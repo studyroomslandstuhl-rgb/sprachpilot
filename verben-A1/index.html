@@ -12,26 +12,247 @@
 <script>
 const GOOGLE_SHEET_URL="https://script.google.com/macros/s/AKfycbzQgBJVmvgfqbWBJSPkDAbxwvbiE3LfaU55iTtz1h1kTdPzxmUmgalxKhRNhpxngfTr/exec";
 const ALL_VERBS=[{"v": "lieben", "emoji": "❤️", "img": "Person zeigt ein Herz"}, {"v": "kaufen", "emoji": "🛒", "img": "Person kauft im Geschäft"}, {"v": "verstehen", "emoji": "💡", "img": "Person versteht"}, {"v": "brauchen", "emoji": "🎒", "img": "Person braucht eine Tasche"}, {"v": "hören", "emoji": "👂", "img": "Person hört Musik"}, {"v": "lernen", "emoji": "📚", "img": "Person lernt Deutsch"}, {"v": "wohnen", "emoji": "🏠", "img": "Person wohnt in einer Stadt"}, {"v": "bringen", "emoji": "🎁", "img": "Person bringt etwas"}, {"v": "sein", "emoji": "👤", "img": "Person ist da"}, {"v": "schreiben", "emoji": "✍️", "img": "Person schreibt"}, {"v": "fotografieren", "emoji": "📷", "img": "Person fotografiert"}, {"v": "telefonieren", "emoji": "☎️", "img": "Person telefoniert"}, {"v": "kochen", "emoji": "🍲", "img": "Person kocht"}, {"v": "leben", "emoji": "🌍", "img": "Person lebt in Deutschland"}, {"v": "kommen", "emoji": "➡️", "img": "Person kommt"}, {"v": "buchstabieren", "emoji": "🔤", "img": "Person buchstabiert"}, {"v": "gehen", "emoji": "🚶", "img": "Person geht"}, {"v": "schwimmen", "emoji": "🏊", "img": "Person schwimmt"}, {"v": "suchen", "emoji": "🔍", "img": "Person sucht"}, {"v": "bestellen", "emoji": "📋", "img": "Person bestellt"}, {"v": "weinen", "emoji": "😢", "img": "Person weint"}, {"v": "reparieren", "emoji": "🔧", "img": "Person repariert"}, {"v": "gewinnen", "emoji": "🏆", "img": "Person gewinnt"}, {"v": "spielen", "emoji": "🎲", "img": "Person spielt"}, {"v": "springen", "emoji": "🤾", "img": "Person springt"}, {"v": "verlieren", "emoji": "😟", "img": "Person verliert"}, {"v": "fragen", "emoji": "❓", "img": "Person fragt"}, {"v": "verkaufen", "emoji": "🏪", "img": "Person verkauft"}, {"v": "unterschreiben", "emoji": "🖊️", "img": "Person unterschreibt"}, {"v": "reservieren", "emoji": "📅", "img": "Person reserviert"}, {"v": "buchen", "emoji": "🎫", "img": "Person bucht"}, {"v": "machen", "emoji": "🛠️", "img": "Person macht etwas"}, {"v": "malen", "emoji": "🎨", "img": "Person malt"}, {"v": "trinken", "emoji": "🥤", "img": "Person trinkt"}, {"v": "schicken", "emoji": "📨", "img": "Person schickt eine Nachricht"}, {"v": "denken", "emoji": "🤔", "img": "Person denkt"}, {"v": "winken", "emoji": "👋", "img": "Person winkt"}, {"v": "hassen", "emoji": "💔", "img": "Person mag etwas gar nicht"}, {"v": "beißen", "emoji": "🦷", "img": "Person beißt"}, {"v": "gießen", "emoji": "🪴", "img": "Person gießt Pflanzen"}, {"v": "reißen", "emoji": "📄", "img": "Person reißt Papier"}, {"v": "putzen", "emoji": "🧽", "img": "Person putzt"}, {"v": "küssen", "emoji": "😘", "img": "Person küsst"}, {"v": "tanzen", "emoji": "💃", "img": "Person tanzt"}, {"v": "mixen", "emoji": "🥣", "img": "Person mixt"}, {"v": "reisen", "emoji": "🧳", "img": "Person reist"}, {"v": "haben", "emoji": "🎒", "img": "Person hat eine Tasche"}, {"v": "überqueren", "emoji": "🚦", "img": "Person überquert die Straße"}, {"v": "grüßen", "emoji": "🙋", "img": "Person grüßt"}, {"v": "genießen", "emoji": "😊", "img": "Person genießt das Essen"}, {"v": "singen", "emoji": "🎤", "img": "Person singt"}, {"v": "schließen", "emoji": "🔒", "img": "Person schließt die Tür"}, {"v": "rennen", "emoji": "🏃", "img": "Person rennt"}, {"v": "lachen", "emoji": "😄", "img": "Person lacht"}, {"v": "warten", "emoji": "⏳", "img": "Person wartet"}, {"v": "arbeiten", "emoji": "💼", "img": "Person arbeitet"}, {"v": "finden", "emoji": "✅", "img": "Person findet etwas"}, {"v": "benutzen", "emoji": "🧰", "img": "Person benutzt ein Gerät"}, {"v": "rechnen", "emoji": "➕", "img": "Person rechnet"}, {"v": "zeichnen", "emoji": "✏️", "img": "Person zeichnet"}, {"v": "öffnen", "emoji": "🚪", "img": "Person öffnet die Tür"}, {"v": "wiederholen", "emoji": "🔁", "img": "Person wiederholt"}, {"v": "schneiden", "emoji": "🔪", "img": "Person schneidet"}, {"v": "streiten", "emoji": "💢", "img": "Person streitet"}, {"v": "atmen", "emoji": "🫁", "img": "Person atmet"}];
-function $(id){return document.getElementById(id)} function clean(s){return String(s||"").trim().toLowerCase().replace(/[.,!?]/g,"")} function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
-let profile=null, verbState={known:[],unsure:[],unknown:[],active:[],progress:{},weak:{}}, cards=[],first=null,lock=false,current=null;
-function loadProfile(){try{profile=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){profile=null} if(!profile){$("profileBox").innerHTML="<div class='no'>Bitte zuerst auf der Startseite registrieren oder einloggen.</div>";return false} $("profileBox").innerHTML=`<div class="ok">Eingeloggt: <strong>${profile.vorname} ${profile.nachname}</strong> | Kurs: ${profile.kurs}</div>`;return true}
-function key(){return "SP_VERBS_"+(profile?profile.userId:"guest")} function loadState(){try{verbState=JSON.parse(localStorage.getItem(key())||"null")||verbState}catch(e){}} function saveState(){localStorage.setItem(key(),JSON.stringify(verbState));sendProgress()}
-function sendProgress(){if(!profile)return;let done=overall();let payload={userId:profile.userId,kurs:profile.kurs,vorname:profile.vorname,nachname:profile.nachname,geburtsdatum:profile.geburtsdatum,heimatland:profile.heimatland,muttersprache:profile.muttersprache,fremdsprache:profile.fremdsprache,wohnort:profile.wohnort,kinder:profile.kinder,fragenFortschritt:profile.fragenFortschritt||0,verbenFortschritt:done,gesamtpunkte:done,profile:profile,verbenState:verbState,timestamp:new Date().toISOString()};try{fetch(GOOGLE_SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})}catch(e){}}
-function overall(){if(!verbState.active.length)return 0;let sum=verbState.active.reduce((s,v)=>s+(verbState.progress[v]||0),0);return Math.round(sum/verbState.active.length)}
-function init(){if(!loadProfile())return;loadState(); if(!verbState.active.length)renderAssessment(); else renderHome()}
-function renderAssessment(){$("app").innerHTML=`<h2>Was kannst du schon?</h2><p class="small">Wähle zuerst. Danach erstellt SprachPilot ein Paket mit maximal 20 Verben.</p><div class="grid">${ALL_VERBS.map(x=>`<div class="verbPick" id="pick_${x.v}"><div class="pic">${x.emoji}</div><strong>${x.v}</strong><br><button onclick="setLevel('${x.v}','known')">kann ich</button><button onclick="setLevel('${x.v}','unsure')">unsicher</button><button onclick="setLevel('${x.v}','unknown')">kann ich nicht</button></div>`).join("")}</div><button class="success" onclick="buildPackage()">Paket erstellen</button>`}
-function setLevel(v,l){["known","unsure","unknown"].forEach(k=>verbState[k]=verbState[k].filter(x=>x!==v));verbState[l].push(v);let el=$("pick_"+v);if(el)el.className="verbPick "+l;saveState()}
-function buildPackage(){let base=[...verbState.unknown,...verbState.unsure];if(base.length<20)base.push(...ALL_VERBS.map(x=>x.v).filter(v=>!base.includes(v)&&!verbState.known.includes(v)));verbState.active=base.slice(0,20);verbState.active.forEach(v=>{if(verbState.progress[v]==null)verbState.progress[v]=0});saveState();renderHome()}
-function renderHome(){$("app").innerHTML=`<h2>Dein Verben-Paket</h2><div class="progress"><strong>Fortschritt:</strong> ${overall()}%</div><p class="small">Maximal 20 Verben gleichzeitig. Wenn du sie gut kannst, kannst du neue Verben wählen.</p><div>${verbState.active.map(v=>`<button class="secondary">${img(v).emoji} ${v} (${verbState.progress[v]||0}%)</button>`).join("")}</div><div class="menu"><button onclick="flashcards()">🃏 Karteikarten</button><button onclick="memory()">🖼️ Memory</button><button onclick="quiz()">✅ Bild zuordnen</button><button onclick="writeVerb()">✍️ Schreiben</button><button onclick="wordSearch()">🔎 Wörtersuche</button><button class="secondary" onclick="renderAssessment()">Neue Verben wählen</button></div><div id="game"></div>`}
-function img(v){return ALL_VERBS.find(x=>x.v===v)||{v:v,emoji:"⭐",img:"Bild"}} function mark(v,good){verbState.progress[v]=Math.max(verbState.progress[v]||0,good?Math.min(100,(verbState.progress[v]||0)+20):verbState.progress[v]||0);if(!good)verbState.weak[v]=(verbState.weak[v]||0)+1;saveState()}
-function flashcards(){current=shuffle(verbState.active)[0];let x=img(current);$("game").innerHTML=`<div class="card"><h3>Karteikarte</h3><div class="pic">${x.emoji}</div><p>${x.img}</p><button onclick="$('answer').classList.remove('hidden')">Lösung zeigen</button><div id="answer" class="hidden"><h2>${current}</h2><button class="success" onclick="mark('${current}',true);flashcards()">kann ich</button><button onclick="mark('${current}',false);flashcards()">noch üben</button></div></div>`}
-function memory(){cards=[];first=null;lock=false;verbState.active.slice(0,10).forEach((v,i)=>{cards.push({p:i,t:"w",v:v,html:v,o:false,d:false});cards.push({p:i,t:"i",v:v,html:`<span class="pic">${img(v).emoji}</span><span class="small">${img(v).img}</span>`,o:false,d:false})});cards=shuffle(cards);renderMemory()}
-function renderMemory(){$("game").innerHTML=`<h3>Memory: Verb + Bild</h3><div class="memory">${cards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`}
-function flip(i){if(lock)return;let c=cards[i];if(!c||c.o||c.d)return;c.o=true;renderMemory();if(first===null){first=i;return}lock=true;let a=cards[first],b=cards[i],good=a.p===b.p&&a.t!==b.t;setTimeout(()=>{if(good){a.d=b.d=true;mark(a.v,true)}else{a.o=b.o=false;mark(a.v,false);mark(b.v,false)}first=null;lock=false;renderMemory();if(cards.every(x=>x.d))$("fb").innerHTML="<div class='ok'>Fertig!</div>"},600)}
-function quiz(){let v=shuffle(verbState.active)[0],x=img(v),opts=shuffle([v,...shuffle(verbState.active.filter(a=>a!==v)).slice(0,3)]);$("game").innerHTML=`<h3>Welches Verb passt?</h3><div class="pic">${x.emoji}</div><p>${x.img}</p>${opts.map(o=>`<button onclick="checkQuiz('${o}','${v}')">${o}</button>`).join("")}<div id="fb"></div>`}
-function checkQuiz(a,v){if(a===v){mark(v,true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>"}else{mark(v,false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>"}}
-function writeVerb(){let v=shuffle(verbState.active)[0],x=img(v);$("game").innerHTML=`<h3>Schreibe das Verb</h3><div class="pic">${x.emoji}</div><p>${x.img}</p><input id="w"><button onclick="checkWrite('${v}')">prüfen</button><div id="fb"></div>`}
-function checkWrite(v){let a=$("w").value;if(clean(a)===clean(v)){mark(v,true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='writeVerb()'>weiter</button>"}else{mark(v,false);$("fb").innerHTML=`<div class='no'>Richtig: ${v}</div>`}}
-function wordSearch(){let chosen=verbState.active.slice(0,8);let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";let grid=Array.from({length:12},()=>Array.from({length:12},()=>letters[Math.floor(Math.random()*letters.length)]));chosen.forEach((v,row)=>{let w=v.toUpperCase().replace("Ü","UE").replace("Ö","OE").replace("Ä","AE").replace("ß","SS").slice(0,12);for(let i=0;i<w.length;i++)grid[row][i]=w[i]});$("game").innerHTML=`<h3>Wörtersuche</h3><p>Finde: ${chosen.join(", ")}</p><div class="wordsearch">${grid.map(r=>r.join(" ")).join("<br>")}</div>`}
+
+function $(id){return document.getElementById(id)}
+function clean(s){return String(s||"").trim().toLowerCase().replace(/[.,!?]/g,"")}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+
+let profile=null;
+let state={
+  phase:"select",
+  index:0,
+  known:[],
+  unsure:[],
+  unknown:[],
+  active:[],
+  progress:{},
+  weak:{},
+  currentGame:"",
+  currentVerb:"",
+  memoryCards:[],
+  first:null,
+  lock:false
+};
+
+function loadProfile(){
+  try{profile=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){profile=null}
+  if(!profile){
+    $("profileBox").innerHTML="<div class='no'>Bitte zuerst auf der Startseite registrieren oder einloggen.</div>";
+    $("app").innerHTML="<button onclick=\"location.href='../'\">Zur Startseite</button>";
+    return false;
+  }
+  $("profileBox").innerHTML=`<div class="ok">Eingeloggt: <strong>${profile.vorname} ${profile.nachname}</strong> | Kurs: ${profile.kurs}</div>`;
+  return true;
+}
+function key(){return "SP_VERBS_"+(profile?profile.userId:"guest")}
+function loadState(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(key())||"null");
+    if(saved) state={...state,...saved};
+  }catch(e){}
+}
+function saveState(){
+  localStorage.setItem(key(),JSON.stringify(state));
+  sendProgress();
+}
+function sendProgress(){
+  if(!profile)return;
+  const done=overall();
+  const payload={
+    userId:profile.userId,kurs:profile.kurs,vorname:profile.vorname,nachname:profile.nachname,
+    geburtsdatum:profile.geburtsdatum,heimatland:profile.heimatland,muttersprache:profile.muttersprache,
+    fremdsprache:profile.fremdsprache,wohnort:profile.wohnort,kinder:profile.kinder,
+    fragenFortschritt:profile.fragenFortschritt||0,verbenFortschritt:done,gesamtpunkte:done,
+    profile:profile,verbenState:state,timestamp:new Date().toISOString()
+  };
+  try{fetch(GOOGLE_SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})}catch(e){}
+}
+function img(v){return ALL_VERBS.find(x=>x.v===v)||{v:v,emoji:"⭐",img:"Bild"}}
+function overall(){
+  if(!state.active.length)return 0;
+  let sum=state.active.reduce((s,v)=>s+(state.progress[v]||0),0);
+  return Math.round(sum/state.active.length);
+}
+function activeComplete(){
+  return state.active.length===20 && state.active.every(v=>(state.progress[v]||0)>=100);
+}
+function init(){
+  if(!loadProfile())return;
+  loadState();
+  if(state.active.length>=20 && !activeComplete()) {
+    state.phase="tasks";
+    saveState();
+    renderHome();
+  } else if(activeComplete()) {
+    renderComplete();
+  } else {
+    state.phase="select";
+    renderOneVerb();
+  }
+}
+function currentPickVerb(){
+  const used=[...state.known,...state.unsure,...state.unknown,...state.active];
+  for(let i=state.index;i<ALL_VERBS.length;i++){
+    if(!used.includes(ALL_VERBS[i].v)){
+      state.index=i;
+      return ALL_VERBS[i];
+    }
+  }
+  return null;
+}
+function renderOneVerb(){
+  state.phase="select";
+  const v=currentPickVerb();
+  if(!v){
+    if(state.active.length>0){state.phase="tasks";saveState();renderHome();return}
+    $("app").innerHTML="<div class='ok'>Alle Verben wurden eingeschätzt.</div>";
+    return;
+  }
+  $("app").innerHTML=`<h2>Verb einschätzen</h2>
+    <div class="progress"><strong>Paket:</strong> ${state.active.length}/20 Verben gesammelt</div>
+    <p class="small">Entscheide schnell. Danach kommt automatisch das nächste Verb.</p>
+    <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
+      <div class="pic">${v.emoji}</div>
+      <h1 style="color:#667eea">${v.v}</h1>
+      <p>${v.img}</p>
+    </div>
+    <button class="success" onclick="rateVerb('${v.v}','known')">✅ kann ich</button>
+    <button onclick="rateVerb('${v.v}','unsure')">❓ unsicher</button>
+    <button onclick="rateVerb('${v.v}','unknown')">❌ kann ich nicht</button>`;
+}
+function rateVerb(v,level){
+  ["known","unsure","unknown"].forEach(k=>state[k]=state[k].filter(x=>x!==v));
+  state[level].push(v);
+  if(level!=="known" && !state.active.includes(v)){
+    state.active.push(v);
+    state.progress[v]=state.progress[v]||0;
+  }
+  state.index++;
+  if(state.active.length>=20){
+    state.active=state.active.slice(0,20);
+    state.phase="tasks";
+    saveState();
+    renderHome();
+  }else{
+    saveState();
+    renderOneVerb();
+  }
+}
+function renderComplete(){
+  $("app").innerHTML=`<h2>🎉 Paket geschafft!</h2>
+    <div class="ok">Du hast diese 20 Verben auf 100 % geübt.</div>
+    <button class="success" onclick="startNextPackage()">Neue 20 Verben wählen</button>
+    <button class="secondary" onclick="renderHome()">Paket wiederholen</button>`;
+}
+function startNextPackage(){
+  state.active=[];
+  state.progress={};
+  state.weak={};
+  state.phase="select";
+  saveState();
+  renderOneVerb();
+}
+function renderHome(){
+  state.phase="tasks";
+  saveState();
+  const complete=activeComplete();
+  $("app").innerHTML=`<h2>Dein Verben-Paket</h2>
+    <div class="progress"><strong>Fortschritt:</strong> ${overall()}%</div>
+    <p class="small">Du übst maximal 20 Verben gleichzeitig. Wenn alle 100 % haben, bekommst du neue Verben.</p>
+    <div>${state.active.map(v=>`<button class="secondary">${img(v).emoji} ${v} (${state.progress[v]||0}%)</button>`).join("")}</div>
+    <div class="menu">
+      <button onclick="flashcards()">🃏 Karteikarten</button>
+      <button onclick="memory()">🖼️ Memory</button>
+      <button onclick="quiz()">✅ Bild zuordnen</button>
+      <button onclick="writeVerb()">✍️ Schreiben</button>
+      <button onclick="wordSearch()">🔎 Wörtersuche</button>
+      ${complete?'<button class="success" onclick="startNextPackage()">Neue 20 Verben</button>':''}
+    </div>
+    <div id="game"></div>`;
+}
+function mark(v,good,amount=20){
+  if(good) state.progress[v]=Math.min(100,(state.progress[v]||0)+amount);
+  else state.weak[v]=(state.weak[v]||0)+1;
+  saveState();
+  if(activeComplete()) renderComplete();
+}
+function flashcards(){
+  state.currentGame="flashcards";
+  let pool=state.active.filter(v=>(state.progress[v]||0)<100);
+  if(!pool.length){renderComplete();return}
+  state.currentVerb=shuffle(pool)[0];
+  saveState();
+  let x=img(state.currentVerb);
+  $("game").innerHTML=`<div class="card"><h3>Karteikarte</h3>
+    <div class="pic">${x.emoji}</div><p>${x.img}</p>
+    <button onclick="$('answer').classList.remove('hidden')">Lösung zeigen</button>
+    <div id="answer" class="hidden"><h2>${state.currentVerb}</h2>
+    <button class="success" onclick="mark('${state.currentVerb}',true,20);flashcards()">kann ich</button>
+    <button onclick="mark('${state.currentVerb}',false);flashcards()">noch üben</button></div></div>`;
+}
+function memory(){
+  state.currentGame="memory";
+  state.first=null;state.lock=false;
+  state.memoryCards=[];
+  state.active.slice(0,10).forEach((v,i)=>{
+    state.memoryCards.push({p:i,t:"w",v:v,html:v,o:false,d:false});
+    state.memoryCards.push({p:i,t:"i",v:v,html:`<span class="pic">${img(v).emoji}</span><span class="small">${img(v).img}</span>`,o:false,d:false});
+  });
+  state.memoryCards=shuffle(state.memoryCards);
+  saveState();
+  renderMemory();
+}
+function renderMemory(){
+  $("game").innerHTML=`<h3>Memory: Verb + Bild</h3>
+  <div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`;
+}
+function flip(i){
+  if(state.lock)return;
+  let c=state.memoryCards[i];
+  if(!c||c.o||c.d)return;
+  c.o=true;renderMemory();
+  if(state.first===null){state.first=i;saveState();return}
+  state.lock=true;
+  let a=state.memoryCards[state.first],b=state.memoryCards[i],good=a.p===b.p&&a.t!==b.t;
+  setTimeout(()=>{
+    if(good){a.d=b.d=true;mark(a.v,true,10)}else{a.o=b.o=false;mark(a.v,false);mark(b.v,false)}
+    state.first=null;state.lock=false;saveState();renderMemory();
+    if(state.memoryCards.every(x=>x.d)){state.active.slice(0,10).forEach(v=>mark(v,true,20));$("fb").innerHTML="<div class='ok'>Memory geschafft!</div>"}
+  },600);
+}
+function quiz(){
+  state.currentGame="quiz";
+  let pool=state.active.filter(v=>(state.progress[v]||0)<100);
+  if(!pool.length){renderComplete();return}
+  let v=shuffle(pool)[0],x=img(v),opts=shuffle([v,...shuffle(state.active.filter(a=>a!==v)).slice(0,3)]);
+  state.currentVerb=v;saveState();
+  $("game").innerHTML=`<h3>Welches Verb passt?</h3><div class="pic">${x.emoji}</div><p>${x.img}</p>${opts.map(o=>`<button onclick="checkQuiz('${o}','${v}')">${o}</button>`).join("")}<div id="fb"></div>`;
+}
+function checkQuiz(a,v){
+  if(a===v){mark(v,true,20);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>"}
+  else{mark(v,false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>"}
+}
+function writeVerb(){
+  state.currentGame="write";
+  let pool=state.active.filter(v=>(state.progress[v]||0)<100);
+  if(!pool.length){renderComplete();return}
+  let v=shuffle(pool)[0],x=img(v);
+  state.currentVerb=v;saveState();
+  $("game").innerHTML=`<h3>Schreibe das Verb</h3><div class="pic">${x.emoji}</div><p>${x.img}</p><input id="w"><button onclick="checkWrite('${v}')">prüfen</button><div id="fb"></div>`;
+}
+function checkWrite(v){
+  let a=$("w").value;
+  if(clean(a)===clean(v)){mark(v,true,20);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='writeVerb()'>weiter</button>"}
+  else{mark(v,false);$("fb").innerHTML=`<div class='no'>Richtig: ${v}</div>`}
+}
+function wordSearch(){
+  state.currentGame="wordsearch";
+  let chosen=state.active.slice(0,8);
+  let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+  let grid=Array.from({length:12},()=>Array.from({length:12},()=>letters[Math.floor(Math.random()*letters.length)]));
+  chosen.forEach((v,row)=>{let w=v.toUpperCase().replace("Ü","UE").replace("Ö","OE").replace("Ä","AE").replace("ß","SS").slice(0,12);for(let i=0;i<w.length;i++)grid[row][i]=w[i]});
+  $("game").innerHTML=`<h3>Wörtersuche</h3><p>Finde: ${chosen.join(", ")}</p><div class="wordsearch">${grid.map(r=>r.join(" ")).join("<br>")}</div><button class="success" onclick="chosenDone()">Ich habe sie gefunden</button>`;
+}
+function chosenDone(){state.active.slice(0,8).forEach(v=>mark(v,true,15));renderHome()}
 init();
 </script></body></html>
