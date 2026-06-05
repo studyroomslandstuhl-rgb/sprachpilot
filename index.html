@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SprachPilot</title>
+  <style>
+    *{box-sizing:border-box}
+    body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);color:#222;min-height:100vh}
+    header{text-align:center;color:white;padding:42px 18px 24px}
+    .logo{font-size:48px;margin-bottom:8px}
+    h1{font-size:42px;margin:0;letter-spacing:.5px}
+    .subtitle{font-size:18px;opacity:.95;margin-top:10px}
+    main{width:min(1050px,94vw);margin:0 auto;padding:18px 0 42px}
+    .welcome{background:white;border-radius:22px;padding:22px;box-shadow:0 12px 35px rgba(0,0,0,.22);margin-bottom:18px;text-align:center}
+    .welcome h2{color:#667eea;margin-top:0}
+    .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+    .card{background:white;border-radius:22px;padding:22px;box-shadow:0 12px 35px rgba(0,0,0,.22);text-decoration:none;color:#222;display:block;transition:.2s;border:3px solid transparent}
+    .card:hover{transform:translateY(-4px);border-color:#ffcc33}
+    .icon{font-size:42px;margin-bottom:8px}
+    .card h3{margin:0 0 8px;font-size:24px;color:#667eea}
+    .card p{margin:0;line-height:1.45;color:#555}
+    .soon{opacity:.75}
+    .badge{display:inline-block;background:#fff3cd;color:#7a5400;border:2px solid #ffc107;border-radius:999px;padding:5px 10px;font-weight:bold;font-size:13px;margin-top:12px}
+    footer{text-align:center;color:white;opacity:.9;padding:20px;font-size:14px}
+    .note{margin-top:18px;background:rgba(255,255,255,.18);color:white;border-radius:18px;padding:14px;text-align:center}
+  </style>
+</head>
+<body>
+  <header>
+    <div class="logo">🚀</div>
+    <h1>SprachPilot</h1>
+    <div class="subtitle">Deutsch lernen – Schritt für Schritt und im eigenen Tempo</div>
+  </header>
+  <main>
+    <section class="welcome">
+      <h2>Willkommen!</h2>
+      <p>Wähle einen Trainer und übe genau das, was du brauchst.</p>
+    </section>
+    <section class="grid">
+      <a class="card" href="fragen-A1/"><div class="icon">❓</div><h3>Fragen A1</h3><p>Trainiere wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.</p><span class="badge">Starten</span></a>
+      <a class="card" href="verben-A1/"><div class="icon">🧩</div><h3>Verben A1</h3><p>Übe Verben in Gruppen: Memory, Bilder, Schreiben und Wiederholung.</p><span class="badge">Starten</span></a>
+      <a class="card soon" href="#"><div class="icon">📚</div><h3>Wortschatz A1</h3><p>Artikel, Plural, Essen, Familie, Wohnen und wichtige Wörter.</p><span class="badge">Bald</span></a>
+      <a class="card soon" href="#"><div class="icon">📝</div><h3>DTZ Training</h3><p>Vorbereitung auf Lesen, Hören, Schreiben und Sprechen.</p><span class="badge">Bald</span></a>
+      <a class="card soon" href="#"><div class="icon">💼</div><h3>Deutsch im Beruf</h3><p>Wortschatz, Briefe, Gespräche und Situationen am Arbeitsplatz.</p><span class="badge">Bald</span></a>
+      <a class="card soon" href="#"><div class="icon">🏆</div><h3>Rangliste</h3><p>Fortschritt und Ergebnisse aus den Kursen ansehen.</p><span class="badge">Bald</span></a>
+    </section>
+    <div class="note">SprachPilot merkt sich deinen Fortschritt und hilft dir, Schritt für Schritt besser zu werden.</div>
+  </main>
+  <footer>© SprachPilot</footer>
+</body>
+</html>
