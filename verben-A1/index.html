@@ -5,6 +5,20 @@
 .grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.verbPick{border:2px solid #ddd;border-radius:14px;padding:12px;background:#f7f8ff;text-align:center}.verbPick.known{background:#e8fff1;border-color:#27ae60}.verbPick.unsure{background:#fff3cd;border-color:#ffc107}.verbPick.unknown{background:#ffe1e1;border-color:#e74c3c}
 .menu{display:flex;flex-wrap:wrap;gap:8px}.memory{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.mem{min-height:88px;border-radius:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:900;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px}.mem.open{background:white;color:#333;border:3px solid #667eea}.mem.done{background:linear-gradient(135deg,#27ae60,#2ecc71);color:white}.pic{font-size:38px;display:block}input{width:100%;padding:12px;border:2px solid #ddd;border-radius:12px;font-size:16px}.progress{background:#eef2ff;padding:10px;border-radius:12px;margin:8px 0}.wordsearch{font-family:monospace;letter-spacing:4px;line-height:1.8;font-size:20px;background:#f7f8ff;padding:12px;border-radius:12px;overflow:auto}
 @media(max-width:500px){.memory{grid-template-columns:repeat(4,1fr);gap:5px}.mem{min-height:70px;font-size:11px}.pic{font-size:28px}}
+
+/* BESSERE VERB-KARTEN */
+.study-card-wrap{perspective:1000px;max-width:360px;margin:18px auto}
+.study-card{width:100%;min-height:230px;position:relative;transform-style:preserve-3d;transition:transform .5s;cursor:pointer}
+.study-card.flipped{transform:rotateY(180deg)}
+.study-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;background:white;border:4px solid #667eea;box-shadow:0 10px 28px rgba(0,0,0,.2);padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.study-back{transform:rotateY(180deg);background:#eefaf3;border-color:#27ae60}
+.native-word{font-size:32px;font-weight:900;color:#764ba2;margin:12px 0}
+.german-word{font-size:42px;font-weight:900;color:#27ae60;margin:12px 0}
+.action-img{width:100%;max-width:230px;height:auto;display:block;margin:0 auto 8px}
+.mem-img{width:100%;max-width:120px;display:block;margin:0 auto 4px}
+.mem-native{font-weight:900;font-size:13px;color:#333}
+.mem-german{font-weight:900;font-size:18px}
+
 </style></head><body><main>
 <div class="card"><h1>🧩 Verben A1</h1><div id="profileBox"></div><button class="secondary" onclick="location.href='../'">🏠 Startseite</button></div>
 <div class="card" id="app"></div>
@@ -76,6 +90,32 @@ function overall(){
 function activeComplete(){
   return state.active.length===20 && state.active.every(v=>(state.progress[v]||0)>=100);
 }
+
+const VERB_TRANSLATIONS = {
+  "Arabisch":{"lieben":"يحب","kaufen":"يشتري","verstehen":"يفهم","brauchen":"يحتاج","hören":"يسمع","lernen":"يتعلم","wohnen":"يسكن","bringen":"يحضر","sein":"يكون","schreiben":"يكتب","fotografieren":"يلتقط صورة","telefonieren":"يتصل","kochen":"يطبخ","leben":"يعيش","kommen":"يأتي","buchstabieren":"يتهجى","gehen":"يذهب","schwimmen":"يسبح","suchen":"يبحث","bestellen":"يطلب","weinen":"يبكي","reparieren":"يصلح","gewinnen":"يفوز","spielen":"يلعب","springen":"يقفز","verlieren":"يخسر","fragen":"يسأل","verkaufen":"يبيع","unterschreiben":"يوقّع","reservieren":"يحجز","buchen":"يحجز","machen":"يفعل","malen":"يرسم","trinken":"يشرب","schicken":"يرسل","denken":"يفكر","winken":"يلوح","hassen":"يكره","beißen":"يعض","gießen":"يسقي","reißen":"يمزق","putzen":"ينظف","küssen":"يقبل","tanzen":"يرقص","mixen":"يخلط","reisen":"يسافر","haben":"يملك","überqueren":"يعبر","grüßen":"يحيي","genießen":"يستمتع","singen":"يغني","schließen":"يغلق","rennen":"يركض","lachen":"يضحك","warten":"ينتظر","arbeiten":"يعمل","finden":"يجد","benutzen":"يستخدم","rechnen":"يحسب","zeichnen":"يرسم","öffnen":"يفتح","wiederholen":"يكرر","schneiden":"يقطع","streiten":"يتشاجر","atmen":"يتنفس"},
+  "Russisch":{"lieben":"любить","kaufen":"покупать","verstehen":"понимать","brauchen":"нуждаться","hören":"слышать","lernen":"учить","wohnen":"жить","bringen":"приносить","sein":"быть","schreiben":"писать","fotografieren":"фотографировать","telefonieren":"звонить","kochen":"готовить","leben":"жить","kommen":"приходить","buchstabieren":"по буквам","gehen":"идти","schwimmen":"плавать","suchen":"искать","bestellen":"заказывать","weinen":"плакать","reparieren":"ремонтировать","gewinnen":"выигрывать","spielen":"играть","springen":"прыгать","verlieren":"терять","fragen":"спрашивать","verkaufen":"продавать","unterschreiben":"подписывать","reservieren":"резервировать","buchen":"бронировать","machen":"делать","malen":"рисовать","trinken":"пить","schicken":"посылать","denken":"думать","winken":"махать","hassen":"ненавидеть","beißen":"кусать","gießen":"поливать","reißen":"рвать","putzen":"чистить","küssen":"целовать","tanzen":"танцевать","mixen":"смешивать","reisen":"путешествовать","haben":"иметь","überqueren":"переходить","grüßen":"приветствовать","genießen":"наслаждаться","singen":"петь","schließen":"закрывать","rennen":"бежать","lachen":"смеяться","warten":"ждать","arbeiten":"работать","finden":"находить","benutzen":"использовать","rechnen":"считать","zeichnen":"рисовать","öffnen":"открывать","wiederholen":"повторять","schneiden":"резать","streiten":"ссориться","atmen":"дышать"},
+  "Ukrainisch":{"lieben":"любити","kaufen":"купувати","verstehen":"розуміти","brauchen":"потребувати","hören":"чути","lernen":"вчити","wohnen":"жити","bringen":"приносити","sein":"бути","schreiben":"писати","fotografieren":"фотографувати","telefonieren":"телефонувати","kochen":"готувати","leben":"жити","kommen":"приходити","buchstabieren":"по буквах","gehen":"йти","schwimmen":"плавати","suchen":"шукати","bestellen":"замовляти","weinen":"плакати","reparieren":"ремонтувати","gewinnen":"вигравати","spielen":"грати","springen":"стрибати","verlieren":"втрачати","fragen":"питати","verkaufen":"продавати","unterschreiben":"підписувати","reservieren":"резервувати","buchen":"бронювати","machen":"робити","malen":"малювати","trinken":"пити","schicken":"надсилати","denken":"думати","winken":"махати","hassen":"ненавидіти","beißen":"кусати","gießen":"поливати","reißen":"рвати","putzen":"чистити","küssen":"цілувати","tanzen":"танцювати","mixen":"змішувати","reisen":"подорожувати","haben":"мати","überqueren":"переходити","grüßen":"вітати","genießen":"насолоджуватися","singen":"співати","schließen":"закривати","rennen":"бігти","lachen":"сміятися","warten":"чекати","arbeiten":"працювати","finden":"знаходити","benutzen":"використовувати","rechnen":"рахувати","zeichnen":"креслити","öffnen":"відкривати","wiederholen":"повторювати","schneiden":"різати","streiten":"сваритися","atmen":"дихати"},
+  "Türkisch":{"lieben":"sevmek","kaufen":"satın almak","verstehen":"anlamak","brauchen":"ihtiyaç duymak","hören":"duymak","lernen":"öğrenmek","wohnen":"oturmak","bringen":"getirmek","sein":"olmak","schreiben":"yazmak","fotografieren":"fotoğraf çekmek","telefonieren":"telefon etmek","kochen":"yemek pişirmek","leben":"yaşamak","kommen":"gelmek","buchstabieren":"harflemek","gehen":"gitmek","schwimmen":"yüzmek","suchen":"aramak","bestellen":"sipariş vermek","weinen":"ağlamak","reparieren":"tamir etmek","gewinnen":"kazanmak","spielen":"oynamak","springen":"zıplamak","verlieren":"kaybetmek","fragen":"sormak","verkaufen":"satmak","unterschreiben":"imzalamak","reservieren":"rezervasyon yapmak","buchen":"rezerve etmek","machen":"yapmak","malen":"boyamak","trinken":"içmek","schicken":"göndermek","denken":"düşünmek","winken":"el sallamak","hassen":"nefret etmek","beißen":"ısırmak","gießen":"sulamak","reißen":"yırtmak","putzen":"temizlemek","küssen":"öpmek","tanzen":"dans etmek","mixen":"karıştırmak","reisen":"seyahat etmek","haben":"sahip olmak","überqueren":"karşıya geçmek","grüßen":"selamlamak","genießen":"keyfini çıkarmak","singen":"şarkı söylemek","schließen":"kapatmak","rennen":"koşmak","lachen":"gülmek","warten":"beklemek","arbeiten":"çalışmak","finden":"bulmak","benutzen":"kullanmak","rechnen":"hesaplamak","zeichnen":"çizmek","öffnen":"açmak","wiederholen":"tekrarlamak","schneiden":"kesmek","streiten":"tartışmak","atmen":"nefes almak"},
+  "Englisch":{"lieben":"to love","kaufen":"to buy","verstehen":"to understand","brauchen":"to need","hören":"to hear","lernen":"to learn","wohnen":"to live","bringen":"to bring","sein":"to be","schreiben":"to write","fotografieren":"to take photos","telefonieren":"to phone","kochen":"to cook","leben":"to live","kommen":"to come","buchstabieren":"to spell","gehen":"to go","schwimmen":"to swim","suchen":"to search","bestellen":"to order","weinen":"to cry","reparieren":"to repair","gewinnen":"to win","spielen":"to play","springen":"to jump","verlieren":"to lose","fragen":"to ask","verkaufen":"to sell","unterschreiben":"to sign","reservieren":"to reserve","buchen":"to book","machen":"to do","malen":"to paint","trinken":"to drink","schicken":"to send","denken":"to think","winken":"to wave","hassen":"to hate","beißen":"to bite","gießen":"to water","reißen":"to tear","putzen":"to clean","küssen":"to kiss","tanzen":"to dance","mixen":"to mix","reisen":"to travel","haben":"to have","überqueren":"to cross","grüßen":"to greet","genießen":"to enjoy","singen":"to sing","schließen":"to close","rennen":"to run","lachen":"to laugh","warten":"to wait","arbeiten":"to work","finden":"to find","benutzen":"to use","rechnen":"to calculate","zeichnen":"to draw","öffnen":"to open","wiederholen":"to repeat","schneiden":"to cut","streiten":"to argue","atmen":"to breathe"}
+};
+function nativeLang(){return (profile&&profile.muttersprache)?profile.muttersprache:"Englisch"}
+function nativeWord(v){const lang=nativeLang();return (VERB_TRANSLATIONS[lang]&&VERB_TRANSLATIONS[lang][v])||(VERB_TRANSLATIONS["Englisch"]&&VERB_TRANSLATIONS["Englisch"][v])||v}
+function actionImage(v,small=false){
+ const color="#667eea",accent="#ffcc33",skin="#f6c28b";
+ const map={
+ kaufen:`<rect x="120" y="90" width="95" height="65" rx="8" fill="#dff3ff"/><text x="148" y="128" font-size="18" font-weight="bold">SHOP</text><circle cx="75" cy="70" r="22" fill="${skin}"/><rect x="55" y="92" width="42" height="70" rx="10" fill="${color}"/><rect x="105" y="130" width="50" height="35" rx="6" fill="${accent}"/><circle cx="118" cy="168" r="6"/><circle cx="145" cy="168" r="6"/>`,
+ schreiben:`<circle cx="75" cy="65" r="22" fill="${skin}"/><rect x="55" y="88" width="45" height="70" rx="10" fill="${color}"/><rect x="115" y="105" width="105" height="65" rx="6" fill="#fff"/><line x1="128" y1="123" x2="205" y2="123" stroke="#333" stroke-width="4"/><line x1="128" y1="142" x2="190" y2="142" stroke="#333" stroke-width="4"/><line x1="96" y1="112" x2="132" y2="132" stroke="#333" stroke-width="8"/>`,
+ telefonieren:`<circle cx="90" cy="70" r="22" fill="${skin}"/><rect x="68" y="93" width="45" height="70" rx="10" fill="${color}"/><rect x="142" y="70" width="45" height="80" rx="8" fill="#222"/><rect x="148" y="80" width="33" height="52" rx="4" fill="#9ee7ff"/><line x1="112" y1="95" x2="145" y2="95" stroke="#333" stroke-width="8"/>`,
+ kochen:`<circle cx="70" cy="65" r="22" fill="${skin}"/><rect x="48" y="88" width="48" height="70" rx="10" fill="${color}"/><rect x="120" y="125" width="92" height="35" rx="8" fill="#555"/><rect x="132" y="112" width="70" height="20" rx="6" fill="#999"/><path d="M145 100 C130 85,160 82,145 65" stroke="#ddd" stroke-width="5" fill="none"/><path d="M175 100 C160 85,190 82,175 65" stroke="#ddd" stroke-width="5" fill="none"/>`,
+ lernen:`<circle cx="75" cy="65" r="22" fill="${skin}"/><rect x="55" y="88" width="45" height="70" rx="10" fill="${color}"/><rect x="120" y="95" width="90" height="65" rx="5" fill="#fff"/><line x1="165" y1="95" x2="165" y2="160" stroke="#333" stroke-width="3"/><line x1="130" y1="115" x2="155" y2="115" stroke="#333" stroke-width="4"/><line x1="174" y1="115" x2="200" y2="115" stroke="#333" stroke-width="4"/>`,
+ gehen:`<circle cx="110" cy="55" r="22" fill="${skin}"/><line x1="110" y1="78" x2="110" y2="125" stroke="${color}" stroke-width="16"/><line x1="110" y1="95" x2="70" y2="115" stroke="#333" stroke-width="8"/><line x1="110" y1="125" x2="80" y2="170" stroke="#333" stroke-width="8"/><line x1="110" y1="125" x2="150" y2="170" stroke="#333" stroke-width="8"/><path d="M170 170 H230" stroke="#999" stroke-width="5"/>`,
+ rennen:`<circle cx="95" cy="55" r="22" fill="${skin}"/><line x1="95" y1="78" x2="125" y2="118" stroke="${color}" stroke-width="16"/><line x1="120" y1="118" x2="75" y2="165" stroke="#333" stroke-width="8"/><line x1="120" y1="118" x2="175" y2="140" stroke="#333" stroke-width="8"/><line x1="110" y1="92" x2="165" y2="80" stroke="#333" stroke-width="8"/><path d="M25 150 H65" stroke="#aaa" stroke-width="5"/><path d="M35 170 H95" stroke="#aaa" stroke-width="5"/>`,
+ trinken:`<circle cx="85" cy="65" r="22" fill="${skin}"/><rect x="62" y="88" width="48" height="70" rx="10" fill="${color}"/><path d="M150 88 L200 88 L190 165 L160 165Z" fill="#9ee7ff" stroke="#333" stroke-width="4"/><line x1="110" y1="95" x2="155" y2="110" stroke="#333" stroke-width="8"/>`
+ };
+ let body=map[v]||`<circle cx="90" cy="60" r="22" fill="${skin}"/><rect x="68" y="84" width="48" height="72" rx="10" fill="${color}"/><circle cx="175" cy="120" r="42" fill="${accent}" stroke="#333" stroke-width="4"/><text x="175" y="130" text-anchor="middle" font-size="28" font-weight="bold" fill="#333">${v.slice(0,2).toUpperCase()}</text><line x1="115" y1="105" x2="150" y2="120" stroke="#333" stroke-width="8"/>`;
+ return `<svg class="${small?'mem-img':'action-img'}" viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${v}"><rect width="260" height="200" rx="20" fill="#f7f8ff"/><rect x="10" y="10" width="240" height="180" rx="18" fill="#fff" stroke="#d6dcff" stroke-width="4"/>${body}</svg>`;
+}
+
 function init(){
   if(!loadProfile())return;
   loadState();
@@ -112,7 +152,7 @@ function renderOneVerb(){
     <div class="progress"><strong>Paket:</strong> ${state.active.length}/20 Verben gesammelt</div>
     <p class="small">Entscheide schnell. Danach kommt automatisch das nächste Verb.</p>
     <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
-      <div class="pic">${v.emoji}</div>
+      ${actionImage(v.v,false)}
       <h1 style="color:#667eea">${v.v}</h1>
       <p>${v.img}</p>
     </div>
@@ -182,28 +222,41 @@ function flashcards(){
   if(!pool.length){renderComplete();return}
   state.currentVerb=shuffle(pool)[0];
   saveState();
-  let x=img(state.currentVerb);
-  $("game").innerHTML=`<div class="card"><h3>Karteikarte</h3>
-    <div class="pic">${x.emoji}</div><p>${x.img}</p>
-    <button onclick="$('answer').classList.remove('hidden')">Lösung zeigen</button>
-    <div id="answer" class="hidden"><h2>${state.currentVerb}</h2>
-    <button class="success" onclick="mark('${state.currentVerb}',true,20);flashcards()">kann ich</button>
-    <button onclick="mark('${state.currentVerb}',false);flashcards()">noch üben</button></div></div>`;
+  let v=state.currentVerb;
+  $("game").innerHTML=`<h3>Karteikarten: Nenne das deutsche Wort</h3>
+    <p class="small">Vorderseite: Muttersprache. Drehe die Karte um und prüfe das deutsche Verb.</p>
+    <div class="study-card-wrap">
+      <div id="studyCard" class="study-card" onclick="this.classList.toggle('flipped')">
+        <div class="study-face">
+          <div class="small">Muttersprache: ${nativeLang()}</div>
+          <div class="native-word">${nativeWord(v)}</div>
+          <p class="small">Wie heißt das auf Deutsch?</p>
+        </div>
+        <div class="study-face study-back">
+          <div class="small">Deutsch</div>
+          <div class="german-word">${v}</div>
+          <p class="small">Klicke wieder, um zurückzudrehen.</p>
+        </div>
+      </div>
+    </div>
+    <button class="success" onclick="mark('${v}',true,20);flashcards()">✅ wusste ich</button>
+    <button onclick="mark('${v}',false);flashcards()">❓ muss ich üben</button>`;
 }
 function memory(){
   state.currentGame="memory";
   state.first=null;state.lock=false;
   state.memoryCards=[];
   state.active.slice(0,10).forEach((v,i)=>{
-    state.memoryCards.push({p:i,t:"w",v:v,html:v,o:false,d:false});
-    state.memoryCards.push({p:i,t:"i",v:v,html:`<span class="pic">${img(v).emoji}</span><span class="small">${img(v).img}</span>`,o:false,d:false});
+    state.memoryCards.push({p:i,t:"de",v:v,html:`<span class="mem-german">${v}</span>`,o:false,d:false});
+    state.memoryCards.push({p:i,t:"img",v:v,html:`${actionImage(v,true)}<span class="mem-native">${nativeWord(v)}</span>`,o:false,d:false});
   });
   state.memoryCards=shuffle(state.memoryCards);
   saveState();
   renderMemory();
 }
 function renderMemory(){
-  $("game").innerHTML=`<h3>Memory: Verb + Bild</h3>
+  $("game").innerHTML=`<h3>Memory: Bild + Muttersprache ↔ deutsches Verb</h3>
+  <p class="small">Finde die Bildkarte mit dem Wort in deiner Muttersprache und das passende deutsche Verb.</p>
   <div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`;
 }
 function flip(i){
@@ -226,7 +279,7 @@ function quiz(){
   if(!pool.length){renderComplete();return}
   let v=shuffle(pool)[0],x=img(v),opts=shuffle([v,...shuffle(state.active.filter(a=>a!==v)).slice(0,3)]);
   state.currentVerb=v;saveState();
-  $("game").innerHTML=`<h3>Welches Verb passt?</h3><div class="pic">${x.emoji}</div><p>${x.img}</p>${opts.map(o=>`<button onclick="checkQuiz('${o}','${v}')">${o}</button>`).join("")}<div id="fb"></div>`;
+  $("game").innerHTML=`<h3>Welches Verb passt?</h3>${actionImage(v,false)}<p>${nativeWord(v)}</p>${opts.map(o=>`<button onclick="checkQuiz('${o}','${v}')">${o}</button>`).join("")}<div id="fb"></div>`;
 }
 function checkQuiz(a,v){
   if(a===v){mark(v,true,20);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>"}
@@ -238,7 +291,7 @@ function writeVerb(){
   if(!pool.length){renderComplete();return}
   let v=shuffle(pool)[0],x=img(v);
   state.currentVerb=v;saveState();
-  $("game").innerHTML=`<h3>Schreibe das Verb</h3><div class="pic">${x.emoji}</div><p>${x.img}</p><input id="w"><button onclick="checkWrite('${v}')">prüfen</button><div id="fb"></div>`;
+  $("game").innerHTML=`<h3>Schreibe das deutsche Verb</h3>${actionImage(v,false)}<p>${nativeWord(v)}</p><input id="w"><button onclick="checkWrite('${v}')">prüfen</button><div id="fb"></div>`;
 }
 function checkWrite(v){
   let a=$("w").value;
