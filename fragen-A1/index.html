@@ -1,1 +1,1530 @@
-Hallo
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>A1 Fragen Trainer Pro</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:Segoe UI,Tahoma,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);color:#333;min-height:100vh;padding:10px}
+header{color:white;text-align:center;padding:24px 10px;margin-bottom:12px}
+header h1{font-size:2rem;text-shadow:1px 2px 4px rgba(0,0,0,.25)}
+main{max-width:1100px;margin:auto}
+.card{background:white;border-radius:16px;padding:20px;margin:14px 0;box-shadow:0 8px 24px rgba(0,0,0,.14)}
+h2{color:#667eea;margin-bottom:14px;border-bottom:3px solid #764ba2;padding-bottom:8px}
+h3{color:#667eea;margin:16px 0 8px}
+button{border:none;border-radius:10px;padding:12px 16px;margin:6px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 3px 9px rgba(0,0,0,.2)}
+button:hover{transform:translateY(-1px)}
+button:disabled{opacity:.55;cursor:not-allowed;transform:none}
+.secondary{background:linear-gradient(135deg,#f093fb,#f5576c)}
+.success{background:linear-gradient(135deg,#4facfe,#00f2fe)}
+.danger,.reset-user{background:linear-gradient(135deg,#ff0844,#ff4b2b)!important;border:3px solid #a4001f!important;font-weight:900!important}
+input,select{width:100%;padding:12px;margin:7px 0 14px;border:2px solid #ddd;border-radius:10px;font-size:16px}
+input:focus,select:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.15)}
+label{font-weight:700;color:#667eea}
+.hidden{display:none!important}
+.big{font-size:26px;font-weight:800;color:#667eea;margin:14px 0}
+.small{font-size:14px;color:#666}
+.ok{color:#169b52;background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:12px 0;font-weight:700}
+.no{color:#c0392b;background:#fde0dc;border-left:5px solid #e74c3c;padding:12px;border-radius:10px;margin:12px 0;font-weight:700}
+.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
+.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
+.stat{background:linear-gradient(135deg,#667eea,#764ba2);color:white;border-radius:12px;text-align:center;padding:15px}
+.stat .num{font-size:1.8rem;font-weight:900}
+.exercise-tracker{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px}
+.exercise-item{background:#f0f4ff;border:2px solid #d5dcff;border-radius:12px;padding:12px;text-align:center;font-weight:800;cursor:pointer}
+.exercise-item:hover{background:#e4eaff;border-color:#667eea}
+.exercise-item.active{outline:4px solid rgba(102,126,234,.25)}
+.exercise-item.completed{background:linear-gradient(135deg,#4facfe,#00f2fe);color:white;border-color:#4facfe}
+.exercise-item.exam{background:#fff3cd;border-color:#ffc107}
+.option{display:block;width:100%;background:#f0f4ff;color:#333;text-align:left;padding:14px;margin:8px 0;border:2px solid #ddd;border-radius:10px;box-shadow:none}
+.option:hover{background:#e3e8ff;border-color:#667eea;transform:none}
+.option.selected{background:#d9f7e8;border-color:#27ae60}
+.option.wrong{background:#fde0dc;border-color:#e74c3c}
+.word{background:#fff3cd;color:#333;border:2px solid #ffc107;box-shadow:none}
+#chosen{min-height:44px;background:#f0f4ff;border-radius:10px;padding:12px;margin:10px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
+.memory{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:7px!important}
+.memcard{min-height:72px!important;padding:6px!important;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:11px!important;line-height:1.15;font-weight:800;text-align:center;display:flex;align-items:center;justify-content:center;word-break:break-word;overflow-wrap:anywhere;box-shadow:0 3px 8px rgba(0,0,0,.18)}
+.memcard.open{background:white;color:#333;border:3px solid #667eea}
+.memcard.done{background:linear-gradient(135deg,#4facfe,#00f2fe)}
+.saved-user-box{background:#f0f4ff;border:2px solid #667eea;border-radius:12px;padding:14px;margin:12px 0}
+.leader{padding:10px;border-left:5px solid #667eea;background:#f7f7ff;border-radius:8px;margin:8px 0}
+table{width:100%;border-collapse:collapse;margin-top:12px}td,th{border:1px solid #ddd;padding:8px}th{background:#667eea;color:white}
+@media(max-width:480px){
+ header h1{font-size:1.5rem}.card{padding:14px}.big{font-size:22px}
+ button{font-size:15px;padding:10px 12px}
+ .exercise-tracker{grid-template-columns:repeat(2,1fr)}
+ .memory{grid-template-columns:repeat(4,1fr)!important;gap:5px!important}
+ .memcard{min-height:64px!important;font-size:10px!important;padding:4px!important}
+}
+
+/* FIX: Menü/Prozess immer lesbar */
+.exercise-item,
+.exercise-item .small {
+  color: #333 !important;
+}
+.exercise-item.completed,
+.exercise-item.completed .small {
+  color: white !important;
+}
+.exercise-item.exam,
+.exercise-item.exam .small {
+  color: #333 !important;
+}
+.exercise-item[disabled],
+.exercise-item[disabled] .small {
+  color: #555 !important;
+}
+.help-box {
+  background:#f0f4ff;
+  border-left:5px solid #667eea;
+  padding:12px;
+  border-radius:10px;
+  margin:10px 0;
+}
+.answer-box {
+  background:#d9f7e8;
+  border-left:5px solid #27ae60;
+  padding:12px;
+  border-radius:10px;
+  margin:10px 0;
+  font-weight:700;
+}
+
+
+/* FINAL UX FIXES */
+.exercise-item,
+.exercise-item .small {
+  color:#333 !important;
+}
+.exercise-item.completed,
+.exercise-item.completed .small {
+  color:white !important;
+}
+.exercise-item.exam,
+.exercise-item.exam .small {
+  color:#333 !important;
+}
+.progress-overview {
+  background:#f7f8ff;
+  border:2px solid #dbe0ff;
+  border-radius:12px;
+  padding:12px;
+  margin:10px 0;
+}
+.profile-edit-box {
+  background:#fff3cd;
+  border-left:5px solid #ffc107;
+  padding:12px;
+  border-radius:10px;
+  margin:10px 0;
+}
+.mic-warning {
+  background:#fff3cd;
+  border-left:5px solid #ffc107;
+  padding:10px;
+  border-radius:10px;
+  margin:10px 0;
+}
+.help-box {
+  background:#f0f4ff;
+  border-left:5px solid #667eea;
+  padding:12px;
+  border-radius:10px;
+  margin:10px 0;
+}
+.answer-box {
+  background:#d9f7e8;
+  border-left:5px solid #27ae60;
+  padding:12px;
+  border-radius:10px;
+  margin:10px 0;
+  font-weight:700;
+}
+.rank-box {
+  background:#eefaf3;
+  border-left:5px solid #27ae60;
+  padding:12px;
+  border-radius:10px;
+  margin:10px 0;
+}
+
+</style>
+</head>
+<body>
+<header>
+<h1>🇩🇪 A1 Fragen Trainer Pro</h1>
+<p>Interaktives Lernen · Sprechen · Hören · Prüfung</p>
+</header>
+<main>
+<section id="login" class="card">
+<h2>🎓 Anmeldung</h2>
+<div id="savedUserBox" class="saved-user-box hidden"></div>
+<label>Vorname *</label><input id="fname" placeholder="z.B. Maria, Omar, Anna, Ali">
+<label>Nachname *</label><input id="lname" placeholder="z.B. Schmidt, Hassan, Müller, Ben Ali">
+<label>Kurscode *</label><input id="course" placeholder="z.B. A1-Montag">
+<label>Heimatland *</label>
+<select id="country">
+  <option value="">-- Heimatland wählen --</option>
+  <option value="Deutschland">Deutschland</option>
+  <option value="Syrien">Syrien</option>
+  <option value="Ukraine">Ukraine</option>
+  <option value="Afghanistan">Afghanistan</option>
+  <option value="Irak">Irak</option>
+  <option value="Türkei">Türkei</option>
+  <option value="Polen">Polen</option>
+  <option value="Rumänien">Rumänien</option>
+  <option value="Bulgarien">Bulgarien</option>
+  <option value="Somalia">Somalia</option>
+  <option value="Eritrea">Eritrea</option>
+  <option value="Ghana">Ghana</option>
+  <option value="Nigeria">Nigeria</option>
+  <option value="Algerien">Algerien</option>
+  <option value="Marokko">Marokko</option>
+  <option value="Tunesien">Tunesien</option>
+  <option value="Iran">Iran</option>
+  <option value="Pakistan">Pakistan</option>
+  <option value="Indien">Indien</option>
+  <option value="Frankreich">Frankreich</option>
+  <option value="Spanien">Spanien</option>
+  <option value="Italien">Italien</option>
+  <option value="USA">USA</option>
+  <option value="China">China</option>
+  <option value="Japan">Japan</option>
+  <option value="Russland">Russland</option>
+</select>
+<label>Sprache *</label><input id="langInput" placeholder="z.B. Arabisch, Ukrainisch, Türkisch">
+<label>Wohnort in Deutschland *</label><input id="cityInput" placeholder="z.B. Homburg, Berlin, Leipzig">
+<label>Alter *</label><input id="ageInput" type="number" min="1" max="120" placeholder="z.B. 35">
+<label>Geburtsort *</label><input id="birthplaceInput" type="text" autocomplete="off" placeholder="Geburtsort frei eingeben, z.B. Aleppo, Kiew, Algier">
+<label>Kinder *</label>
+<select id="childrenInput">
+  <option value="">-- wählen --</option>
+  <option value="0">keine Kinder</option>
+  <option value="1">1 Kind</option>
+  <option value="2">2 Kinder</option>
+  <option value="3">3 Kinder</option>
+  <option value="4">4 Kinder</option>
+  <option value="5">5 Kinder</option>
+  <option value="6">6 Kinder</option>
+  <option value="7">7 Kinder</option>
+  <option value="8">8 Kinder</option>
+  <option value="9">9 Kinder</option>
+  <option value="10">10 Kinder</option>
+</select>
+<label>Familienstand *</label>
+<select id="maritalInput">
+<option value="">-- wählen --</option>
+<option value="verheiratet">verheiratet</option>
+<option value="ledig">ledig</option>
+<option value="geschieden">geschieden</option>
+<option value="verwitwet">verwitwet</option>
+</select>
+<div class="flex">
+<button onclick="start()">🚀 Starten</button>
+<button class="secondary" type="button" onclick="initLogin()">🔄 Auswahlfelder neu laden</button>
+<button class="secondary" onclick="teacher()">👨‍🏫 Lehrer-Dashboard</button>
+<button class="danger reset-user" onclick="resetEverything()">🗑️ Von 0 anfangen</button>
+</div>
+</section>
+
+<section id="app" class="hidden">
+<div class="card topbar">
+<div>
+<div class="big" id="hello"></div>
+<div id="statsLine"></div>
+</div>
+<div>
+<button class="secondary" onclick="editProfile()">Profil bearbeiten</button><button class="secondary" onclick="logout()">Abmelden</button>
+<button class="danger reset-user" onclick="resetEverything()">🗑️ Von 0 anfangen</button>
+</div>
+</div>
+<div class="stats" id="statsBox"></div><div id="progressDetails"></div>
+<div class="card">
+<h2>Aufgaben</h2>
+<p class="small">Alle Aufgaben sind offen. Die Prüfung ist erst am Ende freigeschaltet.</p>
+<div id="exerciseTracker" class="exercise-tracker"></div>
+</div>
+<div class="flex">
+<button onclick="showLeaderboard()">🏅 Bestenliste</button><button onclick="showCourseRanking()">👥 Kurs-Rangliste</button>
+
+</div>
+<div id="game" class="card"></div>
+</section>
+
+<section id="courseRankingSection" class="hidden card">
+<h2>👥 Kurs-Rangliste</h2>
+<button class="secondary" onclick="closeCourseRanking()">Zurück</button>
+<div id="courseRankingBox"></div>
+</section>
+
+<section id="leaderboardSection" class="hidden card">
+<h2>🏅 Prüfungsergebnisse</h2>
+<button class="secondary" onclick="closeLeaderboard()">Zurück</button>
+<div id="leaderboard"></div>
+</section>
+
+<section id="dashboard" class="hidden card">
+<h2>📊 Lehrer-Dashboard</h2>
+<p class="small">Geben Sie Kursnummer und Passwort ein. Passwort: <strong>Ergebnisse</strong></p>
+<label>Kursnummer / Kurscode</label>
+<input id="teacherCourse" placeholder="z.B. A1-Montag">
+<label>Passwort</label>
+<input id="teacherPass" type="password" placeholder="Passwort">
+<button onclick="openTeacherStats()">🔐 Statistik anzeigen</button>
+<button class="secondary" onclick="back()">Zurück</button>
+<div id="teacherStatsBox"></div>
+<hr style="margin:20px 0">
+<p class="small">Optional: Fortschrittsdateien von TN importieren.</p>
+<input type="file" id="importFile" multiple accept=".json" onchange="importFiles(event)">
+<button onclick="downloadCSV()">📥 CSV exportieren</button>
+<div id="dashTable"></div>
+</section>
+</main>
+
+<script>
+
+if(!String.prototype.replaceAll){
+  String.prototype.replaceAll = function(search, replacement){
+    return this.split(search).join(replacement);
+  };
+}
+
+const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbxqlwbjbdFSQuXWz2en2cNxGk7ldTJIITdksJvhzJ8Yu-JDzrfvqfXcD0Yj5-fzu36__w/exec";
+
+// Safety aliases: prevent ReferenceError from accidental inline calls like mode(exam)
+const learn = "learn";
+const qa = "qa";
+const speak = "speak";
+const puzzle = "puzzle";
+const dictation = "dictation";
+const memory = "memory";
+const quickfire = "quickfire";
+const listen = "listen";
+const listenrespond = "listenrespond";
+const exam = "exam";
+
+const COUNTRIES = {
+  "Deutschland": "Deutsch", "Syrien": "Arabisch", "Ukraine": "Ukrainisch", "Afghanistan": "Dari",
+  "Irak": "Arabisch", "Türkei": "Türkisch", "Polen": "Polnisch", "Rumänien": "Rumänisch",
+  "Bulgarien": "Bulgarisch", "Somalia": "Somali", "Eritrea": "Tigrinya", "Ghana": "Twi",
+  "Nigeria": "Yoruba", "Algerien": "Arabisch", "Marokko": "Arabisch", "Tunesien": "Arabisch",
+  "Iran": "Persisch", "Pakistan": "Urdu", "Indien": "Hindi", "Frankreich": "Französisch",
+  "Spanien": "Spanisch", "Italien": "Italienisch", "USA": "Englisch", "China": "Chinesisch",
+  "Japan": "Japanisch", "Russland": "Russisch"
+};
+const DEFAULT_PROFILE = {fname:"Max",lname:"Mustermann",full:"Max Mustermann",origin:"Deutschland",lang:"Deutsch",city:"Berlin",birthplace:"",age:"30",childrenNumber:"0",marital:"ledig"};
+
+const DATA = [
+ {topic:"Name",qSie:"Wie heißen Sie?",qDu:"Wie heißt du?",answerTemplates:["Ich heiße {fname}.","Ich heiße {name}.","Ich bin {fname}.","Ich bin {name}.","Mein Name ist {fname}.","Mein Name ist {name}."]},
+ {topic:"Vorname",qSie:"Wie ist Ihr Vorname?",qDu:"Wie ist dein Vorname?",answerTemplates:["Mein Vorname ist {fname}.","Ich heiße {fname}.","{fname}."]},
+ {topic:"Nachname",qSie:"Wie ist Ihr Nachname?",qDu:"Wie ist dein Nachname?",answerTemplates:["Mein Nachname ist {lname}.","Ich heiße {lname}.","{lname}."]},
+ {topic:"Heimatland",qSie:"Woher kommen Sie?",qDu:"Woher kommst du?",answerTemplates:["Ich komme aus {origin_from}.","Ich bin aus {origin_from}.","Aus {origin_from}."]},
+ {topic:"Sprache",qSie:"Was sprechen Sie?",qDu:"Was sprichst du?",answerTemplates:["Ich spreche {lang} und ein bisschen Deutsch.","Ich spreche {lang}.","{lang}.","{lang} und ein bisschen Deutsch."]},
+ {topic:"Buchstabieren Vorname",qSie:"Buchstabieren Sie bitte Ihren Vornamen.",qDu:"Buchstabiere bitte deinen Vornamen.",answerTemplates:["{spell_fname}","{spell_fname_space}"]},
+ {topic:"Buchstabieren Nachname",qSie:"Buchstabieren Sie bitte Ihren Nachnamen.",qDu:"Buchstabiere bitte deinen Nachnamen.",answerTemplates:["{spell_lname}","{spell_lname_space}"]},
+ {topic:"Wie geht es Ihnen?",qSie:"Wie geht es Ihnen?",qDu:"Wie geht es dir?",answerTemplates:[
+  "Es geht mir sehr gut.","Mir geht es sehr gut.","Sehr gut.","Sehr gut, danke.","Danke, sehr gut.",
+  "Es geht mir gut.","Mir geht es gut.","Gut.","Gut, danke.","Danke, gut.","Danke, es geht mir gut.",
+  "Super.","Es geht mir super.","Mir geht es super.","Prima.","Es geht mir prima.",
+  "Es geht.","Es geht mir okay.","Okay.","Ganz gut.","Nicht schlecht.",
+  "Es geht mir nicht so gut.","Mir geht es nicht so gut.","Nicht so gut.",
+  "Es geht mir schlecht.","Mir geht es schlecht.","Schlecht."
+ ]},
+ {topic:"Kinder",qSie:"Haben Sie Kinder?",qDu:"Hast du Kinder?",answerTemplates:["{children_answer}"]},
+ {topic:"Familienstand",qSie:"Sind Sie verheiratet?",qDu:"Bist du verheiratet?",answerTemplates:["{marital_answer}"]},
+ {topic:"Wohnort",qSie:"Wo wohnen Sie?",qDu:"Wo wohnst du?",answerTemplates:["Ich wohne in {city}.","In {city}."]},
+ {topic:"Alter",qSie:"Wie alt sind Sie?",qDu:"Wie alt bist du?",answerTemplates:["Ich bin {age} Jahre alt.","{age} Jahre alt.","Ich bin {age}."]},
+ {topic:"Geburtsort",qSie:"Wo sind Sie geboren?",qDu:"Wo bist du geboren?",answerTemplates:["Ich bin in {birthplace} geboren.","In {birthplace}."]}
+];
+
+const EXERCISES = ["learn","qa","speak","puzzle","dictation","memory","quickfire","listen","listenrespond","exam"];
+const EXERCISE_NAMES = {learn:"📚 Lernen",qa:"🗣️ Fragen beantworten",speak:"🎤 Sprechen",puzzle:"🧩 Puzzle",dictation:"✍️ Diktat",memory:"🃏 Memory",quickfire:"⚡ Blitzfeuer",listen:"🎧 Hören",listenrespond:"🎤 Hören & Antworten",exam:"🏆 Prüfung"};
+
+function trainingExercises(){return EXERCISES.filter(ex=>ex!=="exam");}
+function allTrainingComplete(){return trainingExercises().every(ex => (exerciseProgress[ex]||0) >= 90);}
+
+
+let student="",course="",game="learn",i=0,score=0,attempts=0,correct=0;
+let studentPerson={...DEFAULT_PROFILE}, answerHistory=[], exerciseProgress={}, questionOrder=DATA.map((_,idx)=>idx);
+let memoryCards=[], first=null, lock=false, helpWrongTries=0, responseTries=0;
+let currentQuestion="", currentAnswer="", examStartTime=null, examTimer=null, examCorrect=0, examAttempts=0, examFinished=false;
+let editingProfile = false;
+let listenClickCount = 0;
+let lastGoogleSend = 0;
+
+function $(id){return document.getElementById(id)}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function item(){
+  if(!Array.isArray(questionOrder) || !questionOrder.length){
+    questionOrder = DATA.map((_,idx)=>idx);
+  }
+  let rawIdx = questionOrder[i % questionOrder.length];
+  let idx = Number.isInteger(rawIdx) && rawIdx >= 0 && rawIdx < DATA.length ? rawIdx : (i % DATA.length);
+  return DATA[idx] || DATA[0];
+}
+function key(){return "A1_"+course+"_"+student}
+function profileStorageKey(){return "A1_SAVED_PROFILE"}
+function sanitizeState(){
+  if(!EXERCISES.includes(game)) game = "learn";
+  if(!Number.isInteger(i) || i < 0) i = 0;
+  if(!Array.isArray(questionOrder) || !questionOrder.length){
+    questionOrder = DATA.map((_,idx)=>idx);
+  }
+  questionOrder = questionOrder
+    .map(Number)
+    .filter(idx => Number.isInteger(idx) && idx >= 0 && idx < DATA.length);
+  if(!questionOrder.length) questionOrder = DATA.map((_,idx)=>idx);
+  if(i >= DATA.length) i = 0;
+  if(!studentPerson || typeof studentPerson !== "object") studentPerson = {...DEFAULT_PROFILE};
+  studentPerson = {...DEFAULT_PROFILE, ...studentPerson};
+}
+
+function initLogin(){
+  const countryEl = $("country");
+  if(countryEl && countryEl.options.length <= 1){
+    countryEl.innerHTML = '<option value="">-- Heimatland wählen --</option>' + Object.keys(COUNTRIES).map(c=>`<option value="${c}">${c}</option>`).join("");
+  }
+  if(countryEl){
+    countryEl.onchange = () => { 
+      if(countryEl.value && !$("langInput").value) $("langInput").value = COUNTRIES[countryEl.value] || ""; 
+    };
+  }
+
+  const childEl = $("childrenInput");
+  if(childEl && childEl.options.length <= 1){
+    childEl.innerHTML = '<option value="">-- wählen --</option>' + Array.from({length:11},(_,n)=>`<option value="${n}">${n===0?"keine Kinder":n===1?"1 Kind":n+" Kinder"}</option>`).join("");
+  }
+
+  const birthEl = $("birthplaceInput");
+  if(birthEl){
+    birthEl.type = "text";
+    birthEl.placeholder = "Geburtsort frei eingeben, z.B. Aleppo, Kiew, Algier";
+  }
+
+  renderSavedUserBox();
+}
+function childText(n){n=String(n??"0"); const w={"0":"keine Kinder","1":"ein Kind","2":"zwei Kinder","3":"drei Kinder","4":"vier Kinder","5":"fünf Kinder","6":"sechs Kinder","7":"sieben Kinder","8":"acht Kinder","9":"neun Kinder","10":"zehn Kinder"}; return w[n]||n+" Kinder";}
+function numberWord(n){return {"1":"ein","2":"zwei","3":"drei","4":"vier","5":"fünf","6":"sechs","7":"sieben","8":"acht","9":"neun","10":"zehn"}[String(n)]||String(n)}
+function childrenAnswer(p=studentPerson){let n=String(p.childrenNumber??"0"); if(n==="0")return "Nein, ich habe keine Kinder."; if(n==="1")return "Ja, ich habe ein Kind."; return "Ja, ich habe "+numberWord(n)+" Kinder."}
+function maritalAnswer(p=studentPerson){let m=p.marital||"ledig"; return m==="verheiratet"?"Ja, ich bin verheiratet.":"Nein, ich bin "+m+"."}
+
+function buildStudentPerson(){
+  let fname=$("fname").value.trim(), lname=$("lname").value.trim(), origin=$("country").value.trim();
+  return {fname,lname,full:(fname+" "+lname).trim(),origin,lang:$("langInput").value.trim(),city:$("cityInput").value.trim(),birthplace:$("birthplaceInput").value.trim(),age:$("ageInput").value.trim(),childrenNumber:$("childrenInput").value,children:childText($("childrenInput").value),marital:$("maritalInput").value};
+}
+function validateLogin(){
+  for(let id of ["fname","lname","course","country","langInput","cityInput","ageInput","birthplaceInput","childrenInput","maritalInput"]){
+    let el=$(id); if(!el.value.trim()){alert("Bitte alle Pflichtfelder ausfüllen.");el.focus();return false;}
+  } return true;
+}
+function saveProfileToStorage(){localStorage.setItem(profileStorageKey(),JSON.stringify({...studentPerson,course}));}
+function getSavedProfile(){try{return JSON.parse(localStorage.getItem(profileStorageKey())||"null")}catch(e){return null}}
+function fillLoginFromProfile(p){if(!p)return; $("fname").value=p.fname||"";$("lname").value=p.lname||"";$("course").value=p.course||"";$("country").value=p.origin||"";$("langInput").value=p.lang||"";$("cityInput").value=p.city||"";$("birthplaceInput").value=p.birthplace||"";$("ageInput").value=p.age||"";$("childrenInput").value=p.childrenNumber||"0";$("maritalInput").value=p.marital||"";}
+function renderSavedUserBox(){
+  let box=$("savedUserBox"), p=getSavedProfile(); if(!box)return;
+  if(!p){box.classList.add("hidden");box.innerHTML="";return}
+  box.classList.remove("hidden");
+  box.innerHTML=`<strong>Gespeicherter Nutzer:</strong><br>${p.full} · ${p.course||"A1"}<br>
+  <button class="success" onclick="continueSavedUser()">✅ Mit diesem Nutzer weitermachen</button>
+  <button class="secondary" onclick="fillLoginFromProfile(getSavedProfile())">✏️ Daten laden / bearbeiten</button>
+  <button class="danger reset-user" onclick="forgetSavedUser()">🗑️ Nutzer entfernen</button>`;
+}
+function continueSavedUser(){let p=getSavedProfile(); if(!p)return alert("Kein gespeicherter Nutzer."); fillLoginFromProfile(p); start();}
+function forgetSavedUser(){if(confirm("Gespeicherten Nutzer entfernen?")){localStorage.removeItem(profileStorageKey());localStorage.removeItem("A1_ACTIVE_SESSION");renderSavedUserBox();}}
+function resetEverything(){
+  if(!confirm("Möchten Sie wirklich von 0 anfangen?")) return;
+  if(!confirm("Sind Sie ganz sicher? Alle lokalen Daten auf diesem Gerät werden gelöscht.")) return;
+  Object.keys(localStorage).forEach(k=>{if(k.startsWith("A1_"))localStorage.removeItem(k)});
+  location.reload();
+}
+
+
+function start(){
+  if(!validateLogin())return;
+  const oldKey = (student && course) ? key() : null;
+  studentPerson=buildStudentPerson(); 
+  if(typeof cleanProfile==='function') cleanProfile(); 
+  student=studentPerson.full; 
+  course=$("course").value.trim();
+
+  loadLocal();
+  // Profil aus Formular ist jetzt die Quelle, nicht alte gespeicherte Daten.
+  const freshProfile = buildStudentPerson();
+  studentPerson = freshProfile;
+  if(typeof cleanProfile==='function') cleanProfile();
+  student = studentPerson.full;
+  saveProfileToStorage();
+  localStorage.setItem("A1_ACTIVE_SESSION",key());
+  if(oldKey && oldKey !== key() && editingProfile){
+    localStorage.removeItem(oldKey);
+  }
+  editingProfile = false;
+  sendToGoogleSheet("login", true);
+  $("login").classList.add("hidden"); 
+  $("app").classList.remove("hidden");
+  $("hello").innerText="Hallo, "+studentPerson.fname+"!";
+  if(typeof loadRewards==='function') loadRewards();
+  updateAll(); 
+  render();
+}
+
+
+
+function editProfile(){
+  editingProfile = true;
+  $("app").classList.add("hidden");
+  $("login").classList.remove("hidden");
+  fillLoginFromProfile({...studentPerson, course});
+  const box = $("savedUserBox");
+  if(box){
+    box.classList.remove("hidden");
+    box.innerHTML = `<div class="profile-edit-box"><strong>Profil bearbeiten:</strong><br>Ändern Sie die Daten und klicken Sie wieder auf Starten. Die neuen Daten werden gespeichert.</div>`;
+  }
+}
+
+
+function logout(){if(confirm("Abmelden? Der gespeicherte Nutzer bleibt erhalten.")){localStorage.removeItem("A1_ACTIVE_SESSION");location.reload();}}
+function teacher(){$("login").classList.add("hidden");$("app").classList.add("hidden");$("dashboard").classList.remove("hidden")}
+function back(){location.reload()}
+
+
+function progressSummary(){
+  return EXERCISES.map(ex => ex + ':' + (Number((exerciseProgress||{})[ex])||0) + '%').join(' | ');
+}
+
+function sendToGoogleSheet(exerciseName="progress", force=false){
+  if(!GOOGLE_SHEET_URL || !student || !course) return;
+  const now = Date.now();
+  if(!force && typeof lastGoogleSend !== "undefined" && now - lastGoogleSend < 5000) return;
+  if(typeof lastGoogleSend !== "undefined") lastGoogleSend = now;
+
+  const payload = {
+    rowId: studentRowId(),
+    course: course || "",
+    student: student || "",
+    exercise: exerciseName || game || "",
+    score: typeof overallProgress==="function" ? overallProgress() : (score || 0),
+    correct: correct || 0,
+    attempts: attempts || 0,
+    accuracy: attempts ? Math.round((correct || 0) * 100 / attempts) : 0,
+    progress: progressSummary(),
+    examTime: "",
+    examScore: "",
+    game: game || "",
+    timestamp: new Date().toISOString(),
+    profile: studentPerson || {},
+    exerciseProgress: exerciseProgress || {}
+  };
+
+  try{
+    fetch(GOOGLE_SHEET_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify(payload)
+    }).catch(err => console.warn("Google Sheet send error:", err));
+  }catch(e){
+    console.warn("Google Sheet send failed:", e);
+  }
+}
+
+
+function sendExamResultToGoogleSheet(result){
+  if(!GOOGLE_SHEET_URL || !student || !course) return;
+  const payload = {
+    rowId: studentRowId(),
+    course: course || "",
+    student: student || "",
+    exercise: "Prüfung",
+    score: typeof overallProgress==="function" ? overallProgress() : (score || 0),
+    correct: correct || 0,
+    attempts: attempts || 0,
+    accuracy: result.accuracy || 0,
+    progress: progressSummary(),
+    examTime: result.time || "",
+    examScore: result.score || "",
+    game: "exam",
+    timestamp: new Date().toISOString(),
+    profile: studentPerson || {},
+    exerciseProgress: exerciseProgress || {},
+    examResult: result || {}
+  };
+  try{
+    fetch(GOOGLE_SHEET_URL, {
+      method: "POST",
+      mode: "no-cors",
+      headers: {"Content-Type": "text/plain;charset=utf-8"},
+      body: JSON.stringify(payload)
+    }).catch(err => console.warn("Google Sheet exam send error:", err));
+  }catch(e){
+    console.warn("Google Sheet exam send failed:", e);
+  }
+}
+
+
+function syncManual(){
+  sendToGoogleSheet("manuell", true);
+  alert("Daten wurden gesendet. Prüfe dein Google Sheet.");
+}
+
+function saveLocal(){
+  if(student&&course){
+    const data={student,course,score,attempts,correct,i,game,questionOrder,studentPerson,answerHistory,exerciseProgress,date:new Date().toLocaleString()};
+    localStorage.setItem(key(),JSON.stringify(data));
+    const regKey="A1_STUDENTS_"+course;
+    let list=JSON.parse(localStorage.getItem(regKey)||"[]");
+    list=list.filter(x=>x.student!==student);
+    list.push({student,course,score,attempts,correct,accuracy:attempts?Math.round(correct*100/attempts):0,exerciseProgress,date:data.date});
+    localStorage.setItem(regKey,JSON.stringify(list));
+  }
+
+  sendToGoogleSheet(game);
+}
+function loadLocal(){
+  let raw=localStorage.getItem(key());
+  if(raw){
+    try{
+      let x=JSON.parse(raw);
+      score=x.score||0;
+      attempts=x.attempts||0;
+      correct=x.correct||0;
+      i=Number.isInteger(x.i)?x.i:0;
+      game=EXERCISES.includes(x.game)?x.game:game;
+      questionOrder=Array.isArray(x.questionOrder)?x.questionOrder:questionOrder;
+      answerHistory=Array.isArray(x.answerHistory)?x.answerHistory:[];
+      exerciseProgress=x.exerciseProgress||{};
+      studentPerson=x.studentPerson||studentPerson;
+      sanitizeState();
+    }catch(e){
+      console.warn("Alte gespeicherte Daten konnten nicht gelesen werden:", e);
+      sanitizeState();
+    }
+  }else{
+    sanitizeState();
+  }
+}
+
+function updateAll(){stats();updateStatsBox();updateExerciseTracker();saveLocal()}
+
+function overallProgress(){
+  let list = EXERCISES.filter(ex=>ex!=="exam");
+  if(!list.length) return 0;
+  let sum = list.reduce((s,ex)=>s+(Number((exerciseProgress||{})[ex])||0),0);
+  return Math.round(sum/list.length);
+}
+function progressDetailsHtml(){
+  return `<div class="progress-overview"><strong>Gesamtfortschritt:</strong> ${overallProgress()}%<br>`+
+    EXERCISES.filter(ex=>ex!=="exam").map(ex=>`${EXERCISE_NAMES[ex]}: ${Number((exerciseProgress||{})[ex])||0}%`).join("<br>")+
+    `</div>`;
+}
+
+function stats(){$("statsLine").innerHTML=`📌 Fortschritt/Punkte: <b>${score}</b> · ✅ Richtig: <b>${correct}/${attempts}</b> (${attempts?Math.round(correct*100/attempts):0}%)`}
+function updateStatsBox(){$("statsBox").innerHTML=`<div class="stat"><div>Aktivität</div><div class="num">${score}</div></div><div class="stat"><div>Richtig</div><div class="num">${correct}/${attempts}</div></div><div class="stat"><div>Genauigkeit</div><div class="num">${attempts?Math.round(correct*100/attempts):0}%</div></div><div class="stat"><div>Modus</div><div class="num">${EXERCISE_NAMES[game].split(" ")[0]}</div></div>`}
+function updateExerciseTracker(){
+  $("exerciseTracker").innerHTML = EXERCISES.map(ex => {
+    let locked = ex==="exam" && !allTrainingComplete();
+    let progress = Math.max(0, Math.min(100, Number((exerciseProgress||{})[ex]) || 0));
+    let label = locked ? "🔒 gesperrt" : String(progress) + "%";
+    return `<button type="button" class="exercise-item ${ex===game?'active':''} ${progress>=90?'completed':''} ${ex==='exam'?'exam':''}" data-exercise="${ex}" data-locked="${locked}">
+      <div>${EXERCISE_NAMES[ex]}</div>
+      <div class="small">${label}</div>
+    </button>`;
+  }).join("");
+
+  document.querySelectorAll("[data-exercise]").forEach(btn => {
+    btn.onclick = () => {
+      const target = String(btn.dataset.exercise || "learn");
+      if(btn.dataset.locked === "true"){
+        alert("Die Prüfung wird erst freigeschaltet, wenn alle Aufgaben erledigt sind.");
+        return;
+      }
+      mode(target);
+    };
+  });
+}
+function mode(m){
+  m = String(m || "learn");
+  if(!EXERCISES.includes(m)) m = "learn";
+  if(m==="exam" && !allTrainingComplete()){
+    alert("Die Prüfung wird erst freigeschaltet, wenn alle Aufgaben erledigt sind.");
+    return;
+  }
+  game=m;
+  i=0;
+  helpWrongTries=0;
+  responseTries=0;
+  if(typeof resetListenCounter==="function") resetListenCounter();
+  questionOrder=m==="learn"?DATA.map((_,idx)=>idx):shuffle(DATA.map((_,idx)=>idx));
+  sanitizeState();
+  if(m==="memory")setupMemory();
+  if(m==="exam")startExam();
+  saveLocal();
+  updateAll();
+  render();
+  setTimeout(()=>$("game")?.scrollIntoView({behavior:"smooth",block:"start"}),50);
+}
+function normalizeGermanNumber(t){return (t||"").replace(/\beins\b/g,"1").replace(/\bein\b/g,"1").replace(/\bzwei\b/g,"2").replace(/\bdrei\b/g,"3").replace(/\bvier\b/g,"4").replace(/\bfünf\b/g,"5").replace(/\bfuenf\b/g,"5").replace(/\bsechs\b/g,"6").replace(/\bsieben\b/g,"7").replace(/\bacht\b/g,"8").replace(/\bneun\b/g,"9").replace(/\bzehn\b/g,"10")}
+function clean(t){return normalizeGermanNumber(String(t||"").toLowerCase()).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss").replace(/[.,!?;:]/g,"").replace(/\s+/g," ").trim()}
+
+
+function countryFromPhrase(country){
+  const articles = {
+    "Ukraine": "der Ukraine",
+    "Türkei": "der Türkei",
+    "Schweiz": "der Schweiz",
+    "Slowakei": "der Slowakei",
+    "USA": "den USA",
+    "Niederlande": "den Niederlanden",
+    "Philippinen": "den Philippinen",
+    "Iran": "dem Iran",
+    "Irak": "dem Irak",
+    "Sudan": "dem Sudan",
+    "Jemen": "dem Jemen",
+    "Libanon": "dem Libanon"
+  };
+  return articles[country] || country;
+}
+
+
+function titleCaseWord(w){
+  return String(w||"").trim().toLowerCase().replace(/(^|[\s,-])\p{L}/gu, m => m.toUpperCase());
+}
+
+function normalizeKnownName(name){
+  let n = titleCaseWord(name);
+  const map = {
+    "Mohamad":"Mohammad","Mohammed":"Mohammad","Mohamed":"Mohammad","Muhammed":"Mohammad",
+    "Achmed":"Ahmed","Ahmad":"Ahmed",
+    "Fatma":"Fatima",
+    "Kyiv":"Kiew","Kiev":"Kiew",
+    "Halab":"Aleppo"
+  };
+  return map[n] || n;
+}
+
+function normalizeLanguageList(txt){
+  let raw = String(txt||"").replace(/\bund\b/gi,",").replace(/;/g,",");
+  let parts = raw.split(",").map(x=>x.trim()).filter(Boolean);
+  const map = {
+    "deutsch":"Deutsch","englisch":"Englisch","russisch":"Russisch","ukrainisch":"Ukrainisch",
+    "arabisch":"Arabisch","türkisch":"Türkisch","tuerkisch":"Türkisch",
+    "polnisch":"Polnisch","rumänisch":"Rumänisch","rumaenisch":"Rumänisch",
+    "französisch":"Französisch","franzoesisch":"Französisch",
+    "spanisch":"Spanisch","italienisch":"Italienisch","persisch":"Persisch",
+    "dari":"Dari","urdu":"Urdu","hindi":"Hindi","somali":"Somali",
+    "tigrinya":"Tigrinya","chinesisch":"Chinesisch","japanisch":"Japanisch"
+  };
+  parts = parts.map(p => map[p.toLowerCase()] || titleCaseWord(p));
+  return [...new Set(parts)].join(", ");
+}
+
+function cleanProfile(){
+  if(!studentPerson || typeof studentPerson !== "object") studentPerson = {...DEFAULT_PROFILE};
+  studentPerson.fname = normalizeKnownName(studentPerson.fname || DEFAULT_PROFILE.fname);
+  studentPerson.lname = normalizeKnownName(studentPerson.lname || DEFAULT_PROFILE.lname);
+  studentPerson.full = (studentPerson.fname + " " + studentPerson.lname).trim();
+  studentPerson.lang = normalizeLanguageList(studentPerson.lang || DEFAULT_PROFILE.lang);
+  studentPerson.city = titleCaseWord(studentPerson.city || DEFAULT_PROFILE.city);
+  studentPerson.birthplace = normalizeKnownName(studentPerson.birthplace || "");
+}
+
+
+function hasOnlyGermanLanguage(){
+  const raw = String((studentPerson && studentPerson.lang) || "").trim().toLowerCase();
+  const normalized = raw.replace(/\s+/g,"").replace(/;/g,",");
+  return normalized === "deutsch";
+}
+function languageAnswerTemplates(){
+  if(hasOnlyGermanLanguage()){
+    return ["Ich spreche Deutsch.","Deutsch."];
+  }
+  return [
+    "Ich spreche {lang} und ein bisschen Deutsch.",
+    "Ich spreche {lang}.",
+    "{lang}.",
+    "{lang} und ein bisschen Deutsch."
+  ];
+}
+
+
+function fillTemplate(t, p=studentPerson){
+  p = p || {};
+  let first = p.fname || DEFAULT_PROFILE.fname || "";
+  let last = p.lname || DEFAULT_PROFILE.lname || "";
+  let full = p.full || ((first + " " + last).trim());
+  let spellFirst = first.toUpperCase().split("").join("-");
+  let spellLast = last.toUpperCase().split("").join("-");
+  let spellFirstSpace = first.toLowerCase().split("").join(" ");
+  let spellLastSpace = last.toLowerCase().split("").join(" ");
+
+  return String(t || "")
+    .replaceAll("{name}", full)
+    .replaceAll("{fname}", first)
+    .replaceAll("{lname}", last)
+    .replaceAll("{origin}", p.origin || DEFAULT_PROFILE.origin || "")
+    .replaceAll("{origin_from}", countryFromPhrase(p.origin || DEFAULT_PROFILE.origin || ""))
+    .replaceAll("{lang}", p.lang || DEFAULT_PROFILE.lang || "")
+    .replaceAll("{city}", p.city || DEFAULT_PROFILE.city || "")
+    .replaceAll("{birthplace}", p.birthplace || DEFAULT_PROFILE.birthplace || "")
+    .replaceAll("{age}", p.age || DEFAULT_PROFILE.age || "")
+    .replaceAll("{spell_fname}", spellFirst)
+    .replaceAll("{spell_lname}", spellLast)
+    .replaceAll("{spell_fname_space}", spellFirstSpace)
+    .replaceAll("{spell_lname_space}", spellLastSpace)
+    .replaceAll("{children_answer}", childrenAnswer(p))
+    .replaceAll("{marital_answer}", maritalAnswer(p));
+}
+
+function answerVariants(x=item(),p=studentPerson){
+ let templates = (x.topic==="Sprache" && typeof languageAnswerTemplates==="function") ? languageAnswerTemplates() : (x.answerTemplates||[]);
+ let variants=templates.map(t=>fillTemplate(t,p));
+ if(x.topic==="Kinder"){let n=String(p.childrenNumber); if(n==="0")variants.push("Nein.","Ich habe keine Kinder."); else if(n==="1")variants.push("Ja.","Ich habe ein Kind.","Ich habe 1 Kind."); else variants.push("Ja.",`Ich habe ${n} Kinder.`,`Ich habe ${numberWord(n)} Kinder.`)}
+ if(x.topic==="Familienstand"){let m=p.marital;if(m==="verheiratet")variants.push("Ja.","Ich bin verheiratet.");else variants.push("Nein.",`Ich bin ${m}.`)}
+ if(x.topic.startsWith("Buchstabieren")){let n=x.topic.includes("Nachname")?p.lname:p.fname; variants.push(n,n.toUpperCase().split("").join(" "),n.toLowerCase().split("").join(" "),n.toLowerCase().split("").join("-"))}
+ return [...new Set(variants.filter(Boolean))];
+}
+
+function getAnswer(x=item()){
+  const vars = answerVariants(x);
+  return vars && vars.length ? vars[0] : "";
+}
+
+function questionVariants(x=item()){
+ let q=[x.qSie,x.qDu].filter(Boolean);
+ if(x.topic==="Name")q.push("Wie ist Ihr Name?","Wie ist dein Name?");
+ if(x.topic==="Vorname")q.push("Wie ist Ihr Vorname?","Wie ist dein Vorname?");
+ if(x.topic==="Nachname")q.push("Wie ist Ihr Nachname?","Wie ist dein Nachname?");
+ return [...new Set(q)];
+}
+
+function okQuestion(user,x=item()){
+  let u=clean(user);
+  return questionVariants(x).some(q=>{
+    let a=clean(q);
+    return u===a || (u.length>5&&a.includes(u)) || (a.length>5&&u.includes(a));
+  });
+}
+
+
+function compactName(t){
+  return clean(t).replace(/\s+/g,"").replace(/-/g,"");
+}
+function similarName(a,b){
+  a = compactName(a);
+  b = compactName(b);
+  const variants = [
+    ["mohammed","mohammad"],["muhammed","mohammad"],["mohamed","mohammad"],
+    ["achmed","ahmed"],["ahmad","ahmed"],["fatma","fatima"]
+  ];
+  variants.forEach(pair=>{
+    if(a===pair[0]) a=pair[1];
+    if(b===pair[0]) b=pair[1];
+  });
+  return a===b || (a.length>3 && b.length>3 && (a.includes(b)||b.includes(a)));
+}
+
+function ok(user){
+  let u=clean(user);
+  return answerVariants().some(v=>{
+    let a=clean(v);
+    return u===a || (u.length>3&&a.includes(u)) || (a.length>3&&u.includes(a)) || similarName(user,v);
+  });
+}
+
+
+
+
+
+
+
+
+function numberToGermanWords(num){
+  num = Number(num);
+  const ones = ["null","eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn","elf","zwölf","dreizehn","vierzehn","fünfzehn","sechzehn","siebzehn","achtzehn","neunzehn"];
+  const tens = ["","","zwanzig","dreißig","vierzig","fünfzig","sechzig","siebzig","achtzig","neunzig"];
+  if(num < 20) return ones[num] || String(num);
+  if(num < 100){
+    let o = num % 10, t = Math.floor(num/10);
+    if(o === 0) return tens[t];
+    return (o===1 ? "ein" : ones[o]) + "und" + tens[t];
+  }
+  return String(num);
+}
+function germanizeNumbersForSpeech(text){
+  return String(text || "").replace(/\b\d{1,3}\b/g, m => numberToGermanWords(parseInt(m,10)));
+}
+function normalizeSpeechText(text){
+  return String(text||"")
+    .replace(/\bSt\.\s*/g,"Sankt ")
+    .replace(/\bStr\.\b/g,"Straße")
+    .replace(/\bNr\.\b/g,"Nummer");
+}
+function getGermanVoice(){
+  try{
+    const synth = window.speechSynthesis;
+    if(!synth || !synth.getVoices) return null;
+    const voices = synth.getVoices() || [];
+    return voices.find(v => (v.lang || "").toLowerCase().startsWith("de-de"))
+        || voices.find(v => (v.lang || "").toLowerCase().startsWith("de"))
+        || voices.find(v => /german|deutsch/i.test(v.name || ""))
+        || null;
+  }catch(e){
+    return null;
+  }
+}
+
+function speakText(t,slow=false){
+  try{
+    if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){
+      const msg = "Sprachausgabe wird auf diesem Gerät/Browser nicht unterstützt.";
+      const fb = $("feedback");
+      if(fb) fb.innerHTML = `<div class="no">${msg}</div>`;
+      else alert(msg);
+      return false;
+    }
+    let spoken = germanizeNumbersForSpeech(t);
+    spoken = normalizeSpeechText(spoken);
+    let u = new SpeechSynthesisUtterance(spoken);
+    u.lang = "de-DE";
+    u.rate = slow ? 0.48 : 0.72;
+    u.pitch = 1;
+    u.volume = 1;
+    const voice = getGermanVoice();
+    if(voice) u.voice = voice;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+    return true;
+  }catch(e){
+    console.error("Sprachausgabe-Fehler:", e);
+    const msg = "Beim Hören gab es ein Problem. Bitte versuchen Sie es noch einmal.";
+    const fb = $("feedback");
+    if(fb) fb.innerHTML = `<div class="no">${msg}</div>`;
+    else alert(msg);
+    return false;
+  }
+}
+
+
+function showTwoStageHelp(){
+  const fb = $("feedback");
+  if(!fb) return;
+  helpWrongTries = helpWrongTries || 0;
+  if(helpWrongTries < 1){
+    fb.innerHTML = `<div class="help-box"><strong>Tipp:</strong> ${responseHint()}</div>`;
+    helpWrongTries = 1;
+  }else{
+    fb.innerHTML = `<div class="answer-box"><strong>Richtige Antwort:</strong><br>${answerVariants().join("<br>")}</div>`;
+    helpWrongTries = 2;
+  }
+}
+function showQuestionHelp(){
+  const fb = $("feedback");
+  if(!fb) return;
+  helpWrongTries = helpWrongTries || 0;
+  if(helpWrongTries < 1){
+    fb.innerHTML = `<div class="help-box"><strong>Tipp:</strong> ${typeof puzzleHelpText==="function" ? puzzleHelpText() : responseHint()}</div>`;
+    helpWrongTries = 1;
+  }else{
+    fb.innerHTML = `<div class="answer-box"><strong>Richtige Frage:</strong><br>${questionVariants().join("<br>")}</div>`;
+    helpWrongTries = 2;
+  }
+}
+
+
+
+function puzzleHelpText(){
+  let topic=item().topic, first=item().qSie.split(" ")[0];
+  if(topic.includes("Heimatland")) return "Baue eine Frage nach der Herkunft. Beginne mit <strong>Woher</strong>.";
+  if(topic.includes("Sprache")) return "Baue eine Frage nach der Sprache. Beginne mit <strong>Was</strong>.";
+  if(topic.includes("Kinder")) return "Baue eine Frage nach Kindern. Beginne mit <strong>Haben</strong>.";
+  if(topic.includes("Familienstand")) return "Baue eine Frage zum Familienstand. Beginne mit <strong>Sind</strong>.";
+  if(topic.includes("Wohnort")) return "Baue eine Frage nach dem Wohnort. Beginne mit <strong>Wo</strong>.";
+  if(topic.includes("Alter")) return "Baue eine Frage nach dem Alter. Beginne mit <strong>Wie alt</strong>.";
+  if(topic.includes("Geburtsort")) return "Baue eine Frage nach dem Geburtsort. Beginne mit <strong>Wo</strong>.";
+  return "Baue die Frage. Beginne mit <strong>"+first+"</strong>.";
+}
+
+function responseHint(){
+  let x=item();
+  if(game==="puzzle") return typeof puzzleHelpText==="function" ? puzzleHelpText() : "Baue die Frage in der richtigen Reihenfolge.";
+  if(x.topic==="Name") return "Beginnen Sie mit: Ich heiße ...";
+  if(x.topic==="Heimatland") return "Beginnen Sie mit: Ich komme aus ...";
+  if(x.topic==="Sprache") return "Beginnen Sie mit: Ich spreche ...";
+  if(x.topic==="Wohnort") return "Beginnen Sie mit: Ich wohne in ...";
+  if(x.topic==="Alter") return "Beginnen Sie mit: Ich bin ... Jahre alt.";
+  if(x.topic==="Geburtsort") return "Beginnen Sie mit: Ich bin in ... geboren.";
+  if(x.topic && x.topic.startsWith("Buchstabieren")) return "Schreiben oder sagen Sie die Buchstaben einzeln.";
+  return "Antworten Sie mit einem passenden Satz.";
+}
+
+
+function disableCheckTemporarily(){
+  const b = $("checkBtn");
+  if(b){
+    b.disabled = true;
+    setTimeout(()=>{ if($("checkBtn")) $("checkBtn").disabled = false; }, 800);
+  }
+}
+function safeCheckAnswer(){
+  const input = $("ans");
+  if(!input) return;
+  disableCheckTemporarily();
+  mark(ok(input.value), input.value);
+}
+function safeCheckTypedRespond(){
+  const input = $("typedRespond");
+  if(!input) return;
+  disableCheckTemporarily();
+  markResponse(ok(input.value), input.value);
+}
+
+function mark(good,userAnswer=""){
+ attempts++;
+ answerHistory.push({question:item().topic,correct:good,answer:userAnswer,acceptedAnswers:game==="puzzle"?questionVariants():answerVariants(),timestamp:new Date().toLocaleTimeString()});
+ if(good){correct++;score+=10;helpWrongTries=0}
+ exerciseProgress[game]=Math.max((exerciseProgress||{})[game]||0,Math.round(((i+(good?1:0))/DATA.length)*100));
+ if(good){
+   $("feedback").innerHTML="<div class='ok'>✔ Richtig! +10 Punkte</div>";
+ }else{
+   helpWrongTries++;
+   if(helpWrongTries===1){
+     $("feedback").innerHTML="<div class='no'>❌ Nicht ganz. Versuche es noch einmal.</div>";
+   }else if(helpWrongTries===2){
+     $("feedback").innerHTML=`<div class='no'>❌ Noch nicht richtig.</div><div class='help-box'><strong>Tipp:</strong> ${game==="puzzle"?puzzleHelpText():responseHint()}</div>`;
+   }else{
+     if(game==="puzzle"){
+       $("feedback").innerHTML=`<div class='no'>❌ Noch nicht richtig.</div><div class='answer-box'><strong>Richtige Frage:</strong><br>${questionVariants().join("<br>")}</div>`;
+     }else{
+       $("feedback").innerHTML=`<div class='no'>❌ Noch nicht richtig.</div><div class='answer-box'><strong>Richtige Antwort:</strong><br>${answerVariants().join("<br>")}</div>`;
+     }
+   }
+ }
+ saveLocal();updateAll();showAdvanceButton(good);
+}
+function showAdvanceButton(good){let fb=$("feedback"); if(!fb||!good)return; document.querySelectorAll("#nextQuestionBtn,#continueExerciseBtn").forEach(b=>b.remove()); if(i>=DATA.length-1){exerciseProgress[game]=100;fb.insertAdjacentHTML("beforeend",`<button class="success" id="continueExerciseBtn">✅ Du darfst zur nächsten Übung weiter</button>`);$("continueExerciseBtn").onclick=goNextExercise}else{fb.insertAdjacentHTML("beforeend",`<button class="success" id="nextQuestionBtn">⏭️ Nächste Frage</button>`);$("nextQuestionBtn").onclick=()=>{i++;helpWrongTries=0;responseTries=0;resetListenCounter();resetListenCounter();saveLocal();render()}}}
+function goNextExercise(){let idx=EXERCISES.indexOf(game); if(idx<EXERCISES.length-1)mode(EXERCISES[idx+1]); else $("game").innerHTML="<h2>Fertig!</h2><div class='ok'>Alle Übungen abgeschlossen.</div>"}
+
+function quickfireClick(btn){
+ if(!btn||btn.disabled)return; let ans=btn.dataset.answer||"",good=clean(ans)===clean(getAnswer())||ok(ans);
+ document.querySelectorAll(".quiz-option").forEach(b=>{b.disabled=true;if(clean(b.dataset.answer||"")===clean(getAnswer()))b.classList.add("selected")});
+ attempts++;answerHistory.push({question:item().topic,correct:good,answer:ans,acceptedAnswers:answerVariants(),timestamp:new Date().toLocaleTimeString()});
+ if(good){correct++;score+=10;$("feedback").innerHTML="<div class='ok'>✔ Richtig! +10 Punkte</div>"}else{$("feedback").innerHTML=`<div class='no'>❌ Falsch.</div><div class='small'><strong>Richtig:</strong> ${getAnswer()}</div>`}
+ exerciseProgress.quickfire=Math.max(exerciseProgress.quickfire||0,Math.round(((i+1)/DATA.length)*100)); saveLocal();updateAll();showBlitzNextButton();
+}
+function showBlitzNextButton(){let fb=$("feedback");document.querySelectorAll("#nextQuestionBtn,#continueExerciseBtn").forEach(b=>b.remove()); if(i>=DATA.length-1){exerciseProgress.quickfire=100;fb.insertAdjacentHTML("beforeend",`<button class="success" id="continueExerciseBtn">✅ Du darfst zur nächsten Übung weiter</button>`);$("continueExerciseBtn").onclick=goNextExercise}else{fb.insertAdjacentHTML("beforeend",`<button class="success" id="nextQuestionBtn">⏭️ Nächste Frage</button>`);$("nextQuestionBtn").onclick=()=>{i++;saveLocal();render()}}}
+
+function markResponse(good,userAnswer=""){
+ attempts++;answerHistory.push({question:item().topic,correct:good,answer:userAnswer,acceptedAnswers:answerVariants(),timestamp:new Date().toLocaleTimeString()});
+ if(good){correct++;score+=10;responseTries=0;$("feedback").innerHTML="<div class='ok'>✔ Richtig! +10 Punkte</div>";showAdvanceButton(true)}
+ else{responseTries++; if(responseTries<2)$("feedback").innerHTML="<div class='no'>❌ Nicht ganz. Versuche es noch einmal.</div>"; else if(responseTries===2)$("feedback").innerHTML=`<div class='no'>❌ Noch nicht richtig.</div><div class='small'><strong>Hilfe:</strong> ${responseHint()}</div>`; else {$("feedback").innerHTML="<div class='no'>❌ Noch nicht richtig. Jetzt bekommst du Antwortmöglichkeiten.</div>"+getCrossTopicAnswers().map(a=>`<button class="option help-answer" onclick="markResponse(ok(this.dataset.answer),this.dataset.answer)" data-answer="${escapeHtml(a)}">${escapeHtml(a)}</button>`).join("")}}
+ saveLocal();updateAll();
+}
+function escapeHtml(s){return String(s).replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("<","&lt;").replaceAll(">","&gt;")}
+
+
+function showTranscript(text){
+  const box = $("transcriptBox");
+  if(box){
+    box.classList.remove("hidden");
+    box.innerHTML = `<div class="help-box"><strong>Transkription:</strong><br>${escapeHtml(text)}</div>`;
+  }
+}
+function transcriptButton(textExpr){
+  return `<button class="secondary" onclick="showTranscript(${textExpr})">👁️ Transkription anzeigen</button><div id="transcriptBox" class="hidden"></div>`;
+}
+
+
+function getCrossTopicAnswers(){
+  let correct = getAnswer();
+  let pool = [];
+  DATA.forEach(d=>{
+    if(d.topic !== item().topic){
+      answerVariants(d).forEach(a=>{
+        if(clean(a)!==clean(correct) && !pool.some(p=>clean(p)===clean(a))) pool.push(a);
+      });
+    }
+  });
+  return shuffle([correct, ...shuffle(pool).slice(0,3)]);
+}
+
+function getWrongQuickAnswers(){
+  let c = getAnswer(), x = item(), base = [];
+  if(x.topic==="Name"){
+    base=[`Ich heißt ${studentPerson.fname}.`,`Ich heißen ${studentPerson.fname}.`,`Ich heiße aus ${studentPerson.fname}.`];
+  }else if(x.topic==="Wohnort"){
+    base=[`Ich wohnen in ${studentPerson.city}.`,`Ich wohne ${studentPerson.city}.`,`Ich wohnt in ${studentPerson.city}.`];
+  }else if(x.topic==="Alter"){
+    base=[`Ich habe ${studentPerson.age} Jahre.`,`Ich bin ${studentPerson.age} alt Jahre.`,`Ich sind ${studentPerson.age} Jahre alt.`];
+  }else if(x.topic==="Heimatland"){
+    base=[`Ich komme ${studentPerson.origin}.`,`Ich komme von ${studentPerson.origin}.`,`Ich bin aus ${studentPerson.origin} kommen.`];
+  }else if(x.topic==="Sprache"){
+    base=[`Ich sprechen ${studentPerson.lang}.`,`Ich kann ${studentPerson.lang} Sprache.`,`Ich spreche ${studentPerson.lang} und Deutsch bisschen.`];
+  }else{
+    base=getCrossTopicAnswers().filter(a=>clean(a)!==clean(c));
+  }
+  return shuffle([c, ...base.filter(Boolean).slice(0,3)]);
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+function spellSlow(name){
+  try{
+    const letters = String(name||"").toUpperCase().split("").join(" ... ");
+    speakText(letters, true);
+  }catch(e){
+    console.error("Buchstabieren-Fehler:", e);
+  }
+}
+function speakCurrent(){
+  try{
+    let x=item();
+    if(!x) return false;
+    if(x.topic==="Buchstabieren Vorname") spellSlow(studentPerson.fname);
+    else if(x.topic==="Buchstabieren Nachname") spellSlow(studentPerson.lname);
+    else speakText(x.qSie, false);
+    return true;
+  }catch(e){
+    console.error("Frage hören Fehler:", e);
+    const fb=$("feedback");
+    if(fb) fb.innerHTML = `<div class="no">Beim Hören gab es ein Problem.</div>`;
+    else alert("Beim Hören gab es ein Problem.");
+    return false;
+  }
+}
+function resetListenCounter(){
+  listenClickCount = 0;
+}
+function updateListenButtons(){
+  const slowBtn = $("slowListenBtn");
+  const transcriptBtn = $("transcriptBtn");
+  if(listenClickCount >= 1 && slowBtn) slowBtn.classList.remove("hidden");
+  if(listenClickCount >= 3 && transcriptBtn) transcriptBtn.classList.remove("hidden");
+}
+function playHiddenAudio(text, slow=false){
+  listenClickCount++;
+  speakText(text, slow);
+  updateListenButtons();
+}
+function playCurrentQuestionHidden(){
+  const x = item();
+  playHiddenAudio((x && x.qSie) ? x.qSie : "", false);
+}
+function playCurrentQuestionSlow(){
+  const x = item();
+  listenClickCount++;
+  speakText((x && x.qSie) ? x.qSie : "", true);
+  updateListenButtons();
+}
+function playDictationHidden(){
+  const x = item();
+  listenClickCount++;
+  if(x && x.topic && x.topic.startsWith("Buchstabieren")){
+    const n = x.topic.includes("Nachname") ? studentPerson.lname : studentPerson.fname;
+    spellSlow(n);
+  }else{
+    speakText(getAnswer(), false);
+  }
+  updateListenButtons();
+}
+function playDictationSlow(){
+  const x = item();
+  listenClickCount++;
+  if(x && x.topic && x.topic.startsWith("Buchstabieren")){
+    const n = x.topic.includes("Nachname") ? studentPerson.lname : studentPerson.fname;
+    spellSlow(n);
+  }else{
+    speakText(getAnswer(), true);
+  }
+  updateListenButtons();
+}
+
+function cleanSpeechResult(text){
+  const words = String(text||"").trim().split(/\s+/);
+  let result = [];
+  for(let i=0;i<words.length;i++){
+    if(i===0 || words[i].toLowerCase() !== words[i-1].toLowerCase()){
+      result.push(words[i]);
+    }
+  }
+  return result.join(" ");
+}
+
+function setMic(on){
+  let m=$("micStatus");
+  if(m)m.innerHTML=on?"🔴 Mikrofon aktiv – Sie können langsam sprechen ...":"⚪ Mikrofon aus";
+}
+function recog(cb){
+  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+  if(!SR){
+    const msg = "Mikrofon/Spracherkennung wird auf diesem Gerät oder Browser nicht unterstützt. Bitte die Antwort tippen.";
+    const fb = $("feedback");
+    if(fb) fb.innerHTML = `<div class="no">${msg}</div>`;
+    else alert(msg);
+    setMic(false);
+    return;
+  }
+
+  try{
+    let r = new SR();
+    r.lang = "de-DE";
+    r.interimResults = false;
+    r.continuous = false;
+    r.maxAlternatives = 3;
+
+    let finalText = "";
+    let stopTimer = null;
+    let didReturn = false;
+
+    function finish(){
+      if(didReturn) return;
+      didReturn = true;
+      clearTimeout(stopTimer);
+      const result = cleanSpeechResult((finalText || "").trim());
+      setMic(false);
+
+      if(result){
+        cb(result);
+      }else{
+        const fb = $("feedback");
+        const msg = "Ich habe nichts verstanden. Bitte noch einmal sprechen oder die Antwort tippen.";
+        if(fb) fb.innerHTML = `<div class="no">${msg}</div>`;
+        else alert(msg);
+      }
+    }
+
+    function scheduleStop(){
+      clearTimeout(stopTimer);
+      stopTimer = setTimeout(()=>{
+        try{ r.stop(); }catch(e){ finish(); }
+      }, 2000);
+    }
+
+    r.onstart = () => {
+      setMic(true);
+      const fb = $("feedback");
+      if(fb) fb.innerHTML = `<div class="help-box">🔴 Mikrofon aktiv. Sprechen Sie jetzt.</div>`;
+      scheduleStop();
+    };
+
+    r.onspeechstart = () => {
+      clearTimeout(stopTimer);
+    };
+
+    r.onspeechend = () => {
+      scheduleStop();
+    };
+
+    r.onsoundend = () => {
+      scheduleStop();
+    };
+
+    r.onresult = e => {
+      let best = "";
+      for(let i=e.resultIndex; i<e.results.length; i++){
+        if(e.results[i] && e.results[i][0]){
+          best = e.results[i][0].transcript || best;
+        }
+      }
+      finalText = best || finalText;
+      const heard = $("heard");
+      if(heard && finalText) heard.innerText = "Gehört: " + cleanSpeechResult(finalText);
+      scheduleStop();
+    };
+
+    r.onerror = e => {
+      clearTimeout(stopTimer);
+      setMic(false);
+      const fb = $("feedback");
+      let msg = "Mikrofonfehler. Bitte die Antwort tippen.";
+      if(e && e.error==="not-allowed") msg = "Mikrofon ist blockiert. Bitte im Browser erlauben oder die Antwort tippen.";
+      if(e && e.error==="no-speech") msg = "Ich habe nichts gehört. Bitte noch einmal sprechen oder tippen.";
+      if(e && e.error==="audio-capture") msg = "Kein Mikrofon gefunden. Bitte die Antwort tippen.";
+      if(e && e.error==="network") msg = "Spracherkennung ist gerade nicht verfügbar. Bitte die Antwort tippen.";
+      if(fb) fb.innerHTML = `<div class="no">${msg}</div>`;
+      else alert(msg);
+    };
+
+    r.onend = () => {
+      finish();
+    };
+
+    r.start();
+  }catch(err){
+    setMic(false);
+    const fb = $("feedback");
+    const msg = "Mikrofon konnte nicht gestartet werden. Bitte die Antwort tippen.";
+    if(fb) fb.innerHTML = `<div class="no">${msg}</div>`;
+    else alert(msg);
+  }
+}
+function listenSpeech(){
+  recog(t=>{
+    const h=$("heard"); if(h) h.innerText="Gesprochen: "+t;
+    markResponse(ok(t),t);
+  });
+}
+function listenAndRespond(){
+  recog(t=>{
+    const h=$("heard"); if(h) h.innerText="Gehört: "+t;
+    markResponse(ok(t),t);
+  });
+}
+function listenExamQuestion(){
+  recog(t=>{
+    const h=$("heard"); if(h) h.innerText="Gesprochen: "+t;
+    markExam(okQuestion(t),t);
+  });
+}
+function render(){
+ try{
+
+ let x=item(),q=x.qSie,html=`<h2>${EXERCISE_NAMES[game]}</h2>`;
+ if(!["listen","listenrespond"].includes(game))html+=`<p class="small">Thema: ${x.topic}</p>`;
+ if(game==="learn"){
+  let ans=getAnswer(),alts=answerVariants(x).filter(a=>clean(a)!==clean(ans));
+  html+=`<div class="big">${q}</div><p>${x.qDu}</p><button onclick="speakCurrent()">🔊 Frage hören</button><button onclick="speakText(getAnswer(), true)">🔊 Antwort hören</button><h3>Antwort</h3><p class="big">${escapeHtml(ans)}</p><h3>Alle akzeptierten Antworten</h3>${answerVariants(x).map(a=>`<p>• ${escapeHtml(a)}</p>`).join("")}<button class="success" onclick="nextLearn()">⏭️ Nächste Frage</button>`;
+ }
+ if(game==="qa"){html+=`<div class="big">${q}</div><input id="ans" placeholder="Antwort schreiben..."><button id="checkBtn" onclick="safeCheckAnswer()">Überprüfen</button><button class="secondary" onclick="showTwoStageHelp()">Hilfe</button><div id="feedback"></div>`}
+ if(game==="speak"){html+=`<div class="big">${q}</div><div id="micStatus" class="small">⚪ Mikrofon aus</div><button onclick="listenSpeech()">🎤 Mikrofon starten</button><input id="typedRespond" placeholder="Hier tippen, falls Mikrofon nicht funktioniert..."><button id="checkBtn" onclick="safeCheckTypedRespond()">Überprüfen</button><p id="heard"></p><div id="feedback"></div>`}
+ if(game==="puzzle"){
+  let words=shuffle(q.replace("?"," ?").split(/\s+/).filter(Boolean));
+  html+=`<p>🧩 Baue die Frage richtig zusammen.</p><div id="chosen"></div><div id="wordList">${words.map(w=>`<button class="word" onclick="chooseWord(this)">${escapeHtml(w)}</button>`).join("")}</div><button onclick="checkPuzzle()">Überprüfen</button><button class="secondary" onclick="render()">Neu</button><div id="feedback"></div>`;
+ }
+ if(game==="dictation"){let ans=getAnswer();html+=`<p>✍️ Höre und schreibe die Antwort.</p><button onclick="playDictationHidden()">🔊 Antwort hören</button><button id="slowListenBtn" class="secondary hidden" onclick="playDictationSlow()">🐢 Langsamer hören</button><button id="transcriptBtn" class="secondary hidden" onclick="showTranscript(getAnswer())">👁️ Transkription anzeigen</button><div id="transcriptBox" class="hidden"></div><input id="ans" placeholder="Schreiben..."><button id="checkBtn" onclick="safeCheckAnswer()">Überprüfen</button><div id="feedback"></div>`}
+ if(game==="memory"){html+=`<p>🃏 Finde Frage und passende Antwort.</p><div class="memory" id="memoryGrid"></div><div id="feedback"></div>`}
+ if(game==="quickfire"){html+=`<div class="big">${q}</div><p>⚡ Wähle die richtige Antwort.</p>${getWrongQuickAnswers().map(a=>`<button type="button" class="option quiz-option" data-answer="${escapeHtml(a)}" onclick="quickfireClick(this)">${escapeHtml(a)}</button>`).join("")}<div id="feedback"></div>`}
+ if(game==="listen"){html+=`<p>🎧 Höre die Frage. Die Frage wird nicht angezeigt.</p><button onclick="playCurrentQuestionHidden()">🔊 Frage abspielen</button><button id="slowListenBtn" class="secondary hidden" onclick="playCurrentQuestionSlow()">🐢 Langsamer hören</button><button id="transcriptBtn" class="secondary hidden" onclick="showTranscript(item().qSie)">👁️ Transkription anzeigen</button><div id="transcriptBox" class="hidden"></div>${getCrossTopicAnswers().map(a=>`<button class="option" onclick="mark(ok(this.dataset.answer),this.dataset.answer)" data-answer="${escapeHtml(a)}">${escapeHtml(a)}</button>`).join("")}<div id="feedback"></div>`}
+ if(game==="listenrespond"){html+=`<p>🎤 Höre die Frage und antworte. Die Frage wird nicht angezeigt.</p><button onclick="playCurrentQuestionHidden()">🔊 Frage abspielen</button><button id="slowListenBtn" class="secondary hidden" onclick="playCurrentQuestionSlow()">🐢 Langsamer hören</button><button id="transcriptBtn" class="secondary hidden" onclick="showTranscript(item().qSie)">👁️ Transkription anzeigen</button><div id="transcriptBox" class="hidden"></div><div id="micStatus" class="small">⚪ Mikrofon aus</div><button onclick="listenAndRespond()">🎤 Mikrofon starten</button><input id="typedRespond" placeholder="Hier tippen, falls Mikrofon nicht funktioniert..."><button id="checkBtn" onclick="safeCheckTypedRespond()">Überprüfen</button><p id="heard"></p><div id="feedback"></div>`}
+ if(game==="exam"){html+=`<div id="examTimer" class="small"></div><p>Bilde die passende Frage zu diesem Begriff:</p><div class="big">🔎 ${x.topic}</div><input id="ans" placeholder="Passende Frage schreiben..."><button onclick="markExam(okQuestion($('ans').value),$('ans').value)">Überprüfen</button><div id="micStatus" class="small">⚪ Mikrofon aus</div><button onclick="listenExamQuestion()">🎤 Frage sprechen</button><button class="secondary" onclick="$('feedback').innerHTML='<div class=small><strong>Tipp:</strong> '+examQuestionHint()+'</div>'">Hilfe</button><button class="success hidden" id="nextExamBtn" onclick="nextExam()">⏭️ Nächste Prüfungsaufgabe</button><p id="heard"></p><div id="feedback"></div>`; setTimeout(updateExamTimer,0)}
+ $("game").innerHTML=html; if(game==="memory")renderMemoryGrid(); stats(); updateStatsBox();
+ }catch(e){
+  console.error(e);
+  const g=$("game");
+  if(g) g.innerHTML = `<h2>Fehler</h2><div class="no">${escapeHtml(e.message||String(e))}</div><button onclick="localStorage.removeItem('A1_ACTIVE_SESSION');location.reload()">Zur Anmeldung zurück</button>`;
+ }
+}
+function nextLearn(){if(i>=DATA.length-1){exerciseProgress.learn=100;updateAll();$("game").innerHTML="<h2>📚 Lernen</h2><div class='ok'>Lernen abgeschlossen.</div><button class='success' onclick='goNextExercise()'>Weiter</button>"}else{i++;exerciseProgress.learn=Math.round(i/DATA.length*100);render()}}
+function chooseWord(btn){let clone=btn.cloneNode(true);clone.onclick=()=>{clone.remove();btn.disabled=false;btn.style.opacity=1};$("chosen").appendChild(clone);btn.disabled=true;btn.style.opacity=.4}
+function checkPuzzle(){let chosen=$("chosen").innerText.trim().replace(/\s+\?/g,"?").replace(/\s+/g," ");let correct=item().qSie.replace(/\s+\?/g,"?").replace(/\s+/g," ");mark(clean(chosen)===clean(correct),chosen)}
+
+function setupMemory(){memoryCards=[];first=null;lock=false;DATA.forEach((x,j)=>{memoryCards.push({pair:j,kind:"q",text:x.qSie,open:false,done:false},{pair:j,kind:"a",text:answerVariants(x)[0]||"...",open:false,done:false})});memoryCards=shuffle(memoryCards)}
+function renderMemoryGrid(){let g=$("memoryGrid");if(!g)return;g.innerHTML=memoryCards.map((c,idx)=>`<button class="memcard ${c.open?'open':''} ${c.done?'done':''}" onclick="flip(${idx})">${c.open||c.done?escapeHtml(c.text):"?"}</button>`).join("")}
+function flip(idx){if(lock)return;let c=memoryCards[idx];if(!c||c.done||c.open)return;c.open=true;renderMemoryGrid();if(first===null){first=idx;return}lock=true;attempts++;let a=memoryCards[first],b=memoryCards[idx],good=a.pair===b.pair&&a.kind!==b.kind;setTimeout(()=>{if(good){a.done=b.done=true;correct++;score+=10;$("feedback").innerHTML="<div class='ok'>✔ Paar gefunden!</div>"}else{a.open=b.open=false;$("feedback").innerHTML="<div class='no'>❌ Kein Paar.</div>"}first=null;lock=false;if(memoryCards.every(c=>c.done)){exerciseProgress.memory=100;$("feedback").innerHTML+="<button class='success' onclick='goNextExercise()'>✅ Du darfst weiter</button>"}saveLocal();updateAll();renderMemoryGrid()},650)}
+
+
+function speakDictationAnswer(){
+  try{
+    const x = item();
+    if(x && x.topic && x.topic.startsWith("Buchstabieren")){
+      const n = x.topic.includes("Nachname") ? studentPerson.lname : studentPerson.fname;
+      spellSlow(n);
+    }else{
+      speakText(getAnswer(), true);
+    }
+  }catch(e){
+    console.error("Diktat-Hören-Fehler:", e);
+    const fb=$("feedback");
+    if(fb) fb.innerHTML = `<div class="no">Beim Hören gab es ein Problem.</div>`;
+  }
+}
+
+
+
+
+
+function showCourseRanking(){
+  const c = course || ($("course")?.value || "");
+  $("app").classList.add("hidden");
+  $("leaderboardSection").classList.add("hidden");
+  $("courseRankingSection").classList.remove("hidden");
+  $("courseRankingBox").innerHTML = "<p>Rangliste wird geladen...</p>";
+
+  loadCourseRankingJsonp(c).then(data=>{
+    let rows = (data && data.rows) ? data.rows : [];
+    rows = rows.sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0));
+    if(!rows.length){
+      $("courseRankingBox").innerHTML = "<div class='no'>Noch keine Ergebnisse für diesen Kurs.</div>";
+      return;
+    }
+    $("courseRankingBox").innerHTML =
+      `<h3>Kurs: ${escapeHtml(c)}</h3><table><tr><th>Platz</th><th>Name</th><th>Fortschritt</th><th>Genauigkeit</th><th>Letzte Aktivität</th></tr>`+
+      rows.map((r,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(r.student||"")}</td><td>${escapeHtml(String(r.score||0))}%</td><td>${escapeHtml(String(r.accuracy||0))}%</td><td>${escapeHtml(r.timestamp||"")}</td></tr>`).join("")+
+      `</table>`;
+  }).catch(err=>{
+    $("courseRankingBox").innerHTML = `<div class="no">${escapeHtml(err.message)}</div>`;
+  });
+}
+
+function overallOfProgress(progress){
+  let list = EXERCISES.filter(ex=>ex!=="exam");
+  if(!list.length) return 0;
+  return Math.round(list.reduce((s,ex)=>s+(Number(progress[ex])||0),0)/list.length);
+}
+
+function studentRowId(){
+  return (course || "") + "||" + (student || "");
+}
+function loadCourseRankingJsonp(courseCode){
+  return new Promise((resolve, reject)=>{
+    const cbName = "rankingCallback_" + Date.now();
+    window[cbName] = data => {
+      try{ delete window[cbName]; }catch(e){}
+      const script = document.getElementById(cbName);
+      if(script) script.remove();
+      resolve(data);
+    };
+    const s = document.createElement("script");
+    s.id = cbName;
+    s.src = GOOGLE_SHEET_URL + "?action=ranking&course=" + encodeURIComponent(courseCode) + "&callback=" + cbName;
+    s.onerror = () => {
+      try{ delete window[cbName]; }catch(e){}
+      reject(new Error("Rangliste konnte nicht geladen werden."));
+    };
+    document.body.appendChild(s);
+  });
+}
+
+function closeCourseRanking(){
+  $("courseRankingSection").classList.add("hidden");
+  $("app").classList.remove("hidden");
+}
+
+
+function formatTime(ms){
+  let s=Math.floor(ms/1000),m=Math.floor(s/60);
+  return m+":"+String(s%60).padStart(2,"0");
+}
+function startExam(){
+  examStartTime=Date.now();
+  examCorrect=0;
+  examAttempts=0;
+  examFinished=false;
+  if(examTimer) clearInterval(examTimer);
+  examTimer=setInterval(updateExamTimer,1000);
+}
+function examScore(){
+  let acc=examAttempts?examCorrect/examAttempts:0;
+  let elapsed=examStartTime?Math.floor((Date.now()-examStartTime)/1000):0;
+  return Math.max(0,Math.round(acc*1000-elapsed));
+}
+function updateExamTimer(){
+  let e=$("examTimer");
+  if(e&&examStartTime)e.innerHTML=`⏱️ Zeit: <b>${formatTime(Date.now()-examStartTime)}</b> · 🎯 Genauigkeit: <b>${examAttempts?Math.round(examCorrect*100/examAttempts):0}%</b> · Wert: <b>${examScore()}</b>`;
+}
+function examQuestionHint(){
+  let t=item().topic;
+  if(t==="Geburtsort")return "Frage nach dem Geburtsort, z. B. mit „Wo ... geboren?“";
+  if(t==="Alter")return "Frage nach dem Alter.";
+  if(t==="Wohnort")return "Frage nach dem Wohnort.";
+  if(t==="Heimatland")return "Frage nach der Herkunft.";
+  if(t==="Vorname")return "Frage nach dem Vornamen.";
+  if(t==="Nachname")return "Frage nach dem Nachnamen.";
+  return "Bilde die passende Frage.";
+}
+function markExam(good,u=""){
+  attempts++;
+  examAttempts++;
+  answerHistory.push({question:item().topic,correct:good,answer:u,acceptedAnswers:questionVariants(),exam:true,timestamp:new Date().toLocaleTimeString()});
+  if(good){
+    correct++;
+    examCorrect++;
+    score+=10;
+    $("feedback").innerHTML="<div class='ok'>✔ Richtig!</div>";
+  }else{
+    $("feedback").innerHTML=`<div class='no'>❌ Nicht richtig.</div><div class='small'>Akzeptiert: ${questionVariants().join(" · ")}</div>`;
+  }
+  const n=$("nextExamBtn");
+  if(n) n.classList.remove("hidden");
+  updateExamTimer();
+  saveLocal();
+  updateAll();
+}
+function nextExam(){
+  if(i>=DATA.length-1) finishExam();
+  else{
+    i++;
+    if(typeof resetListenCounter==="function") resetListenCounter();
+    render();
+  }
+}
+function finishExam(){
+  if(examTimer) clearInterval(examTimer);
+  let res={name:student,course,score:examScore(),time:formatTime(Date.now()-examStartTime),accuracy:examAttempts?Math.round(examCorrect*100/examAttempts):0,date:new Date().toLocaleString()};
+  let b=JSON.parse(localStorage.getItem("A1_EXAM_RESULTS")||"[]");
+  b.push(res);
+  b.sort((a,b)=>b.score-a.score);
+  localStorage.setItem("A1_EXAM_RESULTS",JSON.stringify(b));
+  exerciseProgress.exam=100;
+  if(typeof sendExamResultToGoogleSheet==="function") sendExamResultToGoogleSheet(res);
+  updateAll();
+  $("game").innerHTML=`<h2>🏆 Prüfung abgeschlossen</h2><div class='ok'>Ergebnis gespeichert.</div><p>Zeit: ${res.time}<br>Genauigkeit: ${res.accuracy}%<br>Wert: ${res.score}</p><button onclick='showLeaderboard()'>Bestenliste</button>`;
+}
+
+function showLeaderboard(){let b=JSON.parse(localStorage.getItem("A1_EXAM_RESULTS")||"[]");$("leaderboard").innerHTML=b.length?b.map((e,i)=>`<div class="leader"><b>${i+1}. ${escapeHtml(e.name)}</b> · ${escapeHtml(e.course)}<br>Wert: ${e.score} · Zeit: ${e.time} · Genauigkeit: ${e.accuracy}%</div>`).join(""):"Noch keine Ergebnisse.";$("app").classList.add("hidden");$("courseRankingSection").classList.add("hidden");$("leaderboardSection").classList.remove("hidden")}
+function closeLeaderboard(){$("leaderboardSection").classList.add("hidden");$("app").classList.remove("hidden")}
+function exportMe(){let data=JSON.stringify({student,course,score,attempts,correct,answerHistory,exerciseProgress,studentPerson},null,2);let blob=new Blob([data],{type:"application/json"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=student+"_"+course+".json";a.click()}
+function importFiles(e){let files=[...e.target.files],rows=[];files.forEach(f=>{let r=new FileReader();r.onload=ev=>{let d=JSON.parse(ev.target.result);rows.push(d);$("dashTable").innerHTML="<table><tr><th>Name</th><th>Kurs</th><th>Punkte</th><th>Richtig</th><th>Versuche</th></tr>"+rows.map(x=>`<tr><td>${x.student}</td><td>${x.course}</td><td>${x.score}</td><td>${x.correct}</td><td>${x.attempts}</td></tr>`).join("")+"</table>"};r.readAsText(f)})}
+function downloadCSV(){let rows=JSON.parse(localStorage.getItem("A1_EXAM_RESULTS")||"[]");let csv="Name,Kurs,Wert,Zeit,Genauigkeit,Datum\n"+rows.map(e=>`${e.name},${e.course},${e.score},${e.time},${e.accuracy},${e.date}`).join("\n");let blob=new Blob([csv],{type:"text/csv"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="A1_Ergebnisse.csv";a.click()}
+
+
+
+function restoreSession(){
+  try{
+    initLogin();
+    let active = localStorage.getItem("A1_ACTIVE_SESSION");
+    if(!active) return;
+    let raw = localStorage.getItem(active);
+    if(!raw) return;
+    let x = JSON.parse(raw);
+    student = x.student || "";
+    course = x.course || "";
+    studentPerson = x.studentPerson || {...DEFAULT_PROFILE};
+    score = x.score || 0;
+    attempts = x.attempts || 0;
+    correct = x.correct || 0;
+    i = x.i || 0;
+    game = x.game || "learn";
+    questionOrder = Array.isArray(x.questionOrder) ? x.questionOrder : DATA.map((_,idx)=>idx);
+    answerHistory = x.answerHistory || [];
+    exerciseProgress = x.exerciseProgress || {};
+    $("login").classList.add("hidden");
+    $("app").classList.remove("hidden");
+    $("hello").innerText="Hallo, "+(studentPerson.fname||student)+"!";
+    updateAll();
+    render();
+  }catch(e){
+    console.error(e);
+  }
+}
+
+window.addEventListener("error", e => {
+  const g = $("game");
+  if(g){
+    g.innerHTML = `<h2>Fehler</h2><div class="no">JavaScript-Fehler: ${escapeHtml(e.message || "Unbekannter Fehler")}</div><p class="small">${escapeHtml(e.filename||"")} ${e.lineno||""}</p>`;
+  }
+});
+
+
+if("speechSynthesis" in window){
+  speechSynthesis.onvoiceschanged = () => getGermanVoice();
+}
+window.addEventListener("load", restoreSession);
+</script>
+</body>
+</html>
