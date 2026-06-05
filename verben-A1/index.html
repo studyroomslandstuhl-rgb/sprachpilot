@@ -19,7 +19,79 @@
 .mem-native{font-weight:900;font-size:13px;color:#333}
 .mem-german{font-weight:900;font-size:18px}
 
-</style></head><body><main>
+
+/* ADAPTIVER FORTSCHRITT */
+.progress-toggle{
+  position:fixed;
+  top:14px;
+  right:14px;
+  z-index:9999;
+  border-radius:999px;
+  padding:10px 13px;
+  background:#ffcc33;
+  color:#333;
+  border:2px solid white;
+  box-shadow:0 8px 20px rgba(0,0,0,.25);
+}
+.progress-panel{
+  position:fixed;
+  top:0;
+  right:0;
+  width:min(380px,92vw);
+  height:100vh;
+  background:white;
+  z-index:10000;
+  box-shadow:-10px 0 30px rgba(0,0,0,.3);
+  padding:18px;
+  overflow:auto;
+}
+.progress-row{
+  background:#f7f8ff;
+  border:2px solid #e0e4ff;
+  border-radius:12px;
+  padding:9px;
+  margin:7px 0;
+}
+.progress-line{
+  height:10px;
+  background:#ddd;
+  border-radius:999px;
+  overflow:hidden;
+  margin-top:5px;
+}
+.progress-fill{
+  height:100%;
+  background:linear-gradient(135deg,#27ae60,#2ecc71);
+}
+.task-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
+  gap:12px;
+  margin:12px 0;
+}
+.task-card{
+  min-height:110px;
+  border-radius:18px;
+  background:#f7f8ff;
+  border:3px solid #dce2ff;
+  color:#333;
+  font-size:18px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  text-align:center;
+}
+.task-card .big-icon{font-size:34px;margin-bottom:8px}
+.mini-top-progress{
+  background:white;
+  border:2px solid #dce2ff;
+  border-radius:16px;
+  padding:10px;
+  margin:8px 0;
+}
+
+</style></head><body><button class="progress-toggle" onclick="toggleProgressPanel()">📊</button><div id="progressPanel" class="progress-panel hidden"></div><main>
 <div class="card"><h1>🧩 Verben A1</h1><div id="profileBox"></div><button class="secondary" onclick="location.href='../'">🏠 Startseite</button></div>
 <div class="card" id="app"></div>
 </main>
@@ -39,57 +111,17 @@ let state={
   unsure:[],
   unknown:[],
   active:[],
-  progress:{},
+  learned:[],
+  encounters:{},
+  successBySkill:{},
   weak:{},
   currentGame:"",
   currentVerb:"",
   memoryCards:[],
   first:null,
-  lock:false
+  lock:false,
+  lastAutoReplace:0
 };
-
-function loadProfile(){
-  try{profile=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){profile=null}
-  if(!profile){
-    $("profileBox").innerHTML="<div class='no'>Bitte zuerst auf der Startseite registrieren oder einloggen.</div>";
-    $("app").innerHTML="<button onclick=\"location.href='../'\">Zur Startseite</button>";
-    return false;
-  }
-  $("profileBox").innerHTML=`<div class="ok">Eingeloggt: <strong>${profile.vorname} ${profile.nachname}</strong> | Kurs: ${profile.kurs}</div>`;
-  return true;
-}
-function key(){return "SP_VERBS_"+(profile?profile.userId:"guest")}
-function loadState(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(key())||"null");
-    if(saved) state={...state,...saved};
-  }catch(e){}
-}
-function saveState(){
-  localStorage.setItem(key(),JSON.stringify(state));
-  sendProgress();
-}
-function sendProgress(){
-  if(!profile)return;
-  const done=overall();
-  const payload={
-    userId:profile.userId,kurs:profile.kurs,vorname:profile.vorname,nachname:profile.nachname,
-    geburtsdatum:profile.geburtsdatum,heimatland:profile.heimatland,muttersprache:profile.muttersprache,
-    fremdsprache:profile.fremdsprache,wohnort:profile.wohnort,kinder:profile.kinder,
-    fragenFortschritt:profile.fragenFortschritt||0,verbenFortschritt:done,gesamtpunkte:done,
-    profile:profile,verbenState:state,timestamp:new Date().toISOString()
-  };
-  try{fetch(GOOGLE_SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})}catch(e){}
-}
-function img(v){return ALL_VERBS.find(x=>x.v===v)||{v:v,emoji:"⭐",img:"Bild"}}
-function overall(){
-  if(!state.active.length)return 0;
-  let sum=state.active.reduce((s,v)=>s+(state.progress[v]||0),0);
-  return Math.round(sum/state.active.length);
-}
-function activeComplete(){
-  return state.active.length===20 && state.active.every(v=>(state.progress[v]||0)>=100);
-}
 
 const VERB_TRANSLATIONS = {
   "Arabisch":{"lieben":"يحب","kaufen":"يشتري","verstehen":"يفهم","brauchen":"يحتاج","hören":"يسمع","lernen":"يتعلم","wohnen":"يسكن","bringen":"يحضر","sein":"يكون","schreiben":"يكتب","fotografieren":"يلتقط صورة","telefonieren":"يتصل","kochen":"يطبخ","leben":"يعيش","kommen":"يأتي","buchstabieren":"يتهجى","gehen":"يذهب","schwimmen":"يسبح","suchen":"يبحث","bestellen":"يطلب","weinen":"يبكي","reparieren":"يصلح","gewinnen":"يفوز","spielen":"يلعب","springen":"يقفز","verlieren":"يخسر","fragen":"يسأل","verkaufen":"يبيع","unterschreiben":"يوقّع","reservieren":"يحجز","buchen":"يحجز","machen":"يفعل","malen":"يرسم","trinken":"يشرب","schicken":"يرسل","denken":"يفكر","winken":"يلوح","hassen":"يكره","beißen":"يعض","gießen":"يسقي","reißen":"يمزق","putzen":"ينظف","küssen":"يقبل","tanzen":"يرقص","mixen":"يخلط","reisen":"يسافر","haben":"يملك","überqueren":"يعبر","grüßen":"يحيي","genießen":"يستمتع","singen":"يغني","schließen":"يغلق","rennen":"يركض","lachen":"يضحك","warten":"ينتظر","arbeiten":"يعمل","finden":"يجد","benutzen":"يستخدم","rechnen":"يحسب","zeichnen":"يرسم","öffnen":"يفتح","wiederholen":"يكرر","schneiden":"يقطع","streiten":"يتشاجر","atmen":"يتنفس"},
@@ -116,29 +148,81 @@ function actionImage(v,small=false){
  return `<svg class="${small?'mem-img':'action-img'}" viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${v}"><rect width="260" height="200" rx="20" fill="#f7f8ff"/><rect x="10" y="10" width="240" height="180" rx="18" fill="#fff" stroke="#d6dcff" stroke-width="4"/>${body}</svg>`;
 }
 
+
+
+function loadProfile(){
+  try{profile=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){profile=null}
+  if(!profile){
+    $("profileBox").innerHTML="<div class='no'>Bitte zuerst auf der Startseite registrieren oder einloggen.</div>";
+    $("app").innerHTML="<button onclick=\"location.href='../'\">Zur Startseite</button>";
+    return false;
+  }
+  $("profileBox").innerHTML=`<div class="ok">Eingeloggt: <strong>${profile.vorname} ${profile.nachname}</strong> | Kurs: ${profile.kurs}</div>`;
+  return true;
+}
+function key(){return "SP_VERBS_"+(profile?profile.userId:"guest")}
+function migrateState(){
+  if(state.progress && !state.encounters){
+    state.encounters={};
+    Object.keys(state.progress).forEach(v=>state.encounters[v]=Math.round((state.progress[v]||0)/10));
+  }
+  state.learned=state.learned||[];
+  state.encounters=state.encounters||{};
+  state.successBySkill=state.successBySkill||{};
+  state.active=state.active||[];
+  state.known=state.known||[];
+  state.unsure=state.unsure||[];
+  state.unknown=state.unknown||[];
+}
+function loadState(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(key())||"null");
+    if(saved) state={...state,...saved};
+  }catch(e){}
+  migrateState();
+}
+function saveState(){
+  migrateState();
+  localStorage.setItem(key(),JSON.stringify(state));
+  sendProgress();
+}
+function verbCount(v){return Math.max(0,Math.min(10,Number(state.encounters[v])||0))}
+function verbPercent(v){return verbCount(v)*10}
+function overall(){
+  if(!state.active.length)return 0;
+  let sum=state.active.reduce((s,v)=>s+verbPercent(v),0);
+  return Math.round(sum/state.active.length);
+}
+function learnedTotal(){return state.learned.length + state.active.filter(v=>verbCount(v)>=10).length}
+function sendProgress(){
+  if(!profile)return;
+  const done=overall();
+  const payload={
+    userId:profile.userId,kurs:profile.kurs,vorname:profile.vorname,nachname:profile.nachname,
+    geburtsdatum:profile.geburtsdatum,heimatland:profile.heimatland,muttersprache:profile.muttersprache,
+    fremdsprache:profile.fremdsprache,wohnort:profile.wohnort,kinder:profile.kinder,
+    fragenFortschritt:profile.fragenFortschritt||0,verbenFortschritt:done,gesamtpunkte:done,
+    profile:profile,verbenState:state,timestamp:new Date().toISOString()
+  };
+  try{fetch(GOOGLE_SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})}catch(e){}
+}
+function img(v){return ALL_VERBS.find(x=>x.v===v)||{v:v,emoji:"⭐",img:"Bild"}}
+function unusedVerbs(){
+  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
+  return ALL_VERBS.map(x=>x.v).filter(v=>!used.includes(v));
+}
+function currentPickVerb(){
+  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
+  for(let i=state.index;i<ALL_VERBS.length;i++){
+    if(!used.includes(ALL_VERBS[i].v)){state.index=i;return ALL_VERBS[i];}
+  }
+  return null;
+}
 function init(){
   if(!loadProfile())return;
   loadState();
-  if(state.active.length>=20 && !activeComplete()) {
-    state.phase="tasks";
-    saveState();
-    renderHome();
-  } else if(activeComplete()) {
-    renderComplete();
-  } else {
-    state.phase="select";
-    renderOneVerb();
-  }
-}
-function currentPickVerb(){
-  const used=[...state.known,...state.unsure,...state.unknown,...state.active];
-  for(let i=state.index;i<ALL_VERBS.length;i++){
-    if(!used.includes(ALL_VERBS[i].v)){
-      state.index=i;
-      return ALL_VERBS[i];
-    }
-  }
-  return null;
+  if(state.active.length>=20){state.phase="tasks";renderHome();}
+  else {state.phase="select";renderOneVerb();}
 }
 function renderOneVerb(){
   state.phase="select";
@@ -149,7 +233,7 @@ function renderOneVerb(){
     return;
   }
   $("app").innerHTML=`<h2>Verb einschätzen</h2>
-    <div class="progress"><strong>Paket:</strong> ${state.active.length}/20 Verben gesammelt</div>
+    <div class="mini-top-progress"><strong>Paket:</strong> ${state.active.length}/20 Verben gesammelt</div>
     <p class="small">Entscheide schnell. Danach kommt automatisch das nächste Verb.</p>
     <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
       ${actionImage(v.v,false)}
@@ -159,13 +243,14 @@ function renderOneVerb(){
     <button class="success" onclick="rateVerb('${v.v}','known')">✅ kann ich</button>
     <button onclick="rateVerb('${v.v}','unsure')">❓ unsicher</button>
     <button onclick="rateVerb('${v.v}','unknown')">❌ kann ich nicht</button>`;
+  renderProgressPanel(false);
 }
 function rateVerb(v,level){
   ["known","unsure","unknown"].forEach(k=>state[k]=state[k].filter(x=>x!==v));
   state[level].push(v);
   if(level!=="known" && !state.active.includes(v)){
     state.active.push(v);
-    state.progress[v]=state.progress[v]||0;
+    state.encounters[v]=state.encounters[v]||0;
   }
   state.index++;
   if(state.active.length>=20){
@@ -178,51 +263,92 @@ function rateVerb(v,level){
     renderOneVerb();
   }
 }
-function renderComplete(){
-  $("app").innerHTML=`<h2>🎉 Paket geschafft!</h2>
-    <div class="ok">Du hast diese 20 Verben auf 100 % geübt.</div>
-    <button class="success" onclick="startNextPackage()">Neue 20 Verben wählen</button>
-    <button class="secondary" onclick="renderHome()">Paket wiederholen</button>`;
-}
-function startNextPackage(){
-  state.active=[];
-  state.progress={};
-  state.weak={};
-  state.phase="select";
+function replaceLearnedIfNeeded(){
+  let complete=state.active.filter(v=>verbCount(v)>=10);
+  if(complete.length<3)return false;
+  let toReplace=complete.slice(0,3);
+  toReplace.forEach(v=>{
+    if(!state.learned.includes(v))state.learned.push(v);
+    state.active=state.active.filter(x=>x!==v);
+  });
+  let candidates=[...state.unknown,...state.unsure,...unusedVerbs()].filter(v=>!state.active.includes(v)&&!state.learned.includes(v));
+  candidates.slice(0,toReplace.length).forEach(v=>{
+    if(!state.active.includes(v)){state.active.push(v);state.encounters[v]=state.encounters[v]||0;}
+  });
   saveState();
-  renderOneVerb();
+  return true;
+}
+function addEncounter(v,skill,good=true){
+  if(good){
+    state.successBySkill[v]=state.successBySkill[v]||{};
+    state.successBySkill[v][skill]=(state.successBySkill[v][skill]||0)+1;
+    state.encounters[v]=Math.min(10,(state.encounters[v]||0)+1);
+  }else{
+    state.weak[v]=(state.weak[v]||0)+1;
+  }
+  saveState();
+  if(replaceLearnedIfNeeded()){
+    showAutoReplaceMessage();
+  }
+}
+function showAutoReplaceMessage(){
+  const msg=`<div class="ok"><strong>🎉 3 Verben gelernt!</strong><br>Sie wurden automatisch durch neue Verben ersetzt.</div>`;
+  const g=$("game");
+  if(g)g.insertAdjacentHTML("afterbegin",msg);
 }
 function renderHome(){
   state.phase="tasks";
   saveState();
-  const complete=activeComplete();
-  $("app").innerHTML=`<h2>Dein Verben-Paket</h2>
-    <div class="progress"><strong>Fortschritt:</strong> ${overall()}%</div>
-    <p class="small">Du übst maximal 20 Verben gleichzeitig. Wenn alle 100 % haben, bekommst du neue Verben.</p>
-    <div>${state.active.map(v=>`<button class="secondary">${img(v).emoji} ${v} (${state.progress[v]||0}%)</button>`).join("")}</div>
-    <div class="menu">
-      <button onclick="flashcards()">🃏 Karteikarten</button>
-      <button onclick="memory()">🖼️ Memory</button>
-      <button onclick="quiz()">✅ Bild zuordnen</button>
-      <button onclick="writeVerb()">✍️ Schreiben</button>
-      <button onclick="wordSearch()">🔎 Wörtersuche</button>
-      ${complete?'<button class="success" onclick="startNextPackage()">Neue 20 Verben</button>':''}
+  $("app").innerHTML=`<h2>Verben üben</h2>
+    <div class="mini-top-progress">
+      <strong>Aktiv:</strong> ${state.active.length} Verben |
+      <strong>Gelernt:</strong> ${state.learned.length} |
+      <strong>Fortschritt:</strong> ${overall()}%
+    </div>
+    <div class="task-grid">
+      <button class="task-card" onclick="flashcards()"><span class="big-icon">🃏</span>Karteikarten</button>
+      <button class="task-card" onclick="memory()"><span class="big-icon">🖼️</span>Memory</button>
+      <button class="task-card" onclick="quiz()"><span class="big-icon">✅</span>Bild zuordnen</button>
+      <button class="task-card" onclick="writeVerb()"><span class="big-icon">✍️</span>Schreiben</button>
+      <button class="task-card" onclick="wordSearch()"><span class="big-icon">🔎</span>Wörtersuche</button>
     </div>
     <div id="game"></div>`;
+  renderProgressPanel(false);
 }
-function mark(v,good,amount=20){
-  if(good) state.progress[v]=Math.min(100,(state.progress[v]||0)+amount);
-  else state.weak[v]=(state.weak[v]||0)+1;
-  saveState();
-  if(activeComplete()) renderComplete();
+function toggleProgressPanel(){
+  const p=$("progressPanel");
+  if(!p)return;
+  if(p.classList.contains("hidden")){renderProgressPanel(true);p.classList.remove("hidden");}
+  else p.classList.add("hidden");
+}
+function renderProgressPanel(openOnly){
+  const p=$("progressPanel");
+  if(!p)return;
+  const activeRows=state.active.map(v=>`<div class="progress-row">
+    <strong>${v}</strong> <span class="small">${verbCount(v)}/10 · ${verbPercent(v)}%</span>
+    <div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div>
+    <div class="small">Wiederholt: ${verbCount(v)}x · Fehler: ${state.weak[v]||0}</div>
+  </div>`).join("");
+  p.innerHTML=`<h2>📊 Fortschritt</h2>
+    <button class="secondary" onclick="toggleProgressPanel()">Schließen</button>
+    <div class="progress-row"><strong>Gesamt</strong><br>Aktiv: ${state.active.length} · Gelernt: ${state.learned.length} · Offen: ${unusedVerbs().length}</div>
+    <h3>Aktive Verben</h3>${activeRows||"<p>Noch keine aktiven Verben.</p>"}
+    <h3>Gelernt</h3><p class="small">${state.learned.length?state.learned.join(", "):"Noch keine."}</p>`;
+}
+function chooseVerbForPractice(){
+  let pool=state.active.filter(v=>verbCount(v)<10);
+  if(!pool.length)return null;
+  pool.sort((a,b)=>{
+    const wa=state.weak[a]||0, wb=state.weak[b]||0;
+    return (verbCount(a)-verbCount(b)) || (wb-wa);
+  });
+  return pool[Math.floor(Math.random()*Math.min(6,pool.length))];
 }
 function flashcards(){
   state.currentGame="flashcards";
-  let pool=state.active.filter(v=>(state.progress[v]||0)<100);
-  if(!pool.length){renderComplete();return}
-  state.currentVerb=shuffle(pool)[0];
-  saveState();
-  let v=state.currentVerb;
+  let v=chooseVerbForPractice();
+  if(!v){renderHome();return}
+  state.currentVerb=v;saveState();
   $("game").innerHTML=`<h3>Karteikarten: Nenne das deutsche Wort</h3>
     <p class="small">Vorderseite: Muttersprache. Drehe die Karte um und prüfe das deutsche Verb.</p>
     <div class="study-card-wrap">
@@ -235,12 +361,11 @@ function flashcards(){
         <div class="study-face study-back">
           <div class="small">Deutsch</div>
           <div class="german-word">${v}</div>
-          <p class="small">Klicke wieder, um zurückzudrehen.</p>
         </div>
       </div>
     </div>
-    <button class="success" onclick="mark('${v}',true,20);flashcards()">✅ wusste ich</button>
-    <button onclick="mark('${v}',false);flashcards()">❓ muss ich üben</button>`;
+    <button class="success" onclick="addEncounter('${v}','karteikarte',true);flashcards()">✅ wusste ich</button>
+    <button onclick="addEncounter('${v}','karteikarte',false);flashcards()">❓ muss ich üben</button>`;
 }
 function memory(){
   state.currentGame="memory";
@@ -256,7 +381,6 @@ function memory(){
 }
 function renderMemory(){
   $("game").innerHTML=`<h3>Memory: Bild + Muttersprache ↔ deutsches Verb</h3>
-  <p class="small">Finde die Bildkarte mit dem Wort in deiner Muttersprache und das passende deutsche Verb.</p>
   <div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`;
 }
 function flip(i){
@@ -268,44 +392,44 @@ function flip(i){
   state.lock=true;
   let a=state.memoryCards[state.first],b=state.memoryCards[i],good=a.p===b.p&&a.t!==b.t;
   setTimeout(()=>{
-    if(good){a.d=b.d=true;mark(a.v,true,10)}else{a.o=b.o=false;mark(a.v,false);mark(b.v,false)}
+    if(good){a.d=b.d=true;addEncounter(a.v,'memory',true)}else{a.o=b.o=false;addEncounter(a.v,'memory',false);addEncounter(b.v,'memory',false)}
     state.first=null;state.lock=false;saveState();renderMemory();
-    if(state.memoryCards.every(x=>x.d)){state.active.slice(0,10).forEach(v=>mark(v,true,20));$("fb").innerHTML="<div class='ok'>Memory geschafft!</div>"}
+    if(state.memoryCards.every(x=>x.d))$("fb").innerHTML="<div class='ok'>Memory geschafft!</div>";
   },600);
 }
 function quiz(){
   state.currentGame="quiz";
-  let pool=state.active.filter(v=>(state.progress[v]||0)<100);
-  if(!pool.length){renderComplete();return}
-  let v=shuffle(pool)[0],x=img(v),opts=shuffle([v,...shuffle(state.active.filter(a=>a!==v)).slice(0,3)]);
+  let v=chooseVerbForPractice();
+  if(!v){renderHome();return}
+  let opts=shuffle([v,...shuffle(state.active.filter(a=>a!==v)).slice(0,3)]);
   state.currentVerb=v;saveState();
   $("game").innerHTML=`<h3>Welches Verb passt?</h3>${actionImage(v,false)}<p>${nativeWord(v)}</p>${opts.map(o=>`<button onclick="checkQuiz('${o}','${v}')">${o}</button>`).join("")}<div id="fb"></div>`;
 }
 function checkQuiz(a,v){
-  if(a===v){mark(v,true,20);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>"}
-  else{mark(v,false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>"}
+  if(a===v){addEncounter(v,'zuordnung',true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>"}
+  else{addEncounter(v,'zuordnung',false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>"}
 }
 function writeVerb(){
   state.currentGame="write";
-  let pool=state.active.filter(v=>(state.progress[v]||0)<100);
-  if(!pool.length){renderComplete();return}
-  let v=shuffle(pool)[0],x=img(v);
+  let v=chooseVerbForPractice();
+  if(!v){renderHome();return}
   state.currentVerb=v;saveState();
   $("game").innerHTML=`<h3>Schreibe das deutsche Verb</h3>${actionImage(v,false)}<p>${nativeWord(v)}</p><input id="w"><button onclick="checkWrite('${v}')">prüfen</button><div id="fb"></div>`;
 }
 function checkWrite(v){
   let a=$("w").value;
-  if(clean(a)===clean(v)){mark(v,true,20);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='writeVerb()'>weiter</button>"}
-  else{mark(v,false);$("fb").innerHTML=`<div class='no'>Richtig: ${v}</div>`}
+  if(clean(a)===clean(v)){addEncounter(v,'schreiben',true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='writeVerb()'>weiter</button>"}
+  else{addEncounter(v,'schreiben',false);$("fb").innerHTML=`<div class='no'>Richtig: ${v}</div>`}
 }
 function wordSearch(){
   state.currentGame="wordsearch";
-  let chosen=state.active.slice(0,8);
+  let chosen=state.active.filter(v=>verbCount(v)<10).slice(0,8);
+  if(!chosen.length){renderHome();return}
   let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
   let grid=Array.from({length:12},()=>Array.from({length:12},()=>letters[Math.floor(Math.random()*letters.length)]));
   chosen.forEach((v,row)=>{let w=v.toUpperCase().replace("Ü","UE").replace("Ö","OE").replace("Ä","AE").replace("ß","SS").slice(0,12);for(let i=0;i<w.length;i++)grid[row][i]=w[i]});
   $("game").innerHTML=`<h3>Wörtersuche</h3><p>Finde: ${chosen.join(", ")}</p><div class="wordsearch">${grid.map(r=>r.join(" ")).join("<br>")}</div><button class="success" onclick="chosenDone()">Ich habe sie gefunden</button>`;
 }
-function chosenDone(){state.active.slice(0,8).forEach(v=>mark(v,true,15));renderHome()}
+function chosenDone(){state.active.filter(v=>verbCount(v)<10).slice(0,8).forEach(v=>addEncounter(v,'woertersuche',true));renderHome()}
 init();
 </script></body></html>
