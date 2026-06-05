@@ -91,6 +91,42 @@
   margin:8px 0;
 }
 
+
+/* REALISTISCHE BILDER */
+.real-img{
+  width:100%;
+  max-width:280px;
+  height:190px;
+  object-fit:cover;
+  border-radius:18px;
+  border:3px solid #dce2ff;
+  background:#f7f8ff;
+  display:block;
+  margin:0 auto 10px;
+}
+.real-img-small{
+  width:100%;
+  max-width:115px;
+  height:78px;
+  object-fit:cover;
+  border-radius:10px;
+  border:2px solid #dce2ff;
+  background:#f7f8ff;
+  display:block;
+  margin:0 auto 4px;
+}
+.image-fallback{
+  background:#f7f8ff;
+  border:3px dashed #dce2ff;
+  border-radius:18px;
+  padding:22px;
+  text-align:center;
+  font-weight:900;
+  color:#667eea;
+  margin:0 auto 10px;
+  max-width:280px;
+}
+
 </style></head><body><button class="progress-toggle" onclick="toggleProgressPanel()">📊</button><div id="progressPanel" class="progress-panel hidden"></div><main>
 <div class="card"><h1>🧩 Verben A1</h1><div id="profileBox"></div><button class="secondary" onclick="location.href='../'">🏠 Startseite</button></div>
 <div class="card" id="app"></div>
@@ -218,6 +254,229 @@ function currentPickVerb(){
   }
   return null;
 }
+
+
+function imageFileName(v){
+  return String(v||"")
+    .toLowerCase()
+    .replaceAll("ä","ae")
+    .replaceAll("ö","oe")
+    .replaceAll("ü","ue")
+    .replaceAll("ß","ss")
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-|-$/g,"") + ".webp";
+}
+function realImage(v, small=false){
+  const cls = small ? "real-img-small" : "real-img";
+  const fallback = `<div class="${small?'image-fallback real-img-small':'image-fallback'}">Bild<br>${v}</div>`;
+  return `<img class="${cls}" src="bilder/${imageFileName(v)}" alt="${v}" onerror="this.outerHTML='${fallback.replace(/'/g,"&#39;")}'">`;
+}
+function speakTextVerb(t,slow=false){
+  try{
+    if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){
+      const fb=$("fb")||$("cardFeedback");
+      if(fb)fb.innerHTML="<div class='no'>Hören wird auf diesem Gerät nicht unterstützt.</div>";
+      return;
+    }
+    const u=new SpeechSynthesisUtterance(String(t||""));
+    u.lang="de-DE";
+    u.rate=slow?0.55:0.75;
+    window.speechSynthesis.cancel();
+    window.speechSynthesis.speak(u);
+  }catch(e){
+    const fb=$("fb")||$("cardFeedback");
+    if(fb)fb.innerHTML="<div class='no'>Beim Hören gab es ein Problem.</div>";
+  }
+}
+
+function scrollToGame(){
+  setTimeout(()=>{const g=$("game"); if(g) g.scrollIntoView({behavior:"smooth",block:"start"});},80);
+}
+function scrollToFeedback(){
+  setTimeout(()=>{const fb=$("fb")||$("cardFeedback")||$("game"); if(fb) fb.scrollIntoView({behavior:"smooth",block:"center"});},80);
+}
+function normalizeVerbAnswer(s){
+  return clean(String(s||"").replace(/\s+/g," "));
+}
+function checkVerbAnswer(answer, correct){
+  return normalizeVerbAnswer(answer)===normalizeVerbAnswer(correct);
+}
+function setMicStatus(txt){
+  const m=$("micStatus");
+  if(m)m.innerHTML=txt;
+}
+function recogVerb(cb){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){
+    const fb=$("cardFeedback")||$("fb");
+    if(fb)fb.innerHTML="<div class='no'>Mikrofon funktioniert auf diesem Gerät/Browser nicht. Bitte die Antwort schreiben.</div>";
+    scrollToFeedback();
+    return;
+  }
+  try{
+    let r=new SR();
+    r.lang="de-DE";
+    r.interimResults=false;
+    r.continuous=false;
+    r.maxAlternatives=3;
+    let result="";
+    let timer=null;
+    let done=false;
+    function finish(){
+      if(done)return;
+      done=true;
+      clearTimeout(timer);
+      setMicStatus("⚪ Mikrofon aus");
+      if(result.trim())cb(result.trim());
+      else{
+        const fb=$("cardFeedback")||$("fb");
+        if(fb)fb.innerHTML="<div class='no'>Ich habe nichts verstanden. Bitte noch einmal sprechen oder schreiben.</div>";
+        scrollToFeedback();
+      }
+    }
+    function stopSoon(){
+      clearTimeout(timer);
+      timer=setTimeout(()=>{try{r.stop()}catch(e){finish()}},2000);
+    }
+    r.onstart=()=>{setMicStatus("🔴 Mikrofon aktiv – sprechen Sie jetzt."); stopSoon();};
+    r.onspeechstart=()=>clearTimeout(timer);
+    r.onspeechend=()=>stopSoon();
+    r.onsoundend=()=>stopSoon();
+    r.onresult=e=>{
+      let best="";
+      for(let i=e.resultIndex;i<e.results.length;i++){
+        if(e.results[i]&&e.results[i][0])best=e.results[i][0].transcript||best;
+      }
+      result=best||result;
+      const heard=$("heard");
+      if(heard)heard.innerText="Gehört: "+result;
+      stopSoon();
+    };
+    r.onerror=e=>{
+      clearTimeout(timer);
+      setMicStatus("⚪ Mikrofon aus");
+      const fb=$("cardFeedback")||$("fb");
+      let msg="Mikrofonfehler. Bitte schreiben.";
+      if(e&&e.error==="not-allowed")msg="Mikrofon ist blockiert. Bitte erlauben oder schreiben.";
+      if(e&&e.error==="no-speech")msg="Ich habe nichts gehört. Bitte noch einmal sprechen oder schreiben.";
+      if(fb)fb.innerHTML="<div class='no'>"+msg+"</div>";
+      scrollToFeedback();
+    };
+    r.onend=finish;
+    r.start();
+  }catch(e){
+    const fb=$("cardFeedback")||$("fb");
+    if(fb)fb.innerHTML="<div class='no'>Mikrofon konnte nicht gestartet werden. Bitte schreiben.</div>";
+    scrollToFeedback();
+  }
+}
+
+
+function hearWrite(){
+  state.currentGame="hearWrite";
+  let v=chooseVerbForPractice();
+  if(!v){renderHome();return}
+  state.currentVerb=v;saveState();
+  $("game").innerHTML=`<h3>Hören → Schreiben</h3>
+    <p class="small">Hören Sie das Verb und schreiben Sie es.</p>
+    <button onclick="speakTextVerb('${v}',false)">🔊 Hören</button>
+    <button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 Langsam</button>
+    <input id="hearWriteInput" placeholder="Verb schreiben...">
+    <button class="success" onclick="checkHearWrite('${v}')">Überprüfen</button>
+    <div id="fb"></div>`;
+  scrollToGame();
+}
+function checkHearWrite(v){
+  const val=$("hearWriteInput").value;
+  if(checkVerbAnswer(val,v)){
+    addEncounter(v,"hoeren_schreiben",true);
+    $("fb").innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong></div><button class="success" onclick="hearWrite()">weiter</button>`;
+  }else{
+    addEncounter(v,"hoeren_schreiben",false);
+    $("fb").innerHTML=`<div class="no">❌ Noch nicht. Richtig: <strong>${v}</strong></div><button onclick="hearWrite()">weiter</button>`;
+  }
+  scrollToFeedback();
+}
+function hearSpeak(){
+  state.currentGame="hearSpeak";
+  let v=chooseVerbForPractice();
+  if(!v){renderHome();return}
+  state.currentVerb=v;saveState();
+  $("game").innerHTML=`<h3>Hören → Sprechen</h3>
+    <p class="small">Hören Sie das Verb und sprechen Sie es nach.</p>
+    <button onclick="speakTextVerb('${v}',false)">🔊 Hören</button>
+    <button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 Langsam</button>
+    <button class="success" onclick="checkHearSpeak('${v}')">🎤 Sprechen</button>
+    <div id="micStatus" class="small">⚪ Mikrofon aus</div>
+    <p id="heard" class="small"></p>
+    <div id="fb"></div>`;
+  scrollToGame();
+}
+function checkHearSpeak(v){
+  recogVerb(t=>{
+    const h=$("heard"); if(h)h.innerText="Gehört: "+t;
+    if(checkVerbAnswer(t,v)){
+      addEncounter(v,"hoeren_sprechen",true);
+      $("fb").innerHTML=`<div class="ok">✔ Richtig gesprochen: <strong>${v}</strong></div><button class="success" onclick="hearSpeak()">weiter</button>`;
+    }else{
+      addEncounter(v,"hoeren_sprechen",false);
+      $("fb").innerHTML=`<div class="no">❌ Gehört: ${t}<br>Richtig: <strong>${v}</strong></div><button onclick="hearSpeak()">weiter</button>`;
+    }
+    scrollToFeedback();
+  });
+}
+function imageSpeak(){
+  state.currentGame="imageSpeak";
+  let v=chooseVerbForPractice();
+  if(!v){renderHome();return}
+  state.currentVerb=v;saveState();
+  $("game").innerHTML=`<h3>Bild → Sprechen</h3>
+    <p class="small">Sehen Sie das Bild und sagen Sie das deutsche Verb.</p>
+    ${realImage(v,false)}
+    <p>${nativeWord(v)}</p>
+    <button class="success" onclick="checkImageSpeak('${v}')">🎤 Sprechen</button>
+    <div id="micStatus" class="small">⚪ Mikrofon aus</div>
+    <p id="heard" class="small"></p>
+    <div id="fb"></div>`;
+  scrollToGame();
+}
+function checkImageSpeak(v){
+  recogVerb(t=>{
+    const h=$("heard"); if(h)h.innerText="Gehört: "+t;
+    if(checkVerbAnswer(t,v)){
+      addEncounter(v,"bild_sprechen",true);
+      $("fb").innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong></div><button class="success" onclick="imageSpeak()">weiter</button>`;
+    }else{
+      addEncounter(v,"bild_sprechen",false);
+      $("fb").innerHTML=`<div class="no">❌ Gehört: ${t}<br>Richtig: <strong>${v}</strong></div><button onclick="imageSpeak()">weiter</button>`;
+    }
+    scrollToFeedback();
+  });
+}
+function verbToImage(){
+  state.currentGame="verbToImage";
+  let v=chooseVerbForPractice();
+  if(!v){renderHome();return}
+  const opts=shuffle([v,...shuffle(state.active.filter(x=>x!==v)).slice(0,3)]);
+  state.currentVerb=v;saveState();
+  $("game").innerHTML=`<h3>Verb → Bild</h3>
+    <p class="small">Welches Bild passt zu diesem Verb?</p>
+    <h2>${v}</h2>
+    <div class="grid">${opts.map(o=>`<button class="verbPick" onclick="checkVerbToImage('${o}','${v}')">${realImage(o,true)}<span class="small">${nativeWord(o)}</span></button>`).join("")}</div>
+    <div id="fb"></div>`;
+  scrollToGame();
+}
+function checkVerbToImage(a,v){
+  if(a===v){
+    addEncounter(v,"verb_bild",true);
+    $("fb").innerHTML=`<div class="ok">✔ Richtig!</div><button class="success" onclick="verbToImage()">weiter</button>`;
+  }else{
+    addEncounter(v,"verb_bild",false);
+    $("fb").innerHTML=`<div class="no">❌ Noch nicht.</div>`;
+  }
+  scrollToFeedback();
+}
+
 function init(){
   if(!loadProfile())return;
   loadState();
@@ -236,7 +495,7 @@ function renderOneVerb(){
     <div class="mini-top-progress"><strong>Paket:</strong> ${state.active.length}/20 Verben gesammelt</div>
     <p class="small">Entscheide schnell. Danach kommt automatisch das nächste Verb.</p>
     <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
-      ${actionImage(v.v,false)}
+      ${realImage(v.v,false)}
       <h1 style="color:#667eea">${v.v}</h1>
       <p>${v.img}</p>
     </div>
@@ -310,7 +569,10 @@ function renderHome(){
       <button class="task-card" onclick="memory()"><span class="big-icon">🖼️</span>Memory</button>
       <button class="task-card" onclick="quiz()"><span class="big-icon">✅</span>Bild zuordnen</button>
       <button class="task-card" onclick="writeVerb()"><span class="big-icon">✍️</span>Schreiben</button>
-      <button class="task-card" onclick="wordSearch()"><span class="big-icon">🔎</span>Wörtersuche</button>
+      <button class="task-card" onclick="hearWrite()"><span class="big-icon">🔊</span>Hören → Schreiben</button>
+      <button class="task-card" onclick="hearSpeak()"><span class="big-icon">🎧</span>Hören → Sprechen</button>
+      <button class="task-card" onclick="imageSpeak()"><span class="big-icon">🎤</span>Bild sprechen</button>
+      <button class="task-card" onclick="verbToImage()"><span class="big-icon">🖼️</span>Verb → Bild</button>
     </div>
     <div id="game"></div>`;
   renderProgressPanel(false);
@@ -350,7 +612,7 @@ function flashcards(){
   if(!v){renderHome();return}
   state.currentVerb=v;saveState();
   $("game").innerHTML=`<h3>Karteikarten: Nenne das deutsche Wort</h3>
-    <p class="small">Vorderseite: Muttersprache. Drehe die Karte um und prüfe das deutsche Verb.</p>
+    <p class="small">Vorderseite: Muttersprache. Drehe die Karte um oder antworte direkt.</p>
     <div class="study-card-wrap">
       <div id="studyCard" class="study-card" onclick="this.classList.toggle('flipped')">
         <div class="study-face">
@@ -364,20 +626,56 @@ function flashcards(){
         </div>
       </div>
     </div>
-    <button class="success" onclick="addEncounter('${v}','karteikarte',true);flashcards()">✅ wusste ich</button>
-    <button onclick="addEncounter('${v}','karteikarte',false);flashcards()">❓ muss ich üben</button>`;
+    <input id="cardAnswer" placeholder="Deutsches Verb schreiben...">
+    <button class="success" onclick="checkFlashcardAnswer('${v}')">Überprüfen</button>
+    <button onclick="speakFlashcardAnswer('${v}')">🎤 Sagen</button>
+    <div id="micStatus" class="small">⚪ Mikrofon aus</div>
+    <p id="heard" class="small"></p>
+    <div id="cardFeedback"></div>`;
+  scrollToGame();
 }
+
+function checkFlashcardAnswer(v){
+  const input=$("cardAnswer");
+  const val=input?input.value:"";
+  const fb=$("cardFeedback");
+  if(checkVerbAnswer(val,v)){
+    addEncounter(v,"karteikarte_schreiben",true);
+    if(fb)fb.innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong></div><button class="success" onclick="flashcards()">Nächste Karte</button>`;
+  }else{
+    addEncounter(v,"karteikarte_schreiben",false);
+    if(fb)fb.innerHTML=`<div class="no">❌ Noch nicht. Richtige Antwort: <strong>${v}</strong></div><button onclick="flashcards()">Nächste Karte</button>`;
+  }
+  scrollToFeedback();
+}
+function speakFlashcardAnswer(v){
+  recogVerb(t=>{
+    const heard=$("heard");
+    if(heard)heard.innerText="Gehört: "+t;
+    const fb=$("cardFeedback");
+    if(checkVerbAnswer(t,v)){
+      addEncounter(v,"karteikarte_sprechen",true);
+      if(fb)fb.innerHTML=`<div class="ok">✔ Richtig gesprochen: <strong>${v}</strong></div><button class="success" onclick="flashcards()">Nächste Karte</button>`;
+    }else{
+      addEncounter(v,"karteikarte_sprechen",false);
+      if(fb)fb.innerHTML=`<div class="no">❌ Gehört: ${t}<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Nächste Karte</button>`;
+    }
+    scrollToFeedback();
+  });
+}
+
 function memory(){
   state.currentGame="memory";
   state.first=null;state.lock=false;
   state.memoryCards=[];
   state.active.slice(0,10).forEach((v,i)=>{
     state.memoryCards.push({p:i,t:"de",v:v,html:`<span class="mem-german">${v}</span>`,o:false,d:false});
-    state.memoryCards.push({p:i,t:"img",v:v,html:`${actionImage(v,true)}<span class="mem-native">${nativeWord(v)}</span>`,o:false,d:false});
+    state.memoryCards.push({p:i,t:"img",v:v,html:`${realImage(v,true)}<span class="mem-native">${nativeWord(v)}</span>`,o:false,d:false});
   });
   state.memoryCards=shuffle(state.memoryCards);
   saveState();
   renderMemory();
+  scrollToGame();
 }
 function renderMemory(){
   $("game").innerHTML=`<h3>Memory: Bild + Muttersprache ↔ deutsches Verb</h3>
@@ -403,33 +701,27 @@ function quiz(){
   if(!v){renderHome();return}
   let opts=shuffle([v,...shuffle(state.active.filter(a=>a!==v)).slice(0,3)]);
   state.currentVerb=v;saveState();
-  $("game").innerHTML=`<h3>Welches Verb passt?</h3>${actionImage(v,false)}<p>${nativeWord(v)}</p>${opts.map(o=>`<button onclick="checkQuiz('${o}','${v}')">${o}</button>`).join("")}<div id="fb"></div>`;
+  $("game").innerHTML=`<h3>Welches Verb passt?</h3>${realImage(v,false)}<p>${nativeWord(v)}</p>${opts.map(o=>`<button onclick="checkQuiz('${o}','${v}')">${o}</button>`).join("")}<div id="fb"></div>`;
+  scrollToGame();
 }
 function checkQuiz(a,v){
   if(a===v){addEncounter(v,'zuordnung',true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>"}
-  else{addEncounter(v,'zuordnung',false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>"}
+  else{addEncounter(v,'zuordnung',false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>"} scrollToFeedback();
 }
 function writeVerb(){
   state.currentGame="write";
   let v=chooseVerbForPractice();
   if(!v){renderHome();return}
   state.currentVerb=v;saveState();
-  $("game").innerHTML=`<h3>Schreibe das deutsche Verb</h3>${actionImage(v,false)}<p>${nativeWord(v)}</p><input id="w"><button onclick="checkWrite('${v}')">prüfen</button><div id="fb"></div>`;
+  $("game").innerHTML=`<h3>Schreibe das deutsche Verb</h3>${realImage(v,false)}<p>${nativeWord(v)}</p><input id="w"><button onclick="checkWrite('${v}')">prüfen</button><div id="fb"></div>`;
+  scrollToGame();
 }
 function checkWrite(v){
   let a=$("w").value;
   if(clean(a)===clean(v)){addEncounter(v,'schreiben',true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='writeVerb()'>weiter</button>"}
-  else{addEncounter(v,'schreiben',false);$("fb").innerHTML=`<div class='no'>Richtig: ${v}</div>`}
+  else{addEncounter(v,'schreiben',false);$("fb").innerHTML=`<div class='no'>Richtig: ${v}</div>`} scrollToFeedback();
 }
-function wordSearch(){
-  state.currentGame="wordsearch";
-  let chosen=state.active.filter(v=>verbCount(v)<10).slice(0,8);
-  if(!chosen.length){renderHome();return}
-  let letters="ABCDEFGHIJKLMNOPQRSTUVWXYZ";
-  let grid=Array.from({length:12},()=>Array.from({length:12},()=>letters[Math.floor(Math.random()*letters.length)]));
-  chosen.forEach((v,row)=>{let w=v.toUpperCase().replace("Ü","UE").replace("Ö","OE").replace("Ä","AE").replace("ß","SS").slice(0,12);for(let i=0;i<w.length;i++)grid[row][i]=w[i]});
-  $("game").innerHTML=`<h3>Wörtersuche</h3><p>Finde: ${chosen.join(", ")}</p><div class="wordsearch">${grid.map(r=>r.join(" ")).join("<br>")}</div><button class="success" onclick="chosenDone()">Ich habe sie gefunden</button>`;
-}
-function chosenDone(){state.active.filter(v=>verbCount(v)<10).slice(0,8).forEach(v=>addEncounter(v,'woertersuche',true));renderHome()}
+function wordSearch(){renderHome();}
+function chosenDone(){renderHome();}
 init();
 </script></body></html>
