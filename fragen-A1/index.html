@@ -1482,6 +1482,90 @@ if("speechSynthesis" in window){
   speechSynthesis.onvoiceschanged = () => getGermanVoice();
 }
 window.addEventListener("load", ()=>{ if(!startFromSharedSprachPilot()) restoreSession(); });
+
+// SprachPilot Login-Brücke: übernimmt das Profil von der Startseite für alle Unterseiten.
+function spCalcAge(dateStr){
+  const d=new Date(dateStr);
+  if(isNaN(d)) return "";
+  const now=new Date();
+  let age=now.getFullYear()-d.getFullYear();
+  const m=now.getMonth()-d.getMonth();
+  if(m<0||(m===0&&now.getDate()<d.getDate())) age--;
+  return age;
+}
+function getSharedSprachPilotProfile(){
+  try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}
+}
+function applySharedSprachPilotProfile(){
+  const p=getSharedSprachPilotProfile();
+  if(!p) return false;
+  studentPerson={
+    fname:p.vorname||"",
+    lname:p.nachname||"",
+    full:((p.vorname||"")+" "+(p.nachname||"")).trim(),
+    origin:p.heimatland||"",
+    lang:p.muttersprache==="Deutsch" && !p.fremdsprache ? "Deutsch" : [p.muttersprache,p.fremdsprache].filter(Boolean).join(", "),
+    city:p.wohnort||"",
+    birthplace:p.geburtsort||"",
+    age:spCalcAge(p.geburtsdatum),
+    birthdate:p.geburtsdatum||"",
+    childrenNumber:p.kinder||"0",
+    children: typeof childText==="function" ? childText(p.kinder||"0") : "",
+    marital:p.familienstand||""
+  };
+  student=studentPerson.full;
+  course=p.kurs||"";
+  return true;
+}
+function requireSprachPilotLogin(){
+  const p=getSharedSprachPilotProfile();
+  if(p) return true;
+  if($("login")){
+    $("login").classList.remove("hidden");
+    $("login").innerHTML = `<h2>Bitte zuerst auf der Startseite anmelden</h2>
+    <p>Dein Profil gilt dann automatisch für alle Trainer.</p>
+    <button onclick="window.location.href='../'">🏠 Zur Startseite</button>`;
+  }
+  if($("app")) $("app").classList.add("hidden");
+  return false;
+}
+function startFromSharedSprachPilot(){
+  if(!requireSprachPilotLogin()) return false;
+  if(!applySharedSprachPilotProfile()) return false;
+  try{loadLocal()}catch(e){}
+  localStorage.setItem("A1_ACTIVE_SESSION",key());
+  if($("login")) $("login").classList.add("hidden");
+  if($("app")) $("app").classList.remove("hidden");
+  if($("hello")) $("hello").innerText="Hallo, "+(studentPerson.fname||student)+"!";
+  updateAll();
+  render();
+  return true;
+}
+function goBackToPortal(){
+  window.location.href="../";
+}
+function spSharedPayloadBase(){
+  const p=getSharedSprachPilotProfile();
+  return {
+    userId:(p&&p.userId)||((course||"")+"_"+(student||"")),
+    kurs:course||"",
+    vorname:(studentPerson&&studentPerson.fname)||"",
+    nachname:(studentPerson&&studentPerson.lname)||"",
+    geburtsdatum:(p&&p.geburtsdatum)||(studentPerson&&studentPerson.birthdate)||"",
+    geburtsort:(p&&p.geburtsort)||(studentPerson&&studentPerson.birthplace)||"",
+    heimatland:(studentPerson&&studentPerson.origin)||"",
+    muttersprache:(p&&p.muttersprache)||"",
+    fremdsprache:(p&&p.fremdsprache)||"",
+    wohnort:(studentPerson&&studentPerson.city)||"",
+    kinder:(studentPerson&&studentPerson.childrenNumber)||"",
+    fragenFortschritt: typeof overallProgress==="function" ? overallProgress() : 0,
+    verbenFortschritt:(p&&p.verbenFortschritt)||0,
+    gesamtpunkte:score||0
+  };
+}
+
+
+window.addEventListener("load", ()=>{ startFromSharedSprachPilot(); });
 </script>
 </body>
 </html>
