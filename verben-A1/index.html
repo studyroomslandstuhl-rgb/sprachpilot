@@ -482,6 +482,29 @@
   .quiz-option{font-size:16px!important;padding:10px!important}
 }
 
+
+/* V6 FIX MEMORY QUIZ PUZZLE */
+.memory{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:10px!important}
+.mem{height:118px!important;min-height:118px!important;border-radius:18px!important;overflow:hidden!important;padding:6px!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+.mem.open{background:white!important;border:4px solid #667eea!important;color:#222!important}
+.mem.done{background:linear-gradient(135deg,#27ae60,#2ecc71)!important;color:white!important}
+.mem-german{font-size:17px!important;font-weight:900!important;line-height:1.05!important;word-break:break-word!important;overflow-wrap:anywhere!important}
+.mem-img-holder{width:100%!important;height:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;border-radius:12px!important;background:#f7f8ff!important}
+.mem-img-holder img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
+.img-holder{width:100%;display:flex;justify-content:center;align-items:center}
+.img-holder img{width:100%;max-width:290px;height:210px;object-fit:cover;display:block;border-radius:18px;border:3px solid #dce2ff}
+.quiz-options{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin-top:12px!important}
+.quiz-option{width:100%;min-height:58px;text-align:left;padding:12px!important;border-radius:16px!important;font-size:17px!important;display:flex!important;align-items:center!important;gap:10px!important;justify-content:flex-start!important}
+.quiz-letter{background:white;color:#667eea;border-radius:999px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 auto}
+.puzzle-answer,.puzzle-bank{display:flex;flex-wrap:wrap;gap:8px;min-height:54px;background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:10px;margin:10px 0}
+.word-chip{background:linear-gradient(135deg,#667eea,#764ba2)!important;color:white!important;border:none!important;border-radius:999px!important;padding:10px 14px!important;font-weight:800!important;margin:0!important}
+.word-chip.answer{background:#eef2ff!important;color:#333!important}
+.task-progress{background:#f7f8ff;border:2px solid #dce2ff;border-radius:14px;padding:9px 10px;margin-bottom:12px}
+.task-progress-title{display:flex;justify-content:space-between;font-size:14px;color:#555;font-weight:700}
+.task-progress-line{height:9px;background:#ddd;border-radius:999px;overflow:hidden;margin-top:6px}
+.task-progress-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71)}
+@media(max-width:520px){.memory{grid-template-columns:repeat(3,1fr)!important;gap:8px!important}.mem{height:100px!important;min-height:100px!important}.mem-german{font-size:14px!important}.quiz-options{gap:8px!important}.quiz-option{font-size:15px!important;padding:10px!important}}
+
 </style></head><body><button class="progress-toggle" onclick="toggleProgressPanel()">📊</button><div id="progressPanel" class="progress-panel hidden"></div><main>
 <div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
 <div class="card" id="app"></div>
@@ -692,7 +715,7 @@ function speakTextVerb(t,slow=false){
     }
     const u=new SpeechSynthesisUtterance(String(t||""));
     u.lang="de-DE";
-    u.rate=slow?0.38:0.82;
+    u.rate=slow?0.35:0.85;
     window.speechSynthesis.cancel();
     window.speechSynthesis.speak(u);
   }catch(e){
@@ -899,6 +922,20 @@ function showTranslationHelp(v){
 }
 
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 function imageFileName(v){
   return String(v||"")
     .toLowerCase()
@@ -910,15 +947,11 @@ function imageFileName(v){
     .replace(/^-|-$/g,"") + ".png";
 }
 function imageBox(v,small=false){
-  const cls=small?"mem-img-holder":"img-holder";
-  return `<span class="${cls}" data-verb="${v}"></span>`;
+  const cls=small ? "mem-img-holder" : "img-holder";
+  return `<span class="${cls}" data-verb="${safeText(v)}"></span>`;
 }
-function realImage(v,small=false){
-  return imageBox(v,small);
-}
-function actionImage(v,small=false){
-  return imageBox(v,small);
-}
+function realImage(v,small=false){ return imageBox(v,small); }
+function actionImage(v,small=false){ return imageBox(v,small); }
 function hydrateImages(root){
   const base=root||document;
   base.querySelectorAll("[data-verb]").forEach(box=>{
@@ -935,14 +968,12 @@ function hydrateImages(root){
     box.appendChild(img);
   });
 }
-function renderAndHydrate(){
-  setTimeout(()=>hydrateImages(document),20);
-}
+function renderAndHydrate(){setTimeout(()=>hydrateImages(document),30);}
 
 
-let puzzleCurrent=[];
+var puzzleCurrent=[];
 function sentencePuzzle(){
-  saveCurrentTask("sentencePuzzle");
+  if(typeof saveCurrentTask==="function")saveCurrentTask("sentencePuzzle");
   state.currentGame="sentencePuzzle";
   let v=chooseVerbForPractice();
   if(!v){renderHome();return}
@@ -950,47 +981,27 @@ function sentencePuzzle(){
   const sentence=sentenceForVerb(v);
   puzzleCurrent=[];
   const words=shuffle(sentenceWords(v));
-  $("game").innerHTML=`${taskProgressHtml("satz_puzzle","Satz-Puzzle")}
-    <h3>Satz-Puzzle</h3>
-    <p class="small">Baue den Satz. Danach kannst du ihn hören.</p>
-    ${realImage(v,false)}
-    <div id="puzzleAnswer" class="puzzle-answer"></div>
-    <div id="puzzleBank" class="puzzle-bank">
-      ${words.map(w=>`<button class="word-chip" onclick="pickPuzzleWord(this,'${w.replace(/'/g,"\\'")}')">${w}</button>`).join("")}
-    </div>
-    <button class="secondary" onclick="speakTextVerb('${sentence.replace(/'/g,"\\'")}',false)">🔊 Satz hören</button>
-    <button class="secondary" onclick="speakTextVerb('${sentence.replace(/'/g,"\\'")}',true)">🐢 Langsam</button>
-    <button class="success" onclick="checkSentencePuzzle('${v}')">Prüfen</button>
-    <button class="secondary" onclick="sentencePuzzle()">Neu</button>
-    <div id="fb"></div>`;
+  $("game").innerHTML=`${taskProgressHtml("satz_puzzle","Satz-Puzzle")}<h3>Satz-Puzzle</h3><p class="small">Baue den Satz. Danach kannst du ihn hören.</p>${imageBox(v,false)}<div id="puzzleAnswer" class="puzzle-answer"></div><div id="puzzleBank" class="puzzle-bank">${words.map(w=>`<button class="word-chip" data-word="${safeText(w)}" onclick="pickPuzzleWord(this)">${safeText(w)}</button>`).join("")}</div><button class="secondary" onclick="speakTextVerb('${sentence.replace(/'/g,"\\'")}',false)">🔊 Satz hören</button><button class="secondary" onclick="speakTextVerb('${sentence.replace(/'/g,"\\'")}',true)">🐢 Langsam</button><button class="success" onclick="checkSentencePuzzle('${v}')">Prüfen</button><button class="secondary" onclick="sentencePuzzle()">Neu</button><div id="fb"></div>`;
   renderAndHydrate();
   scrollToGame();
 }
-function pickPuzzleWord(btn,w){
+function pickPuzzleWord(btn){
+  const w=btn.getAttribute("data-word");
   puzzleCurrent.push(w);
   btn.remove();
   const ans=$("puzzleAnswer");
   const chip=document.createElement("button");
   chip.className="word-chip answer";
   chip.textContent=w;
-  chip.onclick=function(){
-    puzzleCurrent=puzzleCurrent.filter((x,i)=>i!==Array.from(ans.children).indexOf(chip));
-    chip.remove();
-  };
+  chip.onclick=function(){const children=Array.from(ans.children);const index=children.indexOf(chip);if(index>=0)puzzleCurrent.splice(index,1);chip.remove();const bank=$("puzzleBank");const b=document.createElement("button");b.className="word-chip";b.textContent=w;b.setAttribute("data-word",w);b.onclick=function(){pickPuzzleWord(b);};bank.appendChild(b);};
   ans.appendChild(chip);
 }
 function checkSentencePuzzle(v){
   const target=sentenceForVerb(v).replace(/[.?!]/g,"").trim();
   const answer=puzzleCurrent.join(" ").trim();
   const fb=$("fb");
-  if(clean(answer)===clean(target)){
-    addEncounter(v,"satz_puzzle",true);
-    fb.innerHTML=`<div class="ok">✔ Richtig: ${sentenceForVerb(v)}</div><button class="success" onclick="sentencePuzzle()">weiter</button>`;
-    speakTextVerb(sentenceForVerb(v),false);
-  }else{
-    addEncounter(v,"satz_puzzle",false);
-    fb.innerHTML=`<div class="no">Noch nicht.<br>Richtig: ${sentenceForVerb(v)}</div>`;
-  }
+  if(clean(answer)===clean(target)){addEncounter(v,"satz_puzzle",true);fb.innerHTML=`<div class="ok">Richtig: ${sentenceForVerb(v)}</div><button class="success" onclick="sentencePuzzle()">weiter</button>`;speakTextVerb(sentenceForVerb(v),false);}
+  else{addEncounter(v,"satz_puzzle",false);fb.innerHTML=`<div class="no">Noch nicht.<br>Richtig: ${sentenceForVerb(v)}</div>`;}
   scrollToFeedback();
 }
 
@@ -1114,15 +1125,11 @@ function sentenceWords(v){
 }
 
 function renderHome(){
-  preloadActiveImages();
+  if(typeof preloadActiveImages==="function")preloadActiveImages();
   state.phase="tasks";
   saveState();
   $("app").innerHTML=`<h2>Verben üben</h2>
-    <div class="mini-top-progress">
-      <strong>Aktiv:</strong> ${state.active.length} |
-      <strong>Gelernt:</strong> ${state.learned.length} |
-      <strong>Gesamt:</strong> ${overall()}%
-    </div>
+    <div class="mini-top-progress"><strong>Aktiv:</strong> ${state.active.length} | <strong>Gelernt:</strong> ${state.learned.length} | <strong>Gesamt:</strong> ${overall()}%</div>
     <div class="task-grid">
       <button class="task-card" onclick="startFlashcardSession();flashcards()"><span class="big-icon">🃏</span>Karteikarten</button>
       <button class="task-card" onclick="memory()"><span class="big-icon">🖼️</span>Memory</button>
@@ -1136,7 +1143,7 @@ function renderHome(){
     </div>
     <div id="game"></div>`;
   renderProgressPanel(false);
-  restoreCurrentTask();
+  if(typeof restoreCurrentTask==="function")restoreCurrentTask();
 }
 function toggleProgressPanel(){
   const p=$("progressPanel");
@@ -1327,25 +1334,18 @@ function speakFlashcardAnswer(v){
 }
 
 function memory(){
-  saveCurrentTask("memory");
+  if(typeof saveCurrentTask==="function")saveCurrentTask("memory");
   state.currentGame="memory";
-  state.first=null;state.lock=false;
-  state.memoryCards=[];
-  const pool=shuffle(state.active.filter(v=>verbPercent(v)<100)).slice(0,6);
-  pool.forEach((v,i)=>{
-    state.memoryCards.push({p:i,t:"de",v:v,html:`<span class="mem-german">${v}</span>`,o:false,d:false});
-    state.memoryCards.push({p:i,t:"img",v:v,html:imageBox(v,true),o:false,d:false});
-  });
+  state.first=null;state.lock=false;state.memoryCards=[];
+  const pool=shuffle((state.active||[]).filter(v=>verbPercent(v)<100)).slice(0,6);
+  pool.forEach((v,i)=>{state.memoryCards.push({p:i,t:"de",v:v,html:`<span class="mem-german">${safeText(v)}</span>`,o:false,d:false});state.memoryCards.push({p:i,t:"img",v:v,html:imageBox(v,true),o:false,d:false});});
   state.memoryCards=shuffle(state.memoryCards);
   saveState();
   renderMemory();
   scrollToGame();
 }
 function renderMemory(){
-  $("game").innerHTML=`${taskProgressHtml("memory","Memory")}
-  <h3>Memory</h3>
-  <p class="small">Finde das Bild und das passende deutsche Verb.</p>
-  <div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`;
+  $("game").innerHTML=`${taskProgressHtml("memory","Memory")}<h3>Memory</h3><p class="small">Finde das Bild und das passende deutsche Verb.</p><div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`;
   renderAndHydrate();
 }
 function flip(i){
@@ -1363,31 +1363,23 @@ function flip(i){
   },600);
 }
 function quiz(){
-  saveCurrentTask("quiz");
+  if(typeof saveCurrentTask==="function")saveCurrentTask("quiz");
   state.currentGame="quiz";
   let v=chooseVerbForPractice();
   if(!v){renderHome();return}
-  let opts=shuffle([v,...shuffle(state.active.filter(a=>a!==v)).slice(0,3)]);
-  while(opts.length<4){
-    const extra=shuffle(ALL_VERBS.map(x=>x.v).filter(x=>!opts.includes(x)))[0];
-    if(extra)opts.push(extra); else break;
-  }
+  let opts=shuffle([v,...shuffle((state.active||[]).filter(a=>a!==v)).slice(0,3)]);
+  while(opts.length<4){const extra=shuffle(ALL_VERBS.map(x=>x.v).filter(x=>!opts.includes(x)))[0];if(extra)opts.push(extra);else break;}
+  opts=opts.slice(0,4);
   state.currentVerb=v;saveState();
   const letters=["A","B","C","D"];
-  $("game").innerHTML=`${taskProgressHtml("bild_verb","Bild → Verb")}
-    <h3>Welches Verb passt?</h3>
-    ${realImage(v,false)}
-    <div class="quiz-options">
-      ${opts.slice(0,4).map((o,i)=>`<button class="quiz-option" onclick="checkQuiz('${o}','${v}')"><span class="quiz-letter">${letters[i]}</span>${o}</button>`).join("")}
-    </div>
-    <button class="secondary help-bottom" onclick="showTranslationHelp('${v}')">Hilfe</button>
-    <div id="fb"></div>`;
+  $("game").innerHTML=`${taskProgressHtml("bild_verb","Bild → Verb")}<h3>Welches Verb passt?</h3>${imageBox(v,false)}<div class="quiz-options">${opts.map((o,i)=>`<button class="quiz-option" onclick="checkQuiz('${o}','${v}')"><span class="quiz-letter">${letters[i]}</span>${safeText(o)}</button>`).join("")}</div><button class="secondary help-bottom" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
   renderAndHydrate();
   scrollToGame();
 }
 function checkQuiz(a,v){
-  if(a===v){addEncounter(v,'bild_verb',true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>"}
-  else{addEncounter(v,'bild_verb',false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>"} scrollToFeedback();
+  if(a===v){addEncounter(v,"bild_verb",true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>";}
+  else{addEncounter(v,"bild_verb",false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>";}
+  scrollToFeedback();
 }
 function writeVerb(){
   state.currentGame="write";
