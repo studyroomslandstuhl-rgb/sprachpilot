@@ -613,6 +613,74 @@
   box-shadow:none!important;
 }
 
+
+/* V9 COMPLETE SYSTEM */
+.level-alert{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  z-index:12000;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  padding:20px;
+}
+.level-alert-box{
+  background:white;
+  border-radius:28px;
+  max-width:420px;
+  width:100%;
+  text-align:center;
+  padding:26px;
+  box-shadow:0 20px 55px rgba(0,0,0,.35);
+  border:4px solid #ffd43b;
+}
+.level-alert-box h2{
+  color:#7a5400;
+  margin-bottom:10px;
+}
+.level-alert-box .big-star{
+  font-size:54px;
+  margin-bottom:8px;
+}
+.lock-note{
+  font-size:12px;
+  opacity:.85;
+  margin-top:5px;
+}
+.progress-panel .overview-mini-img{
+  width:56px;
+  height:42px;
+  object-fit:cover;
+  border-radius:8px;
+  margin-right:8px;
+  background:#eef2ff;
+}
+.progress-row-head{
+  display:flex;
+  align-items:center;
+  gap:6px;
+}
+.progress-row-head .mem-img-holder{
+  width:60px!important;
+  height:45px!important;
+  flex:0 0 auto;
+}
+.progress-row-head .mem-img-holder img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  border-radius:8px;
+}
+.package-done{
+  background:#e9f9ef;
+  border:3px solid #27ae60;
+  border-radius:20px;
+  padding:18px;
+  margin:12px 0;
+  text-align:center;
+}
+
 </style></head><body><button class="progress-toggle" onclick="toggleProgressPanel()">📊</button><div id="progressPanel" class="progress-panel hidden"></div><main>
 <div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
 <div class="card" id="app"></div>
@@ -806,7 +874,10 @@ function unusedVerbs(){
 function currentPickVerb(){
   const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
   for(let i=state.index;i<ALL_VERBS.length;i++){
-    if(!used.includes(ALL_VERBS[i].v)){state.index=i;return ALL_VERBS[i];}
+    if(!used.includes(ALL_VERBS[i].v)){
+      state.index=i;
+      return ALL_VERBS[i];
+    }
   }
   return null;
 }
@@ -933,7 +1004,7 @@ function hearWrite(){
 function checkHearWrite(v){
   const val=$("hearWriteInput").value;
   if(checkVerbAnswer(val,v)){
-    addEncounter(v,"hoeren_schreiben",true);
+    addEncounter(v,"hoeren_schreiben",true); finishTaskIfComplete("hoeren_schreiben","Hören → Schreiben");
     $("fb").innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong></div><button class="success" onclick="hearWrite()">weiter</button>`;
   }else{
     addEncounter(v,"hoeren_schreiben",false);
@@ -960,7 +1031,7 @@ function checkHearSpeak(v){
   recogVerb(t=>{
     const h=$("heard"); if(h)h.innerText="Gehört: "+t;
     if(checkVerbAnswer(t,v)){
-      addEncounter(v,"hoeren_sprechen",true);
+      addEncounter(v,"hoeren_sprechen",true); finishTaskIfComplete("hoeren_sprechen","Hören → Sprechen");
       $("fb").innerHTML=`<div class="ok">✔ Richtig gesprochen: <strong>${v}</strong></div><button class="success" onclick="hearSpeak()">weiter</button>`;
     }else{
       addEncounter(v,"hoeren_sprechen",false);
@@ -983,7 +1054,7 @@ function checkImageSpeak(v){
   recogVerb(t=>{
     const h=$("heard"); if(h)h.innerText="Gehört: "+t;
     if(checkVerbAnswer(t,v)){
-      addEncounter(v,"bild_sprechen",true);
+      addEncounter(v,"bild_sprechen",true); finishTaskIfComplete("bild_sprechen","Bild → Sprechen");
       $("fb").innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong></div><button class="success" onclick="imageSpeak()">weiter</button>`;
     }else{
       addEncounter(v,"bild_sprechen",false);
@@ -1008,7 +1079,7 @@ function verbToImage(){
   scrollToGame();
 }
 function checkVerbToImage(a,v){
-  if(a===v){addEncounter(v,"verb_bild",true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='verbToImage()'>weiter</button>";finishTaskIfComplete("verb_bild","Verb → Bild");}
+  if(a===v){addEncounter(v,"verb_bild",true); finishTaskIfComplete("verb_bild","Verb → Bild");$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='verbToImage()'>weiter</button>";finishTaskIfComplete("verb_bild","Verb → Bild");}
   else{addEncounter(v,"verb_bild",false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>";}
   scrollToFeedback();
 }
@@ -1067,8 +1138,10 @@ function taskProgressHtml(skill,label){
 }
 function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
 function sentenceForVerb(v){
-  const map={"kaufen":"Ich kaufe eine Tomate.","brauchen":"Ich brauche eine Cola.","lernen":"Ich lerne Deutsch.","wohnen":"Ich wohne in Deutschland.","bringen":"Ich bringe eine Pizza.","schreiben":"Ich schreibe meinen Namen.","telefonieren":"Ich telefoniere heute.","kochen":"Ich koche eine Suppe.","kommen":"Ich komme aus Syrien.","gehen":"Ich gehe nach Hause.","schwimmen":"Ich schwimme gern.","suchen":"Ich suche meinen Stift.","bestellen":"Ich bestelle eine Pizza.","hören":"Ich höre Musik.","fotografieren":"Ich fotografiere die Stadt.","buchstabieren":"Ich buchstabiere meinen Namen.","lieben":"Ich liebe Deutsch.","verstehen":"Ich verstehe die Frage.","sein":"Ich bin im Kurs.","leben":"Ich lebe in Deutschland."};
-  return map[v] || `Ich ${v} heute.`;
+  const map={
+    "lieben":"Ich liebe Deutsch.","kaufen":"Ich kaufe eine Tomate.","verstehen":"Ich verstehe die Frage.","brauchen":"Ich brauche einen Stift.","hören":"Ich höre Musik.","lernen":"Ich lerne Deutsch.","wohnen":"Ich wohne in Deutschland.","bringen":"Ich bringe eine Pizza.","sein":"Ich bin im Kurs.","schreiben":"Ich schreibe meinen Namen.","fotografieren":"Ich fotografiere die Stadt.","telefonieren":"Ich telefoniere heute.","kochen":"Ich koche eine Suppe.","leben":"Ich lebe in Deutschland.","kommen":"Ich komme aus Syrien.","buchstabieren":"Ich buchstabiere meinen Namen.","gehen":"Ich gehe nach Hause.","schwimmen":"Ich schwimme gern.","suchen":"Ich suche meinen Schlüssel.","bestellen":"Ich bestelle eine Pizza.","weinen":"Ich weine heute.","reparieren":"Ich repariere mein Fahrrad.","gewinnen":"Ich gewinne das Spiel.","spielen":"Ich spiele Fußball.","springen":"Ich springe hoch.","verlieren":"Ich verliere den Schlüssel.","fragen":"Ich frage die Lehrerin.","verkaufen":"Ich verkaufe ein Buch.","unterschreiben":"Ich unterschreibe das Formular.","reservieren":"Ich reserviere einen Tisch.","buchen":"Ich buche ein Hotel.","machen":"Ich mache eine Aufgabe.","malen":"Ich male ein Bild.","trinken":"Ich trinke Wasser.","schicken":"Ich schicke eine Nachricht.","denken":"Ich denke nach.","winken":"Ich winke meiner Freundin.","hassen":"Ich hasse Stress.","beißen":"Ich beiße in einen Apfel.","gießen":"Ich gieße die Blumen.","reißen":"Ich reiße das Papier.","putzen":"Ich putze das Fenster.","küssen":"Ich küsse mein Kind.","tanzen":"Ich tanze gern.","mixen":"Ich mixe einen Saft.","reisen":"Ich reise nach Berlin.","haben":"Ich habe ein Buch.","überqueren":"Ich überquere die Straße.","grüßen":"Ich grüße meinen Nachbarn.","genießen":"Ich genieße die Sonne.","singen":"Ich singe ein Lied.","schließen":"Ich schließe die Tür.","rennen":"Ich renne schnell.","lachen":"Ich lache laut.","warten":"Ich warte auf den Bus.","arbeiten":"Ich arbeite heute.","finden":"Ich finde den Schlüssel.","benutzen":"Ich benutze mein Handy.","rechnen":"Ich rechne die Aufgabe.","zeichnen":"Ich zeichne ein Haus.","öffnen":"Ich öffne die Tür.","wiederholen":"Ich wiederhole den Satz.","schneiden":"Ich schneide Gemüse.","streiten":"Ich streite nicht gern.","atmen":"Ich atme tief."
+  };
+  return map[v] || `Ich übe das Verb ${v}.`;
 }
 function sentenceWords(v){
   const base=sentenceForVerb(v).replace(/[.?!]/g,"").split(" ");
@@ -1159,8 +1232,13 @@ function checkSentencePuzzle(v){
 function init(){
   if(!loadProfile())return;
   loadState();
-  if(state.active.length>=20){state.phase="tasks";renderHome();}
-  else {state.phase="select";renderOneVerb();}
+  if(state.active.length>=20){
+    state.phase="tasks";
+    renderHome();
+  }else{
+    state.phase="select";
+    renderOneVerb();
+  }
 }
 function renderOneVerb(){
   state.phase="select";
@@ -1188,7 +1266,7 @@ function rateVerb(v,level){
   state[level].push(v);
   if(level!=="known" && !state.active.includes(v)){
     state.active.push(v);
-    state.encounters[v]=state.encounters[v]||0;
+    ensureSkillState(v);
   }
   state.index++;
   if(state.active.length>=20){
@@ -1202,26 +1280,17 @@ function rateVerb(v,level){
   }
 }
 function replaceLearnedIfNeeded(){
-  let complete=state.active.filter(v=>verbPercent(v)>=100);
-  if(complete.length<3)return false;
-  let toReplace=complete.slice(0,3);
-  toReplace.forEach(v=>{
-    if(!state.learned.includes(v))state.learned.push(v);
-    state.active=state.active.filter(x=>x!==v);
-  });
-  let candidates=[...state.unknown,...state.unsure,...unusedVerbs()].filter(v=>!state.active.includes(v)&&!state.learned.includes(v));
-  candidates.slice(0,toReplace.length).forEach(v=>{
-    if(!state.active.includes(v)){state.active.push(v);state.encounters[v]=state.encounters[v]||0;}
-  });
-  saveState();
-  return true;
+  if(packageComplete()){
+    saveState();
+    checkMilestones();
+  }
+  return false;
 }
 function addEncounter(v,skill,good=true){
   markSkill(v,skill,good);
   saveState();
-  if(replaceLearnedIfNeeded()){
-    showAutoReplaceMessage();
-  }
+  replaceLearnedIfNeeded();
+  checkMilestones();
 }
 function showAutoReplaceMessage(){
   const msg=`<div class="ok"><strong>🎉 3 Verben gelernt!</strong><br>Sie wurden automatisch durch neue Verben ersetzt.</div>`;
@@ -1235,21 +1304,10 @@ function showAutoReplaceMessage(){
 
 
 
-function taskDone(skill){
-  const p=taskSkillProgress(skill);
-  return p.total>0 && p.done>=p.total;
-}
-function taskCardClass(skill){
-  return taskDone(skill) ? "task-card done-card locked-card" : "task-card";
-}
-function taskCardStatus(skill){
-  const p=taskSkillProgress(skill);
-  if(p.total===0)return "0%";
-  return taskDone(skill) ? "Erledigt ✓" : `${p.pct}%`;
-}
-function completedTaskMessage(label){
-  return `<div class="achievement"><h3>Super gemacht!</h3><p>Die Aufgabe <strong>${label}</strong> ist erledigt.</p><div class="star-pill">+1 Stern</div></div>`;
-}
+
+
+
+
 function totalStars(){
   const skills = typeof VERB_SKILLS!=="undefined" ? VERB_SKILLS : [];
   let stars=0;
@@ -1274,18 +1332,7 @@ function checkStarAchievement(){
   }
   return "";
 }
-function finishTaskIfComplete(skill,label){
-  const p=taskSkillProgress(skill);
-  if(p.total>0 && p.done>=p.total){
-    const msg=completedTaskMessage(label)+checkStarAchievement();
-    const g=$("game");
-    if(g) g.innerHTML = msg + `<button class="success" onclick="renderHome()">Zur Aufgabenübersicht</button>`;
-    return true;
-  }
-  const starMsg=checkStarAchievement();
-  if(starMsg && $("fb")) $("fb").innerHTML = starMsg + $("fb").innerHTML;
-  return false;
-}
+
 function showVerbOverview(){
   const verbs = ALL_VERBS.map(x=>x.v);
   const cards=verbs.map(v=>`
@@ -1299,37 +1346,122 @@ function showVerbOverview(){
   modal.className="overview-modal";
   modal.id="overviewModal";
   modal.innerHTML=`<div class="overview-box">
-    <div class="overview-head">
-      <h2>Alle Verben</h2>
-      <button class="secondary" onclick="document.getElementById('overviewModal').remove()">Schließen</button>
-    </div>
+    <div class="overview-head"><h2>Alle Verben</h2><button class="secondary" onclick="document.getElementById('overviewModal').remove()">Schließen</button></div>
     <div class="overview-grid">${cards}</div>
   </div>`;
   document.body.appendChild(modal);
   renderAndHydrate();
 }
 
+
+function packageComplete(){
+  return (state.active||[]).length===20 && (state.active||[]).every(v=>verbPercent(v)>=100);
+}
+function taskDone(skill){
+  const p=taskSkillProgress(skill);
+  return p.total>0 && p.done>=p.total;
+}
+function allTasksDone(){
+  return VERB_SKILLS.every(s=>taskDone(s));
+}
+function showAlert(title,msg,icon="⭐"){
+  const old=document.getElementById("levelAlert");
+  if(old) old.remove();
+  const el=document.createElement("div");
+  el.className="level-alert";
+  el.id="levelAlert";
+  el.innerHTML=`<div class="level-alert-box">
+    <div class="big-star">${icon}</div>
+    <h2>${title}</h2>
+    <p>${msg}</p>
+    <button class="success" onclick="document.getElementById('levelAlert').remove()">Weiter</button>
+  </div>`;
+  document.body.appendChild(el);
+}
+function queueAlert(key,title,msg,icon="⭐"){
+  state.alertsShown=state.alertsShown||{};
+  if(state.alertsShown[key])return "";
+  state.alertsShown[key]=true;
+  saveState();
+  setTimeout(()=>showAlert(title,msg,icon),150);
+  return "";
+}
+function checkMilestones(){
+  const stars=totalStars();
+  if(stars>=20) queueAlert("stars20","20 Sterne!","Du hast schon 20 Lernpunkte gesammelt.","⭐");
+  if(stars>=40) queueAlert("stars40","40 Sterne!","Stark! Du kommst gut voran.","⭐");
+  const learned=(state.active||[]).filter(v=>verbPercent(v)>=100).length + (state.learned||[]).length;
+  if(learned>=1) queueAlert("firstVerb","Erstes Verb gelernt!","Ein Verb ist komplett auf 100 %.","🎉");
+  if(learned>=5) queueAlert("fiveVerbs","5 Verben gelernt!","Du baust deinen Wortschatz auf.","🎉");
+  if(learned>=10) queueAlert("tenVerbs","10 Verben gelernt!","Sehr gut! Die Hälfte eines Pakets ist geschafft.","🎉");
+  if(packageComplete()) queueAlert("packageComplete_"+(state.packageNo||1),"Paket geschafft!","Alle 20 Verben sind auf 100 %. Jetzt kannst du neue Verben auswählen.","🏆");
+}
+function completedTaskMessage(label){
+  return `<div class="achievement"><h3>Aufgabe erledigt ✓</h3><p><strong>${label}</strong> ist abgeschlossen.</p><div class="star-pill">⭐ geschafft</div></div>`;
+}
+function finishTaskIfComplete(skill,label){
+  const p=taskSkillProgress(skill);
+  if(p.total>0 && p.done>=p.total){
+    checkMilestones();
+    const g=$("game");
+    if(g) g.innerHTML = completedTaskMessage(label)+`<button class="success" onclick="renderHome()">Zur Aufgabenübersicht</button>`;
+    return true;
+  }
+  checkMilestones();
+  return false;
+}
+function taskCardClass(skill){
+  return taskDone(skill) ? "task-card done-card locked-card" : "task-card";
+}
+function taskCardStatus(skill){
+  const p=taskSkillProgress(skill);
+  if(p.total===0)return "0%";
+  return taskDone(skill) ? "Erledigt ✓" : `${p.pct}%`;
+}
+function currentPackageReadyForNew(){
+  return packageComplete();
+}
+function startNewVerbPackage(){
+  state.packageNo=(state.packageNo||1)+1;
+  state.learned=[...(state.learned||[]),...(state.active||[])].filter((v,i,a)=>a.indexOf(v)===i);
+  state.active=[];
+  state.progress={};
+  state.encounters={};
+  state.flashSession=null;
+  state.currentGame="";
+  state.phase="select";
+  saveState();
+  renderOneVerb();
+}
+function taskBlockedMessage(label){
+  $("game").innerHTML=`<div class="package-done"><h3>${label} erledigt ✓</h3><p>Diese Aufgabe ist für dein aktuelles 20-Verben-Paket abgeschlossen.</p><button class="success" onclick="renderHome()">Zur Übersicht</button></div>`;
+  scrollToGame();
+}
+
 function renderHome(){
   if(typeof preloadActiveImages==="function") preloadActiveImages();
   state.phase="tasks";
   saveState();
+  const packageDone=packageComplete();
   $("app").innerHTML=`<h2>Verben üben</h2>
-    <div class="mini-top-progress"><strong>Aktiv:</strong> ${state.active.length} | <strong>Gelernt:</strong> ${state.learned.length} | <strong>Gesamt:</strong> ${overall()}% | <strong>Sterne:</strong> ${totalStars()}</div>
+    <div class="mini-top-progress"><strong>Paket:</strong> ${(state.packageNo||1)} | <strong>Aktiv:</strong> ${state.active.length}/20 | <strong>Gelernt:</strong> ${state.learned.length} | <strong>Gesamt:</strong> ${overall()}% | <strong>Sterne:</strong> ${totalStars()}</div>
+    ${packageDone?`<div class="package-done"><h3>20 Verben geschafft!</h3><p>Alle aktiven Verben sind auf 100 %. Jetzt kannst du neue Verben einschätzen.</p><button class="success" onclick="startNewVerbPackage()">Neue Verben auswählen</button></div>`:""}
     <button class="overview-button" onclick="showVerbOverview()">Alle Verben anzeigen</button>
     <div class="task-grid">
-      <button class="${taskCardClass('karteikarte')}" onclick="safeRun(()=>{if(taskDone('karteikarte')){finishTaskIfComplete('karteikarte','Karteikarten');return;}startFlashcardSession();flashcards();})"><span class="big-icon">🃏</span>Karteikarten<div class="task-status">${taskCardStatus('karteikarte')}</div></button>
-      <button class="${taskCardClass('memory')}" onclick="safeRun(()=>{if(taskDone('memory')){finishTaskIfComplete('memory','Memory');return;}memory();})"><span class="big-icon">🖼️</span>Memory<div class="task-status">${taskCardStatus('memory')}</div></button>
-      <button class="${taskCardClass('bild_verb')}" onclick="safeRun(()=>{if(taskDone('bild_verb')){finishTaskIfComplete('bild_verb','Bild → Verb');return;}quiz();})"><span class="big-icon">✅</span>Bild → Verb<div class="task-status">${taskCardStatus('bild_verb')}</div></button>
-      <button class="${taskCardClass('schreiben')}" onclick="safeRun(()=>{if(taskDone('schreiben')){finishTaskIfComplete('schreiben','Schreiben');return;}writeVerb();})"><span class="big-icon">✍️</span>Schreiben<div class="task-status">${taskCardStatus('schreiben')}</div></button>
-      <button class="${taskCardClass('hoeren_schreiben')}" onclick="safeRun(()=>{if(taskDone('hoeren_schreiben')){finishTaskIfComplete('hoeren_schreiben','Hören → Schreiben');return;}hearWrite();})"><span class="big-icon">🔊</span>Hören → Schreiben<div class="task-status">${taskCardStatus('hoeren_schreiben')}</div></button>
-      <button class="${taskCardClass('hoeren_sprechen')}" onclick="safeRun(()=>{if(taskDone('hoeren_sprechen')){finishTaskIfComplete('hoeren_sprechen','Hören → Sprechen');return;}hearSpeak();})"><span class="big-icon">🎧</span>Hören → Sprechen<div class="task-status">${taskCardStatus('hoeren_sprechen')}</div></button>
-      <button class="${taskCardClass('bild_sprechen')}" onclick="safeRun(()=>{if(taskDone('bild_sprechen')){finishTaskIfComplete('bild_sprechen','Bild → Sprechen');return;}imageSpeak();})"><span class="big-icon">🎤</span>Bild sprechen<div class="task-status">${taskCardStatus('bild_sprechen')}</div></button>
-      <button class="${taskCardClass('verb_bild')}" onclick="safeRun(()=>{if(taskDone('verb_bild')){finishTaskIfComplete('verb_bild','Verb → Bild');return;}verbToImage();})"><span class="big-icon">🖼️</span>Verb → Bild<div class="task-status">${taskCardStatus('verb_bild')}</div></button>
-      <button class="${taskCardClass('satz_puzzle')}" onclick="safeRun(()=>{if(taskDone('satz_puzzle')){finishTaskIfComplete('satz_puzzle','Satz-Puzzle');return;}sentencePuzzle();})"><span class="big-icon">🧩</span>Satz-Puzzle<div class="task-status">${taskCardStatus('satz_puzzle')}</div></button>
+      <button class="${taskCardClass('karteikarte')}" onclick="safeRun(()=>{if(taskDone('karteikarte')){taskBlockedMessage('Karteikarten');return;}startFlashcardSession();flashcards();})"><span class="big-icon">🃏</span>Karteikarten<div class="task-status">${taskCardStatus('karteikarte')}</div></button>
+      <button class="${taskCardClass('memory')}" onclick="safeRun(()=>{if(taskDone('memory')){taskBlockedMessage('Memory');return;}memory();})"><span class="big-icon">🖼️</span>Memory<div class="task-status">${taskCardStatus('memory')}</div></button>
+      <button class="${taskCardClass('bild_verb')}" onclick="safeRun(()=>{if(taskDone('bild_verb')){taskBlockedMessage('Bild → Verb');return;}quiz();})"><span class="big-icon">✅</span>Bild → Verb<div class="task-status">${taskCardStatus('bild_verb')}</div></button>
+      <button class="${taskCardClass('schreiben')}" onclick="safeRun(()=>{if(taskDone('schreiben')){taskBlockedMessage('Schreiben');return;}writeVerb();})"><span class="big-icon">✍️</span>Schreiben<div class="task-status">${taskCardStatus('schreiben')}</div></button>
+      <button class="${taskCardClass('hoeren_schreiben')}" onclick="safeRun(()=>{if(taskDone('hoeren_schreiben')){taskBlockedMessage('Hören → Schreiben');return;}hearWrite();})"><span class="big-icon">🔊</span>Hören → Schreiben<div class="task-status">${taskCardStatus('hoeren_schreiben')}</div></button>
+      <button class="${taskCardClass('hoeren_sprechen')}" onclick="safeRun(()=>{if(taskDone('hoeren_sprechen')){taskBlockedMessage('Hören → Sprechen');return;}hearSpeak();})"><span class="big-icon">🎧</span>Hören → Sprechen<div class="task-status">${taskCardStatus('hoeren_sprechen')}</div></button>
+      <button class="${taskCardClass('bild_sprechen')}" onclick="safeRun(()=>{if(taskDone('bild_sprechen')){taskBlockedMessage('Bild → Sprechen');return;}imageSpeak();})"><span class="big-icon">🎤</span>Bild sprechen<div class="task-status">${taskCardStatus('bild_sprechen')}</div></button>
+      <button class="${taskCardClass('verb_bild')}" onclick="safeRun(()=>{if(taskDone('verb_bild')){taskBlockedMessage('Verb → Bild');return;}verbToImage();})"><span class="big-icon">🖼️</span>Verb → Bild<div class="task-status">${taskCardStatus('verb_bild')}</div></button>
+      <button class="${taskCardClass('satz_puzzle')}" onclick="safeRun(()=>{if(taskDone('satz_puzzle')){taskBlockedMessage('Satz-Puzzle');return;}sentencePuzzle();})"><span class="big-icon">🧩</span>Satz-Puzzle<div class="task-status">${taskCardStatus('satz_puzzle')}</div></button>
     </div>
     <div id="game"></div>`;
   renderProgressPanel(false);
-  if(typeof restoreCurrentTask==="function") restoreCurrentTask();
+  if(typeof restoreCurrentTask==="function" && !packageDone) restoreCurrentTask();
+  checkMilestones();
 }
 function toggleProgressPanel(){
   const p=$("progressPanel");
@@ -1341,16 +1473,19 @@ function renderProgressPanel(openOnly){
   const p=$("progressPanel");
   if(!p)return;
   const activeRows=state.active.map(v=>`<div class="progress-row">
-    <strong>${v}</strong> <span class="small">${verbSkillCount(v)}/${VERB_SKILLS.length} · ${verbPercent(v)}%</span><div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div><div class="small">Fehler: ${state.weak[v]||0}</div>${skillBadges(v)}
+    <div class="progress-row-head">${imageBox(v,true)}<div><strong>${safeText(v)}</strong><br><span class="small">${verbSkillCount(v)}/${VERB_SKILLS.length} · ${verbPercent(v)}%</span></div></div>
+    <div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div>
+    <div class="small">Fehler: ${state.weak[v]||0}</div>${skillBadges(v)}
   </div>`).join("");
   p.innerHTML=`<h2>📊 Fortschritt</h2>
     <button class="secondary" onclick="toggleProgressPanel()">Schließen</button>
-    <div class="progress-row"><strong>Gesamt</strong><br>Aktiv: ${state.active.length} · Gelernt: ${state.learned.length} · Offen: ${unusedVerbs().length}</div>
+    <div class="progress-row"><strong>Paket ${(state.packageNo||1)}</strong><br>Aktiv: ${state.active.length}/20 · Gelernt: ${state.learned.length} · Offen: ${unusedVerbs().length}<br>Sterne: ${totalStars()}</div>
     <h3>Aktive Verben</h3>${activeRows||"<p>Noch keine aktiven Verben.</p>"}
-    <h3>Gelernt</h3><p class="small">${state.learned.length?state.learned.join(", "):"Noch keine."}</p>`;
+    <h3>Gelernte Verben</h3><p class="small">${state.learned.length?state.learned.join(", "):"Noch keine."}</p>`;
+  renderAndHydrate();
 }
 function chooseVerbForPractice(){
-  let pool=state.active.filter(v=>verbPercent(v)<100);
+  const pool=(state.active||[]).filter(v=>verbPercent(v)<100);
   if(!pool.length)return null;
   pool.sort((a,b)=>{
     const wa=state.weak[a]||0, wb=state.weak[b]||0;
@@ -1596,7 +1731,7 @@ function quiz(){
   scrollToGame();
 }
 function checkQuiz(a,v){
-  if(a===v){addEncounter(v,"bild_verb",true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>";finishTaskIfComplete("bild_verb","Bild → Verb");}
+  if(a===v){addEncounter(v,"bild_verb",true); finishTaskIfComplete("bild_verb","Bild → Verb");$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>";finishTaskIfComplete("bild_verb","Bild → Verb");}
   else{addEncounter(v,"bild_verb",false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>";}
   scrollToFeedback();
 }
@@ -1612,7 +1747,7 @@ function writeVerb(){
 }
 function checkWrite(v){
   let a=$("w").value;
-  if(clean(a)===clean(v)){addEncounter(v,'schreiben',true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='writeVerb()'>weiter</button>";finishTaskIfComplete("schreiben","Schreiben")}
+  if(clean(a)===clean(v)){addEncounter(v,'schreiben',true); finishTaskIfComplete('schreiben','Schreiben');$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='writeVerb()'>weiter</button>";finishTaskIfComplete("schreiben","Schreiben")}
   else{addEncounter(v,'schreiben',false);$("fb").innerHTML=`<div class='no'>Richtig: ${v}</div>`} scrollToFeedback();
 }
 function wordSearch(){renderHome();}
