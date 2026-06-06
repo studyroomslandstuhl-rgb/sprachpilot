@@ -1566,6 +1566,34 @@ function spSharedPayloadBase(){
 
 
 window.addEventListener("load", ()=>{ startFromSharedSprachPilot(); });
+
+/* FIX: Prüfung-Button startExam */
+function startExam(){
+  if(typeof renderExam === "function") return renderExam();
+  if(typeof exam === "function") return exam();
+  if(typeof startPruefung === "function") return startPruefung();
+  if(typeof startPrüfung === "function") return startPrüfung();
+
+  const g = document.getElementById("game");
+  if(g){
+    g.innerHTML = "<h2>🏆 Prüfung</h2><div class='no'>Die Prüfung konnte nicht gestartet werden. Bitte prüfe die Prüfungsfunktion im Code.</div>";
+  }else{
+    alert("Die Prüfung konnte nicht gestartet werden.");
+  }
+}
+
+
+/* FIX: sichtbare JavaScript-Fehler sauber anzeigen */
+window.addEventListener("error", function(e){
+  try{
+    const errorBox = document.createElement("div");
+    errorBox.className = "no";
+    errorBox.innerHTML = "<strong>JavaScript-Fehler:</strong> " + String(e.message || "Unbekannter Fehler").replace(/</g,"&lt;");
+    const target = document.getElementById("game") || document.body;
+    target.appendChild(errorBox);
+  }catch(_){}
+});
+
 </script>
 </body>
 </html>
