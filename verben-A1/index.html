@@ -505,6 +505,114 @@
 .task-progress-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71)}
 @media(max-width:520px){.memory{grid-template-columns:repeat(3,1fr)!important;gap:8px!important}.mem{height:100px!important;min-height:100px!important}.mem-german{font-size:14px!important}.quiz-options{gap:8px!important}.quiz-option{font-size:15px!important;padding:10px!important}}
 
+
+/* V8 ACHIEVEMENTS OVERVIEW LOCK */
+.done-card{
+  background:linear-gradient(135deg,#27ae60,#2ecc71)!important;
+  color:white!important;
+  border-color:#27ae60!important;
+}
+.locked-card{
+  opacity:.75;
+}
+.achievement{
+  background:#fff9db;
+  border:3px solid #ffd43b;
+  border-radius:22px;
+  padding:18px;
+  margin:14px 0;
+  text-align:center;
+  box-shadow:0 10px 28px rgba(0,0,0,.15);
+}
+.achievement h3{
+  margin:0 0 8px!important;
+  color:#7a5400;
+}
+.star-pill{
+  display:inline-block;
+  background:#ffd43b;
+  color:#4a3500;
+  border-radius:999px;
+  padding:7px 12px;
+  font-weight:900;
+  margin:4px;
+}
+.overview-modal{
+  position:fixed;
+  inset:0;
+  background:rgba(0,0,0,.55);
+  z-index:9999;
+  padding:18px;
+  overflow:auto;
+}
+.overview-box{
+  background:white;
+  border-radius:24px;
+  max-width:980px;
+  margin:20px auto;
+  padding:18px;
+  box-shadow:0 20px 50px rgba(0,0,0,.35);
+}
+.overview-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:10px;
+  margin-bottom:12px;
+}
+.overview-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+  gap:12px;
+}
+.verb-overview-card{
+  background:#f7f8ff;
+  border:2px solid #dce2ff;
+  border-radius:16px;
+  padding:9px;
+  text-align:center;
+}
+.verb-overview-card .mem-img-holder{
+  height:105px!important;
+  margin-bottom:8px;
+}
+.verb-overview-card .mem-img-holder img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:cover!important;
+  border-radius:12px;
+}
+.verb-de{
+  font-size:18px;
+  font-weight:900;
+  color:#222;
+}
+.verb-native{
+  font-size:13px;
+  color:#777;
+  margin-top:3px;
+}
+.verb-percent{
+  margin-top:6px;
+  font-weight:800;
+  color:#667eea;
+}
+.task-status{
+  font-size:12px;
+  margin-top:4px;
+  opacity:.9;
+}
+.task-card.done-card .task-status{
+  color:white;
+}
+.overview-button{
+  width:100%;
+  margin:8px 0 10px!important;
+  background:#eef2ff!important;
+  color:#333!important;
+  box-shadow:none!important;
+}
+
 </style></head><body><button class="progress-toggle" onclick="toggleProgressPanel()">📊</button><div id="progressPanel" class="progress-panel hidden"></div><main>
 <div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
 <div class="card" id="app"></div>
@@ -900,7 +1008,7 @@ function verbToImage(){
   scrollToGame();
 }
 function checkVerbToImage(a,v){
-  if(a===v){addEncounter(v,"verb_bild",true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='verbToImage()'>weiter</button>";}
+  if(a===v){addEncounter(v,"verb_bild",true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='verbToImage()'>weiter</button>";finishTaskIfComplete("verb_bild","Verb → Bild");}
   else{addEncounter(v,"verb_bild",false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>";}
   scrollToFeedback();
 }
@@ -962,7 +1070,11 @@ function sentenceForVerb(v){
   const map={"kaufen":"Ich kaufe eine Tomate.","brauchen":"Ich brauche eine Cola.","lernen":"Ich lerne Deutsch.","wohnen":"Ich wohne in Deutschland.","bringen":"Ich bringe eine Pizza.","schreiben":"Ich schreibe meinen Namen.","telefonieren":"Ich telefoniere heute.","kochen":"Ich koche eine Suppe.","kommen":"Ich komme aus Syrien.","gehen":"Ich gehe nach Hause.","schwimmen":"Ich schwimme gern.","suchen":"Ich suche meinen Stift.","bestellen":"Ich bestelle eine Pizza.","hören":"Ich höre Musik.","fotografieren":"Ich fotografiere die Stadt.","buchstabieren":"Ich buchstabiere meinen Namen.","lieben":"Ich liebe Deutsch.","verstehen":"Ich verstehe die Frage.","sein":"Ich bin im Kurs.","leben":"Ich lebe in Deutschland."};
   return map[v] || `Ich ${v} heute.`;
 }
-function sentenceWords(v){return sentenceForVerb(v).replace(/[.?!]/g,"").split(" ");}
+function sentenceWords(v){
+  const base=sentenceForVerb(v).replace(/[.?!]/g,"").split(" ");
+  base.push(".");
+  return base;
+}
 function imageFileName(v){
   return String(v||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".png";
 }
@@ -1029,13 +1141,14 @@ function pickPuzzleWord(btn){
   ans.appendChild(chip);
 }
 function checkSentencePuzzle(v){
-  const target=sentenceForVerb(v).replace(/[.?!]/g,"").trim();
-  const answer=puzzleCurrent.join(" ").trim();
+  const target=sentenceForVerb(v).replace(/\s+/g," ").trim();
+  let answer=puzzleCurrent.join(" ").replace(" .",".").trim();
   const fb=$("fb");
   if(clean(answer)===clean(target)){
     addEncounter(v,"satz_puzzle",true);
     fb.innerHTML=`<div class="ok">Richtig: ${sentenceForVerb(v)}</div><button class="success" onclick="sentencePuzzle()">weiter</button>`;
     speakTextVerb(sentenceForVerb(v),false);
+    finishTaskIfComplete("satz_puzzle","Satz-Puzzle");
   }else{
     addEncounter(v,"satz_puzzle",false);
     fb.innerHTML=`<div class="no">Noch nicht.<br>Richtig: ${sentenceForVerb(v)}</div>`;
@@ -1121,22 +1234,98 @@ function showAutoReplaceMessage(){
 
 
 
+
+function taskDone(skill){
+  const p=taskSkillProgress(skill);
+  return p.total>0 && p.done>=p.total;
+}
+function taskCardClass(skill){
+  return taskDone(skill) ? "task-card done-card locked-card" : "task-card";
+}
+function taskCardStatus(skill){
+  const p=taskSkillProgress(skill);
+  if(p.total===0)return "0%";
+  return taskDone(skill) ? "Erledigt ✓" : `${p.pct}%`;
+}
+function completedTaskMessage(label){
+  return `<div class="achievement"><h3>Super gemacht!</h3><p>Die Aufgabe <strong>${label}</strong> ist erledigt.</p><div class="star-pill">+1 Stern</div></div>`;
+}
+function totalStars(){
+  const skills = typeof VERB_SKILLS!=="undefined" ? VERB_SKILLS : [];
+  let stars=0;
+  (state.active||[]).forEach(v=>{
+    ensureSkillState(v);
+    skills.forEach(s=>{ if(state.skillDone[v]&&state.skillDone[v][s]) stars++; });
+  });
+  (state.learned||[]).forEach(v=>{
+    ensureSkillState(v);
+    skills.forEach(s=>{ if(state.skillDone[v]&&state.skillDone[v][s]) stars++; });
+  });
+  return stars;
+}
+function checkStarAchievement(){
+  state.achievementsShown=state.achievementsShown||{};
+  const stars=totalStars();
+  const key="stars20_"+Math.floor(stars/20);
+  if(stars>=20 && !state.achievementsShown[key]){
+    state.achievementsShown[key]=true;
+    saveState();
+    return `<div class="achievement"><h3>Wow, 20 Sterne!</h3><p>Du hast schon richtig viel geschafft.</p><div class="star-pill">⭐ ${stars} Sterne</div></div>`;
+  }
+  return "";
+}
+function finishTaskIfComplete(skill,label){
+  const p=taskSkillProgress(skill);
+  if(p.total>0 && p.done>=p.total){
+    const msg=completedTaskMessage(label)+checkStarAchievement();
+    const g=$("game");
+    if(g) g.innerHTML = msg + `<button class="success" onclick="renderHome()">Zur Aufgabenübersicht</button>`;
+    return true;
+  }
+  const starMsg=checkStarAchievement();
+  if(starMsg && $("fb")) $("fb").innerHTML = starMsg + $("fb").innerHTML;
+  return false;
+}
+function showVerbOverview(){
+  const verbs = ALL_VERBS.map(x=>x.v);
+  const cards=verbs.map(v=>`
+    <div class="verb-overview-card">
+      ${imageBox(v,true)}
+      <div class="verb-de">${safeText(v)}</div>
+      <div class="verb-native">${safeText(nativeWord(v))}</div>
+      <div class="verb-percent">${verbPercent(v)}%</div>
+    </div>`).join("");
+  const modal=document.createElement("div");
+  modal.className="overview-modal";
+  modal.id="overviewModal";
+  modal.innerHTML=`<div class="overview-box">
+    <div class="overview-head">
+      <h2>Alle Verben</h2>
+      <button class="secondary" onclick="document.getElementById('overviewModal').remove()">Schließen</button>
+    </div>
+    <div class="overview-grid">${cards}</div>
+  </div>`;
+  document.body.appendChild(modal);
+  renderAndHydrate();
+}
+
 function renderHome(){
   if(typeof preloadActiveImages==="function") preloadActiveImages();
   state.phase="tasks";
   saveState();
   $("app").innerHTML=`<h2>Verben üben</h2>
-    <div class="mini-top-progress"><strong>Aktiv:</strong> ${state.active.length} | <strong>Gelernt:</strong> ${state.learned.length} | <strong>Gesamt:</strong> ${overall()}%</div>
+    <div class="mini-top-progress"><strong>Aktiv:</strong> ${state.active.length} | <strong>Gelernt:</strong> ${state.learned.length} | <strong>Gesamt:</strong> ${overall()}% | <strong>Sterne:</strong> ${totalStars()}</div>
+    <button class="overview-button" onclick="showVerbOverview()">Alle Verben anzeigen</button>
     <div class="task-grid">
-      <button class="task-card" onclick="safeRun(()=>{startFlashcardSession();flashcards();})"><span class="big-icon">🃏</span>Karteikarten</button>
-      <button class="task-card" onclick="safeRun(()=>memory())"><span class="big-icon">🖼️</span>Memory</button>
-      <button class="task-card" onclick="safeRun(()=>quiz())"><span class="big-icon">✅</span>Bild → Verb</button>
-      <button class="task-card" onclick="safeRun(()=>writeVerb())"><span class="big-icon">✍️</span>Schreiben</button>
-      <button class="task-card" onclick="safeRun(()=>hearWrite())"><span class="big-icon">🔊</span>Hören → Schreiben</button>
-      <button class="task-card" onclick="safeRun(()=>hearSpeak())"><span class="big-icon">🎧</span>Hören → Sprechen</button>
-      <button class="task-card" onclick="safeRun(()=>imageSpeak())"><span class="big-icon">🎤</span>Bild sprechen</button>
-      <button class="task-card" onclick="safeRun(()=>verbToImage())"><span class="big-icon">🖼️</span>Verb → Bild</button>
-      <button class="task-card" onclick="safeRun(()=>sentencePuzzle())"><span class="big-icon">🧩</span>Satz-Puzzle</button>
+      <button class="${taskCardClass('karteikarte')}" onclick="safeRun(()=>{if(taskDone('karteikarte')){finishTaskIfComplete('karteikarte','Karteikarten');return;}startFlashcardSession();flashcards();})"><span class="big-icon">🃏</span>Karteikarten<div class="task-status">${taskCardStatus('karteikarte')}</div></button>
+      <button class="${taskCardClass('memory')}" onclick="safeRun(()=>{if(taskDone('memory')){finishTaskIfComplete('memory','Memory');return;}memory();})"><span class="big-icon">🖼️</span>Memory<div class="task-status">${taskCardStatus('memory')}</div></button>
+      <button class="${taskCardClass('bild_verb')}" onclick="safeRun(()=>{if(taskDone('bild_verb')){finishTaskIfComplete('bild_verb','Bild → Verb');return;}quiz();})"><span class="big-icon">✅</span>Bild → Verb<div class="task-status">${taskCardStatus('bild_verb')}</div></button>
+      <button class="${taskCardClass('schreiben')}" onclick="safeRun(()=>{if(taskDone('schreiben')){finishTaskIfComplete('schreiben','Schreiben');return;}writeVerb();})"><span class="big-icon">✍️</span>Schreiben<div class="task-status">${taskCardStatus('schreiben')}</div></button>
+      <button class="${taskCardClass('hoeren_schreiben')}" onclick="safeRun(()=>{if(taskDone('hoeren_schreiben')){finishTaskIfComplete('hoeren_schreiben','Hören → Schreiben');return;}hearWrite();})"><span class="big-icon">🔊</span>Hören → Schreiben<div class="task-status">${taskCardStatus('hoeren_schreiben')}</div></button>
+      <button class="${taskCardClass('hoeren_sprechen')}" onclick="safeRun(()=>{if(taskDone('hoeren_sprechen')){finishTaskIfComplete('hoeren_sprechen','Hören → Sprechen');return;}hearSpeak();})"><span class="big-icon">🎧</span>Hören → Sprechen<div class="task-status">${taskCardStatus('hoeren_sprechen')}</div></button>
+      <button class="${taskCardClass('bild_sprechen')}" onclick="safeRun(()=>{if(taskDone('bild_sprechen')){finishTaskIfComplete('bild_sprechen','Bild → Sprechen');return;}imageSpeak();})"><span class="big-icon">🎤</span>Bild sprechen<div class="task-status">${taskCardStatus('bild_sprechen')}</div></button>
+      <button class="${taskCardClass('verb_bild')}" onclick="safeRun(()=>{if(taskDone('verb_bild')){finishTaskIfComplete('verb_bild','Verb → Bild');return;}verbToImage();})"><span class="big-icon">🖼️</span>Verb → Bild<div class="task-status">${taskCardStatus('verb_bild')}</div></button>
+      <button class="${taskCardClass('satz_puzzle')}" onclick="safeRun(()=>{if(taskDone('satz_puzzle')){finishTaskIfComplete('satz_puzzle','Satz-Puzzle');return;}sentencePuzzle();})"><span class="big-icon">🧩</span>Satz-Puzzle<div class="task-status">${taskCardStatus('satz_puzzle')}</div></button>
     </div>
     <div id="game"></div>`;
   renderProgressPanel(false);
@@ -1273,7 +1462,7 @@ function finishFlashVerb(v,good){
   if(replaceLearnedIfNeeded()) showAutoReplaceMessage();
 }
 function flashcardDoneMessage(){
-  $("game").innerHTML=`${flashProgressHtml()}<div class="ok"><h3>Karteikarten geschafft!</h3><p>Alle Wörter wurden zweimal richtig beantwortet.</p><button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button><button class="secondary" onclick="startFlashcardSession();flashcards()">Karteikarten nochmal machen</button></div>`;
+  $("game").innerHTML=`${flashProgressHtml()}${completedTaskMessage("Karteikarten")}${checkStarAchievement()}<button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button><button class="secondary" onclick="startFlashcardSession();flashcards()">Karteikarten nochmal machen</button>`;
   scrollToGame();
 }
 
@@ -1386,7 +1575,7 @@ function flip(i){
   setTimeout(()=>{
     if(good){a.d=b.d=true;addEncounter(a.v,'memory',true)}else{a.o=b.o=false;addEncounter(a.v,'memory',false);addEncounter(b.v,'memory',false)}
     state.first=null;state.lock=false;saveState();renderMemory();
-    if(state.memoryCards.every(x=>x.d))$("fb").innerHTML="<div class='ok'>Memory geschafft!</div>";
+    if(state.memoryCards.every(x=>x.d))$("fb").innerHTML="<div class='ok'>Memory geschafft!</div>";finishTaskIfComplete("memory","Memory");
   },600);
 }
 function quiz(){
@@ -1407,7 +1596,7 @@ function quiz(){
   scrollToGame();
 }
 function checkQuiz(a,v){
-  if(a===v){addEncounter(v,"bild_verb",true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>";}
+  if(a===v){addEncounter(v,"bild_verb",true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>";finishTaskIfComplete("bild_verb","Bild → Verb");}
   else{addEncounter(v,"bild_verb",false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>";}
   scrollToFeedback();
 }
@@ -1423,7 +1612,7 @@ function writeVerb(){
 }
 function checkWrite(v){
   let a=$("w").value;
-  if(clean(a)===clean(v)){addEncounter(v,'schreiben',true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='writeVerb()'>weiter</button>"}
+  if(clean(a)===clean(v)){addEncounter(v,'schreiben',true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='writeVerb()'>weiter</button>";finishTaskIfComplete("schreiben","Schreiben")}
   else{addEncounter(v,'schreiben',false);$("fb").innerHTML=`<div class='no'>Richtig: ${v}</div>`} scrollToFeedback();
 }
 function wordSearch(){renderHome();}
