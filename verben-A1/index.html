@@ -133,6 +133,32 @@ input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size
   margin-top:12px;
 }
 
+
+/* STATISTIK-KACHELN WIE BEI FRAGEN */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin:14px 0;
+}
+.stat{
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:white;
+  border-radius:16px;
+  text-align:center;
+  padding:16px 10px;
+  box-shadow:0 8px 18px rgba(0,0,0,.14);
+}
+.stat .num{
+  font-size:2rem;
+  font-weight:900;
+  line-height:1.05;
+}
+.stat div:first-child{
+  font-size:16px;
+  opacity:.95;
+}
+
 </style>
 </head>
 <body>
@@ -442,7 +468,7 @@ function renderOneVerb(){
   const v=currentPickVerb();
   if(!v){if(state.active.length>0){state.phase="tasks";saveState();renderHome();return};$("app").innerHTML="<div class='ok'>Alle Verben wurden eingeschätzt.</div>";return;}
   $("app").innerHTML=`<h2>Verb einschätzen</h2>
-    <div class="mini-top-progress"><strong>⭐ Fortschritt:</strong> <span id="simpleProgress">0 / 20 Verben gelernt</span></div>
+    <div class="stats" id="verbStatsBox"></div>
     <p class="small">Entscheide schnell. Danach kommt automatisch das nächste Verb.</p>
     <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
       ${imageBox(v.v,false)}<h1 style="color:#667eea">${safeText(v.v)}</h1><p>${safeText(v.img)}</p>
@@ -480,6 +506,23 @@ function updateSimpleProgress(){
   }catch(e){}
 }
 
+
+function updateVerbStatsBox(){
+  try{
+    const learned=(state.active||[]).filter(v=>verbPercent(v)===100).length;
+    const total=(state.active||[]).length || 20;
+    const overallPct=total?Math.round(learned*100/20):0;
+    const open=Math.max(0,20-learned);
+    const box=document.getElementById("verbStatsBox");
+    if(box){
+      box.innerHTML=`<div class="stat"><div>Verben gelernt</div><div class="num">${learned}/20</div></div>
+      <div class="stat"><div>Offen</div><div class="num">${open}</div></div>
+      <div class="stat"><div>Fortschritt</div><div class="num">${Math.round((learned/20)*100)}%</div></div>
+      <div class="stat"><div>Sterne</div><div class="num">⭐ ${learned}</div></div>`;
+    }
+  }catch(e){}
+}
+
 function renderHome(){
   state.phase="tasks"; saveState();
   const packageDone=packageComplete();
@@ -498,7 +541,7 @@ function renderHome(){
       ${taskButton('bild_sprechen','🎤','Bild sprechen','imageSpeak')}
       ${taskButton('satz_puzzle','🧩','Satz-Puzzle','sentencePuzzle')}
     </div><div id="game"></div>`;
-  updateSimpleProgress(); renderProgressPanel(false); if(!packageDone)restoreCurrentTask(); checkMilestones();
+  updateSimpleProgress(); updateVerbStatsBox(); renderProgressPanel(false); if(!packageDone)restoreCurrentTask(); checkMilestones();
 }
 function taskButton(skill,icon,label,fn){return `<button class="${taskCardClass(skill)}" onclick="safeRun(()=>{if(taskDone('${skill}')){taskBlockedMessage('${label}');return}${fn}();})"><span class="big-icon">${icon}</span>${label}<div class="task-status">${taskCardStatus(skill)}</div></button>`}
 function taskBlockedMessage(label){
