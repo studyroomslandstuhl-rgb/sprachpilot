@@ -146,6 +146,109 @@
 .help-bottom{display:block;margin-top:14px!important}
 @media(max-width:500px){.task-grid{grid-template-columns:repeat(2,1fr)!important}.mem{min-height:92px!important;height:92px!important}}
 
+
+/* FIX: BILDER UND KARTEIKARTENRUNDE */
+.flash-progress-box{
+  background:#f7f8ff;
+  border:2px solid #dce2ff;
+  border-radius:14px;
+  padding:10px;
+  margin:10px 0 14px;
+}
+.flash-bar{
+  height:14px;
+  background:#ddd;
+  border-radius:999px;
+  overflow:hidden;
+  margin:7px 0;
+}
+.flash-fill{
+  height:100%;
+  background:linear-gradient(135deg,#27ae60,#2ecc71);
+  transition:width .25s;
+}
+.flash-meta{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  flex-wrap:wrap;
+  font-size:14px;
+  color:#555;
+}
+.real-img,
+.real-img-small{
+  background:#f7f8ff;
+}
+.mem img,
+.verbPick img,
+.real-img,
+.real-img-small{
+  display:block;
+}
+.mem{
+  white-space:normal!important;
+}
+.bild-option{
+  background:#f7f8ff!important;
+  color:#333!important;
+  border:2px solid #dce2ff!important;
+  border-radius:14px!important;
+  padding:6px!important;
+}
+.bild-option img{
+  width:100%!important;
+  height:110px!important;
+  object-fit:cover!important;
+  border-radius:10px!important;
+}
+.help-bottom{
+  display:block;
+  margin-top:14px!important;
+}
+
+
+/* IMAGE DOM FIX V3 */
+.mem{position:relative!important;overflow:hidden!important}
+.mem-img-holder,.img-holder{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  width:100%;
+  height:100%;
+  overflow:hidden;
+  border-radius:10px;
+  background:#f7f8ff;
+}
+.mem-img-holder img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+.img-holder img{
+  width:100%;
+  max-width:280px;
+  height:210px;
+  object-fit:cover;
+  display:block;
+  border-radius:18px;
+  border:3px solid #dce2ff;
+}
+.bild-option .img-holder img{
+  width:100%;
+  height:105px;
+  border:0;
+  border-radius:10px;
+}
+.bild-option{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  min-height:120px!important;
+  padding:6px!important;
+  overflow:hidden!important;
+}
+
 </style></head><body><button class="progress-toggle" onclick="toggleProgressPanel()">📊</button><div id="progressPanel" class="progress-panel hidden"></div><main>
 <div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
 <div class="card" id="app"></div>
@@ -187,21 +290,7 @@ const VERB_TRANSLATIONS = {
 };
 function nativeLang(){return (profile&&profile.muttersprache)?profile.muttersprache:"Englisch"}
 function nativeWord(v){const lang=nativeLang();return (VERB_TRANSLATIONS[lang]&&VERB_TRANSLATIONS[lang][v])||(VERB_TRANSLATIONS["Englisch"]&&VERB_TRANSLATIONS["Englisch"][v])||v}
-function actionImage(v,small=false){
- const color="#667eea",accent="#ffcc33",skin="#f6c28b";
- const map={
- kaufen:`<rect x="120" y="90" width="95" height="65" rx="8" fill="#dff3ff"/><text x="148" y="128" font-size="18" font-weight="bold">SHOP</text><circle cx="75" cy="70" r="22" fill="${skin}"/><rect x="55" y="92" width="42" height="70" rx="10" fill="${color}"/><rect x="105" y="130" width="50" height="35" rx="6" fill="${accent}"/><circle cx="118" cy="168" r="6"/><circle cx="145" cy="168" r="6"/>`,
- schreiben:`<circle cx="75" cy="65" r="22" fill="${skin}"/><rect x="55" y="88" width="45" height="70" rx="10" fill="${color}"/><rect x="115" y="105" width="105" height="65" rx="6" fill="#fff"/><line x1="128" y1="123" x2="205" y2="123" stroke="#333" stroke-width="4"/><line x1="128" y1="142" x2="190" y2="142" stroke="#333" stroke-width="4"/><line x1="96" y1="112" x2="132" y2="132" stroke="#333" stroke-width="8"/>`,
- telefonieren:`<circle cx="90" cy="70" r="22" fill="${skin}"/><rect x="68" y="93" width="45" height="70" rx="10" fill="${color}"/><rect x="142" y="70" width="45" height="80" rx="8" fill="#222"/><rect x="148" y="80" width="33" height="52" rx="4" fill="#9ee7ff"/><line x1="112" y1="95" x2="145" y2="95" stroke="#333" stroke-width="8"/>`,
- kochen:`<circle cx="70" cy="65" r="22" fill="${skin}"/><rect x="48" y="88" width="48" height="70" rx="10" fill="${color}"/><rect x="120" y="125" width="92" height="35" rx="8" fill="#555"/><rect x="132" y="112" width="70" height="20" rx="6" fill="#999"/><path d="M145 100 C130 85,160 82,145 65" stroke="#ddd" stroke-width="5" fill="none"/><path d="M175 100 C160 85,190 82,175 65" stroke="#ddd" stroke-width="5" fill="none"/>`,
- lernen:`<circle cx="75" cy="65" r="22" fill="${skin}"/><rect x="55" y="88" width="45" height="70" rx="10" fill="${color}"/><rect x="120" y="95" width="90" height="65" rx="5" fill="#fff"/><line x1="165" y1="95" x2="165" y2="160" stroke="#333" stroke-width="3"/><line x1="130" y1="115" x2="155" y2="115" stroke="#333" stroke-width="4"/><line x1="174" y1="115" x2="200" y2="115" stroke="#333" stroke-width="4"/>`,
- gehen:`<circle cx="110" cy="55" r="22" fill="${skin}"/><line x1="110" y1="78" x2="110" y2="125" stroke="${color}" stroke-width="16"/><line x1="110" y1="95" x2="70" y2="115" stroke="#333" stroke-width="8"/><line x1="110" y1="125" x2="80" y2="170" stroke="#333" stroke-width="8"/><line x1="110" y1="125" x2="150" y2="170" stroke="#333" stroke-width="8"/><path d="M170 170 H230" stroke="#999" stroke-width="5"/>`,
- rennen:`<circle cx="95" cy="55" r="22" fill="${skin}"/><line x1="95" y1="78" x2="125" y2="118" stroke="${color}" stroke-width="16"/><line x1="120" y1="118" x2="75" y2="165" stroke="#333" stroke-width="8"/><line x1="120" y1="118" x2="175" y2="140" stroke="#333" stroke-width="8"/><line x1="110" y1="92" x2="165" y2="80" stroke="#333" stroke-width="8"/><path d="M25 150 H65" stroke="#aaa" stroke-width="5"/><path d="M35 170 H95" stroke="#aaa" stroke-width="5"/>`,
- trinken:`<circle cx="85" cy="65" r="22" fill="${skin}"/><rect x="62" y="88" width="48" height="70" rx="10" fill="${color}"/><path d="M150 88 L200 88 L190 165 L160 165Z" fill="#9ee7ff" stroke="#333" stroke-width="4"/><line x1="110" y1="95" x2="155" y2="110" stroke="#333" stroke-width="8"/>`
- };
- let body=map[v]||`<circle cx="90" cy="60" r="22" fill="${skin}"/><rect x="68" y="84" width="48" height="72" rx="10" fill="${color}"/><circle cx="175" cy="120" r="42" fill="${accent}" stroke="#333" stroke-width="4"/><text x="175" y="130" text-anchor="middle" font-size="28" font-weight="bold" fill="#333">${v.slice(0,2).toUpperCase()}</text><line x1="115" y1="105" x2="150" y2="120" stroke="#333" stroke-width="8"/>`;
- return `<svg class="${small?'mem-img':'action-img'}" viewBox="0 0 260 200" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="${v}"><rect width="260" height="200" rx="20" fill="#f7f8ff"/><rect x="10" y="10" width="240" height="180" rx="18" fill="#fff" stroke="#d6dcff" stroke-width="4"/>${body}</svg>`;
-}
+
 
 
 
@@ -216,18 +305,100 @@ function loadProfile(){
   return true;
 }
 function key(){return "SP_VERBS_"+(profile?profile.userId:"guest")}
-function migrateState(){
-  if(state.progress && !state.encounters){
-    state.encounters={};
-    Object.keys(state.progress).forEach(v=>state.encounters[v]=Math.round((state.progress[v]||0)/10));
+
+const VERB_SKILLS = [
+  "karteikarte",
+  "memory",
+  "bild_verb",
+  "verb_bild",
+  "schreiben",
+  "hoeren_schreiben",
+  "hoeren_sprechen",
+  "bild_sprechen"
+];
+
+const VERB_SKILL_LABELS = {
+  "karteikarte":"Karteikarten",
+  "memory":"Memory",
+  "bild_verb":"Bild → Verb",
+  "verb_bild":"Verb → Bild",
+  "schreiben":"Schreiben",
+  "hoeren_schreiben":"Hören → Schreiben",
+  "hoeren_sprechen":"Hören → Sprechen",
+  "bild_sprechen":"Bild → Sprechen"
+};
+
+function skillKey(skill){
+  if(skill==="zuordnung") return "bild_verb";
+  if(skill==="karteikarte_schreiben" || skill==="karteikarte_sprechen") return "karteikarte";
+  if(skill==="verb_bild") return "verb_bild";
+  if(skill==="bild_sprechen") return "bild_sprechen";
+  if(skill==="hoeren_schreiben") return "hoeren_schreiben";
+  if(skill==="hoeren_sprechen") return "hoeren_sprechen";
+  if(skill==="schreiben") return "schreiben";
+  if(skill==="memory") return "memory";
+  return skill;
+}
+
+function ensureSkillState(v){
+  state.skillDone = state.skillDone || {};
+  state.skillAttempts = state.skillAttempts || {};
+  state.skillSuccess = state.skillSuccess || {};
+  state.skillDone[v] = state.skillDone[v] || {};
+  state.skillAttempts[v] = state.skillAttempts[v] || {};
+  state.skillSuccess[v] = state.skillSuccess[v] || {};
+}
+
+function verbSkillCount(v){
+  ensureSkillState(v);
+  return VERB_SKILLS.filter(s=>state.skillDone[v][s]).length;
+}
+
+function verbCount(v){
+  return verbSkillCount(v);
+}
+
+function verbPercent(v){
+  return Math.round((verbSkillCount(v) * 100) / VERB_SKILLS.length);
+}
+
+function markSkill(v,skill,good){
+  const sk=skillKey(skill);
+  ensureSkillState(v);
+  state.skillAttempts[v][sk]=(state.skillAttempts[v][sk]||0)+1;
+  if(good){
+    state.skillSuccess[v][sk]=(state.skillSuccess[v][sk]||0)+1;
+    if(sk==="karteikarte"){
+      if((state.skillSuccess[v][sk]||0)>=2) state.skillDone[v][sk]=true;
+    }else{
+      state.skillDone[v][sk]=true;
+    }
+  }else{
+    state.weak[v]=(state.weak[v]||0)+1;
   }
+}
+
+function skillBadges(v){
+  ensureSkillState(v);
+  return VERB_SKILLS.map(s=>{
+    const ok=state.skillDone[v][s];
+    const att=state.skillAttempts[v][s]||0;
+    return `<div class="small">${ok?"✅":"⬜"} ${VERB_SKILL_LABELS[s]} ${att?`(${att}x)`:""}</div>`;
+  }).join("");
+}
+
+function migrateState(){
   state.learned=state.learned||[];
   state.encounters=state.encounters||{};
   state.successBySkill=state.successBySkill||{};
+  state.skillDone=state.skillDone||{};
+  state.skillAttempts=state.skillAttempts||{};
+  state.skillSuccess=state.skillSuccess||{};
   state.active=state.active||[];
   state.known=state.known||[];
   state.unsure=state.unsure||[];
   state.unknown=state.unknown||[];
+  (state.active||[]).forEach(v=>ensureSkillState(v));
 }
 function loadState(){
   try{
@@ -241,14 +412,13 @@ function saveState(){
   localStorage.setItem(key(),JSON.stringify(state));
   sendProgress();
 }
-function verbCount(v){return Math.max(0,Math.min(10,Number(state.encounters[v])||0))}
-function verbPercent(v){return verbCount(v)*10}
+
 function overall(){
   if(!state.active.length)return 0;
   let sum=state.active.reduce((s,v)=>s+verbPercent(v),0);
   return Math.round(sum/state.active.length);
 }
-function learnedTotal(){return state.learned.length + state.active.filter(v=>verbCount(v)>=10).length}
+function learnedTotal(){return state.learned.length + state.active.filter(v=>verbPercent(v)>=100).length}
 function sendProgress(){
   if(!profile)return;
   const done=overall();
@@ -275,22 +445,8 @@ function currentPickVerb(){
 }
 
 
-function imageFileName(v){
-  return String(v||"")
-    .toLowerCase()
-    .replaceAll("ä","ae")
-    .replaceAll("ö","oe")
-    .replaceAll("ü","ue")
-    .replaceAll("ß","ss")
-    .replace(/[^a-z0-9]+/g,"-")
-    .replace(/^-|-$/g,"") + ".png";
-}
-function realImage(v, small=false){
-  const cls=small?"real-img-small":"real-img";
-  const fbCls=small?"image-fallback real-img-small":"image-fallback";
-  const fallback=`<div class="${fbCls}"></div>`;
-  return `<img class="${cls}" src="bilder/${imageFileName(v)}" alt="" loading="eager" decoding="async" onerror="this.outerHTML='${fallback}'">`;
-}
+
+
 function speakTextVerb(t,slow=false){
   try{
     if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){
@@ -310,6 +466,7 @@ function speakTextVerb(t,slow=false){
 }
 
 function scrollToGame(){
+  renderAndHydrate();
   setTimeout(()=>{const g=$("game"); if(g) g.scrollIntoView({behavior:"smooth",block:"start"});},80);
 }
 function scrollToFeedback(){
@@ -481,7 +638,7 @@ function verbToImage(){
   $("game").innerHTML=`<h3>Verb → Bild</h3>
     <p class="small">Welches Bild passt zu diesem Verb?</p>
     <h2>${v}</h2>
-    <div class="grid">${opts.map(o=>`<button class="verbPick" onclick="checkVerbToImage('${o}','${v}')">${realImage(o,true)}</button>`).join("")}</div>
+    <div class="grid">${opts.map(o=>`<button class="bild-option" onclick="checkVerbToImage('${o}','${v}')">${realImage(o,true)}</button>`).join("")}</div>
     <button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
   scrollToGame();
 }
@@ -503,6 +660,47 @@ function showTranslationHelp(v){
     fb.innerHTML=`<div class="ok"><strong>Hilfe (${nativeLang()}):</strong><br>${nativeWord(v)}</div>` + fb.innerHTML;
     scrollToFeedback();
   }
+}
+
+
+function imageFileName(v){
+  return String(v||"")
+    .toLowerCase()
+    .replaceAll("ä","ae")
+    .replaceAll("ö","oe")
+    .replaceAll("ü","ue")
+    .replaceAll("ß","ss")
+    .replace(/[^a-z0-9]+/g,"-")
+    .replace(/^-|-$/g,"") + ".png";
+}
+function imageBox(v,small=false){
+  const cls=small?"mem-img-holder":"img-holder";
+  return `<span class="${cls}" data-verb="${v}"></span>`;
+}
+function realImage(v,small=false){
+  return imageBox(v,small);
+}
+function actionImage(v,small=false){
+  return imageBox(v,small);
+}
+function hydrateImages(root){
+  const base=root||document;
+  base.querySelectorAll("[data-verb]").forEach(box=>{
+    if(box.dataset.loaded==="1")return;
+    box.dataset.loaded="1";
+    const v=box.getAttribute("data-verb");
+    const img=document.createElement("img");
+    img.alt="";
+    img.loading="eager";
+    img.decoding="async";
+    img.src="bilder/"+imageFileName(v);
+    img.onerror=function(){ this.remove(); };
+    box.textContent="";
+    box.appendChild(img);
+  });
+}
+function renderAndHydrate(){
+  setTimeout(()=>hydrateImages(document),20);
 }
 
 function init(){
@@ -551,7 +749,7 @@ function rateVerb(v,level){
   }
 }
 function replaceLearnedIfNeeded(){
-  let complete=state.active.filter(v=>verbCount(v)>=10);
+  let complete=state.active.filter(v=>verbPercent(v)>=100);
   if(complete.length<3)return false;
   let toReplace=complete.slice(0,3);
   toReplace.forEach(v=>{
@@ -566,13 +764,7 @@ function replaceLearnedIfNeeded(){
   return true;
 }
 function addEncounter(v,skill,good=true){
-  if(good){
-    state.successBySkill[v]=state.successBySkill[v]||{};
-    state.successBySkill[v][skill]=(state.successBySkill[v][skill]||0)+1;
-    state.encounters[v]=Math.min(10,(state.encounters[v]||0)+1);
-  }else{
-    state.weak[v]=(state.weak[v]||0)+1;
-  }
+  markSkill(v,skill,good);
   saveState();
   if(replaceLearnedIfNeeded()){
     showAutoReplaceMessage();
@@ -616,9 +808,7 @@ function renderProgressPanel(openOnly){
   const p=$("progressPanel");
   if(!p)return;
   const activeRows=state.active.map(v=>`<div class="progress-row">
-    <strong>${v}</strong> <span class="small">${verbCount(v)}/10 · ${verbPercent(v)}%</span>
-    <div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div>
-    <div class="small">Wiederholt: ${verbCount(v)}x · Fehler: ${state.weak[v]||0}</div>
+    <strong>${v}</strong> <span class="small">${verbSkillCount(v)}/${VERB_SKILLS.length} · ${verbPercent(v)}%</span><div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div><div class="small">Fehler: ${state.weak[v]||0}</div>${skillBadges(v)}
   </div>`).join("");
   p.innerHTML=`<h2>📊 Fortschritt</h2>
     <button class="secondary" onclick="toggleProgressPanel()">Schließen</button>
@@ -627,11 +817,11 @@ function renderProgressPanel(openOnly){
     <h3>Gelernt</h3><p class="small">${state.learned.length?state.learned.join(", "):"Noch keine."}</p>`;
 }
 function chooseVerbForPractice(){
-  let pool=state.active.filter(v=>verbCount(v)<10);
+  let pool=state.active.filter(v=>verbPercent(v)<100);
   if(!pool.length)return null;
   pool.sort((a,b)=>{
     const wa=state.weak[a]||0, wb=state.weak[b]||0;
-    return (verbCount(a)-verbCount(b)) || (wb-wa);
+    return (verbPercent(a)-verbPercent(b)) || (wb-wa);
   });
   return pool[Math.floor(Math.random()*Math.min(6,pool.length))];
 }
@@ -644,39 +834,85 @@ function preloadActiveImages(){
     });
   }catch(e){}
 }
+
+
+
+
+
+
 function startFlashcardSession(){
-  const pool=(state.active||[]).filter(v=>verbCount(v)<10);
-  state.flashSession={queue:shuffle(pool),correctStreak:{},wrongExtra:{},done:[]};
+  const pool=(state.active||[]).filter(v=>verbPercent(v)<100);
+  state.flashSession={
+    queue:shuffle(pool),
+    correct:{},
+    wrong:{},
+    done:[],
+    total:pool.length,
+    current:null
+  };
+  pool.forEach(v=>{
+    state.flashSession.correct[v]=0;
+    state.flashSession.wrong[v]=0;
+  });
   saveState();
 }
+function flashDoneCount(){
+  if(!state.flashSession)return 0;
+  return (state.flashSession.done||[]).length;
+}
+function flashPercent(){
+  if(!state.flashSession || !state.flashSession.total)return 0;
+  return Math.round((flashDoneCount()*100)/state.flashSession.total);
+}
+function flashProgressHtml(){
+  const total=(state.flashSession&&state.flashSession.total)||0;
+  const done=flashDoneCount();
+  const left=Math.max(0,total-done);
+  const pct=flashPercent();
+  return `<div class="flash-progress-box">
+    <strong>Karteikarten-Runde</strong>
+    <div class="flash-bar"><div class="flash-fill" style="width:${pct}%"></div></div>
+    <div class="flash-meta">
+      <span>${pct}% fertig</span>
+      <span>${done}/${total} Wörter abgeschlossen</span>
+      <span>noch ${left}</span>
+    </div>
+  </div>`;
+}
 function nextFlashVerb(){
-  if(!state.flashSession || !state.flashSession.queue || !state.flashSession.queue.length){
+  if(!state.flashSession || !state.flashSession.queue || !state.flashSession.total){
     startFlashcardSession();
   }
   if(!state.flashSession.queue.length)return null;
-  return state.flashSession.queue.shift();
+  const v=state.flashSession.queue.shift();
+  state.flashSession.current=v;
+  saveState();
+  return v;
 }
 function finishFlashVerb(v,good){
-  state.flashSession=state.flashSession||{queue:[],correctStreak:{},wrongExtra:{},done:[]};
+  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:0,current:null};
+  state.flashSession.correct[v]=state.flashSession.correct[v]||0;
+  state.flashSession.wrong[v]=state.flashSession.wrong[v]||0;
+
   if(good){
-    state.flashSession.correctStreak[v]=(state.flashSession.correctStreak[v]||0)+1;
+    state.flashSession.correct[v]++;
     addEncounter(v,"karteikarte",true);
-    if(state.flashSession.correctStreak[v]>=2){
+    if(state.flashSession.correct[v]>=2){
       if(!state.flashSession.done.includes(v))state.flashSession.done.push(v);
       state.flashSession.queue=state.flashSession.queue.filter(x=>x!==v);
     }else{
       state.flashSession.queue.push(v);
     }
   }else{
-    state.flashSession.correctStreak[v]=0;
-    state.flashSession.wrongExtra[v]=(state.flashSession.wrongExtra[v]||0)+2;
+    state.flashSession.wrong[v]++;
+    state.flashSession.correct[v]=0;
     addEncounter(v,"karteikarte",false);
     state.flashSession.queue.push(v,v);
   }
   saveState();
 }
 function flashcardDoneMessage(){
-  $("game").innerHTML=`<div class="ok"><h3>Gut gemacht!</h3><p>Karteikarten abgeschlossen.</p><button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button><button class="secondary" onclick="startFlashcardSession();flashcards()">Karteikarten nochmal machen</button></div>`;
+  $("game").innerHTML=`${flashProgressHtml()}<div class="ok"><h3>Gut gemacht!</h3><p>Du hast diese Karteikarten-Runde abgeschlossen.</p><button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button><button class="secondary" onclick="startFlashcardSession();flashcards()">Karteikarten nochmal machen</button></div>`;
   scrollToGame();
 }
 
@@ -686,8 +922,12 @@ function flashcards(){
   if(!v){flashcardDoneMessage();return}
   state.currentVerb=v;
   saveState();
-  $("game").innerHTML=`<h3>Karteikarten: Nenne das deutsche Wort</h3>
-    <p class="small">Vorderseite: Muttersprache. Antworte auf Deutsch. Nach zwei richtigen Antworten ohne Fehler ist die Karte fertig.</p>
+  const correctNow=(state.flashSession&&state.flashSession.correct&&state.flashSession.correct[v])||0;
+  const wrongNow=(state.flashSession&&state.flashSession.wrong&&state.flashSession.wrong[v])||0;
+  $("game").innerHTML=`${flashProgressHtml()}
+    <h3>Karteikarten: Nenne das deutsche Wort</h3>
+    <p class="small">Dieses Wort braucht <strong>2 richtige Antworten</strong>. Bei Fehlern kommt es noch einmal zurück.</p>
+    <div class="flash-meta"><span>Dieses Wort: ${correctNow}/2 richtig</span><span>Fehler hier: ${wrongNow}</span></div>
     <div class="study-card-wrap">
       <div id="studyCard" class="study-card" onclick="this.classList.toggle('flipped')">
         <div class="study-face">
@@ -716,10 +956,11 @@ function checkFlashcardAnswer(v){
   const fb=$("cardFeedback");
   if(checkVerbAnswer(val,v)){
     finishFlashVerb(v,true);
-    if(fb)fb.innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong></div><button class="success" onclick="flashcards()">Nächste Karte</button>`;
+    const current=(state.flashSession.correct[v]||0);
+    if(fb)fb.innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong><br>${current>=2?"Dieses Wort ist für diese Runde fertig.":"Noch 1 richtige Antwort, dann ist dieses Wort fertig."}</div><button class="success" onclick="flashcards()">Nächste Karte</button>`;
   }else{
     finishFlashVerb(v,false);
-    if(fb)fb.innerHTML=`<div class="no">❌ Noch nicht. Das Wort kommt gleich noch zweimal.<br>Richtige Antwort: <strong>${v}</strong></div><button onclick="flashcards()">Nächste Karte</button>`;
+    if(fb)fb.innerHTML=`<div class="no">❌ Noch nicht. Dieses Wort kommt nochmal, damit du es festigst.<br>Richtige Antwort: <strong>${v}</strong></div><button onclick="flashcards()">Nächste Karte</button>`;
   }
   scrollToFeedback();
 }
@@ -730,10 +971,11 @@ function speakFlashcardAnswer(v){
     const fb=$("cardFeedback");
     if(checkVerbAnswer(t,v)){
       finishFlashVerb(v,true);
-      if(fb)fb.innerHTML=`<div class="ok">✔ Richtig gesprochen: <strong>${v}</strong></div><button class="success" onclick="flashcards()">Nächste Karte</button>`;
+      const current=(state.flashSession.correct[v]||0);
+      if(fb)fb.innerHTML=`<div class="ok">✔ Richtig gesprochen: <strong>${v}</strong><br>${current>=2?"Dieses Wort ist für diese Runde fertig.":"Noch 1 richtige Antwort, dann ist dieses Wort fertig."}</div><button class="success" onclick="flashcards()">Nächste Karte</button>`;
     }else{
       finishFlashVerb(v,false);
-      if(fb)fb.innerHTML=`<div class="no">❌ Gehört: ${t}<br>Das Wort kommt gleich noch zweimal.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Nächste Karte</button>`;
+      if(fb)fb.innerHTML=`<div class="no">❌ Gehört: ${t}<br>Dieses Wort kommt nochmal, damit du es festigst.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Nächste Karte</button>`;
     }
     scrollToFeedback();
   });
@@ -745,7 +987,7 @@ function memory(){
   state.memoryCards=[];
   state.active.slice(0,10).forEach((v,i)=>{
     state.memoryCards.push({p:i,t:"de",v:v,html:`<span class="mem-german">${v}</span>`,o:false,d:false});
-    state.memoryCards.push({p:i,t:"img",v:v,html:`${realImage(v,true)}`,o:false,d:false});
+    state.memoryCards.push({p:i,t:"img",v:v,html:imageBox(v,true),o:false,d:false});
   });
   state.memoryCards=shuffle(state.memoryCards);
   saveState();
@@ -756,6 +998,7 @@ function renderMemory(){
   $("game").innerHTML=`<h3>Memory: Bild ↔ deutsches Verb</h3>
   <p class="small">Finde das Bild und das passende deutsche Verb.</p>
   <div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`;
+  renderAndHydrate();
 }
 function flip(i){
   if(state.lock)return;
