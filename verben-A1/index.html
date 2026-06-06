@@ -249,6 +249,122 @@
   overflow:hidden!important;
 }
 
+
+/* CLEAN CARD UI V4 */
+#game{
+  padding:14px!important;
+}
+.flash-progress-box{
+  padding:10px 12px!important;
+  margin:8px 0 12px!important;
+  border-radius:16px!important;
+}
+.flash-progress-title{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  font-size:15px;
+  font-weight:800;
+}
+.flash-progress-title span:last-child{
+  font-size:13px;
+  color:#666;
+  font-weight:600;
+}
+.flash-bar{
+  height:10px!important;
+  margin:8px 0 0!important;
+}
+.flash-meta{
+  font-size:12px!important;
+  color:#777!important;
+  margin-top:6px;
+}
+.flash-word-list{
+  display:none!important;
+}
+.card-task-head{
+  margin:12px 0 8px;
+}
+.card-task-head h3{
+  font-size:24px!important;
+  line-height:1.15!important;
+  margin:0 0 4px!important;
+}
+.card-task-head .small{
+  font-size:13px!important;
+  color:#777!important;
+}
+.word-status{
+  display:flex;
+  justify-content:center;
+  gap:8px;
+  margin:8px 0 10px;
+  font-size:13px;
+}
+.word-pill{
+  background:#eef2ff;
+  color:#555;
+  border-radius:999px;
+  padding:5px 10px;
+  font-weight:700;
+}
+.study-card-wrap{
+  margin:10px auto 12px!important;
+}
+.study-card{
+  min-height:190px!important;
+}
+.study-face{
+  padding:16px!important;
+}
+.study-face .small{
+  font-size:13px!important;
+  color:#777!important;
+}
+.native-word{
+  font-size:42px!important;
+  line-height:1.1!important;
+  margin:12px 0!important;
+}
+.study-face p.small{
+  margin-top:3px!important;
+}
+#cardAnswer{
+  font-size:18px!important;
+  padding:12px!important;
+  margin-top:6px!important;
+}
+.card-actions{
+  display:flex;
+  gap:8px;
+  align-items:center;
+  justify-content:center;
+  flex-wrap:wrap;
+  margin-top:8px;
+}
+.card-actions button{
+  margin-top:0!important;
+  padding:12px 16px!important;
+  font-size:15px!important;
+}
+#micStatus{
+  text-align:center;
+  font-size:13px!important;
+  margin-top:7px;
+}
+#cardFeedback .ok,
+#cardFeedback .no{
+  font-size:15px!important;
+  line-height:1.35!important;
+}
+@media(max-width:520px){
+  .card-task-head h3{font-size:22px!important}
+  .native-word{font-size:38px!important}
+  .study-card{min-height:175px!important}
+}
+
 </style></head><body><button class="progress-toggle" onclick="toggleProgressPanel()">📊</button><div id="progressPanel" class="progress-panel hidden"></div><main>
 <div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
 <div class="card" id="app"></div>
@@ -866,17 +982,15 @@ function flashPercent(){
 }
 function flashProgressHtml(){
   const total=(state.flashSession&&state.flashSession.total)||0;
-  const done=flashDoneCount();
+  const done=(state.flashSession&&state.flashSession.done?state.flashSession.done.length:0);
   const left=Math.max(0,total-done);
-  const pct=flashPercent();
+  const pct=total?Math.round((done*100)/total):0;
   return `<div class="flash-progress-box">
-    <strong>Karteikarten-Runde</strong>
-    <div class="flash-bar"><div class="flash-fill" style="width:${pct}%"></div></div>
-    <div class="flash-meta">
-      <span>${pct}% fertig</span>
-      <span>${done}/${total} Wörter abgeschlossen</span>
-      <span>noch ${left}</span>
+    <div class="flash-progress-title">
+      <strong>${pct}% fertig</strong>
+      <span>${done}/${total} Wörter · noch ${left}</span>
     </div>
+    <div class="flash-bar"><div class="flash-fill" style="width:${pct}%"></div></div>
   </div>`;
 }
 function nextFlashVerb(){
@@ -925,13 +1039,18 @@ function flashcards(){
   const correctNow=(state.flashSession&&state.flashSession.correct&&state.flashSession.correct[v])||0;
   const wrongNow=(state.flashSession&&state.flashSession.wrong&&state.flashSession.wrong[v])||0;
   $("game").innerHTML=`${flashProgressHtml()}
-    <h3>Karteikarten: Nenne das deutsche Wort</h3>
-    <p class="small">Dieses Wort braucht <strong>2 richtige Antworten</strong>. Bei Fehlern kommt es noch einmal zurück.</p>
-    <div class="flash-meta"><span>Dieses Wort: ${correctNow}/2 richtig</span><span>Fehler hier: ${wrongNow}</span></div>
+    <div class="card-task-head">
+      <h3>Karteikarte</h3>
+      <div class="small">2× richtig = fertig</div>
+    </div>
+    <div class="word-status">
+      <span class="word-pill">${Math.min(correctNow,2)}/2 richtig</span>
+      ${wrongNow?`<span class="word-pill">Fehler: ${wrongNow}</span>`:""}
+    </div>
     <div class="study-card-wrap">
       <div id="studyCard" class="study-card" onclick="this.classList.toggle('flipped')">
         <div class="study-face">
-          <div class="small">Muttersprache: ${nativeLang()}</div>
+          <div class="small">${nativeLang()}</div>
           <div class="native-word">${nativeWord(v)}</div>
           <p class="small">Wie heißt das auf Deutsch?</p>
         </div>
@@ -941,10 +1060,12 @@ function flashcards(){
         </div>
       </div>
     </div>
-    <input id="cardAnswer" placeholder="Deutsches Verb schreiben...">
-    <button class="success" onclick="checkFlashcardAnswer('${v}')">Überprüfen</button>
-    <button onclick="speakFlashcardAnswer('${v}')">🎤 Sagen</button>
-    <div id="micStatus" class="small">⚪ Mikrofon aus</div>
+    <input id="cardAnswer" placeholder="Deutsches Verb...">
+    <div class="card-actions">
+      <button class="success" onclick="checkFlashcardAnswer('${v}')">Überprüfen</button>
+      <button onclick="speakFlashcardAnswer('${v}')">🎤 Sagen</button>
+    </div>
+    <div id="micStatus" class="small">Mikrofon aus</div>
     <p id="heard" class="small"></p>
     <div id="cardFeedback"></div>`;
   scrollToGame();
@@ -957,10 +1078,10 @@ function checkFlashcardAnswer(v){
   if(checkVerbAnswer(val,v)){
     finishFlashVerb(v,true);
     const current=(state.flashSession.correct[v]||0);
-    if(fb)fb.innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong><br>${current>=2?"Dieses Wort ist für diese Runde fertig.":"Noch 1 richtige Antwort, dann ist dieses Wort fertig."}</div><button class="success" onclick="flashcards()">Nächste Karte</button>`;
+    if(fb)fb.innerHTML=`<div class="ok">${current>=2?"✔ Wort fertig.":"✔ Richtig. Noch einmal richtig."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;
   }else{
     finishFlashVerb(v,false);
-    if(fb)fb.innerHTML=`<div class="no">❌ Noch nicht. Dieses Wort kommt nochmal, damit du es festigst.<br>Richtige Antwort: <strong>${v}</strong></div><button onclick="flashcards()">Nächste Karte</button>`;
+    if(fb)fb.innerHTML=`<div class="no">Noch nicht. Es kommt später nochmal.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;
   }
   scrollToFeedback();
 }
@@ -972,10 +1093,10 @@ function speakFlashcardAnswer(v){
     if(checkVerbAnswer(t,v)){
       finishFlashVerb(v,true);
       const current=(state.flashSession.correct[v]||0);
-      if(fb)fb.innerHTML=`<div class="ok">✔ Richtig gesprochen: <strong>${v}</strong><br>${current>=2?"Dieses Wort ist für diese Runde fertig.":"Noch 1 richtige Antwort, dann ist dieses Wort fertig."}</div><button class="success" onclick="flashcards()">Nächste Karte</button>`;
+      if(fb)fb.innerHTML=`<div class="ok">${current>=2?"✔ Wort fertig.":"✔ Richtig. Noch einmal richtig."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;
     }else{
       finishFlashVerb(v,false);
-      if(fb)fb.innerHTML=`<div class="no">❌ Gehört: ${t}<br>Dieses Wort kommt nochmal, damit du es festigst.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Nächste Karte</button>`;
+      if(fb)fb.innerHTML=`<div class="no">Gehört: ${t}<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;
     }
     scrollToFeedback();
   });
