@@ -1601,6 +1601,24 @@ window.addEventListener("error", function(e){
   }catch(_){}
 });
 
+
+/* Fehleranzeige begrenzen */
+if(!window.__spErrorHandlerInstalled){
+  window.__spErrorHandlerInstalled = true;
+  window.addEventListener("error", function(e){
+    try{
+      const old=document.getElementById("spErrorBox");
+      if(old) old.remove();
+      const target=document.getElementById("game") || document.body;
+      const box=document.createElement("div");
+      box.id="spErrorBox";
+      box.className="no";
+      box.innerHTML="<strong>JavaScript-Fehler:</strong> "+String(e.message||"Unbekannt").replace(/</g,"&lt;");
+      target.appendChild(box);
+    }catch(_){}
+  });
+}
+
 </script>
 </body>
 </html>
