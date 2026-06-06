@@ -264,7 +264,7 @@ function imageFileName(v){
     .replaceAll("ü","ue")
     .replaceAll("ß","ss")
     .replace(/[^a-z0-9]+/g,"-")
-    .replace(/^-|-$/g,"") + ".webp";
+    .replace(/^-|-$/g,"") + ".png";
 }
 function realImage(v, small=false){
   const cls = small ? "real-img-small" : "real-img";
@@ -383,7 +383,7 @@ function hearWrite(){
     <button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 Langsam</button>
     <input id="hearWriteInput" placeholder="Verb schreiben...">
     <button class="success" onclick="checkHearWrite('${v}')">Überprüfen</button>
-    <div id="fb"></div>`;
+    <button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
   scrollToGame();
 }
 function checkHearWrite(v){
@@ -409,7 +409,7 @@ function hearSpeak(){
     <button class="success" onclick="checkHearSpeak('${v}')">🎤 Sprechen</button>
     <div id="micStatus" class="small">⚪ Mikrofon aus</div>
     <p id="heard" class="small"></p>
-    <div id="fb"></div>`;
+    <button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
   scrollToGame();
 }
 function checkHearSpeak(v){
@@ -433,11 +433,10 @@ function imageSpeak(){
   $("game").innerHTML=`<h3>Bild → Sprechen</h3>
     <p class="small">Sehen Sie das Bild und sagen Sie das deutsche Verb.</p>
     ${realImage(v,false)}
-    <p>${nativeWord(v)}</p>
     <button class="success" onclick="checkImageSpeak('${v}')">🎤 Sprechen</button>
     <div id="micStatus" class="small">⚪ Mikrofon aus</div>
     <p id="heard" class="small"></p>
-    <div id="fb"></div>`;
+    <button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
   scrollToGame();
 }
 function checkImageSpeak(v){
@@ -462,8 +461,8 @@ function verbToImage(){
   $("game").innerHTML=`<h3>Verb → Bild</h3>
     <p class="small">Welches Bild passt zu diesem Verb?</p>
     <h2>${v}</h2>
-    <div class="grid">${opts.map(o=>`<button class="verbPick" onclick="checkVerbToImage('${o}','${v}')">${realImage(o,true)}<span class="small">${nativeWord(o)}</span></button>`).join("")}</div>
-    <div id="fb"></div>`;
+    <div class="grid">${opts.map(o=>`<button class="verbPick" onclick="checkVerbToImage('${o}','${v}')">${realImage(o,true)}</button>`).join("")}</div>
+    <button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
   scrollToGame();
 }
 function checkVerbToImage(a,v){
@@ -475,6 +474,15 @@ function checkVerbToImage(a,v){
     $("fb").innerHTML=`<div class="no">❌ Noch nicht.</div>`;
   }
   scrollToFeedback();
+}
+
+
+function showTranslationHelp(v){
+  const fb=$("fb")||$("cardFeedback");
+  if(fb){
+    fb.innerHTML=`<div class="ok"><strong>Hilfe (${nativeLang()}):</strong><br>${nativeWord(v)}</div>` + fb.innerHTML;
+    scrollToFeedback();
+  }
 }
 
 function init(){
@@ -670,7 +678,7 @@ function memory(){
   state.memoryCards=[];
   state.active.slice(0,10).forEach((v,i)=>{
     state.memoryCards.push({p:i,t:"de",v:v,html:`<span class="mem-german">${v}</span>`,o:false,d:false});
-    state.memoryCards.push({p:i,t:"img",v:v,html:`${realImage(v,true)}<span class="mem-native">${nativeWord(v)}</span>`,o:false,d:false});
+    state.memoryCards.push({p:i,t:"img",v:v,html:`${realImage(v,true)}`,o:false,d:false});
   });
   state.memoryCards=shuffle(state.memoryCards);
   saveState();
@@ -678,7 +686,7 @@ function memory(){
   scrollToGame();
 }
 function renderMemory(){
-  $("game").innerHTML=`<h3>Memory: Bild + Muttersprache ↔ deutsches Verb</h3>
+  $("game").innerHTML=`<h3>Memory: Bild ↔ deutsches Verb</h3>
   <div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`;
 }
 function flip(i){
@@ -701,7 +709,7 @@ function quiz(){
   if(!v){renderHome();return}
   let opts=shuffle([v,...shuffle(state.active.filter(a=>a!==v)).slice(0,3)]);
   state.currentVerb=v;saveState();
-  $("game").innerHTML=`<h3>Welches Verb passt?</h3>${realImage(v,false)}<p>${nativeWord(v)}</p>${opts.map(o=>`<button onclick="checkQuiz('${o}','${v}')">${o}</button>`).join("")}<div id="fb"></div>`;
+  $("game").innerHTML=`<h3>Welches Verb passt?</h3>${realImage(v,false)}<button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button>${opts.map(o=>`<button onclick="checkQuiz('${o}','${v}')">${o}</button>`).join("")}<div id="fb"></div>`;
   scrollToGame();
 }
 function checkQuiz(a,v){
@@ -713,7 +721,7 @@ function writeVerb(){
   let v=chooseVerbForPractice();
   if(!v){renderHome();return}
   state.currentVerb=v;saveState();
-  $("game").innerHTML=`<h3>Schreibe das deutsche Verb</h3>${realImage(v,false)}<p>${nativeWord(v)}</p><input id="w"><button onclick="checkWrite('${v}')">prüfen</button><div id="fb"></div>`;
+  $("game").innerHTML=`<h3>Schreibe das deutsche Verb</h3>${realImage(v,false)}<input id="w"><button onclick="checkWrite('${v}')">prüfen</button><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
   scrollToGame();
 }
 function checkWrite(v){
