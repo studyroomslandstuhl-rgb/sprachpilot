@@ -1,1046 +1,636 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Verben A1 - SprachPilot</title>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SprachPilot</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;color:#222}main{width:min(1050px,94vw);margin:0 auto;padding:20px 0 40px}
-.card{background:white;border-radius:22px;padding:20px;box-shadow:0 12px 35px rgba(0,0,0,.22);margin-bottom:16px}h1,h2{color:#667eea}button{border:0;border-radius:14px;padding:12px 16px;font-size:16px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);color:white;margin:5px;cursor:pointer}button.secondary{background:#eef2ff;color:#333}button.success{background:linear-gradient(135deg,#27ae60,#2ecc71)}.hidden{display:none!important}.small{font-size:14px;color:#666}.ok{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0}.no{background:#ffe1e1;border-left:5px solid #e74c3c;padding:12px;border-radius:10px;margin:10px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.verbPick{border:2px solid #ddd;border-radius:14px;padding:12px;background:#f7f8ff;text-align:center}.verbPick.known{background:#e8fff1;border-color:#27ae60}.verbPick.unsure{background:#fff3cd;border-color:#ffc107}.verbPick.unknown{background:#ffe1e1;border-color:#e74c3c}
-.menu{display:flex;flex-wrap:wrap;gap:8px}.memory{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.mem{min-height:88px;border-radius:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:900;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px}.mem.open{background:white;color:#333;border:3px solid #667eea}.mem.done{background:linear-gradient(135deg,#27ae60,#2ecc71);color:white}.pic{font-size:38px;display:block}input{width:100%;padding:12px;border:2px solid #ddd;border-radius:12px;font-size:16px}.progress{background:#eef2ff;padding:10px;border-radius:12px;margin:8px 0}.wordsearch{font-family:monospace;letter-spacing:4px;line-height:1.8;font-size:20px;background:#f7f8ff;padding:12px;border-radius:12px;overflow:auto}
-@media(max-width:500px){.memory{grid-template-columns:repeat(4,1fr);gap:5px}.mem{min-height:70px;font-size:11px}.pic{font-size:28px}}
-
-/* BESSERE VERB-KARTEN */
-.study-card-wrap{perspective:1000px;max-width:360px;margin:18px auto}
-.study-card{width:100%;min-height:230px;position:relative;transform-style:preserve-3d;transition:transform .5s;cursor:pointer}
-.study-card.flipped{transform:rotateY(180deg)}
-.study-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;background:white;border:4px solid #667eea;box-shadow:0 10px 28px rgba(0,0,0,.2);padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.study-back{transform:rotateY(180deg);background:#eefaf3;border-color:#27ae60}
-.native-word{font-size:32px;font-weight:900;color:#764ba2;margin:12px 0}
-.german-word{font-size:42px;font-weight:900;color:#27ae60;margin:12px 0}
-.action-img{width:100%;max-width:230px;height:auto;display:block;margin:0 auto 8px}
-.mem-img{width:100%;max-width:120px;display:block;margin:0 auto 4px}
-.mem-native{font-weight:900;font-size:13px;color:#333}
-.mem-german{font-weight:900;font-size:18px}
-
-
-/* ADAPTIVER FORTSCHRITT */
-.progress-toggle{
-  position:fixed;
-  top:14px;
-  right:14px;
-  z-index:9999;
-  border-radius:999px;
-  padding:10px 13px;
-  background:#ffcc33;
-  color:#333;
-  border:2px solid white;
-  box-shadow:0 8px 20px rgba(0,0,0,.25);
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
 }
-.progress-panel{
-  position:fixed;
-  top:0;
-  right:0;
-  width:min(380px,92vw);
-  height:100vh;
-  background:white;
-  z-index:10000;
-  box-shadow:-10px 0 30px rgba(0,0,0,.3);
+
+body{
+  min-height:100vh;
+  font-family:Arial, Helvetica, sans-serif;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:#222;
   padding:18px;
-  overflow:auto;
 }
-.progress-row{
-  background:#f7f8ff;
-  border:2px solid #e0e4ff;
-  border-radius:12px;
-  padding:9px;
-  margin:7px 0;
+
+.container{
+  max-width:920px;
+  margin:0 auto;
 }
-.progress-line{
-  height:10px;
-  background:#ddd;
-  border-radius:999px;
-  overflow:hidden;
-  margin-top:5px;
+
+.hero{
+  background:white;
+  border-radius:28px;
+  padding:28px 22px;
+  box-shadow:0 14px 38px rgba(0,0,0,.23);
+  text-align:center;
+  margin-bottom:18px;
 }
-.progress-fill{
-  height:100%;
-  background:linear-gradient(135deg,#27ae60,#2ecc71);
-}
-.task-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-  gap:12px;
-  margin:12px 0;
-}
-.task-card{
-  min-height:110px;
-  border-radius:18px;
-  background:#f7f8ff;
-  border:3px solid #dce2ff;
-  color:#333;
-  font-size:18px;
+
+.logo-wrap{
+  width:104px;
+  height:104px;
+  margin:0 auto 14px;
+  border-radius:28px;
+  background:linear-gradient(135deg,#eef2ff,#ffffff);
   display:flex;
-  flex-direction:column;
   align-items:center;
   justify-content:center;
-  text-align:center;
-}
-.task-card .big-icon{font-size:34px;margin-bottom:8px}
-.mini-top-progress{
-  background:white;
-  border:2px solid #dce2ff;
-  border-radius:16px;
-  padding:10px;
-  margin:8px 0;
-}
-
-
-/* REALISTISCHE BILDER */
-.real-img{
-  width:100%;
-  max-width:280px;
-  height:190px;
-  object-fit:cover;
-  border-radius:18px;
+  box-shadow:0 10px 24px rgba(102,126,234,.28);
   border:3px solid #dce2ff;
-  background:#f7f8ff;
-  display:block;
-  margin:0 auto 10px;
 }
-.real-img-small{
-  width:100%;
-  max-width:115px;
+
+.logo-wrap svg{
+  width:78px;
   height:78px;
-  object-fit:cover;
-  border-radius:10px;
-  border:2px solid #dce2ff;
-  background:#f7f8ff;
-  display:block;
-  margin:0 auto 4px;
 }
-.image-fallback{
-  background:#f7f8ff;
-  border:3px dashed #dce2ff;
-  border-radius:18px;
+
+h1{
+  font-size:42px;
+  color:#667eea;
+  margin-bottom:8px;
+  letter-spacing:.3px;
+}
+
+.subtitle{
+  font-size:18px;
+  color:#666;
+  line-height:1.4;
+}
+
+.card{
+  background:white;
+  border-radius:24px;
   padding:22px;
-  text-align:center;
+  box-shadow:0 12px 32px rgba(0,0,0,.2);
+  margin-bottom:16px;
+}
+
+h2{
+  color:#667eea;
+  margin-bottom:10px;
+}
+
+h3{
+  margin:10px 0;
+}
+
+label{
+  display:block;
+  font-weight:bold;
+  margin-top:12px;
+}
+
+input,select{
+  width:100%;
+  padding:13px;
+  border:2px solid #ddd;
+  border-radius:13px;
+  font-size:16px;
+  margin-top:6px;
+}
+
+.two{
+  display:grid;
+  grid-template-columns:1fr 1fr;
+  gap:12px;
+}
+
+.three{
+  display:grid;
+  grid-template-columns:1fr 1fr 1fr;
+  gap:8px;
+}
+
+button{
+  border:0;
+  border-radius:15px;
+  padding:14px 18px;
+  font-size:16px;
+  font-weight:800;
+  cursor:pointer;
+  margin-top:12px;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:white;
+  box-shadow:0 8px 18px rgba(0,0,0,.18);
+}
+
+button.secondary{
+  background:#eef2ff;
+  color:#333;
+  box-shadow:none;
+}
+
+button.success{
+  background:linear-gradient(135deg,#27ae60,#2ecc71);
+}
+
+.hidden{
+  display:none!important;
+}
+
+.ok{
+  background:#d9f7e8;
+  border-left:5px solid #27ae60;
+  padding:12px;
+  border-radius:12px;
+  margin:10px 0;
+}
+
+.no{
+  background:#ffe1e1;
+  border-left:5px solid #e74c3c;
+  padding:12px;
+  border-radius:12px;
+  margin:10px 0;
+}
+
+.actions{
+  display:flex;
+  gap:10px;
+  flex-wrap:wrap;
+  justify-content:center;
+}
+
+.modules{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
+  gap:14px;
+}
+
+.module{
+  display:block;
+  text-decoration:none;
+  color:#222;
+  background:white;
+  border-radius:24px;
+  padding:22px;
+  box-shadow:0 12px 32px rgba(0,0,0,.2);
+  border:3px solid transparent;
+  transition:.2s;
+}
+
+.module:hover{
+  border-color:#ffcc33;
+  transform:translateY(-3px);
+}
+
+.module-title{
+  font-size:24px;
   font-weight:900;
   color:#667eea;
-  margin:0 auto 10px;
-  max-width:280px;
+  margin-bottom:8px;
 }
 
-
-/* FINAL CLEANUP VERBEN */
-.top-link{display:inline-block;text-decoration:none;color:#667eea;font-weight:900}
-.top-link:hover{text-decoration:underline}
-.task-grid{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important;gap:8px!important}
-.task-card{min-height:72px!important;padding:8px!important;font-size:14px!important;line-height:1.15!important}
-.task-card .big-icon{font-size:22px!important;margin-bottom:4px}
-.memory{align-items:stretch}
-.mem{min-height:118px!important;height:118px!important;overflow:hidden!important;padding:5px!important}
-.mem.open{display:flex!important;align-items:center!important;justify-content:center!important}
-.mem .real-img-small{width:100%!important;max-width:100%!important;height:100%!important;object-fit:cover!important;border:0!important;border-radius:10px!important;margin:0!important}
-.mem-german{color:#333!important;font-size:17px!important;line-height:1.15!important}
-.real-img{height:210px!important;object-fit:cover!important}
-.real-img-small{height:95px!important;object-fit:cover!important}
-.image-fallback{color:transparent!important;font-size:0!important;min-height:150px}
-.image-fallback::after{content:"Bild";font-size:20px;color:#667eea}
-.help-bottom{display:block;margin-top:14px!important}
-@media(max-width:500px){.task-grid{grid-template-columns:repeat(2,1fr)!important}.mem{min-height:92px!important;height:92px!important}}
-
-
-/* FIX: BILDER UND KARTEIKARTENRUNDE */
-.flash-progress-box{
-  background:#f7f8ff;
-  border:2px solid #dce2ff;
-  border-radius:14px;
-  padding:10px;
-  margin:10px 0 14px;
-}
-.flash-bar{
-  height:14px;
-  background:#ddd;
-  border-radius:999px;
-  overflow:hidden;
-  margin:7px 0;
-}
-.flash-fill{
-  height:100%;
-  background:linear-gradient(135deg,#27ae60,#2ecc71);
-  transition:width .25s;
-}
-.flash-meta{
-  display:flex;
-  justify-content:space-between;
-  gap:8px;
-  flex-wrap:wrap;
-  font-size:14px;
+.module p{
   color:#555;
-}
-.real-img,
-.real-img-small{
-  background:#f7f8ff;
-}
-.mem img,
-.verbPick img,
-.real-img,
-.real-img-small{
-  display:block;
-}
-.mem{
-  white-space:normal!important;
-}
-.bild-option{
-  background:#f7f8ff!important;
-  color:#333!important;
-  border:2px solid #dce2ff!important;
-  border-radius:14px!important;
-  padding:6px!important;
-}
-.bild-option img{
-  width:100%!important;
-  height:110px!important;
-  object-fit:cover!important;
-  border-radius:10px!important;
-}
-.help-bottom{
-  display:block;
-  margin-top:14px!important;
+  line-height:1.4;
 }
 
-
-/* IMAGE DOM FIX V3 */
-.mem{position:relative!important;overflow:hidden!important}
-.mem-img-holder,.img-holder{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  border-radius:10px;
-  background:#f7f8ff;
-}
-.mem-img-holder img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-.img-holder img{
-  width:100%;
-  max-width:280px;
-  height:210px;
-  object-fit:cover;
-  display:block;
-  border-radius:18px;
-  border:3px solid #dce2ff;
-}
-.bild-option .img-holder img{
-  width:100%;
-  height:105px;
-  border:0;
-  border-radius:10px;
-}
-.bild-option{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  min-height:120px!important;
-  padding:6px!important;
-  overflow:hidden!important;
+.badge{
+  display:inline-block;
+  margin-top:12px;
+  background:#fff3cd;
+  border:2px solid #ffc107;
+  color:#7a5400;
+  border-radius:999px;
+  padding:5px 10px;
+  font-weight:bold;
+  font-size:13px;
 }
 
-</style></head><body><button class="progress-toggle" onclick="toggleProgressPanel()">📊</button><div id="progressPanel" class="progress-panel hidden"></div><main>
-<div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
-<div class="card" id="app"></div>
-</main>
+.small{
+  font-size:14px;
+  color:#666;
+  line-height:1.4;
+}
+
+footer{
+  text-align:center;
+  color:white;
+  margin-top:24px;
+  font-size:14px;
+  opacity:.9;
+}
+
+@media(max-width:650px){
+  body{padding:12px}
+  h1{font-size:34px}
+  .two{grid-template-columns:1fr}
+  .hero{padding:24px 16px}
+  .logo-wrap{width:92px;height:92px}
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+
+  <section class="hero">
+    <div class="logo-wrap" aria-label="SprachPilot Logo">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#667eea"/>
+            <stop offset="1" stop-color="#764ba2"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="52" fill="url(#g)"/>
+        <path d="M28 63 C43 38,70 30,91 38 C75 43,63 53,55 70 C47 66,38 63,28 63Z" fill="#fff" opacity=".95"/>
+        <path d="M54 70 C63 53,75 43,91 38 C84 57,72 75,52 91 C55 82,56 75,54 70Z" fill="#ffcc33"/>
+        <circle cx="71" cy="49" r="5" fill="#667eea"/>
+        <path d="M33 82 C43 78,50 76,58 78" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+    <h1>SprachPilot</h1>
+    <p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p>
+  </section>
+
+  <section class="card">
+    <h2>Willkommen!</h2>
+    <div id="loggedBox"></div>
+
+    <div id="authButtons" class="actions">
+      <button onclick="showRegister()">Neu registrieren</button>
+      <button class="secondary" onclick="showLogin()">Einloggen</button>
+    </div>
+
+    <div id="registerBox" class="hidden">
+      <h3>Registrieren</h3>
+      <p class="small">Dein Profil wird auf diesem Gerät gespeichert und von Fragen A1 und Verben A1 verwendet.</p>
+
+      <form onsubmit="registerUser(event)">
+        <div class="two">
+          <div>
+            <label>Vorname *</label>
+            <input id="fname" required>
+          </div>
+          <div>
+            <label>Nachname *</label>
+            <input id="lname" required>
+          </div>
+        </div>
+
+        <label>Kursnummer *</label>
+        <input id="course" required placeholder="z. B. A1-01">
+
+        <label>Geburtsdatum *</label>
+        <div class="three">
+          <select id="birthDay" required>
+            <option value="">Tag</option>
+          </select>
+          <select id="birthMonth" required>
+            <option value="">Monat</option>
+          </select>
+          <select id="birthYear" required>
+            <option value="">Jahr</option>
+          </select>
+        </div>
+
+        <div class="two">
+          <div>
+            <label>Geburtsort *</label>
+            <input id="birthplace" required placeholder="z. B. Kiew, Aleppo, St. Wendel">
+          </div>
+          <div>
+            <label>Wohnort / Stadt *</label>
+            <input id="city" required placeholder="z. B. St. Wendel">
+          </div>
+        </div>
+
+        <div class="two">
+          <div>
+            <label>Heimatland *</label>
+            <select id="country" required>
+              <option value="">Bitte wählen</option>
+            </select>
+          </div>
+          <div>
+            <label>Muttersprache *</label>
+            <select id="nativeLang" required>
+              <option value="">Bitte wählen</option>
+            </select>
+          </div>
+        </div>
+
+        <label>Fremdsprache(n)</label>
+        <select id="foreignLang" multiple size="6"></select>
+        <p class="small">Mehrere Sprachen markieren, falls möglich.</p>
+
+        <div class="two">
+          <div>
+            <label>Kinder</label>
+            <select id="children"></select>
+          </div>
+          <div>
+            <label>Familienstand</label>
+            <select id="marital">
+              <option value="ledig">ledig</option>
+              <option value="verheiratet">verheiratet</option>
+              <option value="geschieden">geschieden</option>
+              <option value="verwitwet">verwitwet</option>
+            </select>
+          </div>
+        </div>
+
+        <button class="success" type="submit">Registrieren und speichern</button>
+      </form>
+    </div>
+
+    <div id="loginBox" class="hidden">
+      <h3>Einloggen</h3>
+      <p class="small">Auf diesem Gerät kannst du ein gespeichertes Profil öffnen.</p>
+      <div id="savedProfiles"></div>
+      <button class="secondary" onclick="showRegister()">Mit Daten erneut anmelden</button>
+    </div>
+  </section>
+
+  <section class="modules">
+    <a class="module" href="fragen-A1/">
+      <div class="module-title">Fragen A1</div>
+      <p>Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.</p>
+      <span class="badge">Starten</span>
+    </a>
+
+    <a class="module" href="verben-A1/">
+      <div class="module-title">Verben A1</div>
+      <p>Verben mit Bildern, Karteikarten, Sprechen, Schreiben und Wiederholung.</p>
+      <span class="badge">Starten</span>
+    </a>
+
+    <a class="module" href="#">
+      <div class="module-title">Wortschatz A1</div>
+      <p>Artikel, Plural und wichtige Wörter.</p>
+      <span class="badge">Bald</span>
+    </a>
+
+    <a class="module" href="#">
+      <div class="module-title">DTZ Training</div>
+      <p>Prüfungstraining für Lesen, Hören, Schreiben und Sprechen.</p>
+      <span class="badge">Bald</span>
+    </a>
+  </section>
+
+  <footer>© SprachPilot</footer>
+</div>
+
 <script>
-const GOOGLE_SHEET_URL="https://script.google.com/macros/s/AKfycbzQgBJVmvgfqbWBJSPkDAbxwvbiE3LfaU55iTtz1h1kTdPzxmUmgalxKhRNhpxngfTr/exec";
-const ALL_VERBS=[{"v": "lieben", "emoji": "❤️", "img": "Person zeigt ein Herz"}, {"v": "kaufen", "emoji": "🛒", "img": "Person kauft im Geschäft"}, {"v": "verstehen", "emoji": "💡", "img": "Person versteht"}, {"v": "brauchen", "emoji": "🎒", "img": "Person braucht eine Tasche"}, {"v": "hören", "emoji": "👂", "img": "Person hört Musik"}, {"v": "lernen", "emoji": "📚", "img": "Person lernt Deutsch"}, {"v": "wohnen", "emoji": "🏠", "img": "Person wohnt in einer Stadt"}, {"v": "bringen", "emoji": "🎁", "img": "Person bringt etwas"}, {"v": "sein", "emoji": "👤", "img": "Person ist da"}, {"v": "schreiben", "emoji": "✍️", "img": "Person schreibt"}, {"v": "fotografieren", "emoji": "📷", "img": "Person fotografiert"}, {"v": "telefonieren", "emoji": "☎️", "img": "Person telefoniert"}, {"v": "kochen", "emoji": "🍲", "img": "Person kocht"}, {"v": "leben", "emoji": "🌍", "img": "Person lebt in Deutschland"}, {"v": "kommen", "emoji": "➡️", "img": "Person kommt"}, {"v": "buchstabieren", "emoji": "🔤", "img": "Person buchstabiert"}, {"v": "gehen", "emoji": "🚶", "img": "Person geht"}, {"v": "schwimmen", "emoji": "🏊", "img": "Person schwimmt"}, {"v": "suchen", "emoji": "🔍", "img": "Person sucht"}, {"v": "bestellen", "emoji": "📋", "img": "Person bestellt"}, {"v": "weinen", "emoji": "😢", "img": "Person weint"}, {"v": "reparieren", "emoji": "🔧", "img": "Person repariert"}, {"v": "gewinnen", "emoji": "🏆", "img": "Person gewinnt"}, {"v": "spielen", "emoji": "🎲", "img": "Person spielt"}, {"v": "springen", "emoji": "🤾", "img": "Person springt"}, {"v": "verlieren", "emoji": "😟", "img": "Person verliert"}, {"v": "fragen", "emoji": "❓", "img": "Person fragt"}, {"v": "verkaufen", "emoji": "🏪", "img": "Person verkauft"}, {"v": "unterschreiben", "emoji": "🖊️", "img": "Person unterschreibt"}, {"v": "reservieren", "emoji": "📅", "img": "Person reserviert"}, {"v": "buchen", "emoji": "🎫", "img": "Person bucht"}, {"v": "machen", "emoji": "🛠️", "img": "Person macht etwas"}, {"v": "malen", "emoji": "🎨", "img": "Person malt"}, {"v": "trinken", "emoji": "🥤", "img": "Person trinkt"}, {"v": "schicken", "emoji": "📨", "img": "Person schickt eine Nachricht"}, {"v": "denken", "emoji": "🤔", "img": "Person denkt"}, {"v": "winken", "emoji": "👋", "img": "Person winkt"}, {"v": "hassen", "emoji": "💔", "img": "Person mag etwas gar nicht"}, {"v": "beißen", "emoji": "🦷", "img": "Person beißt"}, {"v": "gießen", "emoji": "🪴", "img": "Person gießt Pflanzen"}, {"v": "reißen", "emoji": "📄", "img": "Person reißt Papier"}, {"v": "putzen", "emoji": "🧽", "img": "Person putzt"}, {"v": "küssen", "emoji": "😘", "img": "Person küsst"}, {"v": "tanzen", "emoji": "💃", "img": "Person tanzt"}, {"v": "mixen", "emoji": "🥣", "img": "Person mixt"}, {"v": "reisen", "emoji": "🧳", "img": "Person reist"}, {"v": "haben", "emoji": "🎒", "img": "Person hat eine Tasche"}, {"v": "überqueren", "emoji": "🚦", "img": "Person überquert die Straße"}, {"v": "grüßen", "emoji": "🙋", "img": "Person grüßt"}, {"v": "genießen", "emoji": "😊", "img": "Person genießt das Essen"}, {"v": "singen", "emoji": "🎤", "img": "Person singt"}, {"v": "schließen", "emoji": "🔒", "img": "Person schließt die Tür"}, {"v": "rennen", "emoji": "🏃", "img": "Person rennt"}, {"v": "lachen", "emoji": "😄", "img": "Person lacht"}, {"v": "warten", "emoji": "⏳", "img": "Person wartet"}, {"v": "arbeiten", "emoji": "💼", "img": "Person arbeitet"}, {"v": "finden", "emoji": "✅", "img": "Person findet etwas"}, {"v": "benutzen", "emoji": "🧰", "img": "Person benutzt ein Gerät"}, {"v": "rechnen", "emoji": "➕", "img": "Person rechnet"}, {"v": "zeichnen", "emoji": "✏️", "img": "Person zeichnet"}, {"v": "öffnen", "emoji": "🚪", "img": "Person öffnet die Tür"}, {"v": "wiederholen", "emoji": "🔁", "img": "Person wiederholt"}, {"v": "schneiden", "emoji": "🔪", "img": "Person schneidet"}, {"v": "streiten", "emoji": "💢", "img": "Person streitet"}, {"v": "atmen", "emoji": "🫁", "img": "Person atmet"}];
+const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzQgBJVmvgfqbWBJSPkDAbxwvbiE3LfaU55iTtz1h1kTdPzxmUmgalxKhRNhpxngfTr/exec";
 
-function $(id){return document.getElementById(id)}
-function clean(s){return String(s||"").trim().toLowerCase().replace(/[.,!?]/g,"")}
-function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
-
-let profile=null;
-let state={
-  phase:"select",
-  index:0,
-  known:[],
-  unsure:[],
-  unknown:[],
-  active:[],
-  learned:[],
-  encounters:{},
-  successBySkill:{},
-  weak:{},
-  currentGame:"",
-  currentVerb:"",
-  memoryCards:[],
-  first:null,
-  lock:false,
-  lastAutoReplace:0
-};
-
-const VERB_TRANSLATIONS = {
-  "Arabisch":{"lieben":"يحب","kaufen":"يشتري","verstehen":"يفهم","brauchen":"يحتاج","hören":"يسمع","lernen":"يتعلم","wohnen":"يسكن","bringen":"يحضر","sein":"يكون","schreiben":"يكتب","fotografieren":"يلتقط صورة","telefonieren":"يتصل","kochen":"يطبخ","leben":"يعيش","kommen":"يأتي","buchstabieren":"يتهجى","gehen":"يذهب","schwimmen":"يسبح","suchen":"يبحث","bestellen":"يطلب","weinen":"يبكي","reparieren":"يصلح","gewinnen":"يفوز","spielen":"يلعب","springen":"يقفز","verlieren":"يخسر","fragen":"يسأل","verkaufen":"يبيع","unterschreiben":"يوقّع","reservieren":"يحجز","buchen":"يحجز","machen":"يفعل","malen":"يرسم","trinken":"يشرب","schicken":"يرسل","denken":"يفكر","winken":"يلوح","hassen":"يكره","beißen":"يعض","gießen":"يسقي","reißen":"يمزق","putzen":"ينظف","küssen":"يقبل","tanzen":"يرقص","mixen":"يخلط","reisen":"يسافر","haben":"يملك","überqueren":"يعبر","grüßen":"يحيي","genießen":"يستمتع","singen":"يغني","schließen":"يغلق","rennen":"يركض","lachen":"يضحك","warten":"ينتظر","arbeiten":"يعمل","finden":"يجد","benutzen":"يستخدم","rechnen":"يحسب","zeichnen":"يرسم","öffnen":"يفتح","wiederholen":"يكرر","schneiden":"يقطع","streiten":"يتشاجر","atmen":"يتنفس"},
-  "Russisch":{"lieben":"любить","kaufen":"покупать","verstehen":"понимать","brauchen":"нужно / нуждаться","hören":"слышать","lernen":"учить","wohnen":"проживать","bringen":"приносить","sein":"быть","schreiben":"писать","fotografieren":"фотографировать","telefonieren":"звонить","kochen":"готовить","leben":"жить","kommen":"приходить","buchstabieren":"произносить по буквам","gehen":"идти","schwimmen":"плавать","suchen":"искать","bestellen":"заказывать","weinen":"плакать","reparieren":"ремонтировать","gewinnen":"выигрывать","spielen":"играть","springen":"прыгать","verlieren":"проигрывать / терять","fragen":"спрашивать","verkaufen":"продавать","unterschreiben":"подписывать","reservieren":"резервировать","buchen":"бронировать","machen":"делать","malen":"рисовать красками","trinken":"пить","schicken":"посылать","denken":"думать","winken":"махать","hassen":"ненавидеть","beißen":"кусать","gießen":"поливать","reißen":"рвать","putzen":"чистить","küssen":"целовать","tanzen":"танцевать","mixen":"смешивать","reisen":"путешествовать","haben":"иметь","überqueren":"переходить","grüßen":"приветствовать","genießen":"наслаждаться / получать удовольствие","singen":"петь","schließen":"закрывать","rennen":"бежать","lachen":"смеяться","warten":"ждать","arbeiten":"работать","finden":"находить","benutzen":"использовать","rechnen":"считать","zeichnen":"чертить / рисовать","öffnen":"открывать","wiederholen":"повторять","schneiden":"резать","streiten":"ссориться","atmen":"дышать"},
-  "Ukrainisch":{"lieben":"любити","kaufen":"купувати","verstehen":"розуміти","brauchen":"потребувати","hören":"чути","lernen":"вчити","wohnen":"жити","bringen":"приносити","sein":"бути","schreiben":"писати","fotografieren":"фотографувати","telefonieren":"телефонувати","kochen":"готувати","leben":"жити","kommen":"приходити","buchstabieren":"по буквах","gehen":"йти","schwimmen":"плавати","suchen":"шукати","bestellen":"замовляти","weinen":"плакати","reparieren":"ремонтувати","gewinnen":"вигравати","spielen":"грати","springen":"стрибати","verlieren":"втрачати","fragen":"питати","verkaufen":"продавати","unterschreiben":"підписувати","reservieren":"резервувати","buchen":"бронювати","machen":"робити","malen":"малювати","trinken":"пити","schicken":"надсилати","denken":"думати","winken":"махати","hassen":"ненавидіти","beißen":"кусати","gießen":"поливати","reißen":"рвати","putzen":"чистити","küssen":"цілувати","tanzen":"танцювати","mixen":"змішувати","reisen":"подорожувати","haben":"мати","überqueren":"переходити","grüßen":"вітати","genießen":"насолоджуватися","singen":"співати","schließen":"закривати","rennen":"бігти","lachen":"сміятися","warten":"чекати","arbeiten":"працювати","finden":"знаходити","benutzen":"використовувати","rechnen":"рахувати","zeichnen":"креслити","öffnen":"відкривати","wiederholen":"повторювати","schneiden":"різати","streiten":"сваритися","atmen":"дихати"},
-  "Türkisch":{"lieben":"sevmek","kaufen":"satın almak","verstehen":"anlamak","brauchen":"ihtiyaç duymak","hören":"duymak","lernen":"öğrenmek","wohnen":"oturmak","bringen":"getirmek","sein":"olmak","schreiben":"yazmak","fotografieren":"fotoğraf çekmek","telefonieren":"telefon etmek","kochen":"yemek pişirmek","leben":"yaşamak","kommen":"gelmek","buchstabieren":"harflemek","gehen":"gitmek","schwimmen":"yüzmek","suchen":"aramak","bestellen":"sipariş vermek","weinen":"ağlamak","reparieren":"tamir etmek","gewinnen":"kazanmak","spielen":"oynamak","springen":"zıplamak","verlieren":"kaybetmek","fragen":"sormak","verkaufen":"satmak","unterschreiben":"imzalamak","reservieren":"rezervasyon yapmak","buchen":"rezerve etmek","machen":"yapmak","malen":"boyamak","trinken":"içmek","schicken":"göndermek","denken":"düşünmek","winken":"el sallamak","hassen":"nefret etmek","beißen":"ısırmak","gießen":"sulamak","reißen":"yırtmak","putzen":"temizlemek","küssen":"öpmek","tanzen":"dans etmek","mixen":"karıştırmak","reisen":"seyahat etmek","haben":"sahip olmak","überqueren":"karşıya geçmek","grüßen":"selamlamak","genießen":"keyfini çıkarmak","singen":"şarkı söylemek","schließen":"kapatmak","rennen":"koşmak","lachen":"gülmek","warten":"beklemek","arbeiten":"çalışmak","finden":"bulmak","benutzen":"kullanmak","rechnen":"hesaplamak","zeichnen":"çizmek","öffnen":"açmak","wiederholen":"tekrarlamak","schneiden":"kesmek","streiten":"tartışmak","atmen":"nefes almak"},
-  "Englisch":{"lieben":"to love","kaufen":"to buy","verstehen":"to understand","brauchen":"to need","hören":"to hear","lernen":"to learn","wohnen":"to live","bringen":"to bring","sein":"to be","schreiben":"to write","fotografieren":"to take photos","telefonieren":"to phone","kochen":"to cook","leben":"to live","kommen":"to come","buchstabieren":"to spell","gehen":"to go","schwimmen":"to swim","suchen":"to search","bestellen":"to order","weinen":"to cry","reparieren":"to repair","gewinnen":"to win","spielen":"to play","springen":"to jump","verlieren":"to lose","fragen":"to ask","verkaufen":"to sell","unterschreiben":"to sign","reservieren":"to reserve","buchen":"to book","machen":"to do","malen":"to paint","trinken":"to drink","schicken":"to send","denken":"to think","winken":"to wave","hassen":"to hate","beißen":"to bite","gießen":"to water","reißen":"to tear","putzen":"to clean","küssen":"to kiss","tanzen":"to dance","mixen":"to mix","reisen":"to travel","haben":"to have","überqueren":"to cross","grüßen":"to greet","genießen":"to enjoy","singen":"to sing","schließen":"to close","rennen":"to run","lachen":"to laugh","warten":"to wait","arbeiten":"to work","finden":"to find","benutzen":"to use","rechnen":"to calculate","zeichnen":"to draw","öffnen":"to open","wiederholen":"to repeat","schneiden":"to cut","streiten":"to argue","atmen":"to breathe"}
-};
-function nativeLang(){return (profile&&profile.muttersprache)?profile.muttersprache:"Englisch"}
-function nativeWord(v){const lang=nativeLang();return (VERB_TRANSLATIONS[lang]&&VERB_TRANSLATIONS[lang][v])||(VERB_TRANSLATIONS["Englisch"]&&VERB_TRANSLATIONS["Englisch"][v])||v}
-
-
-
-
-function loadProfile(){
-  try{profile=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){profile=null}
-  if(!profile){
-    $("profileBox").innerHTML="<div class='no'>Bitte zuerst auf der Startseite registrieren oder einloggen.</div>";
-    $("app").innerHTML="<button onclick=\"location.href='../'\">Zur Startseite</button>";
-    return false;
-  }
-  $("profileBox").innerHTML=`<div class="ok">Eingeloggt: <strong>${profile.vorname} ${profile.nachname}</strong> | Kurs: ${profile.kurs}</div>`;
-  return true;
-}
-function key(){return "SP_VERBS_"+(profile?profile.userId:"guest")}
-
-const VERB_SKILLS = [
-  "karteikarte",
-  "memory",
-  "bild_verb",
-  "verb_bild",
-  "schreiben",
-  "hoeren_schreiben",
-  "hoeren_sprechen",
-  "bild_sprechen"
+const COUNTRIES = [
+"Afghanistan","Ägypten","Albanien","Algerien","Angola","Argentinien","Armenien","Aserbaidschan","Äthiopien","Australien",
+"Bangladesch","Belarus","Belgien","Bolivien","Bosnien und Herzegowina","Brasilien","Bulgarien","Chile","China","Deutschland",
+"Ecuador","Eritrea","Estland","Finnland","Frankreich","Gambia","Georgien","Ghana","Griechenland","Großbritannien","Guinea",
+"Indien","Indonesien","Irak","Iran","Irland","Italien","Japan","Jemen","Jordanien","Kamerun","Kanada","Kasachstan","Kenia",
+"Kirgisistan","Kolumbien","Kosovo","Kroatien","Kuba","Lettland","Libanon","Litauen","Marokko","Moldau","Montenegro","Nigeria",
+"Nordmazedonien","Pakistan","Palästina","Peru","Philippinen","Polen","Portugal","Rumänien","Russland","Serbien","Slowakei",
+"Slowenien","Somalia","Spanien","Sri Lanka","Sudan","Syrien","Tadschikistan","Thailand","Tschechien","Tunesien","Türkei",
+"Turkmenistan","Uganda","Ukraine","Ungarn","USA","Usbekistan","Venezuela","Vietnam"
 ];
 
-const VERB_SKILL_LABELS = {
-  "karteikarte":"Karteikarten",
-  "memory":"Memory",
-  "bild_verb":"Bild → Verb",
-  "verb_bild":"Verb → Bild",
-  "schreiben":"Schreiben",
-  "hoeren_schreiben":"Hören → Schreiben",
-  "hoeren_sprechen":"Hören → Sprechen",
-  "bild_sprechen":"Bild → Sprechen"
-};
+const LANGUAGES = [
+"Albanisch","Amharisch","Arabisch","Armenisch","Aserbaidschanisch","Bengalisch","Bosnisch","Bulgarisch","Chinesisch","Dari",
+"Deutsch","Englisch","Farsi/Persisch","Französisch","Georgisch","Griechisch","Hindi","Italienisch","Japanisch","Kasachisch",
+"Kroatisch","Kurdisch","Paschtu","Polnisch","Portugiesisch","Rumänisch","Russisch","Serbisch","Somali","Spanisch","Tamil",
+"Thai","Tigrinya","Tschechisch","Türkisch","Ukrainisch","Ungarisch","Urdu","Usbekisch","Vietnamesisch"
+];
 
-function skillKey(skill){
-  if(skill==="zuordnung") return "bild_verb";
-  if(skill==="karteikarte_schreiben" || skill==="karteikarte_sprechen") return "karteikarte";
-  if(skill==="verb_bild") return "verb_bild";
-  if(skill==="bild_sprechen") return "bild_sprechen";
-  if(skill==="hoeren_schreiben") return "hoeren_schreiben";
-  if(skill==="hoeren_sprechen") return "hoeren_sprechen";
-  if(skill==="schreiben") return "schreiben";
-  if(skill==="memory") return "memory";
-  return skill;
-}
+function $(id){return document.getElementById(id)}
 
-function ensureSkillState(v){
-  state.skillDone = state.skillDone || {};
-  state.skillAttempts = state.skillAttempts || {};
-  state.skillSuccess = state.skillSuccess || {};
-  state.skillDone[v] = state.skillDone[v] || {};
-  state.skillAttempts[v] = state.skillAttempts[v] || {};
-  state.skillSuccess[v] = state.skillSuccess[v] || {};
-}
-
-function verbSkillCount(v){
-  ensureSkillState(v);
-  return VERB_SKILLS.filter(s=>state.skillDone[v][s]).length;
-}
-
-function verbCount(v){
-  return verbSkillCount(v);
-}
-
-function verbPercent(v){
-  return Math.round((verbSkillCount(v) * 100) / VERB_SKILLS.length);
-}
-
-function markSkill(v,skill,good){
-  const sk=skillKey(skill);
-  ensureSkillState(v);
-  state.skillAttempts[v][sk]=(state.skillAttempts[v][sk]||0)+1;
-  if(good){
-    state.skillSuccess[v][sk]=(state.skillSuccess[v][sk]||0)+1;
-    if(sk==="karteikarte"){
-      if((state.skillSuccess[v][sk]||0)>=2) state.skillDone[v][sk]=true;
-    }else{
-      state.skillDone[v][sk]=true;
-    }
-  }else{
-    state.weak[v]=(state.weak[v]||0)+1;
+function fillSelects(){
+  for(let i=1;i<=31;i++){
+    $("birthDay").innerHTML += `<option value="${String(i).padStart(2,"0")}">${String(i).padStart(2,"0")}</option>`;
   }
-}
-
-function skillBadges(v){
-  ensureSkillState(v);
-  return VERB_SKILLS.map(s=>{
-    const ok=state.skillDone[v][s];
-    const att=state.skillAttempts[v][s]||0;
-    return `<div class="small">${ok?"✅":"⬜"} ${VERB_SKILL_LABELS[s]} ${att?`(${att}x)`:""}</div>`;
-  }).join("");
-}
-
-function migrateState(){
-  state.learned=state.learned||[];
-  state.encounters=state.encounters||{};
-  state.successBySkill=state.successBySkill||{};
-  state.skillDone=state.skillDone||{};
-  state.skillAttempts=state.skillAttempts||{};
-  state.skillSuccess=state.skillSuccess||{};
-  state.active=state.active||[];
-  state.known=state.known||[];
-  state.unsure=state.unsure||[];
-  state.unknown=state.unknown||[];
-  (state.active||[]).forEach(v=>ensureSkillState(v));
-}
-function loadState(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(key())||"null");
-    if(saved) state={...state,...saved};
-  }catch(e){}
-  migrateState();
-}
-function saveState(){
-  migrateState();
-  localStorage.setItem(key(),JSON.stringify(state));
-  sendProgress();
-}
-
-function overall(){
-  if(!state.active.length)return 0;
-  let sum=state.active.reduce((s,v)=>s+verbPercent(v),0);
-  return Math.round(sum/state.active.length);
-}
-function learnedTotal(){return state.learned.length + state.active.filter(v=>verbPercent(v)>=100).length}
-function sendProgress(){
-  if(!profile)return;
-  const done=overall();
-  const payload={
-    userId:profile.userId,kurs:profile.kurs,vorname:profile.vorname,nachname:profile.nachname,
-    geburtsdatum:profile.geburtsdatum,heimatland:profile.heimatland,muttersprache:profile.muttersprache,
-    fremdsprache:profile.fremdsprache,wohnort:profile.wohnort,kinder:profile.kinder,
-    fragenFortschritt:profile.fragenFortschritt||0,verbenFortschritt:done,gesamtpunkte:done,
-    profile:profile,verbenState:state,timestamp:new Date().toISOString()
-  };
-  try{fetch(GOOGLE_SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})}catch(e){}
-}
-function img(v){return ALL_VERBS.find(x=>x.v===v)||{v:v,emoji:"⭐",img:"Bild"}}
-function unusedVerbs(){
-  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
-  return ALL_VERBS.map(x=>x.v).filter(v=>!used.includes(v));
-}
-function currentPickVerb(){
-  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
-  for(let i=state.index;i<ALL_VERBS.length;i++){
-    if(!used.includes(ALL_VERBS[i].v)){state.index=i;return ALL_VERBS[i];}
+  for(let i=1;i<=12;i++){
+    $("birthMonth").innerHTML += `<option value="${String(i).padStart(2,"0")}">${String(i).padStart(2,"0")}</option>`;
   }
-  return null;
-}
-
-
-
-
-function speakTextVerb(t,slow=false){
-  try{
-    if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){
-      const fb=$("fb")||$("cardFeedback");
-      if(fb)fb.innerHTML="<div class='no'>Hören wird auf diesem Gerät nicht unterstützt.</div>";
-      return;
-    }
-    const u=new SpeechSynthesisUtterance(String(t||""));
-    u.lang="de-DE";
-    u.rate=slow?0.55:0.75;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(u);
-  }catch(e){
-    const fb=$("fb")||$("cardFeedback");
-    if(fb)fb.innerHTML="<div class='no'>Beim Hören gab es ein Problem.</div>";
+  for(let i=1940;i<=2020;i++){
+    $("birthYear").innerHTML += `<option value="${i}">${i}</option>`;
   }
-}
 
-function scrollToGame(){
-  renderAndHydrate();
-  setTimeout(()=>{const g=$("game"); if(g) g.scrollIntoView({behavior:"smooth",block:"start"});},80);
-}
-function scrollToFeedback(){
-  setTimeout(()=>{const fb=$("fb")||$("cardFeedback")||$("game"); if(fb) fb.scrollIntoView({behavior:"smooth",block:"center"});},80);
-}
-function normalizeVerbAnswer(s){
-  return clean(String(s||"").replace(/\s+/g," "));
-}
-function checkVerbAnswer(answer, correct){
-  return normalizeVerbAnswer(answer)===normalizeVerbAnswer(correct);
-}
-function setMicStatus(txt){
-  const m=$("micStatus");
-  if(m)m.innerHTML=txt;
-}
-function recogVerb(cb){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){
-    const fb=$("cardFeedback")||$("fb");
-    if(fb)fb.innerHTML="<div class='no'>Mikrofon funktioniert auf diesem Gerät/Browser nicht. Bitte die Antwort schreiben.</div>";
-    scrollToFeedback();
-    return;
-  }
-  try{
-    let r=new SR();
-    r.lang="de-DE";
-    r.interimResults=false;
-    r.continuous=false;
-    r.maxAlternatives=3;
-    let result="";
-    let timer=null;
-    let done=false;
-    function finish(){
-      if(done)return;
-      done=true;
-      clearTimeout(timer);
-      setMicStatus("⚪ Mikrofon aus");
-      if(result.trim())cb(result.trim());
-      else{
-        const fb=$("cardFeedback")||$("fb");
-        if(fb)fb.innerHTML="<div class='no'>Ich habe nichts verstanden. Bitte noch einmal sprechen oder schreiben.</div>";
-        scrollToFeedback();
-      }
-    }
-    function stopSoon(){
-      clearTimeout(timer);
-      timer=setTimeout(()=>{try{r.stop()}catch(e){finish()}},2000);
-    }
-    r.onstart=()=>{setMicStatus("🔴 Mikrofon aktiv – sprechen Sie jetzt."); stopSoon();};
-    r.onspeechstart=()=>clearTimeout(timer);
-    r.onspeechend=()=>stopSoon();
-    r.onsoundend=()=>stopSoon();
-    r.onresult=e=>{
-      let best="";
-      for(let i=e.resultIndex;i<e.results.length;i++){
-        if(e.results[i]&&e.results[i][0])best=e.results[i][0].transcript||best;
-      }
-      result=best||result;
-      const heard=$("heard");
-      if(heard)heard.innerText="Gehört: "+result;
-      stopSoon();
-    };
-    r.onerror=e=>{
-      clearTimeout(timer);
-      setMicStatus("⚪ Mikrofon aus");
-      const fb=$("cardFeedback")||$("fb");
-      let msg="Mikrofonfehler. Bitte schreiben.";
-      if(e&&e.error==="not-allowed")msg="Mikrofon ist blockiert. Bitte erlauben oder schreiben.";
-      if(e&&e.error==="no-speech")msg="Ich habe nichts gehört. Bitte noch einmal sprechen oder schreiben.";
-      if(fb)fb.innerHTML="<div class='no'>"+msg+"</div>";
-      scrollToFeedback();
-    };
-    r.onend=finish;
-    r.start();
-  }catch(e){
-    const fb=$("cardFeedback")||$("fb");
-    if(fb)fb.innerHTML="<div class='no'>Mikrofon konnte nicht gestartet werden. Bitte schreiben.</div>";
-    scrollToFeedback();
-  }
-}
-
-
-function hearWrite(){
-  state.currentGame="hearWrite";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`<h3>Hören → Schreiben</h3>
-    <p class="small">Hören Sie das Verb und schreiben Sie es.</p>
-    <button onclick="speakTextVerb('${v}',false)">🔊 Hören</button>
-    <button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 Langsam</button>
-    <input id="hearWriteInput" placeholder="Verb schreiben...">
-    <button class="success" onclick="checkHearWrite('${v}')">Überprüfen</button>
-    <button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
-  scrollToGame();
-}
-function checkHearWrite(v){
-  const val=$("hearWriteInput").value;
-  if(checkVerbAnswer(val,v)){
-    addEncounter(v,"hoeren_schreiben",true);
-    $("fb").innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong></div><button class="success" onclick="hearWrite()">weiter</button>`;
-  }else{
-    addEncounter(v,"hoeren_schreiben",false);
-    $("fb").innerHTML=`<div class="no">❌ Noch nicht. Richtig: <strong>${v}</strong></div><button onclick="hearWrite()">weiter</button>`;
-  }
-  scrollToFeedback();
-}
-function hearSpeak(){
-  state.currentGame="hearSpeak";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`<h3>Hören → Sprechen</h3>
-    <p class="small">Hören Sie das Verb und sprechen Sie es nach.</p>
-    <button onclick="speakTextVerb('${v}',false)">🔊 Hören</button>
-    <button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 Langsam</button>
-    <button class="success" onclick="checkHearSpeak('${v}')">🎤 Sprechen</button>
-    <div id="micStatus" class="small">⚪ Mikrofon aus</div>
-    <p id="heard" class="small"></p>
-    <button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
-  scrollToGame();
-}
-function checkHearSpeak(v){
-  recogVerb(t=>{
-    const h=$("heard"); if(h)h.innerText="Gehört: "+t;
-    if(checkVerbAnswer(t,v)){
-      addEncounter(v,"hoeren_sprechen",true);
-      $("fb").innerHTML=`<div class="ok">✔ Richtig gesprochen: <strong>${v}</strong></div><button class="success" onclick="hearSpeak()">weiter</button>`;
-    }else{
-      addEncounter(v,"hoeren_sprechen",false);
-      $("fb").innerHTML=`<div class="no">❌ Gehört: ${t}<br>Richtig: <strong>${v}</strong></div><button onclick="hearSpeak()">weiter</button>`;
-    }
-    scrollToFeedback();
+  COUNTRIES.sort((a,b)=>a.localeCompare(b,"de")).forEach(c=>{
+    $("country").innerHTML += `<option value="${c}">${c}</option>`;
   });
-}
-function imageSpeak(){
-  state.currentGame="imageSpeak";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`<h3>Bild → Sprechen</h3>
-    <p class="small">Sehen Sie das Bild und sagen Sie das deutsche Verb.</p>
-    ${realImage(v,false)}
-    <button class="success" onclick="checkImageSpeak('${v}')">🎤 Sprechen</button>
-    <div id="micStatus" class="small">⚪ Mikrofon aus</div>
-    <p id="heard" class="small"></p>
-    <button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
-  scrollToGame();
-}
-function checkImageSpeak(v){
-  recogVerb(t=>{
-    const h=$("heard"); if(h)h.innerText="Gehört: "+t;
-    if(checkVerbAnswer(t,v)){
-      addEncounter(v,"bild_sprechen",true);
-      $("fb").innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong></div><button class="success" onclick="imageSpeak()">weiter</button>`;
-    }else{
-      addEncounter(v,"bild_sprechen",false);
-      $("fb").innerHTML=`<div class="no">❌ Gehört: ${t}<br>Richtig: <strong>${v}</strong></div><button onclick="imageSpeak()">weiter</button>`;
-    }
-    scrollToFeedback();
+
+  LANGUAGES.sort((a,b)=>a.localeCompare(b,"de")).forEach(l=>{
+    $("nativeLang").innerHTML += `<option value="${l}">${l}</option>`;
+    $("foreignLang").innerHTML += `<option value="${l}">${l}</option>`;
   });
-}
-function verbToImage(){
-  state.currentGame="verbToImage";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
-  const opts=shuffle([v,...shuffle(state.active.filter(x=>x!==v)).slice(0,3)]);
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`<h3>Verb → Bild</h3>
-    <p class="small">Welches Bild passt zu diesem Verb?</p>
-    <h2>${v}</h2>
-    <div class="grid">${opts.map(o=>`<button class="bild-option" onclick="checkVerbToImage('${o}','${v}')">${realImage(o,true)}</button>`).join("")}</div>
-    <button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
-  scrollToGame();
-}
-function checkVerbToImage(a,v){
-  if(a===v){
-    addEncounter(v,"verb_bild",true);
-    $("fb").innerHTML=`<div class="ok">✔ Richtig!</div><button class="success" onclick="verbToImage()">weiter</button>`;
-  }else{
-    addEncounter(v,"verb_bild",false);
-    $("fb").innerHTML=`<div class="no">❌ Noch nicht.</div>`;
-  }
-  scrollToFeedback();
-}
 
-
-function showTranslationHelp(v){
-  const fb=$("fb")||$("cardFeedback");
-  if(fb){
-    fb.innerHTML=`<div class="ok"><strong>Hilfe (${nativeLang()}):</strong><br>${nativeWord(v)}</div>` + fb.innerHTML;
-    scrollToFeedback();
+  $("children").innerHTML = `<option value="0">keine Kinder</option>`;
+  for(let i=1;i<=10;i++){
+    $("children").innerHTML += `<option value="${i}">${i} ${i===1?"Kind":"Kinder"}</option>`;
   }
 }
 
-
-function imageFileName(v){
-  return String(v||"")
+function norm(s){
+  return String(s||"")
+    .trim()
     .toLowerCase()
-    .replaceAll("ä","ae")
-    .replaceAll("ö","oe")
-    .replaceAll("ü","ue")
-    .replaceAll("ß","ss")
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
     .replace(/[^a-z0-9]+/g,"-")
-    .replace(/^-|-$/g,"") + ".png";
-}
-function imageBox(v,small=false){
-  const cls=small?"mem-img-holder":"img-holder";
-  return `<span class="${cls}" data-verb="${v}"></span>`;
-}
-function realImage(v,small=false){
-  return imageBox(v,small);
-}
-function actionImage(v,small=false){
-  return imageBox(v,small);
-}
-function hydrateImages(root){
-  const base=root||document;
-  base.querySelectorAll("[data-verb]").forEach(box=>{
-    if(box.dataset.loaded==="1")return;
-    box.dataset.loaded="1";
-    const v=box.getAttribute("data-verb");
-    const img=document.createElement("img");
-    img.alt="";
-    img.loading="eager";
-    img.decoding="async";
-    img.src="bilder/"+imageFileName(v);
-    img.onerror=function(){ this.remove(); };
-    box.textContent="";
-    box.appendChild(img);
-  });
-}
-function renderAndHydrate(){
-  setTimeout(()=>hydrateImages(document),20);
+    .replace(/^-|-$/g,"");
 }
 
-function init(){
-  if(!loadProfile())return;
-  loadState();
-  if(state.active.length>=20){state.phase="tasks";renderHome();}
-  else {state.phase="select";renderOneVerb();}
-}
-function renderOneVerb(){
-  state.phase="select";
-  const v=currentPickVerb();
-  if(!v){
-    if(state.active.length>0){state.phase="tasks";saveState();renderHome();return}
-    $("app").innerHTML="<div class='ok'>Alle Verben wurden eingeschätzt.</div>";
-    return;
-  }
-  $("app").innerHTML=`<h2>Verb einschätzen</h2>
-    <div class="mini-top-progress"><strong>Paket:</strong> ${state.active.length}/20 Verben gesammelt</div>
-    <p class="small">Entscheide schnell. Danach kommt automatisch das nächste Verb.</p>
-    <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
-      ${realImage(v.v,false)}
-      <h1 style="color:#667eea">${v.v}</h1>
-      <p>${v.img}</p>
-    </div>
-    <button class="success" onclick="rateVerb('${v.v}','known')">✅ kann ich</button>
-    <button onclick="rateVerb('${v.v}','unsure')">❓ unsicher</button>
-    <button onclick="rateVerb('${v.v}','unknown')">❌ kann ich nicht</button>`;
-  renderProgressPanel(false);
-}
-function rateVerb(v,level){
-  ["known","unsure","unknown"].forEach(k=>state[k]=state[k].filter(x=>x!==v));
-  state[level].push(v);
-  if(level!=="known" && !state.active.includes(v)){
-    state.active.push(v);
-    state.encounters[v]=state.encounters[v]||0;
-  }
-  state.index++;
-  if(state.active.length>=20){
-    state.active=state.active.slice(0,20);
-    state.phase="tasks";
-    saveState();
-    renderHome();
-  }else{
-    saveState();
-    renderOneVerb();
-  }
-}
-function replaceLearnedIfNeeded(){
-  let complete=state.active.filter(v=>verbPercent(v)>=100);
-  if(complete.length<3)return false;
-  let toReplace=complete.slice(0,3);
-  toReplace.forEach(v=>{
-    if(!state.learned.includes(v))state.learned.push(v);
-    state.active=state.active.filter(x=>x!==v);
-  });
-  let candidates=[...state.unknown,...state.unsure,...unusedVerbs()].filter(v=>!state.active.includes(v)&&!state.learned.includes(v));
-  candidates.slice(0,toReplace.length).forEach(v=>{
-    if(!state.active.includes(v)){state.active.push(v);state.encounters[v]=state.encounters[v]||0;}
-  });
-  saveState();
-  return true;
-}
-function addEncounter(v,skill,good=true){
-  markSkill(v,skill,good);
-  saveState();
-  if(replaceLearnedIfNeeded()){
-    showAutoReplaceMessage();
-  }
-}
-function showAutoReplaceMessage(){
-  const msg=`<div class="ok"><strong>🎉 3 Verben gelernt!</strong><br>Sie wurden automatisch durch neue Verben ersetzt.</div>`;
-  const g=$("game");
-  if(g)g.insertAdjacentHTML("afterbegin",msg);
-}
-function renderHome(){
-  preloadActiveImages();
-  state.phase="tasks";
-  saveState();
-  $("app").innerHTML=`<h2>Verben üben</h2>
-    <div class="mini-top-progress">
-      <strong>Aktiv:</strong> ${state.active.length} Verben |
-      <strong>Gelernt:</strong> ${state.learned.length} |
-      <strong>Fortschritt:</strong> ${overall()}%
-    </div>
-    <div class="task-grid">
-      <button class="task-card" onclick="flashcards()"><span class="big-icon">🃏</span>Karteikarten</button>
-      <button class="task-card" onclick="memory()"><span class="big-icon">🖼️</span>Memory</button>
-      <button class="task-card" onclick="quiz()"><span class="big-icon">✅</span>Bild zuordnen</button>
-      <button class="task-card" onclick="writeVerb()"><span class="big-icon">✍️</span>Schreiben</button>
-      <button class="task-card" onclick="hearWrite()"><span class="big-icon">🔊</span>Hören → Schreiben</button>
-      <button class="task-card" onclick="hearSpeak()"><span class="big-icon">🎧</span>Hören → Sprechen</button>
-      <button class="task-card" onclick="imageSpeak()"><span class="big-icon">🎤</span>Bild sprechen</button>
-      <button class="task-card" onclick="verbToImage()"><span class="big-icon">🖼️</span>Verb → Bild</button>
-    </div>
-    <div id="game"></div>`;
-  renderProgressPanel(false);
-}
-function toggleProgressPanel(){
-  const p=$("progressPanel");
-  if(!p)return;
-  if(p.classList.contains("hidden")){renderProgressPanel(true);p.classList.remove("hidden");}
-  else p.classList.add("hidden");
-}
-function renderProgressPanel(openOnly){
-  const p=$("progressPanel");
-  if(!p)return;
-  const activeRows=state.active.map(v=>`<div class="progress-row">
-    <strong>${v}</strong> <span class="small">${verbSkillCount(v)}/${VERB_SKILLS.length} · ${verbPercent(v)}%</span><div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div><div class="small">Fehler: ${state.weak[v]||0}</div>${skillBadges(v)}
-  </div>`).join("");
-  p.innerHTML=`<h2>📊 Fortschritt</h2>
-    <button class="secondary" onclick="toggleProgressPanel()">Schließen</button>
-    <div class="progress-row"><strong>Gesamt</strong><br>Aktiv: ${state.active.length} · Gelernt: ${state.learned.length} · Offen: ${unusedVerbs().length}</div>
-    <h3>Aktive Verben</h3>${activeRows||"<p>Noch keine aktiven Verben.</p>"}
-    <h3>Gelernt</h3><p class="small">${state.learned.length?state.learned.join(", "):"Noch keine."}</p>`;
-}
-function chooseVerbForPractice(){
-  let pool=state.active.filter(v=>verbPercent(v)<100);
-  if(!pool.length)return null;
-  pool.sort((a,b)=>{
-    const wa=state.weak[a]||0, wb=state.weak[b]||0;
-    return (verbPercent(a)-verbPercent(b)) || (wb-wa);
-  });
-  return pool[Math.floor(Math.random()*Math.min(6,pool.length))];
+function birthdate(){
+  return $("birthYear").value + "-" + $("birthMonth").value + "-" + $("birthDay").value;
 }
 
-function preloadActiveImages(){
+function calcAge(dateStr){
+  const d = new Date(dateStr);
+  if(isNaN(d)) return "";
+  const now = new Date();
+  let age = now.getFullYear() - d.getFullYear();
+  const m = now.getMonth() - d.getMonth();
+  if(m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
+  return age;
+}
+
+function selectedForeign(){
+  return Array.from($("foreignLang").selectedOptions).map(o=>o.value).join(", ");
+}
+
+function makeUserId(p){
+  return norm(p.kurs) + "_" + norm(p.vorname) + "_" + norm(p.nachname) + "_" + p.geburtsdatum;
+}
+
+function allProfiles(){
+  try{return JSON.parse(localStorage.getItem("SP_PROFILES") || "[]")}
+  catch(e){return []}
+}
+
+function saveProfiles(list){
+  localStorage.setItem("SP_PROFILES", JSON.stringify(list));
+}
+
+function sendProfile(p){
+  const payload = {
+    userId:p.userId,
+    kurs:p.kurs,
+    vorname:p.vorname,
+    nachname:p.nachname,
+    geburtsdatum:p.geburtsdatum,
+    heimatland:p.heimatland,
+    muttersprache:p.muttersprache,
+    fremdsprache:p.fremdsprache,
+    wohnort:p.wohnort,
+    kinder:p.kinder,
+    fragenFortschritt:p.fragenFortschritt||0,
+    verbenFortschritt:p.verbenFortschritt||0,
+    gesamtpunkte:p.gesamtpunkte||0,
+    profile:p,
+    timestamp:new Date().toISOString()
+  };
+
   try{
-    (state.active||[]).forEach(v=>{
-      const im=new Image();
-      im.src="bilder/"+imageFileName(v);
+    fetch(GOOGLE_SHEET_URL,{
+      method:"POST",
+      mode:"no-cors",
+      headers:{"Content-Type":"text/plain;charset=utf-8"},
+      body:JSON.stringify(payload)
     });
   }catch(e){}
 }
 
+function saveActiveProfile(p){
+  localStorage.setItem("SP_USER_PROFILE", JSON.stringify(p));
 
+  let list = allProfiles().filter(x=>x.userId !== p.userId);
+  list.unshift(p);
+  saveProfiles(list.slice(0,10));
 
+  sendProfile(p);
+  renderLogged();
+}
 
+function registerUser(e){
+  e.preventDefault();
 
-
-function startFlashcardSession(){
-  const pool=(state.active||[]).filter(v=>verbPercent(v)<100);
-  state.flashSession={
-    queue:shuffle(pool),
-    correct:{},
-    wrong:{},
-    done:[],
-    total:pool.length,
-    current:null
+  const p = {
+    vorname:$("fname").value.trim(),
+    nachname:$("lname").value.trim(),
+    kurs:$("course").value.trim(),
+    geburtsdatum:birthdate(),
+    tag:$("birthDay").value,
+    monat:$("birthMonth").value,
+    jahr:$("birthYear").value,
+    alter:calcAge(birthdate()),
+    geburtsort:$("birthplace").value.trim(),
+    heimatland:$("country").value,
+    wohnort:$("city").value.trim(),
+    muttersprache:$("nativeLang").value,
+    fremdsprache:selectedForeign(),
+    kinder:$("children").value,
+    familienstand:$("marital").value,
+    fragenFortschritt:0,
+    verbenFortschritt:0,
+    gesamtpunkte:0
   };
-  pool.forEach(v=>{
-    state.flashSession.correct[v]=0;
-    state.flashSession.wrong[v]=0;
-  });
-  saveState();
+
+  p.userId = makeUserId(p);
+  saveActiveProfile(p);
+
+  $("registerBox").classList.add("hidden");
+  $("loginBox").classList.add("hidden");
 }
-function flashDoneCount(){
-  if(!state.flashSession)return 0;
-  return (state.flashSession.done||[]).length;
+
+function showRegister(){
+  $("registerBox").classList.remove("hidden");
+  $("loginBox").classList.add("hidden");
 }
-function flashPercent(){
-  if(!state.flashSession || !state.flashSession.total)return 0;
-  return Math.round((flashDoneCount()*100)/state.flashSession.total);
+
+function showLogin(){
+  $("loginBox").classList.remove("hidden");
+  $("registerBox").classList.add("hidden");
+  renderSavedProfiles();
 }
-function flashProgressHtml(){
-  const total=(state.flashSession&&state.flashSession.total)||0;
-  const done=flashDoneCount();
-  const left=Math.max(0,total-done);
-  const pct=flashPercent();
-  return `<div class="flash-progress-box">
-    <strong>Karteikarten-Runde</strong>
-    <div class="flash-bar"><div class="flash-fill" style="width:${pct}%"></div></div>
-    <div class="flash-meta">
-      <span>${pct}% fertig</span>
-      <span>${done}/${total} Wörter abgeschlossen</span>
-      <span>noch ${left}</span>
+
+function loginProfile(id){
+  const p = allProfiles().find(x=>x.userId === id);
+  if(p) saveActiveProfile(p);
+}
+
+function logout(){
+  localStorage.removeItem("SP_USER_PROFILE");
+  renderLogged();
+}
+
+function fillRegister(p){
+  if(!p) return;
+
+  $("fname").value = p.vorname || "";
+  $("lname").value = p.nachname || "";
+  $("course").value = p.kurs || "";
+  $("birthplace").value = p.geburtsort || "";
+  $("city").value = p.wohnort || "";
+  $("country").value = p.heimatland || "";
+  $("nativeLang").value = p.muttersprache || "";
+  $("children").value = p.kinder || "0";
+  $("marital").value = p.familienstand || "ledig";
+
+  if(p.tag) $("birthDay").value = p.tag;
+  if(p.monat) $("birthMonth").value = p.monat;
+  if(p.jahr) $("birthYear").value = p.jahr;
+}
+
+function editProfile(){
+  let p = null;
+  try{p = JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "null")}
+  catch(e){}
+  showRegister();
+  fillRegister(p);
+}
+
+function renderSavedProfiles(){
+  const box = $("savedProfiles");
+  const list = allProfiles();
+
+  if(!list.length){
+    box.innerHTML = `<div class="no">Noch kein Profil auf diesem Gerät gespeichert.</div>`;
+    return;
+  }
+
+  box.innerHTML = list.map(p=>`
+    <div class="ok">
+      <strong>${p.vorname} ${p.nachname}</strong><br>
+      Kurs: ${p.kurs}<br>
+      <button onclick="loginProfile('${p.userId}')">Einloggen</button>
     </div>
-  </div>`;
-}
-function nextFlashVerb(){
-  if(!state.flashSession || !state.flashSession.queue || !state.flashSession.total){
-    startFlashcardSession();
-  }
-  if(!state.flashSession.queue.length)return null;
-  const v=state.flashSession.queue.shift();
-  state.flashSession.current=v;
-  saveState();
-  return v;
-}
-function finishFlashVerb(v,good){
-  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:0,current:null};
-  state.flashSession.correct[v]=state.flashSession.correct[v]||0;
-  state.flashSession.wrong[v]=state.flashSession.wrong[v]||0;
-
-  if(good){
-    state.flashSession.correct[v]++;
-    addEncounter(v,"karteikarte",true);
-    if(state.flashSession.correct[v]>=2){
-      if(!state.flashSession.done.includes(v))state.flashSession.done.push(v);
-      state.flashSession.queue=state.flashSession.queue.filter(x=>x!==v);
-    }else{
-      state.flashSession.queue.push(v);
-    }
-  }else{
-    state.flashSession.wrong[v]++;
-    state.flashSession.correct[v]=0;
-    addEncounter(v,"karteikarte",false);
-    state.flashSession.queue.push(v,v);
-  }
-  saveState();
-}
-function flashcardDoneMessage(){
-  $("game").innerHTML=`${flashProgressHtml()}<div class="ok"><h3>Gut gemacht!</h3><p>Du hast diese Karteikarten-Runde abgeschlossen.</p><button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button><button class="secondary" onclick="startFlashcardSession();flashcards()">Karteikarten nochmal machen</button></div>`;
-  scrollToGame();
+  `).join("");
 }
 
-function flashcards(){
-  state.currentGame="flashcards";
-  let v=nextFlashVerb();
-  if(!v){flashcardDoneMessage();return}
-  state.currentVerb=v;
-  saveState();
-  const correctNow=(state.flashSession&&state.flashSession.correct&&state.flashSession.correct[v])||0;
-  const wrongNow=(state.flashSession&&state.flashSession.wrong&&state.flashSession.wrong[v])||0;
-  $("game").innerHTML=`${flashProgressHtml()}
-    <h3>Karteikarten: Nenne das deutsche Wort</h3>
-    <p class="small">Dieses Wort braucht <strong>2 richtige Antworten</strong>. Bei Fehlern kommt es noch einmal zurück.</p>
-    <div class="flash-meta"><span>Dieses Wort: ${correctNow}/2 richtig</span><span>Fehler hier: ${wrongNow}</span></div>
-    <div class="study-card-wrap">
-      <div id="studyCard" class="study-card" onclick="this.classList.toggle('flipped')">
-        <div class="study-face">
-          <div class="small">Muttersprache: ${nativeLang()}</div>
-          <div class="native-word">${nativeWord(v)}</div>
-          <p class="small">Wie heißt das auf Deutsch?</p>
-        </div>
-        <div class="study-face study-back">
-          <div class="small">Deutsch</div>
-          <div class="german-word">${v}</div>
-        </div>
+function renderLogged(){
+  let p = null;
+  try{p = JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "null")}
+  catch(e){}
+
+  const box = $("loggedBox");
+
+  if(p){
+    box.innerHTML = `
+      <div class="ok">
+        <strong>Eingeloggt:</strong> ${p.vorname} ${p.nachname} | Kurs: ${p.kurs}<br>
+        <button class="secondary" onclick="editProfile()">Profil bearbeiten</button>
+        <button class="secondary" onclick="logout()">Abmelden</button>
       </div>
-    </div>
-    <input id="cardAnswer" placeholder="Deutsches Verb schreiben...">
-    <button class="success" onclick="checkFlashcardAnswer('${v}')">Überprüfen</button>
-    <button onclick="speakFlashcardAnswer('${v}')">🎤 Sagen</button>
-    <div id="micStatus" class="small">⚪ Mikrofon aus</div>
-    <p id="heard" class="small"></p>
-    <div id="cardFeedback"></div>`;
-  scrollToGame();
-}
-
-function checkFlashcardAnswer(v){
-  const input=$("cardAnswer");
-  const val=input?input.value:"";
-  const fb=$("cardFeedback");
-  if(checkVerbAnswer(val,v)){
-    finishFlashVerb(v,true);
-    const current=(state.flashSession.correct[v]||0);
-    if(fb)fb.innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong><br>${current>=2?"Dieses Wort ist für diese Runde fertig.":"Noch 1 richtige Antwort, dann ist dieses Wort fertig."}</div><button class="success" onclick="flashcards()">Nächste Karte</button>`;
+    `;
+    $("authButtons").classList.add("hidden");
   }else{
-    finishFlashVerb(v,false);
-    if(fb)fb.innerHTML=`<div class="no">❌ Noch nicht. Dieses Wort kommt nochmal, damit du es festigst.<br>Richtige Antwort: <strong>${v}</strong></div><button onclick="flashcards()">Nächste Karte</button>`;
+    box.innerHTML = `<p>Registriere dich einmal. Danach gilt dein Profil für alle Trainer.</p>`;
+    $("authButtons").classList.remove("hidden");
   }
-  scrollToFeedback();
-}
-function speakFlashcardAnswer(v){
-  recogVerb(t=>{
-    const heard=$("heard");
-    if(heard)heard.innerText="Gehört: "+t;
-    const fb=$("cardFeedback");
-    if(checkVerbAnswer(t,v)){
-      finishFlashVerb(v,true);
-      const current=(state.flashSession.correct[v]||0);
-      if(fb)fb.innerHTML=`<div class="ok">✔ Richtig gesprochen: <strong>${v}</strong><br>${current>=2?"Dieses Wort ist für diese Runde fertig.":"Noch 1 richtige Antwort, dann ist dieses Wort fertig."}</div><button class="success" onclick="flashcards()">Nächste Karte</button>`;
-    }else{
-      finishFlashVerb(v,false);
-      if(fb)fb.innerHTML=`<div class="no">❌ Gehört: ${t}<br>Dieses Wort kommt nochmal, damit du es festigst.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Nächste Karte</button>`;
-    }
-    scrollToFeedback();
-  });
 }
 
-function memory(){
-  state.currentGame="memory";
-  state.first=null;state.lock=false;
-  state.memoryCards=[];
-  state.active.slice(0,10).forEach((v,i)=>{
-    state.memoryCards.push({p:i,t:"de",v:v,html:`<span class="mem-german">${v}</span>`,o:false,d:false});
-    state.memoryCards.push({p:i,t:"img",v:v,html:imageBox(v,true),o:false,d:false});
-  });
-  state.memoryCards=shuffle(state.memoryCards);
-  saveState();
-  renderMemory();
-  scrollToGame();
-}
-function renderMemory(){
-  $("game").innerHTML=`<h3>Memory: Bild ↔ deutsches Verb</h3>
-  <p class="small">Finde das Bild und das passende deutsche Verb.</p>
-  <div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`;
-  renderAndHydrate();
-}
-function flip(i){
-  if(state.lock)return;
-  let c=state.memoryCards[i];
-  if(!c||c.o||c.d)return;
-  c.o=true;renderMemory();
-  if(state.first===null){state.first=i;saveState();return}
-  state.lock=true;
-  let a=state.memoryCards[state.first],b=state.memoryCards[i],good=a.p===b.p&&a.t!==b.t;
-  setTimeout(()=>{
-    if(good){a.d=b.d=true;addEncounter(a.v,'memory',true)}else{a.o=b.o=false;addEncounter(a.v,'memory',false);addEncounter(b.v,'memory',false)}
-    state.first=null;state.lock=false;saveState();renderMemory();
-    if(state.memoryCards.every(x=>x.d))$("fb").innerHTML="<div class='ok'>Memory geschafft!</div>";
-  },600);
-}
-function quiz(){
-  state.currentGame="quiz";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
-  let opts=shuffle([v,...shuffle(state.active.filter(a=>a!==v)).slice(0,3)]);
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`<h3>Welches Verb passt?</h3>${realImage(v,false)}${opts.map(o=>`<button onclick="checkQuiz('${o}','${v}')">${o}</button>`).join("")}<div id="fb"></div>`;
-  scrollToGame();
-}
-function checkQuiz(a,v){
-  if(a===v){addEncounter(v,'zuordnung',true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>"}
-  else{addEncounter(v,'zuordnung',false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>"} scrollToFeedback();
-}
-function writeVerb(){
-  state.currentGame="write";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`<h3>Schreibe das deutsche Verb</h3>${realImage(v,false)}<input id="w"><button onclick="checkWrite('${v}')">prüfen</button><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
-  scrollToGame();
-}
-function checkWrite(v){
-  let a=$("w").value;
-  if(clean(a)===clean(v)){addEncounter(v,'schreiben',true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='writeVerb()'>weiter</button>"}
-  else{addEncounter(v,'schreiben',false);$("fb").innerHTML=`<div class='no'>Richtig: ${v}</div>`} scrollToFeedback();
-}
-function wordSearch(){renderHome();}
-function chosenDone(){renderHome();}
-init();
-</script></body></html>
+fillSelects();
+renderLogged();
+</script>
+
+</body>
+</html>
