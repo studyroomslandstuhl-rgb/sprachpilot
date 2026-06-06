@@ -100,6 +100,39 @@ input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size
   .native-word{font-size:34px}
   .study-card{min-height:176px}
 }
+
+/* FINAL PATCH: bessere Bilder + klare Belohnungen */
+.mem-img-holder img,
+.progress-row-head .mem-img-holder img,
+.verb-overview-card .mem-img-holder img{
+  object-fit:contain!important;
+  background:#f7f8ff!important;
+}
+.img-holder img{
+  object-fit:contain!important;
+  background:#f7f8ff!important;
+}
+.bild-option .mem-img-holder img{
+  object-fit:contain!important;
+}
+.mem{
+  height:132px!important;
+  min-height:132px!important;
+}
+@media(max-width:520px){
+  .mem{
+    height:120px!important;
+    min-height:120px!important;
+  }
+}
+.next-task-row{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  margin-top:12px;
+}
+
 </style>
 </head>
 <body>
@@ -124,7 +157,7 @@ let state={
   phase:"select", index:0, known:[], unsure:[], unknown:[], active:[], learned:[],
   weak:{}, currentGame:"", currentVerb:"", memoryCards:[], first:null, lock:false,
   skillDone:{}, skillAttempts:{}, skillSuccess:{}, flashSession:null,
-  taskQueues:{}, taskDoneSets:{}, alertsShown:{}, packageNo:1
+  taskQueues:{}, taskDoneSets:{}, alertsShown:{}, taskRewardsShown:{}, packageNo:1
 };
 
 const VERB_TRANSLATIONS = {
@@ -168,7 +201,7 @@ function ensureSkillState(v){
 function migrateState(){
   state.learned=state.learned||[]; state.active=state.active||[]; state.known=state.known||[]; state.unsure=state.unsure||[]; state.unknown=state.unknown||[];
   state.weak=state.weak||{}; state.skillDone=state.skillDone||{}; state.skillAttempts=state.skillAttempts||{}; state.skillSuccess=state.skillSuccess||{};
-  state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{}; state.alertsShown=state.alertsShown||{}; state.packageNo=state.packageNo||1;
+  state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{}; state.alertsShown=state.alertsShown||{}; state.taskRewardsShown=state.taskRewardsShown||{}; state.packageNo=state.packageNo||1;
   (state.active||[]).forEach(v=>ensureSkillState(v));
 }
 function loadState(){
@@ -295,9 +328,8 @@ function packageComplete(){return (state.active||[]).length===20 && state.active
 function allTasksDone(){return VERB_SKILLS.every(s=>taskDone(s))}
 
 function totalStars(){
-  let stars=0;
-  [...(state.active||[]),...(state.learned||[])].forEach(v=>{ensureSkillState(v);VERB_SKILLS.forEach(s=>{if(state.skillDone[v]&&state.skillDone[v][s])stars++;})});
-  return stars;
+  // Ein Stern zählt nur, wenn eine komplette Aufgabe / ein Level auf 100% ist.
+  return VERB_SKILLS.filter(s=>taskDone(s)).length;
 }
 function showAlert(title,msg,icon="⭐"){
   const old=document.getElementById("levelAlert"); if(old)old.remove();
@@ -307,20 +339,72 @@ function showAlert(title,msg,icon="⭐"){
 }
 function queueAlert(key,title,msg,icon="⭐"){state.alertsShown=state.alertsShown||{};if(state.alertsShown[key])return;state.alertsShown[key]=true;saveState();setTimeout(()=>showAlert(title,msg,icon),120)}
 function checkMilestones(){
-  const stars=totalStars();
-  if(stars>=20)queueAlert("stars20","20 Sterne!","Du hast schon 20 Lernpunkte gesammelt.","⭐");
-  if(stars>=40)queueAlert("stars40","40 Sterne!","Stark! Du kommst gut voran.","⭐");
-  const learned=(state.active||[]).filter(v=>verbPercent(v)>=100).length+(state.learned||[]).length;
-  if(learned>=1)queueAlert("firstVerb","Erstes Verb gelernt!","Ein Verb ist komplett auf 100 %.","🎉");
-  if(learned>=5)queueAlert("fiveVerbs","5 Verben gelernt!","Du baust deinen Wortschatz auf.","🎉");
-  if(learned>=10)queueAlert("tenVerbs","10 Verben gelernt!","Die Hälfte eines Pakets ist geschafft.","🎉");
-  if(packageComplete())queueAlert("packageComplete_"+(state.packageNo||1),"Paket geschafft!","Alle 20 Verben sind auf 100 %. Jetzt kannst du neue Verben auswählen.","🏆");
+  // Keine Zwischenbelohnungen. Nur wenn alle 20 aktiven Verben auf 100% sind.
+  if(packageComplete()){
+    queueAlert(
+      "packageComplete_"+(state.packageNo||1),
+      "20 Verben geschafft!",
+      "Du hast jetzt 20 Verben auf 100% gelernt.",
+      "🏆"
+    );
+  }
 }
-function completedTaskMessage(label){return `<div class="achievement"><h3>Aufgabe erledigt ✓</h3><p><strong>${label}</strong> ist abgeschlossen.</p><div class="star-pill">⭐ geschafft</div></div>`}
+
+
+function taskOrder(){
+  return ["karteikarte","memory","bild_verb","verb_bild","schreiben","hoeren_schreiben","hoeren_sprechen","bild_sprechen","satz_puzzle"];
+}
+function taskFunctionName(skill){
+  const map={
+    karteikarte:"flashcards",
+    memory:"memory",
+    bild_verb:"quiz",
+    verb_bild:"verbToImage",
+    schreiben:"writeVerb",
+    hoeren_schreiben:"hearWrite",
+    hoeren_sprechen:"hearSpeak",
+    bild_sprechen:"imageSpeak",
+    satz_puzzle:"sentencePuzzle"
+  };
+  return map[skill] || "renderHome";
+}
+function openNextTask(){
+  const order=taskOrder();
+  for(const skill of order){
+    if(!taskDone(skill)){
+      if(skill==="karteikarte"){startFlashcardSession();flashcards();return;}
+      const fn=taskFunctionName(skill);
+      if(typeof window[fn]==="function"){window[fn]();return;}
+    }
+  }
+  renderHome();
+}
+function completedTaskMessage(label,skill){
+  state.taskRewardsShown=state.taskRewardsShown||{};
+  const key="taskReward_"+(state.packageNo||1)+"_"+skillKey(skill||label);
+  const first=!state.taskRewardsShown[key];
+  state.taskRewardsShown[key]=true;
+  saveState();
+  const starText=first ? "⭐ Stern erhalten" : "⭐ Stern bereits erhalten";
+  return `<div class="achievement">
+    <h3>Aufgabe erledigt ✓</h3>
+    <p><strong>${label}</strong> ist auf 100% abgeschlossen.</p>
+    <div class="star-pill">${starText}</div>
+    <p class="small">Sterne bekommst du nur für vollständig abgeschlossene Aufgaben.</p>
+  </div>`;
+}
+
 function finishTaskIfComplete(skill,label){
   if(taskDone(skill)){
     checkMilestones();
-    const g=$("game"); if(g)g.innerHTML=completedTaskMessage(label)+`<button class="success" onclick="renderHome()">Zur Aufgabenübersicht</button>`;
+    const g=$("game");
+    if(g){
+      g.innerHTML=completedTaskMessage(label,skill)+
+      `<div class="next-task-row">
+        <button class="success" onclick="openNextTask()">Nächstes Spiel →</button>
+        <button class="secondary" onclick="renderHome()">Zur Aufgabenübersicht</button>
+      </div>`;
+    }
     return true;
   }
   checkMilestones();
@@ -391,6 +475,7 @@ function startNewVerbPackage(){
   state.packageNo=(state.packageNo||1)+1;
   state.learned=[...(state.learned||[]),...(state.active||[])].filter((v,i,a)=>a.indexOf(v)===i);
   state.active=[]; state.taskQueues={}; state.taskDoneSets={}; state.flashSession=null; state.currentGame="";
+  state.taskRewardsShown={};
   state.phase="select"; saveState(); renderOneVerb();
 }
 function safeRun(fn){try{fn()}catch(e){console.error(e);const g=$("game");if(g)g.innerHTML="<div class='no'>Diese Aufgabe konnte nicht geöffnet werden. Bitte neu laden.</div>";}}
@@ -398,7 +483,7 @@ function renderHome(){
   state.phase="tasks"; saveState();
   const packageDone=packageComplete();
   $("app").innerHTML=`<h2>Verben üben</h2>
-    <div class="mini-top-progress"><strong>Paket:</strong> ${state.packageNo||1} | <strong>Aktiv:</strong> ${state.active.length}/20 | <strong>Gelernt:</strong> ${state.learned.length} | <strong>Gesamt:</strong> ${overall()}% | <strong>Sterne:</strong> ${totalStars()}</div>
+    <div class="mini-top-progress"><strong>Paket:</strong> ${state.packageNo||1} | <strong>Aktiv:</strong> ${state.active.length}/20 | <strong>Gelernt:</strong> ${state.learned.length} | <strong>Gesamt:</strong> ${overall()}% | <strong>Sterne:</strong> ${totalStars()}/9</div>
     ${packageDone?`<div class="package-done"><h3>20 Verben geschafft!</h3><p>Alle aktiven Verben sind auf 100 %. Jetzt kannst du neue Verben einschätzen.</p><button class="success" onclick="startNewVerbPackage()">Neue Verben auswählen</button></div>`:""}
     <button class="overview-button" onclick="showVerbOverview()">Alle Verben anzeigen</button>
     <div class="task-grid">
@@ -415,7 +500,17 @@ function renderHome(){
   renderProgressPanel(false); if(!packageDone)restoreCurrentTask(); checkMilestones();
 }
 function taskButton(skill,icon,label,fn){return `<button class="${taskCardClass(skill)}" onclick="safeRun(()=>{if(taskDone('${skill}')){taskBlockedMessage('${label}');return}${fn}();})"><span class="big-icon">${icon}</span>${label}<div class="task-status">${taskCardStatus(skill)}</div></button>`}
-function taskBlockedMessage(label){$("game").innerHTML=`<div class="package-done"><h3>${label} erledigt ✓</h3><p>Diese Aufgabe ist für dein aktuelles 20-Verben-Paket abgeschlossen.</p><button class="success" onclick="renderHome()">Zur Übersicht</button></div>`;scrollToGame()}
+function taskBlockedMessage(label){
+  $("game").innerHTML=`<div class="package-done">
+    <h3>${label} erledigt ✓</h3>
+    <p>Diese Aufgabe ist für dein aktuelles 20-Verben-Paket bereits abgeschlossen.</p>
+    <div class="next-task-row">
+      <button class="success" onclick="openNextTask()">Nächstes Spiel →</button>
+      <button class="secondary" onclick="renderHome()">Zur Übersicht</button>
+    </div>
+  </div>`;
+  scrollToGame();
+}
 function restoreCurrentTask(){return false}
 
 function startFlashcardSession(){
@@ -487,7 +582,14 @@ function checkFlashcardAnswer(v){
   scrollToFeedback();
 }
 function speakFlashcardAnswer(v){recogVerb(t=>{const h=$("heard");if(h)h.innerText="Gehört: "+t;const fb=$("cardFeedback");if(state.cardWasFlipped){finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Die Karte war schon umgedreht. Kein Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;}else if(checkVerbAnswer(t,v)){finishFlashVerb(v,true);const c=state.flashSession.correct[v]||0;fb.innerHTML=`<div class="ok">${c>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;}else{finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Gehört: ${safeText(t)}<br>Richtig: <strong>${v}</strong><br>Das Verb kommt am Ende noch einmal.</div><button onclick="flashcards()">Weiter</button>`;}scrollToFeedback();})}
-function flashcardDoneMessage(){$("game").innerHTML=`${flashProgressHtml()}${completedTaskMessage("Karteikarten")}<button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button>`;scrollToGame()}
+function flashcardDoneMessage(){
+  $("game").innerHTML=`${flashProgressHtml()}${completedTaskMessage("Karteikarten","karteikarte")}
+  <div class="next-task-row">
+    <button class="success" onclick="openNextTask()">Nächstes Spiel →</button>
+    <button class="secondary" onclick="renderHome()">Zur Aufgabenübersicht</button>
+  </div>`;
+  scrollToGame();
+}
 
 function memory(){
   saveCurrentTask("memory"); state.currentGame="memory"; state.first=null; state.lock=false; state.memoryCards=[];
@@ -544,7 +646,7 @@ function showVerbOverview(){
 function renderProgressPanel(openOnly){
   const p=$("progressPanel"); if(!p)return;
   const activeRows=state.active.map(v=>`<div class="progress-row"><div class="progress-row-head">${imageBox(v,true)}<div><strong>${safeText(v)}</strong><br><span class="small">${verbSkillCount(v)}/${VERB_SKILLS.length} · ${verbPercent(v)}%</span></div></div><div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div><div class="small">Fehler: ${state.weak[v]||0}</div>${skillBadges(v)}</div>`).join("");
-  p.innerHTML=`<h2>📊 Fortschritt</h2><button class="secondary" onclick="toggleProgressPanel()">Schließen</button><div class="progress-row"><strong>Paket ${state.packageNo||1}</strong><br>Aktiv: ${state.active.length}/20 · Gelernt: ${state.learned.length} · Offen: ${unusedVerbs().length}<br>Sterne: ${totalStars()}</div><h3>Aktive Verben</h3>${activeRows||"<p>Noch keine aktiven Verben.</p>"}<h3>Gelernte Verben</h3><p class="small">${state.learned.length?state.learned.join(", "):"Noch keine."}</p>`;
+  p.innerHTML=`<h2>📊 Fortschritt</h2><button class="secondary" onclick="toggleProgressPanel()">Schließen</button><div class="progress-row"><strong>Paket ${state.packageNo||1}</strong><br>Aktiv: ${state.active.length}/20 · Gelernt: ${state.learned.length} · Offen: ${unusedVerbs().length}<br>Sterne: ${totalStars()}/9</div><h3>Aktive Verben</h3>${activeRows||"<p>Noch keine aktiven Verben.</p>"}<h3>Gelernte Verben</h3><p class="small">${state.learned.length?state.learned.join(", "):"Noch keine."}</p>`;
   renderAndHydrate();
 }
 function toggleProgressPanel(){const p=$("progressPanel");if(!p)return;p.classList.toggle("hidden");if(!p.classList.contains("hidden"))renderProgressPanel(true)}
