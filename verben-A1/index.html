@@ -1,567 +1,130 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1.0"><title>Verben A1 - SprachPilot</title>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Verben A1 - SprachPilot</title>
 <style>
-*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;color:#222}main{width:min(1050px,94vw);margin:0 auto;padding:20px 0 40px}
-.card{background:white;border-radius:22px;padding:20px;box-shadow:0 12px 35px rgba(0,0,0,.22);margin-bottom:16px}h1,h2{color:#667eea}button{border:0;border-radius:14px;padding:12px 16px;font-size:16px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);color:white;margin:5px;cursor:pointer}button.secondary{background:#eef2ff;color:#333}button.success{background:linear-gradient(135deg,#27ae60,#2ecc71)}.hidden{display:none!important}.small{font-size:14px;color:#666}.ok{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0}.no{background:#ffe1e1;border-left:5px solid #e74c3c;padding:12px;border-radius:10px;margin:10px 0}
-.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(160px,1fr));gap:10px}.verbPick{border:2px solid #ddd;border-radius:14px;padding:12px;background:#f7f8ff;text-align:center}.verbPick.known{background:#e8fff1;border-color:#27ae60}.verbPick.unsure{background:#fff3cd;border-color:#ffc107}.verbPick.unknown{background:#ffe1e1;border-color:#e74c3c}
-.menu{display:flex;flex-wrap:wrap;gap:8px}.memory{display:grid;grid-template-columns:repeat(4,1fr);gap:8px}.mem{min-height:88px;border-radius:14px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:900;display:flex;align-items:center;justify-content:center;text-align:center;padding:6px}.mem.open{background:white;color:#333;border:3px solid #667eea}.mem.done{background:linear-gradient(135deg,#27ae60,#2ecc71);color:white}.pic{font-size:38px;display:block}input{width:100%;padding:12px;border:2px solid #ddd;border-radius:12px;font-size:16px}.progress{background:#eef2ff;padding:10px;border-radius:12px;margin:8px 0}.wordsearch{font-family:monospace;letter-spacing:4px;line-height:1.8;font-size:20px;background:#f7f8ff;padding:12px;border-radius:12px;overflow:auto}
-@media(max-width:500px){.memory{grid-template-columns:repeat(4,1fr);gap:5px}.mem{min-height:70px;font-size:11px}.pic{font-size:28px}}
-
-/* BESSERE VERB-KARTEN */
-.study-card-wrap{perspective:1000px;max-width:360px;margin:18px auto}
-.study-card{width:100%;min-height:230px;position:relative;transform-style:preserve-3d;transition:transform .5s;cursor:pointer}
-.study-card.flipped{transform:rotateY(180deg)}
-.study-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;background:white;border:4px solid #667eea;box-shadow:0 10px 28px rgba(0,0,0,.2);padding:20px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.study-back{transform:rotateY(180deg);background:#eefaf3;border-color:#27ae60}
-.native-word{font-size:32px;font-weight:900;color:#764ba2;margin:12px 0}
-.german-word{font-size:42px;font-weight:900;color:#27ae60;margin:12px 0}
-.action-img{width:100%;max-width:230px;height:auto;display:block;margin:0 auto 8px}
-.mem-img{width:100%;max-width:120px;display:block;margin:0 auto 4px}
-.mem-native{font-weight:900;font-size:13px;color:#333}
-.mem-german{font-weight:900;font-size:18px}
-
-
-/* ADAPTIVER FORTSCHRITT */
-.progress-toggle{
-  position:fixed;
-  top:14px;
-  right:14px;
-  z-index:9999;
-  border-radius:999px;
-  padding:10px 13px;
-  background:#ffcc33;
-  color:#333;
-  border:2px solid white;
-  box-shadow:0 8px 20px rgba(0,0,0,.25);
-}
-.progress-panel{
-  position:fixed;
-  top:0;
-  right:0;
-  width:min(380px,92vw);
-  height:100vh;
-  background:white;
-  z-index:10000;
-  box-shadow:-10px 0 30px rgba(0,0,0,.3);
-  padding:18px;
-  overflow:auto;
-}
-.progress-row{
-  background:#f7f8ff;
-  border:2px solid #e0e4ff;
-  border-radius:12px;
-  padding:9px;
-  margin:7px 0;
-}
-.progress-line{
-  height:10px;
-  background:#ddd;
-  border-radius:999px;
-  overflow:hidden;
-  margin-top:5px;
-}
-.progress-fill{
-  height:100%;
-  background:linear-gradient(135deg,#27ae60,#2ecc71);
-}
-.task-grid{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(170px,1fr));
-  gap:12px;
-  margin:12px 0;
-}
-.task-card{
-  min-height:110px;
-  border-radius:18px;
-  background:#f7f8ff;
-  border:3px solid #dce2ff;
-  color:#333;
-  font-size:18px;
-  display:flex;
-  flex-direction:column;
-  align-items:center;
-  justify-content:center;
-  text-align:center;
-}
-.task-card .big-icon{font-size:34px;margin-bottom:8px}
-.mini-top-progress{
-  background:white;
-  border:2px solid #dce2ff;
-  border-radius:16px;
-  padding:10px;
-  margin:8px 0;
-}
-
-
-/* REALISTISCHE BILDER */
-.real-img{
-  width:100%;
-  max-width:280px;
-  height:190px;
-  object-fit:cover;
-  border-radius:18px;
-  border:3px solid #dce2ff;
-  background:#f7f8ff;
-  display:block;
-  margin:0 auto 10px;
-}
-.real-img-small{
-  width:100%;
-  max-width:115px;
-  height:78px;
-  object-fit:cover;
-  border-radius:10px;
-  border:2px solid #dce2ff;
-  background:#f7f8ff;
-  display:block;
-  margin:0 auto 4px;
-}
-.image-fallback{
-  background:#f7f8ff;
-  border:3px dashed #dce2ff;
-  border-radius:18px;
-  padding:22px;
-  text-align:center;
-  font-weight:900;
-  color:#667eea;
-  margin:0 auto 10px;
-  max-width:280px;
-}
-
-
-/* FINAL CLEANUP VERBEN */
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;color:#222}
+main{width:min(1050px,94vw);margin:0 auto;padding:18px 0 42px}
+.card{background:white;border-radius:22px;padding:18px;box-shadow:0 12px 35px rgba(0,0,0,.22);margin-bottom:16px}
+h1,h2{color:#667eea;margin-top:0}
+h3{margin:8px 0 10px}
+button{border:0;border-radius:14px;padding:12px 16px;font-size:16px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);color:white;margin:5px;cursor:pointer}
+button.secondary{background:#eef2ff;color:#333}
+button.success{background:linear-gradient(135deg,#27ae60,#2ecc71)}
+button.danger{background:linear-gradient(135deg,#e74c3c,#c0392b)}
+button:disabled{opacity:.55;cursor:not-allowed}
+input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size:18px;margin:8px 0}
+.hidden{display:none!important}
+.small{font-size:14px;color:#666}
+.ok{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0}
+.no{background:#ffe1e1;border-left:5px solid #e74c3c;padding:12px;border-radius:10px;margin:10px 0}
 .top-link{display:inline-block;text-decoration:none;color:#667eea;font-weight:900}
 .top-link:hover{text-decoration:underline}
-.task-grid{grid-template-columns:repeat(auto-fit,minmax(120px,1fr))!important;gap:8px!important}
-.task-card{min-height:72px!important;padding:8px!important;font-size:14px!important;line-height:1.15!important}
-.task-card .big-icon{font-size:22px!important;margin-bottom:4px}
-.memory{align-items:stretch}
-.mem{min-height:118px!important;height:118px!important;overflow:hidden!important;padding:5px!important}
-.mem.open{display:flex!important;align-items:center!important;justify-content:center!important}
-.mem .real-img-small{width:100%!important;max-width:100%!important;height:100%!important;object-fit:cover!important;border:0!important;border-radius:10px!important;margin:0!important}
-.mem-german{color:#333!important;font-size:17px!important;line-height:1.15!important}
-.real-img{height:210px!important;object-fit:cover!important}
-.real-img-small{height:95px!important;object-fit:cover!important}
-.image-fallback{color:transparent!important;font-size:0!important;min-height:150px}
-.image-fallback::after{content:"Bild";font-size:20px;color:#667eea}
-.help-bottom{display:block;margin-top:14px!important}
-@media(max-width:500px){.task-grid{grid-template-columns:repeat(2,1fr)!important}.mem{min-height:92px!important;height:92px!important}}
-
-
-/* FIX: BILDER UND KARTEIKARTENRUNDE */
-.flash-progress-box{
-  background:#f7f8ff;
-  border:2px solid #dce2ff;
-  border-radius:14px;
-  padding:10px;
-  margin:10px 0 14px;
-}
-.flash-bar{
-  height:14px;
-  background:#ddd;
-  border-radius:999px;
-  overflow:hidden;
-  margin:7px 0;
-}
-.flash-fill{
-  height:100%;
-  background:linear-gradient(135deg,#27ae60,#2ecc71);
-  transition:width .25s;
-}
-.flash-meta{
-  display:flex;
-  justify-content:space-between;
-  gap:8px;
-  flex-wrap:wrap;
-  font-size:14px;
-  color:#555;
-}
-.real-img,
-.real-img-small{
-  background:#f7f8ff;
-}
-.mem img,
-.verbPick img,
-.real-img,
-.real-img-small{
-  display:block;
-}
-.mem{
-  white-space:normal!important;
-}
-.bild-option{
-  background:#f7f8ff!important;
-  color:#333!important;
-  border:2px solid #dce2ff!important;
-  border-radius:14px!important;
-  padding:6px!important;
-}
-.bild-option img{
-  width:100%!important;
-  height:110px!important;
-  object-fit:cover!important;
-  border-radius:10px!important;
-}
-.help-bottom{
-  display:block;
-  margin-top:14px!important;
-}
-
-
-/* IMAGE DOM FIX V3 */
-.mem{position:relative!important;overflow:hidden!important}
-.mem-img-holder,.img-holder{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  width:100%;
-  height:100%;
-  overflow:hidden;
-  border-radius:10px;
-  background:#f7f8ff;
-}
-.mem-img-holder img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-.img-holder img{
-  width:100%;
-  max-width:280px;
-  height:210px;
-  object-fit:cover;
-  display:block;
-  border-radius:18px;
-  border:3px solid #dce2ff;
-}
-.bild-option .img-holder img{
-  width:100%;
-  height:105px;
-  border:0;
-  border-radius:10px;
-}
-.bild-option{
-  display:flex!important;
-  align-items:center!important;
-  justify-content:center!important;
-  min-height:120px!important;
-  padding:6px!important;
-  overflow:hidden!important;
-}
-
-
-/* CLEAN CARD UI V4 */
-#game{
-  padding:14px!important;
-}
-.flash-progress-box{
-  padding:10px 12px!important;
-  margin:8px 0 12px!important;
-  border-radius:16px!important;
-}
-.flash-progress-title{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:8px;
-  font-size:15px;
-  font-weight:800;
-}
-.flash-progress-title span:last-child{
-  font-size:13px;
-  color:#666;
-  font-weight:600;
-}
-.flash-bar{
-  height:10px!important;
-  margin:8px 0 0!important;
-}
-.flash-meta{
-  font-size:12px!important;
-  color:#777!important;
-  margin-top:6px;
-}
-.flash-word-list{
-  display:none!important;
-}
-.card-task-head{
-  margin:12px 0 8px;
-}
-.card-task-head h3{
-  font-size:24px!important;
-  line-height:1.15!important;
-  margin:0 0 4px!important;
-}
-.card-task-head .small{
-  font-size:13px!important;
-  color:#777!important;
-}
-.word-status{
-  display:flex;
-  justify-content:center;
-  gap:8px;
-  margin:8px 0 10px;
-  font-size:13px;
-}
-.word-pill{
-  background:#eef2ff;
-  color:#555;
-  border-radius:999px;
-  padding:5px 10px;
-  font-weight:700;
-}
-.study-card-wrap{
-  margin:10px auto 12px!important;
-}
-.study-card{
-  min-height:190px!important;
-}
-.study-face{
-  padding:16px!important;
-}
-.study-face .small{
-  font-size:13px!important;
-  color:#777!important;
-}
-.native-word{
-  font-size:42px!important;
-  line-height:1.1!important;
-  margin:12px 0!important;
-}
-.study-face p.small{
-  margin-top:3px!important;
-}
-#cardAnswer{
-  font-size:18px!important;
-  padding:12px!important;
-  margin-top:6px!important;
-}
-.card-actions{
-  display:flex;
-  gap:8px;
-  align-items:center;
-  justify-content:center;
-  flex-wrap:wrap;
-  margin-top:8px;
-}
-.card-actions button{
-  margin-top:0!important;
-  padding:12px 16px!important;
-  font-size:15px!important;
-}
-#micStatus{
-  text-align:center;
-  font-size:13px!important;
-  margin-top:7px;
-}
-#cardFeedback .ok,
-#cardFeedback .no{
-  font-size:15px!important;
-  line-height:1.35!important;
-}
-@media(max-width:520px){
-  .card-task-head h3{font-size:22px!important}
-  .native-word{font-size:38px!important}
-  .study-card{min-height:175px!important}
-}
-
-
-/* V5 MEMORY QUIZ PUZZLE */
-.memory{
-  display:grid!important;
-  grid-template-columns:repeat(3,1fr)!important;
-  gap:10px!important;
-}
-.mem{
-  height:138px!important;
-  min-height:138px!important;
-  border-radius:18px!important;
-  font-size:16px!important;
-  padding:8px!important;
-}
-.mem.open{
-  background:white!important;
-  color:#222!important;
-  border:4px solid #667eea!important;
-}
-.mem-german{
-  font-size:18px!important;
-  line-height:1.1!important;
-  max-width:100%;
-  overflow-wrap:anywhere;
-  hyphens:auto;
-}
-.mem-img-holder img{
-  width:100%!important;
-  height:100%!important;
-  object-fit:cover!important;
-}
-.quiz-options{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:10px;
-  margin-top:12px;
-}
-.quiz-option{
-  width:100%;
-  min-height:58px;
-  text-align:left;
-  padding:12px 14px!important;
-  border-radius:16px!important;
-  font-size:18px!important;
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-.quiz-letter{
-  background:white;
-  color:#667eea;
-  border-radius:999px;
-  width:30px;
-  height:30px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  font-weight:900;
-  flex:0 0 auto;
-}
-.task-progress{
-  background:#f7f8ff;
-  border:2px solid #dce2ff;
-  border-radius:14px;
-  padding:9px 10px;
-  margin-bottom:12px;
-}
-.task-progress-title{
-  display:flex;
-  justify-content:space-between;
-  font-size:14px;
-  color:#555;
-  font-weight:700;
-}
-.task-progress-line{
-  height:9px;
-  background:#ddd;
-  border-radius:999px;
-  overflow:hidden;
-  margin-top:6px;
-}
-.task-progress-fill{
-  height:100%;
-  background:linear-gradient(135deg,#27ae60,#2ecc71);
-}
-.puzzle-bank,.puzzle-answer{
-  display:flex;
-  flex-wrap:wrap;
-  gap:8px;
-  min-height:54px;
-  background:#f7f8ff;
-  border:2px solid #dce2ff;
-  border-radius:16px;
-  padding:10px;
-  margin:10px 0;
-}
-.word-chip{
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  color:white;
-  border:none;
-  border-radius:999px;
-  padding:10px 14px;
-  font-weight:800;
-  margin:0!important;
-}
-.word-chip.answer{
-  background:#eef2ff;
-  color:#333;
-}
-@media(max-width:520px){
-  .memory{grid-template-columns:repeat(3,1fr)!important;gap:8px!important}
-  .mem{height:115px!important;min-height:115px!important}
-  .mem-german{font-size:15px!important}
-  .quiz-options{grid-template-columns:1fr 1fr;gap:8px}
-  .quiz-option{font-size:16px!important;padding:10px!important}
-}
-
-
-/* V6 FIX MEMORY QUIZ PUZZLE */
-.memory{display:grid!important;grid-template-columns:repeat(3,1fr)!important;gap:10px!important}
-.mem{height:118px!important;min-height:118px!important;border-radius:18px!important;overflow:hidden!important;padding:6px!important;display:flex!important;align-items:center!important;justify-content:center!important;text-align:center!important}
+.mini-top-progress{background:white;border:2px solid #dce2ff;border-radius:16px;padding:10px;margin:8px 0}
+.task-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:12px 0}
+.task-card{min-height:82px;border-radius:18px;background:#f7f8ff!important;border:3px solid #dce2ff;color:#333;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px}
+.task-card .big-icon{font-size:23px;margin-bottom:4px}
+.task-card.done-card{background:linear-gradient(135deg,#27ae60,#2ecc71)!important;color:white!important;border-color:#27ae60!important}
+.task-status{font-size:12px;margin-top:4px;opacity:.9}
+.overview-button{width:100%;margin:8px 0 10px!important;background:#eef2ff!important;color:#333!important;box-shadow:none!important}
+.img-holder{width:100%;display:flex;justify-content:center;align-items:center;margin:8px 0}
+.img-holder img{width:100%;max-width:300px;height:215px;object-fit:cover;display:block;border-radius:18px;border:3px solid #dce2ff;background:#f7f8ff}
+.mem-img-holder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;background:#f7f8ff}
+.mem-img-holder img{width:100%;height:100%;object-fit:cover;display:block}
+.image-fallback{background:#f7f8ff;border:3px dashed #dce2ff;border-radius:18px;min-height:160px;display:flex;align-items:center;justify-content:center;color:#667eea;font-weight:900}
+.memory{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.mem{height:112px;min-height:112px;border-radius:18px;overflow:hidden;padding:6px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:900}
 .mem.open{background:white!important;border:4px solid #667eea!important;color:#222!important}
 .mem.done{background:linear-gradient(135deg,#27ae60,#2ecc71)!important;color:white!important}
-.mem-german{font-size:17px!important;font-weight:900!important;line-height:1.05!important;word-break:break-word!important;overflow-wrap:anywhere!important}
-.mem-img-holder{width:100%!important;height:100%!important;display:flex!important;align-items:center!important;justify-content:center!important;overflow:hidden!important;border-radius:12px!important;background:#f7f8ff!important}
-.mem-img-holder img{width:100%!important;height:100%!important;object-fit:cover!important;display:block!important}
-.img-holder{width:100%;display:flex;justify-content:center;align-items:center}
-.img-holder img{width:100%;max-width:290px;height:210px;object-fit:cover;display:block;border-radius:18px;border:3px solid #dce2ff}
-.quiz-options{display:grid!important;grid-template-columns:1fr 1fr!important;gap:10px!important;margin-top:12px!important}
-.quiz-option{width:100%;min-height:58px;text-align:left;padding:12px!important;border-radius:16px!important;font-size:17px!important;display:flex!important;align-items:center!important;gap:10px!important;justify-content:flex-start!important}
+.mem-german{font-size:16px!important;font-weight:900;line-height:1.08;word-break:break-word;overflow-wrap:anywhere}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.quiz-option{width:100%;min-height:58px;text-align:left;padding:12px!important;border-radius:16px!important;font-size:17px!important;display:flex;align-items:center;gap:10px;justify-content:flex-start}
 .quiz-letter{background:white;color:#667eea;border-radius:999px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 auto}
-.puzzle-answer,.puzzle-bank{display:flex;flex-wrap:wrap;gap:8px;min-height:54px;background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:10px;margin:10px 0}
-.word-chip{background:linear-gradient(135deg,#667eea,#764ba2)!important;color:white!important;border:none!important;border-radius:999px!important;padding:10px 14px!important;font-weight:800!important;margin:0!important}
-.word-chip.answer{background:#eef2ff!important;color:#333!important}
 .task-progress{background:#f7f8ff;border:2px solid #dce2ff;border-radius:14px;padding:9px 10px;margin-bottom:12px}
 .task-progress-title{display:flex;justify-content:space-between;font-size:14px;color:#555;font-weight:700}
 .task-progress-line{height:9px;background:#ddd;border-radius:999px;overflow:hidden;margin-top:6px}
 .task-progress-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71)}
-@media(max-width:520px){.memory{grid-template-columns:repeat(3,1fr)!important;gap:8px!important}.mem{height:100px!important;min-height:100px!important}.mem-german{font-size:14px!important}.quiz-options{gap:8px!important}.quiz-option{font-size:15px!important;padding:10px!important}}
-
-
-/* V12 STABLE RECOVERY */
-.star-overview{
-  background:#fff9db;
-  border:2px solid #ffd43b;
-  border-radius:16px;
-  padding:10px;
-  margin:8px 0 12px;
-  text-align:center;
-  font-weight:900;
-  color:#5c4300;
+.puzzle-answer,.puzzle-bank{display:flex;flex-wrap:wrap;gap:8px;min-height:54px;background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:10px;margin:10px 0}
+.word-chip{background:linear-gradient(135deg,#667eea,#764ba2)!important;color:white!important;border:none!important;border-radius:999px!important;padding:10px 14px!important;font-weight:800!important;margin:0!important}
+.word-chip.answer{background:#eef2ff!important;color:#333!important}
+.study-card-wrap{perspective:1000px;max-width:360px;margin:12px auto}
+.study-card{width:100%;min-height:190px;position:relative;transform-style:preserve-3d;transition:transform .5s;cursor:pointer}
+.study-card.flipped{transform:rotateY(180deg)}
+.study-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;background:white;border:4px solid #667eea;box-shadow:0 10px 28px rgba(0,0,0,.2);padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.study-back{transform:rotateY(180deg);background:#eefaf3;border-color:#27ae60}
+.native-word{font-size:38px;font-weight:900;color:#764ba2;margin:12px 0;line-height:1.1}
+.german-word{font-size:42px;font-weight:900;color:#27ae60;margin:12px 0}
+.word-status{display:flex;justify-content:center;gap:8px;margin:8px 0 10px;font-size:13px}
+.word-pill{background:#eef2ff;color:#555;border-radius:999px;padding:5px 10px;font-weight:700}
+.flash-progress-box{background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:10px 12px;margin:8px 0 12px}
+.flash-progress-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px;font-weight:800}
+.flash-progress-title span:last-child{font-size:13px;color:#666;font-weight:600}
+.flash-bar{height:10px;background:#ddd;border-radius:999px;overflow:hidden;margin:8px 0 0}
+.flash-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71);transition:width .25s}
+.card-actions{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.progress-toggle{position:fixed;top:14px;right:14px;z-index:9999;border-radius:999px;padding:10px 13px;background:#ffcc33;color:#333;border:2px solid white;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.progress-panel{position:fixed;top:0;right:0;width:min(390px,92vw);height:100vh;background:white;z-index:10000;box-shadow:-10px 0 30px rgba(0,0,0,.3);padding:18px;overflow:auto}
+.progress-row{background:#f7f8ff;border:2px solid #e0e4ff;border-radius:12px;padding:9px;margin:7px 0}
+.progress-line{height:10px;background:#ddd;border-radius:999px;overflow:hidden;margin-top:5px}
+.progress-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71)}
+.progress-row-head{display:flex;align-items:center;gap:8px}
+.progress-row-head .mem-img-holder{width:62px!important;height:46px!important;flex:0 0 auto}
+.progress-row-head .mem-img-holder img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:8px}
+.overview-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;padding:18px;overflow:auto}
+.overview-box{background:white;border-radius:24px;max-width:980px;margin:20px auto;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.overview-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
+.verb-overview-card{background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:9px;text-align:center}
+.verb-overview-card .mem-img-holder{height:105px!important;margin-bottom:8px}
+.verb-overview-card .mem-img-holder img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:12px}
+.verb-de{font-size:18px;font-weight:900;color:#222}
+.verb-native{font-size:13px;color:#777;margin-top:3px}
+.verb-percent{margin-top:6px;font-weight:800;color:#667eea}
+.level-alert{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:12000;display:flex;align-items:center;justify-content:center;padding:20px}
+.level-alert-box{background:white;border-radius:28px;max-width:420px;width:100%;text-align:center;padding:26px;box-shadow:0 20px 55px rgba(0,0,0,.35);border:4px solid #ffd43b}
+.level-alert-box h2{color:#7a5400;margin-bottom:10px}
+.level-alert-box .big-star{font-size:54px;margin-bottom:8px}
+.achievement,.package-done{background:#fff9db;border:3px solid #ffd43b;border-radius:22px;padding:18px;margin:14px 0;text-align:center;box-shadow:0 10px 28px rgba(0,0,0,.15)}
+.package-done{background:#e9f9ef;border-color:#27ae60}
+.star-pill{display:inline-block;background:#ffd43b;color:#4a3500;border-radius:999px;padding:7px 12px;font-weight:900;margin:4px}
+@media(max-width:520px){
+  .task-grid{grid-template-columns:repeat(2,1fr)}
+  .memory{grid-template-columns:repeat(3,1fr);gap:7px}
+  .mem{height:96px;min-height:96px}
+  .mem-german{font-size:14px!important}
+  .quiz-options{gap:8px}
+  .quiz-option{font-size:15px!important;padding:10px!important}
+  .native-word{font-size:34px}
+  .study-card{min-height:176px}
 }
-.runtime-error{
-  background:#ffe1e1;
-  border-left:5px solid #e74c3c;
-  padding:12px;
-  border-radius:12px;
-  margin:10px 0;
-}
-.verb-star{font-size:18px;margin-right:4px;}
-
-</style></head><body><button class="progress-toggle" onclick="toggleProgressPanel()">📊</button><div id="progressPanel" class="progress-panel hidden"></div><main>
-<div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
-<div class="card" id="app"></div>
+</style>
+</head>
+<body>
+<button class="progress-toggle" onclick="toggleProgressPanel()">📊</button>
+<div id="progressPanel" class="progress-panel hidden"></div>
+<main>
+  <div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
+  <div class="card" id="app"></div>
 </main>
-<script>window.addEventListener('error', function(e){
-  try{
-    const app=document.getElementById("app");
-    if(app) app.innerHTML = `<div class="runtime-error"><strong>App-Fehler:</strong><br>${e.message}</div>`;
-  }catch(x){}
-});
 
+<script>
 const GOOGLE_SHEET_URL="https://script.google.com/macros/s/AKfycbzQgBJVmvgfqbWBJSPkDAbxwvbiE3LfaU55iTtz1h1kTdPzxmUmgalxKhRNhpxngfTr/exec";
 const ALL_VERBS=[{"v": "lieben", "emoji": "❤️", "img": "Person zeigt ein Herz"}, {"v": "kaufen", "emoji": "🛒", "img": "Person kauft im Geschäft"}, {"v": "verstehen", "emoji": "💡", "img": "Person versteht"}, {"v": "brauchen", "emoji": "🎒", "img": "Person braucht eine Tasche"}, {"v": "hören", "emoji": "👂", "img": "Person hört Musik"}, {"v": "lernen", "emoji": "📚", "img": "Person lernt Deutsch"}, {"v": "wohnen", "emoji": "🏠", "img": "Person wohnt in einer Stadt"}, {"v": "bringen", "emoji": "🎁", "img": "Person bringt etwas"}, {"v": "sein", "emoji": "👤", "img": "Person ist da"}, {"v": "schreiben", "emoji": "✍️", "img": "Person schreibt"}, {"v": "fotografieren", "emoji": "📷", "img": "Person fotografiert"}, {"v": "telefonieren", "emoji": "☎️", "img": "Person telefoniert"}, {"v": "kochen", "emoji": "🍲", "img": "Person kocht"}, {"v": "leben", "emoji": "🌍", "img": "Person lebt in Deutschland"}, {"v": "kommen", "emoji": "➡️", "img": "Person kommt"}, {"v": "buchstabieren", "emoji": "🔤", "img": "Person buchstabiert"}, {"v": "gehen", "emoji": "🚶", "img": "Person geht"}, {"v": "schwimmen", "emoji": "🏊", "img": "Person schwimmt"}, {"v": "suchen", "emoji": "🔍", "img": "Person sucht"}, {"v": "bestellen", "emoji": "📋", "img": "Person bestellt"}, {"v": "weinen", "emoji": "😢", "img": "Person weint"}, {"v": "reparieren", "emoji": "🔧", "img": "Person repariert"}, {"v": "gewinnen", "emoji": "🏆", "img": "Person gewinnt"}, {"v": "spielen", "emoji": "🎲", "img": "Person spielt"}, {"v": "springen", "emoji": "🤾", "img": "Person springt"}, {"v": "verlieren", "emoji": "😟", "img": "Person verliert"}, {"v": "fragen", "emoji": "❓", "img": "Person fragt"}, {"v": "verkaufen", "emoji": "🏪", "img": "Person verkauft"}, {"v": "unterschreiben", "emoji": "🖊️", "img": "Person unterschreibt"}, {"v": "reservieren", "emoji": "📅", "img": "Person reserviert"}, {"v": "buchen", "emoji": "🎫", "img": "Person bucht"}, {"v": "machen", "emoji": "🛠️", "img": "Person macht etwas"}, {"v": "malen", "emoji": "🎨", "img": "Person malt"}, {"v": "trinken", "emoji": "🥤", "img": "Person trinkt"}, {"v": "schicken", "emoji": "📨", "img": "Person schickt eine Nachricht"}, {"v": "denken", "emoji": "🤔", "img": "Person denkt"}, {"v": "winken", "emoji": "👋", "img": "Person winkt"}, {"v": "hassen", "emoji": "💔", "img": "Person mag etwas gar nicht"}, {"v": "beißen", "emoji": "🦷", "img": "Person beißt"}, {"v": "gießen", "emoji": "🪴", "img": "Person gießt Pflanzen"}, {"v": "reißen", "emoji": "📄", "img": "Person reißt Papier"}, {"v": "putzen", "emoji": "🧽", "img": "Person putzt"}, {"v": "küssen", "emoji": "😘", "img": "Person küsst"}, {"v": "tanzen", "emoji": "💃", "img": "Person tanzt"}, {"v": "mixen", "emoji": "🥣", "img": "Person mixt"}, {"v": "reisen", "emoji": "🧳", "img": "Person reist"}, {"v": "haben", "emoji": "🎒", "img": "Person hat eine Tasche"}, {"v": "überqueren", "emoji": "🚦", "img": "Person überquert die Straße"}, {"v": "grüßen", "emoji": "🙋", "img": "Person grüßt"}, {"v": "genießen", "emoji": "😊", "img": "Person genießt das Essen"}, {"v": "singen", "emoji": "🎤", "img": "Person singt"}, {"v": "schließen", "emoji": "🔒", "img": "Person schließt die Tür"}, {"v": "rennen", "emoji": "🏃", "img": "Person rennt"}, {"v": "lachen", "emoji": "😄", "img": "Person lacht"}, {"v": "warten", "emoji": "⏳", "img": "Person wartet"}, {"v": "arbeiten", "emoji": "💼", "img": "Person arbeitet"}, {"v": "finden", "emoji": "✅", "img": "Person findet etwas"}, {"v": "benutzen", "emoji": "🧰", "img": "Person benutzt ein Gerät"}, {"v": "rechnen", "emoji": "➕", "img": "Person rechnet"}, {"v": "zeichnen", "emoji": "✏️", "img": "Person zeichnet"}, {"v": "öffnen", "emoji": "🚪", "img": "Person öffnet die Tür"}, {"v": "wiederholen", "emoji": "🔁", "img": "Person wiederholt"}, {"v": "schneiden", "emoji": "🔪", "img": "Person schneidet"}, {"v": "streiten", "emoji": "💢", "img": "Person streitet"}, {"v": "atmen", "emoji": "🫁", "img": "Person atmet"}];
 
 function $(id){return document.getElementById(id)}
 function clean(s){return String(s||"").trim().toLowerCase().replace(/[.,!?]/g,"")}
 function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
 
 let profile=null;
 let state={
-  phase:"select",
-  index:0,
-  known:[],
-  unsure:[],
-  unknown:[],
-  active:[],
-  learned:[],
-  encounters:{},
-  successBySkill:{},
-  weak:{},
-  currentGame:"",
-  currentVerb:"",
-  memoryCards:[],
-  first:null,
-  lock:false,
-  lastAutoReplace:0
+  phase:"select", index:0, known:[], unsure:[], unknown:[], active:[], learned:[],
+  weak:{}, currentGame:"", currentVerb:"", memoryCards:[], first:null, lock:false,
+  skillDone:{}, skillAttempts:{}, skillSuccess:{}, flashSession:null,
+  taskQueues:{}, taskDoneSets:{}, alertsShown:{}, packageNo:1
 };
 
 const VERB_TRANSLATIONS = {
@@ -571,11 +134,21 @@ const VERB_TRANSLATIONS = {
   "Türkisch":{"lieben":"sevmek","kaufen":"satın almak","verstehen":"anlamak","brauchen":"ihtiyaç duymak","hören":"duymak","lernen":"öğrenmek","wohnen":"oturmak","bringen":"getirmek","sein":"olmak","schreiben":"yazmak","fotografieren":"fotoğraf çekmek","telefonieren":"telefon etmek","kochen":"yemek pişirmek","leben":"yaşamak","kommen":"gelmek","buchstabieren":"harflemek","gehen":"gitmek","schwimmen":"yüzmek","suchen":"aramak","bestellen":"sipariş vermek","weinen":"ağlamak","reparieren":"tamir etmek","gewinnen":"kazanmak","spielen":"oynamak","springen":"zıplamak","verlieren":"kaybetmek","fragen":"sormak","verkaufen":"satmak","unterschreiben":"imzalamak","reservieren":"rezervasyon yapmak","buchen":"rezerve etmek","machen":"yapmak","malen":"boyamak","trinken":"içmek","schicken":"göndermek","denken":"düşünmek","winken":"el sallamak","hassen":"nefret etmek","beißen":"ısırmak","gießen":"sulamak","reißen":"yırtmak","putzen":"temizlemek","küssen":"öpmek","tanzen":"dans etmek","mixen":"karıştırmak","reisen":"seyahat etmek","haben":"sahip olmak","überqueren":"karşıya geçmek","grüßen":"selamlamak","genießen":"keyfini çıkarmak","singen":"şarkı söylemek","schließen":"kapatmak","rennen":"koşmak","lachen":"gülmek","warten":"beklemek","arbeiten":"çalışmak","finden":"bulmak","benutzen":"kullanmak","rechnen":"hesaplamak","zeichnen":"çizmek","öffnen":"açmak","wiederholen":"tekrarlamak","schneiden":"kesmek","streiten":"tartışmak","atmen":"nefes almak"},
   "Englisch":{"lieben":"to love","kaufen":"to buy","verstehen":"to understand","brauchen":"to need","hören":"to hear","lernen":"to learn","wohnen":"to live","bringen":"to bring","sein":"to be","schreiben":"to write","fotografieren":"to take photos","telefonieren":"to phone","kochen":"to cook","leben":"to live","kommen":"to come","buchstabieren":"to spell","gehen":"to go","schwimmen":"to swim","suchen":"to search","bestellen":"to order","weinen":"to cry","reparieren":"to repair","gewinnen":"to win","spielen":"to play","springen":"to jump","verlieren":"to lose","fragen":"to ask","verkaufen":"to sell","unterschreiben":"to sign","reservieren":"to reserve","buchen":"to book","machen":"to do","malen":"to paint","trinken":"to drink","schicken":"to send","denken":"to think","winken":"to wave","hassen":"to hate","beißen":"to bite","gießen":"to water","reißen":"to tear","putzen":"to clean","küssen":"to kiss","tanzen":"to dance","mixen":"to mix","reisen":"to travel","haben":"to have","überqueren":"to cross","grüßen":"to greet","genießen":"to enjoy","singen":"to sing","schließen":"to close","rennen":"to run","lachen":"to laugh","warten":"to wait","arbeiten":"to work","finden":"to find","benutzen":"to use","rechnen":"to calculate","zeichnen":"to draw","öffnen":"to open","wiederholen":"to repeat","schneiden":"to cut","streiten":"to argue","atmen":"to breathe"}
 };
+
+const VERB_SKILLS = ["karteikarte","memory","bild_verb","verb_bild","schreiben","hoeren_schreiben","hoeren_sprechen","bild_sprechen","satz_puzzle"];
+const VERB_SKILL_LABELS = {
+  karteikarte:"Karteikarten", memory:"Memory", bild_verb:"Bild → Verb", verb_bild:"Verb → Bild",
+  schreiben:"Schreiben", hoeren_schreiben:"Hören → Schreiben", hoeren_sprechen:"Hören → Sprechen",
+  bild_sprechen:"Bild → Sprechen", satz_puzzle:"Satz-Puzzle"
+};
+const TASK_FUNC = {
+  memory:"memory", bild_verb:"quiz", verb_bild:"verbToImage", schreiben:"writeVerb",
+  hoeren_schreiben:"hearWrite", hoeren_sprechen:"hearSpeak", bild_sprechen:"imageSpeak", satz_puzzle:"sentencePuzzle"
+};
+
 function nativeLang(){return (profile&&profile.muttersprache)?profile.muttersprache:"Englisch"}
 function nativeWord(v){const lang=nativeLang();return (VERB_TRANSLATIONS[lang]&&VERB_TRANSLATIONS[lang][v])||(VERB_TRANSLATIONS["Englisch"]&&VERB_TRANSLATIONS["Englisch"][v])||v}
-
-
-
+function key(){return "SP_VERBS_"+(profile?profile.userId:"guest")}
 
 function loadProfile(){
   try{profile=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){profile=null}
@@ -584,113 +157,22 @@ function loadProfile(){
     $("app").innerHTML="<button onclick=\"location.href='../'\">Zur Startseite</button>";
     return false;
   }
-  $("profileBox").innerHTML=`<div class="ok">Eingeloggt: <strong>${profile.vorname} ${profile.nachname}</strong> | Kurs: ${profile.kurs}</div>`;
+  $("profileBox").innerHTML=`<div class="ok">Eingeloggt: <strong>${safeText(profile.vorname)} ${safeText(profile.nachname)}</strong> | Kurs: ${safeText(profile.kurs||"")}</div>`;
   return true;
-}
-function key(){return "SP_VERBS_"+(profile?profile.userId:"guest")}
-
-const VERB_SKILLS = [
-  "karteikarte",
-  "memory",
-  "bild_verb",
-  "verb_bild",
-  "schreiben",
-  "hoeren_schreiben",
-  "hoeren_sprechen",
-  "bild_sprechen",
-  "satz_puzzle"
-];
-
-const VERB_SKILL_LABELS = {
-  "karteikarte":"Karteikarten",
-  "memory":"Memory",
-  "bild_verb":"Bild → Verb",
-  "verb_bild":"Verb → Bild",
-  "schreiben":"Schreiben",
-  "hoeren_schreiben":"Hören → Schreiben",
-  "hoeren_sprechen":"Hören → Sprechen",
-  "bild_sprechen":"Bild → Sprechen",
-  "satz_puzzle":"Satz-Puzzle"
-};
-
-function skillKey(skill){
-  if(skill==="zuordnung") return "bild_verb";
-  if(skill==="karteikarte_schreiben" || skill==="karteikarte_sprechen") return "karteikarte";
-  if(skill==="verb_bild") return "verb_bild";
-  if(skill==="bild_sprechen") return "bild_sprechen";
-  if(skill==="satz_puzzle") return "satz_puzzle";
-  if(skill==="hoeren_schreiben") return "hoeren_schreiben";
-  if(skill==="hoeren_sprechen") return "hoeren_sprechen";
-  if(skill==="schreiben") return "schreiben";
-  if(skill==="memory") return "memory";
-  return skill;
 }
 
 function ensureSkillState(v){
-  state.skillDone = state.skillDone || {};
-  state.skillAttempts = state.skillAttempts || {};
-  state.skillSuccess = state.skillSuccess || {};
-  state.skillDone[v] = state.skillDone[v] || {};
-  state.skillAttempts[v] = state.skillAttempts[v] || {};
-  state.skillSuccess[v] = state.skillSuccess[v] || {};
+  state.skillDone=state.skillDone||{}; state.skillAttempts=state.skillAttempts||{}; state.skillSuccess=state.skillSuccess||{};
+  state.skillDone[v]=state.skillDone[v]||{}; state.skillAttempts[v]=state.skillAttempts[v]||{}; state.skillSuccess[v]=state.skillSuccess[v]||{};
 }
-
-function verbSkillCount(v){
-  ensureSkillState(v);
-  return VERB_SKILLS.filter(s=>state.skillDone[v][s]).length;
-}
-
-function verbCount(v){
-  return verbSkillCount(v);
-}
-
-function verbPercent(v){
-  return Math.round((verbSkillCount(v) * 100) / VERB_SKILLS.length);
-}
-
-function markSkill(v,skill,good){
-  const sk=skillKey(skill);
-  ensureSkillState(v);
-  state.skillAttempts[v][sk]=(state.skillAttempts[v][sk]||0)+1;
-  if(good){
-    state.skillSuccess[v][sk]=(state.skillSuccess[v][sk]||0)+1;
-    if(sk==="karteikarte"){
-      if((state.skillSuccess[v][sk]||0)>=2) state.skillDone[v][sk]=true;
-    }else{
-      state.skillDone[v][sk]=true;
-    }
-  }else{
-    state.weak[v]=(state.weak[v]||0)+1;
-  }
-}
-
-function skillBadges(v){
-  ensureSkillState(v);
-  return VERB_SKILLS.map(s=>{
-    const ok=state.skillDone[v][s];
-    const att=state.skillAttempts[v][s]||0;
-    return `<div class="small">${ok?"✅":"⬜"} ${VERB_SKILL_LABELS[s]} ${att?`(${att}x)`:""}</div>`;
-  }).join("");
-}
-
 function migrateState(){
-  state.learned=state.learned||[];
-  state.encounters=state.encounters||{};
-  state.successBySkill=state.successBySkill||{};
-  state.skillDone=state.skillDone||{};
-  state.skillAttempts=state.skillAttempts||{};
-  state.skillSuccess=state.skillSuccess||{};
-  state.active=state.active||[];
-  state.known=state.known||[];
-  state.unsure=state.unsure||[];
-  state.unknown=state.unknown||[];
+  state.learned=state.learned||[]; state.active=state.active||[]; state.known=state.known||[]; state.unsure=state.unsure||[]; state.unknown=state.unknown||[];
+  state.weak=state.weak||{}; state.skillDone=state.skillDone||{}; state.skillAttempts=state.skillAttempts||{}; state.skillSuccess=state.skillSuccess||{};
+  state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{}; state.alertsShown=state.alertsShown||{}; state.packageNo=state.packageNo||1;
   (state.active||[]).forEach(v=>ensureSkillState(v));
 }
 function loadState(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(key())||"null");
-    if(saved) state={...state,...saved};
-  }catch(e){}
+  try{const saved=JSON.parse(localStorage.getItem(key())||"null"); if(saved) state={...state,...saved};}catch(e){}
   migrateState();
 }
 function saveState(){
@@ -698,305 +180,18 @@ function saveState(){
   localStorage.setItem(key(),JSON.stringify(state));
   sendProgress();
 }
-
-function overall(){
-  if(!state.active.length)return 0;
-  let sum=state.active.reduce((s,v)=>s+verbPercent(v),0);
-  return Math.round(sum/state.active.length);
-}
-function learnedTotal(){return state.learned.length + state.active.filter(v=>verbPercent(v)>=100).length}
 function sendProgress(){
   if(!profile)return;
-  const done=overall();
-  const payload={
-    userId:profile.userId,kurs:profile.kurs,vorname:profile.vorname,nachname:profile.nachname,
+  const payload={userId:profile.userId,kurs:profile.kurs,vorname:profile.vorname,nachname:profile.nachname,
     geburtsdatum:profile.geburtsdatum,heimatland:profile.heimatland,muttersprache:profile.muttersprache,
     fremdsprache:profile.fremdsprache,wohnort:profile.wohnort,kinder:profile.kinder,
-    fragenFortschritt:profile.fragenFortschritt||0,verbenFortschritt:done,gesamtpunkte:done,
-    profile:profile,verbenState:state,timestamp:new Date().toISOString()
-  };
+    fragenFortschritt:profile.fragenFortschritt||0,verbenFortschritt:overall(),gesamtpunkte:overall(),
+    profile:profile,verbenState:state,timestamp:new Date().toISOString()};
   try{fetch(GOOGLE_SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})}catch(e){}
 }
-function img(v){return ALL_VERBS.find(x=>x.v===v)||{v:v,emoji:"⭐",img:"Bild"}}
-function unusedVerbs(){
-  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
-  return ALL_VERBS.map(x=>x.v).filter(v=>!used.includes(v));
-}
-function currentPickVerb(){
-  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
-  for(let i=state.index;i<ALL_VERBS.length;i++){
-    if(!used.includes(ALL_VERBS[i].v)){state.index=i;return ALL_VERBS[i];}
-  }
-  return null;
-}
 
-
-
-
-function speakTextVerb(t,slow=false){
-  try{
-    if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){
-      const fb=$("fb")||$("cardFeedback");
-      if(fb)fb.innerHTML="<div class='no'>Hören wird auf diesem Gerät nicht unterstützt.</div>";
-      return;
-    }
-    const u=new SpeechSynthesisUtterance(String(t||""));
-    u.lang="de-DE";
-    u.rate=slow?0.35:0.85;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(u);
-  }catch(e){
-    const fb=$("fb")||$("cardFeedback");
-    if(fb)fb.innerHTML="<div class='no'>Beim Hören gab es ein Problem.</div>";
-  }
-}
-
-function scrollToGame(){
-  renderAndHydrate();
-  setTimeout(()=>{const g=$("game"); if(g) g.scrollIntoView({behavior:"smooth",block:"start"});},80);
-}
-function scrollToFeedback(){
-  setTimeout(()=>{const fb=$("fb")||$("cardFeedback")||$("game"); if(fb) fb.scrollIntoView({behavior:"smooth",block:"center"});},80);
-}
-function normalizeVerbAnswer(s){
-  return clean(String(s||"").replace(/\s+/g," "));
-}
-function checkVerbAnswer(answer, correct){
-  return normalizeVerbAnswer(answer)===normalizeVerbAnswer(correct);
-}
-function setMicStatus(txt){
-  const m=$("micStatus");
-  if(m)m.innerHTML=txt;
-}
-function recogVerb(cb){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){
-    const fb=$("cardFeedback")||$("fb");
-    if(fb)fb.innerHTML="<div class='no'>Mikrofon funktioniert auf diesem Gerät/Browser nicht. Bitte die Antwort schreiben.</div>";
-    scrollToFeedback();
-    return;
-  }
-  try{
-    let r=new SR();
-    r.lang="de-DE";
-    r.interimResults=false;
-    r.continuous=false;
-    r.maxAlternatives=3;
-    let result="";
-    let timer=null;
-    let done=false;
-    function finish(){
-      if(done)return;
-      done=true;
-      clearTimeout(timer);
-      setMicStatus("⚪ Mikrofon aus");
-      if(result.trim())cb(result.trim());
-      else{
-        const fb=$("cardFeedback")||$("fb");
-        if(fb)fb.innerHTML="<div class='no'>Ich habe nichts verstanden. Bitte noch einmal sprechen oder schreiben.</div>";
-        scrollToFeedback();
-      }
-    }
-    function stopSoon(){
-      clearTimeout(timer);
-      timer=setTimeout(()=>{try{r.stop()}catch(e){finish()}},2000);
-    }
-    r.onstart=()=>{setMicStatus("🔴 Mikrofon aktiv – sprechen Sie jetzt."); stopSoon();};
-    r.onspeechstart=()=>clearTimeout(timer);
-    r.onspeechend=()=>stopSoon();
-    r.onsoundend=()=>stopSoon();
-    r.onresult=e=>{
-      let best="";
-      for(let i=e.resultIndex;i<e.results.length;i++){
-        if(e.results[i]&&e.results[i][0])best=e.results[i][0].transcript||best;
-      }
-      result=best||result;
-      const heard=$("heard");
-      if(heard)heard.innerText="Gehört: "+result;
-      stopSoon();
-    };
-    r.onerror=e=>{
-      clearTimeout(timer);
-      setMicStatus("⚪ Mikrofon aus");
-      const fb=$("cardFeedback")||$("fb");
-      let msg="Mikrofonfehler. Bitte schreiben.";
-      if(e&&e.error==="not-allowed")msg="Mikrofon ist blockiert. Bitte erlauben oder schreiben.";
-      if(e&&e.error==="no-speech")msg="Ich habe nichts gehört. Bitte noch einmal sprechen oder schreiben.";
-      if(fb)fb.innerHTML="<div class='no'>"+msg+"</div>";
-      scrollToFeedback();
-    };
-    r.onend=finish;
-    r.start();
-  }catch(e){
-    const fb=$("cardFeedback")||$("fb");
-    if(fb)fb.innerHTML="<div class='no'>Mikrofon konnte nicht gestartet werden. Bitte schreiben.</div>";
-    scrollToFeedback();
-  }
-}
-
-
-function hearWrite(){
-  state.currentGame="hearWrite";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`${taskProgressHtml("hoeren_schreiben","Hören → Schreiben")}<h3>Hören → Schreiben</h3>
-    <p class="small">Hören Sie das Verb und schreiben Sie es.</p>
-    <button onclick="speakTextVerb('${v}',false)">🔊 Hören</button>
-    <button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 Langsam</button>
-    <input id="hearWriteInput" placeholder="Verb schreiben...">
-    <button class="success" onclick="checkHearWrite('${v}')">Überprüfen</button>
-    <button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
-  scrollToGame();
-}
-function checkHearWrite(v){
-  const val=$("hearWriteInput").value;
-  if(checkVerbAnswer(val,v)){
-    addEncounter(v,"hoeren_schreiben",true);
-    $("fb").innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong></div><button class="success" onclick="hearWrite()">weiter</button>`;
-  }else{
-    addEncounter(v,"hoeren_schreiben",false);
-    $("fb").innerHTML=`<div class="no">❌ Noch nicht. Richtig: <strong>${v}</strong></div><button onclick="hearWrite()">weiter</button>`;
-  }
-  scrollToFeedback();
-}
-function hearSpeak(){
-  state.currentGame="hearSpeak";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`${taskProgressHtml("hoeren_sprechen","Hören → Sprechen")}<h3>Hören → Sprechen</h3>
-    <p class="small">Hören Sie das Verb und sprechen Sie es nach.</p>
-    <button onclick="speakTextVerb('${v}',false)">🔊 Hören</button>
-    <button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 Langsam</button>
-    <button class="success" onclick="checkHearSpeak('${v}')">🎤 Sprechen</button>
-    <div id="micStatus" class="small">⚪ Mikrofon aus</div>
-    <p id="heard" class="small"></p>
-    <button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
-  scrollToGame();
-}
-function checkHearSpeak(v){
-  recogVerb(t=>{
-    const h=$("heard"); if(h)h.innerText="Gehört: "+t;
-    if(checkVerbAnswer(t,v)){
-      addEncounter(v,"hoeren_sprechen",true);
-      $("fb").innerHTML=`<div class="ok">✔ Richtig gesprochen: <strong>${v}</strong></div><button class="success" onclick="hearSpeak()">weiter</button>`;
-    }else{
-      addEncounter(v,"hoeren_sprechen",false);
-      $("fb").innerHTML=`<div class="no">❌ Gehört: ${t}<br>Richtig: <strong>${v}</strong></div><button onclick="hearSpeak()">weiter</button>`;
-    }
-    scrollToFeedback();
-  });
-}
-function imageSpeak(){
-  if(typeof saveCurrentTask==="function") saveCurrentTask("imageSpeak");
-  state.currentGame="imageSpeak";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`${taskProgressHtml("bild_sprechen","Bild → Sprechen")}<h3>Bild → Sprechen</h3>${imageBox(v,false)}<button class="success" onclick="checkImageSpeak('${v}')">🎤 Sprechen</button><div id="micStatus" class="small">Mikrofon aus</div><p id="heard" class="small"></p><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
-  renderAndHydrate();
-  scrollToGame();
-}
-function checkImageSpeak(v){
-  recogVerb(t=>{
-    const h=$("heard"); if(h)h.innerText="Gehört: "+t;
-    if(checkVerbAnswer(t,v)){
-      addEncounter(v,"bild_sprechen",true);
-      $("fb").innerHTML=`<div class="ok">✔ Richtig: <strong>${v}</strong></div><button class="success" onclick="imageSpeak()">weiter</button>`;
-    }else{
-      addEncounter(v,"bild_sprechen",false);
-      $("fb").innerHTML=`<div class="no">❌ Gehört: ${t}<br>Richtig: <strong>${v}</strong></div><button onclick="imageSpeak()">weiter</button>`;
-    }
-    scrollToFeedback();
-  });
-}
-function verbToImage(){
-  if(typeof saveCurrentTask==="function") saveCurrentTask("verbToImage");
-  state.currentGame="verbToImage";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
-  const opts=shuffle([v,...shuffle((state.active||[]).filter(x=>x!==v)).slice(0,3)]);
-  while(opts.length<4){
-    const extra=shuffle(ALL_VERBS.map(x=>x.v).filter(x=>!opts.includes(x)))[0];
-    if(extra)opts.push(extra); else break;
-  }
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`${taskProgressHtml("verb_bild","Verb → Bild")}<h3>Welches Bild passt?</h3><h2>${safeText(v)}</h2><div class="grid">${opts.slice(0,4).map(o=>`<button class="bild-option" onclick="checkVerbToImage('${o}','${v}')">${imageBox(o,true)}</button>`).join("")}</div><button class="secondary help-bottom" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
-  renderAndHydrate();
-  scrollToGame();
-}
-function checkVerbToImage(a,v){
-  if(a===v){addEncounter(v,"verb_bild",true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='verbToImage()'>weiter</button>";}
-  else{addEncounter(v,"verb_bild",false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>";}
-  scrollToFeedback();
-}
-
-
-function showTranslationHelp(v){
-  const fb=$("fb")||$("cardFeedback");
-  if(fb){
-    fb.innerHTML=`<div class="ok"><strong>Hilfe (${nativeLang()}):</strong><br>${nativeWord(v)}</div>` + fb.innerHTML;
-    scrollToFeedback();
-  }
-}
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function taskSkillProgress(skill){
-  const sk=skillKey(skill);
-  const active=(state.active||[]);
-  if(!active.length)return {done:0,total:0,pct:0};
-  let done=active.filter(v=>{ensureSkillState(v);return state.skillDone[v]&&state.skillDone[v][sk];}).length;
-  return {done:done,total:active.length,pct:Math.round(done*100/active.length)};
-}
-function taskProgressHtml(skill,label){
-  const p=taskSkillProgress(skill);
-  return `<div class="task-progress"><div class="task-progress-title"><span>${label}</span><span>${p.done}/${p.total} · ${p.pct}%</span></div><div class="task-progress-line"><div class="task-progress-fill" style="width:${p.pct}%"></div></div></div>`;
-}
-function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-function sentenceForVerb(v){
-  const map={"kaufen":"Ich kaufe eine Tomate.","brauchen":"Ich brauche eine Cola.","lernen":"Ich lerne Deutsch.","wohnen":"Ich wohne in Deutschland.","bringen":"Ich bringe eine Pizza.","schreiben":"Ich schreibe meinen Namen.","telefonieren":"Ich telefoniere heute.","kochen":"Ich koche eine Suppe.","kommen":"Ich komme aus Syrien.","gehen":"Ich gehe nach Hause.","schwimmen":"Ich schwimme gern.","suchen":"Ich suche meinen Stift.","bestellen":"Ich bestelle eine Pizza.","hören":"Ich höre Musik.","fotografieren":"Ich fotografiere die Stadt.","buchstabieren":"Ich buchstabiere meinen Namen.","lieben":"Ich liebe Deutsch.","verstehen":"Ich verstehe die Frage.","sein":"Ich bin im Kurs.","leben":"Ich lebe in Deutschland."};
-  return map[v] || `Ich ${v} heute.`;
-}
-function sentenceWords(v){return sentenceForVerb(v).replace(/[.?!]/g,"").split(" ");}
-function imageFileName(v){
-  return String(v||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".png";
-}
-function imageBox(v,small=false){
-  const cls=small?"mem-img-holder":"img-holder";
-  return `<span class="${cls}" data-verb="${safeText(v)}"></span>`;
-}
-function realImage(v,small=false){return imageBox(v,small);}
-function actionImage(v,small=false){return imageBox(v,small);}
+function imageFileName(v){return String(v||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".png"}
+function imageBox(v,small=false){const cls=small?"mem-img-holder":"img-holder";return `<span class="${cls}" data-verb="${safeText(v)}"><span class="image-fallback">Bild</span></span>`}
 function hydrateImages(root){
   const base=root||document;
   base.querySelectorAll("[data-verb]").forEach(box=>{
@@ -1008,529 +203,354 @@ function hydrateImages(root){
     img.loading="eager";
     img.decoding="async";
     img.src="bilder/"+imageFileName(v);
-    img.onerror=function(){this.remove();};
+    img.onerror=function(){box.innerHTML="<span class='image-fallback'>Bild</span>";};
     box.textContent="";
     box.appendChild(img);
   });
 }
-function renderAndHydrate(){setTimeout(()=>hydrateImages(document),30);}
+function renderAndHydrate(){setTimeout(()=>hydrateImages(document),20)}
 
+function skillKey(skill){return skill==="zuordnung"?"bild_verb":skill}
+function verbSkillCount(v){ensureSkillState(v);return VERB_SKILLS.filter(s=>state.skillDone[v]&&state.skillDone[v][s]).length}
+function verbPercent(v){return Math.round((verbSkillCount(v)*100)/VERB_SKILLS.length)}
+function overall(){if(!state.active.length)return 0;return Math.round(state.active.reduce((s,v)=>s+verbPercent(v),0)/state.active.length)}
+function taskQueueKey(skill){return "queue_"+skillKey(skill)}
+function taskDoneSetKey(skill){return "done_"+skillKey(skill)}
+function queuedProgress(skill){
+  const dKey=taskDoneSetKey(skill); state.taskDoneSets=state.taskDoneSets||{};
+  const done=(state.taskDoneSets[dKey]||[]).filter(v=>(state.active||[]).includes(v)).length;
+  const total=(state.active||[]).length;
+  return {done,total,pct:total?Math.round(done*100/total):0};
+}
+function taskSkillProgress(skill){return queuedProgress(skill)}
+function taskProgressHtml(skill,label){const p=taskSkillProgress(skill);return `<div class="task-progress"><div class="task-progress-title"><span>${label}</span><span>${p.done}/${p.total} · ${p.pct}%</span></div><div class="task-progress-line"><div class="task-progress-fill" style="width:${p.pct}%"></div></div></div>`}
+function taskDone(skill){const p=taskSkillProgress(skill);return p.total>0 && p.done>=p.total}
+function taskCardClass(skill){return taskDone(skill)?"task-card done-card":"task-card"}
+function taskCardStatus(skill){const p=taskSkillProgress(skill);return taskDone(skill)?"Erledigt ✓":`${p.pct}%`}
 
-var puzzleCurrent=[];
-function sentencePuzzle(){
-  if(typeof saveCurrentTask==="function") saveCurrentTask("sentencePuzzle");
-  state.currentGame="sentencePuzzle";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
-  state.currentVerb=v;
-  const sentence=sentenceForVerb(v);
-  puzzleCurrent=[];
-  const words=shuffle(sentenceWords(v));
-  $("game").innerHTML=`${taskProgressHtml("satz_puzzle","Satz-Puzzle")}<h3>Satz-Puzzle</h3><p class="small">Baue den Satz. Danach kannst du ihn hören.</p>${imageBox(v,false)}<div id="puzzleAnswer" class="puzzle-answer"></div><div id="puzzleBank" class="puzzle-bank">${words.map(w=>`<button class="word-chip" data-word="${safeText(w)}" onclick="pickPuzzleWord(this)">${safeText(w)}</button>`).join("")}</div><button class="secondary" onclick="speakTextVerb('${sentence.replace(/'/g,"\\'")}',false)">🔊 Satz hören</button><button class="secondary" onclick="speakTextVerb('${sentence.replace(/'/g,"\\'")}',true)">🐢 Langsam</button><button class="success" onclick="checkSentencePuzzle('${v}')">Prüfen</button><button class="secondary" onclick="sentencePuzzle()">Neu</button><div id="fb"></div>`;
-  renderAndHydrate();
-  scrollToGame();
-}
-function pickPuzzleWord(btn){
-  const w=btn.getAttribute("data-word");
-  puzzleCurrent.push(w);
-  btn.remove();
-  const ans=$("puzzleAnswer");
-  const chip=document.createElement("button");
-  chip.className="word-chip answer";
-  chip.textContent=w;
-  chip.onclick=function(){
-    const children=Array.from(ans.children);
-    const index=children.indexOf(chip);
-    if(index>=0)puzzleCurrent.splice(index,1);
-    chip.remove();
-    const bank=$("puzzleBank");
-    const b=document.createElement("button");
-    b.className="word-chip";
-    b.textContent=w;
-    b.setAttribute("data-word",w);
-    b.onclick=function(){pickPuzzleWord(b);};
-    bank.appendChild(b);
-  };
-  ans.appendChild(chip);
-}
-function checkSentencePuzzle(v){
-  const target=sentenceForVerb(v).replace(/[.?!]/g,"").trim();
-  const answer=puzzleCurrent.join(" ").trim();
-  const fb=$("fb");
-  if(clean(answer)===clean(target)){
-    addEncounter(v,"satz_puzzle",true);
-    fb.innerHTML=`<div class="ok">Richtig: ${sentenceForVerb(v)}</div><button class="success" onclick="sentencePuzzle()">weiter</button>`;
-    speakTextVerb(sentenceForVerb(v),false);
-  }else{
-    addEncounter(v,"satz_puzzle",false);
-    fb.innerHTML=`<div class="no">Noch nicht.<br>Richtig: ${sentenceForVerb(v)}</div>`;
+function initTaskQueue(skill){
+  state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{};
+  const qKey=taskQueueKey(skill), dKey=taskDoneSetKey(skill);
+  state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
+  const doneSet=new Set(state.taskDoneSets[dKey]);
+  const remaining=(state.active||[]).filter(v=>!doneSet.has(v));
+  if(!Array.isArray(state.taskQueues[qKey])) state.taskQueues[qKey]=shuffle(remaining);
+  else {
+    const current=state.taskQueues[qKey].filter(v=>remaining.includes(v));
+    const missing=remaining.filter(v=>!current.includes(v));
+    state.taskQueues[qKey]=current.concat(shuffle(missing));
   }
-  scrollToFeedback();
+  saveState();
+}
+function nextFromTaskQueue(skill){
+  initTaskQueue(skill);
+  const qKey=taskQueueKey(skill);
+  const q=state.taskQueues[qKey]||[];
+  if(!q.length)return null;
+  const v=q.shift();
+  state.taskQueues[qKey]=q;
+  saveState();
+  return v;
+}
+function finishQueuedVerb(skill,v,good){
+  state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{};
+  const qKey=taskQueueKey(skill), dKey=taskDoneSetKey(skill);
+  state.taskQueues[qKey]=state.taskQueues[qKey]||[];
+  state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
+  if(good){
+    if(!state.taskDoneSets[dKey].includes(v)) state.taskDoneSets[dKey].push(v);
+    state.taskQueues[qKey]=state.taskQueues[qKey].filter(x=>x!==v);
+  }else{
+    if(!state.taskDoneSets[dKey].includes(v) && !state.taskQueues[qKey].includes(v)) state.taskQueues[qKey].push(v);
+  }
+  saveState();
+}
+function chooseVerbForPractice(skill){return skill?nextFromTaskQueue(skill):nextFromTaskQueue(state.currentGame||"schreiben")}
+
+function markSkill(v,skill,good){
+  const sk=skillKey(skill); ensureSkillState(v);
+  state.skillAttempts[v][sk]=(state.skillAttempts[v][sk]||0)+1;
+  if(good){
+    state.skillSuccess[v][sk]=(state.skillSuccess[v][sk]||0)+1;
+    if(sk==="karteikarte"){if((state.skillSuccess[v][sk]||0)>=2)state.skillDone[v][sk]=true;}
+    else state.skillDone[v][sk]=true;
+  }else state.weak[v]=(state.weak[v]||0)+1;
+}
+function addEncounter(v,skill,good=true){markSkill(v,skill,good);saveState();checkMilestones();}
+
+function skillBadges(v){
+  ensureSkillState(v);
+  return VERB_SKILLS.map(s=>`<div class="small">${state.skillDone[v][s]?"✅":"⬜"} ${VERB_SKILL_LABELS[s]} ${state.skillAttempts[v][s]?`(${state.skillAttempts[v][s]}x)`:""}</div>`).join("");
+}
+function unusedVerbs(){
+  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
+  return ALL_VERBS.map(x=>x.v).filter(v=>!used.includes(v));
+}
+function currentPickVerb(){
+  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
+  for(let i=state.index;i<ALL_VERBS.length;i++){if(!used.includes(ALL_VERBS[i].v)){state.index=i;return ALL_VERBS[i];}}
+  return null;
+}
+function packageComplete(){return (state.active||[]).length===20 && state.active.every(v=>verbPercent(v)>=100)}
+function allTasksDone(){return VERB_SKILLS.every(s=>taskDone(s))}
+
+function totalStars(){
+  let stars=0;
+  [...(state.active||[]),...(state.learned||[])].forEach(v=>{ensureSkillState(v);VERB_SKILLS.forEach(s=>{if(state.skillDone[v]&&state.skillDone[v][s])stars++;})});
+  return stars;
+}
+function showAlert(title,msg,icon="⭐"){
+  const old=document.getElementById("levelAlert"); if(old)old.remove();
+  const el=document.createElement("div"); el.className="level-alert"; el.id="levelAlert";
+  el.innerHTML=`<div class="level-alert-box"><div class="big-star">${icon}</div><h2>${title}</h2><p>${msg}</p><button class="success" onclick="document.getElementById('levelAlert').remove()">Weiter</button></div>`;
+  document.body.appendChild(el);
+}
+function queueAlert(key,title,msg,icon="⭐"){state.alertsShown=state.alertsShown||{};if(state.alertsShown[key])return;state.alertsShown[key]=true;saveState();setTimeout(()=>showAlert(title,msg,icon),120)}
+function checkMilestones(){
+  const stars=totalStars();
+  if(stars>=20)queueAlert("stars20","20 Sterne!","Du hast schon 20 Lernpunkte gesammelt.","⭐");
+  if(stars>=40)queueAlert("stars40","40 Sterne!","Stark! Du kommst gut voran.","⭐");
+  const learned=(state.active||[]).filter(v=>verbPercent(v)>=100).length+(state.learned||[]).length;
+  if(learned>=1)queueAlert("firstVerb","Erstes Verb gelernt!","Ein Verb ist komplett auf 100 %.","🎉");
+  if(learned>=5)queueAlert("fiveVerbs","5 Verben gelernt!","Du baust deinen Wortschatz auf.","🎉");
+  if(learned>=10)queueAlert("tenVerbs","10 Verben gelernt!","Die Hälfte eines Pakets ist geschafft.","🎉");
+  if(packageComplete())queueAlert("packageComplete_"+(state.packageNo||1),"Paket geschafft!","Alle 20 Verben sind auf 100 %. Jetzt kannst du neue Verben auswählen.","🏆");
+}
+function completedTaskMessage(label){return `<div class="achievement"><h3>Aufgabe erledigt ✓</h3><p><strong>${label}</strong> ist abgeschlossen.</p><div class="star-pill">⭐ geschafft</div></div>`}
+function finishTaskIfComplete(skill,label){
+  if(taskDone(skill)){
+    checkMilestones();
+    const g=$("game"); if(g)g.innerHTML=completedTaskMessage(label)+`<button class="success" onclick="renderHome()">Zur Aufgabenübersicht</button>`;
+    return true;
+  }
+  checkMilestones();
+  return false;
 }
 
-function init(){
-  if(!loadProfile())return;
-  loadState();
-  if(state.active.length>=20){state.phase="tasks";renderHome();}
-  else {state.phase="select";renderOneVerb();}
+function speakTextVerb(t,slow=false){
+  try{const u=new SpeechSynthesisUtterance(String(t||""));u.lang="de-DE";u.rate=slow?0.55:0.9;window.speechSynthesis.cancel();window.speechSynthesis.speak(u);}
+  catch(e){const fb=$("fb")||$("cardFeedback"); if(fb)fb.innerHTML="<div class='no'>Hören wird auf diesem Gerät nicht unterstützt.</div>";}
 }
+function normalizeVerbAnswer(s){return clean(String(s||"").replace(/\s+/g," "))}
+function checkVerbAnswer(answer,correct){return normalizeVerbAnswer(answer)===normalizeVerbAnswer(correct)}
+function setMicStatus(txt){const m=$("micStatus");if(m)m.innerHTML=txt}
+function recogVerb(cb){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){const fb=$("cardFeedback")||$("fb"); if(fb)fb.innerHTML="<div class='no'>Mikrofon funktioniert auf diesem Gerät/Browser nicht. Bitte die Antwort schreiben.</div>";scrollToFeedback();return;}
+  try{
+    let r=new SR(); r.lang="de-DE"; r.interimResults=false; r.continuous=false; r.maxAlternatives=3;
+    let result="", done=false, timer=null;
+    function finish(){if(done)return;done=true;clearTimeout(timer);setMicStatus("⚪ Mikrofon aus");if(result.trim())cb(result.trim());else{const fb=$("cardFeedback")||$("fb");if(fb)fb.innerHTML="<div class='no'>Ich habe nichts verstanden. Bitte noch einmal sprechen oder schreiben.</div>";scrollToFeedback();}}
+    function stopSoon(){clearTimeout(timer);timer=setTimeout(()=>{try{r.stop()}catch(e){finish()}},1800)}
+    r.onstart=()=>{setMicStatus("🔴 Mikrofon aktiv – sprechen Sie jetzt.");stopSoon();};
+    r.onspeechstart=()=>clearTimeout(timer); r.onspeechend=()=>stopSoon(); r.onsoundend=()=>stopSoon();
+    r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i]&&e.results[i][0])result=e.results[i][0].transcript||result;}const h=$("heard");if(h)h.innerText="Gehört: "+result;stopSoon();};
+    r.onerror=e=>{clearTimeout(timer);setMicStatus("⚪ Mikrofon aus");const fb=$("cardFeedback")||$("fb");if(fb)fb.innerHTML="<div class='no'>Mikrofonfehler. Bitte schreiben.</div>";scrollToFeedback();};
+    r.onend=finish; r.start();
+  }catch(e){const fb=$("cardFeedback")||$("fb");if(fb)fb.innerHTML="<div class='no'>Mikrofon konnte nicht gestartet werden. Bitte schreiben.</div>";scrollToFeedback();}
+}
+function scrollToGame(){renderAndHydrate();setTimeout(()=>{const g=$("game");if(g)g.scrollIntoView({behavior:"smooth",block:"start"})},70)}
+function scrollToFeedback(){setTimeout(()=>{const fb=$("fb")||$("cardFeedback")||$("game");if(fb)fb.scrollIntoView({behavior:"smooth",block:"center"})},70)}
+function saveCurrentTask(task){state.currentGame=task;saveState()}
+
+function sentenceForVerb(v){
+  const map={
+    "lieben":"Ich liebe Deutsch.","kaufen":"Ich kaufe eine Tomate.","verstehen":"Ich verstehe die Frage.","brauchen":"Ich brauche einen Stift.","hören":"Ich höre Musik.","lernen":"Ich lerne Deutsch.","wohnen":"Ich wohne in Deutschland.","bringen":"Ich bringe eine Pizza.","sein":"Ich bin im Kurs.","schreiben":"Ich schreibe meinen Namen.","fotografieren":"Ich fotografiere die Stadt.","telefonieren":"Ich telefoniere heute.","kochen":"Ich koche eine Suppe.","leben":"Ich lebe in Deutschland.","kommen":"Ich komme aus Syrien.","buchstabieren":"Ich buchstabiere meinen Namen.","gehen":"Ich gehe nach Hause.","schwimmen":"Ich schwimme gern.","suchen":"Ich suche meinen Schlüssel.","bestellen":"Ich bestelle eine Pizza.","weinen":"Ich weine heute.","reparieren":"Ich repariere mein Fahrrad.","gewinnen":"Ich gewinne das Spiel.","spielen":"Ich spiele Fußball.","springen":"Ich springe hoch.","verlieren":"Ich verliere den Schlüssel.","fragen":"Ich frage die Lehrerin.","verkaufen":"Ich verkaufe ein Buch.","unterschreiben":"Ich unterschreibe das Formular.","reservieren":"Ich reserviere einen Tisch.","buchen":"Ich buche ein Hotel.","machen":"Ich mache eine Aufgabe.","malen":"Ich male ein Bild.","trinken":"Ich trinke Wasser.","schicken":"Ich schicke eine Nachricht.","denken":"Ich denke nach.","winken":"Ich winke meiner Freundin.","hassen":"Ich hasse Stress.","beißen":"Ich beiße in einen Apfel.","gießen":"Ich gieße die Blumen.","reißen":"Ich reiße das Papier.","putzen":"Ich putze das Fenster.","küssen":"Ich küsse mein Kind.","tanzen":"Ich tanze gern.","mixen":"Ich mixe einen Saft.","reisen":"Ich reise nach Berlin.","haben":"Ich habe ein Buch.","überqueren":"Ich überquere die Straße.","grüßen":"Ich grüße meinen Nachbarn.","genießen":"Ich genieße die Sonne.","singen":"Ich singe ein Lied.","schließen":"Ich schließe die Tür.","rennen":"Ich renne schnell.","lachen":"Ich lache laut.","warten":"Ich warte auf den Bus.","arbeiten":"Ich arbeite heute.","finden":"Ich finde den Schlüssel.","benutzen":"Ich benutze mein Handy.","rechnen":"Ich rechne die Aufgabe.","zeichnen":"Ich zeichne ein Haus.","öffnen":"Ich öffne die Tür.","wiederholen":"Ich wiederhole den Satz.","schneiden":"Ich schneide Gemüse.","streiten":"Ich streite nicht gern.","atmen":"Ich atme tief."
+  };
+  return map[v]||`Ich übe das Verb ${v}.`;
+}
+function sentenceWords(v){const base=sentenceForVerb(v).replace(/[.?!]/g,"").split(" ");base.push(".");return base}
+
 function renderOneVerb(){
   state.phase="select";
   const v=currentPickVerb();
-  if(!v){
-    if(state.active.length>0){state.phase="tasks";saveState();renderHome();return}
-    $("app").innerHTML="<div class='ok'>Alle Verben wurden eingeschätzt.</div>";
-    return;
-  }
+  if(!v){if(state.active.length>0){state.phase="tasks";saveState();renderHome();return};$("app").innerHTML="<div class='ok'>Alle Verben wurden eingeschätzt.</div>";return;}
   $("app").innerHTML=`<h2>Verb einschätzen</h2>
     <div class="mini-top-progress"><strong>Paket:</strong> ${state.active.length}/20 Verben gesammelt</div>
     <p class="small">Entscheide schnell. Danach kommt automatisch das nächste Verb.</p>
     <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
-      ${realImage(v.v,false)}
-      <h1 style="color:#667eea">${v.v}</h1>
-      <p>${v.img}</p>
+      ${imageBox(v.v,false)}<h1 style="color:#667eea">${safeText(v.v)}</h1><p>${safeText(v.img)}</p>
     </div>
     <button class="success" onclick="rateVerb('${v.v}','known')">✅ kann ich</button>
     <button onclick="rateVerb('${v.v}','unsure')">❓ unsicher</button>
     <button onclick="rateVerb('${v.v}','unknown')">❌ kann ich nicht</button>`;
-  renderProgressPanel(false);
+  renderProgressPanel(false); renderAndHydrate();
 }
 function rateVerb(v,level){
   ["known","unsure","unknown"].forEach(k=>state[k]=state[k].filter(x=>x!==v));
   state[level].push(v);
-  if(level!=="known" && !state.active.includes(v)){
-    state.active.push(v);
-    state.encounters[v]=state.encounters[v]||0;
-  }
+  if(level!=="known" && !state.active.includes(v)){state.active.push(v);ensureSkillState(v);}
   state.index++;
   if(state.active.length>=20){
     state.active=state.active.slice(0,20);
-    state.phase="tasks";
-    saveState();
-    renderHome();
-  }else{
-    saveState();
-    renderOneVerb();
-  }
-}
-function replaceLearnedIfNeeded(){
-  let complete=state.active.filter(v=>verbPercent(v)>=100);
-  if(complete.length<3)return false;
-  let toReplace=complete.slice(0,3);
-  toReplace.forEach(v=>{
-    if(!state.learned.includes(v))state.learned.push(v);
-    state.active=state.active.filter(x=>x!==v);
-  });
-  let candidates=[...state.unknown,...state.unsure,...unusedVerbs()].filter(v=>!state.active.includes(v)&&!state.learned.includes(v));
-  candidates.slice(0,toReplace.length).forEach(v=>{
-    if(!state.active.includes(v)){state.active.push(v);state.encounters[v]=state.encounters[v]||0;}
-  });
-  saveState();
-  return true;
-}
-function addEncounter(v,skill,good=true){
-  markSkill(v,skill,good);
-  saveState();
-  if(replaceLearnedIfNeeded()){
-    showAutoReplaceMessage();
-  }
-}
-function showAutoReplaceMessage(){
-  const msg=`<div class="ok"><strong>🎉 3 Verben gelernt!</strong><br>Sie wurden automatisch durch neue Verben ersetzt.</div>`;
-  const g=$("game");
-  if(g)g.insertAdjacentHTML("afterbegin",msg);
-}
-
-
-
-
-
-
-
-function safeRun(fn){
-  try{
-    fn();
-  }catch(e){
-    console.error(e);
-    const g=$("game")||$("app");
-    if(g) g.innerHTML = `<div class="runtime-error"><strong>Fehler in der Aufgabe.</strong><br>${String(e.message||e)}</div>`;
-  }
-}
-function verbStar(v){
-  return verbPercent(v)>=100 ? "⭐" : "○";
-}
-function packageStars(){
-  return (state.active||[]).filter(v=>verbPercent(v)>=100).length;
-}
-function totalStars(){
-  return packageStars();
-}
-function starText(){
-  const total=(state.active||[]).length || 20;
-  return `${packageStars()} / ${total} Sterne`;
-}
-function checkMilestones(){
-  // bewusst stabil gehalten: keine blockierenden Popups beim Start
-}
-function packageComplete(){
-  return (state.active||[]).length>=20 && (state.active||[]).every(v=>verbPercent(v)>=100);
-}
-function taskDone(skill){
-  const p=taskSkillProgress(skill);
-  return p.total>0 && p.done>=p.total;
-}
-function taskCardClass(skill){
-  return taskDone(skill) ? "task-card done-card locked-card" : "task-card";
-}
-function taskCardStatus(skill){
-  const p=taskSkillProgress(skill);
-  if(p.total===0)return "0%";
-  return taskDone(skill) ? "Erledigt ✓" : `${p.pct}%`;
-}
-function taskBlockedMessage(label){
-  const g=$("game");
-  if(g){
-    g.innerHTML=`<div class="ok"><h3>${label} erledigt ✓</h3><p>Diese Aufgabe ist für dieses Paket abgeschlossen.</p><button class="success" onclick="renderHome()">Zur Übersicht</button></div>`;
-    scrollToGame();
-  }
-}
-function completedTaskMessage(label){
-  return `<div class="ok"><h3>Aufgabe erledigt ✓</h3><p>${label} ist abgeschlossen.</p></div>`;
-}
-function finishTaskIfComplete(skill,label){
-  if(taskDone(skill)){
-    const g=$("game");
-    if(g) g.innerHTML=completedTaskMessage(label)+`<button class="success" onclick="renderHome()">Zur Übersicht</button>`;
-    return true;
-  }
-  return false;
+    state.taskQueues={}; state.taskDoneSets={}; state.flashSession=null;
+    state.phase="tasks"; saveState(); renderHome();
+  }else{saveState(); renderOneVerb();}
 }
 function startNewVerbPackage(){
   state.packageNo=(state.packageNo||1)+1;
   state.learned=[...(state.learned||[]),...(state.active||[])].filter((v,i,a)=>a.indexOf(v)===i);
-  state.active=[];
-  state.currentGame="";
-  state.phase="select";
-  state.index=0;
-  saveState();
-  renderOneVerb();
+  state.active=[]; state.taskQueues={}; state.taskDoneSets={}; state.flashSession=null; state.currentGame="";
+  state.phase="select"; saveState(); renderOneVerb();
 }
-
+function safeRun(fn){try{fn()}catch(e){console.error(e);const g=$("game");if(g)g.innerHTML="<div class='no'>Diese Aufgabe konnte nicht geöffnet werden. Bitte neu laden.</div>";}}
 function renderHome(){
-  if(typeof preloadActiveImages==="function") preloadActiveImages();
-  state.phase="tasks";
-  saveState();
+  state.phase="tasks"; saveState();
   const packageDone=packageComplete();
   $("app").innerHTML=`<h2>Verben üben</h2>
-    <div class="mini-top-progress">
-      <strong>Paket:</strong> ${(state.packageNo||1)} |
-      <strong>Aktiv:</strong> ${state.active.length}/20 |
-      <strong>Gelernt:</strong> ${state.learned.length} |
-      <strong>Gesamt:</strong> ${overall()}%
-    </div>
-    <div class="star-overview">⭐ ${starText()}<br><span class="small">1 Stern = 1 Verb auf 100 %</span></div>
-    ${packageDone?`<div class="ok"><h3>20 Sterne geschafft!</h3><p>Alle 20 Verben sind gelernt.</p><button class="success" onclick="startNewVerbPackage()">Neue Verben auswählen</button></div>`:""}
+    <div class="mini-top-progress"><strong>Paket:</strong> ${state.packageNo||1} | <strong>Aktiv:</strong> ${state.active.length}/20 | <strong>Gelernt:</strong> ${state.learned.length} | <strong>Gesamt:</strong> ${overall()}% | <strong>Sterne:</strong> ${totalStars()}</div>
+    ${packageDone?`<div class="package-done"><h3>20 Verben geschafft!</h3><p>Alle aktiven Verben sind auf 100 %. Jetzt kannst du neue Verben einschätzen.</p><button class="success" onclick="startNewVerbPackage()">Neue Verben auswählen</button></div>`:""}
     <button class="overview-button" onclick="showVerbOverview()">Alle Verben anzeigen</button>
     <div class="task-grid">
-      <button class="${taskCardClass('karteikarte')}" onclick="safeRun(()=>{if(taskDone('karteikarte')){taskBlockedMessage('Karteikarten');return;}startFlashcardSession();flashcards();})"><span class="big-icon">🃏</span>Karteikarten<div class="task-status">${taskCardStatus('karteikarte')}</div></button>
-      <button class="${taskCardClass('memory')}" onclick="safeRun(()=>{if(taskDone('memory')){taskBlockedMessage('Memory');return;}memory();})"><span class="big-icon">🖼️</span>Memory<div class="task-status">${taskCardStatus('memory')}</div></button>
-      <button class="${taskCardClass('bild_verb')}" onclick="safeRun(()=>{if(taskDone('bild_verb')){taskBlockedMessage('Bild → Verb');return;}quiz();})"><span class="big-icon">✅</span>Bild → Verb<div class="task-status">${taskCardStatus('bild_verb')}</div></button>
-      <button class="${taskCardClass('schreiben')}" onclick="safeRun(()=>{if(taskDone('schreiben')){taskBlockedMessage('Schreiben');return;}writeVerb();})"><span class="big-icon">✍️</span>Schreiben<div class="task-status">${taskCardStatus('schreiben')}</div></button>
-      <button class="${taskCardClass('hoeren_schreiben')}" onclick="safeRun(()=>{if(taskDone('hoeren_schreiben')){taskBlockedMessage('Hören → Schreiben');return;}hearWrite();})"><span class="big-icon">🔊</span>Hören → Schreiben<div class="task-status">${taskCardStatus('hoeren_schreiben')}</div></button>
-      <button class="${taskCardClass('hoeren_sprechen')}" onclick="safeRun(()=>{if(taskDone('hoeren_sprechen')){taskBlockedMessage('Hören → Sprechen');return;}hearSpeak();})"><span class="big-icon">🎧</span>Hören → Sprechen<div class="task-status">${taskCardStatus('hoeren_sprechen')}</div></button>
-      <button class="${taskCardClass('bild_sprechen')}" onclick="safeRun(()=>{if(taskDone('bild_sprechen')){taskBlockedMessage('Bild → Sprechen');return;}imageSpeak();})"><span class="big-icon">🎤</span>Bild sprechen<div class="task-status">${taskCardStatus('bild_sprechen')}</div></button>
-      <button class="${taskCardClass('verb_bild')}" onclick="safeRun(()=>{if(taskDone('verb_bild')){taskBlockedMessage('Verb → Bild');return;}verbToImage();})"><span class="big-icon">🖼️</span>Verb → Bild<div class="task-status">${taskCardStatus('verb_bild')}</div></button>
-      <button class="${taskCardClass('satz_puzzle')}" onclick="safeRun(()=>{if(taskDone('satz_puzzle')){taskBlockedMessage('Satz-Puzzle');return;}sentencePuzzle();})"><span class="big-icon">🧩</span>Satz-Puzzle<div class="task-status">${taskCardStatus('satz_puzzle')}</div></button>
-    </div>
-    <div id="game"></div>`;
-  renderProgressPanel(false);
+      <button class="${taskCardClass('karteikarte')}" onclick="safeRun(()=>{if(taskDone('karteikarte')){taskBlockedMessage('Karteikarten');return}startFlashcardSession();flashcards();})"><span class="big-icon">🃏</span>Karteikarten<div class="task-status">${taskCardStatus('karteikarte')}</div></button>
+      ${taskButton('memory','🖼️','Memory','memory')}
+      ${taskButton('bild_verb','✅','Bild → Verb','quiz')}
+      ${taskButton('verb_bild','🖼️','Verb → Bild','verbToImage')}
+      ${taskButton('schreiben','✍️','Schreiben','writeVerb')}
+      ${taskButton('hoeren_schreiben','🔊','Hören → Schreiben','hearWrite')}
+      ${taskButton('hoeren_sprechen','🎧','Hören → Sprechen','hearSpeak')}
+      ${taskButton('bild_sprechen','🎤','Bild sprechen','imageSpeak')}
+      ${taskButton('satz_puzzle','🧩','Satz-Puzzle','sentencePuzzle')}
+    </div><div id="game"></div>`;
+  renderProgressPanel(false); if(!packageDone)restoreCurrentTask(); checkMilestones();
 }
-function toggleProgressPanel(){
-  const p=$("progressPanel");
-  if(!p)return;
-  if(p.classList.contains("hidden")){renderProgressPanel(true);p.classList.remove("hidden");}
-  else p.classList.add("hidden");
-}
-function renderProgressPanel(openOnly){
-  const p=$("progressPanel");
-  if(!p)return;
-  const activeRows=(state.active||[]).map(v=>`<div class="progress-row">
-    <div class="progress-row-head">${imageBox(v,true)}<div><strong><span class="verb-star">${verbStar(v)}</span>${safeText(v)}</strong><br><span class="small">${verbSkillCount(v)}/${VERB_SKILLS.length} · ${verbPercent(v)}%</span></div></div>
-    <div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div>
-    ${skillBadges(v)}
-  </div>`).join("");
-  p.innerHTML=`<h2>📊 Fortschritt</h2>
-    <button class="secondary" onclick="toggleProgressPanel()">Schließen</button>
-    <div class="progress-row"><strong>Paket ${(state.packageNo||1)}</strong><br>⭐ ${starText()}</div>
-    <h3>Aktive Verben</h3>${activeRows||"<p>Noch keine aktiven Verben.</p>"}`;
-  renderAndHydrate();
-}
-function chooseVerbForPractice(){
-  let pool=state.active.filter(v=>verbPercent(v)<100);
-  if(!pool.length)return null;
-  pool.sort((a,b)=>{
-    const wa=state.weak[a]||0, wb=state.weak[b]||0;
-    return (verbPercent(a)-verbPercent(b)) || (wb-wa);
-  });
-  return pool[Math.floor(Math.random()*Math.min(6,pool.length))];
-}
-
-function preloadActiveImages(){
-  try{
-    (state.active||[]).forEach(v=>{
-      const im=new Image();
-      im.src="bilder/"+imageFileName(v);
-    });
-  }catch(e){}
-}
-
-
-
-
-
-
-
-function markCardFlipped(){
-  state.cardWasFlipped = true;
-  saveState();
-}
-function currentCardCounts(v){
-  if(!state.flashSession) return {correct:0, total:0, done:0, pct:0};
-  const c=(state.flashSession.correct&&state.flashSession.correct[v])||0;
-  const total=(state.flashSession.total||0)*2;
-  const done=Object.values(state.flashSession.correct||{}).reduce((s,n)=>s+Math.min(2,Number(n)||0),0);
-  return {correct:c,total:total,done:done,pct:total?Math.round(done*100/total):0};
-}
+function taskButton(skill,icon,label,fn){return `<button class="${taskCardClass(skill)}" onclick="safeRun(()=>{if(taskDone('${skill}')){taskBlockedMessage('${label}');return}${fn}();})"><span class="big-icon">${icon}</span>${label}<div class="task-status">${taskCardStatus(skill)}</div></button>`}
+function taskBlockedMessage(label){$("game").innerHTML=`<div class="package-done"><h3>${label} erledigt ✓</h3><p>Diese Aufgabe ist für dein aktuelles 20-Verben-Paket abgeschlossen.</p><button class="success" onclick="renderHome()">Zur Übersicht</button></div>`;scrollToGame()}
+function restoreCurrentTask(){return false}
 
 function startFlashcardSession(){
-  const pool=(state.active||[]).filter(v=>verbPercent(v)<100);
-  state.flashSession={
-    queue:shuffle(pool),
-    correct:{},
-    wrong:{},
-    done:[],
-    total:pool.length,
-    current:null
-  };
-  pool.forEach(v=>{
-    state.flashSession.correct[v]=0;
-    state.flashSession.wrong[v]=0;
-  });
+  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:(state.active||[]).length,words:(state.active||[])};
+  state.flashSession.correct=state.flashSession.correct||{}; state.flashSession.wrong=state.flashSession.wrong||{}; state.flashSession.done=state.flashSession.done||[];
+  const doneSet=new Set(state.flashSession.done);
+  const remaining=(state.active||[]).filter(v=>!doneSet.has(v));
+  state.flashSession.words=state.active.slice(); state.flashSession.total=state.active.length;
+  if(!state.flashSession.queue || !state.flashSession.queue.length) state.flashSession.queue=shuffle(remaining);
+  remaining.forEach(v=>{state.flashSession.correct[v]=state.flashSession.correct[v]||0;state.flashSession.wrong[v]=state.flashSession.wrong[v]||0;});
   saveState();
 }
-function flashDoneCount(){
-  if(!state.flashSession)return 0;
-  return (state.flashSession.done||[]).length;
-}
-function flashPercent(){
-  if(!state.flashSession || !state.flashSession.total)return 0;
-  return Math.round((flashDoneCount()*100)/state.flashSession.total);
+function nextFlashVerb(){
+  if(!state.flashSession || !state.flashSession.queue)startFlashcardSession();
+  if((state.flashSession.done||[]).length>=state.flashSession.total)return null;
+  if(!state.flashSession.queue.length){
+    const doneSet=new Set(state.flashSession.done||[]);
+    state.flashSession.queue=(state.active||[]).filter(v=>!doneSet.has(v));
+  }
+  if(!state.flashSession.queue.length)return null;
+  const v=state.flashSession.queue.shift(); state.flashSession.current=v; saveState(); return v;
 }
 function flashProgressHtml(){
-  const totalWords=(state.flashSession&&state.flashSession.total)||0;
+  const totalWords=(state.flashSession&&state.flashSession.total)||state.active.length;
   const totalPoints=totalWords*2;
   const points=Object.values((state.flashSession&&state.flashSession.correct)||{}).reduce((s,n)=>s+Math.min(2,Number(n)||0),0);
   const pct=totalPoints?Math.round(points*100/totalPoints):0;
   const doneWords=(state.flashSession&&state.flashSession.done?state.flashSession.done.length:0);
-  return `<div class="flash-progress-box">
-    <div class="flash-progress-title">
-      <strong>${pct}% fertig</strong>
-      <span>${points}/${totalPoints} Punkte · ${doneWords}/${totalWords} Wörter</span>
-    </div>
-    <div class="flash-bar"><div class="flash-fill" style="width:${pct}%"></div></div>
-  </div>`;
+  return `<div class="flash-progress-box"><div class="flash-progress-title"><strong>${pct}% fertig</strong><span>${points}/${totalPoints} Punkte · ${doneWords}/${totalWords} Wörter</span></div><div class="flash-bar"><div class="flash-fill" style="width:${pct}%"></div></div></div>`;
 }
-function nextFlashVerb(){
-  if(!state.flashSession || !state.flashSession.queue || !state.flashSession.total){
-    startFlashcardSession();
-  }
-  if(!state.flashSession.queue.length)return null;
-  const v=state.flashSession.queue.shift();
-  state.flashSession.current=v;
-  saveState();
-  return v;
+function flashcards(){
+  state.currentGame="flashcards";
+  let v=nextFlashVerb(); if(!v){flashcardDoneMessage();return}
+  state.currentVerb=v; state.cardWasFlipped=false; saveState();
+  const correctNow=(state.flashSession.correct&&state.flashSession.correct[v])||0, wrongNow=(state.flashSession.wrong&&state.flashSession.wrong[v])||0;
+  $("game").innerHTML=`${flashProgressHtml()}<div class="card-task-head"><h3>Karteikarte</h3><div class="small">Antwort zählt nur vor dem Umdrehen.</div></div>
+    <div class="word-status"><span class="word-pill">${Math.min(correctNow,2)}/2 Punkte</span>${wrongNow?`<span class="word-pill">Fehler: ${wrongNow}</span>`:""}</div>
+    <div class="study-card-wrap"><div id="studyCard" class="study-card" onclick="state.cardWasFlipped=true;saveState();this.classList.toggle('flipped')">
+      <div class="study-face"><div class="small">${nativeLang()}</div><div class="native-word">${safeText(nativeWord(v))}</div><p class="small">Wie heißt das auf Deutsch?</p></div>
+      <div class="study-face study-back"><div class="small">Deutsch</div><div class="german-word">${safeText(v)}</div></div>
+    </div></div>
+    <input id="cardAnswer" placeholder="Deutsches Verb..."><div class="card-actions"><button class="success" onclick="checkFlashcardAnswer('${v}')">Überprüfen</button><button onclick="speakFlashcardAnswer('${v}')">🎤 Sagen</button></div>
+    <div id="micStatus" class="small">Mikrofon aus</div><p id="heard" class="small"></p><div id="cardFeedback"></div>`;
+  scrollToGame();
 }
 function finishFlashVerb(v,good){
-  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:0,words:[],current:null};
-  state.flashSession.correct[v]=state.flashSession.correct[v]||0;
-  state.flashSession.wrong[v]=state.flashSession.wrong[v]||0;
-  ensureSkillState(v);
-
+  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:state.active.length,words:state.active.slice()};
+  ensureSkillState(v); state.flashSession.correct[v]=state.flashSession.correct[v]||0; state.flashSession.wrong[v]=state.flashSession.wrong[v]||0;
   if(good){
     state.flashSession.correct[v]=Math.min(2,state.flashSession.correct[v]+1);
-    state.skillAttempts[v]["karteikarte"]=(state.skillAttempts[v]["karteikarte"]||0)+1;
-    state.skillSuccess[v]["karteikarte"]=(state.skillSuccess[v]["karteikarte"]||0)+1;
-
+    markSkill(v,"karteikarte",true);
     if(state.flashSession.correct[v]>=2){
       state.skillDone[v]["karteikarte"]=true;
       if(!state.flashSession.done.includes(v))state.flashSession.done.push(v);
+      finishQueuedVerb("karteikarte",v,true);
       state.flashSession.queue=state.flashSession.queue.filter(x=>x!==v);
-    }else{
-      state.flashSession.queue.push(v);
-    }
+    }else state.flashSession.queue.push(v);
   }else{
-    state.flashSession.wrong[v]++;
-    state.skillAttempts[v]["karteikarte"]=(state.skillAttempts[v]["karteikarte"]||0)+1;
-    state.weak[v]=(state.weak[v]||0)+1;
-    state.flashSession.queue.push(v);
+    markSkill(v,"karteikarte",false);
+    state.flashSession.wrong[v]++; state.flashSession.queue.push(v);
   }
-  saveState();
-  if(replaceLearnedIfNeeded()) showAutoReplaceMessage();
+  saveState(); checkMilestones();
 }
-function flashcardDoneMessage(){
-  $("game").innerHTML=`${flashProgressHtml()}<div class="ok"><h3>Karteikarten geschafft!</h3><p>Alle Wörter wurden zweimal richtig beantwortet.</p><button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button><button class="secondary" onclick="startFlashcardSession();flashcards()">Karteikarten nochmal machen</button></div>`;
-  scrollToGame();
-}
-
-function flashcards(){
-  state.currentGame="flashcards";
-  let v=nextFlashVerb();
-  if(!v){flashcardDoneMessage();return}
-  state.currentVerb=v;
-  state.cardWasFlipped=false;
-  saveState();
-  const correctNow=(state.flashSession&&state.flashSession.correct&&state.flashSession.correct[v])||0;
-  const wrongNow=(state.flashSession&&state.flashSession.wrong&&state.flashSession.wrong[v])||0;
-  $("game").innerHTML=`${flashProgressHtml()}
-    <div class="card-task-head">
-      <h3>Karteikarte</h3>
-      <div class="small">Antwort zählt nur vor dem Umdrehen.</div>
-    </div>
-    <div class="word-status">
-      <span class="word-pill">${Math.min(correctNow,2)}/2 Punkte</span>
-      ${wrongNow?`<span class="word-pill">Fehler: ${wrongNow}</span>`:""}
-    </div>
-    <div class="study-card-wrap">
-      <div id="studyCard" class="study-card" onclick="markCardFlipped();this.classList.toggle('flipped')">
-        <div class="study-face">
-          <div class="small">${nativeLang()}</div>
-          <div class="native-word">${nativeWord(v)}</div>
-          <p class="small">Wie heißt das auf Deutsch?</p>
-        </div>
-        <div class="study-face study-back">
-          <div class="small">Deutsch</div>
-          <div class="german-word">${v}</div>
-        </div>
-      </div>
-    </div>
-    <input id="cardAnswer" placeholder="Deutsches Verb...">
-    <div class="card-actions">
-      <button class="success" onclick="checkFlashcardAnswer('${v}')">Überprüfen</button>
-      <button onclick="speakFlashcardAnswer('${v}')">🎤 Sagen</button>
-    </div>
-    <div id="micStatus" class="small">Mikrofon aus</div>
-    <p id="heard" class="small"></p>
-    <div id="cardFeedback"></div>`;
-  scrollToGame();
-}
-
 function checkFlashcardAnswer(v){
-  const input=$("cardAnswer");
-  const val=input?input.value:"";
-  const fb=$("cardFeedback");
-  if(state.cardWasFlipped){
-    finishFlashVerb(v,false);
-    if(fb)fb.innerHTML=`<div class="no">Die Karte war schon umgedreht. Diese Antwort zählt nicht als Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;
-  }else if(checkVerbAnswer(val,v)){
-    finishFlashVerb(v,true);
-    const current=(state.flashSession.correct[v]||0);
-    if(fb)fb.innerHTML=`<div class="ok">${current>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;
-  }else{
-    finishFlashVerb(v,false);
-    if(fb)fb.innerHTML=`<div class="no">Noch nicht. Kein Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;
-  }
+  const val=($("cardAnswer")||{value:""}).value, fb=$("cardFeedback");
+  if(state.cardWasFlipped){finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Die Karte war schon umgedreht. Diese Antwort zählt nicht als Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;}
+  else if(checkVerbAnswer(val,v)){finishFlashVerb(v,true);const c=state.flashSession.correct[v]||0;fb.innerHTML=`<div class="ok">${c>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;}
+  else{finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Noch nicht. Das Verb kommt am Ende noch einmal.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;}
   scrollToFeedback();
 }
-function speakFlashcardAnswer(v){
-  recogVerb(t=>{
-    const heard=$("heard");
-    if(heard)heard.innerText="Gehört: "+t;
-    const fb=$("cardFeedback");
-    if(state.cardWasFlipped){
-      finishFlashVerb(v,false);
-      if(fb)fb.innerHTML=`<div class="no">Die Karte war schon umgedreht. Diese Antwort zählt nicht als Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;
-    }else if(checkVerbAnswer(t,v)){
-      finishFlashVerb(v,true);
-      const current=(state.flashSession.correct[v]||0);
-      if(fb)fb.innerHTML=`<div class="ok">${current>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;
-    }else{
-      finishFlashVerb(v,false);
-      if(fb)fb.innerHTML=`<div class="no">Gehört: ${t}<br>Kein Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;
-    }
-    scrollToFeedback();
-  });
-}
+function speakFlashcardAnswer(v){recogVerb(t=>{const h=$("heard");if(h)h.innerText="Gehört: "+t;const fb=$("cardFeedback");if(state.cardWasFlipped){finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Die Karte war schon umgedreht. Kein Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;}else if(checkVerbAnswer(t,v)){finishFlashVerb(v,true);const c=state.flashSession.correct[v]||0;fb.innerHTML=`<div class="ok">${c>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;}else{finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Gehört: ${safeText(t)}<br>Richtig: <strong>${v}</strong><br>Das Verb kommt am Ende noch einmal.</div><button onclick="flashcards()">Weiter</button>`;}scrollToFeedback();})}
+function flashcardDoneMessage(){$("game").innerHTML=`${flashProgressHtml()}${completedTaskMessage("Karteikarten")}<button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button>`;scrollToGame()}
 
 function memory(){
-  if(typeof saveCurrentTask==="function") saveCurrentTask("memory");
-  state.currentGame="memory";
-  state.first=null;state.lock=false;state.memoryCards=[];
-  const base=(state.active&&state.active.length?state.active:ALL_VERBS.map(x=>x.v));
-  const pool=shuffle(base.filter(v=>verbPercent(v)<100)).slice(0,6);
-  pool.forEach((v,i)=>{
-    state.memoryCards.push({p:i,t:"de",v:v,html:`<span class="mem-german">${safeText(v)}</span>`,o:false,d:false});
-    state.memoryCards.push({p:i,t:"img",v:v,html:imageBox(v,true),o:false,d:false});
-  });
-  state.memoryCards=shuffle(state.memoryCards);
-  saveState();
-  renderMemory();
-  scrollToGame();
+  saveCurrentTask("memory"); state.currentGame="memory"; state.first=null; state.lock=false; state.memoryCards=[];
+  initTaskQueue("memory");
+  const pool=(state.taskQueues[taskQueueKey("memory")]||[]).slice(0,6);
+  if(!pool.length){finishTaskIfComplete("memory","Memory");return}
+  pool.forEach((v,i)=>{state.memoryCards.push({p:i,t:"de",v:v,html:`<span class="mem-german">${safeText(v)}</span>`,o:false,d:false});state.memoryCards.push({p:i,t:"img",v:v,html:imageBox(v,true),o:false,d:false});});
+  state.memoryCards=shuffle(state.memoryCards); saveState(); renderMemory(); scrollToGame();
 }
-function renderMemory(){
-  $("game").innerHTML=`${taskProgressHtml("memory","Memory")}<h3>Memory</h3><p class="small">Finde das Bild und das passende deutsche Verb.</p><div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`;
-  renderAndHydrate();
-}
+function renderMemory(){$("game").innerHTML=`${taskProgressHtml("memory","Memory")}<h3>Memory</h3><p class="small">Finde das Bild und das passende deutsche Verb.</p><div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`;renderAndHydrate();}
 function flip(i){
-  if(state.lock)return;
-  let c=state.memoryCards[i];
-  if(!c||c.o||c.d)return;
-  c.o=true;renderMemory();
-  if(state.first===null){state.first=i;saveState();return}
-  state.lock=true;
-  let a=state.memoryCards[state.first],b=state.memoryCards[i],good=a.p===b.p&&a.t!==b.t;
-  setTimeout(()=>{
-    if(good){a.d=b.d=true;addEncounter(a.v,'memory',true)}else{a.o=b.o=false;addEncounter(a.v,'memory',false);addEncounter(b.v,'memory',false)}
-    state.first=null;state.lock=false;saveState();renderMemory();
-    if(state.memoryCards.every(x=>x.d))$("fb").innerHTML="<div class='ok'>Memory geschafft!</div>";
-  },600);
+  if(state.lock)return; const c=state.memoryCards[i]; if(!c||c.o||c.d)return; c.o=true;
+  if(state.first===null){state.first=i;saveState();renderMemory();return}
+  const a=state.memoryCards[state.first], b=c; state.lock=true; renderMemory();
+  setTimeout(()=>{if(a.p===b.p&&a.t!==b.t){a.d=b.d=true;finishQueuedVerb("memory",a.v,true);addEncounter(a.v,"memory",true);$("fb").innerHTML="<div class='ok'>Paar gefunden!</div>";}else{if(a&&a.v)finishQueuedVerb("memory",a.v,false);if(b&&b.v&&b.v!==a.v)finishQueuedVerb("memory",b.v,false);a.o=false;b.o=false;$("fb").innerHTML="<div class='no'>Noch nicht. Die Verben kommen am Ende wieder.</div>";}state.first=null;state.lock=false;saveState();renderMemory();if(state.memoryCards.every(x=>x.d))finishTaskIfComplete("memory","Memory");},650);
 }
+
 function quiz(){
-  if(typeof saveCurrentTask==="function") saveCurrentTask("quiz");
-  state.currentGame="quiz";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
+  saveCurrentTask("quiz"); state.currentGame="quiz"; let v=nextFromTaskQueue("bild_verb"); if(!v){finishTaskIfComplete("bild_verb","Bild → Verb");return}
   let opts=shuffle([v,...shuffle((state.active||[]).filter(a=>a!==v)).slice(0,3)]);
-  while(opts.length<4){
-    const extra=shuffle(ALL_VERBS.map(x=>x.v).filter(x=>!opts.includes(x)))[0];
-    if(extra)opts.push(extra); else break;
-  }
-  opts=opts.slice(0,4);
-  state.currentVerb=v;saveState();
-  const letters=["A","B","C","D"];
-  $("game").innerHTML=`${taskProgressHtml("bild_verb","Bild → Verb")}<h3>Welches Verb passt?</h3>${imageBox(v,false)}<div class="quiz-options">${opts.map((o,i)=>`<button class="quiz-option" onclick="checkQuiz('${o}','${v}')"><span class="quiz-letter">${letters[i]}</span>${safeText(o)}</button>`).join("")}</div><button class="secondary help-bottom" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
+  while(opts.length<4){const extra=shuffle(ALL_VERBS.map(x=>x.v).filter(x=>!opts.includes(x)))[0];if(extra)opts.push(extra);else break;}
+  const letters=["A","B","C","D"]; state.currentVerb=v; saveState();
+  $("game").innerHTML=`${taskProgressHtml("bild_verb","Bild → Verb")}<h3>Welches Verb passt?</h3>${imageBox(v,false)}<div class="quiz-options">${opts.slice(0,4).map((o,i)=>`<button class="quiz-option" onclick="checkQuiz('${o}','${v}')"><span class="quiz-letter">${letters[i]}</span>${safeText(o)}</button>`).join("")}</div><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
+  renderAndHydrate(); scrollToGame();
+}
+function checkQuiz(a,v){if(a===v){addEncounter(v,"bild_verb",true);finishQueuedVerb("bild_verb",v,true);$("fb").innerHTML="<div class='ok'>Richtig! Dieses Verb ist in dieser Aufgabe fertig.</div><button onclick='quiz()'>weiter</button>";finishTaskIfComplete("bild_verb","Bild → Verb");}else{addEncounter(v,"bild_verb",false);finishQueuedVerb("bild_verb",v,false);$("fb").innerHTML="<div class='no'>Noch nicht. Dieses Verb kommt am Ende noch einmal.</div><button onclick='quiz()'>weiter</button>";}scrollToFeedback();}
+
+function writeVerb(){saveCurrentTask("write");state.currentGame="write";let v=nextFromTaskQueue("schreiben");if(!v){finishTaskIfComplete("schreiben","Schreiben");return}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("schreiben","Schreiben")}<h3>Schreibe das deutsche Verb</h3>${imageBox(v,false)}<input id="w" placeholder="Verb schreiben..."><button onclick="checkWrite('${v}')">prüfen</button><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;renderAndHydrate();scrollToGame();}
+function checkWrite(v){const val=$("w").value;if(checkVerbAnswer(val,v)){addEncounter(v,"schreiben",true);finishQueuedVerb("schreiben",v,true);$("fb").innerHTML="<div class='ok'>Richtig! Dieses Verb ist in dieser Aufgabe fertig.</div><button onclick='writeVerb()'>weiter</button>";finishTaskIfComplete("schreiben","Schreiben");}else{addEncounter(v,"schreiben",false);finishQueuedVerb("schreiben",v,false);$("fb").innerHTML=`<div class='no'>Noch nicht. Richtig: <strong>${v}</strong><br>Dieses Verb kommt am Ende noch einmal.</div><button onclick='writeVerb()'>weiter</button>`;}scrollToFeedback();}
+
+function hearWrite(){saveCurrentTask("hearWrite");state.currentGame="hearWrite";let v=nextFromTaskQueue("hoeren_schreiben");if(!v){finishTaskIfComplete("hoeren_schreiben","Hören → Schreiben");return}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("hoeren_schreiben","Hören → Schreiben")}<h3>Hören → Schreiben</h3><button onclick="speakTextVerb('${v}',false)">🔊 normal</button><button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 langsam</button><input id="hw" placeholder="Verb schreiben..."><button onclick="checkHearWrite('${v}')">prüfen</button><div id="fb"></div>`;scrollToGame();}
+function checkHearWrite(v){const val=$("hw").value;if(checkVerbAnswer(val,v)){addEncounter(v,"hoeren_schreiben",true);finishQueuedVerb("hoeren_schreiben",v,true);$("fb").innerHTML="<div class='ok'>Richtig! Dieses Verb ist in dieser Aufgabe fertig.</div><button onclick='hearWrite()'>weiter</button>";finishTaskIfComplete("hoeren_schreiben","Hören → Schreiben");}else{addEncounter(v,"hoeren_schreiben",false);finishQueuedVerb("hoeren_schreiben",v,false);$("fb").innerHTML=`<div class='no'>Noch nicht. Richtig: <strong>${v}</strong><br>Dieses Verb kommt am Ende noch einmal.</div><button onclick='hearWrite()'>weiter</button>`;}scrollToFeedback();}
+
+function hearSpeak(){saveCurrentTask("hearSpeak");state.currentGame="hearSpeak";let v=nextFromTaskQueue("hoeren_sprechen");if(!v){finishTaskIfComplete("hoeren_sprechen","Hören → Sprechen");return}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("hoeren_sprechen","Hören → Sprechen")}<h3>Hören → Sprechen</h3><button onclick="speakTextVerb('${v}',false)">🔊 normal</button><button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 langsam</button><button class="success" onclick="checkHearSpeak('${v}')">🎤 sprechen</button><div id="micStatus" class="small">Mikrofon aus</div><p id="heard" class="small"></p><div id="fb"></div>`;scrollToGame();}
+function checkHearSpeak(v){recogVerb(t=>{$("heard").innerText="Gehört: "+t;if(checkVerbAnswer(t,v)){addEncounter(v,"hoeren_sprechen",true);finishQueuedVerb("hoeren_sprechen",v,true);$("fb").innerHTML="<div class='ok'>Richtig gesprochen! Dieses Verb ist in dieser Aufgabe fertig.</div><button onclick='hearSpeak()'>weiter</button>";finishTaskIfComplete("hoeren_sprechen","Hören → Sprechen");}else{addEncounter(v,"hoeren_sprechen",false);finishQueuedVerb("hoeren_sprechen",v,false);$("fb").innerHTML=`<div class='no'>Noch nicht. Richtig: <strong>${v}</strong><br>Dieses Verb kommt am Ende noch einmal.</div><button onclick='hearSpeak()'>weiter</button>`;}scrollToFeedback();})}
+
+function imageSpeak(){saveCurrentTask("imageSpeak");state.currentGame="imageSpeak";let v=nextFromTaskQueue("bild_sprechen");if(!v){finishTaskIfComplete("bild_sprechen","Bild → Sprechen");return}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("bild_sprechen","Bild → Sprechen")}<h3>Bild → Sprechen</h3>${imageBox(v,false)}<button class="success" onclick="checkImageSpeak('${v}')">🎤 Sprechen</button><div id="micStatus" class="small">Mikrofon aus</div><p id="heard" class="small"></p><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;renderAndHydrate();scrollToGame();}
+function checkImageSpeak(v){recogVerb(t=>{$("heard").innerText="Gehört: "+t;if(checkVerbAnswer(t,v)){addEncounter(v,"bild_sprechen",true);finishQueuedVerb("bild_sprechen",v,true);$("fb").innerHTML="<div class='ok'>Richtig gesprochen! Dieses Verb ist in dieser Aufgabe fertig.</div><button onclick='imageSpeak()'>weiter</button>";finishTaskIfComplete("bild_sprechen","Bild → Sprechen");}else{addEncounter(v,"bild_sprechen",false);finishQueuedVerb("bild_sprechen",v,false);$("fb").innerHTML=`<div class='no'>Noch nicht. Richtig: <strong>${v}</strong><br>Dieses Verb kommt am Ende noch einmal.</div><button onclick='imageSpeak()'>weiter</button>`;}scrollToFeedback();})}
+
+function verbToImage(){saveCurrentTask("verbToImage");state.currentGame="verbToImage";let v=nextFromTaskQueue("verb_bild");if(!v){finishTaskIfComplete("verb_bild","Verb → Bild");return}let opts=shuffle([v,...shuffle((state.active||[]).filter(x=>x!==v)).slice(0,3)]);while(opts.length<4){const extra=shuffle(ALL_VERBS.map(x=>x.v).filter(x=>!opts.includes(x)))[0];if(extra)opts.push(extra);else break;}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("verb_bild","Verb → Bild")}<h3>Welches Bild passt?</h3><h2>${safeText(v)}</h2><div class="quiz-options">${opts.slice(0,4).map((o,i)=>`<button class="bild-option" onclick="checkVerbToImage('${o}','${v}')">${imageBox(o,true)}</button>`).join("")}</div><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;renderAndHydrate();scrollToGame();}
+function checkVerbToImage(a,v){if(a===v){addEncounter(v,"verb_bild",true);finishQueuedVerb("verb_bild",v,true);$("fb").innerHTML="<div class='ok'>Richtig! Dieses Verb ist in dieser Aufgabe fertig.</div><button onclick='verbToImage()'>weiter</button>";finishTaskIfComplete("verb_bild","Verb → Bild");}else{addEncounter(v,"verb_bild",false);finishQueuedVerb("verb_bild",v,false);$("fb").innerHTML="<div class='no'>Noch nicht. Dieses Verb kommt am Ende noch einmal.</div><button onclick='verbToImage()'>weiter</button>";}scrollToFeedback();}
+
+let puzzleCurrent=[];
+function sentencePuzzle(){saveCurrentTask("sentencePuzzle");state.currentGame="sentencePuzzle";let v=nextFromTaskQueue("satz_puzzle");if(!v){finishTaskIfComplete("satz_puzzle","Satz-Puzzle");return}state.currentVerb=v;const sentence=sentenceForVerb(v);puzzleCurrent=[];const words=shuffle(sentenceWords(v));$("game").innerHTML=`${taskProgressHtml("satz_puzzle","Satz-Puzzle")}<h3>Satz-Puzzle</h3><p class="small">Baue den Satz. Der Punkt gehört dazu.</p>${imageBox(v,false)}<div id="puzzleAnswer" class="puzzle-answer"></div><div id="puzzleBank" class="puzzle-bank">${words.map(w=>`<button class="word-chip" data-word="${safeText(w)}" onclick="pickPuzzleWord(this)">${safeText(w)}</button>`).join("")}</div><button class="secondary" onclick="speakTextVerb('${sentence.replace(/'/g,"\\'")}',false)">🔊 Satz hören</button><button class="secondary" onclick="speakTextVerb('${sentence.replace(/'/g,"\\'")}',true)">🐢 Langsam</button><button class="success" onclick="checkSentencePuzzle('${v}')">Prüfen</button><button class="secondary" onclick="sentencePuzzle()">Neu</button><div id="fb"></div>`;renderAndHydrate();scrollToGame();}
+function pickPuzzleWord(btn){const w=btn.getAttribute("data-word");puzzleCurrent.push(w);btn.remove();const ans=$("puzzleAnswer");const chip=document.createElement("button");chip.className="word-chip answer";chip.textContent=w;chip.onclick=function(){const children=Array.from(ans.children);const index=children.indexOf(chip);if(index>=0)puzzleCurrent.splice(index,1);chip.remove();const bank=$("puzzleBank");const b=document.createElement("button");b.className="word-chip";b.textContent=w;b.setAttribute("data-word",w);b.onclick=function(){pickPuzzleWord(b)};bank.appendChild(b);};ans.appendChild(chip);}
+function checkSentencePuzzle(v){const target=sentenceForVerb(v).replace(/\s+/g," ").trim();let answer=puzzleCurrent.join(" ").replace(" .",".").trim();const fb=$("fb");if(clean(answer)===clean(target)){addEncounter(v,"satz_puzzle",true);finishQueuedVerb("satz_puzzle",v,true);fb.innerHTML=`<div class="ok">Richtig: ${sentenceForVerb(v)}<br>Dieses Verb ist in dieser Aufgabe fertig.</div><button class="success" onclick="sentencePuzzle()">weiter</button>`;speakTextVerb(sentenceForVerb(v),false);finishTaskIfComplete("satz_puzzle","Satz-Puzzle");}else{addEncounter(v,"satz_puzzle",false);finishQueuedVerb("satz_puzzle",v,false);fb.innerHTML=`<div class="no">Noch nicht.<br>Richtig: ${sentenceForVerb(v)}<br>Dieses Verb kommt am Ende noch einmal.</div><button onclick="sentencePuzzle()">weiter</button>`;}scrollToFeedback();}
+
+function showTranslationHelp(v){const fb=$("fb")||$("cardFeedback");if(fb){fb.innerHTML=`<div class="ok"><strong>Hilfe (${nativeLang()}):</strong><br>${safeText(nativeWord(v))}</div>`+fb.innerHTML;scrollToFeedback();}}
+function showVerbOverview(){
+  const cards=ALL_VERBS.map(x=>x.v).map(v=>`<div class="verb-overview-card">${imageBox(v,true)}<div class="verb-de">${safeText(v)}</div><div class="verb-native">${safeText(nativeWord(v))}</div><div class="verb-percent">${verbPercent(v)}%</div></div>`).join("");
+  const modal=document.createElement("div");modal.className="overview-modal";modal.id="overviewModal";modal.innerHTML=`<div class="overview-box"><div class="overview-head"><h2>Alle Verben</h2><button class="secondary" onclick="document.getElementById('overviewModal').remove()">Schließen</button></div><div class="overview-grid">${cards}</div></div>`;
+  document.body.appendChild(modal);renderAndHydrate();
+}
+function renderProgressPanel(openOnly){
+  const p=$("progressPanel"); if(!p)return;
+  const activeRows=state.active.map(v=>`<div class="progress-row"><div class="progress-row-head">${imageBox(v,true)}<div><strong>${safeText(v)}</strong><br><span class="small">${verbSkillCount(v)}/${VERB_SKILLS.length} · ${verbPercent(v)}%</span></div></div><div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div><div class="small">Fehler: ${state.weak[v]||0}</div>${skillBadges(v)}</div>`).join("");
+  p.innerHTML=`<h2>📊 Fortschritt</h2><button class="secondary" onclick="toggleProgressPanel()">Schließen</button><div class="progress-row"><strong>Paket ${state.packageNo||1}</strong><br>Aktiv: ${state.active.length}/20 · Gelernt: ${state.learned.length} · Offen: ${unusedVerbs().length}<br>Sterne: ${totalStars()}</div><h3>Aktive Verben</h3>${activeRows||"<p>Noch keine aktiven Verben.</p>"}<h3>Gelernte Verben</h3><p class="small">${state.learned.length?state.learned.join(", "):"Noch keine."}</p>`;
   renderAndHydrate();
-  scrollToGame();
 }
-function checkQuiz(a,v){
-  if(a===v){addEncounter(v,"bild_verb",true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='quiz()'>weiter</button>";}
-  else{addEncounter(v,"bild_verb",false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>";}
-  scrollToFeedback();
-}
-function writeVerb(){
-  if(typeof saveCurrentTask==="function") saveCurrentTask("write");
-  state.currentGame="write";
-  let v=chooseVerbForPractice();
-  if(!v){renderHome();return}
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`${taskProgressHtml("schreiben","Schreiben")}<h3>Schreibe das deutsche Verb</h3>${imageBox(v,false)}<input id="w" placeholder="Verb schreiben..."><button onclick="checkWrite('${v}')">prüfen</button><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
-  renderAndHydrate();
-  scrollToGame();
-}
-function checkWrite(v){
-  let a=$("w").value;
-  if(clean(a)===clean(v)){addEncounter(v,'schreiben',true);$("fb").innerHTML="<div class='ok'>Richtig!</div><button onclick='writeVerb()'>weiter</button>"}
-  else{addEncounter(v,'schreiben',false);$("fb").innerHTML=`<div class='no'>Richtig: ${v}</div>`} scrollToFeedback();
-}
-function wordSearch(){renderHome();}
-function chosenDone(){renderHome();}
-try{init();}catch(e){console.error(e);const app=document.getElementById("app");if(app)app.innerHTML=`<div class="runtime-error"><strong>Startfehler:</strong><br>${e.message}</div>`;}</script></body></html>
+function toggleProgressPanel(){const p=$("progressPanel");if(!p)return;p.classList.toggle("hidden");if(!p.classList.contains("hidden"))renderProgressPanel(true)}
+
+function init(){if(!loadProfile())return;loadState();if(state.active.length>=20){state.phase="tasks";renderHome();}else{state.phase="select";renderOneVerb();}}
+document.addEventListener("DOMContentLoaded",init);
+</script>
+</body>
+</html>
