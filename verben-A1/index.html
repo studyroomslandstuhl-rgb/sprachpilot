@@ -328,8 +328,7 @@ function packageComplete(){return (state.active||[]).length===20 && state.active
 function allTasksDone(){return VERB_SKILLS.every(s=>taskDone(s))}
 
 function totalStars(){
-  // Ein Stern zählt nur, wenn eine komplette Aufgabe / ein Level auf 100% ist.
-  return VERB_SKILLS.filter(s=>taskDone(s)).length;
+  return (state.active||[]).filter(v=>verbPercent(v)===100).length;
 }
 function showAlert(title,msg,icon="⭐"){
   const old=document.getElementById("levelAlert"); if(old)old.remove();
@@ -380,17 +379,10 @@ function openNextTask(){
   renderHome();
 }
 function completedTaskMessage(label,skill){
-  state.taskRewardsShown=state.taskRewardsShown||{};
-  const key="taskReward_"+(state.packageNo||1)+"_"+skillKey(skill||label);
-  const first=!state.taskRewardsShown[key];
-  state.taskRewardsShown[key]=true;
-  saveState();
-  const starText=first ? "⭐ Stern erhalten" : "⭐ Stern bereits erhalten";
   return `<div class="achievement">
-    <h3>Aufgabe erledigt ✓</h3>
-    <p><strong>${label}</strong> ist auf 100% abgeschlossen.</p>
-    <div class="star-pill">${starText}</div>
-    <p class="small">Sterne bekommst du nur für vollständig abgeschlossene Aufgaben.</p>
+    <h3>🎉 Gut gemacht!</h3>
+    <p>Du hast die Aufgabe <strong>${label}</strong> erledigt.</p>
+    <p class="small">Diese Aufgabe ist jetzt abgeschlossen.</p>
   </div>`;
 }
 
