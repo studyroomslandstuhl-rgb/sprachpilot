@@ -207,45 +207,69 @@
 }
 
 
-/* AUFGABEN WIE FRAGEN-APP */
-.game-frame{
-  background:white;
-  border:3px solid #dce2ff;
-  border-radius:22px;
-  padding:18px;
-  margin:12px 0 14px;
-  box-shadow:0 8px 22px rgba(0,0,0,.12);
-}
-.task-grid.compact{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(92px,1fr))!important;
+/* AUFGABENLAYOUT UND KARTEIKARTEN-ABSCHLUSS */
+.task-grid{
+  display:grid!important;
+  grid-template-columns:repeat(4,1fr)!important;
   gap:6px!important;
   margin:8px 0!important;
 }
-.task-grid.compact .task-card{
-  min-height:58px!important;
-  padding:6px!important;
+.task-card{
+  min-height:48px!important;
+  padding:6px 5px!important;
   font-size:12px!important;
-  border-radius:14px!important;
+  border-radius:12px!important;
 }
-.task-grid.compact .big-icon{
+.task-card .big-icon{
   font-size:18px!important;
   margin-bottom:2px!important;
 }
-.flash-word-row{
-  display:flex;
-  justify-content:space-between;
-  gap:8px;
-  align-items:center;
-  background:#eef2ff;
-  border-radius:12px;
-  padding:8px;
-  margin:8px 0;
-  font-size:14px;
+#game{
+  background:#fff;
+  border:3px solid #dce2ff;
+  border-radius:22px;
+  padding:16px;
+  margin-top:12px;
+  box-shadow:0 8px 24px rgba(0,0,0,.12);
 }
-.current-task-title{
-  color:#667eea;
-  margin-top:0;
+#game:empty{
+  display:none;
+}
+.flash-progress-box{
+  background:#f7f8ff;
+  border:2px solid #dce2ff;
+  border-radius:14px;
+  padding:10px;
+  margin:10px 0 14px;
+}
+.flash-bar{
+  height:16px;
+  background:#ddd;
+  border-radius:999px;
+  overflow:hidden;
+  margin:7px 0;
+}
+.flash-fill{
+  height:100%;
+  background:linear-gradient(135deg,#27ae60,#2ecc71);
+  transition:width .25s;
+}
+.flash-word-list{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(130px,1fr));
+  gap:5px;
+  margin:8px 0;
+}
+.flash-word-item{
+  background:white;
+  border:1px solid #dce2ff;
+  border-radius:10px;
+  padding:5px;
+  font-size:12px;
+}
+@media(max-width:600px){
+  .task-grid{grid-template-columns:repeat(3,1fr)!important}
+  .task-card{font-size:11px!important}
 }
 
 </style></head><body><button class="progress-toggle" onclick="toggleProgressPanel()">📊</button><div id="progressPanel" class="progress-panel hidden"></div><main>
@@ -399,8 +423,6 @@ function migrateState(){
   state.known=state.known||[];
   state.unsure=state.unsure||[];
   state.unknown=state.unknown||[];
-  state.currentGame=state.currentGame||"";
-  state.flashSession=state.flashSession||null;
   (state.active||[]).forEach(v=>ensureSkillState(v));
 }
 function loadState(){
@@ -564,6 +586,7 @@ function recogVerb(cb){
 
 
 function hearWrite(){
+  saveCurrentTask("hearWrite");
   state.currentGame="hearWrite";
   let v=chooseVerbForPractice();
   if(!v){renderHome();return}
@@ -589,6 +612,7 @@ function checkHearWrite(v){
   scrollToFeedback();
 }
 function hearSpeak(){
+  saveCurrentTask("hearSpeak");
   state.currentGame="hearSpeak";
   let v=chooseVerbForPractice();
   if(!v){renderHome();return}
@@ -617,6 +641,7 @@ function checkHearSpeak(v){
   });
 }
 function imageSpeak(){
+  saveCurrentTask("imageSpeak");
   state.currentGame="imageSpeak";
   let v=chooseVerbForPractice();
   if(!v){renderHome();return}
@@ -644,6 +669,7 @@ function checkImageSpeak(v){
   });
 }
 function verbToImage(){
+  saveCurrentTask("verbToImage");
   state.currentGame="verbToImage";
   let v=chooseVerbForPractice();
   if(!v){renderHome();return}
@@ -748,32 +774,61 @@ function showAutoReplaceMessage(){
   const g=$("game");
   if(g)g.insertAdjacentHTML("afterbegin",msg);
 }
-function renderHome(resume=true){
+
+function saveCurrentTask(name){
+  state.currentGame=name;
+  state.phase="tasks";
+  saveState();
+}
+function restoreCurrentTask(){
+  if(!state || state.phase!=="tasks" || !state.currentGame) return false;
+  const task=state.currentGame;
+  if(task==="flashcards"){flashcards();return true;}
+  if(task==="memory"){memory();return true;}
+  if(task==="quiz"){quiz();return true;}
+  if(task==="write"){writeVerb();return true;}
+  if(task==="hearWrite"){hearWrite();return true;}
+  if(task==="hearSpeak"){hearSpeak();return true;}
+  if(task==="imageSpeak"){imageSpeak();return true;}
+  if(task==="verbToImage"){verbToImage();return true;}
+  return false;
+}
+function flashSkillDonePercent(){
+  if(!state.flashSession || !state.flashSession.total) return 0;
+  return Math.round(((state.flashSession.done||[]).length*100)/state.flashSession.total);
+}
+function flashWordProgressList(){
+  if(!state.flashSession || !state.flashSession.words) return "";
+  return `<div class="flash-word-list">`+state.flashSession.words.map(v=>{
+    const c=(state.flashSession.correct&&state.flashSession.correct[v])||0;
+    const done=(state.flashSession.done||[]).includes(v);
+    return `<div class="flash-word-item">${done?"✅":"⬜"} ${v}: ${Math.min(c,2)}/2</div>`;
+  }).join("")+`</div>`;
+}
+
+function renderHome(){
   preloadActiveImages();
   state.phase="tasks";
   saveState();
   $("app").innerHTML=`<h2>Verben üben</h2>
     <div class="mini-top-progress">
-      <strong>Aktiv:</strong> ${state.active.length} Verben |
+      <strong>Aktiv:</strong> ${state.active.length} |
       <strong>Gelernt:</strong> ${state.learned.length} |
       <strong>Fortschritt:</strong> ${overall()}%
     </div>
-    <div id="game" class="game-frame">
-      <h3 class="current-task-title">Aufgabe wählen</h3>
-      <p class="small">Wähle eine Übung. Dein Fortschritt wird gespeichert.</p>
+    <div class="task-grid">
+      <button class="task-card" onclick="startFlashcardSession();flashcards()"><span class="big-icon">🃏</span>Karteikarten</button>
+      <button class="task-card" onclick="memory()"><span class="big-icon">🖼️</span>Memory</button>
+      <button class="task-card" onclick="quiz()"><span class="big-icon">✅</span>Bild → Verb</button>
+      <button class="task-card" onclick="writeVerb()"><span class="big-icon">✍️</span>Schreiben</button>
+      <button class="task-card" onclick="hearWrite()"><span class="big-icon">🔊</span>Hören → Schreiben</button>
+      <button class="task-card" onclick="hearSpeak()"><span class="big-icon">🎧</span>Hören → Sprechen</button>
+      <button class="task-card" onclick="imageSpeak()"><span class="big-icon">🎤</span>Bild sprechen</button>
+      <button class="task-card" onclick="verbToImage()"><span class="big-icon">🖼️</span>Verb → Bild</button>
     </div>
-    <div class="task-grid compact">
-      <button class="task-card" onclick="startTask('flashcards')"><span class="big-icon">🃏</span>Karten</button>
-      <button class="task-card" onclick="startTask('memory')"><span class="big-icon">🖼️</span>Memory</button>
-      <button class="task-card" onclick="startTask('quiz')"><span class="big-icon">✅</span>Bild→Verb</button>
-      <button class="task-card" onclick="startTask('writeVerb')"><span class="big-icon">✍️</span>Schreiben</button>
-      <button class="task-card" onclick="startTask('hearWrite')"><span class="big-icon">🔊</span>Hören+Schr.</button>
-      <button class="task-card" onclick="startTask('hearSpeak')"><span class="big-icon">🎧</span>Hören+Spr.</button>
-      <button class="task-card" onclick="startTask('imageSpeak')"><span class="big-icon">🎤</span>Bild+Spr.</button>
-      <button class="task-card" onclick="startTask('verbToImage')"><span class="big-icon">🖼️</span>Verb→Bild</button>
-    </div>`;
+    <div id="game"></div>`;
   renderProgressPanel(false);
-  if(resume) resumeTask();
+  restoreCurrentTask();
 }
 function toggleProgressPanel(){
   const p=$("progressPanel");
@@ -817,37 +872,10 @@ function preloadActiveImages(){
 
 
 
-
-function startTask(name){
-  state.currentGame=name;
-  if(name==="flashcards"){
-    startFlashcardSession(true);
-  }
-  saveState();
-  runTask(name);
-}
-function runTask(name){
-  if(name==="flashcards") return flashcards();
-  if(name==="memory") return memory();
-  if(name==="quiz") return quiz();
-  if(name==="writeVerb") return writeVerb();
-  if(name==="hearWrite") return hearWrite();
-  if(name==="hearSpeak") return hearSpeak();
-  if(name==="imageSpeak") return imageSpeak();
-  if(name==="verbToImage") return verbToImage();
-}
-function resumeTask(){
-  if(state.currentGame){
-    runTask(state.currentGame);
-  }
-}
-
-function startFlashcardSession(force=false){
-  if(!force && state.flashSession && state.flashSession.total && flashDoneCount()<state.flashSession.total){
-    return;
-  }
-  const pool=(state.active||[]).filter(v=>!state.skillDone?.[v]?.karteikarte && verbPercent(v)<100);
+function startFlashcardSession(){
+  const pool=(state.active||[]).filter(v=>!(state.skillDone&&state.skillDone[v]&&state.skillDone[v]["karteikarte"]));
   state.flashSession={
+    words:pool,
     queue:shuffle(pool),
     correct:{},
     wrong:{},
@@ -871,27 +899,29 @@ function flashPercent(){
 }
 function flashProgressHtml(){
   const total=(state.flashSession&&state.flashSession.total)||0;
-  const done=flashDoneCount();
+  const done=(state.flashSession&&state.flashSession.done?state.flashSession.done.length:0);
   const left=Math.max(0,total-done);
   const pct=total?Math.round((done*100)/total):0;
   return `<div class="flash-progress-box">
-    <strong>Karteikarten-Runde</strong>
+    <strong>Karteikarten-Fortschritt: ${pct}%</strong>
     <div class="flash-bar"><div class="flash-fill" style="width:${pct}%"></div></div>
     <div class="flash-meta">
-      <span>${pct}% fertig</span>
-      <span>${done}/${total} Wörter abgeschlossen</span>
+      <span>${done}/${total} Wörter fertig</span>
       <span>noch ${left}</span>
+      <span>pro Wort: 2× richtig</span>
     </div>
+    ${flashWordProgressList()}
   </div>`;
 }
 function nextFlashVerb(){
-  if(!state.flashSession || !state.flashSession.total){
-    startFlashcardSession(false);
+  if(!state.flashSession || !state.flashSession.queue || !state.flashSession.total){
+    startFlashcardSession();
   }
-  if(!state.flashSession || !state.flashSession.total)return null;
-  if(flashDoneCount()>=state.flashSession.total)return null;
+  if(state.flashSession.total && state.flashSession.done && state.flashSession.done.length>=state.flashSession.total){
+    return null;
+  }
   if(!state.flashSession.queue.length){
-    const remaining=(state.active||[]).filter(v=>!state.flashSession.done.includes(v) && !state.skillDone?.[v]?.karteikarte);
+    const remaining=(state.flashSession.words||[]).filter(v=>!(state.flashSession.done||[]).includes(v));
     state.flashSession.queue=shuffle(remaining);
   }
   if(!state.flashSession.queue.length)return null;
@@ -901,14 +931,18 @@ function nextFlashVerb(){
   return v;
 }
 function finishFlashVerb(v,good){
-  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:0,current:null};
+  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:0,words:[],current:null};
   state.flashSession.correct[v]=state.flashSession.correct[v]||0;
   state.flashSession.wrong[v]=state.flashSession.wrong[v]||0;
+  ensureSkillState(v);
 
   if(good){
     state.flashSession.correct[v]++;
-    addEncounter(v,"karteikarte",true);
+    state.skillAttempts[v]["karteikarte"]=(state.skillAttempts[v]["karteikarte"]||0)+1;
+    state.skillSuccess[v]["karteikarte"]=(state.skillSuccess[v]["karteikarte"]||0)+1;
+
     if(state.flashSession.correct[v]>=2){
+      state.skillDone[v]["karteikarte"]=true;
       if(!state.flashSession.done.includes(v))state.flashSession.done.push(v);
       state.flashSession.queue=state.flashSession.queue.filter(x=>x!==v);
     }else{
@@ -917,20 +951,23 @@ function finishFlashVerb(v,good){
   }else{
     state.flashSession.wrong[v]++;
     state.flashSession.correct[v]=0;
-    addEncounter(v,"karteikarte",false);
+    state.skillAttempts[v]["karteikarte"]=(state.skillAttempts[v]["karteikarte"]||0)+1;
+    state.weak[v]=(state.weak[v]||0)+1;
     state.flashSession.queue.push(v,v);
   }
   saveState();
+  if(replaceLearnedIfNeeded()) showAutoReplaceMessage();
 }
 function flashcardDoneMessage(){
-  state.currentGame="flashcards";
-  saveState();
-  $("game").innerHTML=`${flashProgressHtml()}<div class="ok"><h3>Gut gemacht!</h3><p>Karteikarten abgeschlossen. Die Karteikarten-Spalte ist für die erfolgreichen Wörter gefüllt.</p><button class="success" onclick="state.currentGame='';saveState();renderHome(false)">Nächste Aufgabe wählen</button><button class="secondary" onclick="startFlashcardSession(true);flashcards()">Karteikarten nochmal machen</button></div>`;
+  $("game").innerHTML=`${flashProgressHtml()}<div class="ok"><h3>Gut gemacht!</h3><p>Du hast diese Karteikarten-Runde abgeschlossen.</p><button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button><button class="secondary" onclick="startFlashcardSession();flashcards()">Karteikarten nochmal machen</button></div>`;
   scrollToGame();
 }
 
 function flashcards(){
-  state.currentGame="flashcards";
+  saveCurrentTask("flashcards");
+  if(!state.flashSession || !state.flashSession.total || !state.flashSession.queue){
+    startFlashcardSession();
+  }
   let v=nextFlashVerb();
   if(!v){flashcardDoneMessage();return}
   state.currentVerb=v;
@@ -938,12 +975,9 @@ function flashcards(){
   const correctNow=(state.flashSession&&state.flashSession.correct&&state.flashSession.correct[v])||0;
   const wrongNow=(state.flashSession&&state.flashSession.wrong&&state.flashSession.wrong[v])||0;
   $("game").innerHTML=`${flashProgressHtml()}
-    <h3 class="current-task-title">Karteikarten: Nenne das deutsche Wort</h3>
-    <div class="flash-word-row">
-      <span>Dieses Wort: <strong>${correctNow}/2 richtig</strong></span>
-      <span>Fehler: ${wrongNow}</span>
-    </div>
-    <p class="small">Wenn ein Wort 2× richtig war, verschwindet es aus dieser Karteikarten-Runde.</p>
+    <h3>Karteikarten: Nenne das deutsche Wort</h3>
+    <p class="small">Dieses Wort ist fertig, wenn du es <strong>2× richtig</strong> beantwortet hast. Bei einem Fehler wird der Zähler für dieses Wort zurückgesetzt und es kommt nochmal.</p>
+    <div class="flash-meta"><span>Dieses Wort: ${Math.min(correctNow,2)}/2 richtig</span><span>Fehler hier: ${wrongNow}</span></div>
     <div class="study-card-wrap">
       <div id="studyCard" class="study-card" onclick="this.classList.toggle('flipped')">
         <div class="study-face">
@@ -998,6 +1032,7 @@ function speakFlashcardAnswer(v){
 }
 
 function memory(){
+  saveCurrentTask("memory");
   state.currentGame="memory";
   state.first=null;state.lock=false;
   state.memoryCards=[];
@@ -1030,6 +1065,7 @@ function flip(i){
   },600);
 }
 function quiz(){
+  saveCurrentTask("quiz");
   state.currentGame="quiz";
   let v=chooseVerbForPractice();
   if(!v){renderHome();return}
@@ -1043,6 +1079,7 @@ function checkQuiz(a,v){
   else{addEncounter(v,'zuordnung',false);$("fb").innerHTML="<div class='no'>Noch nicht.</div>"} scrollToFeedback();
 }
 function writeVerb(){
+  saveCurrentTask("write");
   state.currentGame="write";
   let v=chooseVerbForPractice();
   if(!v){renderHome();return}
