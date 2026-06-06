@@ -442,7 +442,7 @@ function renderOneVerb(){
   const v=currentPickVerb();
   if(!v){if(state.active.length>0){state.phase="tasks";saveState();renderHome();return};$("app").innerHTML="<div class='ok'>Alle Verben wurden eingeschätzt.</div>";return;}
   $("app").innerHTML=`<h2>Verb einschätzen</h2>
-    <div class="mini-top-progress"><strong>Paket:</strong> ${state.active.length}/20 Verben gesammelt</div>
+    <div class="mini-top-progress"><strong>⭐ Fortschritt:</strong> <span id="simpleProgress">0 / 20 Verben gelernt</span></div>
     <p class="small">Entscheide schnell. Danach kommt automatisch das nächste Verb.</p>
     <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
       ${imageBox(v.v,false)}<h1 style="color:#667eea">${safeText(v.v)}</h1><p>${safeText(v.img)}</p>
@@ -471,6 +471,15 @@ function startNewVerbPackage(){
   state.phase="select"; saveState(); renderOneVerb();
 }
 function safeRun(fn){try{fn()}catch(e){console.error(e);const g=$("game");if(g)g.innerHTML="<div class='no'>Diese Aufgabe konnte nicht geöffnet werden. Bitte neu laden.</div>";}}
+
+function updateSimpleProgress(){
+  try{
+    const learned=(state.active||[]).filter(v=>verbPercent(v)===100).length;
+    const el=document.getElementById('simpleProgress');
+    if(el) el.textContent = learned + " / 20 Verben gelernt";
+  }catch(e){}
+}
+
 function renderHome(){
   state.phase="tasks"; saveState();
   const packageDone=packageComplete();
@@ -489,7 +498,7 @@ function renderHome(){
       ${taskButton('bild_sprechen','🎤','Bild sprechen','imageSpeak')}
       ${taskButton('satz_puzzle','🧩','Satz-Puzzle','sentencePuzzle')}
     </div><div id="game"></div>`;
-  renderProgressPanel(false); if(!packageDone)restoreCurrentTask(); checkMilestones();
+  updateSimpleProgress(); renderProgressPanel(false); if(!packageDone)restoreCurrentTask(); checkMilestones();
 }
 function taskButton(skill,icon,label,fn){return `<button class="${taskCardClass(skill)}" onclick="safeRun(()=>{if(taskDone('${skill}')){taskBlockedMessage('${label}');return}${fn}();})"><span class="big-icon">${icon}</span>${label}<div class="task-status">${taskCardStatus(skill)}</div></button>`}
 function taskBlockedMessage(label){
