@@ -1187,6 +1187,19 @@ function preloadActiveImages(){
 
 
 
+
+function markCardFlipped(){
+  state.cardWasFlipped = true;
+  saveState();
+}
+function currentCardCounts(v){
+  if(!state.flashSession) return {correct:0, total:0, done:0, pct:0};
+  const c=(state.flashSession.correct&&state.flashSession.correct[v])||0;
+  const total=(state.flashSession.total||0)*2;
+  const done=Object.values(state.flashSession.correct||{}).reduce((s,n)=>s+Math.min(2,Number(n)||0),0);
+  return {correct:c,total:total,done:done,pct:total?Math.round(done*100/total):0};
+}
+
 function startFlashcardSession(){
   const pool=(state.active||[]).filter(v=>verbPercent(v)<100);
   state.flashSession={
@@ -1212,14 +1225,15 @@ function flashPercent(){
   return Math.round((flashDoneCount()*100)/state.flashSession.total);
 }
 function flashProgressHtml(){
-  const total=(state.flashSession&&state.flashSession.total)||0;
-  const done=(state.flashSession&&state.flashSession.done?state.flashSession.done.length:0);
-  const left=Math.max(0,total-done);
-  const pct=total?Math.round((done*100)/total):0;
+  const totalWords=(state.flashSession&&state.flashSession.total)||0;
+  const totalPoints=totalWords*2;
+  const points=Object.values((state.flashSession&&state.flashSession.correct)||{}).reduce((s,n)=>s+Math.min(2,Number(n)||0),0);
+  const pct=totalPoints?Math.round(points*100/totalPoints):0;
+  const doneWords=(state.flashSession&&state.flashSession.done?state.flashSession.done.length:0);
   return `<div class="flash-progress-box">
     <div class="flash-progress-title">
       <strong>${pct}% fertig</strong>
-      <span>${done}/${total} Wörter · noch ${left}</span>
+      <span>${points}/${totalPoints} Punkte · ${doneWords}/${totalWords} Wörter</span>
     </div>
     <div class="flash-bar"><div class="flash-fill" style="width:${pct}%"></div></div>
   </div>`;
@@ -1235,14 +1249,18 @@ function nextFlashVerb(){
   return v;
 }
 function finishFlashVerb(v,good){
-  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:0,current:null};
+  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:0,words:[],current:null};
   state.flashSession.correct[v]=state.flashSession.correct[v]||0;
   state.flashSession.wrong[v]=state.flashSession.wrong[v]||0;
+  ensureSkillState(v);
 
   if(good){
-    state.flashSession.correct[v]++;
-    addEncounter(v,"karteikarte",true);
+    state.flashSession.correct[v]=Math.min(2,state.flashSession.correct[v]+1);
+    state.skillAttempts[v]["karteikarte"]=(state.skillAttempts[v]["karteikarte"]||0)+1;
+    state.skillSuccess[v]["karteikarte"]=(state.skillSuccess[v]["karteikarte"]||0)+1;
+
     if(state.flashSession.correct[v]>=2){
+      state.skillDone[v]["karteikarte"]=true;
       if(!state.flashSession.done.includes(v))state.flashSession.done.push(v);
       state.flashSession.queue=state.flashSession.queue.filter(x=>x!==v);
     }else{
@@ -1250,14 +1268,15 @@ function finishFlashVerb(v,good){
     }
   }else{
     state.flashSession.wrong[v]++;
-    state.flashSession.correct[v]=0;
-    addEncounter(v,"karteikarte",false);
-    state.flashSession.queue.push(v,v);
+    state.skillAttempts[v]["karteikarte"]=(state.skillAttempts[v]["karteikarte"]||0)+1;
+    state.weak[v]=(state.weak[v]||0)+1;
+    state.flashSession.queue.push(v);
   }
   saveState();
+  if(replaceLearnedIfNeeded()) showAutoReplaceMessage();
 }
 function flashcardDoneMessage(){
-  $("game").innerHTML=`${flashProgressHtml()}<div class="ok"><h3>Gut gemacht!</h3><p>Du hast diese Karteikarten-Runde abgeschlossen.</p><button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button><button class="secondary" onclick="startFlashcardSession();flashcards()">Karteikarten nochmal machen</button></div>`;
+  $("game").innerHTML=`${flashProgressHtml()}<div class="ok"><h3>Karteikarten geschafft!</h3><p>Alle Wörter wurden zweimal richtig beantwortet.</p><button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button><button class="secondary" onclick="startFlashcardSession();flashcards()">Karteikarten nochmal machen</button></div>`;
   scrollToGame();
 }
 
@@ -1266,20 +1285,21 @@ function flashcards(){
   let v=nextFlashVerb();
   if(!v){flashcardDoneMessage();return}
   state.currentVerb=v;
+  state.cardWasFlipped=false;
   saveState();
   const correctNow=(state.flashSession&&state.flashSession.correct&&state.flashSession.correct[v])||0;
   const wrongNow=(state.flashSession&&state.flashSession.wrong&&state.flashSession.wrong[v])||0;
   $("game").innerHTML=`${flashProgressHtml()}
     <div class="card-task-head">
       <h3>Karteikarte</h3>
-      <div class="small">2× richtig = fertig</div>
+      <div class="small">Antwort zählt nur vor dem Umdrehen.</div>
     </div>
     <div class="word-status">
-      <span class="word-pill">${Math.min(correctNow,2)}/2 richtig</span>
+      <span class="word-pill">${Math.min(correctNow,2)}/2 Punkte</span>
       ${wrongNow?`<span class="word-pill">Fehler: ${wrongNow}</span>`:""}
     </div>
     <div class="study-card-wrap">
-      <div id="studyCard" class="study-card" onclick="this.classList.toggle('flipped')">
+      <div id="studyCard" class="study-card" onclick="markCardFlipped();this.classList.toggle('flipped')">
         <div class="study-face">
           <div class="small">${nativeLang()}</div>
           <div class="native-word">${nativeWord(v)}</div>
@@ -1306,13 +1326,16 @@ function checkFlashcardAnswer(v){
   const input=$("cardAnswer");
   const val=input?input.value:"";
   const fb=$("cardFeedback");
-  if(checkVerbAnswer(val,v)){
+  if(state.cardWasFlipped){
+    finishFlashVerb(v,false);
+    if(fb)fb.innerHTML=`<div class="no">Die Karte war schon umgedreht. Diese Antwort zählt nicht als Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;
+  }else if(checkVerbAnswer(val,v)){
     finishFlashVerb(v,true);
     const current=(state.flashSession.correct[v]||0);
-    if(fb)fb.innerHTML=`<div class="ok">${current>=2?"✔ Wort fertig.":"✔ Richtig. Noch einmal richtig."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;
+    if(fb)fb.innerHTML=`<div class="ok">${current>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;
   }else{
     finishFlashVerb(v,false);
-    if(fb)fb.innerHTML=`<div class="no">Noch nicht. Es kommt später nochmal.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;
+    if(fb)fb.innerHTML=`<div class="no">Noch nicht. Kein Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;
   }
   scrollToFeedback();
 }
@@ -1321,13 +1344,16 @@ function speakFlashcardAnswer(v){
     const heard=$("heard");
     if(heard)heard.innerText="Gehört: "+t;
     const fb=$("cardFeedback");
-    if(checkVerbAnswer(t,v)){
+    if(state.cardWasFlipped){
+      finishFlashVerb(v,false);
+      if(fb)fb.innerHTML=`<div class="no">Die Karte war schon umgedreht. Diese Antwort zählt nicht als Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;
+    }else if(checkVerbAnswer(t,v)){
       finishFlashVerb(v,true);
       const current=(state.flashSession.correct[v]||0);
-      if(fb)fb.innerHTML=`<div class="ok">${current>=2?"✔ Wort fertig.":"✔ Richtig. Noch einmal richtig."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;
+      if(fb)fb.innerHTML=`<div class="ok">${current>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;
     }else{
       finishFlashVerb(v,false);
-      if(fb)fb.innerHTML=`<div class="no">Gehört: ${t}<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;
+      if(fb)fb.innerHTML=`<div class="no">Gehört: ${t}<br>Kein Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;
     }
     scrollToFeedback();
   });
