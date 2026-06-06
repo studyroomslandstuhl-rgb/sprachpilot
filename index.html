@@ -206,6 +206,48 @@
   margin-top:14px!important;
 }
 
+
+/* AUFGABEN WIE FRAGEN-APP */
+.game-frame{
+  background:white;
+  border:3px solid #dce2ff;
+  border-radius:22px;
+  padding:18px;
+  margin:12px 0 14px;
+  box-shadow:0 8px 22px rgba(0,0,0,.12);
+}
+.task-grid.compact{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(92px,1fr))!important;
+  gap:6px!important;
+  margin:8px 0!important;
+}
+.task-grid.compact .task-card{
+  min-height:58px!important;
+  padding:6px!important;
+  font-size:12px!important;
+  border-radius:14px!important;
+}
+.task-grid.compact .big-icon{
+  font-size:18px!important;
+  margin-bottom:2px!important;
+}
+.flash-word-row{
+  display:flex;
+  justify-content:space-between;
+  gap:8px;
+  align-items:center;
+  background:#eef2ff;
+  border-radius:12px;
+  padding:8px;
+  margin:8px 0;
+  font-size:14px;
+}
+.current-task-title{
+  color:#667eea;
+  margin-top:0;
+}
+
 </style></head><body><button class="progress-toggle" onclick="toggleProgressPanel()">📊</button><div id="progressPanel" class="progress-panel hidden"></div><main>
 <div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
 <div class="card" id="app"></div>
@@ -264,18 +306,102 @@ function loadProfile(){
   return true;
 }
 function key(){return "SP_VERBS_"+(profile?profile.userId:"guest")}
-function migrateState(){
-  if(state.progress && !state.encounters){
-    state.encounters={};
-    Object.keys(state.progress).forEach(v=>state.encounters[v]=Math.round((state.progress[v]||0)/10));
+
+const VERB_SKILLS = [
+  "karteikarte",
+  "memory",
+  "bild_verb",
+  "verb_bild",
+  "schreiben",
+  "hoeren_schreiben",
+  "hoeren_sprechen",
+  "bild_sprechen"
+];
+
+const VERB_SKILL_LABELS = {
+  "karteikarte":"Karteikarten",
+  "memory":"Memory",
+  "bild_verb":"Bild → Verb",
+  "verb_bild":"Verb → Bild",
+  "schreiben":"Schreiben",
+  "hoeren_schreiben":"Hören → Schreiben",
+  "hoeren_sprechen":"Hören → Sprechen",
+  "bild_sprechen":"Bild → Sprechen"
+};
+
+function skillKey(skill){
+  if(skill==="zuordnung") return "bild_verb";
+  if(skill==="karteikarte_schreiben" || skill==="karteikarte_sprechen") return "karteikarte";
+  if(skill==="verb_bild") return "verb_bild";
+  if(skill==="bild_sprechen") return "bild_sprechen";
+  if(skill==="hoeren_schreiben") return "hoeren_schreiben";
+  if(skill==="hoeren_sprechen") return "hoeren_sprechen";
+  if(skill==="schreiben") return "schreiben";
+  if(skill==="memory") return "memory";
+  return skill;
+}
+
+function ensureSkillState(v){
+  state.skillDone = state.skillDone || {};
+  state.skillAttempts = state.skillAttempts || {};
+  state.skillSuccess = state.skillSuccess || {};
+  state.skillDone[v] = state.skillDone[v] || {};
+  state.skillAttempts[v] = state.skillAttempts[v] || {};
+  state.skillSuccess[v] = state.skillSuccess[v] || {};
+}
+
+function verbSkillCount(v){
+  ensureSkillState(v);
+  return VERB_SKILLS.filter(s=>state.skillDone[v][s]).length;
+}
+
+function verbCount(v){
+  return verbSkillCount(v);
+}
+
+function verbPercent(v){
+  return Math.round((verbSkillCount(v) * 100) / VERB_SKILLS.length);
+}
+
+function markSkill(v,skill,good){
+  const sk=skillKey(skill);
+  ensureSkillState(v);
+  state.skillAttempts[v][sk]=(state.skillAttempts[v][sk]||0)+1;
+  if(good){
+    state.skillSuccess[v][sk]=(state.skillSuccess[v][sk]||0)+1;
+    if(sk==="karteikarte"){
+      if((state.skillSuccess[v][sk]||0)>=2) state.skillDone[v][sk]=true;
+    }else{
+      state.skillDone[v][sk]=true;
+    }
+  }else{
+    state.weak[v]=(state.weak[v]||0)+1;
   }
+}
+
+function skillBadges(v){
+  ensureSkillState(v);
+  return VERB_SKILLS.map(s=>{
+    const ok=state.skillDone[v][s];
+    const att=state.skillAttempts[v][s]||0;
+    return `<div class="small">${ok?"✅":"⬜"} ${VERB_SKILL_LABELS[s]} ${att?`(${att}x)`:""}</div>`;
+  }).join("");
+}
+
+function migrateState(){
   state.learned=state.learned||[];
   state.encounters=state.encounters||{};
   state.successBySkill=state.successBySkill||{};
+  state.skillDone=state.skillDone||{};
+  state.skillAttempts=state.skillAttempts||{};
+  state.skillSuccess=state.skillSuccess||{};
   state.active=state.active||[];
   state.known=state.known||[];
   state.unsure=state.unsure||[];
   state.unknown=state.unknown||[];
+  state.currentGame=state.currentGame||"";
+  state.flashSession=state.flashSession||null;
+  (state.active||[]).forEach(v=>ensureSkillState(v));
 }
 function loadState(){
   try{
@@ -289,14 +415,13 @@ function saveState(){
   localStorage.setItem(key(),JSON.stringify(state));
   sendProgress();
 }
-function verbCount(v){return Math.max(0,Math.min(10,Number(state.encounters[v])||0))}
-function verbPercent(v){return verbCount(v)*10}
+
 function overall(){
   if(!state.active.length)return 0;
   let sum=state.active.reduce((s,v)=>s+verbPercent(v),0);
   return Math.round(sum/state.active.length);
 }
-function learnedTotal(){return state.learned.length + state.active.filter(v=>verbCount(v)>=10).length}
+function learnedTotal(){return state.learned.length + state.active.filter(v=>verbPercent(v)>=100).length}
 function sendProgress(){
   if(!profile)return;
   const done=overall();
@@ -597,7 +722,7 @@ function rateVerb(v,level){
   }
 }
 function replaceLearnedIfNeeded(){
-  let complete=state.active.filter(v=>verbCount(v)>=10);
+  let complete=state.active.filter(v=>verbPercent(v)>=100);
   if(complete.length<3)return false;
   let toReplace=complete.slice(0,3);
   toReplace.forEach(v=>{
@@ -612,13 +737,7 @@ function replaceLearnedIfNeeded(){
   return true;
 }
 function addEncounter(v,skill,good=true){
-  if(good){
-    state.successBySkill[v]=state.successBySkill[v]||{};
-    state.successBySkill[v][skill]=(state.successBySkill[v][skill]||0)+1;
-    state.encounters[v]=Math.min(10,(state.encounters[v]||0)+1);
-  }else{
-    state.weak[v]=(state.weak[v]||0)+1;
-  }
+  markSkill(v,skill,good);
   saveState();
   if(replaceLearnedIfNeeded()){
     showAutoReplaceMessage();
@@ -629,7 +748,7 @@ function showAutoReplaceMessage(){
   const g=$("game");
   if(g)g.insertAdjacentHTML("afterbegin",msg);
 }
-function renderHome(){
+function renderHome(resume=true){
   preloadActiveImages();
   state.phase="tasks";
   saveState();
@@ -639,18 +758,22 @@ function renderHome(){
       <strong>Gelernt:</strong> ${state.learned.length} |
       <strong>Fortschritt:</strong> ${overall()}%
     </div>
-    <div class="task-grid">
-      <button class="task-card" onclick="flashcards()"><span class="big-icon">🃏</span>Karteikarten</button>
-      <button class="task-card" onclick="memory()"><span class="big-icon">🖼️</span>Memory</button>
-      <button class="task-card" onclick="quiz()"><span class="big-icon">✅</span>Bild zuordnen</button>
-      <button class="task-card" onclick="writeVerb()"><span class="big-icon">✍️</span>Schreiben</button>
-      <button class="task-card" onclick="hearWrite()"><span class="big-icon">🔊</span>Hören → Schreiben</button>
-      <button class="task-card" onclick="hearSpeak()"><span class="big-icon">🎧</span>Hören → Sprechen</button>
-      <button class="task-card" onclick="imageSpeak()"><span class="big-icon">🎤</span>Bild sprechen</button>
-      <button class="task-card" onclick="verbToImage()"><span class="big-icon">🖼️</span>Verb → Bild</button>
+    <div id="game" class="game-frame">
+      <h3 class="current-task-title">Aufgabe wählen</h3>
+      <p class="small">Wähle eine Übung. Dein Fortschritt wird gespeichert.</p>
     </div>
-    <div id="game"></div>`;
+    <div class="task-grid compact">
+      <button class="task-card" onclick="startTask('flashcards')"><span class="big-icon">🃏</span>Karten</button>
+      <button class="task-card" onclick="startTask('memory')"><span class="big-icon">🖼️</span>Memory</button>
+      <button class="task-card" onclick="startTask('quiz')"><span class="big-icon">✅</span>Bild→Verb</button>
+      <button class="task-card" onclick="startTask('writeVerb')"><span class="big-icon">✍️</span>Schreiben</button>
+      <button class="task-card" onclick="startTask('hearWrite')"><span class="big-icon">🔊</span>Hören+Schr.</button>
+      <button class="task-card" onclick="startTask('hearSpeak')"><span class="big-icon">🎧</span>Hören+Spr.</button>
+      <button class="task-card" onclick="startTask('imageSpeak')"><span class="big-icon">🎤</span>Bild+Spr.</button>
+      <button class="task-card" onclick="startTask('verbToImage')"><span class="big-icon">🖼️</span>Verb→Bild</button>
+    </div>`;
   renderProgressPanel(false);
+  if(resume) resumeTask();
 }
 function toggleProgressPanel(){
   const p=$("progressPanel");
@@ -662,9 +785,7 @@ function renderProgressPanel(openOnly){
   const p=$("progressPanel");
   if(!p)return;
   const activeRows=state.active.map(v=>`<div class="progress-row">
-    <strong>${v}</strong> <span class="small">${verbCount(v)}/10 · ${verbPercent(v)}%</span>
-    <div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div>
-    <div class="small">Wiederholt: ${verbCount(v)}x · Fehler: ${state.weak[v]||0}</div>
+    <strong>${v}</strong> <span class="small">${verbSkillCount(v)}/${VERB_SKILLS.length} · ${verbPercent(v)}%</span><div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div><div class="small">Fehler: ${state.weak[v]||0}</div>${skillBadges(v)}
   </div>`).join("");
   p.innerHTML=`<h2>📊 Fortschritt</h2>
     <button class="secondary" onclick="toggleProgressPanel()">Schließen</button>
@@ -673,11 +794,11 @@ function renderProgressPanel(openOnly){
     <h3>Gelernt</h3><p class="small">${state.learned.length?state.learned.join(", "):"Noch keine."}</p>`;
 }
 function chooseVerbForPractice(){
-  let pool=state.active.filter(v=>verbCount(v)<10);
+  let pool=state.active.filter(v=>verbPercent(v)<100);
   if(!pool.length)return null;
   pool.sort((a,b)=>{
     const wa=state.weak[a]||0, wb=state.weak[b]||0;
-    return (verbCount(a)-verbCount(b)) || (wb-wa);
+    return (verbPercent(a)-verbPercent(b)) || (wb-wa);
   });
   return pool[Math.floor(Math.random()*Math.min(6,pool.length))];
 }
@@ -696,8 +817,36 @@ function preloadActiveImages(){
 
 
 
-function startFlashcardSession(){
-  const pool=(state.active||[]).filter(v=>verbCount(v)<10);
+
+function startTask(name){
+  state.currentGame=name;
+  if(name==="flashcards"){
+    startFlashcardSession(true);
+  }
+  saveState();
+  runTask(name);
+}
+function runTask(name){
+  if(name==="flashcards") return flashcards();
+  if(name==="memory") return memory();
+  if(name==="quiz") return quiz();
+  if(name==="writeVerb") return writeVerb();
+  if(name==="hearWrite") return hearWrite();
+  if(name==="hearSpeak") return hearSpeak();
+  if(name==="imageSpeak") return imageSpeak();
+  if(name==="verbToImage") return verbToImage();
+}
+function resumeTask(){
+  if(state.currentGame){
+    runTask(state.currentGame);
+  }
+}
+
+function startFlashcardSession(force=false){
+  if(!force && state.flashSession && state.flashSession.total && flashDoneCount()<state.flashSession.total){
+    return;
+  }
+  const pool=(state.active||[]).filter(v=>!state.skillDone?.[v]?.karteikarte && verbPercent(v)<100);
   state.flashSession={
     queue:shuffle(pool),
     correct:{},
@@ -724,7 +873,7 @@ function flashProgressHtml(){
   const total=(state.flashSession&&state.flashSession.total)||0;
   const done=flashDoneCount();
   const left=Math.max(0,total-done);
-  const pct=flashPercent();
+  const pct=total?Math.round((done*100)/total):0;
   return `<div class="flash-progress-box">
     <strong>Karteikarten-Runde</strong>
     <div class="flash-bar"><div class="flash-fill" style="width:${pct}%"></div></div>
@@ -736,8 +885,14 @@ function flashProgressHtml(){
   </div>`;
 }
 function nextFlashVerb(){
-  if(!state.flashSession || !state.flashSession.queue || !state.flashSession.total){
-    startFlashcardSession();
+  if(!state.flashSession || !state.flashSession.total){
+    startFlashcardSession(false);
+  }
+  if(!state.flashSession || !state.flashSession.total)return null;
+  if(flashDoneCount()>=state.flashSession.total)return null;
+  if(!state.flashSession.queue.length){
+    const remaining=(state.active||[]).filter(v=>!state.flashSession.done.includes(v) && !state.skillDone?.[v]?.karteikarte);
+    state.flashSession.queue=shuffle(remaining);
   }
   if(!state.flashSession.queue.length)return null;
   const v=state.flashSession.queue.shift();
@@ -768,7 +923,9 @@ function finishFlashVerb(v,good){
   saveState();
 }
 function flashcardDoneMessage(){
-  $("game").innerHTML=`${flashProgressHtml()}<div class="ok"><h3>Gut gemacht!</h3><p>Du hast diese Karteikarten-Runde abgeschlossen.</p><button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button><button class="secondary" onclick="startFlashcardSession();flashcards()">Karteikarten nochmal machen</button></div>`;
+  state.currentGame="flashcards";
+  saveState();
+  $("game").innerHTML=`${flashProgressHtml()}<div class="ok"><h3>Gut gemacht!</h3><p>Karteikarten abgeschlossen. Die Karteikarten-Spalte ist für die erfolgreichen Wörter gefüllt.</p><button class="success" onclick="state.currentGame='';saveState();renderHome(false)">Nächste Aufgabe wählen</button><button class="secondary" onclick="startFlashcardSession(true);flashcards()">Karteikarten nochmal machen</button></div>`;
   scrollToGame();
 }
 
@@ -781,9 +938,12 @@ function flashcards(){
   const correctNow=(state.flashSession&&state.flashSession.correct&&state.flashSession.correct[v])||0;
   const wrongNow=(state.flashSession&&state.flashSession.wrong&&state.flashSession.wrong[v])||0;
   $("game").innerHTML=`${flashProgressHtml()}
-    <h3>Karteikarten: Nenne das deutsche Wort</h3>
-    <p class="small">Dieses Wort braucht <strong>2 richtige Antworten</strong>. Bei Fehlern kommt es noch einmal zurück.</p>
-    <div class="flash-meta"><span>Dieses Wort: ${correctNow}/2 richtig</span><span>Fehler hier: ${wrongNow}</span></div>
+    <h3 class="current-task-title">Karteikarten: Nenne das deutsche Wort</h3>
+    <div class="flash-word-row">
+      <span>Dieses Wort: <strong>${correctNow}/2 richtig</strong></span>
+      <span>Fehler: ${wrongNow}</span>
+    </div>
+    <p class="small">Wenn ein Wort 2× richtig war, verschwindet es aus dieser Karteikarten-Runde.</p>
     <div class="study-card-wrap">
       <div id="studyCard" class="study-card" onclick="this.classList.toggle('flipped')">
         <div class="study-face">
