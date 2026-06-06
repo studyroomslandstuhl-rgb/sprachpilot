@@ -2,1604 +2,604 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>A1 Fragen Trainer Pro</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Verben A1 - SprachPilot</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}
-body{font-family:Segoe UI,Tahoma,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);color:#333;min-height:100vh;padding:10px}
-header{color:white;text-align:center;padding:24px 10px;margin-bottom:12px}
-header h1{font-size:2rem;text-shadow:1px 2px 4px rgba(0,0,0,.25)}
-main{max-width:1100px;margin:auto}
-.card{background:white;border-radius:16px;padding:20px;margin:14px 0;box-shadow:0 8px 24px rgba(0,0,0,.14)}
-h2{color:#667eea;margin-bottom:14px;border-bottom:3px solid #764ba2;padding-bottom:8px}
-h3{color:#667eea;margin:16px 0 8px}
-button{border:none;border-radius:10px;padding:12px 16px;margin:6px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:700;font-size:16px;cursor:pointer;box-shadow:0 3px 9px rgba(0,0,0,.2)}
-button:hover{transform:translateY(-1px)}
-button:disabled{opacity:.55;cursor:not-allowed;transform:none}
-.secondary{background:linear-gradient(135deg,#f093fb,#f5576c)}
-.success{background:linear-gradient(135deg,#4facfe,#00f2fe)}
-.danger,.reset-user{background:linear-gradient(135deg,#ff0844,#ff4b2b)!important;border:3px solid #a4001f!important;font-weight:900!important}
-input,select{width:100%;padding:12px;margin:7px 0 14px;border:2px solid #ddd;border-radius:10px;font-size:16px}
-input:focus,select:focus{outline:none;border-color:#667eea;box-shadow:0 0 0 3px rgba(102,126,234,.15)}
-label{font-weight:700;color:#667eea}
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;color:#222}
+main{width:min(1050px,94vw);margin:0 auto;padding:18px 0 42px}
+.card{background:white;border-radius:22px;padding:18px;box-shadow:0 12px 35px rgba(0,0,0,.22);margin-bottom:16px}
+h1,h2{color:#667eea;margin-top:0}
+h3{margin:8px 0 10px}
+button{border:0;border-radius:14px;padding:12px 16px;font-size:16px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);color:white;margin:5px;cursor:pointer}
+button.secondary{background:#eef2ff;color:#333}
+button.success{background:linear-gradient(135deg,#27ae60,#2ecc71)}
+button.danger{background:linear-gradient(135deg,#e74c3c,#c0392b)}
+button:disabled{opacity:.55;cursor:not-allowed}
+input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size:18px;margin:8px 0}
 .hidden{display:none!important}
-.big{font-size:26px;font-weight:800;color:#667eea;margin:14px 0}
 .small{font-size:14px;color:#666}
-.ok{color:#169b52;background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:12px 0;font-weight:700}
-.no{color:#c0392b;background:#fde0dc;border-left:5px solid #e74c3c;padding:12px;border-radius:10px;margin:12px 0;font-weight:700}
-.flex{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
-.topbar{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap}
-.stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(130px,1fr));gap:10px}
-.stat{background:linear-gradient(135deg,#667eea,#764ba2);color:white;border-radius:12px;text-align:center;padding:15px}
-.stat .num{font-size:1.8rem;font-weight:900}
-.exercise-tracker{display:grid;grid-template-columns:repeat(auto-fit,minmax(115px,1fr));gap:8px}
-.exercise-item{background:#f0f4ff;border:2px solid #d5dcff;border-radius:12px;padding:12px;text-align:center;font-weight:800;cursor:pointer}
-.exercise-item:hover{background:#e4eaff;border-color:#667eea}
-.exercise-item.active{outline:4px solid rgba(102,126,234,.25)}
-.exercise-item.completed{background:linear-gradient(135deg,#4facfe,#00f2fe);color:white;border-color:#4facfe}
-.exercise-item.exam{background:#fff3cd;border-color:#ffc107}
-.option{display:block;width:100%;background:#f0f4ff;color:#333;text-align:left;padding:14px;margin:8px 0;border:2px solid #ddd;border-radius:10px;box-shadow:none}
-.option:hover{background:#e3e8ff;border-color:#667eea;transform:none}
-.option.selected{background:#d9f7e8;border-color:#27ae60}
-.option.wrong{background:#fde0dc;border-color:#e74c3c}
-.word{background:#fff3cd;color:#333;border:2px solid #ffc107;box-shadow:none}
-#chosen{min-height:44px;background:#f0f4ff;border-radius:10px;padding:12px;margin:10px 0;display:flex;flex-wrap:wrap;gap:6px;align-items:center}
-.memory{display:grid!important;grid-template-columns:repeat(4,1fr)!important;gap:7px!important}
-.memcard{min-height:72px!important;padding:6px!important;border-radius:10px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-size:11px!important;line-height:1.15;font-weight:800;text-align:center;display:flex;align-items:center;justify-content:center;word-break:break-word;overflow-wrap:anywhere;box-shadow:0 3px 8px rgba(0,0,0,.18)}
-.memcard.open{background:white;color:#333;border:3px solid #667eea}
-.memcard.done{background:linear-gradient(135deg,#4facfe,#00f2fe)}
-.saved-user-box{background:#f0f4ff;border:2px solid #667eea;border-radius:12px;padding:14px;margin:12px 0}
-.leader{padding:10px;border-left:5px solid #667eea;background:#f7f7ff;border-radius:8px;margin:8px 0}
-table{width:100%;border-collapse:collapse;margin-top:12px}td,th{border:1px solid #ddd;padding:8px}th{background:#667eea;color:white}
-@media(max-width:480px){
- header h1{font-size:1.5rem}.card{padding:14px}.big{font-size:22px}
- button{font-size:15px;padding:10px 12px}
- .exercise-tracker{grid-template-columns:repeat(2,1fr)}
- .memory{grid-template-columns:repeat(4,1fr)!important;gap:5px!important}
- .memcard{min-height:64px!important;font-size:10px!important;padding:4px!important}
+.ok{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0}
+.no{background:#ffe1e1;border-left:5px solid #e74c3c;padding:12px;border-radius:10px;margin:10px 0}
+.top-link{display:inline-block;text-decoration:none;color:#667eea;font-weight:900}
+.top-link:hover{text-decoration:underline}
+.mini-top-progress{background:white;border:2px solid #dce2ff;border-radius:16px;padding:10px;margin:8px 0}
+.task-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:12px 0}
+.task-card{min-height:82px;border-radius:18px;background:#f7f8ff!important;border:3px solid #dce2ff;color:#333;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px}
+.task-card .big-icon{font-size:23px;margin-bottom:4px}
+.task-card.done-card{background:linear-gradient(135deg,#27ae60,#2ecc71)!important;color:white!important;border-color:#27ae60!important}
+.task-status{font-size:12px;margin-top:4px;opacity:.9}
+.overview-button{width:100%;margin:8px 0 10px!important;background:#eef2ff!important;color:#333!important;box-shadow:none!important}
+.img-holder{width:100%;display:flex;justify-content:center;align-items:center;margin:8px 0}
+.img-holder img{width:100%;max-width:300px;height:215px;object-fit:cover;display:block;border-radius:18px;border:3px solid #dce2ff;background:#f7f8ff}
+.mem-img-holder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;background:#f7f8ff}
+.mem-img-holder img{width:100%;height:100%;object-fit:cover;display:block}
+.image-fallback{background:#f7f8ff;border:3px dashed #dce2ff;border-radius:18px;min-height:160px;display:flex;align-items:center;justify-content:center;color:#667eea;font-weight:900}
+.memory{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.mem{height:112px;min-height:112px;border-radius:18px;overflow:hidden;padding:6px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:900}
+.mem.open{background:white!important;border:4px solid #667eea!important;color:#222!important}
+.mem.done{background:linear-gradient(135deg,#27ae60,#2ecc71)!important;color:white!important}
+.mem-german{font-size:16px!important;font-weight:900;line-height:1.08;word-break:break-word;overflow-wrap:anywhere}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.quiz-option{width:100%;min-height:58px;text-align:left;padding:12px!important;border-radius:16px!important;font-size:17px!important;display:flex;align-items:center;gap:10px;justify-content:flex-start}
+.quiz-letter{background:white;color:#667eea;border-radius:999px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 auto}
+.task-progress{background:#f7f8ff;border:2px solid #dce2ff;border-radius:14px;padding:9px 10px;margin-bottom:12px}
+.task-progress-title{display:flex;justify-content:space-between;font-size:14px;color:#555;font-weight:700}
+.task-progress-line{height:9px;background:#ddd;border-radius:999px;overflow:hidden;margin-top:6px}
+.task-progress-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71)}
+.puzzle-answer,.puzzle-bank{display:flex;flex-wrap:wrap;gap:8px;min-height:54px;background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:10px;margin:10px 0}
+.word-chip{background:linear-gradient(135deg,#667eea,#764ba2)!important;color:white!important;border:none!important;border-radius:999px!important;padding:10px 14px!important;font-weight:800!important;margin:0!important}
+.word-chip.answer{background:#eef2ff!important;color:#333!important}
+.study-card-wrap{perspective:1000px;max-width:360px;margin:12px auto}
+.study-card{width:100%;min-height:190px;position:relative;transform-style:preserve-3d;transition:transform .5s;cursor:pointer}
+.study-card.flipped{transform:rotateY(180deg)}
+.study-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;background:white;border:4px solid #667eea;box-shadow:0 10px 28px rgba(0,0,0,.2);padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.study-back{transform:rotateY(180deg);background:#eefaf3;border-color:#27ae60}
+.native-word{font-size:38px;font-weight:900;color:#764ba2;margin:12px 0;line-height:1.1}
+.german-word{font-size:42px;font-weight:900;color:#27ae60;margin:12px 0}
+.word-status{display:flex;justify-content:center;gap:8px;margin:8px 0 10px;font-size:13px}
+.word-pill{background:#eef2ff;color:#555;border-radius:999px;padding:5px 10px;font-weight:700}
+.flash-progress-box{background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:10px 12px;margin:8px 0 12px}
+.flash-progress-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px;font-weight:800}
+.flash-progress-title span:last-child{font-size:13px;color:#666;font-weight:600}
+.flash-bar{height:10px;background:#ddd;border-radius:999px;overflow:hidden;margin:8px 0 0}
+.flash-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71);transition:width .25s}
+.card-actions{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.progress-toggle{position:fixed;top:14px;right:14px;z-index:9999;border-radius:999px;padding:10px 13px;background:#ffcc33;color:#333;border:2px solid white;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.progress-panel{position:fixed;top:0;right:0;width:min(390px,92vw);height:100vh;background:white;z-index:10000;box-shadow:-10px 0 30px rgba(0,0,0,.3);padding:18px;overflow:auto}
+.progress-row{background:#f7f8ff;border:2px solid #e0e4ff;border-radius:12px;padding:9px;margin:7px 0}
+.progress-line{height:10px;background:#ddd;border-radius:999px;overflow:hidden;margin-top:5px}
+.progress-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71)}
+.progress-row-head{display:flex;align-items:center;gap:8px}
+.progress-row-head .mem-img-holder{width:62px!important;height:46px!important;flex:0 0 auto}
+.progress-row-head .mem-img-holder img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:8px}
+.overview-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;padding:18px;overflow:auto}
+.overview-box{background:white;border-radius:24px;max-width:980px;margin:20px auto;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.overview-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
+.verb-overview-card{background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:9px;text-align:center}
+.verb-overview-card .mem-img-holder{height:105px!important;margin-bottom:8px}
+.verb-overview-card .mem-img-holder img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:12px}
+.verb-de{font-size:18px;font-weight:900;color:#222}
+.verb-native{font-size:13px;color:#777;margin-top:3px}
+.verb-percent{margin-top:6px;font-weight:800;color:#667eea}
+.level-alert{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:12000;display:flex;align-items:center;justify-content:center;padding:20px}
+.level-alert-box{background:white;border-radius:28px;max-width:420px;width:100%;text-align:center;padding:26px;box-shadow:0 20px 55px rgba(0,0,0,.35);border:4px solid #ffd43b}
+.level-alert-box h2{color:#7a5400;margin-bottom:10px}
+.level-alert-box .big-star{font-size:54px;margin-bottom:8px}
+.achievement,.package-done{background:#fff9db;border:3px solid #ffd43b;border-radius:22px;padding:18px;margin:14px 0;text-align:center;box-shadow:0 10px 28px rgba(0,0,0,.15)}
+.package-done{background:#e9f9ef;border-color:#27ae60}
+.star-pill{display:inline-block;background:#ffd43b;color:#4a3500;border-radius:999px;padding:7px 12px;font-weight:900;margin:4px}
+@media(max-width:520px){
+  .task-grid{grid-template-columns:repeat(2,1fr)}
+  .memory{grid-template-columns:repeat(3,1fr);gap:7px}
+  .mem{height:96px;min-height:96px}
+  .mem-german{font-size:14px!important}
+  .quiz-options{gap:8px}
+  .quiz-option{font-size:15px!important;padding:10px!important}
+  .native-word{font-size:34px}
+  .study-card{min-height:176px}
 }
 
-/* FIX: Menü/Prozess immer lesbar */
-.exercise-item,
-.exercise-item .small {
-  color: #333 !important;
+/* SprachPilot Logo oben */
+.sp-logo-wrap{
+  text-align:center;
+  margin:4px 0 12px;
 }
-.exercise-item.completed,
-.exercise-item.completed .small {
-  color: white !important;
+.sp-logo{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  text-decoration:none;
+  font-weight:900;
+  font-size:28px;
+  color:white;
+  letter-spacing:.2px;
+  text-shadow:1px 2px 5px rgba(0,0,0,.28);
 }
-.exercise-item.exam,
-.exercise-item.exam .small {
-  color: #333 !important;
-}
-.exercise-item[disabled],
-.exercise-item[disabled] .small {
-  color: #555 !important;
-}
-.help-box {
-  background:#f0f4ff;
-  border-left:5px solid #667eea;
-  padding:12px;
-  border-radius:10px;
-  margin:10px 0;
-}
-.answer-box {
-  background:#d9f7e8;
-  border-left:5px solid #27ae60;
-  padding:12px;
-  border-radius:10px;
-  margin:10px 0;
-  font-weight:700;
-}
-
-
-/* FINAL UX FIXES */
-.exercise-item,
-.exercise-item .small {
-  color:#333 !important;
-}
-.exercise-item.completed,
-.exercise-item.completed .small {
-  color:white !important;
-}
-.exercise-item.exam,
-.exercise-item.exam .small {
-  color:#333 !important;
-}
-.progress-overview {
-  background:#f7f8ff;
-  border:2px solid #dbe0ff;
-  border-radius:12px;
-  padding:12px;
-  margin:10px 0;
-}
-.profile-edit-box {
-  background:#fff3cd;
-  border-left:5px solid #ffc107;
-  padding:12px;
-  border-radius:10px;
-  margin:10px 0;
-}
-.mic-warning {
-  background:#fff3cd;
-  border-left:5px solid #ffc107;
-  padding:10px;
-  border-radius:10px;
-  margin:10px 0;
-}
-.help-box {
-  background:#f0f4ff;
-  border-left:5px solid #667eea;
-  padding:12px;
-  border-radius:10px;
-  margin:10px 0;
-}
-.answer-box {
-  background:#d9f7e8;
-  border-left:5px solid #27ae60;
-  padding:12px;
-  border-radius:10px;
-  margin:10px 0;
-  font-weight:700;
-}
-.rank-box {
-  background:#eefaf3;
-  border-left:5px solid #27ae60;
-  padding:12px;
-  border-radius:10px;
-  margin:10px 0;
+.sp-logo:hover{
+  transform:scale(1.03);
 }
 
 </style>
 </head>
 <body>
-
-<header>
-<div style="text-align:center;margin-bottom:10px;">
-<a href="https://sprachpilot.org" style="text-decoration:none;">
-<img src="logo-sprachpilot.png" alt="Sprachpilot" style="height:80px;max-width:90%;cursor:pointer;">
-</a>
-</div>
-
-<h1>🇩🇪 A1 Fragen Trainer Pro</h1>
-<p>Interaktives Lernen · Sprechen · Hören · Prüfung</p>
-</header>
+<button class="progress-toggle" onclick="toggleProgressPanel()">📊</button>
+<div id="progressPanel" class="progress-panel hidden"></div>
 <main>
-<section id="login" class="card">
-<h2>🎓 Anmeldung</h2>
-<div id="savedUserBox" class="saved-user-box hidden"></div>
-<label>Vorname *</label><input id="fname" placeholder="z.B. Maria, Omar, Anna, Ali">
-<label>Nachname *</label><input id="lname" placeholder="z.B. Schmidt, Hassan, Müller, Ben Ali">
-<label>Kurscode *</label><input id="course" placeholder="z.B. A1-Montag">
-<label>Heimatland *</label>
-<select id="country">
-  <option value="">-- Heimatland wählen --</option>
-  <option value="Deutschland">Deutschland</option>
-  <option value="Syrien">Syrien</option>
-  <option value="Ukraine">Ukraine</option>
-  <option value="Afghanistan">Afghanistan</option>
-  <option value="Irak">Irak</option>
-  <option value="Türkei">Türkei</option>
-  <option value="Polen">Polen</option>
-  <option value="Rumänien">Rumänien</option>
-  <option value="Bulgarien">Bulgarien</option>
-  <option value="Somalia">Somalia</option>
-  <option value="Eritrea">Eritrea</option>
-  <option value="Ghana">Ghana</option>
-  <option value="Nigeria">Nigeria</option>
-  <option value="Algerien">Algerien</option>
-  <option value="Marokko">Marokko</option>
-  <option value="Tunesien">Tunesien</option>
-  <option value="Iran">Iran</option>
-  <option value="Pakistan">Pakistan</option>
-  <option value="Indien">Indien</option>
-  <option value="Frankreich">Frankreich</option>
-  <option value="Spanien">Spanien</option>
-  <option value="Italien">Italien</option>
-  <option value="USA">USA</option>
-  <option value="China">China</option>
-  <option value="Japan">Japan</option>
-  <option value="Russland">Russland</option>
-</select>
-<label>Sprache *</label><input id="langInput" placeholder="z.B. Arabisch, Ukrainisch, Türkisch">
-<label>Wohnort in Deutschland *</label><input id="cityInput" placeholder="z.B. Homburg, Berlin, Leipzig">
-<label>Alter *</label><input id="ageInput" type="number" min="1" max="120" placeholder="z.B. 35">
-<label>Geburtsort *</label><input id="birthplaceInput" type="text" autocomplete="off" placeholder="Geburtsort frei eingeben, z.B. Aleppo, Kiew, Algier">
-<label>Kinder *</label>
-<select id="childrenInput">
-  <option value="">-- wählen --</option>
-  <option value="0">keine Kinder</option>
-  <option value="1">1 Kind</option>
-  <option value="2">2 Kinder</option>
-  <option value="3">3 Kinder</option>
-  <option value="4">4 Kinder</option>
-  <option value="5">5 Kinder</option>
-  <option value="6">6 Kinder</option>
-  <option value="7">7 Kinder</option>
-  <option value="8">8 Kinder</option>
-  <option value="9">9 Kinder</option>
-  <option value="10">10 Kinder</option>
-</select>
-<label>Familienstand *</label>
-<select id="maritalInput">
-<option value="">-- wählen --</option>
-<option value="verheiratet">verheiratet</option>
-<option value="ledig">ledig</option>
-<option value="geschieden">geschieden</option>
-<option value="verwitwet">verwitwet</option>
-</select>
-<div class="flex">
-<button onclick="start()">🚀 Starten</button>
-<button class="secondary" type="button" onclick="initLogin()">🔄 Auswahlfelder neu laden</button>
-<button class="secondary" onclick="teacher()">👨‍🏫 Lehrer-Dashboard</button>
-<button class="danger reset-user" onclick="resetEverything()">🗑️ Von 0 anfangen</button>
-</div>
-</section>
-
-<section id="app" class="hidden">
-<div class="card topbar">
-<div>
-<div class="big" id="hello"></div>
-<div id="statsLine"></div>
-</div>
-<div>
-<button class="secondary" onclick="editProfile()">Profil bearbeiten</button><button class="secondary" onclick="goBackToPortal()">🏠 Startseite</button><button class="secondary" onclick="logout()">Abmelden</button>
-<button class="danger reset-user" onclick="resetEverything()">🗑️ Von 0 anfangen</button>
-</div>
-</div>
-<div class="stats" id="statsBox"></div><div id="progressDetails"></div>
-<div class="card">
-<h2>Aufgaben</h2>
-<p class="small">Alle Aufgaben sind offen. Die Prüfung ist erst am Ende freigeschaltet.</p>
-<div id="exerciseTracker" class="exercise-tracker"></div>
-</div>
-<div class="flex">
-<button onclick="showLeaderboard()">🏅 Bestenliste</button><button onclick="showCourseRanking()">👥 Kurs-Rangliste</button>
-
-</div>
-<div id="game" class="card"></div>
-</section>
-
-<section id="courseRankingSection" class="hidden card">
-<h2>👥 Kurs-Rangliste</h2>
-<button class="secondary" onclick="closeCourseRanking()">Zurück</button>
-<div id="courseRankingBox"></div>
-</section>
-
-<section id="leaderboardSection" class="hidden card">
-<h2>🏅 Prüfungsergebnisse</h2>
-<button class="secondary" onclick="closeLeaderboard()">Zurück</button>
-<div id="leaderboard"></div>
-</section>
-
-<section id="dashboard" class="hidden card">
-<h2>📊 Lehrer-Dashboard</h2>
-<p class="small">Geben Sie Kursnummer und Passwort ein. Passwort: <strong>Ergebnisse</strong></p>
-<label>Kursnummer / Kurscode</label>
-<input id="teacherCourse" placeholder="z.B. A1-Montag">
-<label>Passwort</label>
-<input id="teacherPass" type="password" placeholder="Passwort">
-<button onclick="openTeacherStats()">🔐 Statistik anzeigen</button>
-<button class="secondary" onclick="back()">Zurück</button>
-<div id="teacherStatsBox"></div>
-<hr style="margin:20px 0">
-<p class="small">Optional: Fortschrittsdateien von TN importieren.</p>
-<input type="file" id="importFile" multiple accept=".json" onchange="importFiles(event)">
-<button onclick="downloadCSV()">📥 CSV exportieren</button>
-<div id="dashTable"></div>
-</section>
+  <div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
+  <div class="card" id="app"></div>
 </main>
 
 <script>
-
-if(!String.prototype.replaceAll){
-  String.prototype.replaceAll = function(search, replacement){
-    return this.split(search).join(replacement);
-  };
-}
-
-const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzQgBJVmvgfqbWBJSPkDAbxwvbiE3LfaU55iTtz1h1kTdPzxmUmgalxKhRNhpxngfTr/exec";
-const COUNTRIES = {
-  "Deutschland": "Deutsch", "Syrien": "Arabisch", "Ukraine": "Ukrainisch", "Afghanistan": "Dari",
-  "Irak": "Arabisch", "Türkei": "Türkisch", "Polen": "Polnisch", "Rumänien": "Rumänisch",
-  "Bulgarien": "Bulgarisch", "Somalia": "Somali", "Eritrea": "Tigrinya", "Ghana": "Twi",
-  "Nigeria": "Yoruba", "Algerien": "Arabisch", "Marokko": "Arabisch", "Tunesien": "Arabisch",
-  "Iran": "Persisch", "Pakistan": "Urdu", "Indien": "Hindi", "Frankreich": "Französisch",
-  "Spanien": "Spanisch", "Italien": "Italienisch", "USA": "Englisch", "China": "Chinesisch",
-  "Japan": "Japanisch", "Russland": "Russisch"
-};
-const DEFAULT_PROFILE = {fname:"Max",lname:"Mustermann",full:"Max Mustermann",origin:"Deutschland",lang:"Deutsch",city:"Berlin",birthplace:"",age:"30",childrenNumber:"0",marital:"ledig"};
-
-const DATA = [
- {topic:"Name",qSie:"Wie heißen Sie?",qDu:"Wie heißt du?",answerTemplates:["Ich heiße {fname}.","Ich heiße {name}.","Ich bin {fname}.","Ich bin {name}.","Mein Name ist {fname}.","Mein Name ist {name}."]},
- {topic:"Vorname",qSie:"Wie ist Ihr Vorname?",qDu:"Wie ist dein Vorname?",answerTemplates:["Mein Vorname ist {fname}.","Ich heiße {fname}.","{fname}."]},
- {topic:"Nachname",qSie:"Wie ist Ihr Nachname?",qDu:"Wie ist dein Nachname?",answerTemplates:["Mein Nachname ist {lname}.","Ich heiße {lname}.","{lname}."]},
- {topic:"Heimatland",qSie:"Woher kommen Sie?",qDu:"Woher kommst du?",answerTemplates:["Ich komme aus {origin_from}.","Ich bin aus {origin_from}.","Aus {origin_from}."]},
- {topic:"Sprache",qSie:"Was sprechen Sie?",qDu:"Was sprichst du?",answerTemplates:["Ich spreche {lang} und ein bisschen Deutsch.","Ich spreche {lang}.","{lang}.","{lang} und ein bisschen Deutsch."]},
- {topic:"Buchstabieren Vorname",qSie:"Buchstabieren Sie bitte Ihren Vornamen.",qDu:"Buchstabiere bitte deinen Vornamen.",answerTemplates:["{spell_fname}","{spell_fname_space}"]},
- {topic:"Buchstabieren Nachname",qSie:"Buchstabieren Sie bitte Ihren Nachnamen.",qDu:"Buchstabiere bitte deinen Nachnamen.",answerTemplates:["{spell_lname}","{spell_lname_space}"]},
- {topic:"Wie geht es Ihnen?",qSie:"Wie geht es Ihnen?",qDu:"Wie geht es dir?",answerTemplates:[
-  "Es geht mir sehr gut.","Mir geht es sehr gut.","Sehr gut.","Sehr gut, danke.","Danke, sehr gut.",
-  "Es geht mir gut.","Mir geht es gut.","Gut.","Gut, danke.","Danke, gut.","Danke, es geht mir gut.",
-  "Super.","Es geht mir super.","Mir geht es super.","Prima.","Es geht mir prima.",
-  "Es geht.","Es geht mir okay.","Okay.","Ganz gut.","Nicht schlecht.",
-  "Es geht mir nicht so gut.","Mir geht es nicht so gut.","Nicht so gut.",
-  "Es geht mir schlecht.","Mir geht es schlecht.","Schlecht."
- ]},
- {topic:"Kinder",qSie:"Haben Sie Kinder?",qDu:"Hast du Kinder?",answerTemplates:["{children_answer}"]},
- {topic:"Familienstand",qSie:"Sind Sie verheiratet?",qDu:"Bist du verheiratet?",answerTemplates:["{marital_answer}"]},
- {topic:"Wohnort",qSie:"Wo wohnen Sie?",qDu:"Wo wohnst du?",answerTemplates:["Ich wohne in {city}.","In {city}."]},
- {topic:"Alter",qSie:"Wie alt sind Sie?",qDu:"Wie alt bist du?",answerTemplates:["Ich bin {age} Jahre alt.","{age} Jahre alt.","Ich bin {age}."]},
- {topic:"Geburtsort",qSie:"Wo sind Sie geboren?",qDu:"Wo bist du geboren?",answerTemplates:["Ich bin in {birthplace} geboren.","In {birthplace}."]}
-];
-
-const EXERCISES = ["learn","qa","speak","puzzle","dictation","memory","quickfire","listen","listenrespond","exam"];
-const EXERCISE_NAMES = {learn:"📚 Lernen",qa:"🗣️ Fragen beantworten",speak:"🎤 Sprechen",puzzle:"🧩 Puzzle",dictation:"✍️ Diktat",memory:"🃏 Memory",quickfire:"⚡ Blitzfeuer",listen:"🎧 Hören",listenrespond:"🎤 Hören & Antworten",exam:"🏆 Prüfung"};
-
-function trainingExercises(){return EXERCISES.filter(ex=>ex!=="exam");}
-function allTrainingComplete(){return trainingExercises().every(ex => (exerciseProgress[ex]||0) >= 90);}
-
-
-let student="",course="",game="learn",i=0,score=0,attempts=0,correct=0;
-let studentPerson={...DEFAULT_PROFILE}, answerHistory=[], exerciseProgress={}, questionOrder=DATA.map((_,idx)=>idx);
-let memoryCards=[], first=null, lock=false, helpWrongTries=0, responseTries=0;
-let currentQuestion="", currentAnswer="", examStartTime=null, examTimer=null, examCorrect=0, examAttempts=0, examFinished=false;
-let editingProfile = false;
-let listenClickCount = 0;
-let lastGoogleSend = 0;
+const GOOGLE_SHEET_URL="https://script.google.com/macros/s/AKfycbzQgBJVmvgfqbWBJSPkDAbxwvbiE3LfaU55iTtz1h1kTdPzxmUmgalxKhRNhpxngfTr/exec";
+const ALL_VERBS=[{"v": "lieben", "emoji": "❤️", "img": "Person zeigt ein Herz"}, {"v": "kaufen", "emoji": "🛒", "img": "Person kauft im Geschäft"}, {"v": "verstehen", "emoji": "💡", "img": "Person versteht"}, {"v": "brauchen", "emoji": "🎒", "img": "Person braucht eine Tasche"}, {"v": "hören", "emoji": "👂", "img": "Person hört Musik"}, {"v": "lernen", "emoji": "📚", "img": "Person lernt Deutsch"}, {"v": "wohnen", "emoji": "🏠", "img": "Person wohnt in einer Stadt"}, {"v": "bringen", "emoji": "🎁", "img": "Person bringt etwas"}, {"v": "sein", "emoji": "👤", "img": "Person ist da"}, {"v": "schreiben", "emoji": "✍️", "img": "Person schreibt"}, {"v": "fotografieren", "emoji": "📷", "img": "Person fotografiert"}, {"v": "telefonieren", "emoji": "☎️", "img": "Person telefoniert"}, {"v": "kochen", "emoji": "🍲", "img": "Person kocht"}, {"v": "leben", "emoji": "🌍", "img": "Person lebt in Deutschland"}, {"v": "kommen", "emoji": "➡️", "img": "Person kommt"}, {"v": "buchstabieren", "emoji": "🔤", "img": "Person buchstabiert"}, {"v": "gehen", "emoji": "🚶", "img": "Person geht"}, {"v": "schwimmen", "emoji": "🏊", "img": "Person schwimmt"}, {"v": "suchen", "emoji": "🔍", "img": "Person sucht"}, {"v": "bestellen", "emoji": "📋", "img": "Person bestellt"}, {"v": "weinen", "emoji": "😢", "img": "Person weint"}, {"v": "reparieren", "emoji": "🔧", "img": "Person repariert"}, {"v": "gewinnen", "emoji": "🏆", "img": "Person gewinnt"}, {"v": "spielen", "emoji": "🎲", "img": "Person spielt"}, {"v": "springen", "emoji": "🤾", "img": "Person springt"}, {"v": "verlieren", "emoji": "😟", "img": "Person verliert"}, {"v": "fragen", "emoji": "❓", "img": "Person fragt"}, {"v": "verkaufen", "emoji": "🏪", "img": "Person verkauft"}, {"v": "unterschreiben", "emoji": "🖊️", "img": "Person unterschreibt"}, {"v": "reservieren", "emoji": "📅", "img": "Person reserviert"}, {"v": "buchen", "emoji": "🎫", "img": "Person bucht"}, {"v": "machen", "emoji": "🛠️", "img": "Person macht etwas"}, {"v": "malen", "emoji": "🎨", "img": "Person malt"}, {"v": "trinken", "emoji": "🥤", "img": "Person trinkt"}, {"v": "schicken", "emoji": "📨", "img": "Person schickt eine Nachricht"}, {"v": "denken", "emoji": "🤔", "img": "Person denkt"}, {"v": "winken", "emoji": "👋", "img": "Person winkt"}, {"v": "hassen", "emoji": "💔", "img": "Person mag etwas gar nicht"}, {"v": "beißen", "emoji": "🦷", "img": "Person beißt"}, {"v": "gießen", "emoji": "🪴", "img": "Person gießt Pflanzen"}, {"v": "reißen", "emoji": "📄", "img": "Person reißt Papier"}, {"v": "putzen", "emoji": "🧽", "img": "Person putzt"}, {"v": "küssen", "emoji": "😘", "img": "Person küsst"}, {"v": "tanzen", "emoji": "💃", "img": "Person tanzt"}, {"v": "mixen", "emoji": "🥣", "img": "Person mixt"}, {"v": "reisen", "emoji": "🧳", "img": "Person reist"}, {"v": "haben", "emoji": "🎒", "img": "Person hat eine Tasche"}, {"v": "überqueren", "emoji": "🚦", "img": "Person überquert die Straße"}, {"v": "grüßen", "emoji": "🙋", "img": "Person grüßt"}, {"v": "genießen", "emoji": "😊", "img": "Person genießt das Essen"}, {"v": "singen", "emoji": "🎤", "img": "Person singt"}, {"v": "schließen", "emoji": "🔒", "img": "Person schließt die Tür"}, {"v": "rennen", "emoji": "🏃", "img": "Person rennt"}, {"v": "lachen", "emoji": "😄", "img": "Person lacht"}, {"v": "warten", "emoji": "⏳", "img": "Person wartet"}, {"v": "arbeiten", "emoji": "💼", "img": "Person arbeitet"}, {"v": "finden", "emoji": "✅", "img": "Person findet etwas"}, {"v": "benutzen", "emoji": "🧰", "img": "Person benutzt ein Gerät"}, {"v": "rechnen", "emoji": "➕", "img": "Person rechnet"}, {"v": "zeichnen", "emoji": "✏️", "img": "Person zeichnet"}, {"v": "öffnen", "emoji": "🚪", "img": "Person öffnet die Tür"}, {"v": "wiederholen", "emoji": "🔁", "img": "Person wiederholt"}, {"v": "schneiden", "emoji": "🔪", "img": "Person schneidet"}, {"v": "streiten", "emoji": "💢", "img": "Person streitet"}, {"v": "atmen", "emoji": "🫁", "img": "Person atmet"}];
 
 function $(id){return document.getElementById(id)}
-function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){let j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function item(){
-  if(!Array.isArray(questionOrder) || !questionOrder.length){
-    questionOrder = DATA.map((_,idx)=>idx);
-  }
-  let rawIdx = questionOrder[i % questionOrder.length];
-  let idx = Number.isInteger(rawIdx) && rawIdx >= 0 && rawIdx < DATA.length ? rawIdx : (i % DATA.length);
-  return DATA[idx] || DATA[0];
-}
-function key(){return "A1_"+course+"_"+student}
-function profileStorageKey(){return "A1_SAVED_PROFILE"}
-function sanitizeState(){
-  if(!EXERCISES.includes(game)) game = "learn";
-  if(!Number.isInteger(i) || i < 0) i = 0;
-  if(!Array.isArray(questionOrder) || !questionOrder.length){
-    questionOrder = DATA.map((_,idx)=>idx);
-  }
-  questionOrder = questionOrder
-    .map(Number)
-    .filter(idx => Number.isInteger(idx) && idx >= 0 && idx < DATA.length);
-  if(!questionOrder.length) questionOrder = DATA.map((_,idx)=>idx);
-  if(i >= DATA.length) i = 0;
-  if(!studentPerson || typeof studentPerson !== "object") studentPerson = {...DEFAULT_PROFILE};
-  studentPerson = {...DEFAULT_PROFILE, ...studentPerson};
-}
+function clean(s){return String(s||"").trim().toLowerCase().replace(/[.,!?]/g,"")}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
 
-function initLogin(){
-  const countryEl = $("country");
-  if(countryEl && countryEl.options.length <= 1){
-    countryEl.innerHTML = '<option value="">-- Heimatland wählen --</option>' + Object.keys(COUNTRIES).map(c=>`<option value="${c}">${c}</option>`).join("");
-  }
-  if(countryEl){
-    countryEl.onchange = () => { 
-      if(countryEl.value && !$("langInput").value) $("langInput").value = COUNTRIES[countryEl.value] || ""; 
-    };
-  }
+let profile=null;
+let state={
+  phase:"select", index:0, known:[], unsure:[], unknown:[], active:[], learned:[],
+  weak:{}, currentGame:"", currentVerb:"", memoryCards:[], first:null, lock:false,
+  skillDone:{}, skillAttempts:{}, skillSuccess:{}, flashSession:null,
+  taskQueues:{}, taskDoneSets:{}, alertsShown:{}, packageNo:1
+};
 
-  const childEl = $("childrenInput");
-  if(childEl && childEl.options.length <= 1){
-    childEl.innerHTML = '<option value="">-- wählen --</option>' + Array.from({length:11},(_,n)=>`<option value="${n}">${n===0?"keine Kinder":n===1?"1 Kind":n+" Kinder"}</option>`).join("");
-  }
+const VERB_TRANSLATIONS = {
+  "Arabisch":{"lieben":"يحب","kaufen":"يشتري","verstehen":"يفهم","brauchen":"يحتاج","hören":"يسمع","lernen":"يتعلم","wohnen":"يسكن","bringen":"يحضر","sein":"يكون","schreiben":"يكتب","fotografieren":"يلتقط صورة","telefonieren":"يتصل","kochen":"يطبخ","leben":"يعيش","kommen":"يأتي","buchstabieren":"يتهجى","gehen":"يذهب","schwimmen":"يسبح","suchen":"يبحث","bestellen":"يطلب","weinen":"يبكي","reparieren":"يصلح","gewinnen":"يفوز","spielen":"يلعب","springen":"يقفز","verlieren":"يخسر","fragen":"يسأل","verkaufen":"يبيع","unterschreiben":"يوقّع","reservieren":"يحجز","buchen":"يحجز","machen":"يفعل","malen":"يرسم","trinken":"يشرب","schicken":"يرسل","denken":"يفكر","winken":"يلوح","hassen":"يكره","beißen":"يعض","gießen":"يسقي","reißen":"يمزق","putzen":"ينظف","küssen":"يقبل","tanzen":"يرقص","mixen":"يخلط","reisen":"يسافر","haben":"يملك","überqueren":"يعبر","grüßen":"يحيي","genießen":"يستمتع","singen":"يغني","schließen":"يغلق","rennen":"يركض","lachen":"يضحك","warten":"ينتظر","arbeiten":"يعمل","finden":"يجد","benutzen":"يستخدم","rechnen":"يحسب","zeichnen":"يرسم","öffnen":"يفتح","wiederholen":"يكرر","schneiden":"يقطع","streiten":"يتشاجر","atmen":"يتنفس"},
+  "Russisch":{"lieben":"любить","kaufen":"покупать","verstehen":"понимать","brauchen":"нужно / нуждаться","hören":"слышать","lernen":"учить","wohnen":"проживать","bringen":"приносить","sein":"быть","schreiben":"писать","fotografieren":"фотографировать","telefonieren":"звонить","kochen":"готовить","leben":"жить","kommen":"приходить","buchstabieren":"произносить по буквам","gehen":"идти","schwimmen":"плавать","suchen":"искать","bestellen":"заказывать","weinen":"плакать","reparieren":"ремонтировать","gewinnen":"выигрывать","spielen":"играть","springen":"прыгать","verlieren":"проигрывать / терять","fragen":"спрашивать","verkaufen":"продавать","unterschreiben":"подписывать","reservieren":"резервировать","buchen":"бронировать","machen":"делать","malen":"рисовать красками","trinken":"пить","schicken":"посылать","denken":"думать","winken":"махать","hassen":"ненавидеть","beißen":"кусать","gießen":"поливать","reißen":"рвать","putzen":"чистить","küssen":"целовать","tanzen":"танцевать","mixen":"смешивать","reisen":"путешествовать","haben":"иметь","überqueren":"переходить","grüßen":"приветствовать","genießen":"наслаждаться / получать удовольствие","singen":"петь","schließen":"закрывать","rennen":"бежать","lachen":"смеяться","warten":"ждать","arbeiten":"работать","finden":"находить","benutzen":"использовать","rechnen":"считать","zeichnen":"чертить / рисовать","öffnen":"открывать","wiederholen":"повторять","schneiden":"резать","streiten":"ссориться","atmen":"дышать"},
+  "Ukrainisch":{"lieben":"любити","kaufen":"купувати","verstehen":"розуміти","brauchen":"потребувати","hören":"чути","lernen":"вчити","wohnen":"жити","bringen":"приносити","sein":"бути","schreiben":"писати","fotografieren":"фотографувати","telefonieren":"телефонувати","kochen":"готувати","leben":"жити","kommen":"приходити","buchstabieren":"по буквах","gehen":"йти","schwimmen":"плавати","suchen":"шукати","bestellen":"замовляти","weinen":"плакати","reparieren":"ремонтувати","gewinnen":"вигравати","spielen":"грати","springen":"стрибати","verlieren":"втрачати","fragen":"питати","verkaufen":"продавати","unterschreiben":"підписувати","reservieren":"резервувати","buchen":"бронювати","machen":"робити","malen":"малювати","trinken":"пити","schicken":"надсилати","denken":"думати","winken":"махати","hassen":"ненавидіти","beißen":"кусати","gießen":"поливати","reißen":"рвати","putzen":"чистити","küssen":"цілувати","tanzen":"танцювати","mixen":"змішувати","reisen":"подорожувати","haben":"мати","überqueren":"переходити","grüßen":"вітати","genießen":"насолоджуватися","singen":"співати","schließen":"закривати","rennen":"бігти","lachen":"сміятися","warten":"чекати","arbeiten":"працювати","finden":"знаходити","benutzen":"використовувати","rechnen":"рахувати","zeichnen":"креслити","öffnen":"відкривати","wiederholen":"повторювати","schneiden":"різати","streiten":"сваритися","atmen":"дихати"},
+  "Türkisch":{"lieben":"sevmek","kaufen":"satın almak","verstehen":"anlamak","brauchen":"ihtiyaç duymak","hören":"duymak","lernen":"öğrenmek","wohnen":"oturmak","bringen":"getirmek","sein":"olmak","schreiben":"yazmak","fotografieren":"fotoğraf çekmek","telefonieren":"telefon etmek","kochen":"yemek pişirmek","leben":"yaşamak","kommen":"gelmek","buchstabieren":"harflemek","gehen":"gitmek","schwimmen":"yüzmek","suchen":"aramak","bestellen":"sipariş vermek","weinen":"ağlamak","reparieren":"tamir etmek","gewinnen":"kazanmak","spielen":"oynamak","springen":"zıplamak","verlieren":"kaybetmek","fragen":"sormak","verkaufen":"satmak","unterschreiben":"imzalamak","reservieren":"rezervasyon yapmak","buchen":"rezerve etmek","machen":"yapmak","malen":"boyamak","trinken":"içmek","schicken":"göndermek","denken":"düşünmek","winken":"el sallamak","hassen":"nefret etmek","beißen":"ısırmak","gießen":"sulamak","reißen":"yırtmak","putzen":"temizlemek","küssen":"öpmek","tanzen":"dans etmek","mixen":"karıştırmak","reisen":"seyahat etmek","haben":"sahip olmak","überqueren":"karşıya geçmek","grüßen":"selamlamak","genießen":"keyfini çıkarmak","singen":"şarkı söylemek","schließen":"kapatmak","rennen":"koşmak","lachen":"gülmek","warten":"beklemek","arbeiten":"çalışmak","finden":"bulmak","benutzen":"kullanmak","rechnen":"hesaplamak","zeichnen":"çizmek","öffnen":"açmak","wiederholen":"tekrarlamak","schneiden":"kesmek","streiten":"tartışmak","atmen":"nefes almak"},
+  "Englisch":{"lieben":"to love","kaufen":"to buy","verstehen":"to understand","brauchen":"to need","hören":"to hear","lernen":"to learn","wohnen":"to live","bringen":"to bring","sein":"to be","schreiben":"to write","fotografieren":"to take photos","telefonieren":"to phone","kochen":"to cook","leben":"to live","kommen":"to come","buchstabieren":"to spell","gehen":"to go","schwimmen":"to swim","suchen":"to search","bestellen":"to order","weinen":"to cry","reparieren":"to repair","gewinnen":"to win","spielen":"to play","springen":"to jump","verlieren":"to lose","fragen":"to ask","verkaufen":"to sell","unterschreiben":"to sign","reservieren":"to reserve","buchen":"to book","machen":"to do","malen":"to paint","trinken":"to drink","schicken":"to send","denken":"to think","winken":"to wave","hassen":"to hate","beißen":"to bite","gießen":"to water","reißen":"to tear","putzen":"to clean","küssen":"to kiss","tanzen":"to dance","mixen":"to mix","reisen":"to travel","haben":"to have","überqueren":"to cross","grüßen":"to greet","genießen":"to enjoy","singen":"to sing","schließen":"to close","rennen":"to run","lachen":"to laugh","warten":"to wait","arbeiten":"to work","finden":"to find","benutzen":"to use","rechnen":"to calculate","zeichnen":"to draw","öffnen":"to open","wiederholen":"to repeat","schneiden":"to cut","streiten":"to argue","atmen":"to breathe"}
+};
 
-  const birthEl = $("birthplaceInput");
-  if(birthEl){
-    birthEl.type = "text";
-    birthEl.placeholder = "Geburtsort frei eingeben, z.B. Aleppo, Kiew, Algier";
-  }
+const VERB_SKILLS = ["karteikarte","memory","bild_verb","verb_bild","schreiben","hoeren_schreiben","hoeren_sprechen","bild_sprechen","satz_puzzle"];
+const VERB_SKILL_LABELS = {
+  karteikarte:"Karteikarten", memory:"Memory", bild_verb:"Bild → Verb", verb_bild:"Verb → Bild",
+  schreiben:"Schreiben", hoeren_schreiben:"Hören → Schreiben", hoeren_sprechen:"Hören → Sprechen",
+  bild_sprechen:"Bild → Sprechen", satz_puzzle:"Satz-Puzzle"
+};
+const TASK_FUNC = {
+  memory:"memory", bild_verb:"quiz", verb_bild:"verbToImage", schreiben:"writeVerb",
+  hoeren_schreiben:"hearWrite", hoeren_sprechen:"hearSpeak", bild_sprechen:"imageSpeak", satz_puzzle:"sentencePuzzle"
+};
 
-  renderSavedUserBox();
-}
-function childText(n){n=String(n??"0"); const w={"0":"keine Kinder","1":"ein Kind","2":"zwei Kinder","3":"drei Kinder","4":"vier Kinder","5":"fünf Kinder","6":"sechs Kinder","7":"sieben Kinder","8":"acht Kinder","9":"neun Kinder","10":"zehn Kinder"}; return w[n]||n+" Kinder";}
-function numberWord(n){return {"1":"ein","2":"zwei","3":"drei","4":"vier","5":"fünf","6":"sechs","7":"sieben","8":"acht","9":"neun","10":"zehn"}[String(n)]||String(n)}
-function childrenAnswer(p=studentPerson){let n=String(p.childrenNumber??"0"); if(n==="0")return "Nein, ich habe keine Kinder."; if(n==="1")return "Ja, ich habe ein Kind."; return "Ja, ich habe "+numberWord(n)+" Kinder."}
-function maritalAnswer(p=studentPerson){let m=p.marital||"ledig"; return m==="verheiratet"?"Ja, ich bin verheiratet.":"Nein, ich bin "+m+"."}
+function nativeLang(){return (profile&&profile.muttersprache)?profile.muttersprache:"Englisch"}
+function nativeWord(v){const lang=nativeLang();return (VERB_TRANSLATIONS[lang]&&VERB_TRANSLATIONS[lang][v])||(VERB_TRANSLATIONS["Englisch"]&&VERB_TRANSLATIONS["Englisch"][v])||v}
+function key(){return "SP_VERBS_"+(profile?profile.userId:"guest")}
 
-function buildStudentPerson(){
-  let fname=$("fname").value.trim(), lname=$("lname").value.trim(), origin=$("country").value.trim();
-  return {fname,lname,full:(fname+" "+lname).trim(),origin,lang:$("langInput").value.trim(),city:$("cityInput").value.trim(),birthplace:$("birthplaceInput").value.trim(),age:$("ageInput").value.trim(),childrenNumber:$("childrenInput").value,children:childText($("childrenInput").value),marital:$("maritalInput").value};
-}
-function validateLogin(){
-  for(let id of ["fname","lname","course","country","langInput","cityInput","ageInput","birthplaceInput","childrenInput","maritalInput"]){
-    let el=$(id); if(!el.value.trim()){alert("Bitte alle Pflichtfelder ausfüllen.");el.focus();return false;}
-  } return true;
-}
-function saveProfileToStorage(){localStorage.setItem(profileStorageKey(),JSON.stringify({...studentPerson,course}));}
-function getSavedProfile(){try{return JSON.parse(localStorage.getItem(profileStorageKey())||"null")}catch(e){return null}}
-function fillLoginFromProfile(p){if(!p)return; $("fname").value=p.fname||"";$("lname").value=p.lname||"";$("course").value=p.course||"";$("country").value=p.origin||"";$("langInput").value=p.lang||"";$("cityInput").value=p.city||"";$("birthplaceInput").value=p.birthplace||"";$("ageInput").value=p.age||"";$("childrenInput").value=p.childrenNumber||"0";$("maritalInput").value=p.marital||"";}
-function renderSavedUserBox(){
-  let box=$("savedUserBox"), p=getSavedProfile(); if(!box)return;
-  if(!p){box.classList.add("hidden");box.innerHTML="";return}
-  box.classList.remove("hidden");
-  box.innerHTML=`<strong>Gespeicherter Nutzer:</strong><br>${p.full} · ${p.course||"A1"}<br>
-  <button class="success" onclick="continueSavedUser()">✅ Mit diesem Nutzer weitermachen</button>
-  <button class="secondary" onclick="fillLoginFromProfile(getSavedProfile())">✏️ Daten laden / bearbeiten</button>
-  <button class="danger reset-user" onclick="forgetSavedUser()">🗑️ Nutzer entfernen</button>`;
-}
-function continueSavedUser(){let p=getSavedProfile(); if(!p)return alert("Kein gespeicherter Nutzer."); fillLoginFromProfile(p); start();}
-function forgetSavedUser(){if(confirm("Gespeicherten Nutzer entfernen?")){localStorage.removeItem(profileStorageKey());localStorage.removeItem("A1_ACTIVE_SESSION");renderSavedUserBox();}}
-function resetEverything(){
-  if(!confirm("Möchten Sie wirklich von 0 anfangen?")) return;
-  if(!confirm("Sind Sie ganz sicher? Alle lokalen Daten auf diesem Gerät werden gelöscht.")) return;
-  Object.keys(localStorage).forEach(k=>{if(k.startsWith("A1_"))localStorage.removeItem(k)});
-  location.reload();
-}
-
-
-function start(){
-  if(!validateLogin())return;
-  const oldKey = (student && course) ? key() : null;
-  studentPerson=buildStudentPerson(); 
-  if(typeof cleanProfile==='function') cleanProfile(); 
-  student=studentPerson.full; 
-  course=$("course").value.trim();
-
-  loadLocal();
-  // Profil aus Formular ist jetzt die Quelle, nicht alte gespeicherte Daten.
-  const freshProfile = buildStudentPerson();
-  studentPerson = freshProfile;
-  if(typeof cleanProfile==='function') cleanProfile();
-  student = studentPerson.full;
-  saveProfileToStorage();
-  localStorage.setItem("A1_ACTIVE_SESSION",key());
-  if(oldKey && oldKey !== key() && editingProfile){
-    localStorage.removeItem(oldKey);
-  }
-  editingProfile = false;
-  sendToGoogleSheet("login", true);
-  $("login").classList.add("hidden"); 
-  $("app").classList.remove("hidden");
-  $("hello").innerText="Hallo, "+studentPerson.fname+"!";
-  if(typeof loadRewards==='function') loadRewards();
-  updateAll(); 
-  render();
-}
-
-
-
-function editProfile(){
-  editingProfile = true;
-  $("app").classList.add("hidden");
-  $("login").classList.remove("hidden");
-  fillLoginFromProfile({...studentPerson, course});
-  const box = $("savedUserBox");
-  if(box){
-    box.classList.remove("hidden");
-    box.innerHTML = `<div class="profile-edit-box"><strong>Profil bearbeiten:</strong><br>Ändern Sie die Daten und klicken Sie wieder auf Starten. Die neuen Daten werden gespeichert.</div>`;
-  }
-}
-
-
-function logout(){if(confirm("Abmelden? Der gespeicherte Nutzer bleibt erhalten.")){localStorage.removeItem("A1_ACTIVE_SESSION");location.reload();}}
-function teacher(){$("login").classList.add("hidden");$("app").classList.add("hidden");$("dashboard").classList.remove("hidden")}
-function back(){location.reload()}
-
-
-function progressSummary(){
-  return EXERCISES.map(ex => ex + ':' + (Number((exerciseProgress||{})[ex])||0) + '%').join(' | ');
-}
-
-function sendToGoogleSheet(exerciseName="progress", force=false){
-  if(!GOOGLE_SHEET_URL || !student || !course) return;
-  const payload = spSharedPayloadBase();
-  payload.exercise = exerciseName || game || "";
-  payload.game = game || "";
-  payload.timestamp = new Date().toISOString();
-  payload.profile = studentPerson || {};
-  payload.exerciseProgress = exerciseProgress || {};
-  payload.correct = correct || 0;
-  payload.attempts = attempts || 0;
-  payload.accuracy = attempts ? Math.round((correct||0)*100/attempts) : 0;
-  try{
-    fetch(GOOGLE_SHEET_URL,{
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload)
-    }).catch(err=>console.warn(err));
-  }catch(e){console.warn(e)}
-}
-
-
-function sendExamResultToGoogleSheet(result){
-  if(!GOOGLE_SHEET_URL || !student || !course) return;
-  const payload = {
-    rowId: studentRowId(),
-    course: course || "",
-    student: student || "",
-    exercise: "Prüfung",
-    score: typeof overallProgress==="function" ? overallProgress() : (score || 0),
-    correct: correct || 0,
-    attempts: attempts || 0,
-    accuracy: result.accuracy || 0,
-    progress: progressSummary(),
-    examTime: result.time || "",
-    examScore: result.score || "",
-    game: "exam",
-    timestamp: new Date().toISOString(),
-    profile: studentPerson || {},
-    exerciseProgress: exerciseProgress || {},
-    examResult: result || {}
-  };
-  try{
-    fetch(GOOGLE_SHEET_URL, {
-      method: "POST",
-      mode: "no-cors",
-      headers: {"Content-Type": "text/plain;charset=utf-8"},
-      body: JSON.stringify(payload)
-    }).catch(err => console.warn("Google Sheet exam send error:", err));
-  }catch(e){
-    console.warn("Google Sheet exam send failed:", e);
-  }
-}
-
-
-function syncManual(){
-  sendToGoogleSheet("manuell", true);
-  alert("Daten wurden gesendet. Prüfe dein Google Sheet.");
-}
-
-function saveLocal(){
-  if(student&&course){
-    const data={student,course,score,attempts,correct,i,game,questionOrder,studentPerson,answerHistory,exerciseProgress,date:new Date().toLocaleString()};
-    localStorage.setItem(key(),JSON.stringify(data));
-    const regKey="A1_STUDENTS_"+course;
-    let list=JSON.parse(localStorage.getItem(regKey)||"[]");
-    list=list.filter(x=>x.student!==student);
-    list.push({student,course,score,attempts,correct,accuracy:attempts?Math.round(correct*100/attempts):0,exerciseProgress,date:data.date});
-    localStorage.setItem(regKey,JSON.stringify(list));
-  }
-
-  sendToGoogleSheet(game);
-}
-function loadLocal(){
-  let raw=localStorage.getItem(key());
-  if(raw){
-    try{
-      let x=JSON.parse(raw);
-      score=x.score||0;
-      attempts=x.attempts||0;
-      correct=x.correct||0;
-      i=Number.isInteger(x.i)?x.i:0;
-      game=EXERCISES.includes(x.game)?x.game:game;
-      questionOrder=Array.isArray(x.questionOrder)?x.questionOrder:questionOrder;
-      answerHistory=Array.isArray(x.answerHistory)?x.answerHistory:[];
-      exerciseProgress=x.exerciseProgress||{};
-      studentPerson=x.studentPerson||studentPerson;
-      sanitizeState();
-    }catch(e){
-      console.warn("Alte gespeicherte Daten konnten nicht gelesen werden:", e);
-      sanitizeState();
-    }
-  }else{
-    sanitizeState();
-  }
-}
-
-function updateAll(){stats();updateStatsBox();updateExerciseTracker();saveLocal()}
-
-function overallProgress(){
-  let list = EXERCISES.filter(ex=>ex!=="exam");
-  if(!list.length) return 0;
-  let sum = list.reduce((s,ex)=>s+(Number((exerciseProgress||{})[ex])||0),0);
-  return Math.round(sum/list.length);
-}
-function progressDetailsHtml(){
-  return `<div class="progress-overview"><strong>Gesamtfortschritt:</strong> ${overallProgress()}%<br>`+
-    EXERCISES.filter(ex=>ex!=="exam").map(ex=>`${EXERCISE_NAMES[ex]}: ${Number((exerciseProgress||{})[ex])||0}%`).join("<br>")+
-    `</div>`;
-}
-
-function stats(){$("statsLine").innerHTML=`📌 Fortschritt/Punkte: <b>${score}</b> · ✅ Richtig: <b>${correct}/${attempts}</b> (${attempts?Math.round(correct*100/attempts):0}%)`}
-function updateStatsBox(){$("statsBox").innerHTML=`<div class="stat"><div>Aktivität</div><div class="num">${score}</div></div><div class="stat"><div>Richtig</div><div class="num">${correct}/${attempts}</div></div><div class="stat"><div>Genauigkeit</div><div class="num">${attempts?Math.round(correct*100/attempts):0}%</div></div><div class="stat"><div>Modus</div><div class="num">${EXERCISE_NAMES[game].split(" ")[0]}</div></div>`}
-function updateExerciseTracker(){
-  $("exerciseTracker").innerHTML = EXERCISES.map(ex => {
-    let locked = ex==="exam" && !allTrainingComplete();
-    let progress = Math.max(0, Math.min(100, Number((exerciseProgress||{})[ex]) || 0));
-    let label = locked ? "🔒 gesperrt" : String(progress) + "%";
-    return `<button type="button" class="exercise-item ${ex===game?'active':''} ${progress>=90?'completed':''} ${ex==='exam'?'exam':''}" data-exercise="${ex}" ${locked ? "disabled" : ""}>
-      <div>${EXERCISE_NAMES[ex]}</div>
-      <div class="small">${label}</div>
-    </button>`;
-  }).join("");
-
-  document.querySelectorAll("[data-exercise]").forEach(btn => {
-    btn.onclick = () => {
-      const ex = btn.dataset.exercise;
-      if(ex==="exam" && !allTrainingComplete()){
-        alert("Die Prüfung wird erst freigeschaltet, wenn alle Aufgaben erledigt sind.");
-        return;
-      }
-      mode(ex);
-    };
-  });
-}
-function mode(m){
-  if(m==="exam" && !allTrainingComplete()){
-    alert("Die Prüfung wird erst freigeschaltet, wenn alle Aufgaben erledigt sind.");
-    return;
-  }
-  game=m;
-  i=0;
-  helpWrongTries=0;
-  responseTries=0;
-  resetListenCounter();
-  questionOrder=m==="learn"?DATA.map((_,idx)=>idx):shuffle(DATA.map((_,idx)=>idx));
-  sanitizeState();
-  if(m==="memory")setupMemory();
-  if(m==="exam")startExam();
-  saveLocal();
-  updateAll();
-  render();
-  setTimeout(()=>$("game")?.scrollIntoView({behavior:"smooth",block:"start"}),50);
-}
-function normalizeGermanNumber(t){return (t||"").replace(/\beins\b/g,"1").replace(/\bein\b/g,"1").replace(/\bzwei\b/g,"2").replace(/\bdrei\b/g,"3").replace(/\bvier\b/g,"4").replace(/\bfünf\b/g,"5").replace(/\bfuenf\b/g,"5").replace(/\bsechs\b/g,"6").replace(/\bsieben\b/g,"7").replace(/\bacht\b/g,"8").replace(/\bneun\b/g,"9").replace(/\bzehn\b/g,"10")}
-function clean(t){return normalizeGermanNumber(String(t||"").toLowerCase()).normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss").replace(/[.,!?;:]/g,"").replace(/\s+/g," ").trim()}
-
-
-function countryFromPhrase(country){
-  const articles = {
-    "Ukraine": "der Ukraine",
-    "Türkei": "der Türkei",
-    "Schweiz": "der Schweiz",
-    "Slowakei": "der Slowakei",
-    "USA": "den USA",
-    "Niederlande": "den Niederlanden",
-    "Philippinen": "den Philippinen",
-    "Iran": "dem Iran",
-    "Irak": "dem Irak",
-    "Sudan": "dem Sudan",
-    "Jemen": "dem Jemen",
-    "Libanon": "dem Libanon"
-  };
-  return articles[country] || country;
-}
-
-
-function titleCaseWord(w){
-  return String(w||"").trim().toLowerCase().replace(/(^|[\s,-])\p{L}/gu, m => m.toUpperCase());
-}
-
-function normalizeKnownName(name){
-  let n = titleCaseWord(name);
-  const map = {
-    "Mohamad":"Mohammad","Mohammed":"Mohammad","Mohamed":"Mohammad","Muhammed":"Mohammad",
-    "Achmed":"Ahmed","Ahmad":"Ahmed",
-    "Fatma":"Fatima",
-    "Kyiv":"Kiew","Kiev":"Kiew",
-    "Halab":"Aleppo"
-  };
-  return map[n] || n;
-}
-
-function normalizeLanguageList(txt){
-  let raw = String(txt||"").replace(/\bund\b/gi,",").replace(/;/g,",");
-  let parts = raw.split(",").map(x=>x.trim()).filter(Boolean);
-  const map = {
-    "deutsch":"Deutsch","englisch":"Englisch","russisch":"Russisch","ukrainisch":"Ukrainisch",
-    "arabisch":"Arabisch","türkisch":"Türkisch","tuerkisch":"Türkisch",
-    "polnisch":"Polnisch","rumänisch":"Rumänisch","rumaenisch":"Rumänisch",
-    "französisch":"Französisch","franzoesisch":"Französisch",
-    "spanisch":"Spanisch","italienisch":"Italienisch","persisch":"Persisch",
-    "dari":"Dari","urdu":"Urdu","hindi":"Hindi","somali":"Somali",
-    "tigrinya":"Tigrinya","chinesisch":"Chinesisch","japanisch":"Japanisch"
-  };
-  parts = parts.map(p => map[p.toLowerCase()] || titleCaseWord(p));
-  return [...new Set(parts)].join(", ");
-}
-
-function cleanProfile(){
-  if(!studentPerson || typeof studentPerson !== "object") studentPerson = {...DEFAULT_PROFILE};
-  studentPerson.fname = normalizeKnownName(studentPerson.fname || DEFAULT_PROFILE.fname);
-  studentPerson.lname = normalizeKnownName(studentPerson.lname || DEFAULT_PROFILE.lname);
-  studentPerson.full = (studentPerson.fname + " " + studentPerson.lname).trim();
-  studentPerson.lang = normalizeLanguageList(studentPerson.lang || DEFAULT_PROFILE.lang);
-  studentPerson.city = titleCaseWord(studentPerson.city || DEFAULT_PROFILE.city);
-  studentPerson.birthplace = normalizeKnownName(studentPerson.birthplace || "");
-}
-
-
-function hasOnlyGermanLanguage(){
-  const raw = String((studentPerson && studentPerson.lang) || "").trim().toLowerCase();
-  const normalized = raw.replace(/\s+/g,"").replace(/;/g,",");
-  return normalized === "deutsch";
-}
-function languageAnswerTemplates(){
-  if(hasOnlyGermanLanguage()){
-    return ["Ich spreche Deutsch.","Deutsch."];
-  }
-  return [
-    "Ich spreche {lang} und ein bisschen Deutsch.",
-    "Ich spreche {lang}.",
-    "{lang}.",
-    "{lang} und ein bisschen Deutsch."
-  ];
-}
-
-
-function fillTemplate(t, p=studentPerson){
-  p = p || {};
-  let first = p.fname || DEFAULT_PROFILE.fname || "";
-  let last = p.lname || DEFAULT_PROFILE.lname || "";
-  let full = p.full || ((first + " " + last).trim());
-  let spellFirst = first.toUpperCase().split("").join("-");
-  let spellLast = last.toUpperCase().split("").join("-");
-  let spellFirstSpace = first.toLowerCase().split("").join(" ");
-  let spellLastSpace = last.toLowerCase().split("").join(" ");
-
-  return String(t || "")
-    .replaceAll("{name}", full)
-    .replaceAll("{fname}", first)
-    .replaceAll("{lname}", last)
-    .replaceAll("{origin}", p.origin || DEFAULT_PROFILE.origin || "")
-    .replaceAll("{origin_from}", countryFromPhrase(p.origin || DEFAULT_PROFILE.origin || ""))
-    .replaceAll("{lang}", p.lang || DEFAULT_PROFILE.lang || "")
-    .replaceAll("{city}", p.city || DEFAULT_PROFILE.city || "")
-    .replaceAll("{birthplace}", p.birthplace || DEFAULT_PROFILE.birthplace || "")
-    .replaceAll("{age}", p.age || DEFAULT_PROFILE.age || "")
-    .replaceAll("{spell_fname}", spellFirst)
-    .replaceAll("{spell_lname}", spellLast)
-    .replaceAll("{spell_fname_space}", spellFirstSpace)
-    .replaceAll("{spell_lname_space}", spellLastSpace)
-    .replaceAll("{children_answer}", childrenAnswer(p))
-    .replaceAll("{marital_answer}", maritalAnswer(p));
-}
-
-function answerVariants(x=item(),p=studentPerson){
- let templates = (x.topic==="Sprache" && typeof languageAnswerTemplates==="function") ? languageAnswerTemplates() : (x.answerTemplates||[]);
- let variants=templates.map(t=>fillTemplate(t,p));
- if(x.topic==="Kinder"){let n=String(p.childrenNumber); if(n==="0")variants.push("Nein.","Ich habe keine Kinder."); else if(n==="1")variants.push("Ja.","Ich habe ein Kind.","Ich habe 1 Kind."); else variants.push("Ja.",`Ich habe ${n} Kinder.`,`Ich habe ${numberWord(n)} Kinder.`)}
- if(x.topic==="Familienstand"){let m=p.marital;if(m==="verheiratet")variants.push("Ja.","Ich bin verheiratet.");else variants.push("Nein.",`Ich bin ${m}.`)}
- if(x.topic.startsWith("Buchstabieren")){let n=x.topic.includes("Nachname")?p.lname:p.fname; variants.push(n,n.toUpperCase().split("").join(" "),n.toLowerCase().split("").join(" "),n.toLowerCase().split("").join("-"))}
- return [...new Set(variants.filter(Boolean))];
-}
-
-function getAnswer(x=item()){
-  const vars = answerVariants(x);
-  return vars && vars.length ? vars[0] : "";
-}
-
-function questionVariants(x=item()){
- let q=[x.qSie,x.qDu].filter(Boolean);
- if(x.topic==="Name")q.push("Wie ist Ihr Name?","Wie ist dein Name?");
- if(x.topic==="Vorname")q.push("Wie ist Ihr Vorname?","Wie ist dein Vorname?");
- if(x.topic==="Nachname")q.push("Wie ist Ihr Nachname?","Wie ist dein Nachname?");
- return [...new Set(q)];
-}
-
-function compactName(t){
-  return clean(t).replace(/\s+/g,"").replace(/-/g,"");
-}
-function similarName(a,b){
-  a = compactName(a);
-  b = compactName(b);
-  const variants = [
-    ["mohammed","mohammad"],["muhammed","mohammad"],["mohamed","mohammad"],
-    ["achmed","ahmed"],["ahmad","ahmed"],["fatma","fatima"]
-  ];
-  variants.forEach(pair=>{
-    if(a===pair[0]) a=pair[1];
-    if(b===pair[0]) b=pair[1];
-  });
-  return a===b || (a.length>3 && b.length>3 && (a.includes(b)||b.includes(a)));
-}
-
-function ok(user){
-  let u=clean(user);
-  return answerVariants().some(v=>{
-    let a=clean(v);
-    return u===a || (u.length>3&&a.includes(u)) || (a.length>3&&u.includes(a)) || similarName(user,v);
-  });
-}
-
-
-
-
-
-
-
-
-function numberToGermanWords(num){
-  num = Number(num);
-  const ones = ["null","eins","zwei","drei","vier","fünf","sechs","sieben","acht","neun","zehn","elf","zwölf","dreizehn","vierzehn","fünfzehn","sechzehn","siebzehn","achtzehn","neunzehn"];
-  const tens = ["","","zwanzig","dreißig","vierzig","fünfzig","sechzig","siebzig","achtzig","neunzig"];
-  if(num < 20) return ones[num] || String(num);
-  if(num < 100){
-    let o = num % 10, t = Math.floor(num/10);
-    if(o === 0) return tens[t];
-    return (o===1 ? "ein" : ones[o]) + "und" + tens[t];
-  }
-  return String(num);
-}
-function germanizeNumbersForSpeech(text){
-  return String(text || "").replace(/\b\d{1,3}\b/g, m => numberToGermanWords(parseInt(m,10)));
-}
-function normalizeSpeechText(text){
-  return String(text||"")
-    .replace(/\bSt\.\s*/g,"Sankt ")
-    .replace(/\bStr\.\b/g,"Straße")
-    .replace(/\bNr\.\b/g,"Nummer");
-}
-function getGermanVoice(){
-  try{
-    const synth = window.speechSynthesis;
-    if(!synth || !synth.getVoices) return null;
-    const voices = synth.getVoices() || [];
-    return voices.find(v => (v.lang || "").toLowerCase().startsWith("de-de"))
-        || voices.find(v => (v.lang || "").toLowerCase().startsWith("de"))
-        || voices.find(v => /german|deutsch/i.test(v.name || ""))
-        || null;
-  }catch(e){
-    return null;
-  }
-}
-
-function speakText(t,slow=false){
-  try{
-    if(!window.speechSynthesis || !window.SpeechSynthesisUtterance){
-      const msg = "Sprachausgabe wird auf diesem Gerät/Browser nicht unterstützt.";
-      const fb = $("feedback");
-      if(fb) fb.innerHTML = `<div class="no">${msg}</div>`;
-      else alert(msg);
-      return false;
-    }
-    let spoken = germanizeNumbersForSpeech(t);
-    spoken = normalizeSpeechText(spoken);
-    let u = new SpeechSynthesisUtterance(spoken);
-    u.lang = "de-DE";
-    u.rate = slow ? 0.48 : 0.72;
-    u.pitch = 1;
-    u.volume = 1;
-    const voice = getGermanVoice();
-    if(voice) u.voice = voice;
-    window.speechSynthesis.cancel();
-    window.speechSynthesis.speak(u);
-    return true;
-  }catch(e){
-    console.error("Sprachausgabe-Fehler:", e);
-    const msg = "Beim Hören gab es ein Problem. Bitte versuchen Sie es noch einmal.";
-    const fb = $("feedback");
-    if(fb) fb.innerHTML = `<div class="no">${msg}</div>`;
-    else alert(msg);
+function loadProfile(){
+  try{profile=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){profile=null}
+  if(!profile){
+    $("profileBox").innerHTML="<div class='no'>Bitte zuerst auf der Startseite registrieren oder einloggen.</div>";
+    $("app").innerHTML="<button onclick=\"location.href='../'\">Zur Startseite</button>";
     return false;
   }
+  $("profileBox").innerHTML=`<div class="ok">Eingeloggt: <strong>${safeText(profile.vorname)} ${safeText(profile.nachname)}</strong> | Kurs: ${safeText(profile.kurs||"")}</div>`;
+  return true;
 }
 
-
-function showTwoStageHelp(){
-  const fb = $("feedback");
-  if(!fb) return;
-  helpWrongTries = helpWrongTries || 0;
-  if(helpWrongTries < 1){
-    fb.innerHTML = `<div class="help-box"><strong>Tipp:</strong> ${responseHint()}</div>`;
-    helpWrongTries = 1;
-  }else{
-    fb.innerHTML = `<div class="answer-box"><strong>Richtige Antwort:</strong><br>${answerVariants().join("<br>")}</div>`;
-    helpWrongTries = 2;
-  }
+function ensureSkillState(v){
+  state.skillDone=state.skillDone||{}; state.skillAttempts=state.skillAttempts||{}; state.skillSuccess=state.skillSuccess||{};
+  state.skillDone[v]=state.skillDone[v]||{}; state.skillAttempts[v]=state.skillAttempts[v]||{}; state.skillSuccess[v]=state.skillSuccess[v]||{};
 }
-function showQuestionHelp(){
-  const fb = $("feedback");
-  if(!fb) return;
-  helpWrongTries = helpWrongTries || 0;
-  if(helpWrongTries < 1){
-    fb.innerHTML = `<div class="help-box"><strong>Tipp:</strong> ${typeof puzzleHelpText==="function" ? puzzleHelpText() : responseHint()}</div>`;
-    helpWrongTries = 1;
-  }else{
-    fb.innerHTML = `<div class="answer-box"><strong>Richtige Frage:</strong><br>${questionVariants().join("<br>")}</div>`;
-    helpWrongTries = 2;
-  }
+function migrateState(){
+  state.learned=state.learned||[]; state.active=state.active||[]; state.known=state.known||[]; state.unsure=state.unsure||[]; state.unknown=state.unknown||[];
+  state.weak=state.weak||{}; state.skillDone=state.skillDone||{}; state.skillAttempts=state.skillAttempts||{}; state.skillSuccess=state.skillSuccess||{};
+  state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{}; state.alertsShown=state.alertsShown||{}; state.packageNo=state.packageNo||1;
+  (state.active||[]).forEach(v=>ensureSkillState(v));
 }
-
-
-
-function puzzleHelpText(){
-  let topic=item().topic, first=item().qSie.split(" ")[0];
-  if(topic.includes("Heimatland")) return "Baue eine Frage nach der Herkunft. Beginne mit <strong>Woher</strong>.";
-  if(topic.includes("Sprache")) return "Baue eine Frage nach der Sprache. Beginne mit <strong>Was</strong>.";
-  if(topic.includes("Kinder")) return "Baue eine Frage nach Kindern. Beginne mit <strong>Haben</strong>.";
-  if(topic.includes("Familienstand")) return "Baue eine Frage zum Familienstand. Beginne mit <strong>Sind</strong>.";
-  if(topic.includes("Wohnort")) return "Baue eine Frage nach dem Wohnort. Beginne mit <strong>Wo</strong>.";
-  if(topic.includes("Alter")) return "Baue eine Frage nach dem Alter. Beginne mit <strong>Wie alt</strong>.";
-  if(topic.includes("Geburtsort")) return "Baue eine Frage nach dem Geburtsort. Beginne mit <strong>Wo</strong>.";
-  return "Baue die Frage. Beginne mit <strong>"+first+"</strong>.";
+function loadState(){
+  try{const saved=JSON.parse(localStorage.getItem(key())||"null"); if(saved) state={...state,...saved};}catch(e){}
+  migrateState();
+}
+function saveState(){
+  migrateState();
+  localStorage.setItem(key(),JSON.stringify(state));
+  sendProgress();
+}
+function sendProgress(){
+  if(!profile)return;
+  const payload={userId:profile.userId,kurs:profile.kurs,vorname:profile.vorname,nachname:profile.nachname,
+    geburtsdatum:profile.geburtsdatum,heimatland:profile.heimatland,muttersprache:profile.muttersprache,
+    fremdsprache:profile.fremdsprache,wohnort:profile.wohnort,kinder:profile.kinder,
+    fragenFortschritt:profile.fragenFortschritt||0,verbenFortschritt:overall(),gesamtpunkte:overall(),
+    profile:profile,verbenState:state,timestamp:new Date().toISOString()};
+  try{fetch(GOOGLE_SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})}catch(e){}
 }
 
-function responseHint(){
-  let x=item();
-  if(game==="puzzle") return typeof puzzleHelpText==="function" ? puzzleHelpText() : "Baue die Frage in der richtigen Reihenfolge.";
-  if(x.topic==="Name") return "Beginnen Sie mit: Ich heiße ...";
-  if(x.topic==="Heimatland") return "Beginnen Sie mit: Ich komme aus ...";
-  if(x.topic==="Sprache") return "Beginnen Sie mit: Ich spreche ...";
-  if(x.topic==="Wohnort") return "Beginnen Sie mit: Ich wohne in ...";
-  if(x.topic==="Alter") return "Beginnen Sie mit: Ich bin ... Jahre alt.";
-  if(x.topic==="Geburtsort") return "Beginnen Sie mit: Ich bin in ... geboren.";
-  if(x.topic && x.topic.startsWith("Buchstabieren")) return "Schreiben oder sagen Sie die Buchstaben einzeln.";
-  return "Antworten Sie mit einem passenden Satz.";
-}
-
-
-function disableCheckTemporarily(){
-  const b = $("checkBtn");
-  if(b){
-    b.disabled = true;
-    setTimeout(()=>{ if($("checkBtn")) $("checkBtn").disabled = false; }, 800);
-  }
-}
-function safeCheckAnswer(){
-  const input = $("ans");
-  if(!input) return;
-  disableCheckTemporarily();
-  mark(ok(input.value), input.value);
-}
-function safeCheckTypedRespond(){
-  const input = $("typedRespond");
-  if(!input) return;
-  disableCheckTemporarily();
-  markResponse(ok(input.value), input.value);
-}
-
-function mark(good,userAnswer=""){
- attempts++;
- answerHistory.push({question:item().topic,correct:good,answer:userAnswer,acceptedAnswers:game==="puzzle"?questionVariants():answerVariants(),timestamp:new Date().toLocaleTimeString()});
- if(good){correct++;score+=10;helpWrongTries=0}
- exerciseProgress[game]=Math.max((exerciseProgress||{})[game]||0,Math.round(((i+(good?1:0))/DATA.length)*100));
- if(good){
-   $("feedback").innerHTML="<div class='ok'>✔ Richtig! +10 Punkte</div>";
- }else{
-   helpWrongTries++;
-   if(helpWrongTries===1){
-     $("feedback").innerHTML="<div class='no'>❌ Nicht ganz. Versuche es noch einmal.</div>";
-   }else if(helpWrongTries===2){
-     $("feedback").innerHTML=`<div class='no'>❌ Noch nicht richtig.</div><div class='help-box'><strong>Tipp:</strong> ${game==="puzzle"?puzzleHelpText():responseHint()}</div>`;
-   }else{
-     if(game==="puzzle"){
-       $("feedback").innerHTML=`<div class='no'>❌ Noch nicht richtig.</div><div class='answer-box'><strong>Richtige Frage:</strong><br>${questionVariants().join("<br>")}</div>`;
-     }else{
-       $("feedback").innerHTML=`<div class='no'>❌ Noch nicht richtig.</div><div class='answer-box'><strong>Richtige Antwort:</strong><br>${answerVariants().join("<br>")}</div>`;
-     }
-   }
- }
- saveLocal();updateAll();showAdvanceButton(good);
-}
-function showAdvanceButton(good){let fb=$("feedback"); if(!fb||!good)return; document.querySelectorAll("#nextQuestionBtn,#continueExerciseBtn").forEach(b=>b.remove()); if(i>=DATA.length-1){exerciseProgress[game]=100;fb.insertAdjacentHTML("beforeend",`<button class="success" id="continueExerciseBtn">✅ Du darfst zur nächsten Übung weiter</button>`);$("continueExerciseBtn").onclick=goNextExercise}else{fb.insertAdjacentHTML("beforeend",`<button class="success" id="nextQuestionBtn">⏭️ Nächste Frage</button>`);$("nextQuestionBtn").onclick=()=>{i++;helpWrongTries=0;responseTries=0;resetListenCounter();resetListenCounter();saveLocal();render()}}}
-function goNextExercise(){let idx=EXERCISES.indexOf(game); if(idx<EXERCISES.length-1)mode(EXERCISES[idx+1]); else $("game").innerHTML="<h2>Fertig!</h2><div class='ok'>Alle Übungen abgeschlossen.</div>"}
-
-function quickfireClick(btn){
- if(!btn||btn.disabled)return; let ans=btn.dataset.answer||"",good=clean(ans)===clean(getAnswer())||ok(ans);
- document.querySelectorAll(".quiz-option").forEach(b=>{b.disabled=true;if(clean(b.dataset.answer||"")===clean(getAnswer()))b.classList.add("selected")});
- attempts++;answerHistory.push({question:item().topic,correct:good,answer:ans,acceptedAnswers:answerVariants(),timestamp:new Date().toLocaleTimeString()});
- if(good){correct++;score+=10;$("feedback").innerHTML="<div class='ok'>✔ Richtig! +10 Punkte</div>"}else{$("feedback").innerHTML=`<div class='no'>❌ Falsch.</div><div class='small'><strong>Richtig:</strong> ${getAnswer()}</div>`}
- exerciseProgress.quickfire=Math.max(exerciseProgress.quickfire||0,Math.round(((i+1)/DATA.length)*100)); saveLocal();updateAll();showBlitzNextButton();
-}
-function showBlitzNextButton(){let fb=$("feedback");document.querySelectorAll("#nextQuestionBtn,#continueExerciseBtn").forEach(b=>b.remove()); if(i>=DATA.length-1){exerciseProgress.quickfire=100;fb.insertAdjacentHTML("beforeend",`<button class="success" id="continueExerciseBtn">✅ Du darfst zur nächsten Übung weiter</button>`);$("continueExerciseBtn").onclick=goNextExercise}else{fb.insertAdjacentHTML("beforeend",`<button class="success" id="nextQuestionBtn">⏭️ Nächste Frage</button>`);$("nextQuestionBtn").onclick=()=>{i++;saveLocal();render()}}}
-
-function markResponse(good,userAnswer=""){
- attempts++;answerHistory.push({question:item().topic,correct:good,answer:userAnswer,acceptedAnswers:answerVariants(),timestamp:new Date().toLocaleTimeString()});
- if(good){correct++;score+=10;responseTries=0;$("feedback").innerHTML="<div class='ok'>✔ Richtig! +10 Punkte</div>";showAdvanceButton(true)}
- else{responseTries++; if(responseTries<2)$("feedback").innerHTML="<div class='no'>❌ Nicht ganz. Versuche es noch einmal.</div>"; else if(responseTries===2)$("feedback").innerHTML=`<div class='no'>❌ Noch nicht richtig.</div><div class='small'><strong>Hilfe:</strong> ${responseHint()}</div>`; else {$("feedback").innerHTML="<div class='no'>❌ Noch nicht richtig. Jetzt bekommst du Antwortmöglichkeiten.</div>"+getCrossTopicAnswers().map(a=>`<button class="option help-answer" onclick="markResponse(ok(this.dataset.answer),this.dataset.answer)" data-answer="${escapeHtml(a)}">${escapeHtml(a)}</button>`).join("")}}
- saveLocal();updateAll();
-}
-function escapeHtml(s){return String(s).replaceAll("&","&amp;").replaceAll('"',"&quot;").replaceAll("<","&lt;").replaceAll(">","&gt;")}
-
-
-function showTranscript(text){
-  const box = $("transcriptBox");
-  if(box){
-    box.classList.remove("hidden");
-    box.innerHTML = `<div class="help-box"><strong>Transkription:</strong><br>${escapeHtml(text)}</div>`;
-  }
-}
-function transcriptButton(textExpr){
-  return `<button class="secondary" onclick="showTranscript(${textExpr})">👁️ Transkription anzeigen</button><div id="transcriptBox" class="hidden"></div>`;
-}
-
-
-function getCrossTopicAnswers(){
-  let correct = getAnswer();
-  let pool = [];
-  DATA.forEach(d=>{
-    if(d.topic !== item().topic){
-      answerVariants(d).forEach(a=>{
-        if(clean(a)!==clean(correct) && !pool.some(p=>clean(p)===clean(a))) pool.push(a);
-      });
-    }
+function imageFileName(v){return String(v||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".png"}
+function imageBox(v,small=false){const cls=small?"mem-img-holder":"img-holder";return `<span class="${cls}" data-verb="${safeText(v)}"><span class="image-fallback">Bild</span></span>`}
+function hydrateImages(root){
+  const base=root||document;
+  base.querySelectorAll("[data-verb]").forEach(box=>{
+    if(box.dataset.loaded==="1")return;
+    box.dataset.loaded="1";
+    const v=box.getAttribute("data-verb");
+    const img=document.createElement("img");
+    img.alt="";
+    img.loading="eager";
+    img.decoding="async";
+    img.src="bilder/"+imageFileName(v);
+    img.onerror=function(){box.innerHTML="<span class='image-fallback'>Bild</span>";};
+    box.textContent="";
+    box.appendChild(img);
   });
-  return shuffle([correct, ...shuffle(pool).slice(0,3)]);
 }
+function renderAndHydrate(){setTimeout(()=>hydrateImages(document),20)}
 
-function getWrongQuickAnswers(){
-  let c = getAnswer(), x = item(), base = [];
-  if(x.topic==="Name"){
-    base=[`Ich heißt ${studentPerson.fname}.`,`Ich heißen ${studentPerson.fname}.`,`Ich heiße aus ${studentPerson.fname}.`];
-  }else if(x.topic==="Wohnort"){
-    base=[`Ich wohnen in ${studentPerson.city}.`,`Ich wohne ${studentPerson.city}.`,`Ich wohnt in ${studentPerson.city}.`];
-  }else if(x.topic==="Alter"){
-    base=[`Ich habe ${studentPerson.age} Jahre.`,`Ich bin ${studentPerson.age} alt Jahre.`,`Ich sind ${studentPerson.age} Jahre alt.`];
-  }else if(x.topic==="Heimatland"){
-    base=[`Ich komme ${studentPerson.origin}.`,`Ich komme von ${studentPerson.origin}.`,`Ich bin aus ${studentPerson.origin} kommen.`];
-  }else if(x.topic==="Sprache"){
-    base=[`Ich sprechen ${studentPerson.lang}.`,`Ich kann ${studentPerson.lang} Sprache.`,`Ich spreche ${studentPerson.lang} und Deutsch bisschen.`];
+function skillKey(skill){return skill==="zuordnung"?"bild_verb":skill}
+function verbSkillCount(v){ensureSkillState(v);return VERB_SKILLS.filter(s=>state.skillDone[v]&&state.skillDone[v][s]).length}
+function verbPercent(v){return Math.round((verbSkillCount(v)*100)/VERB_SKILLS.length)}
+function overall(){if(!state.active.length)return 0;return Math.round(state.active.reduce((s,v)=>s+verbPercent(v),0)/state.active.length)}
+function taskQueueKey(skill){return "queue_"+skillKey(skill)}
+function taskDoneSetKey(skill){return "done_"+skillKey(skill)}
+function queuedProgress(skill){
+  const dKey=taskDoneSetKey(skill); state.taskDoneSets=state.taskDoneSets||{};
+  const done=(state.taskDoneSets[dKey]||[]).filter(v=>(state.active||[]).includes(v)).length;
+  const total=(state.active||[]).length;
+  return {done,total,pct:total?Math.round(done*100/total):0};
+}
+function taskSkillProgress(skill){return queuedProgress(skill)}
+function taskProgressHtml(skill,label){const p=taskSkillProgress(skill);return `<div class="task-progress"><div class="task-progress-title"><span>${label}</span><span>${p.done}/${p.total} · ${p.pct}%</span></div><div class="task-progress-line"><div class="task-progress-fill" style="width:${p.pct}%"></div></div></div>`}
+function taskDone(skill){const p=taskSkillProgress(skill);return p.total>0 && p.done>=p.total}
+function taskCardClass(skill){return taskDone(skill)?"task-card done-card":"task-card"}
+function taskCardStatus(skill){const p=taskSkillProgress(skill);return taskDone(skill)?"Erledigt ✓":`${p.pct}%`}
+
+function initTaskQueue(skill){
+  state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{};
+  const qKey=taskQueueKey(skill), dKey=taskDoneSetKey(skill);
+  state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
+  const doneSet=new Set(state.taskDoneSets[dKey]);
+  const remaining=(state.active||[]).filter(v=>!doneSet.has(v));
+  if(!Array.isArray(state.taskQueues[qKey])) state.taskQueues[qKey]=shuffle(remaining);
+  else {
+    const current=state.taskQueues[qKey].filter(v=>remaining.includes(v));
+    const missing=remaining.filter(v=>!current.includes(v));
+    state.taskQueues[qKey]=current.concat(shuffle(missing));
+  }
+  saveState();
+}
+function nextFromTaskQueue(skill){
+  initTaskQueue(skill);
+  const qKey=taskQueueKey(skill);
+  const q=state.taskQueues[qKey]||[];
+  if(!q.length)return null;
+  const v=q.shift();
+  state.taskQueues[qKey]=q;
+  saveState();
+  return v;
+}
+function finishQueuedVerb(skill,v,good){
+  state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{};
+  const qKey=taskQueueKey(skill), dKey=taskDoneSetKey(skill);
+  state.taskQueues[qKey]=state.taskQueues[qKey]||[];
+  state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
+  if(good){
+    if(!state.taskDoneSets[dKey].includes(v)) state.taskDoneSets[dKey].push(v);
+    state.taskQueues[qKey]=state.taskQueues[qKey].filter(x=>x!==v);
   }else{
-    base=getCrossTopicAnswers().filter(a=>clean(a)!==clean(c));
+    if(!state.taskDoneSets[dKey].includes(v) && !state.taskQueues[qKey].includes(v)) state.taskQueues[qKey].push(v);
   }
-  return shuffle([c, ...base.filter(Boolean).slice(0,3)]);
+  saveState();
 }
+function chooseVerbForPractice(skill){return skill?nextFromTaskQueue(skill):nextFromTaskQueue(state.currentGame||"schreiben")}
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-function spellSlow(name){
-  try{
-    const letters = String(name||"").toUpperCase().split("").join(" ... ");
-    speakText(letters, true);
-  }catch(e){
-    console.error("Buchstabieren-Fehler:", e);
-  }
+function markSkill(v,skill,good){
+  const sk=skillKey(skill); ensureSkillState(v);
+  state.skillAttempts[v][sk]=(state.skillAttempts[v][sk]||0)+1;
+  if(good){
+    state.skillSuccess[v][sk]=(state.skillSuccess[v][sk]||0)+1;
+    if(sk==="karteikarte"){if((state.skillSuccess[v][sk]||0)>=2)state.skillDone[v][sk]=true;}
+    else state.skillDone[v][sk]=true;
+  }else state.weak[v]=(state.weak[v]||0)+1;
 }
-function speakCurrent(){
-  try{
-    let x=item();
-    if(!x) return false;
-    if(x.topic==="Buchstabieren Vorname") spellSlow(studentPerson.fname);
-    else if(x.topic==="Buchstabieren Nachname") spellSlow(studentPerson.lname);
-    else speakText(x.qSie, false);
+function addEncounter(v,skill,good=true){markSkill(v,skill,good);saveState();checkMilestones();}
+
+function skillBadges(v){
+  ensureSkillState(v);
+  return VERB_SKILLS.map(s=>`<div class="small">${state.skillDone[v][s]?"✅":"⬜"} ${VERB_SKILL_LABELS[s]} ${state.skillAttempts[v][s]?`(${state.skillAttempts[v][s]}x)`:""}</div>`).join("");
+}
+function unusedVerbs(){
+  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
+  return ALL_VERBS.map(x=>x.v).filter(v=>!used.includes(v));
+}
+function currentPickVerb(){
+  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
+  for(let i=state.index;i<ALL_VERBS.length;i++){if(!used.includes(ALL_VERBS[i].v)){state.index=i;return ALL_VERBS[i];}}
+  return null;
+}
+function packageComplete(){return (state.active||[]).length===20 && state.active.every(v=>verbPercent(v)>=100)}
+function allTasksDone(){return VERB_SKILLS.every(s=>taskDone(s))}
+
+function totalStars(){
+  let stars=0;
+  [...(state.active||[]),...(state.learned||[])].forEach(v=>{ensureSkillState(v);VERB_SKILLS.forEach(s=>{if(state.skillDone[v]&&state.skillDone[v][s])stars++;})});
+  return stars;
+}
+function showAlert(title,msg,icon="⭐"){
+  const old=document.getElementById("levelAlert"); if(old)old.remove();
+  const el=document.createElement("div"); el.className="level-alert"; el.id="levelAlert";
+  el.innerHTML=`<div class="level-alert-box"><div class="big-star">${icon}</div><h2>${title}</h2><p>${msg}</p><button class="success" onclick="document.getElementById('levelAlert').remove()">Weiter</button></div>`;
+  document.body.appendChild(el);
+}
+function queueAlert(key,title,msg,icon="⭐"){state.alertsShown=state.alertsShown||{};if(state.alertsShown[key])return;state.alertsShown[key]=true;saveState();setTimeout(()=>showAlert(title,msg,icon),120)}
+function checkMilestones(){
+  const stars=totalStars();
+  if(stars>=20)queueAlert("stars20","20 Sterne!","Du hast schon 20 Lernpunkte gesammelt.","⭐");
+  if(stars>=40)queueAlert("stars40","40 Sterne!","Stark! Du kommst gut voran.","⭐");
+  const learned=(state.active||[]).filter(v=>verbPercent(v)>=100).length+(state.learned||[]).length;
+  if(learned>=1)queueAlert("firstVerb","Erstes Verb gelernt!","Ein Verb ist komplett auf 100 %.","🎉");
+  if(learned>=5)queueAlert("fiveVerbs","5 Verben gelernt!","Du baust deinen Wortschatz auf.","🎉");
+  if(learned>=10)queueAlert("tenVerbs","10 Verben gelernt!","Die Hälfte eines Pakets ist geschafft.","🎉");
+  if(packageComplete())queueAlert("packageComplete_"+(state.packageNo||1),"Paket geschafft!","Alle 20 Verben sind auf 100 %. Jetzt kannst du neue Verben auswählen.","🏆");
+}
+function completedTaskMessage(label){return `<div class="achievement"><h3>Aufgabe erledigt ✓</h3><p><strong>${label}</strong> ist abgeschlossen.</p><div class="star-pill">⭐ geschafft</div></div>`}
+function finishTaskIfComplete(skill,label){
+  if(taskDone(skill)){
+    checkMilestones();
+    const g=$("game"); if(g)g.innerHTML=completedTaskMessage(label)+`<button class="success" onclick="renderHome()">Zur Aufgabenübersicht</button>`;
     return true;
-  }catch(e){
-    console.error("Frage hören Fehler:", e);
-    const fb=$("feedback");
-    if(fb) fb.innerHTML = `<div class="no">Beim Hören gab es ein Problem.</div>`;
-    else alert("Beim Hören gab es ein Problem.");
-    return false;
   }
-}
-function resetListenCounter(){
-  listenClickCount = 0;
-}
-function updateListenButtons(){
-  const slowBtn = $("slowListenBtn");
-  const transcriptBtn = $("transcriptBtn");
-  if(listenClickCount >= 1 && slowBtn) slowBtn.classList.remove("hidden");
-  if(listenClickCount >= 3 && transcriptBtn) transcriptBtn.classList.remove("hidden");
-}
-function playHiddenAudio(text, slow=false){
-  listenClickCount++;
-  speakText(text, slow);
-  updateListenButtons();
-}
-function playCurrentQuestionHidden(){
-  const x = item();
-  playHiddenAudio((x && x.qSie) ? x.qSie : "", false);
-}
-function playCurrentQuestionSlow(){
-  const x = item();
-  listenClickCount++;
-  speakText((x && x.qSie) ? x.qSie : "", true);
-  updateListenButtons();
-}
-function playDictationHidden(){
-  const x = item();
-  listenClickCount++;
-  if(x && x.topic && x.topic.startsWith("Buchstabieren")){
-    const n = x.topic.includes("Nachname") ? studentPerson.lname : studentPerson.fname;
-    spellSlow(n);
-  }else{
-    speakText(getAnswer(), false);
-  }
-  updateListenButtons();
-}
-function playDictationSlow(){
-  const x = item();
-  listenClickCount++;
-  if(x && x.topic && x.topic.startsWith("Buchstabieren")){
-    const n = x.topic.includes("Nachname") ? studentPerson.lname : studentPerson.fname;
-    spellSlow(n);
-  }else{
-    speakText(getAnswer(), true);
-  }
-  updateListenButtons();
-}
-
-function cleanSpeechResult(text){
-  const words = String(text||"").trim().split(/\s+/);
-  let result = [];
-  for(let i=0;i<words.length;i++){
-    if(i===0 || words[i].toLowerCase() !== words[i-1].toLowerCase()){
-      result.push(words[i]);
-    }
-  }
-  return result.join(" ");
-}
-
-function setMic(on){
-  let m=$("micStatus");
-  if(m)m.innerHTML=on?"🔴 Mikrofon aktiv – Sie können langsam sprechen ...":"⚪ Mikrofon aus";
-}
-function recog(cb){
-  const SR = window.SpeechRecognition || window.webkitSpeechRecognition;
-  if(!SR){
-    const msg = "Mikrofon/Spracherkennung wird auf diesem Gerät oder Browser nicht unterstützt. Bitte die Antwort tippen.";
-    const fb = $("feedback");
-    if(fb) fb.innerHTML = `<div class="no">${msg}</div>`;
-    else alert(msg);
-    setMic(false);
-    return;
-  }
-
-  try{
-    let r = new SR();
-    r.lang = "de-DE";
-    r.interimResults = false;
-    r.continuous = false;
-    r.maxAlternatives = 3;
-
-    let finalText = "";
-    let stopTimer = null;
-    let didReturn = false;
-
-    function finish(){
-      if(didReturn) return;
-      didReturn = true;
-      clearTimeout(stopTimer);
-      const result = cleanSpeechResult((finalText || "").trim());
-      setMic(false);
-
-      if(result){
-        cb(result);
-      }else{
-        const fb = $("feedback");
-        const msg = "Ich habe nichts verstanden. Bitte noch einmal sprechen oder die Antwort tippen.";
-        if(fb) fb.innerHTML = `<div class="no">${msg}</div>`;
-        else alert(msg);
-      }
-    }
-
-    function scheduleStop(){
-      clearTimeout(stopTimer);
-      stopTimer = setTimeout(()=>{
-        try{ r.stop(); }catch(e){ finish(); }
-      }, 2000);
-    }
-
-    r.onstart = () => {
-      setMic(true);
-      const fb = $("feedback");
-      if(fb) fb.innerHTML = `<div class="help-box">🔴 Mikrofon aktiv. Sprechen Sie jetzt.</div>`;
-      scheduleStop();
-    };
-
-    r.onspeechstart = () => {
-      clearTimeout(stopTimer);
-    };
-
-    r.onspeechend = () => {
-      scheduleStop();
-    };
-
-    r.onsoundend = () => {
-      scheduleStop();
-    };
-
-    r.onresult = e => {
-      let best = "";
-      for(let i=e.resultIndex; i<e.results.length; i++){
-        if(e.results[i] && e.results[i][0]){
-          best = e.results[i][0].transcript || best;
-        }
-      }
-      finalText = best || finalText;
-      const heard = $("heard");
-      if(heard && finalText) heard.innerText = "Gehört: " + cleanSpeechResult(finalText);
-      scheduleStop();
-    };
-
-    r.onerror = e => {
-      clearTimeout(stopTimer);
-      setMic(false);
-      const fb = $("feedback");
-      let msg = "Mikrofonfehler. Bitte die Antwort tippen.";
-      if(e && e.error==="not-allowed") msg = "Mikrofon ist blockiert. Bitte im Browser erlauben oder die Antwort tippen.";
-      if(e && e.error==="no-speech") msg = "Ich habe nichts gehört. Bitte noch einmal sprechen oder tippen.";
-      if(e && e.error==="audio-capture") msg = "Kein Mikrofon gefunden. Bitte die Antwort tippen.";
-      if(e && e.error==="network") msg = "Spracherkennung ist gerade nicht verfügbar. Bitte die Antwort tippen.";
-      if(fb) fb.innerHTML = `<div class="no">${msg}</div>`;
-      else alert(msg);
-    };
-
-    r.onend = () => {
-      finish();
-    };
-
-    r.start();
-  }catch(err){
-    setMic(false);
-    const fb = $("feedback");
-    const msg = "Mikrofon konnte nicht gestartet werden. Bitte die Antwort tippen.";
-    if(fb) fb.innerHTML = `<div class="no">${msg}</div>`;
-    else alert(msg);
-  }
-}
-function listenSpeech(){
-  recog(t=>{
-    const h=$("heard"); if(h) h.innerText="Gesprochen: "+t;
-    markResponse(ok(t),t);
-  });
-}
-function listenAndRespond(){
-  recog(t=>{
-    const h=$("heard"); if(h) h.innerText="Gehört: "+t;
-    markResponse(ok(t),t);
-  });
-}
-function listenExamQuestion(){
-  recog(t=>{
-    const h=$("heard"); if(h) h.innerText="Gesprochen: "+t;
-    markExam(okQuestion(t),t);
-  });
-}
-function render(){
- try{
-
- let x=item(),q=x.qSie,html=`<h2>${EXERCISE_NAMES[game]}</h2>`;
- if(!["listen","listenrespond"].includes(game))html+=`<p class="small">Thema: ${x.topic}</p>`;
- if(game==="learn"){
-  let ans=getAnswer(),alts=answerVariants(x).filter(a=>clean(a)!==clean(ans));
-  html+=`<div class="big">${q}</div><p>${x.qDu}</p><button onclick="speakCurrent()">🔊 Frage hören</button><button onclick="speakText(getAnswer(), true)">🔊 Antwort hören</button><h3>Antwort</h3><p class="big">${escapeHtml(ans)}</p><h3>Alle akzeptierten Antworten</h3>${answerVariants(x).map(a=>`<p>• ${escapeHtml(a)}</p>`).join("")}<button class="success" onclick="nextLearn()">⏭️ Nächste Frage</button>`;
- }
- if(game==="qa"){html+=`<div class="big">${q}</div><input id="ans" placeholder="Antwort schreiben..."><button id="checkBtn" onclick="safeCheckAnswer()">Überprüfen</button><button class="secondary" onclick="showTwoStageHelp()">Hilfe</button><div id="feedback"></div>`}
- if(game==="speak"){html+=`<div class="big">${q}</div><div id="micStatus" class="small">⚪ Mikrofon aus</div><button onclick="listenSpeech()">🎤 Mikrofon starten</button><input id="typedRespond" placeholder="Hier tippen, falls Mikrofon nicht funktioniert..."><button id="checkBtn" onclick="safeCheckTypedRespond()">Überprüfen</button><p id="heard"></p><div id="feedback"></div>`}
- if(game==="puzzle"){
-  let words=shuffle(q.replace("?"," ?").split(/\s+/).filter(Boolean));
-  html+=`<p>🧩 Baue die Frage richtig zusammen.</p><div id="chosen"></div><div id="wordList">${words.map(w=>`<button class="word" onclick="chooseWord(this)">${escapeHtml(w)}</button>`).join("")}</div><button onclick="checkPuzzle()">Überprüfen</button><button class="secondary" onclick="render()">Neu</button><div id="feedback"></div>`;
- }
- if(game==="dictation"){let ans=getAnswer();html+=`<p>✍️ Höre und schreibe die Antwort.</p><button onclick="playDictationHidden()">🔊 Antwort hören</button><button id="slowListenBtn" class="secondary hidden" onclick="playDictationSlow()">🐢 Langsamer hören</button><button id="transcriptBtn" class="secondary hidden" onclick="showTranscript(getAnswer())">👁️ Transkription anzeigen</button><div id="transcriptBox" class="hidden"></div><input id="ans" placeholder="Schreiben..."><button id="checkBtn" onclick="safeCheckAnswer()">Überprüfen</button><div id="feedback"></div>`}
- if(game==="memory"){html+=`<p>🃏 Finde Frage und passende Antwort.</p><div class="memory" id="memoryGrid"></div><div id="feedback"></div>`}
- if(game==="quickfire"){html+=`<div class="big">${q}</div><p>⚡ Wähle die richtige Antwort.</p>${getWrongQuickAnswers().map(a=>`<button type="button" class="option quiz-option" data-answer="${escapeHtml(a)}" onclick="quickfireClick(this)">${escapeHtml(a)}</button>`).join("")}<div id="feedback"></div>`}
- if(game==="listen"){html+=`<p>🎧 Höre die Frage. Die Frage wird nicht angezeigt.</p><button onclick="playCurrentQuestionHidden()">🔊 Frage abspielen</button><button id="slowListenBtn" class="secondary hidden" onclick="playCurrentQuestionSlow()">🐢 Langsamer hören</button><button id="transcriptBtn" class="secondary hidden" onclick="showTranscript(item().qSie)">👁️ Transkription anzeigen</button><div id="transcriptBox" class="hidden"></div>${getCrossTopicAnswers().map(a=>`<button class="option" onclick="mark(ok(this.dataset.answer),this.dataset.answer)" data-answer="${escapeHtml(a)}">${escapeHtml(a)}</button>`).join("")}<div id="feedback"></div>`}
- if(game==="listenrespond"){html+=`<p>🎤 Höre die Frage und antworte. Die Frage wird nicht angezeigt.</p><button onclick="playCurrentQuestionHidden()">🔊 Frage abspielen</button><button id="slowListenBtn" class="secondary hidden" onclick="playCurrentQuestionSlow()">🐢 Langsamer hören</button><button id="transcriptBtn" class="secondary hidden" onclick="showTranscript(item().qSie)">👁️ Transkription anzeigen</button><div id="transcriptBox" class="hidden"></div><div id="micStatus" class="small">⚪ Mikrofon aus</div><button onclick="listenAndRespond()">🎤 Mikrofon starten</button><input id="typedRespond" placeholder="Hier tippen, falls Mikrofon nicht funktioniert..."><button id="checkBtn" onclick="safeCheckTypedRespond()">Überprüfen</button><p id="heard"></p><div id="feedback"></div>`}
- if(game==="exam"){html+=`<div id="examTimer" class="small"></div><p>Bilde die passende Frage zu diesem Begriff:</p><div class="big">🔎 ${x.topic}</div><input id="ans" placeholder="Passende Frage schreiben..."><button onclick="markExam(okQuestion($('ans').value),$('ans').value)">Überprüfen</button><div id="micStatus" class="small">⚪ Mikrofon aus</div><button onclick="listenExamQuestion()">🎤 Frage sprechen</button><button class="secondary" onclick="$('feedback').innerHTML='<div class=small><strong>Hilfe:</strong> '+examQuestionHint()+'</div>'">Hilfe</button><button class="success hidden" id="nextExamBtn" onclick="nextExam()">⏭️ Nächste Prüfungsaufgabe</button><p id="heard"></p><div id="feedback"></div>`; setTimeout(updateExamTimer,0)}
- $("game").innerHTML=html; if(game==="memory")renderMemoryGrid(); stats(); updateStatsBox();
- }catch(e){
-  console.error(e);
-  const g=$("game");
-  if(g) g.innerHTML = `<h2>Fehler</h2><div class="no">${escapeHtml(e.message||String(e))}</div><button onclick="localStorage.removeItem('A1_ACTIVE_SESSION');location.reload()">Zur Anmeldung zurück</button>`;
- }
-}
-function nextLearn(){if(i>=DATA.length-1){exerciseProgress.learn=100;updateAll();$("game").innerHTML="<h2>📚 Lernen</h2><div class='ok'>Lernen abgeschlossen.</div><button class='success' onclick='goNextExercise()'>Weiter</button>"}else{i++;exerciseProgress.learn=Math.round(i/DATA.length*100);render()}}
-function chooseWord(btn){let clone=btn.cloneNode(true);clone.onclick=()=>{clone.remove();btn.disabled=false;btn.style.opacity=1};$("chosen").appendChild(clone);btn.disabled=true;btn.style.opacity=.4}
-function checkPuzzle(){let chosen=$("chosen").innerText.trim().replace(/\s+\?/g,"?").replace(/\s+/g," ");let correct=item().qSie.replace(/\s+\?/g,"?").replace(/\s+/g," ");mark(clean(chosen)===clean(correct),chosen)}
-
-function setupMemory(){memoryCards=[];first=null;lock=false;DATA.forEach((x,j)=>{memoryCards.push({pair:j,kind:"q",text:x.qSie,open:false,done:false},{pair:j,kind:"a",text:answerVariants(x)[0]||"...",open:false,done:false})});memoryCards=shuffle(memoryCards)}
-function renderMemoryGrid(){let g=$("memoryGrid");if(!g)return;g.innerHTML=memoryCards.map((c,idx)=>`<button class="memcard ${c.open?'open':''} ${c.done?'done':''}" onclick="flip(${idx})">${c.open||c.done?escapeHtml(c.text):"?"}</button>`).join("")}
-function flip(idx){if(lock)return;let c=memoryCards[idx];if(!c||c.done||c.open)return;c.open=true;renderMemoryGrid();if(first===null){first=idx;return}lock=true;attempts++;let a=memoryCards[first],b=memoryCards[idx],good=a.pair===b.pair&&a.kind!==b.kind;setTimeout(()=>{if(good){a.done=b.done=true;correct++;score+=10;$("feedback").innerHTML="<div class='ok'>✔ Paar gefunden!</div>"}else{a.open=b.open=false;$("feedback").innerHTML="<div class='no'>❌ Kein Paar.</div>"}first=null;lock=false;if(memoryCards.every(c=>c.done)){exerciseProgress.memory=100;$("feedback").innerHTML+="<button class='success' onclick='goNextExercise()'>✅ Du darfst weiter</button>"}saveLocal();updateAll();renderMemoryGrid()},650)}
-
-
-function speakDictationAnswer(){
-  try{
-    const x = item();
-    if(x && x.topic && x.topic.startsWith("Buchstabieren")){
-      const n = x.topic.includes("Nachname") ? studentPerson.lname : studentPerson.fname;
-      spellSlow(n);
-    }else{
-      speakText(getAnswer(), true);
-    }
-  }catch(e){
-    console.error("Diktat-Hören-Fehler:", e);
-    const fb=$("feedback");
-    if(fb) fb.innerHTML = `<div class="no">Beim Hören gab es ein Problem.</div>`;
-  }
-}
-
-
-
-
-
-function showCourseRanking(){
-  const c = course || ($("course")?.value || "");
-  $("app").classList.add("hidden");
-  $("leaderboardSection").classList.add("hidden");
-  $("courseRankingSection").classList.remove("hidden");
-  $("courseRankingBox").innerHTML = "<p>Rangliste wird geladen...</p>";
-
-  loadCourseRankingJsonp(c).then(data=>{
-    let rows = (data && data.rows) ? data.rows : [];
-    rows = rows.sort((a,b)=>(Number(b.score)||0)-(Number(a.score)||0));
-    if(!rows.length){
-      $("courseRankingBox").innerHTML = "<div class='no'>Noch keine Ergebnisse für diesen Kurs.</div>";
-      return;
-    }
-    $("courseRankingBox").innerHTML =
-      `<h3>Kurs: ${escapeHtml(c)}</h3><table><tr><th>Platz</th><th>Name</th><th>Fortschritt</th><th>Genauigkeit</th><th>Letzte Aktivität</th></tr>`+
-      rows.map((r,i)=>`<tr><td>${i+1}</td><td>${escapeHtml(r.student||"")}</td><td>${escapeHtml(String(r.score||0))}%</td><td>${escapeHtml(String(r.accuracy||0))}%</td><td>${escapeHtml(r.timestamp||"")}</td></tr>`).join("")+
-      `</table>`;
-  }).catch(err=>{
-    $("courseRankingBox").innerHTML = `<div class="no">${escapeHtml(err.message)}</div>`;
-  });
-}
-
-function overallOfProgress(progress){
-  let list = EXERCISES.filter(ex=>ex!=="exam");
-  if(!list.length) return 0;
-  return Math.round(list.reduce((s,ex)=>s+(Number(progress[ex])||0),0)/list.length);
-}
-
-function studentRowId(){
-  return (course || "") + "||" + (student || "");
-}
-function loadCourseRankingJsonp(courseCode){
-  return new Promise((resolve, reject)=>{
-    const cbName = "rankingCallback_" + Date.now();
-    window[cbName] = data => {
-      try{ delete window[cbName]; }catch(e){}
-      const script = document.getElementById(cbName);
-      if(script) script.remove();
-      resolve(data);
-    };
-    const s = document.createElement("script");
-    s.id = cbName;
-    s.src = GOOGLE_SHEET_URL + "?action=ranking&course=" + encodeURIComponent(courseCode) + "&callback=" + cbName;
-    s.onerror = () => {
-      try{ delete window[cbName]; }catch(e){}
-      reject(new Error("Rangliste konnte nicht geladen werden."));
-    };
-    document.body.appendChild(s);
-  });
-}
-
-function closeCourseRanking(){
-  $("courseRankingSection").classList.add("hidden");
-  $("app").classList.remove("hidden");
-}
-
-function showLeaderboard(){let b=JSON.parse(localStorage.getItem("A1_EXAM_RESULTS")||"[]");$("leaderboard").innerHTML=b.length?b.map((e,i)=>`<div class="leader"><b>${i+1}. ${escapeHtml(e.name)}</b> · ${escapeHtml(e.course)}<br>Wert: ${e.score} · Zeit: ${e.time} · Genauigkeit: ${e.accuracy}%</div>`).join(""):"Noch keine Ergebnisse.";$("app").classList.add("hidden");$("courseRankingSection").classList.add("hidden");$("leaderboardSection").classList.remove("hidden")}
-function closeLeaderboard(){$("leaderboardSection").classList.add("hidden");$("app").classList.remove("hidden")}
-function exportMe(){let data=JSON.stringify({student,course,score,attempts,correct,answerHistory,exerciseProgress,studentPerson},null,2);let blob=new Blob([data],{type:"application/json"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=student+"_"+course+".json";a.click()}
-function importFiles(e){let files=[...e.target.files],rows=[];files.forEach(f=>{let r=new FileReader();r.onload=ev=>{let d=JSON.parse(ev.target.result);rows.push(d);$("dashTable").innerHTML="<table><tr><th>Name</th><th>Kurs</th><th>Punkte</th><th>Richtig</th><th>Versuche</th></tr>"+rows.map(x=>`<tr><td>${x.student}</td><td>${x.course}</td><td>${x.score}</td><td>${x.correct}</td><td>${x.attempts}</td></tr>`).join("")+"</table>"};r.readAsText(f)})}
-function downloadCSV(){let rows=JSON.parse(localStorage.getItem("A1_EXAM_RESULTS")||"[]");let csv="Name,Kurs,Wert,Zeit,Genauigkeit,Datum\n"+rows.map(e=>`${e.name},${e.course},${e.score},${e.time},${e.accuracy},${e.date}`).join("\n");let blob=new Blob([csv],{type:"text/csv"});let a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download="A1_Ergebnisse.csv";a.click()}
-
-
-
-
-function spCalcAge(dateStr){
-  const d=new Date(dateStr);
-  if(isNaN(d)) return "";
-  const now=new Date();
-  let age=now.getFullYear()-d.getFullYear();
-  const m=now.getMonth()-d.getMonth();
-  if(m<0||(m===0&&now.getDate()<d.getDate())) age--;
-  return age;
-}
-function getSharedSprachPilotProfile(){
-  try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}
-}
-function applySharedSprachPilotProfile(){
-  const p=getSharedSprachPilotProfile();
-  if(!p) return false;
-  studentPerson={
-    fname:p.vorname||"",
-    lname:p.nachname||"",
-    full:((p.vorname||"")+" "+(p.nachname||"")).trim(),
-    origin:p.heimatland||"",
-    lang:p.muttersprache==="Deutsch" && !p.fremdsprache ? "Deutsch" : [p.muttersprache,p.fremdsprache].filter(Boolean).join(", "),
-    city:p.wohnort||"",
-    birthplace:p.geburtsort||"",
-    age:spCalcAge(p.geburtsdatum),
-    birthdate:p.geburtsdatum||"",
-    childrenNumber:p.kinder||"0",
-    children: typeof childText==="function" ? childText(p.kinder||"0") : "",
-    marital:p.familienstand||""
-  };
-  student=studentPerson.full;
-  course=p.kurs||"";
-  return true;
-}
-function startFromSharedSprachPilot(){
-  if(!applySharedSprachPilotProfile()) return false;
-  try{loadLocal()}catch(e){}
-  localStorage.setItem("A1_ACTIVE_SESSION",key());
-  if($("login")) $("login").classList.add("hidden");
-  if($("app")) $("app").classList.remove("hidden");
-  if($("hello")) $("hello").innerText="Hallo, "+(studentPerson.fname||student)+"!";
-  updateAll();
-  render();
-  return true;
-}
-function goBackToPortal(){
-  window.location.href="../";
-}
-function spSharedPayloadBase(){
-  const p=getSharedSprachPilotProfile();
-  return {
-    userId:(p&&p.userId)||((course||"")+"_"+(student||"")),
-    kurs:course||"",
-    vorname:(studentPerson&&studentPerson.fname)||"",
-    nachname:(studentPerson&&studentPerson.lname)||"",
-    geburtsdatum:(p&&p.geburtsdatum)||(studentPerson&&studentPerson.birthdate)||"",
-    heimatland:(studentPerson&&studentPerson.origin)||"",
-    muttersprache:(p&&p.muttersprache)||"",
-    fremdsprache:(p&&p.fremdsprache)||"",
-    wohnort:(studentPerson&&studentPerson.city)||"",
-    kinder:(studentPerson&&studentPerson.childrenNumber)||"",
-    fragenFortschritt: typeof overallProgress==="function" ? overallProgress() : 0,
-    verbenFortschritt:(p&&p.verbenFortschritt)||0,
-    gesamtpunkte:score||0
-  };
-}
-
-function restoreSession(){
-  try{
-    initLogin();
-    let active = localStorage.getItem("A1_ACTIVE_SESSION");
-    if(!active) return;
-    let raw = localStorage.getItem(active);
-    if(!raw) return;
-    let x = JSON.parse(raw);
-    student = x.student || "";
-    course = x.course || "";
-    studentPerson = x.studentPerson || {...DEFAULT_PROFILE};
-    score = x.score || 0;
-    attempts = x.attempts || 0;
-    correct = x.correct || 0;
-    i = x.i || 0;
-    game = x.game || "learn";
-    questionOrder = Array.isArray(x.questionOrder) ? x.questionOrder : DATA.map((_,idx)=>idx);
-    answerHistory = x.answerHistory || [];
-    exerciseProgress = x.exerciseProgress || {};
-    $("login").classList.add("hidden");
-    $("app").classList.remove("hidden");
-    $("hello").innerText="Hallo, "+(studentPerson.fname||student)+"!";
-    updateAll();
-    render();
-  }catch(e){
-    console.error(e);
-  }
-}
-
-window.addEventListener("error", e => {
-  const g = $("game");
-  if(g){
-    g.innerHTML = `<h2>Fehler</h2><div class="no">JavaScript-Fehler: ${escapeHtml(e.message || "Unbekannter Fehler")}</div><p class="small">${escapeHtml(e.filename||"")} ${e.lineno||""}</p>`;
-  }
-});
-
-
-if("speechSynthesis" in window){
-  speechSynthesis.onvoiceschanged = () => getGermanVoice();
-}
-window.addEventListener("load", ()=>{ if(!startFromSharedSprachPilot()) restoreSession(); });
-
-// SprachPilot Login-Brücke: übernimmt das Profil von der Startseite für alle Unterseiten.
-function spCalcAge(dateStr){
-  const d=new Date(dateStr);
-  if(isNaN(d)) return "";
-  const now=new Date();
-  let age=now.getFullYear()-d.getFullYear();
-  const m=now.getMonth()-d.getMonth();
-  if(m<0||(m===0&&now.getDate()<d.getDate())) age--;
-  return age;
-}
-function getSharedSprachPilotProfile(){
-  try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}
-}
-function applySharedSprachPilotProfile(){
-  const p=getSharedSprachPilotProfile();
-  if(!p) return false;
-  studentPerson={
-    fname:p.vorname||"",
-    lname:p.nachname||"",
-    full:((p.vorname||"")+" "+(p.nachname||"")).trim(),
-    origin:p.heimatland||"",
-    lang:p.muttersprache==="Deutsch" && !p.fremdsprache ? "Deutsch" : [p.muttersprache,p.fremdsprache].filter(Boolean).join(", "),
-    city:p.wohnort||"",
-    birthplace:p.geburtsort||"",
-    age:spCalcAge(p.geburtsdatum),
-    birthdate:p.geburtsdatum||"",
-    childrenNumber:p.kinder||"0",
-    children: typeof childText==="function" ? childText(p.kinder||"0") : "",
-    marital:p.familienstand||""
-  };
-  student=studentPerson.full;
-  course=p.kurs||"";
-  return true;
-}
-function requireSprachPilotLogin(){
-  const p=getSharedSprachPilotProfile();
-  if(p) return true;
-  if($("login")){
-    $("login").classList.remove("hidden");
-    $("login").innerHTML = `<h2>Bitte zuerst auf der Startseite anmelden</h2>
-    <p>Dein Profil gilt dann automatisch für alle Trainer.</p>
-    <button onclick="window.location.href='../'">🏠 Zur Startseite</button>`;
-  }
-  if($("app")) $("app").classList.add("hidden");
+  checkMilestones();
   return false;
 }
-function startFromSharedSprachPilot(){
-  if(!requireSprachPilotLogin()) return false;
-  if(!applySharedSprachPilotProfile()) return false;
-  try{loadLocal()}catch(e){}
-  localStorage.setItem("A1_ACTIVE_SESSION",key());
-  if($("login")) $("login").classList.add("hidden");
-  if($("app")) $("app").classList.remove("hidden");
-  if($("hello")) $("hello").innerText="Hallo, "+(studentPerson.fname||student)+"!";
-  updateAll();
-  render();
-  return true;
+
+function speakTextVerb(t,slow=false){
+  try{const u=new SpeechSynthesisUtterance(String(t||""));u.lang="de-DE";u.rate=slow?0.55:0.9;window.speechSynthesis.cancel();window.speechSynthesis.speak(u);}
+  catch(e){const fb=$("fb")||$("cardFeedback"); if(fb)fb.innerHTML="<div class='no'>Hören wird auf diesem Gerät nicht unterstützt.</div>";}
 }
-function goBackToPortal(){
-  window.location.href="../";
+function normalizeVerbAnswer(s){return clean(String(s||"").replace(/\s+/g," "))}
+function checkVerbAnswer(answer,correct){return normalizeVerbAnswer(answer)===normalizeVerbAnswer(correct)}
+function setMicStatus(txt){const m=$("micStatus");if(m)m.innerHTML=txt}
+function recogVerb(cb){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  if(!SR){const fb=$("cardFeedback")||$("fb"); if(fb)fb.innerHTML="<div class='no'>Mikrofon funktioniert auf diesem Gerät/Browser nicht. Bitte die Antwort schreiben.</div>";scrollToFeedback();return;}
+  try{
+    let r=new SR(); r.lang="de-DE"; r.interimResults=false; r.continuous=false; r.maxAlternatives=3;
+    let result="", done=false, timer=null;
+    function finish(){if(done)return;done=true;clearTimeout(timer);setMicStatus("⚪ Mikrofon aus");if(result.trim())cb(result.trim());else{const fb=$("cardFeedback")||$("fb");if(fb)fb.innerHTML="<div class='no'>Ich habe nichts verstanden. Bitte noch einmal sprechen oder schreiben.</div>";scrollToFeedback();}}
+    function stopSoon(){clearTimeout(timer);timer=setTimeout(()=>{try{r.stop()}catch(e){finish()}},1800)}
+    r.onstart=()=>{setMicStatus("🔴 Mikrofon aktiv – sprechen Sie jetzt.");stopSoon();};
+    r.onspeechstart=()=>clearTimeout(timer); r.onspeechend=()=>stopSoon(); r.onsoundend=()=>stopSoon();
+    r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i]&&e.results[i][0])result=e.results[i][0].transcript||result;}const h=$("heard");if(h)h.innerText="Gehört: "+result;stopSoon();};
+    r.onerror=e=>{clearTimeout(timer);setMicStatus("⚪ Mikrofon aus");const fb=$("cardFeedback")||$("fb");if(fb)fb.innerHTML="<div class='no'>Mikrofonfehler. Bitte schreiben.</div>";scrollToFeedback();};
+    r.onend=finish; r.start();
+  }catch(e){const fb=$("cardFeedback")||$("fb");if(fb)fb.innerHTML="<div class='no'>Mikrofon konnte nicht gestartet werden. Bitte schreiben.</div>";scrollToFeedback();}
 }
-function spSharedPayloadBase(){
-  const p=getSharedSprachPilotProfile();
-  return {
-    userId:(p&&p.userId)||((course||"")+"_"+(student||"")),
-    kurs:course||"",
-    vorname:(studentPerson&&studentPerson.fname)||"",
-    nachname:(studentPerson&&studentPerson.lname)||"",
-    geburtsdatum:(p&&p.geburtsdatum)||(studentPerson&&studentPerson.birthdate)||"",
-    geburtsort:(p&&p.geburtsort)||(studentPerson&&studentPerson.birthplace)||"",
-    heimatland:(studentPerson&&studentPerson.origin)||"",
-    muttersprache:(p&&p.muttersprache)||"",
-    fremdsprache:(p&&p.fremdsprache)||"",
-    wohnort:(studentPerson&&studentPerson.city)||"",
-    kinder:(studentPerson&&studentPerson.childrenNumber)||"",
-    fragenFortschritt: typeof overallProgress==="function" ? overallProgress() : 0,
-    verbenFortschritt:(p&&p.verbenFortschritt)||0,
-    gesamtpunkte:score||0
+function scrollToGame(){renderAndHydrate();setTimeout(()=>{const g=$("game");if(g)g.scrollIntoView({behavior:"smooth",block:"start"})},70)}
+function scrollToFeedback(){setTimeout(()=>{const fb=$("fb")||$("cardFeedback")||$("game");if(fb)fb.scrollIntoView({behavior:"smooth",block:"center"})},70)}
+function saveCurrentTask(task){state.currentGame=task;saveState()}
+
+function sentenceForVerb(v){
+  const map={
+    "lieben":"Ich liebe Deutsch.","kaufen":"Ich kaufe eine Tomate.","verstehen":"Ich verstehe die Frage.","brauchen":"Ich brauche einen Stift.","hören":"Ich höre Musik.","lernen":"Ich lerne Deutsch.","wohnen":"Ich wohne in Deutschland.","bringen":"Ich bringe eine Pizza.","sein":"Ich bin im Kurs.","schreiben":"Ich schreibe meinen Namen.","fotografieren":"Ich fotografiere die Stadt.","telefonieren":"Ich telefoniere heute.","kochen":"Ich koche eine Suppe.","leben":"Ich lebe in Deutschland.","kommen":"Ich komme aus Syrien.","buchstabieren":"Ich buchstabiere meinen Namen.","gehen":"Ich gehe nach Hause.","schwimmen":"Ich schwimme gern.","suchen":"Ich suche meinen Schlüssel.","bestellen":"Ich bestelle eine Pizza.","weinen":"Ich weine heute.","reparieren":"Ich repariere mein Fahrrad.","gewinnen":"Ich gewinne das Spiel.","spielen":"Ich spiele Fußball.","springen":"Ich springe hoch.","verlieren":"Ich verliere den Schlüssel.","fragen":"Ich frage die Lehrerin.","verkaufen":"Ich verkaufe ein Buch.","unterschreiben":"Ich unterschreibe das Formular.","reservieren":"Ich reserviere einen Tisch.","buchen":"Ich buche ein Hotel.","machen":"Ich mache eine Aufgabe.","malen":"Ich male ein Bild.","trinken":"Ich trinke Wasser.","schicken":"Ich schicke eine Nachricht.","denken":"Ich denke nach.","winken":"Ich winke meiner Freundin.","hassen":"Ich hasse Stress.","beißen":"Ich beiße in einen Apfel.","gießen":"Ich gieße die Blumen.","reißen":"Ich reiße das Papier.","putzen":"Ich putze das Fenster.","küssen":"Ich küsse mein Kind.","tanzen":"Ich tanze gern.","mixen":"Ich mixe einen Saft.","reisen":"Ich reise nach Berlin.","haben":"Ich habe ein Buch.","überqueren":"Ich überquere die Straße.","grüßen":"Ich grüße meinen Nachbarn.","genießen":"Ich genieße die Sonne.","singen":"Ich singe ein Lied.","schließen":"Ich schließe die Tür.","rennen":"Ich renne schnell.","lachen":"Ich lache laut.","warten":"Ich warte auf den Bus.","arbeiten":"Ich arbeite heute.","finden":"Ich finde den Schlüssel.","benutzen":"Ich benutze mein Handy.","rechnen":"Ich rechne die Aufgabe.","zeichnen":"Ich zeichne ein Haus.","öffnen":"Ich öffne die Tür.","wiederholen":"Ich wiederhole den Satz.","schneiden":"Ich schneide Gemüse.","streiten":"Ich streite nicht gern.","atmen":"Ich atme tief."
   };
+  return map[v]||`Ich übe das Verb ${v}.`;
+}
+function sentenceWords(v){const base=sentenceForVerb(v).replace(/[.?!]/g,"").split(" ");base.push(".");return base}
+
+function renderOneVerb(){
+  state.phase="select";
+  const v=currentPickVerb();
+  if(!v){if(state.active.length>0){state.phase="tasks";saveState();renderHome();return};$("app").innerHTML="<div class='ok'>Alle Verben wurden eingeschätzt.</div>";return;}
+  $("app").innerHTML=`<h2>Verb einschätzen</h2>
+    <div class="mini-top-progress"><strong>Paket:</strong> ${state.active.length}/20 Verben gesammelt</div>
+    <p class="small">Entscheide schnell. Danach kommt automatisch das nächste Verb.</p>
+    <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
+      ${imageBox(v.v,false)}<h1 style="color:#667eea">${safeText(v.v)}</h1><p>${safeText(v.img)}</p>
+    </div>
+    <button class="success" onclick="rateVerb('${v.v}','known')">✅ kann ich</button>
+    <button onclick="rateVerb('${v.v}','unsure')">❓ unsicher</button>
+    <button onclick="rateVerb('${v.v}','unknown')">❌ kann ich nicht</button>`;
+  renderProgressPanel(false); renderAndHydrate();
+}
+function rateVerb(v,level){
+  ["known","unsure","unknown"].forEach(k=>state[k]=state[k].filter(x=>x!==v));
+  state[level].push(v);
+  if(level!=="known" && !state.active.includes(v)){state.active.push(v);ensureSkillState(v);}
+  state.index++;
+  if(state.active.length>=20){
+    state.active=state.active.slice(0,20);
+    state.taskQueues={}; state.taskDoneSets={}; state.flashSession=null;
+    state.phase="tasks"; saveState(); renderHome();
+  }else{saveState(); renderOneVerb();}
+}
+function startNewVerbPackage(){
+  state.packageNo=(state.packageNo||1)+1;
+  state.learned=[...(state.learned||[]),...(state.active||[])].filter((v,i,a)=>a.indexOf(v)===i);
+  state.active=[]; state.taskQueues={}; state.taskDoneSets={}; state.flashSession=null; state.currentGame="";
+  state.phase="select"; saveState(); renderOneVerb();
+}
+function safeRun(fn){try{fn()}catch(e){console.error(e);const g=$("game");if(g)g.innerHTML="<div class='no'>Diese Aufgabe konnte nicht geöffnet werden. Bitte neu laden.</div>";}}
+function renderHome(){
+  state.phase="tasks"; saveState();
+  const packageDone=packageComplete();
+  $("app").innerHTML=`<h2>Verben üben</h2>
+    <div class="mini-top-progress"><strong>Paket:</strong> ${state.packageNo||1} | <strong>Aktiv:</strong> ${state.active.length}/20 | <strong>Gelernt:</strong> ${state.learned.length} | <strong>Gesamt:</strong> ${overall()}% | <strong>Sterne:</strong> ${totalStars()}</div>
+    ${packageDone?`<div class="package-done"><h3>20 Verben geschafft!</h3><p>Alle aktiven Verben sind auf 100 %. Jetzt kannst du neue Verben einschätzen.</p><button class="success" onclick="startNewVerbPackage()">Neue Verben auswählen</button></div>`:""}
+    <button class="overview-button" onclick="showVerbOverview()">Alle Verben anzeigen</button>
+    <div class="task-grid">
+      <button class="${taskCardClass('karteikarte')}" onclick="safeRun(()=>{if(taskDone('karteikarte')){taskBlockedMessage('Karteikarten');return}startFlashcardSession();flashcards();})"><span class="big-icon">🃏</span>Karteikarten<div class="task-status">${taskCardStatus('karteikarte')}</div></button>
+      ${taskButton('memory','🖼️','Memory','memory')}
+      ${taskButton('bild_verb','✅','Bild → Verb','quiz')}
+      ${taskButton('verb_bild','🖼️','Verb → Bild','verbToImage')}
+      ${taskButton('schreiben','✍️','Schreiben','writeVerb')}
+      ${taskButton('hoeren_schreiben','🔊','Hören → Schreiben','hearWrite')}
+      ${taskButton('hoeren_sprechen','🎧','Hören → Sprechen','hearSpeak')}
+      ${taskButton('bild_sprechen','🎤','Bild sprechen','imageSpeak')}
+      ${taskButton('satz_puzzle','🧩','Satz-Puzzle','sentencePuzzle')}
+    </div><div id="game"></div>`;
+  renderProgressPanel(false); if(!packageDone)restoreCurrentTask(); checkMilestones();
+}
+function taskButton(skill,icon,label,fn){return `<button class="${taskCardClass(skill)}" onclick="safeRun(()=>{if(taskDone('${skill}')){taskBlockedMessage('${label}');return}${fn}();})"><span class="big-icon">${icon}</span>${label}<div class="task-status">${taskCardStatus(skill)}</div></button>`}
+function taskBlockedMessage(label){$("game").innerHTML=`<div class="package-done"><h3>${label} erledigt ✓</h3><p>Diese Aufgabe ist für dein aktuelles 20-Verben-Paket abgeschlossen.</p><button class="success" onclick="renderHome()">Zur Übersicht</button></div>`;scrollToGame()}
+function restoreCurrentTask(){return false}
+
+function startFlashcardSession(){
+  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:(state.active||[]).length,words:(state.active||[])};
+  state.flashSession.correct=state.flashSession.correct||{}; state.flashSession.wrong=state.flashSession.wrong||{}; state.flashSession.done=state.flashSession.done||[];
+  const doneSet=new Set(state.flashSession.done);
+  const remaining=(state.active||[]).filter(v=>!doneSet.has(v));
+  state.flashSession.words=state.active.slice(); state.flashSession.total=state.active.length;
+  if(!state.flashSession.queue || !state.flashSession.queue.length) state.flashSession.queue=shuffle(remaining);
+  remaining.forEach(v=>{state.flashSession.correct[v]=state.flashSession.correct[v]||0;state.flashSession.wrong[v]=state.flashSession.wrong[v]||0;});
+  saveState();
+}
+function nextFlashVerb(){
+  if(!state.flashSession || !state.flashSession.queue)startFlashcardSession();
+  if((state.flashSession.done||[]).length>=state.flashSession.total)return null;
+  if(!state.flashSession.queue.length){
+    const doneSet=new Set(state.flashSession.done||[]);
+    state.flashSession.queue=(state.active||[]).filter(v=>!doneSet.has(v));
+  }
+  if(!state.flashSession.queue.length)return null;
+  const v=state.flashSession.queue.shift(); state.flashSession.current=v; saveState(); return v;
+}
+function flashProgressHtml(){
+  const totalWords=(state.flashSession&&state.flashSession.total)||state.active.length;
+  const totalPoints=totalWords*2;
+  const points=Object.values((state.flashSession&&state.flashSession.correct)||{}).reduce((s,n)=>s+Math.min(2,Number(n)||0),0);
+  const pct=totalPoints?Math.round(points*100/totalPoints):0;
+  const doneWords=(state.flashSession&&state.flashSession.done?state.flashSession.done.length:0);
+  return `<div class="flash-progress-box"><div class="flash-progress-title"><strong>${pct}% fertig</strong><span>${points}/${totalPoints} Punkte · ${doneWords}/${totalWords} Wörter</span></div><div class="flash-bar"><div class="flash-fill" style="width:${pct}%"></div></div></div>`;
+}
+function flashcards(){
+  state.currentGame="flashcards";
+  let v=nextFlashVerb(); if(!v){flashcardDoneMessage();return}
+  state.currentVerb=v; state.cardWasFlipped=false; saveState();
+  const correctNow=(state.flashSession.correct&&state.flashSession.correct[v])||0, wrongNow=(state.flashSession.wrong&&state.flashSession.wrong[v])||0;
+  $("game").innerHTML=`${flashProgressHtml()}<div class="card-task-head"><h3>Karteikarte</h3><div class="small">Antwort zählt nur vor dem Umdrehen.</div></div>
+    <div class="word-status"><span class="word-pill">${Math.min(correctNow,2)}/2 Punkte</span>${wrongNow?`<span class="word-pill">Fehler: ${wrongNow}</span>`:""}</div>
+    <div class="study-card-wrap"><div id="studyCard" class="study-card" onclick="state.cardWasFlipped=true;saveState();this.classList.toggle('flipped')">
+      <div class="study-face"><div class="small">${nativeLang()}</div><div class="native-word">${safeText(nativeWord(v))}</div><p class="small">Wie heißt das auf Deutsch?</p></div>
+      <div class="study-face study-back"><div class="small">Deutsch</div><div class="german-word">${safeText(v)}</div></div>
+    </div></div>
+    <input id="cardAnswer" placeholder="Deutsches Verb..."><div class="card-actions"><button class="success" onclick="checkFlashcardAnswer('${v}')">Überprüfen</button><button onclick="speakFlashcardAnswer('${v}')">🎤 Sagen</button></div>
+    <div id="micStatus" class="small">Mikrofon aus</div><p id="heard" class="small"></p><div id="cardFeedback"></div>`;
+  scrollToGame();
+}
+function finishFlashVerb(v,good){
+  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:state.active.length,words:state.active.slice()};
+  ensureSkillState(v); state.flashSession.correct[v]=state.flashSession.correct[v]||0; state.flashSession.wrong[v]=state.flashSession.wrong[v]||0;
+  if(good){
+    state.flashSession.correct[v]=Math.min(2,state.flashSession.correct[v]+1);
+    markSkill(v,"karteikarte",true);
+    if(state.flashSession.correct[v]>=2){
+      state.skillDone[v]["karteikarte"]=true;
+      if(!state.flashSession.done.includes(v))state.flashSession.done.push(v);
+      finishQueuedVerb("karteikarte",v,true);
+      state.flashSession.queue=state.flashSession.queue.filter(x=>x!==v);
+    }else state.flashSession.queue.push(v);
+  }else{
+    markSkill(v,"karteikarte",false);
+    state.flashSession.wrong[v]++; state.flashSession.queue.push(v);
+  }
+  saveState(); checkMilestones();
+}
+function checkFlashcardAnswer(v){
+  const val=($("cardAnswer")||{value:""}).value, fb=$("cardFeedback");
+  if(state.cardWasFlipped){finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Die Karte war schon umgedreht. Diese Antwort zählt nicht als Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;}
+  else if(checkVerbAnswer(val,v)){finishFlashVerb(v,true);const c=state.flashSession.correct[v]||0;fb.innerHTML=`<div class="ok">${c>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;}
+  else{finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Noch nicht. Das Verb kommt am Ende noch einmal.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;}
+  scrollToFeedback();
+}
+function speakFlashcardAnswer(v){recogVerb(t=>{const h=$("heard");if(h)h.innerText="Gehört: "+t;const fb=$("cardFeedback");if(state.cardWasFlipped){finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Die Karte war schon umgedreht. Kein Punkt.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;}else if(checkVerbAnswer(t,v)){finishFlashVerb(v,true);const c=state.flashSession.correct[v]||0;fb.innerHTML=`<div class="ok">${c>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;}else{finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Gehört: ${safeText(t)}<br>Richtig: <strong>${v}</strong><br>Das Verb kommt am Ende noch einmal.</div><button onclick="flashcards()">Weiter</button>`;}scrollToFeedback();})}
+function flashcardDoneMessage(){$("game").innerHTML=`${flashProgressHtml()}${completedTaskMessage("Karteikarten")}<button class="success" onclick="renderHome()">Nächste Aufgabe wählen</button>`;scrollToGame()}
+
+function memory(){
+  saveCurrentTask("memory"); state.currentGame="memory"; state.first=null; state.lock=false; state.memoryCards=[];
+  initTaskQueue("memory");
+  const pool=(state.taskQueues[taskQueueKey("memory")]||[]).slice(0,6);
+  if(!pool.length){finishTaskIfComplete("memory","Memory");return}
+  pool.forEach((v,i)=>{state.memoryCards.push({p:i,t:"de",v:v,html:`<span class="mem-german">${safeText(v)}</span>`,o:false,d:false});state.memoryCards.push({p:i,t:"img",v:v,html:imageBox(v,true),o:false,d:false});});
+  state.memoryCards=shuffle(state.memoryCards); saveState(); renderMemory(); scrollToGame();
+}
+function renderMemory(){$("game").innerHTML=`${taskProgressHtml("memory","Memory")}<h3>Memory</h3><p class="small">Finde das Bild und das passende deutsche Verb.</p><div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`;renderAndHydrate();}
+function flip(i){
+  if(state.lock)return; const c=state.memoryCards[i]; if(!c||c.o||c.d)return; c.o=true;
+  if(state.first===null){state.first=i;saveState();renderMemory();return}
+  const a=state.memoryCards[state.first], b=c; state.lock=true; renderMemory();
+  setTimeout(()=>{if(a.p===b.p&&a.t!==b.t){a.d=b.d=true;finishQueuedVerb("memory",a.v,true);addEncounter(a.v,"memory",true);$("fb").innerHTML="<div class='ok'>Paar gefunden!</div>";}else{if(a&&a.v)finishQueuedVerb("memory",a.v,false);if(b&&b.v&&b.v!==a.v)finishQueuedVerb("memory",b.v,false);a.o=false;b.o=false;$("fb").innerHTML="<div class='no'>Noch nicht. Die Verben kommen am Ende wieder.</div>";}state.first=null;state.lock=false;saveState();renderMemory();if(state.memoryCards.every(x=>x.d))finishTaskIfComplete("memory","Memory");},650);
 }
 
+function quiz(){
+  saveCurrentTask("quiz"); state.currentGame="quiz"; let v=nextFromTaskQueue("bild_verb"); if(!v){finishTaskIfComplete("bild_verb","Bild → Verb");return}
+  let opts=shuffle([v,...shuffle((state.active||[]).filter(a=>a!==v)).slice(0,3)]);
+  while(opts.length<4){const extra=shuffle(ALL_VERBS.map(x=>x.v).filter(x=>!opts.includes(x)))[0];if(extra)opts.push(extra);else break;}
+  const letters=["A","B","C","D"]; state.currentVerb=v; saveState();
+  $("game").innerHTML=`${taskProgressHtml("bild_verb","Bild → Verb")}<h3>Welches Verb passt?</h3>${imageBox(v,false)}<div class="quiz-options">${opts.slice(0,4).map((o,i)=>`<button class="quiz-option" onclick="checkQuiz('${o}','${v}')"><span class="quiz-letter">${letters[i]}</span>${safeText(o)}</button>`).join("")}</div><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
+  renderAndHydrate(); scrollToGame();
+}
+function checkQuiz(a,v){if(a===v){addEncounter(v,"bild_verb",true);finishQueuedVerb("bild_verb",v,true);$("fb").innerHTML="<div class='ok'>Richtig! Dieses Verb ist in dieser Aufgabe fertig.</div><button onclick='quiz()'>weiter</button>";finishTaskIfComplete("bild_verb","Bild → Verb");}else{addEncounter(v,"bild_verb",false);finishQueuedVerb("bild_verb",v,false);$("fb").innerHTML="<div class='no'>Noch nicht. Dieses Verb kommt am Ende noch einmal.</div><button onclick='quiz()'>weiter</button>";}scrollToFeedback();}
 
-window.addEventListener("load", ()=>{ startFromSharedSprachPilot(); });
+function writeVerb(){saveCurrentTask("write");state.currentGame="write";let v=nextFromTaskQueue("schreiben");if(!v){finishTaskIfComplete("schreiben","Schreiben");return}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("schreiben","Schreiben")}<h3>Schreibe das deutsche Verb</h3>${imageBox(v,false)}<input id="w" placeholder="Verb schreiben..."><button onclick="checkWrite('${v}')">prüfen</button><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;renderAndHydrate();scrollToGame();}
+function checkWrite(v){const val=$("w").value;if(checkVerbAnswer(val,v)){addEncounter(v,"schreiben",true);finishQueuedVerb("schreiben",v,true);$("fb").innerHTML="<div class='ok'>Richtig! Dieses Verb ist in dieser Aufgabe fertig.</div><button onclick='writeVerb()'>weiter</button>";finishTaskIfComplete("schreiben","Schreiben");}else{addEncounter(v,"schreiben",false);finishQueuedVerb("schreiben",v,false);$("fb").innerHTML=`<div class='no'>Noch nicht. Richtig: <strong>${v}</strong><br>Dieses Verb kommt am Ende noch einmal.</div><button onclick='writeVerb()'>weiter</button>`;}scrollToFeedback();}
+
+function hearWrite(){saveCurrentTask("hearWrite");state.currentGame="hearWrite";let v=nextFromTaskQueue("hoeren_schreiben");if(!v){finishTaskIfComplete("hoeren_schreiben","Hören → Schreiben");return}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("hoeren_schreiben","Hören → Schreiben")}<h3>Hören → Schreiben</h3><button onclick="speakTextVerb('${v}',false)">🔊 normal</button><button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 langsam</button><input id="hw" placeholder="Verb schreiben..."><button onclick="checkHearWrite('${v}')">prüfen</button><div id="fb"></div>`;scrollToGame();}
+function checkHearWrite(v){const val=$("hw").value;if(checkVerbAnswer(val,v)){addEncounter(v,"hoeren_schreiben",true);finishQueuedVerb("hoeren_schreiben",v,true);$("fb").innerHTML="<div class='ok'>Richtig! Dieses Verb ist in dieser Aufgabe fertig.</div><button onclick='hearWrite()'>weiter</button>";finishTaskIfComplete("hoeren_schreiben","Hören → Schreiben");}else{addEncounter(v,"hoeren_schreiben",false);finishQueuedVerb("hoeren_schreiben",v,false);$("fb").innerHTML=`<div class='no'>Noch nicht. Richtig: <strong>${v}</strong><br>Dieses Verb kommt am Ende noch einmal.</div><button onclick='hearWrite()'>weiter</button>`;}scrollToFeedback();}
+
+function hearSpeak(){saveCurrentTask("hearSpeak");state.currentGame="hearSpeak";let v=nextFromTaskQueue("hoeren_sprechen");if(!v){finishTaskIfComplete("hoeren_sprechen","Hören → Sprechen");return}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("hoeren_sprechen","Hören → Sprechen")}<h3>Hören → Sprechen</h3><button onclick="speakTextVerb('${v}',false)">🔊 normal</button><button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 langsam</button><button class="success" onclick="checkHearSpeak('${v}')">🎤 sprechen</button><div id="micStatus" class="small">Mikrofon aus</div><p id="heard" class="small"></p><div id="fb"></div>`;scrollToGame();}
+function checkHearSpeak(v){recogVerb(t=>{$("heard").innerText="Gehört: "+t;if(checkVerbAnswer(t,v)){addEncounter(v,"hoeren_sprechen",true);finishQueuedVerb("hoeren_sprechen",v,true);$("fb").innerHTML="<div class='ok'>Richtig gesprochen! Dieses Verb ist in dieser Aufgabe fertig.</div><button onclick='hearSpeak()'>weiter</button>";finishTaskIfComplete("hoeren_sprechen","Hören → Sprechen");}else{addEncounter(v,"hoeren_sprechen",false);finishQueuedVerb("hoeren_sprechen",v,false);$("fb").innerHTML=`<div class='no'>Noch nicht. Richtig: <strong>${v}</strong><br>Dieses Verb kommt am Ende noch einmal.</div><button onclick='hearSpeak()'>weiter</button>`;}scrollToFeedback();})}
+
+function imageSpeak(){saveCurrentTask("imageSpeak");state.currentGame="imageSpeak";let v=nextFromTaskQueue("bild_sprechen");if(!v){finishTaskIfComplete("bild_sprechen","Bild → Sprechen");return}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("bild_sprechen","Bild → Sprechen")}<h3>Bild → Sprechen</h3>${imageBox(v,false)}<button class="success" onclick="checkImageSpeak('${v}')">🎤 Sprechen</button><div id="micStatus" class="small">Mikrofon aus</div><p id="heard" class="small"></p><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;renderAndHydrate();scrollToGame();}
+function checkImageSpeak(v){recogVerb(t=>{$("heard").innerText="Gehört: "+t;if(checkVerbAnswer(t,v)){addEncounter(v,"bild_sprechen",true);finishQueuedVerb("bild_sprechen",v,true);$("fb").innerHTML="<div class='ok'>Richtig gesprochen! Dieses Verb ist in dieser Aufgabe fertig.</div><button onclick='imageSpeak()'>weiter</button>";finishTaskIfComplete("bild_sprechen","Bild → Sprechen");}else{addEncounter(v,"bild_sprechen",false);finishQueuedVerb("bild_sprechen",v,false);$("fb").innerHTML=`<div class='no'>Noch nicht. Richtig: <strong>${v}</strong><br>Dieses Verb kommt am Ende noch einmal.</div><button onclick='imageSpeak()'>weiter</button>`;}scrollToFeedback();})}
+
+function verbToImage(){saveCurrentTask("verbToImage");state.currentGame="verbToImage";let v=nextFromTaskQueue("verb_bild");if(!v){finishTaskIfComplete("verb_bild","Verb → Bild");return}let opts=shuffle([v,...shuffle((state.active||[]).filter(x=>x!==v)).slice(0,3)]);while(opts.length<4){const extra=shuffle(ALL_VERBS.map(x=>x.v).filter(x=>!opts.includes(x)))[0];if(extra)opts.push(extra);else break;}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("verb_bild","Verb → Bild")}<h3>Welches Bild passt?</h3><h2>${safeText(v)}</h2><div class="quiz-options">${opts.slice(0,4).map((o,i)=>`<button class="bild-option" onclick="checkVerbToImage('${o}','${v}')">${imageBox(o,true)}</button>`).join("")}</div><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;renderAndHydrate();scrollToGame();}
+function checkVerbToImage(a,v){if(a===v){addEncounter(v,"verb_bild",true);finishQueuedVerb("verb_bild",v,true);$("fb").innerHTML="<div class='ok'>Richtig! Dieses Verb ist in dieser Aufgabe fertig.</div><button onclick='verbToImage()'>weiter</button>";finishTaskIfComplete("verb_bild","Verb → Bild");}else{addEncounter(v,"verb_bild",false);finishQueuedVerb("verb_bild",v,false);$("fb").innerHTML="<div class='no'>Noch nicht. Dieses Verb kommt am Ende noch einmal.</div><button onclick='verbToImage()'>weiter</button>";}scrollToFeedback();}
+
+let puzzleCurrent=[];
+function sentencePuzzle(){saveCurrentTask("sentencePuzzle");state.currentGame="sentencePuzzle";let v=nextFromTaskQueue("satz_puzzle");if(!v){finishTaskIfComplete("satz_puzzle","Satz-Puzzle");return}state.currentVerb=v;const sentence=sentenceForVerb(v);puzzleCurrent=[];const words=shuffle(sentenceWords(v));$("game").innerHTML=`${taskProgressHtml("satz_puzzle","Satz-Puzzle")}<h3>Satz-Puzzle</h3><p class="small">Baue den Satz. Der Punkt gehört dazu.</p>${imageBox(v,false)}<div id="puzzleAnswer" class="puzzle-answer"></div><div id="puzzleBank" class="puzzle-bank">${words.map(w=>`<button class="word-chip" data-word="${safeText(w)}" onclick="pickPuzzleWord(this)">${safeText(w)}</button>`).join("")}</div><button class="secondary" onclick="speakTextVerb('${sentence.replace(/'/g,"\\'")}',false)">🔊 Satz hören</button><button class="secondary" onclick="speakTextVerb('${sentence.replace(/'/g,"\\'")}',true)">🐢 Langsam</button><button class="success" onclick="checkSentencePuzzle('${v}')">Prüfen</button><button class="secondary" onclick="sentencePuzzle()">Neu</button><div id="fb"></div>`;renderAndHydrate();scrollToGame();}
+function pickPuzzleWord(btn){const w=btn.getAttribute("data-word");puzzleCurrent.push(w);btn.remove();const ans=$("puzzleAnswer");const chip=document.createElement("button");chip.className="word-chip answer";chip.textContent=w;chip.onclick=function(){const children=Array.from(ans.children);const index=children.indexOf(chip);if(index>=0)puzzleCurrent.splice(index,1);chip.remove();const bank=$("puzzleBank");const b=document.createElement("button");b.className="word-chip";b.textContent=w;b.setAttribute("data-word",w);b.onclick=function(){pickPuzzleWord(b)};bank.appendChild(b);};ans.appendChild(chip);}
+function checkSentencePuzzle(v){const target=sentenceForVerb(v).replace(/\s+/g," ").trim();let answer=puzzleCurrent.join(" ").replace(" .",".").trim();const fb=$("fb");if(clean(answer)===clean(target)){addEncounter(v,"satz_puzzle",true);finishQueuedVerb("satz_puzzle",v,true);fb.innerHTML=`<div class="ok">Richtig: ${sentenceForVerb(v)}<br>Dieses Verb ist in dieser Aufgabe fertig.</div><button class="success" onclick="sentencePuzzle()">weiter</button>`;speakTextVerb(sentenceForVerb(v),false);finishTaskIfComplete("satz_puzzle","Satz-Puzzle");}else{addEncounter(v,"satz_puzzle",false);finishQueuedVerb("satz_puzzle",v,false);fb.innerHTML=`<div class="no">Noch nicht.<br>Richtig: ${sentenceForVerb(v)}<br>Dieses Verb kommt am Ende noch einmal.</div><button onclick="sentencePuzzle()">weiter</button>`;}scrollToFeedback();}
+
+function showTranslationHelp(v){const fb=$("fb")||$("cardFeedback");if(fb){fb.innerHTML=`<div class="ok"><strong>Hilfe (${nativeLang()}):</strong><br>${safeText(nativeWord(v))}</div>`+fb.innerHTML;scrollToFeedback();}}
+function showVerbOverview(){
+  const cards=ALL_VERBS.map(x=>x.v).map(v=>`<div class="verb-overview-card">${imageBox(v,true)}<div class="verb-de">${safeText(v)}</div><div class="verb-native">${safeText(nativeWord(v))}</div><div class="verb-percent">${verbPercent(v)}%</div></div>`).join("");
+  const modal=document.createElement("div");modal.className="overview-modal";modal.id="overviewModal";modal.innerHTML=`<div class="overview-box"><div class="overview-head"><h2>Alle Verben</h2><button class="secondary" onclick="document.getElementById('overviewModal').remove()">Schließen</button></div><div class="overview-grid">${cards}</div></div>`;
+  document.body.appendChild(modal);renderAndHydrate();
+}
+function renderProgressPanel(openOnly){
+  const p=$("progressPanel"); if(!p)return;
+  const activeRows=state.active.map(v=>`<div class="progress-row"><div class="progress-row-head">${imageBox(v,true)}<div><strong>${safeText(v)}</strong><br><span class="small">${verbSkillCount(v)}/${VERB_SKILLS.length} · ${verbPercent(v)}%</span></div></div><div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div><div class="small">Fehler: ${state.weak[v]||0}</div>${skillBadges(v)}</div>`).join("");
+  p.innerHTML=`<h2>📊 Fortschritt</h2><button class="secondary" onclick="toggleProgressPanel()">Schließen</button><div class="progress-row"><strong>Paket ${state.packageNo||1}</strong><br>Aktiv: ${state.active.length}/20 · Gelernt: ${state.learned.length} · Offen: ${unusedVerbs().length}<br>Sterne: ${totalStars()}</div><h3>Aktive Verben</h3>${activeRows||"<p>Noch keine aktiven Verben.</p>"}<h3>Gelernte Verben</h3><p class="small">${state.learned.length?state.learned.join(", "):"Noch keine."}</p>`;
+  renderAndHydrate();
+}
+function toggleProgressPanel(){const p=$("progressPanel");if(!p)return;p.classList.toggle("hidden");if(!p.classList.contains("hidden"))renderProgressPanel(true)}
+
+function init(){if(!loadProfile())return;loadState();if(state.active.length>=20){state.phase="tasks";renderHome();}else{state.phase="select";renderOneVerb();}}
+document.addEventListener("DOMContentLoaded",init);
+
+/* FIX: Google Sheet nur bei Aufgabenabschluss senden */
+function sendExerciseCompletedOnce(exName){
+  if(!exName) exName = game;
+  window._sentExerciseCompletions = window._sentExerciseCompletions || {};
+  const key = keyPrefixForCompletion() + "_" + exName;
+  if(window._sentExerciseCompletions[key]) return;
+  window._sentExerciseCompletions[key] = true;
+  try{
+    sendToGoogleSheet("completed_" + exName, true);
+  }catch(e){
+    console.warn("Google Sheet Abschluss konnte nicht gesendet werden:", e);
+  }
+}
+function keyPrefixForCompletion(){
+  return String(course||"") + "_" + String(student||"");
+}
+
 
 /* FIX: Prüfung-Button startExam */
 function startExam(){
   if(typeof renderExam === "function") return renderExam();
   if(typeof exam === "function") return exam();
-  if(typeof startPruefung === "function") return startPruefung();
-  if(typeof startPrüfung === "function") return startPrüfung();
-
   const g = document.getElementById("game");
   if(g){
-    g.innerHTML = "<h2>🏆 Prüfung</h2><div class='no'>Die Prüfung konnte nicht gestartet werden. Bitte prüfe die Prüfungsfunktion im Code.</div>";
-  }else{
-    alert("Die Prüfung konnte nicht gestartet werden.");
+    g.innerHTML = "<h2>🏆 Prüfung</h2><div class='no'>Die Prüfung konnte nicht gestartet werden.</div>";
   }
 }
-
-
-/* FIX: sichtbare JavaScript-Fehler sauber anzeigen */
-window.addEventListener("error", function(e){
-  try{
-    const errorBox = document.createElement("div");
-    errorBox.className = "no";
-    errorBox.innerHTML = "<strong>JavaScript-Fehler:</strong> " + String(e.message || "Unbekannter Fehler").replace(/</g,"&lt;");
-    const target = document.getElementById("game") || document.body;
-    target.appendChild(errorBox);
-  }catch(_){}
-});
 
 </script>
 </body>
