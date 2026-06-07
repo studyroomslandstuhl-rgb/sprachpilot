@@ -243,7 +243,7 @@ table{width:100%;border-collapse:collapse;margin-top:12px}td,th{border:1px solid
 <div class="stats" id="statsBox"></div><div id="progressDetails"></div>
 <div class="card">
 <h2>Aufgaben</h2>
-<p class="small">Alle Aufgaben sind offen. Die Prüfung ist erst am Ende freigeschaltet.</p>
+<p class="small">Alle Aufgaben und die Prüfung sind offen.</p>
 <div id="exerciseTracker" class="exercise-tracker"></div>
 </div>
 <div class="flex">
@@ -330,7 +330,7 @@ const EXERCISES = ["learn","qa","speak","puzzle","dictation","memory","quickfire
 const EXERCISE_NAMES = {learn:"📚 Lernen",qa:"🗣️ Fragen beantworten",speak:"🎤 Sprechen",puzzle:"🧩 Puzzle",dictation:"✍️ Diktat",memory:"🃏 Memory",quickfire:"⚡ Blitzfeuer",listen:"🎧 Hören",listenrespond:"🎤 Hören & Antworten",exam:"🏆 Prüfung"};
 
 function trainingExercises(){return EXERCISES.filter(ex=>ex!=="exam");}
-function allTrainingComplete(){return trainingExercises().every(ex => (exerciseProgress[ex]||0) >= 90);}
+function allTrainingComplete(){return true;}
 
 
 let student="",course="",game="learn",i=0,score=0,attempts=0,correct=0;
@@ -597,7 +597,7 @@ function stats(){$("statsLine").innerHTML=`📌 Fortschritt/Punkte: <b>${score}<
 function updateStatsBox(){$("statsBox").innerHTML=`<div class="stat"><div>Aktivität</div><div class="num">${score}</div></div><div class="stat"><div>Richtig</div><div class="num">${correct}/${attempts}</div></div><div class="stat"><div>Genauigkeit</div><div class="num">${attempts?Math.round(correct*100/attempts):0}%</div></div><div class="stat"><div>Modus</div><div class="num">${EXERCISE_NAMES[game].split(" ")[0]}</div></div>`}
 function updateExerciseTracker(){
   $("exerciseTracker").innerHTML = EXERCISES.map(ex => {
-    let locked = ex==="exam" && !allTrainingComplete();
+    let locked = false;
     let progress = Math.max(0, Math.min(100, Number((exerciseProgress||{})[ex]) || 0));
     let label = locked ? "🔒 gesperrt" : String(progress) + "%";
     return `<button type="button" class="exercise-item ${ex===game?'active':''} ${progress>=90?'completed':''} ${ex==='exam'?'exam':''}" data-exercise="${ex}" ${locked ? "disabled" : ""}>
@@ -609,19 +609,13 @@ function updateExerciseTracker(){
   document.querySelectorAll("[data-exercise]").forEach(btn => {
     btn.onclick = () => {
       const ex = btn.dataset.exercise;
-      if(ex==="exam" && !allTrainingComplete()){
-        alert("Die Prüfung wird erst freigeschaltet, wenn alle Aufgaben erledigt sind.");
-        return;
-      }
+      
       mode(ex);
     };
   });
 }
 function mode(m){
-  if(m==="exam" && !allTrainingComplete()){
-    alert("Die Prüfung wird erst freigeschaltet, wenn alle Aufgaben erledigt sind.");
-    return;
-  }
+  
   game=m;
   i=0;
   helpWrongTries=0;
