@@ -150,29 +150,10 @@ table{width:100%;border-collapse:collapse;margin-top:12px}td,th{border:1px solid
   margin:10px 0;
 }
 
-
-/* SICHTBARES SPRACHPILOT LOGO */
-.sp-logo-wrap{
-  text-align:center;
-  margin:0 0 10px;
-}
-.sp-logo{
-  display:inline-block;
-  text-decoration:none;
-  font-weight:900;
-  font-size:38px;
-  color:white;
-  text-shadow:1px 2px 5px rgba(0,0,0,.28);
-  line-height:1.1;
-}
-.sp-logo:hover{transform:scale(1.03)}
-
 </style>
 </head>
 <body>
-
 <header>
-<div class="sp-logo-wrap"><a class="sp-logo" href="https://sprachpilot.org">SprachPilot</a></div>
 <h1>🇩🇪 A1 Fragen Trainer Pro</h1>
 <p>Interaktives Lernen · Sprechen · Hören · Prüfung</p>
 </header>
@@ -1588,28 +1569,6 @@ function spSharedPayloadBase(){
 window.addEventListener("load", ()=>{ startFromSharedSprachPilot(); });
 
 /* FIX: Prüfung-Button startExam */
-
-/* FIX: Prüfungs-Timer */
-function formatTime(ms){
-  let sec = Math.max(0, Math.floor((Number(ms)||0)/1000));
-  let m = Math.floor(sec/60);
-  let s = sec % 60;
-  return `${m}:${String(s).padStart(2,"0")}`;
-}
-function examScore(){
-  let acc = examAttempts > 0 ? (examCorrect / examAttempts) : 0;
-  let elapsed = examStartTime ? Math.floor((Date.now()-examStartTime)/1000) : 0;
-  return Math.max(0, Math.round(acc*1000 - elapsed));
-}
-function updateExamTimer(){
-  let box = $("examTimer");
-  if(box && examStartTime){
-    let elapsed = Date.now() - examStartTime;
-    let acc = examAttempts > 0 ? Math.round(examCorrect*100/examAttempts) : 0;
-    box.innerHTML = `⏱️ Zeit: <strong>${formatTime(elapsed)}</strong> · 🎯 Genauigkeit: <strong>${acc}%</strong> · 🏆 Prüfungswert: <strong>${examScore()}</strong>`;
-  }
-}
-
 function startExam(){
   if(typeof renderExam === "function") return renderExam();
   if(typeof exam === "function") return exam();
@@ -1637,25 +1596,201 @@ window.addEventListener("error", function(e){
 });
 
 
-/* Fehleranzeige begrenzen */
-if(!window.__spErrorHandlerInstalled){
-  window.__spErrorHandlerInstalled = true;
-  window.addEventListener("error", function(e){
-    try{
-      const old=document.getElementById("spErrorBox");
-      if(old) old.remove();
-      const target=document.getElementById("game") || document.body;
-      const box=document.createElement("div");
-      box.id="spErrorBox";
-      box.className="no";
-      box.innerHTML="<strong>JavaScript-Fehler:</strong> "+String(e.message||"Unbekannt").replace(/</g,"&lt;");
-      target.appendChild(box);
-    }catch(_){}
-  });
+
+/* ===== ROBUSTER PRÜFUNGS-FIX ===== */
+if(typeof formatTime !== "function"){
+  window.formatTime = function(ms){
+    let sec = Math.max(0, Math.floor((Number(ms)||0)/1000));
+    let m = Math.floor(sec/60);
+    let s = sec % 60;
+    return `${m}:${String(s).padStart(2,"0")}`;
+  };
 }
 
+if(typeof examScore !== "function"){
+  window.examScore = function(){
+    let acc = examAttempts > 0 ? (examCorrect / examAttempts) : 0;
+    let elapsed = examStartTime ? Math.floor((Date.now()-examStartTime)/1000) : 0;
+    return Math.max(0, Math.round(acc*1000 - elapsed));
+  };
+}
 
-function renderGameButtons(){ try{ updateExerciseTracker(); }catch(e){} }
+if(typeof updateExamTimer !== "function"){
+  window.updateExamTimer = function(){
+    let box = $("examTimer");
+    if(box && examStartTime){
+      let elapsed = Date.now() - examStartTime;
+      let acc = examAttempts > 0 ? Math.round(examCorrect*100/examAttempts) : 0;
+      box.innerHTML = `⏱️ Zeit: <strong>${formatTime(elapsed)}</strong> · 🎯 Genauigkeit: <strong>${acc}%</strong> · 🏆 Prüfungswert: <strong>${examScore()}</strong>`;
+    }
+  };
+}
+
+if(typeof okQuestion !== "function"){
+  window.okQuestion = function(user, x=item()){
+    let u = clean(user);
+    if(!u) return false;
+    return questionVariants(x).some(q => clean(q) === u);
+  };
+}
+
+if(typeof examQuestionHint !== "function"){
+  window.examQuestionHint = function(){
+    let x = item();
+    if(x.topic==="Name") return "Frage nach dem Namen.";
+    if(x.topic==="Vorname") return "Frage nach dem Vornamen.";
+    if(x.topic==="Nachname") return "Frage nach dem Nachnamen.";
+    if(x.topic==="Heimatland") return "Frage nach der Herkunft.";
+    if(x.topic==="Sprache") return "Frage nach der Sprache.";
+    if(x.topic==="Wohnort") return "Frage nach dem Wohnort.";
+    if(x.topic==="Alter") return "Frage nach dem Alter.";
+    if(x.topic==="Geburtsort") return "Frage nach dem Geburtsort.";
+    if(x.topic==="Kinder") return "Frage nach Kindern.";
+    if(x.topic==="Familienstand") return "Frage nach dem Familienstand.";
+    if(x.topic && x.topic.startsWith("Buchstabieren")) return "Bilde eine Buchstabier-Frage.";
+    return "Bilde die passende Frage.";
+  };
+}
+
+if(typeof startExam !== "function"){
+  window.startExam = function(){
+    game = "exam";
+    i = 0;
+    questionOrder = shuffle(DATA.map((_,idx)=>idx));
+    examStartTime = Date.now();
+    examCorrect = 0;
+    examAttempts = 0;
+    examFinished = false;
+    if(examTimer) clearInterval(examTimer);
+    examTimer = setInterval(updateExamTimer,1000);
+  };
+}
+
+if(typeof markExam !== "function"){
+  window.markExam = function(good,userAnswer=""){
+    examAttempts++;
+    attempts++;
+    answerHistory.push({
+      question:item().topic,
+      correct:good,
+      answer:userAnswer,
+      acceptedAnswers:questionVariants(),
+      timestamp:new Date().toLocaleTimeString(),
+      exam:true
+    });
+
+    if(good){
+      examCorrect++;
+      correct++;
+      score += 10;
+      $("feedback").innerHTML = "<div class='ok'>Gut gemacht!</div>";
+    }else{
+      $("feedback").innerHTML = `<div class='no'>Versuch es nochmal.</div><div class='answer-box'><strong>Richtige Frage:</strong><br>${questionVariants().map(escapeHtml).join("<br>")}</div>`;
+    }
+
+    updateExamTimer();
+    saveLocal();
+    updateAll();
+
+    let next = $("nextExamBtn");
+    if(next) next.style.display = "inline-block";
+  };
+}
+
+if(typeof nextExam !== "function"){
+  window.nextExam = function(){
+    if(i >= DATA.length - 1){
+      finishExam();
+    }else{
+      i++;
+      helpWrongTries = 0;
+      responseTries = 0;
+      render();
+    }
+  };
+}
+
+if(typeof saveExamResult !== "function"){
+  window.saveExamResult = function(){
+    let elapsedMs = examStartTime ? Date.now()-examStartTime : 0;
+    let accuracy = examAttempts ? Math.round(examCorrect*100/examAttempts) : 0;
+    let result = {
+      name: student,
+      course: course,
+      score: examScore(),
+      examScore: examScore(),
+      examTimeMs: elapsedMs,
+      examTime: formatTime(elapsedMs),
+      time: formatTime(elapsedMs),
+      accuracy: accuracy,
+      examAccuracy: accuracy,
+      examCorrect: examCorrect,
+      examAttempts: examAttempts,
+      total: DATA.length,
+      date: new Date().toLocaleString()
+    };
+    try{
+      let board = JSON.parse(localStorage.getItem("A1_EXAM_RESULTS") || "[]");
+      board.push(result);
+      board.sort((a,b)=>(b.examScore||b.score||0)-(a.examScore||a.score||0));
+      localStorage.setItem("A1_EXAM_RESULTS", JSON.stringify(board));
+    }catch(e){}
+    return result;
+  };
+}
+
+if(typeof finishExam !== "function"){
+  window.finishExam = function(){
+    if(examFinished) return;
+    examFinished = true;
+    if(examTimer) clearInterval(examTimer);
+    let result = saveExamResult();
+    exerciseProgress.exam = 100;
+    saveLocal();
+    try{ updateExerciseTracker(); }catch(e){}
+    try{ sendExamResultToGoogleSheet(result); }catch(e){ console.warn(e); }
+
+    $("game").innerHTML = `<h2>🏆 Prüfung abgeschlossen!</h2>
+      <div class="ok">Gut gemacht!</div>
+      <div class="stats">
+        <div class="stat"><div>Zeit</div><div class="num">${result.examTime}</div></div>
+        <div class="stat"><div>Richtig</div><div class="num">${examCorrect}/${examAttempts}</div></div>
+        <div class="stat"><div>Genauigkeit</div><div class="num">${result.examAccuracy}%</div></div>
+        <div class="stat"><div>Wert</div><div class="num">${result.examScore}</div></div>
+      </div>
+      <button onclick="showLeaderboard()">🏅 Ergebnisse ansehen</button>
+      <button class="secondary" onclick="mode('learn')">Weiter üben</button>`;
+  };
+}
+
+if(typeof renderGameButtons !== "function"){
+  window.renderGameButtons = function(){
+    try{ updateExerciseTracker(); }catch(e){}
+  };
+}
+
+if(typeof studentRowId !== "function"){
+  window.studentRowId = function(){
+    return String(course||"") + "_" + String(student||"");
+  };
+}
+
+if(typeof spSharedPayloadBase !== "function"){
+  window.spSharedPayloadBase = function(){
+    return {
+      rowId: studentRowId(),
+      course: course || "",
+      student: student || "",
+      score: score || 0,
+      correct: correct || 0,
+      attempts: attempts || 0,
+      progress: typeof progressSummary==="function" ? progressSummary() : "",
+      module: "fragen"
+    };
+  };
+}
+/* ===== ENDE ROBUSTER PRÜFUNGS-FIX ===== */
+
 </script>
 </body>
 </html>
