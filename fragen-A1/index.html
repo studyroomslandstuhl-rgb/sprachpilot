@@ -571,8 +571,9 @@ function saveLocal(){
     localStorage.setItem(regKey,JSON.stringify(list));
   }
 
-  sendToGoogleSheet(game);
+  // Google Sheet wird nicht bei jedem Klick gesendet.
 }
+
 function loadLocal(){
   let raw=localStorage.getItem(key());
   if(raw){
@@ -1587,6 +1588,28 @@ function spSharedPayloadBase(){
 window.addEventListener("load", ()=>{ startFromSharedSprachPilot(); });
 
 /* FIX: Prüfung-Button startExam */
+
+/* FIX: Prüfungs-Timer */
+function formatTime(ms){
+  let sec = Math.max(0, Math.floor((Number(ms)||0)/1000));
+  let m = Math.floor(sec/60);
+  let s = sec % 60;
+  return `${m}:${String(s).padStart(2,"0")}`;
+}
+function examScore(){
+  let acc = examAttempts > 0 ? (examCorrect / examAttempts) : 0;
+  let elapsed = examStartTime ? Math.floor((Date.now()-examStartTime)/1000) : 0;
+  return Math.max(0, Math.round(acc*1000 - elapsed));
+}
+function updateExamTimer(){
+  let box = $("examTimer");
+  if(box && examStartTime){
+    let elapsed = Date.now() - examStartTime;
+    let acc = examAttempts > 0 ? Math.round(examCorrect*100/examAttempts) : 0;
+    box.innerHTML = `⏱️ Zeit: <strong>${formatTime(elapsed)}</strong> · 🎯 Genauigkeit: <strong>${acc}%</strong> · 🏆 Prüfungswert: <strong>${examScore()}</strong>`;
+  }
+}
+
 function startExam(){
   if(typeof renderExam === "function") return renderExam();
   if(typeof exam === "function") return exam();
@@ -1631,6 +1654,8 @@ if(!window.__spErrorHandlerInstalled){
   });
 }
 
+
+function renderGameButtons(){ try{ updateExerciseTracker(); }catch(e){} }
 </script>
 </body>
 </html>
