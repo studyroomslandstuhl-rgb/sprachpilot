@@ -2,733 +2,318 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SprachPilot</title>
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Verben A1 - SprachPilot</title>
 <style>
-*{
-  box-sizing:border-box;
-  margin:0;
-  padding:0;
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;color:#222}
+main{width:min(1050px,94vw);margin:0 auto;padding:18px 0 42px}
+.card{background:white;border-radius:22px;padding:18px;box-shadow:0 12px 35px rgba(0,0,0,.22);margin-bottom:16px}
+h1,h2{color:#667eea;margin-top:0}
+h3{margin:8px 0 10px}
+button{border:0;border-radius:14px;padding:12px 16px;font-size:16px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);color:white;margin:5px;cursor:pointer}
+button.secondary{background:#eef2ff;color:#333}
+button.success{background:linear-gradient(135deg,#27ae60,#2ecc71)}
+button.danger{background:linear-gradient(135deg,#e74c3c,#c0392b)}
+button:disabled{opacity:.55;cursor:not-allowed}
+input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size:18px;margin:8px 0}
+.hidden{display:none!important}
+.small{font-size:14px;color:#666}
+.ok{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0}
+.no{background:#ffe1e1;border-left:5px solid #e74c3c;padding:12px;border-radius:10px;margin:10px 0}
+.top-link{display:inline-block;text-decoration:none;color:#667eea;font-weight:900}
+.top-link:hover{text-decoration:underline}
+.mini-top-progress{background:white;border:2px solid #dce2ff;border-radius:16px;padding:10px;margin:8px 0}
+.task-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:12px 0}
+.task-card{min-height:82px;border-radius:18px;background:#f7f8ff!important;border:3px solid #dce2ff;color:#333;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px}
+.task-card .big-icon{font-size:23px;margin-bottom:4px}
+.task-card.done-card{background:linear-gradient(135deg,#27ae60,#2ecc71)!important;color:white!important;border-color:#27ae60!important}
+.task-status{font-size:12px;margin-top:4px;opacity:.9}
+.overview-button{width:100%;margin:8px 0 10px!important;background:#eef2ff!important;color:#333!important;box-shadow:none!important}
+.img-holder{width:100%;display:flex;justify-content:center;align-items:center;margin:8px 0}
+.img-holder img{width:100%;max-width:300px;height:215px;object-fit:cover;display:block;border-radius:18px;border:3px solid #dce2ff;background:#f7f8ff}
+.mem-img-holder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;background:#f7f8ff}
+.mem-img-holder img{width:100%;height:100%;object-fit:cover;display:block}
+.image-fallback{background:#f7f8ff;border:3px dashed #dce2ff;border-radius:18px;min-height:160px;display:flex;align-items:center;justify-content:center;color:#667eea;font-weight:900}
+.memory{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.mem{height:112px;min-height:112px;border-radius:18px;overflow:hidden;padding:6px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:900}
+.mem.open{background:white!important;border:4px solid #667eea!important;color:#222!important}
+.mem.done{background:linear-gradient(135deg,#27ae60,#2ecc71)!important;color:white!important}
+.mem-german{font-size:16px!important;font-weight:900;line-height:1.08;word-break:break-word;overflow-wrap:anywhere}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.quiz-option{width:100%;min-height:58px;text-align:left;padding:12px!important;border-radius:16px!important;font-size:17px!important;display:flex;align-items:center;gap:10px;justify-content:flex-start}
+.quiz-letter{background:white;color:#667eea;border-radius:999px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 auto}
+.task-progress{background:#f7f8ff;border:2px solid #dce2ff;border-radius:14px;padding:9px 10px;margin-bottom:12px}
+.task-progress-title{display:flex;justify-content:space-between;font-size:14px;color:#555;font-weight:700}
+.task-progress-line{height:9px;background:#ddd;border-radius:999px;overflow:hidden;margin-top:6px}
+.task-progress-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71)}
+.puzzle-answer,.puzzle-bank{display:flex;flex-wrap:wrap;gap:8px;min-height:54px;background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:10px;margin:10px 0}
+.word-chip{background:linear-gradient(135deg,#667eea,#764ba2)!important;color:white!important;border:none!important;border-radius:999px!important;padding:10px 14px!important;font-weight:800!important;margin:0!important}
+.word-chip.answer{background:#eef2ff!important;color:#333!important}
+.study-card-wrap{perspective:1000px;max-width:360px;margin:12px auto}
+.study-card{width:100%;min-height:190px;position:relative;transform-style:preserve-3d;transition:transform .5s;cursor:pointer}
+.study-card.flipped{transform:rotateY(180deg)}
+.study-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;background:white;border:4px solid #667eea;box-shadow:0 10px 28px rgba(0,0,0,.2);padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.study-back{transform:rotateY(180deg);background:#eefaf3;border-color:#27ae60}
+.native-word{font-size:38px;font-weight:900;color:#764ba2;margin:12px 0;line-height:1.1}
+.german-word{font-size:42px;font-weight:900;color:#27ae60;margin:12px 0}
+.word-status{display:flex;justify-content:center;gap:8px;margin:8px 0 10px;font-size:13px}
+.word-pill{background:#eef2ff;color:#555;border-radius:999px;padding:5px 10px;font-weight:700}
+.flash-progress-box{background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:10px 12px;margin:8px 0 12px}
+.flash-progress-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px;font-weight:800}
+.flash-progress-title span:last-child{font-size:13px;color:#666;font-weight:600}
+.flash-bar{height:10px;background:#ddd;border-radius:999px;overflow:hidden;margin:8px 0 0}
+.flash-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71);transition:width .25s}
+.card-actions{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.progress-toggle{position:fixed;top:14px;right:14px;z-index:9999;border-radius:999px;padding:10px 13px;background:#ffcc33;color:#333;border:2px solid white;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.progress-panel{position:fixed;top:0;right:0;width:min(390px,92vw);height:100vh;background:white;z-index:10000;box-shadow:-10px 0 30px rgba(0,0,0,.3);padding:18px;overflow:auto}
+.progress-row{background:#f7f8ff;border:2px solid #e0e4ff;border-radius:12px;padding:9px;margin:7px 0}
+.progress-line{height:10px;background:#ddd;border-radius:999px;overflow:hidden;margin-top:5px}
+.progress-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71)}
+.progress-row-head{display:flex;align-items:center;gap:8px}
+.progress-row-head .mem-img-holder{width:62px!important;height:46px!important;flex:0 0 auto}
+.progress-row-head .mem-img-holder img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:8px}
+.overview-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;padding:18px;overflow:auto}
+.overview-box{background:white;border-radius:24px;max-width:980px;margin:20px auto;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.overview-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
+.verb-overview-card{background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:9px;text-align:center}
+.verb-overview-card .mem-img-holder{height:105px!important;margin-bottom:8px}
+.verb-overview-card .mem-img-holder img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:12px}
+.verb-de{font-size:18px;font-weight:900;color:#222}
+.verb-native{font-size:13px;color:#777;margin-top:3px}
+.verb-percent{margin-top:6px;font-weight:800;color:#667eea}
+.level-alert{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:12000;display:flex;align-items:center;justify-content:center;padding:20px}
+.level-alert-box{background:white;border-radius:28px;max-width:420px;width:100%;text-align:center;padding:26px;box-shadow:0 20px 55px rgba(0,0,0,.35);border:4px solid #ffd43b}
+.level-alert-box h2{color:#7a5400;margin-bottom:10px}
+.level-alert-box .big-star{font-size:54px;margin-bottom:8px}
+.achievement,.package-done{background:#fff9db;border:3px solid #ffd43b;border-radius:22px;padding:18px;margin:14px 0;text-align:center;box-shadow:0 10px 28px rgba(0,0,0,.15)}
+.package-done{background:#e9f9ef;border-color:#27ae60}
+.star-pill{display:inline-block;background:#ffd43b;color:#4a3500;border-radius:999px;padding:7px 12px;font-weight:900;margin:4px}
+@media(max-width:520px){
+  .task-grid{grid-template-columns:repeat(2,1fr)}
+  .memory{grid-template-columns:repeat(3,1fr);gap:7px}
+  .mem{height:96px;min-height:96px}
+  .mem-german{font-size:14px!important}
+  .quiz-options{gap:8px}
+  .quiz-option{font-size:15px!important;padding:10px!important}
+  .native-word{font-size:34px}
+  .study-card{min-height:176px}
 }
 
-body{
-  min-height:100vh;
-  font-family:Arial, Helvetica, sans-serif;
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  color:#222;
-  padding:18px;
+/* FINAL PATCH: bessere Bilder + klare Belohnungen */
+.mem-img-holder img,
+.progress-row-head .mem-img-holder img,
+.verb-overview-card .mem-img-holder img{
+  object-fit:contain!important;
+  background:#f7f8ff!important;
 }
-
-.container{
-  max-width:920px;
-  margin:0 auto;
+.img-holder img{
+  object-fit:contain!important;
+  background:#f7f8ff!important;
 }
-
-.hero{
-  background:white;
-  border-radius:28px;
-  padding:28px 22px;
-  box-shadow:0 14px 38px rgba(0,0,0,.23);
-  text-align:center;
-  margin-bottom:18px;
+.bild-option .mem-img-holder img{
+  object-fit:contain!important;
 }
-
-.logo-wrap{
-  width:104px;
-  height:104px;
-  margin:0 auto 14px;
-  border-radius:28px;
-  background:linear-gradient(135deg,#eef2ff,#ffffff);
+.mem{
+  height:132px!important;
+  min-height:132px!important;
+}
+@media(max-width:520px){
+  .mem{
+    height:120px!important;
+    min-height:120px!important;
+  }
+}
+.next-task-row{
   display:flex;
-  align-items:center;
-  justify-content:center;
-  box-shadow:0 10px 24px rgba(102,126,234,.28);
-  border:3px solid #dce2ff;
-}
-
-.logo-wrap svg{
-  width:78px;
-  height:78px;
-}
-
-h1{
-  font-size:42px;
-  color:#667eea;
-  margin-bottom:8px;
-  letter-spacing:.3px;
-}
-
-.subtitle{
-  font-size:18px;
-  color:#666;
-  line-height:1.4;
-}
-
-.card{
-  background:white;
-  border-radius:24px;
-  padding:22px;
-  box-shadow:0 12px 32px rgba(0,0,0,.2);
-  margin-bottom:16px;
-}
-
-h2{
-  color:#667eea;
-  margin-bottom:10px;
-}
-
-h3{
-  margin:10px 0;
-}
-
-label{
-  display:block;
-  font-weight:bold;
-  margin-top:12px;
-}
-
-input,select{
-  width:100%;
-  padding:13px;
-  border:2px solid #ddd;
-  border-radius:13px;
-  font-size:16px;
-  margin-top:6px;
-}
-
-.two{
-  display:grid;
-  grid-template-columns:1fr 1fr;
-  gap:12px;
-}
-
-.three{
-  display:grid;
-  grid-template-columns:1fr 1fr 1fr;
-  gap:8px;
-}
-
-button{
-  border:0;
-  border-radius:15px;
-  padding:14px 18px;
-  font-size:16px;
-  font-weight:800;
-  cursor:pointer;
-  margin-top:12px;
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  color:white;
-  box-shadow:0 8px 18px rgba(0,0,0,.18);
-}
-
-button.secondary{
-  background:#eef2ff;
-  color:#333;
-  box-shadow:none;
-}
-
-button.success{
-  background:linear-gradient(135deg,#27ae60,#2ecc71);
-}
-
-.hidden{
-  display:none!important;
-}
-
-.ok{
-  background:#d9f7e8;
-  border-left:5px solid #27ae60;
-  padding:12px;
-  border-radius:12px;
-  margin:10px 0;
-}
-
-.no{
-  background:#ffe1e1;
-  border-left:5px solid #e74c3c;
-  padding:12px;
-  border-radius:12px;
-  margin:10px 0;
-}
-
-.actions{
-  display:flex;
-  gap:10px;
   flex-wrap:wrap;
   justify-content:center;
-}
-
-.modules{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(220px,1fr));
-  gap:14px;
-}
-
-.module{
-  display:block;
-  text-decoration:none;
-  color:#222;
-  background:white;
-  border-radius:24px;
-  padding:22px;
-  box-shadow:0 12px 32px rgba(0,0,0,.2);
-  border:3px solid transparent;
-  transition:.2s;
-}
-
-.module:hover{
-  border-color:#ffcc33;
-  transform:translateY(-3px);
-}
-
-.module-title{
-  font-size:24px;
-  font-weight:900;
-  color:#667eea;
-  margin-bottom:8px;
-}
-
-.module p{
-  color:#555;
-  line-height:1.4;
-}
-
-.badge{
-  display:inline-block;
+  gap:8px;
   margin-top:12px;
-  background:#fff3cd;
-  border:2px solid #ffc107;
-  color:#7a5400;
-  border-radius:999px;
-  padding:5px 10px;
-  font-weight:bold;
-  font-size:13px;
 }
 
-.small{
-  font-size:14px;
-  color:#666;
-  line-height:1.4;
-}
 
-footer{
-  text-align:center;
+/* STATISTIK-KACHELN WIE BEI FRAGEN */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin:14px 0;
+}
+.stat{
+  background:linear-gradient(135deg,#667eea,#764ba2);
   color:white;
-  margin-top:24px;
-  font-size:14px;
-  opacity:.9;
+  border-radius:16px;
+  text-align:center;
+  padding:16px 10px;
+  box-shadow:0 8px 18px rgba(0,0,0,.14);
+}
+.stat .num{
+  font-size:2rem;
+  font-weight:900;
+  line-height:1.05;
+}
+.stat div:first-child{
+  font-size:16px;
+  opacity:.95;
 }
 
-@media(max-width:650px){
-  body{padding:12px}
-  h1{font-size:34px}
-  .two{grid-template-columns:1fr}
-  .hero{padding:24px 16px}
-  .logo-wrap{width:92px;height:92px}
-}
 </style>
 </head>
 <body>
+<button class="progress-toggle" onclick="toggleProgressPanel()">📊</button>
+<div id="progressPanel" class="progress-panel hidden"></div>
+<main>
+  <div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
+  <div class="card" id="app"></div>
+</main>
 
-<div class="container">
 
-  <section class="hero">
-    <div class="logo-wrap" aria-label="SprachPilot Logo">
-      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img">
-        <defs>
-          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stop-color="#667eea"/>
-            <stop offset="1" stop-color="#764ba2"/>
-          </linearGradient>
-        </defs>
-        <circle cx="60" cy="60" r="52" fill="url(#g)"/>
-        <path d="M28 63 C43 38,70 30,91 38 C75 43,63 53,55 70 C47 66,38 63,28 63Z" fill="#fff" opacity=".95"/>
-        <path d="M54 70 C63 53,75 43,91 38 C84 57,72 75,52 91 C55 82,56 75,54 70Z" fill="#ffcc33"/>
-        <circle cx="71" cy="49" r="5" fill="#667eea"/>
-        <path d="M33 82 C43 78,50 76,58 78" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none"/>
-      </svg>
-    </div>
-    <h1>SprachPilot</h1>
-    <p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p>
-  </section>
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getFirestore, doc, getDoc, setDoc, updateDoc, serverTimestamp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-  <section class="card">
-    <h2>Willkommen!</h2>
-    <div id="loggedBox"></div>
+const firebaseConfig = {
+  apiKey: "AIzaSyDbl0m8JIEu7BuoLwXrdxRL4wMJAVJS468",
+  authDomain: "sprachpilot-12c68.firebaseapp.com",
+  projectId: "sprachpilot-12c68",
+  storageBucket: "sprachpilot-12c68.firebasestorage.app",
+  messagingSenderId: "454992284519",
+  appId: "1:454992284519:web:c7a87558cf59e0c0fc7dc2",
+  measurementId: "G-2XXR3FSY89"
+};
 
-    <div id="authButtons" class="actions">
-      <button onclick="showRegister()">Neu registrieren</button>
-      <button class="secondary" onclick="showLogin()">Einloggen</button>
-    </div>
+const app = initializeApp(firebaseConfig);
+const db = getFirestore(app);
 
-    <div id="registerBox" class="hidden">
-      <h3>Registrieren</h3>
-      <p class="small">Dein Profil wird auf diesem Gerät gespeichert und von Fragen A1 und Verben A1 verwendet.</p>
-
-      <form onsubmit="registerUser(event)">
-        <div class="two">
-          <div>
-            <label>Vorname *</label>
-            <input id="fname" required>
-          </div>
-          <div>
-            <label>Nachname *</label>
-            <input id="lname" required>
-          </div>
-        </div>
-
-        <label>Kursnummer *</label>
-        <input id="course" required placeholder="z. B. A1-01">
-
-        <label>Geburtsdatum *</label>
-        <div class="three">
-          <select id="birthDay" required>
-            <option value="">Tag</option>
-          </select>
-          <select id="birthMonth" required>
-            <option value="">Monat</option>
-          </select>
-          <select id="birthYear" required>
-            <option value="">Jahr</option>
-          </select>
-        </div>
-
-        <div class="two">
-          <div>
-            <label>Geburtsort *</label>
-            <input id="birthplace" required placeholder="z. B. Kiew, Aleppo, St. Wendel">
-          </div>
-          <div>
-            <label>Wohnort / Stadt *</label>
-            <input id="city" required placeholder="z. B. St. Wendel">
-          </div>
-        </div>
-
-        <div class="two">
-          <div>
-            <label>Heimatland *</label>
-            <select id="country" required>
-              <option value="">Bitte wählen</option>
-            </select>
-          </div>
-          <div>
-            <label>Muttersprache *</label>
-            <select id="nativeLang" required>
-              <option value="">Bitte wählen</option>
-            </select>
-          </div>
-        </div>
-
-        <label>Fremdsprache(n)</label>
-        <select id="foreignLang" multiple size="6"></select>
-        <p class="small">Mehrere Sprachen markieren, falls möglich.</p>
-
-        <div class="two">
-          <div>
-            <label>Kinder</label>
-            <select id="children"></select>
-          </div>
-          <div>
-            <label>Familienstand</label>
-            <select id="marital">
-              <option value="ledig">ledig</option>
-              <option value="verheiratet">verheiratet</option>
-              <option value="geschieden">geschieden</option>
-              <option value="verwitwet">verwitwet</option>
-            </select>
-          </div>
-        </div>
-
-        <button class="success" type="submit">Registrieren und speichern</button>
-      </form>
-    </div>
-
-    <div id="loginBox" class="hidden">
-      <h3>Einloggen</h3>
-      <p class="small">Auf diesem Gerät kannst du ein gespeichertes Profil öffnen.</p>
-      <div id="savedProfiles"></div>
-      <button class="secondary" onclick="showRegister()">Mit Daten erneut anmelden</button>
-    
-    <div id="cloudLoginBox" class="hidden">
-      <h3>Cloud Login</h3>
-      <p class="small">Auf jedem Gerät mit Vorname, Nachname und Kursnummer anmelden.</p>
-      <label>Vorname</label><input id="loginFirst">
-      <label>Nachname</label><input id="loginLast">
-      <label>Kursnummer</label><input id="loginCourse">
-      <button class="success" onclick="cloudLogin()">Cloud Login</button>
-      <div id="cloudLoginResult"></div>
-    </div>
-
-</div>
-  </section>
-
-  <section class="modules">
-
-    <a class="module" href="fragen-A1/">
-      <div class="module-title">Fragen A1</div>
-      <p>Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.</p>
-      <span class="badge">Starten</span>
-    </a>
-
-    <a class="module" href="wortschatz/">
-      <div class="module-title">Wortschatz</div>
-      <p>Schritte Plus Neu</p>
-      <span class="badge">Starten</span>
-    </a>
-
-    <a class="module" href="verben-A1/">
-      <div class="module-title">Verben A1</div>
-      <p>Verben mit Bildern, Karteikarten, Sprechen, Schreiben und Wiederholung.</p>
-      <span class="badge">Starten</span>
-    </a>
-
-  </section>
-
-  <footer>© SprachPilot</footer>
-</div>
-
-<script>
-const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzXxK2HQdEFjAV316wdh1s-I_dBa2PCjhH2Vsf0ocqsOqnIxf9GADvwkgtatePV7sZ42Q/exec";
-
-const COUNTRIES = [
-"Afghanistan","Ägypten","Albanien","Algerien","Angola","Argentinien","Armenien","Aserbaidschan","Äthiopien","Australien",
-"Bangladesch","Belarus","Belgien","Bolivien","Bosnien und Herzegowina","Brasilien","Bulgarien","Chile","China","Deutschland",
-"Ecuador","Eritrea","Estland","Finnland","Frankreich","Gambia","Georgien","Ghana","Griechenland","Großbritannien","Guinea",
-"Indien","Indonesien","Irak","Iran","Irland","Italien","Japan","Jemen","Jordanien","Kamerun","Kanada","Kasachstan","Kenia",
-"Kirgisistan","Kolumbien","Kosovo","Kroatien","Kuba","Lettland","Libanon","Litauen","Marokko","Moldau","Montenegro","Nigeria",
-"Nordmazedonien","Pakistan","Palästina","Peru","Philippinen","Polen","Portugal","Rumänien","Russland","Serbien","Slowakei",
-"Slowenien","Somalia","Spanien","Sri Lanka","Sudan","Syrien","Tadschikistan","Thailand","Tschechien","Tunesien","Türkei",
-"Turkmenistan","Uganda","Ukraine","Ungarn","USA","Usbekistan","Venezuela","Vietnam"
-];
-
-const LANGUAGES = [
-"Albanisch","Amharisch","Arabisch","Armenisch","Aserbaidschanisch","Bengalisch","Bosnisch","Bulgarisch","Chinesisch","Dari",
-"Deutsch","Englisch","Farsi/Persisch","Französisch","Georgisch","Griechisch","Hindi","Italienisch","Japanisch","Kasachisch",
-"Kroatisch","Kurdisch","Paschtu","Polnisch","Portugiesisch","Rumänisch","Russisch","Serbisch","Somali","Spanisch","Tamil",
-"Thai","Tigrinya","Tschechisch","Türkisch","Ukrainisch","Ungarisch","Urdu","Usbekisch","Vietnamesisch"
-];
+const COUNTRIES = ["Afghanistan","Ägypten","Albanien","Algerien","Armenien","Aserbaidschan","Deutschland","Eritrea","Georgien","Irak","Iran","Kasachstan","Marokko","Moldau","Pakistan","Polen","Rumänien","Russland","Serbien","Syrien","Türkei","Ukraine","Usbekistan"];
+const LANGUAGES = ["Arabisch","Deutsch","Englisch","Farsi/Persisch","Französisch","Kurdisch","Polnisch","Rumänisch","Russisch","Serbisch","Türkisch","Ukrainisch","Urdu"];
 
 function $(id){return document.getElementById(id)}
+function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+function norm(s){return String(s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
+function makeStudentId(v,n,k){return norm(k)+"_"+norm(v)+"_"+norm(n)}
+function birthdate(){return $("birthYear").value+"-"+$("birthMonth").value+"-"+$("birthDay").value}
+function calcAge(d){const x=new Date(d);if(isNaN(x))return"";const n=new Date();let a=n.getFullYear()-x.getFullYear();const m=n.getMonth()-x.getMonth();if(m<0||(m===0&&n.getDate()<x.getDate()))a--;return a}
+function selectedForeign(){return Array.from($("foreignLang").selectedOptions).map(o=>o.value).join(", ")}
+function getLocalProfile(){try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}}
+
+async function loadAssignments(courseId){
+  try{
+    const snap=await getDoc(doc(db,"assignments",courseId));
+    return snap.exists()?snap.data():{};
+  }catch(e){return{}}
+}
+
+function saveLocalStudent(student,assignments){
+  const p={
+    userId:student.studentId,studentId:student.studentId,
+    vorname:student.vorname,nachname:student.nachname,kurs:student.kurs,kursnummer:student.kurs,
+    geburtsdatum:student.geburtsdatum||"",tag:student.tag||"",monat:student.monat||"",jahr:student.jahr||"",
+    alter:student.alter||"",geburtsort:student.geburtsort||"",heimatland:student.heimatland||"",
+    wohnort:student.wohnort||"",muttersprache:student.muttersprache||"Englisch",
+    fremdsprache:student.fremdsprache||"",kinder:student.kinder||"0",familienstand:student.familienstand||"ledig",
+    fragenFortschritt:student.fragenFortschritt||0,verbenFortschritt:student.verbenFortschritt||0,
+    wortschatzFortschritt:student.wortschatzFortschritt||0,assignments:assignments||{},firebase:true,keepLoggedIn:true
+  };
+  localStorage.setItem("SP_USER_PROFILE",JSON.stringify(p));
+  localStorage.setItem("SP_KEEP_LOGGED_IN","1");
+  localStorage.setItem("SP_STUDENT_ID",student.studentId);
+  renderLogged();
+}
 
 function fillSelects(){
-  for(let i=1;i<=31;i++){
-    $("birthDay").innerHTML += `<option value="${String(i).padStart(2,"0")}">${String(i).padStart(2,"0")}</option>`;
-  }
-  for(let i=1;i<=12;i++){
-    $("birthMonth").innerHTML += `<option value="${String(i).padStart(2,"0")}">${String(i).padStart(2,"0")}</option>`;
-  }
-  for(let i=1940;i<=2020;i++){
-    $("birthYear").innerHTML += `<option value="${i}">${i}</option>`;
-  }
-
-  COUNTRIES.sort((a,b)=>a.localeCompare(b,"de")).forEach(c=>{
-    $("country").innerHTML += `<option value="${c}">${c}</option>`;
-  });
-
-  LANGUAGES.sort((a,b)=>a.localeCompare(b,"de")).forEach(l=>{
-    $("nativeLang").innerHTML += `<option value="${l}">${l}</option>`;
-    $("foreignLang").innerHTML += `<option value="${l}">${l}</option>`;
-  });
-
-  $("children").innerHTML = `<option value="0">keine Kinder</option>`;
-  for(let i=1;i<=10;i++){
-    $("children").innerHTML += `<option value="${i}">${i} ${i===1?"Kind":"Kinder"}</option>`;
-  }
+  for(let i=1;i<=31;i++)$("birthDay").innerHTML+=`<option value="${String(i).padStart(2,"0")}">${String(i).padStart(2,"0")}</option>`;
+  for(let i=1;i<=12;i++)$("birthMonth").innerHTML+=`<option value="${String(i).padStart(2,"0")}">${String(i).padStart(2,"0")}</option>`;
+  for(let i=1940;i<=2020;i++)$("birthYear").innerHTML+=`<option value="${i}">${i}</option>`;
+  COUNTRIES.sort((a,b)=>a.localeCompare(b,"de")).forEach(c=>$("country").innerHTML+=`<option value="${c}">${c}</option>`);
+  LANGUAGES.sort((a,b)=>a.localeCompare(b,"de")).forEach(l=>{$("nativeLang").innerHTML+=`<option value="${l}">${l}</option>`;$("foreignLang").innerHTML+=`<option value="${l}">${l}</option>`});
+  $("children").innerHTML=`<option value="0">keine Kinder</option>`;
+  for(let i=1;i<=10;i++)$("children").innerHTML+=`<option value="${i}">${i} ${i===1?"Kind":"Kinder"}</option>`;
 }
 
-function norm(s){
-  return String(s||"")
-    .trim()
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g,"")
-    .replace(/[^a-z0-9]+/g,"-")
-    .replace(/^-|-$/g,"");
+window.showRegister=function(){$("registerBox").classList.remove("hidden");$("loginBox").classList.add("hidden")}
+window.showLogin=function(){
+  $("loginBox").classList.remove("hidden");$("registerBox").classList.add("hidden");
+  $("savedProfiles").innerHTML=`<div class="ok"><strong>Einloggen auf jedem Gerät</strong><br>Vorname, Nachname und Kursnummer eingeben.</div>
+  <label>Vorname *</label><input id="loginFirst">
+  <label>Nachname *</label><input id="loginLast">
+  <label>Kursnummer *</label><input id="loginCourse" placeholder="z. B. A1-MO">
+  <button class="success" onclick="studentLogin()">Einloggen</button><div id="loginResult"></div>`;
 }
 
-function birthdate(){
-  return $("birthYear").value + "-" + $("birthMonth").value + "-" + $("birthDay").value;
-}
-
-function calcAge(dateStr){
-  const d = new Date(dateStr);
-  if(isNaN(d)) return "";
-  const now = new Date();
-  let age = now.getFullYear() - d.getFullYear();
-  const m = now.getMonth() - d.getMonth();
-  if(m < 0 || (m === 0 && now.getDate() < d.getDate())) age--;
-  return age;
-}
-
-function selectedForeign(){
-  return Array.from($("foreignLang").selectedOptions).map(o=>o.value).join(", ");
-}
-
-function makeUserId(p){
-  return norm(p.kurs) + "_" + norm(p.vorname) + "_" + norm(p.nachname) + "_" + p.geburtsdatum;
-}
-
-function allProfiles(){
-  try{return JSON.parse(localStorage.getItem("SP_PROFILES") || "[]")}
-  catch(e){return []}
-}
-
-function saveProfiles(list){
-  localStorage.setItem("SP_PROFILES", JSON.stringify(list));
-}
-
-function sendProfile(p){
-  const payload = {
-    userId:p.userId,
-    kurs:p.kurs,
-    vorname:p.vorname,
-    nachname:p.nachname,
-    geburtsdatum:p.geburtsdatum,
-    heimatland:p.heimatland,
-    muttersprache:p.muttersprache,
-    fremdsprache:p.fremdsprache,
-    wohnort:p.wohnort,
-    kinder:p.kinder,
-    fragenFortschritt:p.fragenFortschritt||0,
-    verbenFortschritt:p.verbenFortschritt||0,
-    gesamtpunkte:p.gesamtpunkte||0,
-    profile:p,
-    timestamp:new Date().toISOString()
-  };
-
+window.studentLogin=async function(){
+  const vorname=$("loginFirst").value.trim(), nachname=$("loginLast").value.trim(), kurs=$("loginCourse").value.trim();
+  if(!vorname||!nachname||!kurs){$("loginResult").innerHTML='<div class="no">Bitte alle Felder ausfüllen.</div>';return}
+  const studentId=makeStudentId(vorname,nachname,kurs);
+  $("loginResult").innerHTML='<div class="ok">Login wird geprüft...</div>';
   try{
-    fetch(GOOGLE_SHEET_URL,{
-      method:"POST",
-      mode:"no-cors",
-      headers:{"Content-Type":"text/plain;charset=utf-8"},
-      body:JSON.stringify(payload)
-    });
-  }catch(e){}
+    const ref=doc(db,"students",studentId);
+    const snap=await getDoc(ref);
+    if(!snap.exists()){$("loginResult").innerHTML='<div class="no">Profil nicht gefunden. Bitte zuerst registrieren.</div>';return}
+    const student=snap.data();
+    const assignments=await loadAssignments(student.kurs);
+    await updateDoc(ref,{lastLogin:serverTimestamp()});
+    saveLocalStudent(student,assignments);
+  }catch(e){console.error(e);$("loginResult").innerHTML='<div class="no">Login nicht möglich. Bitte Firebase-Regeln prüfen.</div>'}
 }
 
-function saveActiveProfile(p){
-  localStorage.setItem("SP_USER_PROFILE", JSON.stringify(p));
-
-  let list = allProfiles().filter(x=>x.userId !== p.userId);
-  list.unshift(p);
-  saveProfiles(list.slice(0,10));
-
-  sendProfile(p);
-  renderLogged();
-}
-
-function registerUser(e){
+window.registerUser=async function(e){
   e.preventDefault();
-
-  const p = {
-    vorname:$("fname").value.trim(),
-    nachname:$("lname").value.trim(),
-    kurs:$("course").value.trim(),
-    geburtsdatum:birthdate(),
-    tag:$("birthDay").value,
-    monat:$("birthMonth").value,
-    jahr:$("birthYear").value,
-    alter:calcAge(birthdate()),
-    geburtsort:$("birthplace").value.trim(),
-    heimatland:$("country").value,
-    wohnort:$("city").value.trim(),
-    muttersprache:$("nativeLang").value,
-    fremdsprache:selectedForeign(),
-    kinder:$("children").value,
-    familienstand:$("marital").value,
-    fragenFortschritt:0,
-    verbenFortschritt:0,
-    gesamtpunkte:0
+  const student={
+    vorname:$("fname").value.trim(),nachname:$("lname").value.trim(),kurs:$("course").value.trim(),
+    geburtsdatum:birthdate(),tag:$("birthDay").value,monat:$("birthMonth").value,jahr:$("birthYear").value,
+    alter:calcAge(birthdate()),geburtsort:$("birthplace").value.trim(),heimatland:$("country").value,
+    wohnort:$("city").value.trim(),muttersprache:$("nativeLang").value,fremdsprache:selectedForeign(),
+    kinder:$("children").value,familienstand:$("marital").value,fragenFortschritt:0,verbenFortschritt:0,wortschatzFortschritt:0
   };
-
-  p.userId = makeUserId(p);
-  saveActiveProfile(p);
-
-  $("registerBox").classList.add("hidden");
-  $("loginBox").classList.add("hidden");
+  student.studentId=makeStudentId(student.vorname,student.nachname,student.kurs); student.userId=student.studentId;
+  let result=$("registerResult"); if(!result){result=document.createElement("div");result.id="registerResult";$("registerBox").appendChild(result)}
+  result.innerHTML='<div class="ok">Registrierung wird gespeichert...</div>';
+  try{
+    const courseSnap=await getDoc(doc(db,"courses",student.kurs));
+    if(!courseSnap.exists()){result.innerHTML=`<div class="no">Diese Kursnummer existiert nicht: ${safeText(student.kurs)}</div>`;return}
+    const studentRef=doc(db,"students",student.studentId);
+    const existing=await getDoc(studentRef);
+    if(existing.exists()){result.innerHTML='<div class="no">Dieses Profil gibt es schon. Bitte einloggen.</div>';return}
+    await setDoc(studentRef,{...student,createdAt:serverTimestamp(),lastLogin:serverTimestamp(),active:true});
+    await setDoc(doc(db,"progress",student.studentId),{studentId:student.studentId,kurs:student.kurs,fragen:{progress:0,state:{}},verben:{progress:0,stars:0,state:{}},wortschatz:{progress:0,state:{}},updatedAt:serverTimestamp()});
+    const assignments=await loadAssignments(student.kurs);
+    saveLocalStudent(student,assignments);
+    $("registerBox").classList.add("hidden");$("loginBox").classList.add("hidden");
+  }catch(e){console.error(e);result.innerHTML='<div class="no">Speichern nicht möglich. Bitte Firebase-Regeln prüfen.</div>'}
 }
 
-function showRegister(){
-  $("registerBox").classList.remove("hidden");
-  $("loginBox").classList.add("hidden");
+window.logout=function(){localStorage.removeItem("SP_USER_PROFILE");localStorage.removeItem("SP_KEEP_LOGGED_IN");localStorage.removeItem("SP_STUDENT_ID");renderLogged()}
+window.editProfile=function(){
+  const p=getLocalProfile(); showRegister(); if(!p)return;
+  $("fname").value=p.vorname||"";$("lname").value=p.nachname||"";$("course").value=p.kurs||"";$("birthplace").value=p.geburtsort||"";$("city").value=p.wohnort||"";$("country").value=p.heimatland||"";$("nativeLang").value=p.muttersprache||"";$("children").value=p.kinder||"0";$("marital").value=p.familienstand||"ledig";
+  if(p.tag)$("birthDay").value=p.tag;if(p.monat)$("birthMonth").value=p.monat;if(p.jahr)$("birthYear").value=p.jahr;
 }
 
-function showLogin(){
-  $("loginBox").classList.remove("hidden");
-  $("registerBox").classList.add("hidden");
-  renderSavedProfiles();
-}
-
-function loginProfile(id){
-  const p = allProfiles().find(x=>x.userId === id);
-  if(p) saveActiveProfile(p);
-}
-
-function logout(){
-  localStorage.removeItem("SP_USER_PROFILE");
-  renderLogged();
-}
-
-function fillRegister(p){
-  if(!p) return;
-
-  $("fname").value = p.vorname || "";
-  $("lname").value = p.nachname || "";
-  $("course").value = p.kurs || "";
-  $("birthplace").value = p.geburtsort || "";
-  $("city").value = p.wohnort || "";
-  $("country").value = p.heimatland || "";
-  $("nativeLang").value = p.muttersprache || "";
-  $("children").value = p.kinder || "0";
-  $("marital").value = p.familienstand || "ledig";
-
-  if(p.tag) $("birthDay").value = p.tag;
-  if(p.monat) $("birthMonth").value = p.monat;
-  if(p.jahr) $("birthYear").value = p.jahr;
-}
-
-function editProfile(){
-  let p = null;
-  try{p = JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "null")}
-  catch(e){}
-  showRegister();
-  fillRegister(p);
-}
-
-function renderSavedProfiles(){
-  const box = $("savedProfiles");
-  const list = allProfiles();
-
-  if(!list.length){
-    box.innerHTML = `<div class="no">Noch kein Profil auf diesem Gerät gespeichert.</div>`;
-    return;
-  }
-
-  box.innerHTML = list.map(p=>`
-    <div class="ok">
-      <strong>${p.vorname} ${p.nachname}</strong><br>
-      Kurs: ${p.kurs}<br>
-      <button onclick="loginProfile('${p.userId}')">Einloggen</button>
-    </div>
-  `).join("");
+function renderModules(p){
+  const a=p.assignments||{};
+  const fragen=a.fragenA1!==false, verben=a.verbenA1!==false;
+  const w=a.wortschatz||[];
+  const wort=Array.isArray(w)?w.length>0:!!w;
+  document.querySelector(".modules").innerHTML=`
+  <a class="module" href="${fragen?'fragen-A1/':'#'}" ${fragen?'':'onclick="return false;" style="opacity:.55"'}><div class="module-title">Fragen A1</div><p>${fragen?'Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.':'Für deinen Kurs noch nicht freigeschaltet.'}</p><span class="badge">${fragen?'Starten':'Gesperrt'}</span></a>
+  <a class="module" href="${wort?'wortschatz/':'#'}" ${wort?'':'onclick="return false;" style="opacity:.55"'}><div class="module-title">Wortschatz</div><p>${wort?'Schritte Plus Neu · '+safeText(Array.isArray(w)?w.join(", "):"freigeschaltet"):'Für deinen Kurs noch nicht freigeschaltet.'}</p><span class="badge">${wort?'Starten':'Gesperrt'}</span></a>
+  <a class="module" href="${verben?'verben-A1/':'#'}" ${verben?'':'onclick="return false;" style="opacity:.55"'}><div class="module-title">Verben A1</div><p>${verben?'Verben mit Bildern, Karteikarten, Sprechen, Schreiben und Wiederholung.':'Für deinen Kurs noch nicht freigeschaltet.'}</p><span class="badge">${verben?'Starten':'Gesperrt'}</span></a>`;
 }
 
 function renderLogged(){
-  let p = null;
-  try{p = JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "null")}
-  catch(e){}
-
-  const box = $("loggedBox");
-
+  const p=getLocalProfile(), box=$("loggedBox");
   if(p){
-    box.innerHTML = `
-      <div class="ok">
-        <strong>Eingeloggt:</strong> ${p.vorname} ${p.nachname} | Kurs: ${p.kurs}<br>
-        <button class="secondary" onclick="editProfile()">Profil bearbeiten</button>
-        <button class="secondary" onclick="logout()">Abmelden</button>
-      </div>
-    `;
-    $("authButtons").classList.add("hidden");
+    box.innerHTML=`<div class="ok"><strong>Eingeloggt:</strong> ${safeText(p.vorname)} ${safeText(p.nachname)} | Kurs: ${safeText(p.kurs)}<br><span class="small">Du bleibst auf diesem Gerät eingeloggt.</span><br><button class="secondary" onclick="editProfile()">Profil bearbeiten</button><button class="secondary" onclick="logout()">Abmelden</button></div>`;
+    $("authButtons").classList.add("hidden"); renderModules(p);
   }else{
-    box.innerHTML = `<p>Registriere dich einmal. Danach gilt dein Profil für alle Trainer.</p>`;
+    box.innerHTML="<p>Registriere dich einmal oder logge dich ein. Danach gilt dein Profil für alle Trainer.</p>";
     $("authButtons").classList.remove("hidden");
   }
 }
-
-
-/* ===== DAUERHAFT EINGELOGGT AUF DIESEM GERÄT ===== */
-function rememberLogin(p){
-  p.letzterLogin = new Date().toISOString();
-  p.keepLoggedIn = true;
-  localStorage.setItem("SP_USER_PROFILE", JSON.stringify(p));
-  localStorage.setItem("SP_KEEP_LOGGED_IN", "1");
-}
-
-function getActiveProfile(){
-  try{
-    const p = JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "null");
-    if(p && localStorage.getItem("SP_KEEP_LOGGED_IN") === "1") return p;
-    if(p && p.keepLoggedIn) return p;
-    return p;
-  }catch(e){
-    return null;
-  }
-}
-
-function logout(){
-  localStorage.removeItem("SP_USER_PROFILE");
-  localStorage.removeItem("SP_KEEP_LOGGED_IN");
-  renderLogged();
-}
-
-function saveActiveProfile(p){
-  rememberLogin(p);
-
-  let list = allProfiles().filter(x=>x.userId !== p.userId);
-  list.unshift(p);
-  saveProfiles(list.slice(0,10));
-
-  sendProfile(p);
-  renderLogged();
-}
-
-function renderLogged(){
-  let p = getActiveProfile();
-  const box = $("loggedBox");
-
-  if(p){
-    box.innerHTML = `
-      <div class="ok">
-        <strong>Eingeloggt:</strong> ${p.vorname} ${p.nachname} | Kurs: ${p.kurs}<br>
-        <span class="small">Du bleibst auf diesem Gerät eingeloggt.</span><br>
-        <button class="secondary" onclick="editProfile()">Profil bearbeiten</button>
-        <button class="secondary" onclick="logout()">Abmelden</button>
-      </div>
-    `;
-    $("authButtons").classList.add("hidden");
-  }else{
-    box.innerHTML = `<p>Registriere dich einmal oder logge dich ein. Danach bleibst du auf diesem Gerät angemeldet.</p>`;
-    $("authButtons").classList.remove("hidden");
-  }
-}
-/* ===== ENDE DAUERLOGIN ===== */
-
-fillSelects();
-renderLogged();
-
-function showLogin(){
-  $("loginBox").classList.remove("hidden");
-  const c=document.getElementById("cloudLoginBox");
-  if(c)c.classList.remove("hidden");
-  $("registerBox").classList.add("hidden");
-  renderSavedProfiles();
-}
-
-async function cloudLogin(){
-  const first=$("loginFirst").value.trim();
-  const last=$("loginLast").value.trim();
-  const course=$("loginCourse").value.trim();
-
-  if(!first||!last||!course){
-    $("cloudLoginResult").innerHTML='<div class="no">Bitte alle Felder ausfüllen.</div>';
-    return;
-  }
-
-  try{
-    const r=await fetch(GOOGLE_SHEET_URL+'?vorname='+encodeURIComponent(first)+'&nachname='+encodeURIComponent(last)+'&kurs='+encodeURIComponent(course));
-    const data=await r.json();
-
-    if(data && data.success && data.user){
-      saveActiveProfile(data.user);
-      $("cloudLoginResult").innerHTML='<div class="ok">Login erfolgreich.</div>';
-      return;
-    }
-    $("cloudLoginResult").innerHTML='<div class="no">Profil nicht gefunden.</div>';
-  }catch(e){
-    $("cloudLoginResult").innerHTML='<div class="no">Cloud Login nicht erreichbar.</div>';
-  }
-}
-
+fillSelects();renderLogged();
 </script>
 
 </body>
