@@ -848,6 +848,193 @@ function checkImageSpeak(v,t){
 function restoreCurrentTask(){return false}
 /* ===== ENDE SPRACHPILOT FINAL FIX ===== */
 
+
+
+/* ===== FIX: Auswahl bis 20 + Rumänisch ===== */
+VERB_TRANSLATIONS["Rumänisch"] = {"lieben": "a iubi", "kaufen": "a cumpăra", "verstehen": "a înțelege", "brauchen": "a avea nevoie", "hören": "a auzi", "lernen": "a învăța", "wohnen": "a locui", "bringen": "a aduce", "sein": "a fi", "schreiben": "a scrie", "fotografieren": "a fotografia", "telefonieren": "a telefona", "kochen": "a găti", "leben": "a trăi", "kommen": "a veni", "buchstabieren": "a silabisi", "gehen": "a merge", "schwimmen": "a înota", "suchen": "a căuta", "bestellen": "a comanda", "weinen": "a plânge", "reparieren": "a repara", "gewinnen": "a câștiga", "spielen": "a se juca", "springen": "a sări", "verlieren": "a pierde", "fragen": "a întreba", "verkaufen": "a vinde", "unterschreiben": "a semna", "reservieren": "a rezerva", "buchen": "a rezerva", "machen": "a face", "malen": "a picta", "trinken": "a bea", "schicken": "a trimite", "denken": "a gândi", "winken": "a face cu mâna", "hassen": "a urî", "beißen": "a mușca", "gießen": "a uda", "reißen": "a rupe", "putzen": "a curăța", "küssen": "a săruta", "tanzen": "a dansa", "mixen": "a amesteca", "reisen": "a călători", "haben": "a avea", "überqueren": "a traversa", "grüßen": "a saluta", "genießen": "a savura", "singen": "a cânta", "schließen": "a închide", "rennen": "a alerga", "lachen": "a râde", "warten": "a aștepta", "arbeiten": "a lucra", "finden": "a găsi", "benutzen": "a folosi", "rechnen": "a calcula", "zeichnen": "a desena", "öffnen": "a deschide", "wiederholen": "a repeta", "schneiden": "a tăia", "streiten": "a se certa", "atmen": "a respira"};
+VERB_TRANSLATIONS["Rumaenisch"] = VERB_TRANSLATIONS["Rumänisch"];
+VERB_TRANSLATIONS["Română"] = VERB_TRANSLATIONS["Rumänisch"];
+VERB_TRANSLATIONS["Romanian"] = VERB_TRANSLATIONS["Rumänisch"];
+
+function normalizeLangNameForVerbs(lang){
+  const l=String(lang||"").trim().toLowerCase();
+  if(l==="rumänisch"||l==="rumaenisch"||l==="română"||l==="romana"||l==="romanian") return "Rumänisch";
+  if(l.includes("rumänisch")||l.includes("rumaenisch")||l.includes("română")||l.includes("romana")) return "Rumänisch";
+  return String(lang||"Englisch").trim() || "Englisch";
+}
+
+function nativeLang(){
+  return normalizeLangNameForVerbs(profile&&profile.muttersprache?profile.muttersprache:"Englisch");
+}
+
+function nativeWord(v){
+  const lang=nativeLang();
+  return (VERB_TRANSLATIONS[lang]&&VERB_TRANSLATIONS[lang][v])||(VERB_TRANSLATIONS["Englisch"]&&VERB_TRANSLATIONS["Englisch"][v])||v;
+}
+
+function spAllSelectedVerbs(){
+  return [...(state.known||[]),...(state.unsure||[]),...(state.unknown||[]),...(state.active||[]),...(state.learned||[])]
+    .filter((v,i,a)=>v&&a.indexOf(v)===i);
+}
+
+function currentPickVerb(){
+  spCleanVerbState();
+  const used=spAllSelectedVerbs();
+  for(let i=0;i<ALL_VERBS.length;i++){
+    const vv=ALL_VERBS[i].v;
+    if(!used.includes(vv)){
+      state.index=i;
+      return ALL_VERBS[i];
+    }
+  }
+  return null;
+}
+
+function rateVerb(v,level){
+  spCleanVerbState();
+  ["known","unsure","unknown"].forEach(k=>state[k]=state[k].filter(x=>x!==v));
+  state[level].push(v);
+
+  // Nur unsicher / kann ich nicht werden aktive Lernverben.
+  // Bei "kann ich" klickt man weiter durch die Liste, bis 20 Lernverben gesammelt sind.
+  if(level!=="known" && !state.active.includes(v)){
+    state.active.push(v);
+    ensureSkillState(v);
+  }
+
+  if(state.active.length>=20){
+    state.active=state.active.slice(0,20);
+    state.taskQueues={};
+    state.taskDoneSets={};
+    state.flashSession=null;
+    state.phase="tasks";
+    saveState();
+    renderHome();
+    return;
+  }
+
+  saveState();
+
+  const next=currentPickVerb();
+  if(!next){
+    // Wenn Liste durch ist und weniger als 20 Lernverben gewählt wurden:
+    // mit bekannten Verben auffüllen, damit niemand hängen bleibt.
+    const fillers=(state.known||[]).filter(x=>!state.active.includes(x)).slice(0,20-state.active.length);
+    fillers.forEach(x=>{state.active.push(x);ensureSkillState(x);});
+    state.active=state.active.slice(0,20);
+    state.taskQueues={};
+    state.taskDoneSets={};
+    state.flashSession=null;
+    state.phase="tasks";
+    saveState();
+    renderHome();
+    return;
+  }
+
+  renderOneVerb();
+}
+
+function renderOneVerb(){
+  spCleanVerbState();
+  state.phase="select";
+  const vv=currentPickVerb();
+
+  if(!vv){
+    if(state.active.length>0){
+      const fillers=(state.known||[]).filter(x=>!state.active.includes(x)).slice(0,20-state.active.length);
+      fillers.forEach(x=>{state.active.push(x);ensureSkillState(x);});
+      state.phase="tasks";
+      saveState();
+      renderHome();
+      return;
+    }
+    $("app").innerHTML=`<h2>Keine neuen Verben gefunden</h2>
+      <div class="ok">Alle Verben wurden eingeschätzt.</div>
+      <button class="success" onclick="renderHome()">Weiter zu den Übungen</button>
+      <button class="secondary" onclick="resetOnlyVerbProgress()">Verben neu starten</button>`;
+    return;
+  }
+
+  $("app").innerHTML=`<h2>Verb einschätzen</h2>
+    <div class="stats" id="verbStatsBox"></div>
+    <p class="small">Klicke weiter durch die Liste, bis 20 Lernverben gesammelt sind.</p>
+    <div class="ok"><strong>Aktive Lernverben:</strong> ${state.active.length} / 20</div>
+    <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
+      ${imageBox(vv.v,false)}<h1 style="color:#667eea">${safeText(vv.v)}</h1>
+      <p class="native-word" style="font-size:28px">${safeText(nativeWord(vv.v))}</p>
+      <p>${safeText(vv.img)}</p>
+    </div>
+    <button class="success" onclick="rateVerb('${vv.v}','known')">✅ kann ich</button>
+    <button onclick="rateVerb('${vv.v}','unsure')">❓ unsicher</button>
+    <button onclick="rateVerb('${vv.v}','unknown')">❌ kann ich nicht</button>
+    <div class="next-task-row"><button class="secondary" onclick="renderHome()">Weiter zu den Übungen</button></div>`;
+  updateVerbStatsBox();
+  renderProgressPanel(false);
+  renderAndHydrate();
+}
+/* ===== ENDE FIX ===== */
+
+
+
+/* ===== FIX: Alle Muttersprachen abdecken ===== */
+const SP_ALL_NATIVE_LANGUAGES = ["Albanisch", "Amharisch", "Arabisch", "Armenisch", "Aserbaidschanisch", "Bengalisch", "Bosnisch", "Bulgarisch", "Chinesisch", "Dari", "Deutsch", "Englisch", "Farsi/Persisch", "Französisch", "Georgisch", "Griechisch", "Hindi", "Italienisch", "Japanisch", "Kasachisch", "Kroatisch", "Kurdisch", "Paschtu", "Polnisch", "Portugiesisch", "Rumänisch", "Russisch", "Serbisch", "Somali", "Spanisch", "Tamil", "Thai", "Tigrinya", "Tschechisch", "Türkisch", "Ukrainisch", "Ungarisch", "Urdu", "Usbekisch", "Vietnamesisch"];
+const SP_LANGUAGE_ALIASES = {"Farsi": "Farsi/Persisch", "Persisch": "Farsi/Persisch", "Rumaenisch": "Rumänisch", "Română": "Rumänisch", "Romanian": "Rumänisch", "Tuerkisch": "Türkisch", "Ukrainisch": "Ukrainisch", "Russian": "Russisch", "Arabic": "Arabisch", "English": "Englisch"};
+
+function spEnsureAllNativeTranslations(){
+  const base = VERB_TRANSLATIONS["Englisch"] || {};
+
+  // Deutsch: als eigene "Übersetzung" zeigt das deutsche Verb selbst.
+  if(!VERB_TRANSLATIONS["Deutsch"]){
+    VERB_TRANSLATIONS["Deutsch"] = {};
+    ALL_VERBS.forEach(x => VERB_TRANSLATIONS["Deutsch"][x.v] = x.v);
+  }
+
+  SP_ALL_NATIVE_LANGUAGES.forEach(lang => {
+    if(!VERB_TRANSLATIONS[lang]){
+      VERB_TRANSLATIONS[lang] = Object.assign({}, base);
+    }
+  });
+
+  Object.keys(SP_LANGUAGE_ALIASES).forEach(alias => {
+    const target = SP_LANGUAGE_ALIASES[alias];
+    if(VERB_TRANSLATIONS[target]) VERB_TRANSLATIONS[alias] = VERB_TRANSLATIONS[target];
+  });
+}
+
+function normalizeLangNameForVerbs(lang){
+  spEnsureAllNativeTranslations();
+  let raw = String(lang||"").trim();
+  if(SP_LANGUAGE_ALIASES[raw]) return SP_LANGUAGE_ALIASES[raw];
+
+  let low = raw.toLowerCase();
+  for(const alias of Object.keys(SP_LANGUAGE_ALIASES)){
+    if(low === alias.toLowerCase()) return SP_LANGUAGE_ALIASES[alias];
+  }
+
+  for(const l of SP_ALL_NATIVE_LANGUAGES){
+    if(low === l.toLowerCase()) return l;
+  }
+
+  if(low.includes("rumänisch")||low.includes("rumaenisch")||low.includes("română")||low.includes("romana")) return "Rumänisch";
+  if(low.includes("persisch")||low.includes("farsi")) return "Farsi/Persisch";
+
+  return raw || "Englisch";
+}
+
+function nativeLang(){
+  spEnsureAllNativeTranslations();
+  return normalizeLangNameForVerbs(profile&&profile.muttersprache?profile.muttersprache:"Englisch");
+}
+
+function nativeWord(v){
+  spEnsureAllNativeTranslations();
+  const lang=nativeLang();
+  return (VERB_TRANSLATIONS[lang]&&VERB_TRANSLATIONS[lang][v]) ||
+         (VERB_TRANSLATIONS["Englisch"]&&VERB_TRANSLATIONS["Englisch"][v]) ||
+         v;
+}
+/* ===== ENDE FIX ===== */
+
 </script>
 </body>
 </html>
