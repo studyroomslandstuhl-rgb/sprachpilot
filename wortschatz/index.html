@@ -2,91 +2,218 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SprachPilot Wortschatz</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SprachPilot - Wortschatz</title>
 <style>
-body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);margin:0;padding:20px}
-.container{max-width:1100px;margin:auto}
-.hero,.card{background:#fff;border-radius:24px;padding:24px;box-shadow:0 12px 32px rgba(0,0,0,.2);margin-bottom:18px}
-h1{color:#667eea;text-align:center}
-.subtitle{text-align:center;color:#666}
-.level-title{font-size:30px;font-weight:bold;color:#667eea;margin-bottom:10px}
-.book-title{margin-bottom:15px;color:#666}
-.lessons{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px}
-.lesson-btn{display:block;text-decoration:none;text-align:center;padding:15px;border-radius:14px;color:#fff;background:linear-gradient(135deg,#667eea,#764ba2);font-weight:bold}
+*{
+  box-sizing:border-box;
+  margin:0;
+  padding:0;
+}
+
+body{
+  min-height:100vh;
+  font-family:Arial, Helvetica, sans-serif;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:#222;
+  padding:18px;
+}
+
+.container{
+  max-width:1000px;
+  margin:0 auto;
+}
+
+.hero{
+  background:white;
+  border-radius:28px;
+  padding:28px 22px;
+  box-shadow:0 14px 38px rgba(0,0,0,.23);
+  text-align:center;
+  margin-bottom:18px;
+}
+
+.logo{
+  width:96px;
+  height:96px;
+  margin:0 auto 14px;
+  border-radius:26px;
+  background:linear-gradient(135deg,#eef2ff,#ffffff);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 10px 24px rgba(102,126,234,.28);
+  border:3px solid #dce2ff;
+  font-size:44px;
+}
+
+h1{
+  font-size:38px;
+  color:#667eea;
+  margin-bottom:8px;
+}
+
+.subtitle{
+  font-size:18px;
+  color:#666;
+  line-height:1.4;
+}
+
+.back-wrap{
+  text-align:center;
+  margin-bottom:18px;
+}
+
+.back{
+  display:inline-block;
+  text-decoration:none;
+  background:#eef2ff;
+  color:#333;
+  font-weight:800;
+  padding:13px 18px;
+  border-radius:15px;
+}
+
+.card{
+  background:white;
+  border-radius:24px;
+  padding:22px;
+  box-shadow:0 12px 32px rgba(0,0,0,.2);
+  margin-bottom:18px;
+}
+
+.level-title{
+  font-size:30px;
+  font-weight:900;
+  color:#667eea;
+  margin-bottom:6px;
+}
+
+.book-title{
+  color:#555;
+  font-size:16px;
+  margin-bottom:18px;
+}
+
+.lessons{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(145px,1fr));
+  gap:12px;
+}
+
+.lesson-btn{
+  display:block;
+  text-decoration:none;
+  text-align:center;
+  border-radius:16px;
+  padding:16px 12px;
+  font-size:17px;
+  font-weight:900;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:white;
+  box-shadow:0 8px 18px rgba(0,0,0,.18);
+  transition:.2s;
+}
+
+.lesson-btn:hover{
+  transform:translateY(-3px);
+  box-shadow:0 12px 24px rgba(0,0,0,.24);
+}
+
+footer{
+  text-align:center;
+  color:white;
+  margin-top:24px;
+  font-size:14px;
+  opacity:.9;
+}
+
+@media(max-width:650px){
+  body{padding:12px}
+  h1{font-size:32px}
+  .hero{padding:24px 16px}
+  .lessons{grid-template-columns:repeat(2,1fr)}
+}
 </style>
 </head>
+
 <body>
 <div class="container">
-<div class="hero">
-<h1>Wortschatz</h1>
-<p class="subtitle">Schritte Plus Neu</p>
-</div>
 
-<section class="card">
-<div class="level-title">A1</div>
-<div class="book-title">Schritte Plus Neu A1 - 14 Lektionen</div>
-<div class="lessons">
-<a class="lesson-btn" href="A1-Lektion-1/">Lektion 1</a>
-<a class="lesson-btn" href="A1-Lektion-2/">Lektion 2</a>
-<a class="lesson-btn" href="A1-Lektion-3/">Lektion 3</a>
-<a class="lesson-btn" href="A1-Lektion-4/">Lektion 4</a>
-<a class="lesson-btn" href="A1-Lektion-5/">Lektion 5</a>
-<a class="lesson-btn" href="A1-Lektion-6/">Lektion 6</a>
-<a class="lesson-btn" href="A1-Lektion-7/">Lektion 7</a>
-<a class="lesson-btn" href="A1-Lektion-8/">Lektion 8</a>
-<a class="lesson-btn" href="A1-Lektion-9/">Lektion 9</a>
-<a class="lesson-btn" href="A1-Lektion-10/">Lektion 10</a>
-<a class="lesson-btn" href="A1-Lektion-11/">Lektion 11</a>
-<a class="lesson-btn" href="A1-Lektion-12/">Lektion 12</a>
-<a class="lesson-btn" href="A1-Lektion-13/">Lektion 13</a>
-<a class="lesson-btn" href="A1-Lektion-14/">Lektion 14</a>
-</div>
-</section>
+  <section class="hero">
+    <div class="logo">✈️</div>
+    <h1>Wortschatz</h1>
+    <p class="subtitle">Schritte Plus Neu - A1, A2 und B1</p>
+  </section>
 
+  <div class="back-wrap">
+    <a class="back" href="../index.html">← Zur Startseite</a>
+  </div>
 
-<section class="card">
-<div class="level-title">A2</div>
-<div class="book-title">Schritte Plus Neu A2 - 14 Lektionen</div>
-<div class="lessons">
-<a class="lesson-btn" href="A2-Lektion-1/">Lektion 1</a>
-<a class="lesson-btn" href="A2-Lektion-2/">Lektion 2</a>
-<a class="lesson-btn" href="A2-Lektion-3/">Lektion 3</a>
-<a class="lesson-btn" href="A2-Lektion-4/">Lektion 4</a>
-<a class="lesson-btn" href="A2-Lektion-5/">Lektion 5</a>
-<a class="lesson-btn" href="A2-Lektion-6/">Lektion 6</a>
-<a class="lesson-btn" href="A2-Lektion-7/">Lektion 7</a>
-<a class="lesson-btn" href="A2-Lektion-8/">Lektion 8</a>
-<a class="lesson-btn" href="A2-Lektion-9/">Lektion 9</a>
-<a class="lesson-btn" href="A2-Lektion-10/">Lektion 10</a>
-<a class="lesson-btn" href="A2-Lektion-11/">Lektion 11</a>
-<a class="lesson-btn" href="A2-Lektion-12/">Lektion 12</a>
-<a class="lesson-btn" href="A2-Lektion-13/">Lektion 13</a>
-<a class="lesson-btn" href="A2-Lektion-14/">Lektion 14</a>
-</div>
-</section>
+  <section class="card">
+    <div class="level-title">A1</div>
+    <div class="book-title">Schritte Plus Neu A1 - 14 Lektionen</div>
+    <div class="lessons">
+      <a class="lesson-btn" href="./A1-Lektion-1/">Lektion 1</a>
+      <a class="lesson-btn" href="./A1-Lektion-2/">Lektion 2</a>
+      <a class="lesson-btn" href="./A1-Lektion-3/">Lektion 3</a>
+      <a class="lesson-btn" href="./A1-Lektion-4/">Lektion 4</a>
+      <a class="lesson-btn" href="./A1-Lektion-5/">Lektion 5</a>
+      <a class="lesson-btn" href="./A1-Lektion-6/">Lektion 6</a>
+      <a class="lesson-btn" href="./A1-Lektion-7/">Lektion 7</a>
+      <a class="lesson-btn" href="./A1-Lektion-8/">Lektion 8</a>
+      <a class="lesson-btn" href="./A1-Lektion-9/">Lektion 9</a>
+      <a class="lesson-btn" href="./A1-Lektion-10/">Lektion 10</a>
+      <a class="lesson-btn" href="./A1-Lektion-11/">Lektion 11</a>
+      <a class="lesson-btn" href="./A1-Lektion-12/">Lektion 12</a>
+      <a class="lesson-btn" href="./A1-Lektion-13/">Lektion 13</a>
+      <a class="lesson-btn" href="./A1-Lektion-14/">Lektion 14</a>
+    </div>
+  </section>
 
+  <section class="card">
+    <div class="level-title">A2</div>
+    <div class="book-title">Schritte Plus Neu A2 - 14 Lektionen</div>
+    <div class="lessons">
+      <a class="lesson-btn" href="./A2-Lektion-1/">Lektion 1</a>
+      <a class="lesson-btn" href="./A2-Lektion-2/">Lektion 2</a>
+      <a class="lesson-btn" href="./A2-Lektion-3/">Lektion 3</a>
+      <a class="lesson-btn" href="./A2-Lektion-4/">Lektion 4</a>
+      <a class="lesson-btn" href="./A2-Lektion-5/">Lektion 5</a>
+      <a class="lesson-btn" href="./A2-Lektion-6/">Lektion 6</a>
+      <a class="lesson-btn" href="./A2-Lektion-7/">Lektion 7</a>
+      <a class="lesson-btn" href="./A2-Lektion-8/">Lektion 8</a>
+      <a class="lesson-btn" href="./A2-Lektion-9/">Lektion 9</a>
+      <a class="lesson-btn" href="./A2-Lektion-10/">Lektion 10</a>
+      <a class="lesson-btn" href="./A2-Lektion-11/">Lektion 11</a>
+      <a class="lesson-btn" href="./A2-Lektion-12/">Lektion 12</a>
+      <a class="lesson-btn" href="./A2-Lektion-13/">Lektion 13</a>
+      <a class="lesson-btn" href="./A2-Lektion-14/">Lektion 14</a>
+    </div>
+  </section>
 
-<section class="card">
-<div class="level-title">B1</div>
-<div class="book-title">Schritte Plus Neu B1 - 14 Lektionen</div>
-<div class="lessons">
-<a class="lesson-btn" href="B1-Lektion-1/">Lektion 1</a>
-<a class="lesson-btn" href="B1-Lektion-2/">Lektion 2</a>
-<a class="lesson-btn" href="B1-Lektion-3/">Lektion 3</a>
-<a class="lesson-btn" href="B1-Lektion-4/">Lektion 4</a>
-<a class="lesson-btn" href="B1-Lektion-5/">Lektion 5</a>
-<a class="lesson-btn" href="B1-Lektion-6/">Lektion 6</a>
-<a class="lesson-btn" href="B1-Lektion-7/">Lektion 7</a>
-<a class="lesson-btn" href="B1-Lektion-8/">Lektion 8</a>
-<a class="lesson-btn" href="B1-Lektion-9/">Lektion 9</a>
-<a class="lesson-btn" href="B1-Lektion-10/">Lektion 10</a>
-<a class="lesson-btn" href="B1-Lektion-11/">Lektion 11</a>
-<a class="lesson-btn" href="B1-Lektion-12/">Lektion 12</a>
-<a class="lesson-btn" href="B1-Lektion-13/">Lektion 13</a>
-<a class="lesson-btn" href="B1-Lektion-14/">Lektion 14</a>
-</div>
-</section>
+  <section class="card">
+    <div class="level-title">B1</div>
+    <div class="book-title">Schritte Plus Neu B1 - 14 Lektionen</div>
+    <div class="lessons">
+      <a class="lesson-btn" href="./B1-Lektion-1/">Lektion 1</a>
+      <a class="lesson-btn" href="./B1-Lektion-2/">Lektion 2</a>
+      <a class="lesson-btn" href="./B1-Lektion-3/">Lektion 3</a>
+      <a class="lesson-btn" href="./B1-Lektion-4/">Lektion 4</a>
+      <a class="lesson-btn" href="./B1-Lektion-5/">Lektion 5</a>
+      <a class="lesson-btn" href="./B1-Lektion-6/">Lektion 6</a>
+      <a class="lesson-btn" href="./B1-Lektion-7/">Lektion 7</a>
+      <a class="lesson-btn" href="./B1-Lektion-8/">Lektion 8</a>
+      <a class="lesson-btn" href="./B1-Lektion-9/">Lektion 9</a>
+      <a class="lesson-btn" href="./B1-Lektion-10/">Lektion 10</a>
+      <a class="lesson-btn" href="./B1-Lektion-11/">Lektion 11</a>
+      <a class="lesson-btn" href="./B1-Lektion-12/">Lektion 12</a>
+      <a class="lesson-btn" href="./B1-Lektion-13/">Lektion 13</a>
+      <a class="lesson-btn" href="./B1-Lektion-14/">Lektion 14</a>
+    </div>
+  </section>
+
+  <footer>© SprachPilot</footer>
 
 </div>
 </body>
