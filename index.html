@@ -348,7 +348,18 @@ footer{
       <p class="small">Auf diesem Gerät kannst du ein gespeichertes Profil öffnen.</p>
       <div id="savedProfiles"></div>
       <button class="secondary" onclick="showRegister()">Mit Daten erneut anmelden</button>
+    
+    <div id="cloudLoginBox" class="hidden">
+      <h3>Cloud Login</h3>
+      <p class="small">Auf jedem Gerät mit Vorname, Nachname und Kursnummer anmelden.</p>
+      <label>Vorname</label><input id="loginFirst">
+      <label>Nachname</label><input id="loginLast">
+      <label>Kursnummer</label><input id="loginCourse">
+      <button class="success" onclick="cloudLogin()">Cloud Login</button>
+      <div id="cloudLoginResult"></div>
     </div>
+
+</div>
   </section>
 
   <section class="modules">
@@ -377,7 +388,7 @@ footer{
 </div>
 
 <script>
-const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzQgBJVmvgfqbWBJSPkDAbxwvbiE3LfaU55iTtz1h1kTdPzxmUmgalxKhRNhpxngfTr/exec";
+const GOOGLE_SHEET_URL = "https://script.google.com/macros/s/AKfycbzXxK2HQdEFjAV316wdh1s-I_dBa2PCjhH2Vsf0ocqsOqnIxf9GADvwkgtatePV7sZ42Q/exec";
 
 const COUNTRIES = [
 "Afghanistan","Ägypten","Albanien","Algerien","Angola","Argentinien","Armenien","Aserbaidschan","Äthiopien","Australien",
@@ -626,6 +637,40 @@ function renderLogged(){
 
 fillSelects();
 renderLogged();
+
+function showLogin(){
+  $("loginBox").classList.remove("hidden");
+  const c=document.getElementById("cloudLoginBox");
+  if(c)c.classList.remove("hidden");
+  $("registerBox").classList.add("hidden");
+  renderSavedProfiles();
+}
+
+async function cloudLogin(){
+  const first=$("loginFirst").value.trim();
+  const last=$("loginLast").value.trim();
+  const course=$("loginCourse").value.trim();
+
+  if(!first||!last||!course){
+    $("cloudLoginResult").innerHTML='<div class="no">Bitte alle Felder ausfüllen.</div>';
+    return;
+  }
+
+  try{
+    const r=await fetch(GOOGLE_SHEET_URL+'?vorname='+encodeURIComponent(first)+'&nachname='+encodeURIComponent(last)+'&kurs='+encodeURIComponent(course));
+    const data=await r.json();
+
+    if(data && data.success && data.user){
+      saveActiveProfile(data.user);
+      $("cloudLoginResult").innerHTML='<div class="ok">Login erfolgreich.</div>';
+      return;
+    }
+    $("cloudLoginResult").innerHTML='<div class="no">Profil nicht gefunden.</div>';
+  }catch(e){
+    $("cloudLoginResult").innerHTML='<div class="no">Cloud Login nicht erreichbar.</div>';
+  }
+}
+
 </script>
 
 </body>
