@@ -169,8 +169,131 @@ input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size
   <div class="card" id="app"></div>
 </main>
 
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
+/* ===== FIREBASE FORTSCHRITT SPEICHERN / LADEN ===== */
+function firebaseStudentId(){
+  if(profile && (profile.studentId || profile.userId)) return profile.studentId || profile.userId;
+  try{
+    const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");
+    return p && (p.studentId || p.userId);
+  }catch(e){return null}
+}
+
+function firebaseProgressPercent(){
+  try{return overall()}catch(e){return 0}
+}
+
+function firebaseStars(){
+  try{return totalStars()}catch(e){return 0}
+}
+
+async function loadState(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(key())||"null");
+    if(saved) state={...state,...saved};
+  }catch(e){}
+
+  migrateState();
+
+  const sid=firebaseStudentId();
+  if(!sid || typeof db==="undefined"){
+    return;
+  }
+
+  try{
+    const snap=await db.collection("progress").doc(sid).get();
+    if(snap.exists){
+      const data=snap.data()||{};
+      if(data.verben && data.verben.state){
+        state={...state,...data.verben.state};
+        migrateState();
+        localStorage.setItem(key(),JSON.stringify(state));
+      }
+    }
+  }catch(e){
+    console.warn("Firebase Fortschritt konnte nicht geladen werden:", e);
+  }
+}
+
+let firebaseSaveTimer=null;
+
+function saveState(){
+  migrateState();
+  localStorage.setItem(key(),JSON.stringify(state));
+  sendProgress();
+}
+
+function sendProgress(){
+  if(!profile)return;
+  const sid=firebaseStudentId();
+  if(!sid || typeof db==="undefined")return;
+
+  clearTimeout(firebaseSaveTimer);
+  firebaseSaveTimer=setTimeout(async()=>{
+    try{
+      await db.collection("progress").doc(sid).set({
+        studentId:sid,
+        kurs:profile.kurs||profile.kursnummer||"",
+        verben:{
+          progress:firebaseProgressPercent(),
+          stars:firebaseStars(),
+          activeVerbs:state.active||[],
+          learnedVerbs:state.learned||[],
+          known:state.known||[],
+          unsure:state.unsure||[],
+          unknown:state.unknown||[],
+          state:state
+        },
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+
+      await db.collection("students").doc(sid).set({
+        studentId:sid,
+        vorname:profile.vorname||"",
+        nachname:profile.nachname||"",
+        kurs:profile.kurs||profile.kursnummer||"",
+        muttersprache:profile.muttersprache||"",
+        verbenFortschritt:firebaseProgressPercent(),
+        lastActivity:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+    }catch(e){
+      console.warn("Firebase Fortschritt konnte nicht gespeichert werden:", e);
+    }
+  },450);
+}
+
+async function init(){
+  if(!loadProfile())return;
+  await loadState();
+  if(state.active.length>=20){
+    state.phase="tasks";
+    renderHome();
+  }else{
+    state.phase="select";
+    renderOneVerb();
+  }
+}
+/* ===== ENDE FIREBASE PATCH ===== */
+
+init();
+</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
 <script>
-const GOOGLE_SHEET_URL="https://script.google.com/macros/s/AKfycbzQgBJVmvgfqbWBJSPkDAbxwvbiE3LfaU55iTtz1h1kTdPzxmUmgalxKhRNhpxngfTr/exec";
+const GOOGLE_SHEET_URL="";
+const firebaseConfig = {
+  apiKey: "AIzaSyDbl0m8JIEu7BuoLwXrdxRL4wMJAVJS468",
+  authDomain: "sprachpilot-12c68.firebaseapp.com",
+  projectId: "sprachpilot-12c68",
+  storageBucket: "sprachpilot-12c68.firebasestorage.app",
+  messagingSenderId: "454992284519",
+  appId: "1:454992284519:web:c7a87558cf59e0c0fc7dc2",
+  measurementId: "G-2XXR3FSY89"
+};
+if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
+const db = firebase.firestore();
+
 const ALL_VERBS=[{"v": "lieben", "emoji": "❤️", "img": "Person zeigt ein Herz"}, {"v": "kaufen", "emoji": "🛒", "img": "Person kauft im Geschäft"}, {"v": "verstehen", "emoji": "💡", "img": "Person versteht"}, {"v": "brauchen", "emoji": "🎒", "img": "Person braucht eine Tasche"}, {"v": "hören", "emoji": "👂", "img": "Person hört Musik"}, {"v": "lernen", "emoji": "📚", "img": "Person lernt Deutsch"}, {"v": "wohnen", "emoji": "🏠", "img": "Person wohnt in einer Stadt"}, {"v": "bringen", "emoji": "🎁", "img": "Person bringt etwas"}, {"v": "sein", "emoji": "👤", "img": "Person ist da"}, {"v": "schreiben", "emoji": "✍️", "img": "Person schreibt"}, {"v": "fotografieren", "emoji": "📷", "img": "Person fotografiert"}, {"v": "telefonieren", "emoji": "☎️", "img": "Person telefoniert"}, {"v": "kochen", "emoji": "🍲", "img": "Person kocht"}, {"v": "leben", "emoji": "🌍", "img": "Person lebt in Deutschland"}, {"v": "kommen", "emoji": "➡️", "img": "Person kommt"}, {"v": "buchstabieren", "emoji": "🔤", "img": "Person buchstabiert"}, {"v": "gehen", "emoji": "🚶", "img": "Person geht"}, {"v": "schwimmen", "emoji": "🏊", "img": "Person schwimmt"}, {"v": "suchen", "emoji": "🔍", "img": "Person sucht"}, {"v": "bestellen", "emoji": "📋", "img": "Person bestellt"}, {"v": "weinen", "emoji": "😢", "img": "Person weint"}, {"v": "reparieren", "emoji": "🔧", "img": "Person repariert"}, {"v": "gewinnen", "emoji": "🏆", "img": "Person gewinnt"}, {"v": "spielen", "emoji": "🎲", "img": "Person spielt"}, {"v": "springen", "emoji": "🤾", "img": "Person springt"}, {"v": "verlieren", "emoji": "😟", "img": "Person verliert"}, {"v": "fragen", "emoji": "❓", "img": "Person fragt"}, {"v": "verkaufen", "emoji": "🏪", "img": "Person verkauft"}, {"v": "unterschreiben", "emoji": "🖊️", "img": "Person unterschreibt"}, {"v": "reservieren", "emoji": "📅", "img": "Person reserviert"}, {"v": "buchen", "emoji": "🎫", "img": "Person bucht"}, {"v": "machen", "emoji": "🛠️", "img": "Person macht etwas"}, {"v": "malen", "emoji": "🎨", "img": "Person malt"}, {"v": "trinken", "emoji": "🥤", "img": "Person trinkt"}, {"v": "schicken", "emoji": "📨", "img": "Person schickt eine Nachricht"}, {"v": "denken", "emoji": "🤔", "img": "Person denkt"}, {"v": "winken", "emoji": "👋", "img": "Person winkt"}, {"v": "hassen", "emoji": "💔", "img": "Person mag etwas gar nicht"}, {"v": "beißen", "emoji": "🦷", "img": "Person beißt"}, {"v": "gießen", "emoji": "🪴", "img": "Person gießt Pflanzen"}, {"v": "reißen", "emoji": "📄", "img": "Person reißt Papier"}, {"v": "putzen", "emoji": "🧽", "img": "Person putzt"}, {"v": "küssen", "emoji": "😘", "img": "Person küsst"}, {"v": "tanzen", "emoji": "💃", "img": "Person tanzt"}, {"v": "mixen", "emoji": "🥣", "img": "Person mixt"}, {"v": "reisen", "emoji": "🧳", "img": "Person reist"}, {"v": "haben", "emoji": "🎒", "img": "Person hat eine Tasche"}, {"v": "überqueren", "emoji": "🚦", "img": "Person überquert die Straße"}, {"v": "grüßen", "emoji": "🙋", "img": "Person grüßt"}, {"v": "genießen", "emoji": "😊", "img": "Person genießt das Essen"}, {"v": "singen", "emoji": "🎤", "img": "Person singt"}, {"v": "schließen", "emoji": "🔒", "img": "Person schließt die Tür"}, {"v": "rennen", "emoji": "🏃", "img": "Person rennt"}, {"v": "lachen", "emoji": "😄", "img": "Person lacht"}, {"v": "warten", "emoji": "⏳", "img": "Person wartet"}, {"v": "arbeiten", "emoji": "💼", "img": "Person arbeitet"}, {"v": "finden", "emoji": "✅", "img": "Person findet etwas"}, {"v": "benutzen", "emoji": "🧰", "img": "Person benutzt ein Gerät"}, {"v": "rechnen", "emoji": "➕", "img": "Person rechnet"}, {"v": "zeichnen", "emoji": "✏️", "img": "Person zeichnet"}, {"v": "öffnen", "emoji": "🚪", "img": "Person öffnet die Tür"}, {"v": "wiederholen", "emoji": "🔁", "img": "Person wiederholt"}, {"v": "schneiden", "emoji": "🔪", "img": "Person schneidet"}, {"v": "streiten", "emoji": "💢", "img": "Person streitet"}, {"v": "atmen", "emoji": "🫁", "img": "Person atmet"}];
 
 function $(id){return document.getElementById(id)}
