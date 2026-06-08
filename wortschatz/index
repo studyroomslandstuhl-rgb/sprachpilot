@@ -1,0 +1,187 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SprachPilot - Wortschatz</title>
+
+<style>
+body{
+font-family:Arial,sans-serif;
+background:linear-gradient(135deg,#667eea,#764ba2);
+margin:0;
+padding:20px;
+}
+
+.container{
+max-width:1000px;
+margin:auto;
+}
+
+h1{
+text-align:center;
+color:white;
+margin-bottom:25px;
+}
+
+.level-grid{
+display:grid;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+}
+
+.level-card{
+background:white;
+padding:25px;
+border-radius:20px;
+text-align:center;
+cursor:pointer;
+box-shadow:0 10px 25px rgba(0,0,0,.2);
+font-size:28px;
+font-weight:bold;
+color:#667eea;
+}
+
+.book-grid{
+display:none;
+grid-template-columns:repeat(auto-fit,minmax(250px,1fr));
+gap:20px;
+margin-top:20px;
+}
+
+.book-card{
+background:white;
+padding:20px;
+border-radius:20px;
+text-align:center;
+cursor:pointer;
+box-shadow:0 10px 25px rgba(0,0,0,.2);
+}
+
+.lesson-grid{
+display:none;
+grid-template-columns:repeat(auto-fit,minmax(150px,1fr));
+gap:15px;
+margin-top:20px;
+}
+
+.lesson{
+background:white;
+padding:18px;
+border-radius:15px;
+text-align:center;
+font-weight:bold;
+cursor:pointer;
+box-shadow:0 5px 15px rgba(0,0,0,.15);
+}
+
+.back{
+margin-bottom:15px;
+padding:12px 20px;
+border:none;
+border-radius:10px;
+background:white;
+cursor:pointer;
+font-weight:bold;
+display:none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+<button class="back" id="backBtn" onclick="goBack()">← Zurück</button>
+
+<h1>Wortschatz - Schritte Plus Neu</h1>
+
+<div class="level-grid" id="levels">
+<div class="level-card" onclick="showBooks('A1')">A1</div>
+<div class="level-card" onclick="showBooks('A2')">A2</div>
+<div class="level-card" onclick="showBooks('B1')">B1</div>
+</div>
+
+<div class="book-grid" id="books"></div>
+
+<div class="lesson-grid" id="lessons"></div>
+
+</div>
+
+<script>
+
+let currentLevel = "";
+
+function showBooks(level){
+
+currentLevel = level;
+
+document.getElementById("levels").style.display="none";
+document.getElementById("books").style.display="grid";
+document.getElementById("backBtn").style.display="inline-block";
+
+const books = document.getElementById("books");
+
+books.innerHTML=`
+
+<div class="book-card" onclick="showLessons('Schritte Plus Neu ${level}')">
+<h2>Schritte Plus Neu ${level}</h2>
+<p>14 Lektionen</p>
+</div>
+
+`;
+}
+
+function showLessons(book){
+
+document.getElementById("books").style.display="none";
+
+const lessons=document.getElementById("lessons");
+
+let html="";
+
+for(let i=1;i<=14;i++){
+
+html+=`
+<div class="lesson"
+onclick="openLesson('${currentLevel}',${i})">
+Lektion ${i}
+</div>
+`;
+
+}
+
+lessons.innerHTML=html;
+lessons.style.display="grid";
+}
+
+function openLesson(level,lektion){
+
+window.location.href=
+`lektion.html?level=${level}&lektion=${lektion}`;
+
+}
+
+function goBack(){
+
+const lessons=document.getElementById("lessons");
+const books=document.getElementById("books");
+const levels=document.getElementById("levels");
+
+if(lessons.style.display==="grid"){
+lessons.style.display="none";
+books.style.display="grid";
+return;
+}
+
+if(books.style.display==="grid"){
+books.style.display="none";
+levels.style.display="grid";
+document.getElementById("backBtn").style.display="none";
+}
+
+}
+</script>
+
+</body>
+</html>
