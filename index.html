@@ -635,6 +635,64 @@ function renderLogged(){
   }
 }
 
+
+/* ===== DAUERHAFT EINGELOGGT AUF DIESEM GERÄT ===== */
+function rememberLogin(p){
+  p.letzterLogin = new Date().toISOString();
+  p.keepLoggedIn = true;
+  localStorage.setItem("SP_USER_PROFILE", JSON.stringify(p));
+  localStorage.setItem("SP_KEEP_LOGGED_IN", "1");
+}
+
+function getActiveProfile(){
+  try{
+    const p = JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "null");
+    if(p && localStorage.getItem("SP_KEEP_LOGGED_IN") === "1") return p;
+    if(p && p.keepLoggedIn) return p;
+    return p;
+  }catch(e){
+    return null;
+  }
+}
+
+function logout(){
+  localStorage.removeItem("SP_USER_PROFILE");
+  localStorage.removeItem("SP_KEEP_LOGGED_IN");
+  renderLogged();
+}
+
+function saveActiveProfile(p){
+  rememberLogin(p);
+
+  let list = allProfiles().filter(x=>x.userId !== p.userId);
+  list.unshift(p);
+  saveProfiles(list.slice(0,10));
+
+  sendProfile(p);
+  renderLogged();
+}
+
+function renderLogged(){
+  let p = getActiveProfile();
+  const box = $("loggedBox");
+
+  if(p){
+    box.innerHTML = `
+      <div class="ok">
+        <strong>Eingeloggt:</strong> ${p.vorname} ${p.nachname} | Kurs: ${p.kurs}<br>
+        <span class="small">Du bleibst auf diesem Gerät eingeloggt.</span><br>
+        <button class="secondary" onclick="editProfile()">Profil bearbeiten</button>
+        <button class="secondary" onclick="logout()">Abmelden</button>
+      </div>
+    `;
+    $("authButtons").classList.add("hidden");
+  }else{
+    box.innerHTML = `<p>Registriere dich einmal oder logge dich ein. Danach bleibst du auf diesem Gerät angemeldet.</p>`;
+    $("authButtons").classList.remove("hidden");
+  }
+}
+/* ===== ENDE DAUERLOGIN ===== */
+
 fillSelects();
 renderLogged();
 
