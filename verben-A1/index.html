@@ -170,114 +170,8 @@ input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size
 </main>
 
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
-/* ===== FIREBASE FORTSCHRITT SPEICHERN / LADEN ===== */
-function firebaseStudentId(){
-  if(profile && (profile.studentId || profile.userId)) return profile.studentId || profile.userId;
-  try{
-    const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");
-    return p && (p.studentId || p.userId);
-  }catch(e){return null}
-}
 
-function firebaseProgressPercent(){
-  try{return overall()}catch(e){return 0}
-}
-
-function firebaseStars(){
-  try{return totalStars()}catch(e){return 0}
-}
-
-async function loadState(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(key())||"null");
-    if(saved) state={...state,...saved};
-  }catch(e){}
-
-  migrateState();
-
-  const sid=firebaseStudentId();
-  if(!sid || typeof db==="undefined"){
-    return;
-  }
-
-  try{
-    const snap=await db.collection("progress").doc(sid).get();
-    if(snap.exists){
-      const data=snap.data()||{};
-      if(data.verben && data.verben.state){
-        state={...state,...data.verben.state};
-        migrateState();
-        localStorage.setItem(key(),JSON.stringify(state));
-      }
-    }
-  }catch(e){
-    console.warn("Firebase Fortschritt konnte nicht geladen werden:", e);
-  }
-}
-
-let firebaseSaveTimer=null;
-
-function saveState(){
-  migrateState();
-  localStorage.setItem(key(),JSON.stringify(state));
-  sendProgress();
-}
-
-function sendProgress(){
-  if(!profile)return;
-  const sid=firebaseStudentId();
-  if(!sid || typeof db==="undefined")return;
-
-  clearTimeout(firebaseSaveTimer);
-  firebaseSaveTimer=setTimeout(async()=>{
-    try{
-      await db.collection("progress").doc(sid).set({
-        studentId:sid,
-        kurs:profile.kurs||profile.kursnummer||"",
-        verben:{
-          progress:firebaseProgressPercent(),
-          stars:firebaseStars(),
-          activeVerbs:state.active||[],
-          learnedVerbs:state.learned||[],
-          known:state.known||[],
-          unsure:state.unsure||[],
-          unknown:state.unknown||[],
-          state:state
-        },
-        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-
-      await db.collection("students").doc(sid).set({
-        studentId:sid,
-        vorname:profile.vorname||"",
-        nachname:profile.nachname||"",
-        kurs:profile.kurs||profile.kursnummer||"",
-        muttersprache:profile.muttersprache||"",
-        verbenFortschritt:firebaseProgressPercent(),
-        lastActivity:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-    }catch(e){
-      console.warn("Firebase Fortschritt konnte nicht gespeichert werden:", e);
-    }
-  },450);
-}
-
-async function init(){
-  if(!loadProfile())return;
-  await loadState();
-  if(state.active.length>=20){
-    state.phase="tasks";
-    renderHome();
-  }else{
-    state.phase="select";
-    renderOneVerb();
-  }
-}
-/* ===== ENDE FIREBASE PATCH ===== */
-
-init();
-</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
 <script>
@@ -353,24 +247,99 @@ function migrateState(){
   state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{}; state.alertsShown=state.alertsShown||{}; state.taskRewardsShown=state.taskRewardsShown||{}; state.packageNo=state.packageNo||1;
   (state.active||[]).forEach(v=>ensureSkillState(v));
 }
-function loadState(){
-  try{const saved=JSON.parse(localStorage.getItem(key())||"null"); if(saved) state={...state,...saved};}catch(e){}
+
+async function loadState(){
+  try{
+    const saved=JSON.parse(localStorage.getItem(key())||"null");
+    if(saved) state={...state,...saved};
+  }catch(e){}
+
   migrateState();
+
+  const sid=firebaseStudentId();
+  if(sid && typeof db!=="undefined"){
+    try{
+      const snap=await db.collection("progress").doc(sid).get();
+      if(snap.exists){
+        const data=snap.data()||{};
+        if(data.verben && data.verben.state){
+          state={...state,...data.verben.state};
+          migrateState();
+          localStorage.setItem(key(),JSON.stringify(state));
+        }
+      }
+    }catch(e){
+      console.warn("Firebase Verben-Fortschritt konnte nicht geladen werden:", e);
+    }
+  }
 }
+
 function saveState(){
   migrateState();
   localStorage.setItem(key(),JSON.stringify(state));
   sendProgress();
 }
+
+let firebaseSaveTimer=null;
+function firebaseStudentId(){
+  if(profile && (profile.studentId || profile.userId)) return profile.studentId || profile.userId;
+  try{
+    const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");
+    return p && (p.studentId || p.userId);
+  }catch(e){return null}
+}
+function firebaseProgressPercent(){
+  try{return overall()}catch(e){return 0}
+}
+function firebaseStars(){
+  try{return totalStars()}catch(e){return 0}
+}
 function sendProgress(){
   if(!profile)return;
-  const payload={userId:profile.userId,kurs:profile.kurs,vorname:profile.vorname,nachname:profile.nachname,
-    geburtsdatum:profile.geburtsdatum,heimatland:profile.heimatland,muttersprache:profile.muttersprache,
-    fremdsprache:profile.fremdsprache,wohnort:profile.wohnort,kinder:profile.kinder,
-    fragenFortschritt:profile.fragenFortschritt||0,verbenFortschritt:overall(),gesamtpunkte:overall(),
-    profile:profile,verbenState:state,timestamp:new Date().toISOString()};
-  try{fetch(GOOGLE_SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})}catch(e){}
+  const sid=firebaseStudentId();
+  if(!sid || typeof db==="undefined")return;
+
+  clearTimeout(firebaseSaveTimer);
+  firebaseSaveTimer=setTimeout(async()=>{
+    try{
+      const progressValue=firebaseProgressPercent();
+      await db.collection("progress").doc(sid).set({
+        studentId:sid,
+        kurs:profile.kurs||profile.kursnummer||"",
+        verben:{
+          progress:progressValue,
+          stars:firebaseStars(),
+          activeVerbs:state.active||[],
+          learnedVerbs:state.learned||[],
+          known:state.known||[],
+          unsure:state.unsure||[],
+          unknown:state.unknown||[],
+          state:state,
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+        },
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+
+      await db.collection("students").doc(sid).set({
+        studentId:sid,
+        vorname:profile.vorname||"",
+        nachname:profile.nachname||"",
+        kurs:profile.kurs||profile.kursnummer||"",
+        muttersprache:profile.muttersprache||"",
+        verbenFortschritt:progressValue,
+        lastActivity:firebase.firestore.FieldValue.serverTimestamp()
+      },{merge:true});
+
+      try{
+        profile.verbenFortschritt=progressValue;
+        localStorage.setItem("SP_USER_PROFILE",JSON.stringify(profile));
+      }catch(e){}
+    }catch(e){
+      console.warn("Firebase Verben-Fortschritt konnte nicht gespeichert werden:", e);
+    }
+  },600);
 }
+
 
 function imageFileName(v){return String(v||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".png"}
 function imageBox(v,small=false){const cls=small?"mem-img-holder":"img-holder";return `<span class="${cls}" data-verb="${safeText(v)}"><span class="image-fallback">Bild</span></span>`}
@@ -818,27 +787,19 @@ function renderProgressPanel(openOnly){
 }
 function toggleProgressPanel(){const p=$("progressPanel");if(!p)return;p.classList.toggle("hidden");if(!p.classList.contains("hidden"))renderProgressPanel(true)}
 
-function init(){if(!loadProfile())return;loadState();if(state.active.length>=20){state.phase="tasks";renderHome();}else{state.phase="select";renderOneVerb();}}
-document.addEventListener("DOMContentLoaded",init);
 
-
-/* ===== SPRACHPILOT FINAL FIX ===== */
-function spCleanVerbState(){
-  state.known=Array.isArray(state.known)?state.known:[];
-  state.unsure=Array.isArray(state.unsure)?state.unsure:[];
-  state.unknown=Array.isArray(state.unknown)?state.unknown:[];
-  state.active=Array.isArray(state.active)?state.active:[];
-  state.learned=Array.isArray(state.learned)?state.learned:[];
-  state.taskQueues=state.taskQueues||{};
-  state.taskDoneSets=state.taskDoneSets||{};
-  state.skillDone=state.skillDone||{};
-  state.skillAttempts=state.skillAttempts||{};
-  state.skillSuccess=state.skillSuccess||{};
-  state.packageNo=state.packageNo||1;
-  state.active=state.active.filter((v,i,a)=>v&&a.indexOf(v)===i).slice(0,20);
-  state.learned=state.learned.filter((v,i,a)=>v&&a.indexOf(v)===i&&!state.active.includes(v));
-  state.active.forEach(v=>ensureSkillState(v));
+async function init(){
+  if(!loadProfile())return;
+  await loadState();
+  if((state.active||[]).length>=20 || state.phase==="tasks"){
+    state.phase="tasks";
+    renderHome();
+  }else{
+    state.phase="select";
+    renderOneVerb();
+  }
 }
+
 function packageComplete(){
   spCleanVerbState();
   return state.active.length===20 && state.active.every(v=>verbPercent(v)>=100);
