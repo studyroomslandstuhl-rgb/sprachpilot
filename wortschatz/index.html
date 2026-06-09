@@ -134,6 +134,34 @@ footer{
   .hero{padding:24px 16px}
   .lessons{grid-template-columns:repeat(2,1fr)}
 }
+
+.lesson-btn.locked{
+  background:#e9e9ef!important;
+  color:#777!important;
+  box-shadow:none!important;
+  cursor:not-allowed!important;
+  border:2px solid #d4d4dd;
+}
+.lesson-btn.locked:hover{
+  transform:none!important;
+  box-shadow:none!important;
+}
+.lesson-btn.open{
+  background:linear-gradient(135deg,#4facfe,#00f2fe)!important;
+}
+.assignment-status{
+  background:#eefaf3;
+  border-left:5px solid #27ae60;
+  padding:12px;
+  border-radius:12px;
+  margin-bottom:14px;
+  font-weight:700;
+}
+.assignment-status.no{
+  background:#ffe1e1;
+  border-left-color:#e74c3c;
+}
+
 </style>
 </head>
 
@@ -154,20 +182,20 @@ footer{
     <div class="level-title">A1</div>
     <div class="book-title">Schritte Plus Neu A1 - 14 Lektionen</div>
     <div class="lessons">
-      <a class="lesson-btn" href="./A1-Lektion-1/">Lektion 1</a>
-      <a class="lesson-btn" href="./A1-Lektion-2/">Lektion 2</a>
-      <a class="lesson-btn" href="./A1-Lektion-3/">Lektion 3</a>
-      <a class="lesson-btn" href="./A1-Lektion-4/">Lektion 4</a>
-      <a class="lesson-btn" href="./A1-Lektion-5/">Lektion 5</a>
-      <a class="lesson-btn" href="./A1-Lektion-6/">Lektion 6</a>
-      <a class="lesson-btn" href="./A1-Lektion-7/">Lektion 7</a>
-      <a class="lesson-btn" href="./A1-Lektion-8/">Lektion 8</a>
-      <a class="lesson-btn" href="./A1-Lektion-9/">Lektion 9</a>
-      <a class="lesson-btn" href="./A1-Lektion-10/">Lektion 10</a>
-      <a class="lesson-btn" href="./A1-Lektion-11/">Lektion 11</a>
-      <a class="lesson-btn" href="./A1-Lektion-12/">Lektion 12</a>
-      <a class="lesson-btn" href="./A1-Lektion-13/">Lektion 13</a>
-      <a class="lesson-btn" href="./A1-Lektion-14/">Lektion 14</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-1" href="./A1-Lektion-1/">🔒 Lektion 1</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-2" href="./A1-Lektion-2/">🔒 Lektion 2</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-3" href="./A1-Lektion-3/">🔒 Lektion 3</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-4" href="./A1-Lektion-4/">🔒 Lektion 4</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-5" href="./A1-Lektion-5/">🔒 Lektion 5</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-6" href="./A1-Lektion-6/">🔒 Lektion 6</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-7" href="./A1-Lektion-7/">🔒 Lektion 7</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-8" href="./A1-Lektion-8/">🔒 Lektion 8</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-9" href="./A1-Lektion-9/">🔒 Lektion 9</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-10" href="./A1-Lektion-10/">🔒 Lektion 10</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-11" href="./A1-Lektion-11/">🔒 Lektion 11</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-12" href="./A1-Lektion-12/">🔒 Lektion 12</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-13" href="./A1-Lektion-13/">🔒 Lektion 13</a>
+      <a class="lesson-btn locked" data-lesson="A1-Lektion-14" href="./A1-Lektion-14/">🔒 Lektion 14</a>
     </div>
   </section>
 
@@ -175,20 +203,20 @@ footer{
     <div class="level-title">A2</div>
     <div class="book-title">Schritte Plus Neu A2 - 14 Lektionen</div>
     <div class="lessons">
-      <a class="lesson-btn" href="./A2-Lektion-1/">Lektion 1</a>
-      <a class="lesson-btn" href="./A2-Lektion-2/">Lektion 2</a>
-      <a class="lesson-btn" href="./A2-Lektion-3/">Lektion 3</a>
-      <a class="lesson-btn" href="./A2-Lektion-4/">Lektion 4</a>
-      <a class="lesson-btn" href="./A2-Lektion-5/">Lektion 5</a>
-      <a class="lesson-btn" href="./A2-Lektion-6/">Lektion 6</a>
-      <a class="lesson-btn" href="./A2-Lektion-7/">Lektion 7</a>
-      <a class="lesson-btn" href="./A2-Lektion-8/">Lektion 8</a>
-      <a class="lesson-btn" href="./A2-Lektion-9/">Lektion 9</a>
-      <a class="lesson-btn" href="./A2-Lektion-10/">Lektion 10</a>
-      <a class="lesson-btn" href="./A2-Lektion-11/">Lektion 11</a>
-      <a class="lesson-btn" href="./A2-Lektion-12/">Lektion 12</a>
-      <a class="lesson-btn" href="./A2-Lektion-13/">Lektion 13</a>
-      <a class="lesson-btn" href="./A2-Lektion-14/">Lektion 14</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-1" href="./A2-Lektion-1/">🔒 Lektion 1</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-2" href="./A2-Lektion-2/">🔒 Lektion 2</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-3" href="./A2-Lektion-3/">🔒 Lektion 3</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-4" href="./A2-Lektion-4/">🔒 Lektion 4</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-5" href="./A2-Lektion-5/">🔒 Lektion 5</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-6" href="./A2-Lektion-6/">🔒 Lektion 6</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-7" href="./A2-Lektion-7/">🔒 Lektion 7</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-8" href="./A2-Lektion-8/">🔒 Lektion 8</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-9" href="./A2-Lektion-9/">🔒 Lektion 9</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-10" href="./A2-Lektion-10/">🔒 Lektion 10</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-11" href="./A2-Lektion-11/">🔒 Lektion 11</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-12" href="./A2-Lektion-12/">🔒 Lektion 12</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-13" href="./A2-Lektion-13/">🔒 Lektion 13</a>
+      <a class="lesson-btn locked" data-lesson="A2-Lektion-14" href="./A2-Lektion-14/">🔒 Lektion 14</a>
     </div>
   </section>
 
@@ -196,25 +224,134 @@ footer{
     <div class="level-title">B1</div>
     <div class="book-title">Schritte Plus Neu B1 - 14 Lektionen</div>
     <div class="lessons">
-      <a class="lesson-btn" href="./B1-Lektion-1/">Lektion 1</a>
-      <a class="lesson-btn" href="./B1-Lektion-2/">Lektion 2</a>
-      <a class="lesson-btn" href="./B1-Lektion-3/">Lektion 3</a>
-      <a class="lesson-btn" href="./B1-Lektion-4/">Lektion 4</a>
-      <a class="lesson-btn" href="./B1-Lektion-5/">Lektion 5</a>
-      <a class="lesson-btn" href="./B1-Lektion-6/">Lektion 6</a>
-      <a class="lesson-btn" href="./B1-Lektion-7/">Lektion 7</a>
-      <a class="lesson-btn" href="./B1-Lektion-8/">Lektion 8</a>
-      <a class="lesson-btn" href="./B1-Lektion-9/">Lektion 9</a>
-      <a class="lesson-btn" href="./B1-Lektion-10/">Lektion 10</a>
-      <a class="lesson-btn" href="./B1-Lektion-11/">Lektion 11</a>
-      <a class="lesson-btn" href="./B1-Lektion-12/">Lektion 12</a>
-      <a class="lesson-btn" href="./B1-Lektion-13/">Lektion 13</a>
-      <a class="lesson-btn" href="./B1-Lektion-14/">Lektion 14</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-1" href="./B1-Lektion-1/">🔒 Lektion 1</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-2" href="./B1-Lektion-2/">🔒 Lektion 2</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-3" href="./B1-Lektion-3/">🔒 Lektion 3</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-4" href="./B1-Lektion-4/">🔒 Lektion 4</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-5" href="./B1-Lektion-5/">🔒 Lektion 5</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-6" href="./B1-Lektion-6/">🔒 Lektion 6</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-7" href="./B1-Lektion-7/">🔒 Lektion 7</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-8" href="./B1-Lektion-8/">🔒 Lektion 8</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-9" href="./B1-Lektion-9/">🔒 Lektion 9</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-10" href="./B1-Lektion-10/">🔒 Lektion 10</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-11" href="./B1-Lektion-11/">🔒 Lektion 11</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-12" href="./B1-Lektion-12/">🔒 Lektion 12</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-13" href="./B1-Lektion-13/">🔒 Lektion 13</a>
+      <a class="lesson-btn locked" data-lesson="B1-Lektion-14" href="./B1-Lektion-14/">🔒 Lektion 14</a>
     </div>
   </section>
 
   <footer>© SprachPilot</footer>
 
 </div>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script>
+const firebaseConfig = {
+  apiKey: "AIzaSyDbl0m8JIEu7BuoLwXrdxRL4wMJAVJS468",
+  authDomain: "sprachpilot-12c68.firebaseapp.com",
+  projectId: "sprachpilot-12c68",
+  storageBucket: "sprachpilot-12c68.firebasestorage.app",
+  messagingSenderId: "454992284519",
+  appId: "1:454992284519:web:c7a87558cf59e0c0fc7dc2",
+  measurementId: "G-2XXR3FSY89"
+};
+if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
+const db = firebase.firestore();
+
+function getProfile(){
+  try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}
+}
+function normalizeLessonKey(s){
+  s=String(s||"").trim();
+  const low=s.toLowerCase();
+  const m=low.match(/(?:a1-|a2-|b1-)?lektion-?(\d+)/);
+  if(m){
+    let level = "";
+    if(low.includes("a2")) level="A2";
+    else if(low.includes("b1")) level="B1";
+    else level="A1";
+    return `${level}-Lektion-${Number(m[1])}`;
+  }
+  return s;
+}
+function isAllowed(lessonId, allowed){
+  const normalized=allowed.map(normalizeLessonKey);
+  return normalized.includes(lessonId);
+}
+function setStatus(text, bad=false){
+  let box=document.getElementById("assignmentStatus");
+  if(!box){
+    box=document.createElement("div");
+    box.id="assignmentStatus";
+    const firstCard=document.querySelector(".card");
+    if(firstCard) firstCard.prepend(box);
+  }
+  box.className="assignment-status"+(bad?" no":"");
+  box.innerHTML=text;
+}
+async function applyAssignments(){
+  const profile=getProfile();
+  if(!profile || !(profile.kurs||profile.kursnummer)){
+    setStatus("Bitte zuerst auf der Startseite einloggen. Danach siehst du deine freigeschalteten Lektionen.", true);
+    lockAll();
+    return;
+  }
+  const courseId=profile.kurs||profile.kursnummer;
+  try{
+    const snap=await db.collection("assignments").doc(courseId).get();
+    if(!snap.exists){
+      setStatus(`Für deinen Kurs <strong>${courseId}</strong> gibt es noch keine Wortschatz-Freigabe.`, true);
+      lockAll();
+      return;
+    }
+    const data=snap.data()||{};
+    const allowed=Array.isArray(data.wortschatz)?data.wortschatz:[];
+    if(!allowed.length){
+      setStatus(`Für deinen Kurs <strong>${courseId}</strong> ist noch keine Wortschatz-Lektion freigeschaltet.`, true);
+      lockAll();
+      return;
+    }
+    let count=0;
+    document.querySelectorAll(".lesson-btn").forEach(a=>{
+      const lesson=a.dataset.lesson;
+      const label=a.textContent.replace("🔒","").replace("✅","").trim();
+      if(isAllowed(lesson, allowed)){
+        a.classList.remove("locked");
+        a.classList.add("open");
+        a.innerHTML="✅ "+label;
+        count++;
+      }else{
+        a.classList.add("locked");
+        a.classList.remove("open");
+        a.innerHTML="🔒 "+label;
+        a.addEventListener("click", function(e){
+          e.preventDefault();
+          alert("Diese Lektion ist für deinen Kurs noch nicht freigeschaltet.");
+        });
+      }
+    });
+    setStatus(`Eingeloggt: <strong>${profile.vorname||""} ${profile.nachname||""}</strong> · Kurs: <strong>${courseId}</strong><br>Freigeschaltet: <strong>${count}</strong> Lektion(en)`);
+  }catch(e){
+    console.error(e);
+    setStatus("Firebase konnte nicht geladen werden. Bitte Internetverbindung und Firestore-Regeln prüfen.", true);
+    lockAll();
+  }
+}
+function lockAll(){
+  document.querySelectorAll(".lesson-btn").forEach(a=>{
+    const label=a.textContent.replace("🔒","").replace("✅","").trim();
+    a.classList.add("locked");
+    a.innerHTML="🔒 "+label;
+    a.addEventListener("click", function(e){
+      e.preventDefault();
+      alert("Bitte zuerst auf der Startseite einloggen oder Lektion freischalten lassen.");
+    });
+  });
+}
+applyAssignments();
+</script>
+
 </body>
 </html>
