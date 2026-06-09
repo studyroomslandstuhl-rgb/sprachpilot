@@ -170,8 +170,102 @@ input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size
 </main>
 
 
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+/* ===== FIREBASE PROGRESS + START FIX: VERBEN A1 ===== */
+let firebaseSaveTimerSafe=null;
+function firebaseStudentIdSafe(){
+  if(profile && (profile.studentId || profile.userId)) return profile.studentId || profile.userId;
+  try{
+    const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");
+    return p && (p.studentId || p.userId);
+  }catch(e){return null}
+}
+function firebaseVerbProgressSafe(){try{return overall()}catch(e){return 0}}
+function firebaseVerbStarsSafe(){try{return totalStars()}catch(e){return 0}}
+async function loadFirebaseVerbProgressSafe(){
+  const sid=firebaseStudentIdSafe();
+  if(!sid || typeof db==="undefined") return;
+  try{
+    const snap=await db.collection("progress").doc(sid).get();
+    if(snap.exists){
+      const data=snap.data()||{};
+      if(data.verben && data.verben.state){
+        state={...state,...data.verben.state};
+        migrateState();
+        localStorage.setItem(key(),JSON.stringify(state));
+      }
+    }
+  }catch(e){console.warn("Firebase Verben-Fortschritt konnte nicht geladen werden:", e)}
+}
+async function saveFirebaseVerbProgressNowSafe(){
+  if(!profile) return;
+  const sid=firebaseStudentIdSafe();
+  if(!sid || typeof db==="undefined") return;
+  try{
+    const progressValue=firebaseVerbProgressSafe();
+    await db.collection("progress").doc(sid).set({
+      studentId:sid,
+      kurs:profile.kurs||profile.kursnummer||"",
+      verben:{
+        progress:progressValue,
+        stars:firebaseVerbStarsSafe(),
+        activeVerbs:state.active||[],
+        learnedVerbs:state.learned||[],
+        known:state.known||[],
+        unsure:state.unsure||[],
+        unknown:state.unknown||[],
+        state:state,
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      },
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+    await db.collection("students").doc(sid).set({
+      studentId:sid,
+      vorname:profile.vorname||"",
+      nachname:profile.nachname||"",
+      kurs:profile.kurs||profile.kursnummer||"",
+      muttersprache:profile.muttersprache||"",
+      verbenFortschritt:progressValue,
+      lastActivity:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+    try{profile.verbenFortschritt=progressValue;localStorage.setItem("SP_USER_PROFILE",JSON.stringify(profile));}catch(e){}
+  }catch(e){console.warn("Firebase Verben-Fortschritt konnte nicht gespeichert werden:", e)}
+}
+function saveFirebaseVerbProgressSafe(){
+  clearTimeout(firebaseSaveTimerSafe);
+  firebaseSaveTimerSafe=setTimeout(saveFirebaseVerbProgressNowSafe,600);
+}
+
+const originalSaveStateSafe = saveState;
+saveState = function(){
+  originalSaveStateSafe();
+  saveFirebaseVerbProgressSafe();
+};
+
+const originalLoadStateSafe = loadState;
+loadState = async function(){
+  originalLoadStateSafe();
+  await loadFirebaseVerbProgressSafe();
+};
+
+const originalInitSafe = init;
+init = async function(){
+  if(!loadProfile()) return;
+  await loadState();
+  if((state.active||[]).length>=20 || state.phase==="tasks"){
+    state.phase="tasks";
+    renderHome();
+  }else{
+    state.phase="select";
+    renderOneVerb();
+  }
+};
+
+window.addEventListener("load",()=>{init();});
+/* ===== ENDE FIREBASE PROGRESS + START FIX ===== */
+
+</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
 <script>
@@ -187,7 +281,6 @@ const firebaseConfig = {
 };
 if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
 const db = firebase.firestore();
-
 const ALL_VERBS=[{"v": "lieben", "emoji": "❤️", "img": "Person zeigt ein Herz"}, {"v": "kaufen", "emoji": "🛒", "img": "Person kauft im Geschäft"}, {"v": "verstehen", "emoji": "💡", "img": "Person versteht"}, {"v": "brauchen", "emoji": "🎒", "img": "Person braucht eine Tasche"}, {"v": "hören", "emoji": "👂", "img": "Person hört Musik"}, {"v": "lernen", "emoji": "📚", "img": "Person lernt Deutsch"}, {"v": "wohnen", "emoji": "🏠", "img": "Person wohnt in einer Stadt"}, {"v": "bringen", "emoji": "🎁", "img": "Person bringt etwas"}, {"v": "sein", "emoji": "👤", "img": "Person ist da"}, {"v": "schreiben", "emoji": "✍️", "img": "Person schreibt"}, {"v": "fotografieren", "emoji": "📷", "img": "Person fotografiert"}, {"v": "telefonieren", "emoji": "☎️", "img": "Person telefoniert"}, {"v": "kochen", "emoji": "🍲", "img": "Person kocht"}, {"v": "leben", "emoji": "🌍", "img": "Person lebt in Deutschland"}, {"v": "kommen", "emoji": "➡️", "img": "Person kommt"}, {"v": "buchstabieren", "emoji": "🔤", "img": "Person buchstabiert"}, {"v": "gehen", "emoji": "🚶", "img": "Person geht"}, {"v": "schwimmen", "emoji": "🏊", "img": "Person schwimmt"}, {"v": "suchen", "emoji": "🔍", "img": "Person sucht"}, {"v": "bestellen", "emoji": "📋", "img": "Person bestellt"}, {"v": "weinen", "emoji": "😢", "img": "Person weint"}, {"v": "reparieren", "emoji": "🔧", "img": "Person repariert"}, {"v": "gewinnen", "emoji": "🏆", "img": "Person gewinnt"}, {"v": "spielen", "emoji": "🎲", "img": "Person spielt"}, {"v": "springen", "emoji": "🤾", "img": "Person springt"}, {"v": "verlieren", "emoji": "😟", "img": "Person verliert"}, {"v": "fragen", "emoji": "❓", "img": "Person fragt"}, {"v": "verkaufen", "emoji": "🏪", "img": "Person verkauft"}, {"v": "unterschreiben", "emoji": "🖊️", "img": "Person unterschreibt"}, {"v": "reservieren", "emoji": "📅", "img": "Person reserviert"}, {"v": "buchen", "emoji": "🎫", "img": "Person bucht"}, {"v": "machen", "emoji": "🛠️", "img": "Person macht etwas"}, {"v": "malen", "emoji": "🎨", "img": "Person malt"}, {"v": "trinken", "emoji": "🥤", "img": "Person trinkt"}, {"v": "schicken", "emoji": "📨", "img": "Person schickt eine Nachricht"}, {"v": "denken", "emoji": "🤔", "img": "Person denkt"}, {"v": "winken", "emoji": "👋", "img": "Person winkt"}, {"v": "hassen", "emoji": "💔", "img": "Person mag etwas gar nicht"}, {"v": "beißen", "emoji": "🦷", "img": "Person beißt"}, {"v": "gießen", "emoji": "🪴", "img": "Person gießt Pflanzen"}, {"v": "reißen", "emoji": "📄", "img": "Person reißt Papier"}, {"v": "putzen", "emoji": "🧽", "img": "Person putzt"}, {"v": "küssen", "emoji": "😘", "img": "Person küsst"}, {"v": "tanzen", "emoji": "💃", "img": "Person tanzt"}, {"v": "mixen", "emoji": "🥣", "img": "Person mixt"}, {"v": "reisen", "emoji": "🧳", "img": "Person reist"}, {"v": "haben", "emoji": "🎒", "img": "Person hat eine Tasche"}, {"v": "überqueren", "emoji": "🚦", "img": "Person überquert die Straße"}, {"v": "grüßen", "emoji": "🙋", "img": "Person grüßt"}, {"v": "genießen", "emoji": "😊", "img": "Person genießt das Essen"}, {"v": "singen", "emoji": "🎤", "img": "Person singt"}, {"v": "schließen", "emoji": "🔒", "img": "Person schließt die Tür"}, {"v": "rennen", "emoji": "🏃", "img": "Person rennt"}, {"v": "lachen", "emoji": "😄", "img": "Person lacht"}, {"v": "warten", "emoji": "⏳", "img": "Person wartet"}, {"v": "arbeiten", "emoji": "💼", "img": "Person arbeitet"}, {"v": "finden", "emoji": "✅", "img": "Person findet etwas"}, {"v": "benutzen", "emoji": "🧰", "img": "Person benutzt ein Gerät"}, {"v": "rechnen", "emoji": "➕", "img": "Person rechnet"}, {"v": "zeichnen", "emoji": "✏️", "img": "Person zeichnet"}, {"v": "öffnen", "emoji": "🚪", "img": "Person öffnet die Tür"}, {"v": "wiederholen", "emoji": "🔁", "img": "Person wiederholt"}, {"v": "schneiden", "emoji": "🔪", "img": "Person schneidet"}, {"v": "streiten", "emoji": "💢", "img": "Person streitet"}, {"v": "atmen", "emoji": "🫁", "img": "Person atmet"}];
 
 function $(id){return document.getElementById(id)}
@@ -247,99 +340,24 @@ function migrateState(){
   state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{}; state.alertsShown=state.alertsShown||{}; state.taskRewardsShown=state.taskRewardsShown||{}; state.packageNo=state.packageNo||1;
   (state.active||[]).forEach(v=>ensureSkillState(v));
 }
-
-async function loadState(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(key())||"null");
-    if(saved) state={...state,...saved};
-  }catch(e){}
-
+function loadState(){
+  try{const saved=JSON.parse(localStorage.getItem(key())||"null"); if(saved) state={...state,...saved};}catch(e){}
   migrateState();
-
-  const sid=firebaseStudentId();
-  if(sid && typeof db!=="undefined"){
-    try{
-      const snap=await db.collection("progress").doc(sid).get();
-      if(snap.exists){
-        const data=snap.data()||{};
-        if(data.verben && data.verben.state){
-          state={...state,...data.verben.state};
-          migrateState();
-          localStorage.setItem(key(),JSON.stringify(state));
-        }
-      }
-    }catch(e){
-      console.warn("Firebase Verben-Fortschritt konnte nicht geladen werden:", e);
-    }
-  }
 }
-
 function saveState(){
   migrateState();
   localStorage.setItem(key(),JSON.stringify(state));
   sendProgress();
 }
-
-let firebaseSaveTimer=null;
-function firebaseStudentId(){
-  if(profile && (profile.studentId || profile.userId)) return profile.studentId || profile.userId;
-  try{
-    const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");
-    return p && (p.studentId || p.userId);
-  }catch(e){return null}
-}
-function firebaseProgressPercent(){
-  try{return overall()}catch(e){return 0}
-}
-function firebaseStars(){
-  try{return totalStars()}catch(e){return 0}
-}
 function sendProgress(){
   if(!profile)return;
-  const sid=firebaseStudentId();
-  if(!sid || typeof db==="undefined")return;
-
-  clearTimeout(firebaseSaveTimer);
-  firebaseSaveTimer=setTimeout(async()=>{
-    try{
-      const progressValue=firebaseProgressPercent();
-      await db.collection("progress").doc(sid).set({
-        studentId:sid,
-        kurs:profile.kurs||profile.kursnummer||"",
-        verben:{
-          progress:progressValue,
-          stars:firebaseStars(),
-          activeVerbs:state.active||[],
-          learnedVerbs:state.learned||[],
-          known:state.known||[],
-          unsure:state.unsure||[],
-          unknown:state.unknown||[],
-          state:state,
-          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-        },
-        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-
-      await db.collection("students").doc(sid).set({
-        studentId:sid,
-        vorname:profile.vorname||"",
-        nachname:profile.nachname||"",
-        kurs:profile.kurs||profile.kursnummer||"",
-        muttersprache:profile.muttersprache||"",
-        verbenFortschritt:progressValue,
-        lastActivity:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-
-      try{
-        profile.verbenFortschritt=progressValue;
-        localStorage.setItem("SP_USER_PROFILE",JSON.stringify(profile));
-      }catch(e){}
-    }catch(e){
-      console.warn("Firebase Verben-Fortschritt konnte nicht gespeichert werden:", e);
-    }
-  },600);
+  const payload={userId:profile.userId,kurs:profile.kurs,vorname:profile.vorname,nachname:profile.nachname,
+    geburtsdatum:profile.geburtsdatum,heimatland:profile.heimatland,muttersprache:profile.muttersprache,
+    fremdsprache:profile.fremdsprache,wohnort:profile.wohnort,kinder:profile.kinder,
+    fragenFortschritt:profile.fragenFortschritt||0,verbenFortschritt:overall(),gesamtpunkte:overall(),
+    profile:profile,verbenState:state,timestamp:new Date().toISOString()};
+  try{fetch(GOOGLE_SHEET_URL,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify(payload)})}catch(e){}
 }
-
 
 function imageFileName(v){return String(v||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".png"}
 function imageBox(v,small=false){const cls=small?"mem-img-holder":"img-holder";return `<span class="${cls}" data-verb="${safeText(v)}"><span class="image-fallback">Bild</span></span>`}
@@ -787,19 +805,27 @@ function renderProgressPanel(openOnly){
 }
 function toggleProgressPanel(){const p=$("progressPanel");if(!p)return;p.classList.toggle("hidden");if(!p.classList.contains("hidden"))renderProgressPanel(true)}
 
+function init(){if(!loadProfile())return;loadState();if(state.active.length>=20){state.phase="tasks";renderHome();}else{state.phase="select";renderOneVerb();}}
+document.addEventListener("DOMContentLoaded",init);
 
-async function init(){
-  if(!loadProfile())return;
-  await loadState();
-  if((state.active||[]).length>=20 || state.phase==="tasks"){
-    state.phase="tasks";
-    renderHome();
-  }else{
-    state.phase="select";
-    renderOneVerb();
-  }
+
+/* ===== SPRACHPILOT FINAL FIX ===== */
+function spCleanVerbState(){
+  state.known=Array.isArray(state.known)?state.known:[];
+  state.unsure=Array.isArray(state.unsure)?state.unsure:[];
+  state.unknown=Array.isArray(state.unknown)?state.unknown:[];
+  state.active=Array.isArray(state.active)?state.active:[];
+  state.learned=Array.isArray(state.learned)?state.learned:[];
+  state.taskQueues=state.taskQueues||{};
+  state.taskDoneSets=state.taskDoneSets||{};
+  state.skillDone=state.skillDone||{};
+  state.skillAttempts=state.skillAttempts||{};
+  state.skillSuccess=state.skillSuccess||{};
+  state.packageNo=state.packageNo||1;
+  state.active=state.active.filter((v,i,a)=>v&&a.indexOf(v)===i).slice(0,20);
+  state.learned=state.learned.filter((v,i,a)=>v&&a.indexOf(v)===i&&!state.active.includes(v));
+  state.active.forEach(v=>ensureSkillState(v));
 }
-
 function packageComplete(){
   spCleanVerbState();
   return state.active.length===20 && state.active.every(v=>verbPercent(v)>=100);
