@@ -171,153 +171,7 @@ input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size
 
 
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js">
-
-/* ===== REPAIR: 20 TRAININGSVERBEN STOPPEN ===== */
-function spUniqueList(arr){
-  return [...new Set((arr||[]).filter(Boolean))];
-}
-function spTrainingList(){
-  return spUniqueList([...(state.unsure||[]), ...(state.unknown||[])]).slice(0,20);
-}
-function spRepairSelectionState(){
-  state.known = spUniqueList(state.known);
-  state.unsure = spUniqueList(state.unsure);
-  state.unknown = spUniqueList(state.unknown);
-  state.learned = spUniqueList(state.learned);
-  state.active = spTrainingList();
-  state.taskQueues = state.taskQueues || {};
-  state.taskDoneSets = state.taskDoneSets || {};
-  state.skillDone = state.skillDone || {};
-  state.skillAttempts = state.skillAttempts || {};
-  state.skillSuccess = state.skillSuccess || {};
-  state.packageNo = state.packageNo || 1;
-  state.active.forEach(v=>ensureSkillState(v));
-}
-function unusedVerbs(){
-  spRepairSelectionState();
-  const used = spUniqueList([...(state.known||[]), ...(state.unsure||[]), ...(state.unknown||[]), ...(state.learned||[])]);
-  return ALL_VERBS.map(x=>x.v).filter(v=>!used.includes(v));
-}
-function currentPickVerb(){
-  spRepairSelectionState();
-  const pool = unusedVerbs();
-  if(!pool.length) return null;
-  return ALL_VERBS.find(x=>x.v===pool[0]) || null;
-}
-function renderOneVerb(){
-  state.phase = "select";
-  spRepairSelectionState();
-  const trainingCount = spTrainingList().length;
-
-  if(trainingCount >= 20){
-    state.active = spTrainingList();
-    state.taskQueues = {};
-    state.taskDoneSets = {};
-    state.flashSession = null;
-    state.phase = "tasks";
-    saveState();
-    renderHome();
-    return;
-  }
-
-  const v = currentPickVerb();
-  if(!v){
-    if(trainingCount > 0){
-      state.active = spTrainingList();
-      state.phase = "tasks";
-      saveState();
-      $("app").innerHTML = `<h2>Verben üben</h2><div class="no">Es gibt keine weiteren neuen Verben. Du hast aktuell ${trainingCount}/20 Trainingsverben.</div><button class="success" onclick="renderHome()">Mit ${trainingCount} Verben üben</button>`;
-      return;
-    }
-    $("app").innerHTML = `<h2>Keine weiteren Verben</h2><div class="ok">Alle Verben wurden eingeschätzt.</div>`;
-    return;
-  }
-
-  $("app").innerHTML = `<h2>Verb einschätzen</h2>
-    <div class="stats" id="verbStatsBox"></div>
-    <p class="small">Ziel: 20 Trainingsverben sammeln. Nur <strong>unsicher</strong> und <strong>kann ich nicht</strong> zählen.</p>
-    <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
-      ${imageBox(v.v,false)}
-      <h1 style="color:#667eea">${safeText(v.v)}</h1>
-      <p>${safeText(v.img)}</p>
-      <p class="small">Trainingsverben: ${trainingCount}/20</p>
-    </div>
-    <button class="success" onclick="rateVerb('${v.v}','known')">✅ kann ich</button>
-    <button onclick="rateVerb('${v.v}','unsure')">❓ unsicher</button>
-    <button onclick="rateVerb('${v.v}','unknown')">❌ kann ich nicht</button>`;
-  updateVerbStatsBox();
-  renderProgressPanel(false);
-  renderAndHydrate();
-}
-function rateVerb(v,level){
-  state.known = spUniqueList(state.known).filter(x=>x!==v);
-  state.unsure = spUniqueList(state.unsure).filter(x=>x!==v);
-  state.unknown = spUniqueList(state.unknown).filter(x=>x!==v);
-
-  if(level === "known"){
-    state.known.push(v);
-  }else if(level === "unsure"){
-    state.unsure.push(v);
-    ensureSkillState(v);
-  }else if(level === "unknown"){
-    state.unknown.push(v);
-    ensureSkillState(v);
-  }
-
-  state.active = spTrainingList();
-
-  if(state.active.length >= 20){
-    state.active = state.active.slice(0,20);
-    state.taskQueues = {};
-    state.taskDoneSets = {};
-    state.flashSession = null;
-    state.phase = "tasks";
-    saveState();
-    renderHome();
-    return;
-  }
-
-  saveState();
-  renderOneVerb();
-}
-function updateVerbStatsBox(){
-  try{
-    spRepairSelectionState();
-    const training = state.active.length;
-    const learned = state.active.filter(v=>verbPercent(v)>=100).length;
-    const open = Math.max(0,20-training);
-    const box = document.getElementById("verbStatsBox");
-    if(box){
-      box.innerHTML = `<div class="stat"><div>Trainingsverben</div><div class="num">${training}/20</div></div>
-      <div class="stat"><div>Noch auswählen</div><div class="num">${open}</div></div>
-      <div class="stat"><div>Gelernt</div><div class="num">${learned}/20</div></div>
-      <div class="stat"><div>Sterne</div><div class="num">⭐ ${learned}/20</div></div>`;
-    }
-  }catch(e){}
-}
-function startNewVerbPackage(){
-  spRepairSelectionState();
-  state.learned = spUniqueList([...(state.learned||[]), ...(state.active||[])]);
-  state.active = [];
-  state.known = [];
-  state.unsure = [];
-  state.unknown = [];
-  state.taskQueues = {};
-  state.taskDoneSets = {};
-  state.flashSession = null;
-  state.currentGame = "";
-  state.taskRewardsShown = {};
-  state.alertsShown = {};
-  state.packageNo = (state.packageNo||1) + 1;
-  state.phase = "select";
-  saveState();
-  renderOneVerb();
-}
-init();
-/* ===== ENDE REPAIR ===== */
-
-</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 
 <script>
@@ -1338,6 +1192,172 @@ function flashcards(){
   scrollToGame();
 }
 /* ===== ENDE ÜBERSETZUNG + ERKLÄRUNG ===== */
+
+
+
+/* ===== CLEAN FIX: 20 UNSICHER/KANN-NICHT VERBEN ===== */
+function spVerbUnique(arr){ return [...new Set((arr||[]).filter(Boolean))]; }
+function spVerbNormalizeState(){
+  state.known=spVerbUnique(state.known);
+  state.unsure=spVerbUnique(state.unsure);
+  state.unknown=spVerbUnique(state.unknown);
+  state.learned=spVerbUnique(state.learned);
+  state.taskQueues=state.taskQueues||{};
+  state.taskDoneSets=state.taskDoneSets||{};
+  state.skillDone=state.skillDone||{};
+  state.skillAttempts=state.skillAttempts||{};
+  state.skillSuccess=state.skillSuccess||{};
+  state.packageNo=state.packageNo||1;
+}
+function spVerbTrainingList(){
+  spVerbNormalizeState();
+  return spVerbUnique([...(state.unsure||[]),...(state.unknown||[])]).slice(0,20);
+}
+function spVerbUsedForSelection(){
+  spVerbNormalizeState();
+  return spVerbUnique([...(state.known||[]),...(state.unsure||[]),...(state.unknown||[]),...(state.learned||[])]);
+}
+
+unusedVerbs=function(){
+  const used=spVerbUsedForSelection();
+  return ALL_VERBS.map(x=>x.v).filter(v=>!used.includes(v));
+};
+
+currentPickVerb=function(){
+  const pool=unusedVerbs();
+  if(!pool.length)return null;
+  return ALL_VERBS.find(x=>x.v===pool[0])||null;
+};
+
+rateVerb=function(v,level){
+  spVerbNormalizeState();
+  state.known=state.known.filter(x=>x!==v);
+  state.unsure=state.unsure.filter(x=>x!==v);
+  state.unknown=state.unknown.filter(x=>x!==v);
+
+  if(level==="known") state.known.push(v);
+  if(level==="unsure"){ state.unsure.push(v); ensureSkillState(v); }
+  if(level==="unknown"){ state.unknown.push(v); ensureSkillState(v); }
+
+  state.active=spVerbTrainingList();
+
+  if(state.active.length>=20){
+    state.active=state.active.slice(0,20);
+    state.taskQueues={};
+    state.taskDoneSets={};
+    state.flashSession=null;
+    state.phase="tasks";
+    saveState();
+    renderHome();
+    return;
+  }
+
+  saveState();
+  renderOneVerb();
+};
+
+renderOneVerb=function(){
+  state.phase="select";
+  spVerbNormalizeState();
+
+  const training=spVerbTrainingList();
+  state.active=training.slice();
+
+  if(training.length>=20){
+    state.active=training.slice(0,20);
+    state.taskQueues={};
+    state.taskDoneSets={};
+    state.flashSession=null;
+    state.phase="tasks";
+    saveState();
+    renderHome();
+    return;
+  }
+
+  const v=currentPickVerb();
+
+  if(!v){
+    if(training.length>0){
+      state.active=training.slice();
+      state.phase="tasks";
+      saveState();
+      $("app").innerHTML=`<h2>Verben üben</h2><div class="no">Es gibt keine weiteren neuen Verben. Du hast aktuell ${training.length}/20 Trainingsverben.</div><button class="success" onclick="renderHome()">Mit diesen Verben üben</button><button class="secondary" onclick="startNewVerbPackage()">Neu auswählen</button>`;
+      return;
+    }
+    $("app").innerHTML=`<h2>Keine weiteren Verben</h2><div class="ok">Alle Verben wurden eingeschätzt.</div><button class="secondary" onclick="startNewVerbPackage()">Neu starten</button>`;
+    return;
+  }
+
+  $("app").innerHTML=`<h2>Verb einschätzen</h2>
+    <div class="stats" id="verbStatsBox"></div>
+    <p class="small">Ziel: Sammle 20 Trainingsverben. Nur <strong>unsicher</strong> und <strong>kann ich nicht</strong> zählen.</p>
+    <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
+      ${imageBox(v.v,false)}
+      <h1 style="color:#667eea">${safeText(v.v)}</h1>
+      <p>${safeText(v.img)}</p>
+      <p class="small">Trainingsverben: ${training.length}/20</p>
+    </div>
+    <button class="success" onclick="rateVerb('${v.v}','known')">✅ kann ich</button>
+    <button onclick="rateVerb('${v.v}','unsure')">❓ unsicher</button>
+    <button onclick="rateVerb('${v.v}','unknown')">❌ kann ich nicht</button>`;
+  updateVerbStatsBox();
+  renderProgressPanel(false);
+  renderAndHydrate();
+};
+
+updateVerbStatsBox=function(){
+  try{
+    const training=spVerbTrainingList().length;
+    const learned=(state.active||[]).filter(v=>verbPercent(v)>=100).length;
+    const open=Math.max(0,20-training);
+    const box=document.getElementById("verbStatsBox");
+    if(box){
+      box.innerHTML=`<div class="stat"><div>Trainingsverben</div><div class="num">${training}/20</div></div>
+      <div class="stat"><div>Noch auswählen</div><div class="num">${open}</div></div>
+      <div class="stat"><div>Gelernt</div><div class="num">${learned}/20</div></div>
+      <div class="stat"><div>Sterne</div><div class="num">⭐ ${learned}/20</div></div>`;
+    }
+  }catch(e){}
+};
+
+startNewVerbPackage=function(){
+  spVerbNormalizeState();
+  state.learned=spVerbUnique([...(state.learned||[]),...(state.active||[])]);
+  state.active=[];
+  state.known=[];
+  state.unsure=[];
+  state.unknown=[];
+  state.taskQueues={};
+  state.taskDoneSets={};
+  state.flashSession=null;
+  state.currentGame="";
+  state.taskRewardsShown={};
+  state.alertsShown={};
+  state.packageNo=(state.packageNo||1)+1;
+  state.phase="select";
+  saveState();
+  renderOneVerb();
+};
+
+const spOriginalInitCleanFix=init;
+init=async function(){
+  if(!loadProfile())return;
+  await loadState();
+  spVerbNormalizeState();
+  const training=spVerbTrainingList();
+  if(training.length>=20 || state.phase==="tasks"){
+    state.active=training.length?training.slice(0,20):spVerbUnique(state.active).slice(0,20);
+    state.phase="tasks";
+    renderHome();
+  }else{
+    state.active=training.slice();
+    state.phase="select";
+    renderOneVerb();
+  }
+};
+
+init();
+/* ===== ENDE CLEAN FIX ===== */
 
 </script>
 </body>
