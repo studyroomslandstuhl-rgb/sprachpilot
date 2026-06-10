@@ -2,110 +2,96 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<title>SprachPilot Verben A1</title>
+<title>SprachPilot Verben</title>
 <style>
 body{font-family:Arial;background:linear-gradient(135deg,#667eea,#764ba2);color:white;text-align:center}
-.card{background:white;color:black;padding:20px;margin:40px auto;width:340px;border-radius:20px}
-img{width:220px;border-radius:10px}
+.card{background:white;color:black;width:320px;height:360px;margin:40px auto;border-radius:20px;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer}
+img{width:200px;border-radius:10px}
+.hidden{display:none}
 input{padding:10px;margin-top:10px;width:80%}
 button{margin-top:10px;padding:10px 20px;border:none;border-radius:10px;background:#4CAF50;color:white}
-#status{margin-top:10px;font-weight:bold}
+#task{margin-top:10px;font-weight:bold}
 </style>
 </head>
 <body>
 
 <h1>Verben Trainer</h1>
 
-<div class="card">
-  <h2 id="verb"></h2>
-  <img id="img">
-  <br>
-  <input id="input" placeholder="Schreib das Verb...">
+<div id="task">👉 Schau dir die Karte an und drehe sie um</div>
+
+<div class="card" onclick="flip()">
+  <div id="front">
+    <img id="img">
+  </div>
+  <div id="back" class="hidden">
+    <h2 id="translation"></h2>
+  </div>
+</div>
+
+<div>
+  <input id="input" placeholder="Schreib das Verb auf Deutsch...">
   <br>
   <button onclick="check()">Prüfen</button>
   <p id="feedback"></p>
-  <p id="status"></p>
 </div>
 
 <script>
 
-const verbs = ["essen","sprechen","fahren","schlafen","sehen","lesen","rufen","schreien","träumen","kleben","kosten","schieben","ziehen"];
+const verbs = [
+{de:"essen",ru:"есть"},
+{de:"sprechen",ru:"говорить"},
+{de:"fahren",ru:"ехать"},
+{de:"schlafen",ru:"спать"},
+{de:"sehen",ru:"видеть"},
+{de:"lesen",ru:"читать"},
+{de:"rufen",ru:"звать"},
+{de:"schreien",ru:"кричать"},
+{de:"träumen",ru:"мечтать"},
+{de:"kleben",ru:"клеить"},
+{de:"kosten",ru:"стоить"},
+{de:"schieben",ru:"толкать"},
+{de:"ziehen",ru:"тянуть"}
+];
 
-let stats = JSON.parse(localStorage.getItem("stats")||"{}");
 let current = 0;
-let startTime = 0;
-
-function pickVerb(){
-  const unsure = verbs.filter(v => stats[v]?.status==="unsure");
-  const known = verbs.filter(v => stats[v]?.status==="known");
-
-  if(unsure.length>0 && Math.random()<0.7){
-    return unsure[Math.floor(Math.random()*unsure.length)];
-  }
-
-  const pool = verbs.filter(v => !known.includes(v));
-  if(pool.length>0) return pool[Math.floor(Math.random()*pool.length)];
-
-  return verbs[Math.floor(Math.random()*verbs.length)];
-}
+let flipped = false;
 
 function show(){
-  const v = pickVerb();
-  current = verbs.indexOf(v);
-
-  document.getElementById("verb").innerText = v;
-  document.getElementById("img").src = "bilder/"+v+".png";
+  const v = verbs[current];
+  document.getElementById("img").src = "bilder/"+v.de+".png";
+  document.getElementById("translation").innerText = v.ru;
   document.getElementById("input").value="";
   document.getElementById("feedback").innerText="";
+  flipped = false;
+  document.getElementById("front").classList.remove("hidden");
+  document.getElementById("back").classList.add("hidden");
+}
 
-  startTime = Date.now();
+function flip(){
+  flipped = !flipped;
+  document.getElementById("front").classList.toggle("hidden");
+  document.getElementById("back").classList.toggle("hidden");
 }
 
 function check(){
   const v = verbs[current];
   const input = document.getElementById("input").value.trim().toLowerCase();
-  const time = Date.now() - startTime;
 
-  stats[v] = stats[v] || {correct:0,wrong:0,status:"new"};
-
-  if(input === v){
-    stats[v].correct++;
-
-    if(time > 5000){
-      stats[v].status = "unsure";
-    }
-
-    if(stats[v].correct >= 2 && stats[v].wrong === 0){
-      stats[v].status = "known";
-      document.getElementById("feedback").innerText = "✅ kannst du!";
-    }else{
-      document.getElementById("feedback").innerText = "✔ nochmal!";
-    }
-
+  if(input === v.de){
+    document.getElementById("feedback").innerText = "✅ richtig!";
+    next();
   }else{
-    stats[v].wrong++;
-    stats[v].correct = 0;
-    stats[v].status = "unsure";
-    document.getElementById("feedback").innerText = "❌ falsch!";
+    document.getElementById("feedback").innerText = "❌ nochmal!";
   }
+}
 
-  localStorage.setItem("stats", JSON.stringify(stats));
-  updateStatus();
-
+function next(){
+  current++;
+  if(current>=verbs.length) current=0;
   setTimeout(show,1000);
 }
 
-function updateStatus(){
-  let known=0, unsure=0;
-  Object.values(stats).forEach(v=>{
-    if(v.status==="known") known++;
-    if(v.status==="unsure") unsure++;
-  });
-  document.getElementById("status").innerText = "✅ "+known+" | ⚠️ "+unsure;
-}
-
 show();
-updateStatus();
 
 </script>
 
