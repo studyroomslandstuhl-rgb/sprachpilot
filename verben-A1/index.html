@@ -437,11 +437,25 @@ function finishQueuedVerb(skill,v,good){
 function chooseVerbForPractice(skill){return skill?nextFromTaskQueue(skill):nextFromTaskQueue(state.currentGame||"schreiben")}
 
 function markSkill(v,skill,good){
-  const sk=skillKey(skill); ensureSkillState(v);
-  state.skillAttempts[v][sk]=(state.skillAttempts[v][sk]||0)+1;
+  ensureSkillState(v);
+  state.skillAttempts[v][skill]=(state.skillAttempts[v][skill]||0)+1;
+
+  state.skillSuccess[v].global = state.skillSuccess[v].global || 0;
+
   if(good){
-    state.skillSuccess[v][sk]=(state.skillSuccess[v][sk]||0)+1;
-    if(sk==="karteikarte"){if((state.skillSuccess[v][sk]||0)>=2)state.skillDone[v][sk]=true;}
+    state.skillSuccess[v].global++;
+
+    if(state.skillSuccess[v].global >= 2){
+      if(!state.known.includes(v)) state.known.push(v);
+      state.skillDone[v][skill]=true;
+    }
+
+  }else{
+    state.skillSuccess[v].global = 0;
+    if(!state.unsure.includes(v)) state.unsure.push(v);
+  }
+}
+
     else state.skillDone[v][sk]=true;
   }else state.weak[v]=(state.weak[v]||0)+1;
 }
