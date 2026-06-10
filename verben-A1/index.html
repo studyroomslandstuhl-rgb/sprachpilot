@@ -2,40 +2,105 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SprachPilot Verben</title>
+
 <style>
-body{font-family:Arial;background:linear-gradient(135deg,#667eea,#764ba2);color:white;text-align:center}
-.card{background:white;color:black;width:320px;height:360px;margin:40px auto;border-radius:20px;display:flex;align-items:center;justify-content:center;flex-direction:column;cursor:pointer}
-img{width:200px;border-radius:10px}
-.hidden{display:none}
-input{padding:10px;margin-top:10px;width:80%}
-button{margin-top:10px;padding:10px 20px;border:none;border-radius:10px;background:#4CAF50;color:white}
-#task{margin-top:10px;font-weight:bold}
+body{
+  margin:0;
+  font-family:Arial;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:white;
+}
+
+/* NAV */
+.navbar{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  padding:12px;
+  background:#222;
+}
+.logo{font-weight:bold;font-size:18px;cursor:pointer}
+.menu a{color:white;margin-left:10px;text-decoration:none;font-size:14px}
+
+/* CONTENT */
+.container{padding:15px;text-align:center}
+
+.card{
+  background:white;
+  color:black;
+  border-radius:20px;
+  padding:15px;
+  max-width:320px;
+  margin:20px auto;
+}
+
+img{
+  width:100%;
+  max-width:220px;
+  border-radius:12px;
+}
+
+button{
+  padding:10px;
+  margin:5px;
+  border:none;
+  border-radius:10px;
+  font-size:14px;
+}
+
+.primary{background:#4CAF50;color:white}
+.secondary{background:#e74c3c;color:white}
+
+input{
+  width:90%;
+  padding:10px;
+  margin-top:10px;
+}
+
 </style>
 </head>
+
 <body>
 
-<h1>Verben Trainer</h1>
+<div class="navbar">
+  <div class="logo" onclick="goHome()">SprachPilot</div>
+  <div class="menu">
+    <a href="#">Verben</a>
+  </div>
+</div>
 
-<div id="task">👉 Schau dir die Karte an und drehe sie um</div>
+<div class="container">
+
+<h3>Kennst du das Verb? Schreib es auf Deutsch ohne die Karte umzudrehen</h3>
 
 <div class="card" onclick="flip()">
   <div id="front">
     <img id="img">
+    <p id="ru"></p>
   </div>
-  <div id="back" class="hidden">
-    <h2 id="translation"></h2>
+  <div id="back" style="display:none">
+    <h2 id="de"></h2>
   </div>
 </div>
 
-<div>
-  <input id="input" placeholder="Schreib das Verb auf Deutsch...">
-  <br>
-  <button onclick="check()">Prüfen</button>
-  <p id="feedback"></p>
+<input id="input" placeholder="Verb auf Deutsch">
+
+<br>
+
+<button class="primary" onclick="check()">Prüfen</button>
+<button class="secondary" onclick="dontKnow()">Ich weiß es nicht</button>
+
+<p id="feedback"></p>
+
 </div>
 
 <script>
+
+function goHome(){
+  window.location.href = "../index.html";
+}
 
 const verbs = [
 {de:"essen",ru:"есть"},
@@ -53,42 +118,74 @@ const verbs = [
 {de:"ziehen",ru:"тянуть"}
 ];
 
-let current = 0;
-let flipped = false;
+let stats = JSON.parse(localStorage.getItem("stats")||"{}");
+let current;
+
+function pick(){
+  const unsure = verbs.filter(v => stats[v.de]?.status==="unsure" || stats[v.de]?.status==="unknown");
+  if(unsure.length>0) return unsure[Math.floor(Math.random()*unsure.length)];
+  return verbs[Math.floor(Math.random()*verbs.length)];
+}
 
 function show(){
-  const v = verbs[current];
+  const v = pick();
+  current = v;
+
   document.getElementById("img").src = "bilder/"+v.de+".png";
-  document.getElementById("translation").innerText = v.ru;
+  document.getElementById("ru").innerText = v.ru;
+  document.getElementById("de").innerText = v.de;
+
+  document.getElementById("front").style.display="block";
+  document.getElementById("back").style.display="none";
   document.getElementById("input").value="";
   document.getElementById("feedback").innerText="";
-  flipped = false;
-  document.getElementById("front").classList.remove("hidden");
-  document.getElementById("back").classList.add("hidden");
 }
 
 function flip(){
-  flipped = !flipped;
-  document.getElementById("front").classList.toggle("hidden");
-  document.getElementById("back").classList.toggle("hidden");
+  document.getElementById("front").style.display="none";
+  document.getElementById("back").style.display="block";
+
+  stats[current.de] = stats[current.de] || {status:"new"};
+  stats[current.de].status = "unsure";
+
+  save();
 }
 
 function check(){
-  const v = verbs[current];
-  const input = document.getElementById("input").value.trim().toLowerCase();
+  const val = document.getElementById("input").value.trim().toLowerCase();
 
-  if(input === v.de){
-    document.getElementById("feedback").innerText = "✅ richtig!";
+  stats[current.de] = stats[current.de] || {correct:0,wrong:0,status:"new"};
+
+  if(val === current.de){
+    stats[current.de].correct = (stats[current.de].correct||0)+1;
+
+    if(stats[current.de].correct >= 2){
+      stats[current.de].status = "known";
+    }
+
+    document.getElementById("feedback").innerText="✅ richtig";
     next();
+
   }else{
-    document.getElementById("feedback").innerText = "❌ nochmal!";
+    stats[current.de].status="unsure";
+    document.getElementById("feedback").innerText="❌ falsch";
   }
+
+  save();
+}
+
+function dontKnow(){
+  stats[current.de] = {status:"unknown"};
+  save();
+  next();
 }
 
 function next(){
-  current++;
-  if(current>=verbs.length) current=0;
-  setTimeout(show,1000);
+  setTimeout(show,800);
+}
+
+function save(){
+  localStorage.setItem("stats", JSON.stringify(stats));
 }
 
 show();
