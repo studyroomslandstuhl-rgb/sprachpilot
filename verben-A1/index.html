@@ -2,1363 +2,195 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1.0">
-<title>Verben A1 - SprachPilot</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SprachPilot Verben System</title>
+
 <style>
-*{box-sizing:border-box}
-body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;color:#222}
-main{width:min(1050px,94vw);margin:0 auto;padding:18px 0 42px}
-.card{background:white;border-radius:22px;padding:18px;box-shadow:0 12px 35px rgba(0,0,0,.22);margin-bottom:16px}
-h1,h2{color:#667eea;margin-top:0}
-h3{margin:8px 0 10px}
-button{border:0;border-radius:14px;padding:12px 16px;font-size:16px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);color:white;margin:5px;cursor:pointer}
-button.secondary{background:#eef2ff;color:#333}
-button.success{background:linear-gradient(135deg,#27ae60,#2ecc71)}
-button.danger{background:linear-gradient(135deg,#e74c3c,#c0392b)}
-button:disabled{opacity:.55;cursor:not-allowed}
-input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size:18px;margin:8px 0}
-.hidden{display:none!important}
-.small{font-size:14px;color:#666}
-.ok{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0}
-.no{background:#ffe1e1;border-left:5px solid #e74c3c;padding:12px;border-radius:10px;margin:10px 0}
-.top-link{display:inline-block;text-decoration:none;color:#667eea;font-weight:900}
-.top-link:hover{text-decoration:underline}
-.mini-top-progress{background:white;border:2px solid #dce2ff;border-radius:16px;padding:10px;margin:8px 0}
-.task-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:12px 0}
-.task-card{min-height:82px;border-radius:18px;background:#f7f8ff!important;border:3px solid #dce2ff;color:#333;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px}
-.task-card .big-icon{font-size:23px;margin-bottom:4px}
-.task-card.done-card{background:linear-gradient(135deg,#27ae60,#2ecc71)!important;color:white!important;border-color:#27ae60!important}
-.task-status{font-size:12px;margin-top:4px;opacity:.9}
-.overview-button{width:100%;margin:8px 0 10px!important;background:#eef2ff!important;color:#333!important;box-shadow:none!important}
-.img-holder{width:100%;display:flex;justify-content:center;align-items:center;margin:8px 0}
-.img-holder img{width:100%;max-width:300px;height:215px;object-fit:cover;display:block;border-radius:18px;border:3px solid #dce2ff;background:#f7f8ff}
-.mem-img-holder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;background:#f7f8ff}
-.mem-img-holder img{width:100%;height:100%;object-fit:cover;display:block}
-.image-fallback{background:#f7f8ff;border:3px dashed #dce2ff;border-radius:18px;min-height:160px;display:flex;align-items:center;justify-content:center;color:#667eea;font-weight:900}
-.memory{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
-.mem{height:112px;min-height:112px;border-radius:18px;overflow:hidden;padding:6px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:900}
-.mem.open{background:white!important;border:4px solid #667eea!important;color:#222!important}
-.mem.done{background:linear-gradient(135deg,#27ae60,#2ecc71)!important;color:white!important}
-.mem-german{font-size:16px!important;font-weight:900;line-height:1.08;word-break:break-word;overflow-wrap:anywhere}
-.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
-.quiz-option{width:100%;min-height:58px;text-align:left;padding:12px!important;border-radius:16px!important;font-size:17px!important;display:flex;align-items:center;gap:10px;justify-content:flex-start}
-.quiz-letter{background:white;color:#667eea;border-radius:999px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 auto}
-.task-progress{background:#f7f8ff;border:2px solid #dce2ff;border-radius:14px;padding:9px 10px;margin-bottom:12px}
-.task-progress-title{display:flex;justify-content:space-between;font-size:14px;color:#555;font-weight:700}
-.task-progress-line{height:9px;background:#ddd;border-radius:999px;overflow:hidden;margin-top:6px}
-.task-progress-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71)}
-.puzzle-answer,.puzzle-bank{display:flex;flex-wrap:wrap;gap:8px;min-height:54px;background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:10px;margin:10px 0}
-.word-chip{background:linear-gradient(135deg,#667eea,#764ba2)!important;color:white!important;border:none!important;border-radius:999px!important;padding:10px 14px!important;font-weight:800!important;margin:0!important}
-.word-chip.answer{background:#eef2ff!important;color:#333!important}
-.study-card-wrap{perspective:1000px;max-width:360px;margin:12px auto}
-.study-card{width:100%;min-height:190px;position:relative;transform-style:preserve-3d;transition:transform .5s;cursor:pointer}
-.study-card.flipped{transform:rotateY(180deg)}
-.study-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;background:white;border:4px solid #667eea;box-shadow:0 10px 28px rgba(0,0,0,.2);padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
-.study-back{transform:rotateY(180deg);background:#eefaf3;border-color:#27ae60}
-.native-word{font-size:38px;font-weight:900;color:#764ba2;margin:12px 0;line-height:1.1}
-.german-word{font-size:42px;font-weight:900;color:#27ae60;margin:12px 0}
-.word-status{display:flex;justify-content:center;gap:8px;margin:8px 0 10px;font-size:13px}
-.word-pill{background:#eef2ff;color:#555;border-radius:999px;padding:5px 10px;font-weight:700}
-.flash-progress-box{background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:10px 12px;margin:8px 0 12px}
-.flash-progress-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px;font-weight:800}
-.flash-progress-title span:last-child{font-size:13px;color:#666;font-weight:600}
-.flash-bar{height:10px;background:#ddd;border-radius:999px;overflow:hidden;margin:8px 0 0}
-.flash-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71);transition:width .25s}
-.card-actions{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
-.progress-toggle{position:fixed;top:14px;right:14px;z-index:9999;border-radius:999px;padding:10px 13px;background:#ffcc33;color:#333;border:2px solid white;box-shadow:0 8px 20px rgba(0,0,0,.25)}
-.progress-panel{position:fixed;top:0;right:0;width:min(390px,92vw);height:100vh;background:white;z-index:10000;box-shadow:-10px 0 30px rgba(0,0,0,.3);padding:18px;overflow:auto}
-.progress-row{background:#f7f8ff;border:2px solid #e0e4ff;border-radius:12px;padding:9px;margin:7px 0}
-.progress-line{height:10px;background:#ddd;border-radius:999px;overflow:hidden;margin-top:5px}
-.progress-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71)}
-.progress-row-head{display:flex;align-items:center;gap:8px}
-.progress-row-head .mem-img-holder{width:62px!important;height:46px!important;flex:0 0 auto}
-.progress-row-head .mem-img-holder img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:8px}
-.overview-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;padding:18px;overflow:auto}
-.overview-box{background:white;border-radius:24px;max-width:980px;margin:20px auto;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
-.overview-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
-.overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
-.verb-overview-card{background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:9px;text-align:center}
-.verb-overview-card .mem-img-holder{height:105px!important;margin-bottom:8px}
-.verb-overview-card .mem-img-holder img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:12px}
-.verb-de{font-size:18px;font-weight:900;color:#222}
-.verb-native{font-size:13px;color:#777;margin-top:3px}
-.verb-percent{margin-top:6px;font-weight:800;color:#667eea}
-.level-alert{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:12000;display:flex;align-items:center;justify-content:center;padding:20px}
-.level-alert-box{background:white;border-radius:28px;max-width:420px;width:100%;text-align:center;padding:26px;box-shadow:0 20px 55px rgba(0,0,0,.35);border:4px solid #ffd43b}
-.level-alert-box h2{color:#7a5400;margin-bottom:10px}
-.level-alert-box .big-star{font-size:54px;margin-bottom:8px}
-.achievement,.package-done{background:#fff9db;border:3px solid #ffd43b;border-radius:22px;padding:18px;margin:14px 0;text-align:center;box-shadow:0 10px 28px rgba(0,0,0,.15)}
-.package-done{background:#e9f9ef;border-color:#27ae60}
-.star-pill{display:inline-block;background:#ffd43b;color:#4a3500;border-radius:999px;padding:7px 12px;font-weight:900;margin:4px}
-@media(max-width:520px){
-  .task-grid{grid-template-columns:repeat(2,1fr)}
-  .memory{grid-template-columns:repeat(3,1fr);gap:7px}
-  .mem{height:96px;min-height:96px}
-  .mem-german{font-size:14px!important}
-  .quiz-options{gap:8px}
-  .quiz-option{font-size:15px!important;padding:10px!important}
-  .native-word{font-size:34px}
-  .study-card{min-height:176px}
-}
+body{margin:0;font-family:Arial;background:#667eea;color:white;text-align:center}
+.nav{background:#222;padding:10px}
+.logo{font-weight:bold;cursor:pointer}
+.container{padding:15px}
 
-/* FINAL PATCH: bessere Bilder + klare Belohnungen */
-.mem-img-holder img,
-.progress-row-head .mem-img-holder img,
-.verb-overview-card .mem-img-holder img{
-  object-fit:contain!important;
-  background:#f7f8ff!important;
-}
-.img-holder img{
-  object-fit:contain!important;
-  background:#f7f8ff!important;
-}
-.bild-option .mem-img-holder img{
-  object-fit:contain!important;
-}
-.mem{
-  height:132px!important;
-  min-height:132px!important;
-}
-@media(max-width:520px){
-  .mem{
-    height:120px!important;
-    min-height:120px!important;
-  }
-}
-.next-task-row{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:center;
-  gap:8px;
-  margin-top:12px;
-}
+.card{background:white;color:black;border-radius:20px;padding:15px;max-width:320px;margin:20px auto}
+img{width:100%;max-width:220px;border-radius:10px}
 
-
-/* STATISTIK-KACHELN WIE BEI FRAGEN */
-.stats{
-  display:grid;
-  grid-template-columns:repeat(2,1fr);
-  gap:10px;
-  margin:14px 0;
-}
-.stat{
-  background:linear-gradient(135deg,#667eea,#764ba2);
-  color:white;
-  border-radius:16px;
-  text-align:center;
-  padding:16px 10px;
-  box-shadow:0 8px 18px rgba(0,0,0,.14);
-}
-.stat .num{
-  font-size:2rem;
-  font-weight:900;
-  line-height:1.05;
-}
-.stat div:first-child{
-  font-size:16px;
-  opacity:.95;
-}
-
+button{padding:10px;margin:5px;border:none;border-radius:10px}
+.primary{background:#4CAF50;color:white}
+.secondary{background:#e74c3c;color:white}
+.reset{background:#555;color:white;margin-top:20px}
+.hidden{display:none}
 </style>
 </head>
+
 <body>
-<button class="progress-toggle" onclick="toggleProgressPanel()">📊</button>
-<div id="progressPanel" class="progress-panel hidden"></div>
-<main>
-  <div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
-  <div class="card" id="app"></div>
-</main>
 
+<div class="nav">
+  <span class="logo" onclick="location.href='../index.html'">SprachPilot</span>
+</div>
 
+<div class="container">
 
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<h3 id="phaseTitle"></h3>
+
+<div id="card" class="card hidden" onclick="flip()">
+  <div id="front">
+    <img id="img">
+    <p id="ru"></p>
+  </div>
+  <div id="back" class="hidden">
+    <h2 id="de"></h2>
+  </div>
+</div>
+
+<input id="input" class="hidden" placeholder="Verb auf Deutsch">
+<br>
+<button id="checkBtn" class="primary hidden" onclick="check()">Prüfen</button>
+<button id="dontBtn" class="secondary hidden" onclick="dontKnow()">Ich weiß es nicht</button>
+
+<p id="info"></p>
+
+<button class="reset" onclick="resetAll()">Alle Fortschritte löschen</button>
+
+</div>
 
 <script>
-const GOOGLE_SHEET_URL="";
-const firebaseConfig = {
-  apiKey: "AIzaSyDbl0m8JIEu7BuoLwXrdxRL4wMJAVJS468",
-  authDomain: "sprachpilot-12c68.firebaseapp.com",
-  projectId: "sprachpilot-12c68",
-  storageBucket: "sprachpilot-12c68.firebasestorage.app",
-  messagingSenderId: "454992284519",
-  appId: "1:454992284519:web:c7a87558cf59e0c0fc7dc2",
-  measurementId: "G-2XXR3FSY89"
-};
-if(!firebase.apps.length){ firebase.initializeApp(firebaseConfig); }
-const db = firebase.firestore();
 
-const ALL_VERBS=[{"v": "lieben", "emoji": "❤️", "img": "Person zeigt ein Herz"}, {"v": "kaufen", "emoji": "🛒", "img": "Person kauft im Geschäft"}, {"v": "verstehen", "emoji": "💡", "img": "Person versteht"}, {"v": "brauchen", "emoji": "🎒", "img": "Person braucht eine Tasche"}, {"v": "hören", "emoji": "👂", "img": "Person hört Musik"}, {"v": "lernen", "emoji": "📚", "img": "Person lernt Deutsch"}, {"v": "wohnen", "emoji": "🏠", "img": "Person wohnt in einer Stadt"}, {"v": "bringen", "emoji": "🎁", "img": "Person bringt etwas"}, {"v": "sein", "emoji": "👤", "img": "Person ist da"}, {"v": "schreiben", "emoji": "✍️", "img": "Person schreibt"}, {"v": "fotografieren", "emoji": "📷", "img": "Person fotografiert"}, {"v": "telefonieren", "emoji": "☎️", "img": "Person telefoniert"}, {"v": "kochen", "emoji": "🍲", "img": "Person kocht"}, {"v": "leben", "emoji": "🌍", "img": "Person lebt in Deutschland"}, {"v": "kommen", "emoji": "➡️", "img": "Person kommt"}, {"v": "buchstabieren", "emoji": "🔤", "img": "Person buchstabiert"}, {"v": "gehen", "emoji": "🚶", "img": "Person geht"}, {"v": "schwimmen", "emoji": "🏊", "img": "Person schwimmt"}, {"v": "suchen", "emoji": "🔍", "img": "Person sucht"}, {"v": "bestellen", "emoji": "📋", "img": "Person bestellt"}, {"v": "weinen", "emoji": "😢", "img": "Person weint"}, {"v": "reparieren", "emoji": "🔧", "img": "Person repariert"}, {"v": "gewinnen", "emoji": "🏆", "img": "Person gewinnt"}, {"v": "spielen", "emoji": "🎲", "img": "Person spielt"}, {"v": "springen", "emoji": "🤾", "img": "Person springt"}, {"v": "verlieren", "emoji": "😟", "img": "Person verliert"}, {"v": "fragen", "emoji": "❓", "img": "Person fragt"}, {"v": "verkaufen", "emoji": "🏪", "img": "Person verkauft"}, {"v": "unterschreiben", "emoji": "🖊️", "img": "Person unterschreibt"}, {"v": "reservieren", "emoji": "📅", "img": "Person reserviert"}, {"v": "buchen", "emoji": "🎫", "img": "Person bucht"}, {"v": "machen", "emoji": "🛠️", "img": "Person macht etwas"}, {"v": "malen", "emoji": "🎨", "img": "Person malt"}, {"v": "trinken", "emoji": "🥤", "img": "Person trinkt"}, {"v": "schicken", "emoji": "📨", "img": "Person schickt eine Nachricht"}, {"v": "denken", "emoji": "🤔", "img": "Person denkt"}, {"v": "winken", "emoji": "👋", "img": "Person winkt"}, {"v": "hassen", "emoji": "💔", "img": "Person mag etwas gar nicht"}, {"v": "beißen", "emoji": "🦷", "img": "Person beißt"}, {"v": "gießen", "emoji": "🪴", "img": "Person gießt Pflanzen"}, {"v": "reißen", "emoji": "📄", "img": "Person reißt Papier"}, {"v": "putzen", "emoji": "🧽", "img": "Person putzt"}, {"v": "küssen", "emoji": "😘", "img": "Person küsst"}, {"v": "tanzen", "emoji": "💃", "img": "Person tanzt"}, {"v": "mixen", "emoji": "🥣", "img": "Person mixt"}, {"v": "reisen", "emoji": "🧳", "img": "Person reist"}, {"v": "haben", "emoji": "🎒", "img": "Person hat eine Tasche"}, {"v": "überqueren", "emoji": "🚦", "img": "Person überquert die Straße"}, {"v": "grüßen", "emoji": "🙋", "img": "Person grüßt"}, {"v": "genießen", "emoji": "😊", "img": "Person genießt das Essen"}, {"v": "singen", "emoji": "🎤", "img": "Person singt"}, {"v": "schließen", "emoji": "🔒", "img": "Person schließt die Tür"}, {"v": "rennen", "emoji": "🏃", "img": "Person rennt"}, {"v": "lachen", "emoji": "😄", "img": "Person lacht"}, {"v": "warten", "emoji": "⏳", "img": "Person wartet"}, {"v": "arbeiten", "emoji": "💼", "img": "Person arbeitet"}, {"v": "finden", "emoji": "✅", "img": "Person findet etwas"}, {"v": "benutzen", "emoji": "🧰", "img": "Person benutzt ein Gerät"}, {"v": "rechnen", "emoji": "➕", "img": "Person rechnet"}, {"v": "zeichnen", "emoji": "✏️", "img": "Person zeichnet"}, {"v": "öffnen", "emoji": "🚪", "img": "Person öffnet die Tür"}, {"v": "wiederholen", "emoji": "🔁", "img": "Person wiederholt"}, {"v": "schneiden", "emoji": "🔪", "img": "Person schneidet"}, {"v": "streiten", "emoji": "💢", "img": "Person streitet"}, {"v": "atmen", "emoji": "🫁", "img": "Person atmet"}];
+const verbs = [
+{de:"essen",ru:"есть"},
+{de:"sprechen",ru:"говорить"},
+{de:"fahren",ru:"ехать"},
+{de:"schlafen",ru:"спать"},
+{de:"sehen",ru:"видеть"},
+{de:"lesen",ru:"читать"},
+{de:"rufen",ru:"звать"},
+{de:"schreien",ru:"кричать"},
+{de:"träumen",ru:"мечтать"},
+{de:"kleben",ru:"клеить"},
+{de:"kosten",ru:"стоить"},
+{de:"schieben",ru:"толкать"},
+{de:"ziehen",ru:"тянуть"}
+];
 
-function $(id){return document.getElementById(id)}
-function clean(s){return String(s||"").trim().toLowerCase().replace(/[.,!?]/g,"")}
-function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
-function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
+let data = JSON.parse(localStorage.getItem("SP")||"{}");
+data.stage = data.stage || "collect"; // collect → train
+data.pool = data.pool || [];
+data.progress = data.progress || {};
 
-let profile=null;
-let state={
-  phase:"select", index:0, known:[], unsure:[], unknown:[], active:[], learned:[],
-  weak:{}, currentGame:"", currentVerb:"", memoryCards:[], first:null, lock:false,
-  skillDone:{}, skillAttempts:{}, skillSuccess:{}, flashSession:null,
-  taskQueues:{}, taskDoneSets:{}, alertsShown:{}, taskRewardsShown:{}, packageNo:1
-};
+let current;
 
-const VERB_TRANSLATIONS = {
-  "Arabisch":{"lieben":"يحب","kaufen":"يشتري","verstehen":"يفهم","brauchen":"يحتاج","hören":"يسمع","lernen":"يتعلم","wohnen":"يسكن","bringen":"يحضر","sein":"يكون","schreiben":"يكتب","fotografieren":"يلتقط صورة","telefonieren":"يتصل","kochen":"يطبخ","leben":"يعيش","kommen":"يأتي","buchstabieren":"يتهجى","gehen":"يذهب","schwimmen":"يسبح","suchen":"يبحث","bestellen":"يطلب","weinen":"يبكي","reparieren":"يصلح","gewinnen":"يفوز","spielen":"يلعب","springen":"يقفز","verlieren":"يخسر","fragen":"يسأل","verkaufen":"يبيع","unterschreiben":"يوقّع","reservieren":"يحجز","buchen":"يحجز","machen":"يفعل","malen":"يرسم","trinken":"يشرب","schicken":"يرسل","denken":"يفكر","winken":"يلوح","hassen":"يكره","beißen":"يعض","gießen":"يسقي","reißen":"يمزق","putzen":"ينظف","küssen":"يقبل","tanzen":"يرقص","mixen":"يخلط","reisen":"يسافر","haben":"يملك","überqueren":"يعبر","grüßen":"يحيي","genießen":"يستمتع","singen":"يغني","schließen":"يغلق","rennen":"يركض","lachen":"يضحك","warten":"ينتظر","arbeiten":"يعمل","finden":"يجد","benutzen":"يستخدم","rechnen":"يحسب","zeichnen":"يرسم","öffnen":"يفتح","wiederholen":"يكرر","schneiden":"يقطع","streiten":"يتشاجر","atmen":"يتنفس"},
-  "Russisch":{"lieben":"любить","kaufen":"покупать","verstehen":"понимать","brauchen":"нужно / нуждаться","hören":"слышать","lernen":"учить","wohnen":"проживать","bringen":"приносить","sein":"быть","schreiben":"писать","fotografieren":"фотографировать","telefonieren":"звонить","kochen":"готовить","leben":"жить","kommen":"приходить","buchstabieren":"произносить по буквам","gehen":"идти","schwimmen":"плавать","suchen":"искать","bestellen":"заказывать","weinen":"плакать","reparieren":"ремонтировать","gewinnen":"выигрывать","spielen":"играть","springen":"прыгать","verlieren":"проигрывать / терять","fragen":"спрашивать","verkaufen":"продавать","unterschreiben":"подписывать","reservieren":"резервировать","buchen":"бронировать","machen":"делать","malen":"рисовать красками","trinken":"пить","schicken":"посылать","denken":"думать","winken":"махать","hassen":"ненавидеть","beißen":"кусать","gießen":"поливать","reißen":"рвать","putzen":"чистить","küssen":"целовать","tanzen":"танцевать","mixen":"смешивать","reisen":"путешествовать","haben":"иметь","überqueren":"переходить","grüßen":"приветствовать","genießen":"наслаждаться / получать удовольствие","singen":"петь","schließen":"закрывать","rennen":"бежать","lachen":"смеяться","warten":"ждать","arbeiten":"работать","finden":"находить","benutzen":"использовать","rechnen":"считать","zeichnen":"чертить / рисовать","öffnen":"открывать","wiederholen":"повторять","schneiden":"резать","streiten":"ссориться","atmen":"дышать"},
-  "Ukrainisch":{"lieben":"любити","kaufen":"купувати","verstehen":"розуміти","brauchen":"потребувати","hören":"чути","lernen":"вчити","wohnen":"жити","bringen":"приносити","sein":"бути","schreiben":"писати","fotografieren":"фотографувати","telefonieren":"телефонувати","kochen":"готувати","leben":"жити","kommen":"приходити","buchstabieren":"по буквах","gehen":"йти","schwimmen":"плавати","suchen":"шукати","bestellen":"замовляти","weinen":"плакати","reparieren":"ремонтувати","gewinnen":"вигравати","spielen":"грати","springen":"стрибати","verlieren":"втрачати","fragen":"питати","verkaufen":"продавати","unterschreiben":"підписувати","reservieren":"резервувати","buchen":"бронювати","machen":"робити","malen":"малювати","trinken":"пити","schicken":"надсилати","denken":"думати","winken":"махати","hassen":"ненавидіти","beißen":"кусати","gießen":"поливати","reißen":"рвати","putzen":"чистити","küssen":"цілувати","tanzen":"танцювати","mixen":"змішувати","reisen":"подорожувати","haben":"мати","überqueren":"переходити","grüßen":"вітати","genießen":"насолоджуватися","singen":"співати","schließen":"закривати","rennen":"бігти","lachen":"сміятися","warten":"чекати","arbeiten":"працювати","finden":"знаходити","benutzen":"використовувати","rechnen":"рахувати","zeichnen":"креслити","öffnen":"відкривати","wiederholen":"повторювати","schneiden":"різати","streiten":"сваритися","atmen":"дихати"},
-  "Türkisch":{"lieben":"sevmek","kaufen":"satın almak","verstehen":"anlamak","brauchen":"ihtiyaç duymak","hören":"duymak","lernen":"öğrenmek","wohnen":"oturmak","bringen":"getirmek","sein":"olmak","schreiben":"yazmak","fotografieren":"fotoğraf çekmek","telefonieren":"telefon etmek","kochen":"yemek pişirmek","leben":"yaşamak","kommen":"gelmek","buchstabieren":"harflemek","gehen":"gitmek","schwimmen":"yüzmek","suchen":"aramak","bestellen":"sipariş vermek","weinen":"ağlamak","reparieren":"tamir etmek","gewinnen":"kazanmak","spielen":"oynamak","springen":"zıplamak","verlieren":"kaybetmek","fragen":"sormak","verkaufen":"satmak","unterschreiben":"imzalamak","reservieren":"rezervasyon yapmak","buchen":"rezerve etmek","machen":"yapmak","malen":"boyamak","trinken":"içmek","schicken":"göndermek","denken":"düşünmek","winken":"el sallamak","hassen":"nefret etmek","beißen":"ısırmak","gießen":"sulamak","reißen":"yırtmak","putzen":"temizlemek","küssen":"öpmek","tanzen":"dans etmek","mixen":"karıştırmak","reisen":"seyahat etmek","haben":"sahip olmak","überqueren":"karşıya geçmek","grüßen":"selamlamak","genießen":"keyfini çıkarmak","singen":"şarkı söylemek","schließen":"kapatmak","rennen":"koşmak","lachen":"gülmek","warten":"beklemek","arbeiten":"çalışmak","finden":"bulmak","benutzen":"kullanmak","rechnen":"hesaplamak","zeichnen":"çizmek","öffnen":"açmak","wiederholen":"tekrarlamak","schneiden":"kesmek","streiten":"tartışmak","atmen":"nefes almak"},
-  "Englisch":{"lieben":"to love","kaufen":"to buy","verstehen":"to understand","brauchen":"to need","hören":"to hear","lernen":"to learn","wohnen":"to live","bringen":"to bring","sein":"to be","schreiben":"to write","fotografieren":"to take photos","telefonieren":"to phone","kochen":"to cook","leben":"to live","kommen":"to come","buchstabieren":"to spell","gehen":"to go","schwimmen":"to swim","suchen":"to search","bestellen":"to order","weinen":"to cry","reparieren":"to repair","gewinnen":"to win","spielen":"to play","springen":"to jump","verlieren":"to lose","fragen":"to ask","verkaufen":"to sell","unterschreiben":"to sign","reservieren":"to reserve","buchen":"to book","machen":"to do","malen":"to paint","trinken":"to drink","schicken":"to send","denken":"to think","winken":"to wave","hassen":"to hate","beißen":"to bite","gießen":"to water","reißen":"to tear","putzen":"to clean","küssen":"to kiss","tanzen":"to dance","mixen":"to mix","reisen":"to travel","haben":"to have","überqueren":"to cross","grüßen":"to greet","genießen":"to enjoy","singen":"to sing","schließen":"to close","rennen":"to run","lachen":"to laugh","warten":"to wait","arbeiten":"to work","finden":"to find","benutzen":"to use","rechnen":"to calculate","zeichnen":"to draw","öffnen":"to open","wiederholen":"to repeat","schneiden":"to cut","streiten":"to argue","atmen":"to breathe"}
-};
-
-const VERB_SKILLS = ["karteikarte","memory","bild_verb","verb_bild","schreiben","hoeren_schreiben","hoeren_sprechen","bild_sprechen","satz_puzzle"];
-const VERB_SKILL_LABELS = {
-  karteikarte:"Karteikarten", memory:"Memory", bild_verb:"Bild → Verb", verb_bild:"Verb → Bild",
-  schreiben:"Schreiben", hoeren_schreiben:"Hören → Schreiben", hoeren_sprechen:"Hören → Sprechen",
-  bild_sprechen:"Bild → Sprechen", satz_puzzle:"Satz-Puzzle"
-};
-const TASK_FUNC = {
-  memory:"memory", bild_verb:"quiz", verb_bild:"verbToImage", schreiben:"writeVerb",
-  hoeren_schreiben:"hearWrite", hoeren_sprechen:"hearSpeak", bild_sprechen:"imageSpeak", satz_puzzle:"sentencePuzzle"
-};
-
-function nativeLang(){return (profile&&profile.muttersprache)?profile.muttersprache:"Englisch"}
-function nativeWord(v){const lang=nativeLang();return (VERB_TRANSLATIONS[lang]&&VERB_TRANSLATIONS[lang][v])||(VERB_TRANSLATIONS["Englisch"]&&VERB_TRANSLATIONS["Englisch"][v])||v}
-function key(){return "SP_VERBS_"+(profile?profile.userId:"guest")}
-
-function loadProfile(){
-  try{profile=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){profile=null}
-  if(!profile){
-    $("profileBox").innerHTML="<div class='no'>Bitte zuerst auf der Startseite registrieren oder einloggen.</div>";
-    $("app").innerHTML="<button onclick=\"location.href='../'\">Zur Startseite</button>";
-    return false;
-  }
-  $("profileBox").innerHTML=`<div class="ok">Eingeloggt: <strong>${safeText(profile.vorname)} ${safeText(profile.nachname)}</strong> | Kurs: ${safeText(profile.kurs||"")}</div>`;
-  return true;
-}
-
-function ensureSkillState(v){
-  state.skillDone=state.skillDone||{}; state.skillAttempts=state.skillAttempts||{}; state.skillSuccess=state.skillSuccess||{};
-  state.skillDone[v]=state.skillDone[v]||{}; state.skillAttempts[v]=state.skillAttempts[v]||{}; state.skillSuccess[v]=state.skillSuccess[v]||{};
-}
-function migrateState(){
-  state.learned=state.learned||[]; state.active=state.active||[]; state.known=state.known||[]; state.unsure=state.unsure||[]; state.unknown=state.unknown||[];
-  state.weak=state.weak||{}; state.skillDone=state.skillDone||{}; state.skillAttempts=state.skillAttempts||{}; state.skillSuccess=state.skillSuccess||{};
-  state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{}; state.alertsShown=state.alertsShown||{}; state.taskRewardsShown=state.taskRewardsShown||{}; state.packageNo=state.packageNo||1;
-  (state.active||[]).forEach(v=>ensureSkillState(v));
-}
-
-async function loadState(){
-  try{
-    const saved=JSON.parse(localStorage.getItem(key())||"null");
-    if(saved) state={...state,...saved};
-  }catch(e){}
-
-  migrateState();
-
-  const sid=firebaseStudentId();
-  if(sid && typeof db!=="undefined"){
-    try{
-      const snap=await db.collection("progress").doc(sid).get();
-      if(snap.exists){
-        const data=snap.data()||{};
-        if(data.verben && data.verben.state){
-          state={...state,...data.verben.state};
-          migrateState();
-          localStorage.setItem(key(),JSON.stringify(state));
-        }
-      }
-    }catch(e){
-      console.warn("Firebase Verben-Fortschritt konnte nicht geladen werden:", e);
-    }
-  }
-}
-
-function saveState(){
-  migrateState();
-  localStorage.setItem(key(),JSON.stringify(state));
-  sendProgress();
-}
-
-let firebaseSaveTimer=null;
-function firebaseStudentId(){
-  if(profile && (profile.studentId || profile.userId)) return profile.studentId || profile.userId;
-  try{
-    const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");
-    return p && (p.studentId || p.userId);
-  }catch(e){return null}
-}
-function firebaseProgressPercent(){
-  try{return overall()}catch(e){return 0}
-}
-function firebaseStars(){
-  try{return totalStars()}catch(e){return 0}
-}
-function sendProgress(){
-  if(!profile)return;
-  const sid=firebaseStudentId();
-  if(!sid || typeof db==="undefined")return;
-
-  clearTimeout(firebaseSaveTimer);
-  firebaseSaveTimer=setTimeout(async()=>{
-    try{
-      const progressValue=firebaseProgressPercent();
-      await db.collection("progress").doc(sid).set({
-        studentId:sid,
-        kurs:profile.kurs||profile.kursnummer||"",
-        verben:{
-          progress:progressValue,
-          stars:firebaseStars(),
-          activeVerbs:state.active||[],
-          learnedVerbs:state.learned||[],
-          known:state.known||[],
-          unsure:state.unsure||[],
-          unknown:state.unknown||[],
-          state:state,
-          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-        },
-        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-
-      await db.collection("students").doc(sid).set({
-        studentId:sid,
-        vorname:profile.vorname||"",
-        nachname:profile.nachname||"",
-        kurs:profile.kurs||profile.kursnummer||"",
-        muttersprache:profile.muttersprache||"",
-        verbenFortschritt:progressValue,
-        lastActivity:firebase.firestore.FieldValue.serverTimestamp()
-      },{merge:true});
-
-      try{
-        profile.verbenFortschritt=progressValue;
-        localStorage.setItem("SP_USER_PROFILE",JSON.stringify(profile));
-      }catch(e){}
-    }catch(e){
-      console.warn("Firebase Verben-Fortschritt konnte nicht gespeichert werden:", e);
-    }
-  },600);
-}
-
-
-function imageFileName(v){return String(v||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")+".png"}
-function imageBox(v,small=false){const cls=small?"mem-img-holder":"img-holder";return `<span class="${cls}" data-verb="${safeText(v)}"><span class="image-fallback">Bild</span></span>`}
-function hydrateImages(root){
-  const base=root||document;
-  base.querySelectorAll("[data-verb]").forEach(box=>{
-    if(box.dataset.loaded==="1")return;
-    box.dataset.loaded="1";
-    const v=box.getAttribute("data-verb");
-    const img=document.createElement("img");
-    img.alt="";
-    img.loading="eager";
-    img.decoding="async";
-    img.src="bilder/"+imageFileName(v);
-    img.onerror=function(){box.innerHTML="<span class='image-fallback'>Bild</span>";};
-    box.textContent="";
-    box.appendChild(img);
-  });
-}
-function renderAndHydrate(){setTimeout(()=>hydrateImages(document),20)}
-
-function skillKey(skill){return skill==="zuordnung"?"bild_verb":skill}
-function verbSkillCount(v){ensureSkillState(v);return VERB_SKILLS.filter(s=>state.skillDone[v]&&state.skillDone[v][s]).length}
-function verbPercent(v){return Math.round((verbSkillCount(v)*100)/VERB_SKILLS.length)}
-function overall(){if(!state.active.length)return 0;return Math.round(state.active.reduce((s,v)=>s+verbPercent(v),0)/state.active.length)}
-function taskQueueKey(skill){return "queue_"+skillKey(skill)}
-function taskDoneSetKey(skill){return "done_"+skillKey(skill)}
-function queuedProgress(skill){
-  const dKey=taskDoneSetKey(skill); state.taskDoneSets=state.taskDoneSets||{};
-  const done=(state.taskDoneSets[dKey]||[]).filter(v=>(state.active||[]).includes(v)).length;
-  const total=(state.active||[]).length;
-  return {done,total,pct:total?Math.round(done*100/total):0};
-}
-function taskSkillProgress(skill){return queuedProgress(skill)}
-function taskProgressHtml(skill,label){const p=taskSkillProgress(skill);return `<div class="task-progress"><div class="task-progress-title"><span>${label}</span><span>${p.done}/${p.total} · ${p.pct}%</span></div><div class="task-progress-line"><div class="task-progress-fill" style="width:${p.pct}%"></div></div></div>`}
-function taskDone(skill){const p=taskSkillProgress(skill);return p.total>0 && p.done>=p.total}
-function taskCardClass(skill){return taskDone(skill)?"task-card done-card":"task-card"}
-function taskCardStatus(skill){const p=taskSkillProgress(skill);return taskDone(skill)?"Erledigt ✓":`${p.pct}%`}
-
-function initTaskQueue(skill){
-  state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{};
-  const qKey=taskQueueKey(skill), dKey=taskDoneSetKey(skill);
-  state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
-  const doneSet=new Set(state.taskDoneSets[dKey]);
-  const remaining=(state.active||[]).filter(v=>!doneSet.has(v));
-  if(!Array.isArray(state.taskQueues[qKey])) state.taskQueues[qKey]=shuffle(remaining);
-  else {
-    const current=state.taskQueues[qKey].filter(v=>remaining.includes(v));
-    const missing=remaining.filter(v=>!current.includes(v));
-    state.taskQueues[qKey]=current.concat(shuffle(missing));
-  }
-  saveState();
-}
-function nextFromTaskQueue(skill){
-  initTaskQueue(skill);
-  const qKey=taskQueueKey(skill);
-  const q=state.taskQueues[qKey]||[];
-  if(!q.length)return null;
-  const v=q.shift();
-  state.taskQueues[qKey]=q;
-  saveState();
-  return v;
-}
-function finishQueuedVerb(skill,v,good){
-  state.taskQueues=state.taskQueues||{}; state.taskDoneSets=state.taskDoneSets||{};
-  const qKey=taskQueueKey(skill), dKey=taskDoneSetKey(skill);
-  state.taskQueues[qKey]=state.taskQueues[qKey]||[];
-  state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
-  if(good){
-    if(!state.taskDoneSets[dKey].includes(v)) state.taskDoneSets[dKey].push(v);
-    state.taskQueues[qKey]=state.taskQueues[qKey].filter(x=>x!==v);
+// PHASE CONTROL
+function updatePhase(){
+  if(data.stage==="collect"){
+    document.getElementById("phaseTitle").innerText =
+      "Phase 1: Kennst du das Verb? (max 20 unsichere sammeln)";
   }else{
-    if(!state.taskDoneSets[dKey].includes(v) && !state.taskQueues[qKey].includes(v)) state.taskQueues[qKey].push(v);
-  }
-  saveState();
-}
-function chooseVerbForPractice(skill){return skill?nextFromTaskQueue(skill):nextFromTaskQueue(state.currentGame||"schreiben")}
-
-function markSkill(v,skill,good){
-  const sk=skillKey(skill); ensureSkillState(v);
-  state.skillAttempts[v][sk]=(state.skillAttempts[v][sk]||0)+1;
-  if(good){
-    state.skillSuccess[v][sk]=(state.skillSuccess[v][sk]||0)+1;
-    if(sk==="karteikarte"){if((state.skillSuccess[v][sk]||0)>=2)state.skillDone[v][sk]=true;}
-    else state.skillDone[v][sk]=true;
-  }else state.weak[v]=(state.weak[v]||0)+1;
-}
-function addEncounter(v,skill,good=true){markSkill(v,skill,good);saveState();checkMilestones();}
-
-function skillBadges(v){
-  ensureSkillState(v);
-  return VERB_SKILLS.map(s=>`<div class="small">${state.skillDone[v][s]?"✅":"⬜"} ${VERB_SKILL_LABELS[s]} ${state.skillAttempts[v][s]?`(${state.skillAttempts[v][s]}x)`:""}</div>`).join("");
-}
-function unusedVerbs(){
-  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
-  return ALL_VERBS.map(x=>x.v).filter(v=>!used.includes(v));
-}
-function currentPickVerb(){
-  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
-  for(let i=state.index;i<ALL_VERBS.length;i++){if(!used.includes(ALL_VERBS[i].v)){state.index=i;return ALL_VERBS[i];}}
-  return null;
-}
-function packageComplete(){return (state.active||[]).length===20 && state.active.every(v=>verbPercent(v)>=100)}
-function allTasksDone(){return VERB_SKILLS.every(s=>taskDone(s))}
-
-function totalStars(){
-  return (state.active||[]).filter(v=>verbPercent(v)===100).length;
-}
-function showAlert(title,msg,icon="⭐"){
-  const old=document.getElementById("levelAlert"); if(old)old.remove();
-  const el=document.createElement("div"); el.className="level-alert"; el.id="levelAlert";
-  el.innerHTML=`<div class="level-alert-box"><div class="big-star">${icon}</div><h2>${title}</h2><p>${msg}</p><button class="success" onclick="document.getElementById('levelAlert').remove()">Weiter</button></div>`;
-  document.body.appendChild(el);
-}
-function queueAlert(key,title,msg,icon="⭐"){state.alertsShown=state.alertsShown||{};if(state.alertsShown[key])return;state.alertsShown[key]=true;saveState();setTimeout(()=>showAlert(title,msg,icon),120)}
-function checkMilestones(){
-  // Keine Zwischenbelohnungen. Nur wenn alle 20 aktiven Verben auf 100% sind.
-  if(packageComplete()){
-    queueAlert(
-      "packageComplete_"+(state.packageNo||1),
-      "20 Verben geschafft!",
-      "Du hast jetzt 20 Verben auf 100% gelernt.",
-      "🏆"
-    );
+    document.getElementById("phaseTitle").innerText =
+      "Phase 2: Übe deine 20 Verben bis 100%";
   }
 }
 
-
-function taskOrder(){
-  return ["karteikarte","memory","bild_verb","verb_bild","schreiben","hoeren_schreiben","hoeren_sprechen","bild_sprechen","satz_puzzle"];
-}
-function taskFunctionName(skill){
-  const map={
-    karteikarte:"flashcards",
-    memory:"memory",
-    bild_verb:"quiz",
-    verb_bild:"verbToImage",
-    schreiben:"writeVerb",
-    hoeren_schreiben:"hearWrite",
-    hoeren_sprechen:"hearSpeak",
-    bild_sprechen:"imageSpeak",
-    satz_puzzle:"sentencePuzzle"
-  };
-  return map[skill] || "renderHome";
-}
-function openNextTask(){
-  const order=taskOrder();
-  for(const skill of order){
-    if(!taskDone(skill)){
-      if(skill==="karteikarte"){startFlashcardSession();flashcards();return;}
-      const fn=taskFunctionName(skill);
-      if(typeof window[fn]==="function"){window[fn]();return;}
-    }
-  }
-  renderHome();
-}
-function completedTaskMessage(label,skill){
-  return `<div class="achievement">
-    <h3>🎉 Gut gemacht!</h3>
-    <p>Du hast die Aufgabe <strong>${label}</strong> erledigt.</p>
-    <p class="small">Diese Aufgabe ist jetzt abgeschlossen.</p>
-  </div>`;
-}
-
-function finishTaskIfComplete(skill,label){
-  if(taskDone(skill)){
-    checkMilestones();
-    const g=$("game");
-    if(g){
-      g.innerHTML=completedTaskMessage(label,skill)+
-      `<div class="next-task-row">
-        <button class="success" onclick="openNextTask()">Nächstes Spiel →</button>
-        <button class="secondary" onclick="renderHome()">Zur Aufgabenübersicht</button>
-      </div>`;
-    }
-    return true;
-  }
-  checkMilestones();
-  return false;
-}
-
-function speakTextVerb(t,slow=false){
-  try{const u=new SpeechSynthesisUtterance(String(t||""));u.lang="de-DE";u.rate=slow?0.55:0.9;window.speechSynthesis.cancel();window.speechSynthesis.speak(u);}
-  catch(e){const fb=$("fb")||$("cardFeedback"); if(fb)fb.innerHTML="<div class='no'>Hören wird auf diesem Gerät nicht unterstützt.</div>";}
-}
-function normalizeVerbAnswer(s){return clean(String(s||"").replace(/\s+/g," "))}
-function checkVerbAnswer(answer,correct){return normalizeVerbAnswer(answer)===normalizeVerbAnswer(correct)}
-function setMicStatus(txt){const m=$("micStatus");if(m)m.innerHTML=txt}
-function recogVerb(cb){
-  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SR){const fb=$("cardFeedback")||$("fb"); if(fb)fb.innerHTML="<div class='no'>Mikrofon funktioniert auf diesem Gerät/Browser nicht. Bitte die Antwort schreiben.</div>";scrollToFeedback();return;}
-  try{
-    let r=new SR(); r.lang="de-DE"; r.interimResults=false; r.continuous=false; r.maxAlternatives=3;
-    let result="", done=false, timer=null;
-    function finish(){if(done)return;done=true;clearTimeout(timer);setMicStatus("⚪ Mikrofon aus");if(result.trim())cb(result.trim());else{const fb=$("cardFeedback")||$("fb");if(fb)fb.innerHTML="<div class='no'>Ich habe nichts verstanden. Bitte noch einmal sprechen oder schreiben.</div>";scrollToFeedback();}}
-    function stopSoon(){clearTimeout(timer);timer=setTimeout(()=>{try{r.stop()}catch(e){finish()}},1800)}
-    r.onstart=()=>{setMicStatus("🔴 Mikrofon aktiv – sprechen Sie jetzt.");stopSoon();};
-    r.onspeechstart=()=>clearTimeout(timer); r.onspeechend=()=>stopSoon(); r.onsoundend=()=>stopSoon();
-    r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){if(e.results[i]&&e.results[i][0])result=e.results[i][0].transcript||result;}const h=$("heard");if(h)h.innerText="Gehört: "+result;stopSoon();};
-    r.onerror=e=>{clearTimeout(timer);setMicStatus("⚪ Mikrofon aus");const fb=$("cardFeedback")||$("fb");if(fb)fb.innerHTML="<div class='no'>Mikrofonfehler. Bitte schreiben.</div>";scrollToFeedback();};
-    r.onend=finish; r.start();
-  }catch(e){const fb=$("cardFeedback")||$("fb");if(fb)fb.innerHTML="<div class='no'>Mikrofon konnte nicht gestartet werden. Bitte schreiben.</div>";scrollToFeedback();}
-}
-function scrollToGame(){renderAndHydrate();setTimeout(()=>{const g=$("game");if(g)g.scrollIntoView({behavior:"smooth",block:"start"})},70)}
-function scrollToFeedback(){setTimeout(()=>{const fb=$("fb")||$("cardFeedback")||$("game");if(fb)fb.scrollIntoView({behavior:"smooth",block:"center"})},70)}
-function saveCurrentTask(task){state.currentGame=task;saveState()}
-
-function sentenceForVerb(v){
-  const map={
-    "lieben":"Ich liebe Deutsch.","kaufen":"Ich kaufe eine Tomate.","verstehen":"Ich verstehe die Frage.","brauchen":"Ich brauche einen Stift.","hören":"Ich höre Musik.","lernen":"Ich lerne Deutsch.","wohnen":"Ich wohne in Deutschland.","bringen":"Ich bringe eine Pizza.","sein":"Ich bin im Kurs.","schreiben":"Ich schreibe meinen Namen.","fotografieren":"Ich fotografiere die Stadt.","telefonieren":"Ich telefoniere heute.","kochen":"Ich koche eine Suppe.","leben":"Ich lebe in Deutschland.","kommen":"Ich komme aus Syrien.","buchstabieren":"Ich buchstabiere meinen Namen.","gehen":"Ich gehe nach Hause.","schwimmen":"Ich schwimme gern.","suchen":"Ich suche meinen Schlüssel.","bestellen":"Ich bestelle eine Pizza.","weinen":"Ich weine heute.","reparieren":"Ich repariere mein Fahrrad.","gewinnen":"Ich gewinne das Spiel.","spielen":"Ich spiele Fußball.","springen":"Ich springe hoch.","verlieren":"Ich verliere den Schlüssel.","fragen":"Ich frage die Lehrerin.","verkaufen":"Ich verkaufe ein Buch.","unterschreiben":"Ich unterschreibe das Formular.","reservieren":"Ich reserviere einen Tisch.","buchen":"Ich buche ein Hotel.","machen":"Ich mache eine Aufgabe.","malen":"Ich male ein Bild.","trinken":"Ich trinke Wasser.","schicken":"Ich schicke eine Nachricht.","denken":"Ich denke nach.","winken":"Ich winke meiner Freundin.","hassen":"Ich hasse Stress.","beißen":"Ich beiße in einen Apfel.","gießen":"Ich gieße die Blumen.","reißen":"Ich reiße das Papier.","putzen":"Ich putze das Fenster.","küssen":"Ich küsse mein Kind.","tanzen":"Ich tanze gern.","mixen":"Ich mixe einen Saft.","reisen":"Ich reise nach Berlin.","haben":"Ich habe ein Buch.","überqueren":"Ich überquere die Straße.","grüßen":"Ich grüße meinen Nachbarn.","genießen":"Ich genieße die Sonne.","singen":"Ich singe ein Lied.","schließen":"Ich schließe die Tür.","rennen":"Ich renne schnell.","lachen":"Ich lache laut.","warten":"Ich warte auf den Bus.","arbeiten":"Ich arbeite heute.","finden":"Ich finde den Schlüssel.","benutzen":"Ich benutze mein Handy.","rechnen":"Ich rechne die Aufgabe.","zeichnen":"Ich zeichne ein Haus.","öffnen":"Ich öffne die Tür.","wiederholen":"Ich wiederhole den Satz.","schneiden":"Ich schneide Gemüse.","streiten":"Ich streite nicht gern.","atmen":"Ich atme tief."
-  };
-  return map[v]||`Ich übe das Verb ${v}.`;
-}
-function sentenceWords(v){const base=sentenceForVerb(v).replace(/[.?!]/g,"").split(" ");base.push(".");return base}
-
-function renderOneVerb(){
-  state.phase="select";
-  const v=currentPickVerb();
-  if(!v){if(state.active.length>0){state.phase="tasks";saveState();renderHome();return};$("app").innerHTML="<div class='ok'>Alle Verben wurden eingeschätzt.</div>";return;}
-  $("app").innerHTML=`<h2>Verb einschätzen</h2>
-    <div class="stats" id="verbStatsBox"></div>
-    <p class="small">Entscheide schnell. Danach kommt automatisch das nächste Verb.</p>
-    <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
-      ${imageBox(v.v,false)}<h1 style="color:#667eea">${safeText(v.v)}</h1><p>${safeText(v.img)}</p>
-    </div>
-    <button class="success" onclick="rateVerb('${v.v}','known')">✅ kann ich</button>
-    <button onclick="rateVerb('${v.v}','unsure')">❓ unsicher</button>
-    <button onclick="rateVerb('${v.v}','unknown')">❌ kann ich nicht</button>`;
-  renderProgressPanel(false); renderAndHydrate();
-}
-function rateVerb(v,level){
-  ["known","unsure","unknown"].forEach(k=>state[k]=state[k].filter(x=>x!==v));
-  state[level].push(v);
-  if(level!=="known" && !state.active.includes(v)){state.active.push(v);ensureSkillState(v);}
-  state.index++;
-  if(state.active.length>=20){
-    state.active=state.active.slice(0,20);
-    state.taskQueues={}; state.taskDoneSets={}; state.flashSession=null;
-    state.phase="tasks"; saveState(); renderHome();
-  }else{saveState(); renderOneVerb();}
-}
-function startNewVerbPackage(){
-  state.packageNo=(state.packageNo||1)+1;
-  state.learned=[...(state.learned||[]),...(state.active||[])].filter((v,i,a)=>a.indexOf(v)===i);
-  state.active=[]; state.taskQueues={}; state.taskDoneSets={}; state.flashSession=null; state.currentGame="";
-  state.taskRewardsShown={};
-  state.phase="select"; saveState(); renderOneVerb();
-}
-function safeRun(fn){try{fn()}catch(e){console.error(e);const g=$("game");if(g)g.innerHTML="<div class='no'>Diese Aufgabe konnte nicht geöffnet werden. Bitte neu laden.</div>";}}
-
-function updateSimpleProgress(){
-  try{
-    const learned=(state.active||[]).filter(v=>verbPercent(v)===100).length;
-    const el=document.getElementById('simpleProgress');
-    if(el) el.textContent = learned + " / 20 Verben gelernt";
-  }catch(e){}
-}
-
-
-function updateVerbStatsBox(){
-  try{
-    const learned=(state.active||[]).filter(v=>verbPercent(v)===100).length;
-    const total=(state.active||[]).length || 20;
-    const overallPct=total?Math.round(learned*100/20):0;
-    const open=Math.max(0,20-learned);
-    const box=document.getElementById("verbStatsBox");
-    if(box){
-      box.innerHTML=`<div class="stat"><div>Verben gelernt</div><div class="num">${learned}/20</div></div>
-      <div class="stat"><div>Offen</div><div class="num">${open}</div></div>
-      <div class="stat"><div>Fortschritt</div><div class="num">${Math.round((learned/20)*100)}%</div></div>
-      <div class="stat"><div>Sterne</div><div class="num">⭐ ${learned}</div></div>`;
-    }
-  }catch(e){}
-}
-
-function renderHome(){
-  state.phase="tasks"; saveState();
-  const packageDone=packageComplete();
-  $("app").innerHTML=`<h2>Verben üben</h2>
-    <div class="mini-top-progress"><strong>Paket:</strong> ${state.packageNo||1} | <strong>Aktiv:</strong> ${state.active.length}/20 | <strong>Gelernt:</strong> ${state.learned.length} | <strong>Gesamt:</strong> ${overall()}% | <strong>Sterne:</strong> ${totalStars()}/20</div>
-    ${packageDone?`<div class="package-done"><h3>20 Verben geschafft!</h3><p>Alle aktiven Verben sind auf 100 %. Jetzt kannst du neue Verben einschätzen.</p><button class="success" onclick="startNewVerbPackage()">Neue Verben auswählen</button></div>`:""}
-    <button class="overview-button" onclick="showVerbOverview()">Alle Verben anzeigen</button>
-    <div class="task-grid">
-      <button class="${taskCardClass('karteikarte')}" onclick="safeRun(()=>{if(taskDone('karteikarte')){taskBlockedMessage('Karteikarten');return}startFlashcardSession();flashcards();})"><span class="big-icon">🃏</span>Karteikarten<div class="task-status">${taskCardStatus('karteikarte')}</div></button>
-      ${taskButton('memory','🖼️','Memory','memory')}
-      ${taskButton('bild_verb','✅','Bild → Verb','quiz')}
-      ${taskButton('verb_bild','🖼️','Verb → Bild','verbToImage')}
-      ${taskButton('schreiben','✍️','Schreiben','writeVerb')}
-      ${taskButton('hoeren_schreiben','🔊','Hören → Schreiben','hearWrite')}
-      ${taskButton('hoeren_sprechen','🎧','Hören → Sprechen','hearSpeak')}
-      ${taskButton('bild_sprechen','🎤','Bild sprechen','imageSpeak')}
-      ${taskButton('satz_puzzle','🧩','Satz-Puzzle','sentencePuzzle')}
-    </div><div id="game"></div>`;
-  updateSimpleProgress(); updateVerbStatsBox(); renderProgressPanel(false); if(!packageDone)restoreCurrentTask(); checkMilestones();
-}
-function taskButton(skill,icon,label,fn){return `<button class="${taskCardClass(skill)}" onclick="safeRun(()=>{if(taskDone('${skill}')){taskBlockedMessage('${label}');return}${fn}();})"><span class="big-icon">${icon}</span>${label}<div class="task-status">${taskCardStatus(skill)}</div></button>`}
-function taskBlockedMessage(label){
-  $("game").innerHTML=`<div class="package-done">
-    <h3>${label} erledigt ✓</h3>
-    <p>Diese Aufgabe ist für dein aktuelles 20-Verben-Paket bereits abgeschlossen.</p>
-    <div class="next-task-row">
-      <button class="success" onclick="openNextTask()">Nächstes Spiel →</button>
-      <button class="secondary" onclick="renderHome()">Zur Übersicht</button>
-    </div>
-  </div>`;
-  scrollToGame();
-}
-function restoreCurrentTask(){return false}
-
-function startFlashcardSession(){
-  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:(state.active||[]).length,words:(state.active||[])};
-  state.flashSession.correct=state.flashSession.correct||{}; state.flashSession.wrong=state.flashSession.wrong||{}; state.flashSession.done=state.flashSession.done||[];
-  const doneSet=new Set(state.flashSession.done);
-  const remaining=(state.active||[]).filter(v=>!doneSet.has(v));
-  state.flashSession.words=state.active.slice(); state.flashSession.total=state.active.length;
-  if(!state.flashSession.queue || !state.flashSession.queue.length) state.flashSession.queue=shuffle(remaining);
-  remaining.forEach(v=>{state.flashSession.correct[v]=state.flashSession.correct[v]||0;state.flashSession.wrong[v]=state.flashSession.wrong[v]||0;});
-  saveState();
-}
-function nextFlashVerb(){
-  if(!state.flashSession || !state.flashSession.queue)startFlashcardSession();
-  if((state.flashSession.done||[]).length>=state.flashSession.total)return null;
-  if(!state.flashSession.queue.length){
-    const doneSet=new Set(state.flashSession.done||[]);
-    state.flashSession.queue=(state.active||[]).filter(v=>!doneSet.has(v));
-  }
-  if(!state.flashSession.queue.length)return null;
-  const v=state.flashSession.queue.shift(); state.flashSession.current=v; saveState(); return v;
-}
-function flashProgressHtml(){
-  const totalWords=(state.flashSession&&state.flashSession.total)||state.active.length;
-  const totalPoints=totalWords*2;
-  const points=Object.values((state.flashSession&&state.flashSession.correct)||{}).reduce((s,n)=>s+Math.min(2,Number(n)||0),0);
-  const pct=totalPoints?Math.round(points*100/totalPoints):0;
-  const doneWords=(state.flashSession&&state.flashSession.done?state.flashSession.done.length:0);
-  return `<div class="flash-progress-box"><div class="flash-progress-title"><strong>${pct}% fertig</strong><span>${points}/${totalPoints} Punkte · ${doneWords}/${totalWords} Wörter</span></div><div class="flash-bar"><div class="flash-fill" style="width:${pct}%"></div></div></div>`;
-}
-function flashcards(){
-  state.currentGame="flashcards";
-  let v=nextFlashVerb(); if(!v){flashcardDoneMessage();return}
-  state.currentVerb=v; state.cardWasFlipped=false; saveState();
-  const correctNow=(state.flashSession.correct&&state.flashSession.correct[v])||0, wrongNow=(state.flashSession.wrong&&state.flashSession.wrong[v])||0;
-  $("game").innerHTML=`${flashProgressHtml()}<div class="card-task-head"><h3>Karteikarte</h3><div class="small">Antwort zählt nur vor dem Umdrehen.</div></div>
-    <div class="word-status"><span class="word-pill">${Math.min(correctNow,2)}/2 Punkte</span>${wrongNow?`<span class="word-pill">Fehler: ${wrongNow}</span>`:""}</div>
-    <div class="study-card-wrap"><div id="studyCard" class="study-card" onclick="state.cardWasFlipped=true;saveState();this.classList.toggle('flipped')">
-      <div class="study-face"><div class="small">${nativeLang()}</div><div class="native-word">${safeText(nativeWord(v))}</div><p class="small">Wie heißt das auf Deutsch?</p></div>
-      <div class="study-face study-back"><div class="small">Deutsch</div><div class="german-word">${safeText(v)}</div></div>
-    </div></div>
-    <input id="cardAnswer" placeholder="Deutsches Verb..."><div class="card-actions"><button class="success" onclick="checkFlashcardAnswer('${v}')">Überprüfen</button><button onclick="speakFlashcardAnswer('${v}')">🎤 Sagen</button></div>
-    <div id="micStatus" class="small">Mikrofon aus</div><p id="heard" class="small"></p><div id="cardFeedback"></div>`;
-  scrollToGame();
-}
-function finishFlashVerb(v,good){
-  state.flashSession=state.flashSession||{queue:[],correct:{},wrong:{},done:[],total:state.active.length,words:state.active.slice()};
-  ensureSkillState(v); state.flashSession.correct[v]=state.flashSession.correct[v]||0; state.flashSession.wrong[v]=state.flashSession.wrong[v]||0;
-  if(good){
-    state.flashSession.correct[v]=Math.min(2,state.flashSession.correct[v]+1);
-    markSkill(v,"karteikarte",true);
-    if(state.flashSession.correct[v]>=2){
-      state.skillDone[v]["karteikarte"]=true;
-      if(!state.flashSession.done.includes(v))state.flashSession.done.push(v);
-      finishQueuedVerb("karteikarte",v,true);
-      state.flashSession.queue=state.flashSession.queue.filter(x=>x!==v);
-    }else state.flashSession.queue.push(v);
+// PICK VERB
+function pick(){
+  if(data.stage==="collect"){
+    return verbs[Math.floor(Math.random()*verbs.length)];
   }else{
-    markSkill(v,"karteikarte",false);
-    state.flashSession.wrong[v]++; state.flashSession.queue.push(v);
-  }
-  saveState(); checkMilestones();
-}
-function checkFlashcardAnswer(v){
-  const val=($("cardAnswer")||{value:""}).value, fb=$("cardFeedback");
-  if(state.cardWasFlipped){finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Versuch es nochmal.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;}
-  else if(checkVerbAnswer(val,v)){finishFlashVerb(v,true);const c=state.flashSession.correct[v]||0;fb.innerHTML=`<div class="ok">${c>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;}
-  else{finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Versuch es nochmal. Das Verb kommt am Ende noch einmal.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;}
-  scrollToFeedback();
-}
-function speakFlashcardAnswer(v){recogVerb(t=>{const h=$("heard");if(h)h.innerText="Gehört: "+t;const fb=$("cardFeedback");if(state.cardWasFlipped){finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Versuch es nochmal.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;}else if(checkVerbAnswer(t,v)){finishFlashVerb(v,true);const c=state.flashSession.correct[v]||0;fb.innerHTML=`<div class="ok">${c>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;}else{finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Gehört: ${safeText(t)}<br>Richtig: <strong>${v}</strong><br>Das Verb kommt am Ende noch einmal.</div><button onclick="flashcards()">Weiter</button>`;}scrollToFeedback();})}
-function flashcardDoneMessage(){
-  $("game").innerHTML=`${flashProgressHtml()}${completedTaskMessage("Karteikarten","karteikarte")}
-  <div class="next-task-row">
-    <button class="success" onclick="openNextTask()">Nächstes Spiel →</button>
-    <button class="secondary" onclick="renderHome()">Zur Aufgabenübersicht</button>
-  </div>`;
-  scrollToGame();
-}
-
-function memory(){
-  saveCurrentTask("memory"); state.currentGame="memory"; state.first=null; state.lock=false; state.memoryCards=[];
-  initTaskQueue("memory");
-  const pool=(state.taskQueues[taskQueueKey("memory")]||[]).slice(0,6);
-  if(!pool.length){finishTaskIfComplete("memory","Memory");return}
-  pool.forEach((v,i)=>{state.memoryCards.push({p:i,t:"de",v:v,html:`<span class="mem-german">${safeText(v)}</span>`,o:false,d:false});state.memoryCards.push({p:i,t:"img",v:v,html:imageBox(v,true),o:false,d:false});});
-  state.memoryCards=shuffle(state.memoryCards); saveState(); renderMemory(); scrollToGame();
-}
-function renderMemory(){$("game").innerHTML=`${taskProgressHtml("memory","Memory")}<h3>Memory</h3><p class="small">Finde das Bild und das passende deutsche Verb.</p><div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${c.o?'open':''} ${c.d?'done':''}" onclick="flip(${i})">${(c.o||c.d)?c.html:"?"}</button>`).join("")}</div><div id="fb"></div>`;renderAndHydrate();}
-function flip(i){
-  if(state.lock)return; const c=state.memoryCards[i]; if(!c||c.o||c.d)return; c.o=true;
-  if(state.first===null){state.first=i;saveState();renderMemory();return}
-  const a=state.memoryCards[state.first], b=c; state.lock=true; renderMemory();
-  setTimeout(()=>{if(a.p===b.p&&a.t!==b.t){a.d=b.d=true;finishQueuedVerb("memory",a.v,true);addEncounter(a.v,"memory",true);$("fb").innerHTML="<div class='ok'>Gut gemacht!</div>";}else{if(a&&a.v)finishQueuedVerb("memory",a.v,false);if(b&&b.v&&b.v!==a.v)finishQueuedVerb("memory",b.v,false);a.o=false;b.o=false;$("fb").innerHTML="<div class='no'>Versuch es nochmal.</div>";}state.first=null;state.lock=false;saveState();renderMemory();if(state.memoryCards.every(x=>x.d))finishTaskIfComplete("memory","Memory");},650);
-}
-
-function quiz(){
-  saveCurrentTask("quiz"); state.currentGame="quiz"; let v=nextFromTaskQueue("bild_verb"); if(!v){finishTaskIfComplete("bild_verb","Bild → Verb");return}
-  let opts=shuffle([v,...shuffle((state.active||[]).filter(a=>a!==v)).slice(0,3)]);
-  while(opts.length<4){const extra=shuffle(ALL_VERBS.map(x=>x.v).filter(x=>!opts.includes(x)))[0];if(extra)opts.push(extra);else break;}
-  const letters=["A","B","C","D"]; state.currentVerb=v; saveState();
-  $("game").innerHTML=`${taskProgressHtml("bild_verb","Bild → Verb")}<h3>Welches Verb passt?</h3>${imageBox(v,false)}<div class="quiz-options">${opts.slice(0,4).map((o,i)=>`<button class="quiz-option" onclick="checkQuiz('${o}','${v}')"><span class="quiz-letter">${letters[i]}</span>${safeText(o)}</button>`).join("")}</div><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;
-  renderAndHydrate(); scrollToGame();
-}
-function checkQuiz(a,v){if(a===v){addEncounter(v,"bild_verb",true);finishQueuedVerb("bild_verb",v,true);$("fb").innerHTML="<div class='ok'>Gut gemacht!</div><button onclick='quiz()'>weiter</button>";finishTaskIfComplete("bild_verb","Bild → Verb");}else{addEncounter(v,"bild_verb",false);finishQueuedVerb("bild_verb",v,false);$("fb").innerHTML="<div class='no'>Versuch es nochmal. Versuch es nochmal.</div><button onclick='quiz()'>weiter</button>";}scrollToFeedback();}
-
-function writeVerb(){saveCurrentTask("write");state.currentGame="write";let v=nextFromTaskQueue("schreiben");if(!v){finishTaskIfComplete("schreiben","Schreiben");return}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("schreiben","Schreiben")}<h3>Schreibe das deutsche Verb</h3>${imageBox(v,false)}<input id="w" placeholder="Verb schreiben..."><button onclick="checkWrite('${v}')">prüfen</button><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;renderAndHydrate();scrollToGame();}
-function checkWrite(v){const val=$("w").value;if(checkVerbAnswer(val,v)){addEncounter(v,"schreiben",true);finishQueuedVerb("schreiben",v,true);$("fb").innerHTML="<div class='ok'>Gut gemacht!</div><button onclick='writeVerb()'>weiter</button>";finishTaskIfComplete("schreiben","Schreiben");}else{addEncounter(v,"schreiben",false);finishQueuedVerb("schreiben",v,false);$("fb").innerHTML=`<div class='no'>Versuch es nochmal. Richtig: <strong>${v}</strong><br>Versuch es nochmal.</div><button onclick='writeVerb()'>weiter</button>`;}scrollToFeedback();}
-
-function hearWrite(){saveCurrentTask("hearWrite");state.currentGame="hearWrite";let v=nextFromTaskQueue("hoeren_schreiben");if(!v){finishTaskIfComplete("hoeren_schreiben","Hören → Schreiben");return}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("hoeren_schreiben","Hören → Schreiben")}<h3>Hören → Schreiben</h3><button onclick="speakTextVerb('${v}',false)">🔊 normal</button><button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 langsam</button><input id="hw" placeholder="Verb schreiben..."><button onclick="checkHearWrite('${v}')">prüfen</button><div id="fb"></div>`;scrollToGame();}
-function checkHearWrite(v){const val=$("hw").value;if(checkVerbAnswer(val,v)){addEncounter(v,"hoeren_schreiben",true);finishQueuedVerb("hoeren_schreiben",v,true);$("fb").innerHTML="<div class='ok'>Gut gemacht!</div><button onclick='hearWrite()'>weiter</button>";finishTaskIfComplete("hoeren_schreiben","Hören → Schreiben");}else{addEncounter(v,"hoeren_schreiben",false);finishQueuedVerb("hoeren_schreiben",v,false);$("fb").innerHTML=`<div class='no'>Versuch es nochmal. Richtig: <strong>${v}</strong><br>Versuch es nochmal.</div><button onclick='hearWrite()'>weiter</button>`;}scrollToFeedback();}
-
-function hearSpeak(){saveCurrentTask("hearSpeak");state.currentGame="hearSpeak";let v=nextFromTaskQueue("hoeren_sprechen");if(!v){finishTaskIfComplete("hoeren_sprechen","Hören → Sprechen");return}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("hoeren_sprechen","Hören → Sprechen")}<h3>Hören → Sprechen</h3><button onclick="speakTextVerb('${v}',false)">🔊 normal</button><button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 langsam</button><button class="success" onclick="checkHearSpeak('${v}')">🎤 sprechen</button><div id="micStatus" class="small">Mikrofon aus</div><p id="heard" class="small"></p><div id="fb"></div>`;scrollToGame();}
-function checkHearSpeak(v){recogVerb(t=>{$("heard").innerText="Gehört: "+t;if(checkVerbAnswer(t,v)){addEncounter(v,"hoeren_sprechen",true);finishQueuedVerb("hoeren_sprechen",v,true);$("fb").innerHTML="<div class='ok'>Gut gemacht!</div><button onclick='hearSpeak()'>weiter</button>";finishTaskIfComplete("hoeren_sprechen","Hören → Sprechen");}else{addEncounter(v,"hoeren_sprechen",false);finishQueuedVerb("hoeren_sprechen",v,false);$("fb").innerHTML=`<div class='no'>Versuch es nochmal. Richtig: <strong>${v}</strong><br>Versuch es nochmal.</div><button onclick='hearSpeak()'>weiter</button>`;}scrollToFeedback();})}
-
-function imageSpeak(){saveCurrentTask("imageSpeak");state.currentGame="imageSpeak";let v=nextFromTaskQueue("bild_sprechen");if(!v){finishTaskIfComplete("bild_sprechen","Bild → Sprechen");return}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("bild_sprechen","Bild → Sprechen")}<h3>Bild → Sprechen</h3>${imageBox(v,false)}<button class="success" onclick="checkImageSpeak('${v}')">🎤 Sprechen</button><div id="micStatus" class="small">Mikrofon aus</div><p id="heard" class="small"></p><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;renderAndHydrate();scrollToGame();}
-function checkImageSpeak(v){recogVerb(t=>{$("heard").innerText="Gehört: "+t;if(checkVerbAnswer(t,v)){addEncounter(v,"bild_sprechen",true);finishQueuedVerb("bild_sprechen",v,true);$("fb").innerHTML="<div class='ok'>Gut gemacht!</div><button onclick='imageSpeak()'>weiter</button>";finishTaskIfComplete("bild_sprechen","Bild → Sprechen");}else{addEncounter(v,"bild_sprechen",false);finishQueuedVerb("bild_sprechen",v,false);$("fb").innerHTML=`<div class='no'>Versuch es nochmal. Richtig: <strong>${v}</strong><br>Versuch es nochmal.</div><button onclick='imageSpeak()'>weiter</button>`;}scrollToFeedback();})}
-
-function verbToImage(){saveCurrentTask("verbToImage");state.currentGame="verbToImage";let v=nextFromTaskQueue("verb_bild");if(!v){finishTaskIfComplete("verb_bild","Verb → Bild");return}let opts=shuffle([v,...shuffle((state.active||[]).filter(x=>x!==v)).slice(0,3)]);while(opts.length<4){const extra=shuffle(ALL_VERBS.map(x=>x.v).filter(x=>!opts.includes(x)))[0];if(extra)opts.push(extra);else break;}state.currentVerb=v;saveState();$("game").innerHTML=`${taskProgressHtml("verb_bild","Verb → Bild")}<h3>Welches Bild passt?</h3><h2>${safeText(v)}</h2><div class="quiz-options">${opts.slice(0,4).map((o,i)=>`<button class="bild-option" onclick="checkVerbToImage('${o}','${v}')">${imageBox(o,true)}</button>`).join("")}</div><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><div id="fb"></div>`;renderAndHydrate();scrollToGame();}
-function checkVerbToImage(a,v){if(a===v){addEncounter(v,"verb_bild",true);finishQueuedVerb("verb_bild",v,true);$("fb").innerHTML="<div class='ok'>Gut gemacht!</div><button onclick='verbToImage()'>weiter</button>";finishTaskIfComplete("verb_bild","Verb → Bild");}else{addEncounter(v,"verb_bild",false);finishQueuedVerb("verb_bild",v,false);$("fb").innerHTML="<div class='no'>Versuch es nochmal. Versuch es nochmal.</div><button onclick='verbToImage()'>weiter</button>";}scrollToFeedback();}
-
-let puzzleCurrent=[];
-function sentencePuzzle(){saveCurrentTask("sentencePuzzle");state.currentGame="sentencePuzzle";let v=nextFromTaskQueue("satz_puzzle");if(!v){finishTaskIfComplete("satz_puzzle","Satz-Puzzle");return}state.currentVerb=v;const sentence=sentenceForVerb(v);puzzleCurrent=[];const words=shuffle(sentenceWords(v));$("game").innerHTML=`${taskProgressHtml("satz_puzzle","Satz-Puzzle")}<h3>Satz-Puzzle</h3><p class="small">Baue den Satz. Der Punkt gehört dazu.</p>${imageBox(v,false)}<div id="puzzleAnswer" class="puzzle-answer"></div><div id="puzzleBank" class="puzzle-bank">${words.map(w=>`<button class="word-chip" data-word="${safeText(w)}" onclick="pickPuzzleWord(this)">${safeText(w)}</button>`).join("")}</div><button class="secondary" onclick="speakTextVerb('${sentence.replace(/'/g,"\\'")}',false)">🔊 Satz hören</button><button class="secondary" onclick="speakTextVerb('${sentence.replace(/'/g,"\\'")}',true)">🐢 Langsam</button><button class="success" onclick="checkSentencePuzzle('${v}')">Prüfen</button><button class="secondary" onclick="sentencePuzzle()">Neu</button><div id="fb"></div>`;renderAndHydrate();scrollToGame();}
-function pickPuzzleWord(btn){const w=btn.getAttribute("data-word");puzzleCurrent.push(w);btn.remove();const ans=$("puzzleAnswer");const chip=document.createElement("button");chip.className="word-chip answer";chip.textContent=w;chip.onclick=function(){const children=Array.from(ans.children);const index=children.indexOf(chip);if(index>=0)puzzleCurrent.splice(index,1);chip.remove();const bank=$("puzzleBank");const b=document.createElement("button");b.className="word-chip";b.textContent=w;b.setAttribute("data-word",w);b.onclick=function(){pickPuzzleWord(b)};bank.appendChild(b);};ans.appendChild(chip);}
-function checkSentencePuzzle(v){const target=sentenceForVerb(v).replace(/\s+/g," ").trim();let answer=puzzleCurrent.join(" ").replace(" .",".").trim();const fb=$("fb");if(clean(answer)===clean(target)){addEncounter(v,"satz_puzzle",true);finishQueuedVerb("satz_puzzle",v,true);fb.innerHTML=`<div class="ok">Richtig: ${sentenceForVerb(v)}<br>Gut gemacht!</div><button class="success" onclick="sentencePuzzle()">weiter</button>`;speakTextVerb(sentenceForVerb(v),false);finishTaskIfComplete("satz_puzzle","Satz-Puzzle");}else{addEncounter(v,"satz_puzzle",false);finishQueuedVerb("satz_puzzle",v,false);fb.innerHTML=`<div class="no">Versuch es nochmal.<br>Richtig: ${sentenceForVerb(v)}<br>Versuch es nochmal.</div><button onclick="sentencePuzzle()">weiter</button>`;}scrollToFeedback();}
-
-function showTranslationHelp(v){const fb=$("fb")||$("cardFeedback");if(fb){fb.innerHTML=`<div class="ok"><strong>Hilfe (${nativeLang()}):</strong><br>${safeText(nativeWord(v))}</div>`+fb.innerHTML;scrollToFeedback();}}
-function showVerbOverview(){
-  const cards=ALL_VERBS.map(x=>x.v).map(v=>`<div class="verb-overview-card">${imageBox(v,true)}<div class="verb-de">${safeText(v)}</div><div class="verb-native">${safeText(nativeWord(v))}</div><div class="verb-percent">${verbPercent(v)}%</div></div>`).join("");
-  const modal=document.createElement("div");modal.className="overview-modal";modal.id="overviewModal";modal.innerHTML=`<div class="overview-box"><div class="overview-head"><h2>Alle Verben</h2><button class="secondary" onclick="document.getElementById('overviewModal').remove()">Schließen</button></div><div class="overview-grid">${cards}</div></div>`;
-  document.body.appendChild(modal);renderAndHydrate();
-}
-function renderProgressPanel(openOnly){
-  const p=$("progressPanel"); if(!p)return;
-  const activeRows=state.active.map(v=>`<div class="progress-row"><div class="progress-row-head">${imageBox(v,true)}<div><strong>${safeText(v)}</strong><br><span class="small">${verbSkillCount(v)}/${VERB_SKILLS.length} · ${verbPercent(v)}%</span></div></div><div class="progress-line"><div class="progress-fill" style="width:${verbPercent(v)}%"></div></div><div class="small">Fehler: ${state.weak[v]||0}</div>${skillBadges(v)}</div>`).join("");
-  p.innerHTML=`<h2>📊 Fortschritt</h2><button class="secondary" onclick="toggleProgressPanel()">Schließen</button><div class="progress-row"><strong>Paket ${state.packageNo||1}</strong><br>Aktiv: ${state.active.length}/20 · Gelernt: ${state.learned.length} · Offen: ${unusedVerbs().length}<br>Sterne: ${totalStars()}/9</div><h3>Aktive Verben</h3>${activeRows||"<p>Noch keine aktiven Verben.</p>"}<h3>Gelernte Verben</h3><p class="small">${state.learned.length?state.learned.join(", "):"Noch keine."}</p>`;
-  renderAndHydrate();
-}
-function toggleProgressPanel(){const p=$("progressPanel");if(!p)return;p.classList.toggle("hidden");if(!p.classList.contains("hidden"))renderProgressPanel(true)}
-
-
-async function init(){
-  if(!loadProfile())return;
-  await loadState();
-  if((state.active||[]).length>=20 || state.phase==="tasks"){
-    state.phase="tasks";
-    renderHome();
-  }else{
-    state.phase="select";
-    renderOneVerb();
+    return data.pool[Math.floor(Math.random()*data.pool.length)];
   }
 }
 
-function packageComplete(){
-  spCleanVerbState();
-  return state.active.length===20 && state.active.every(v=>verbPercent(v)>=100);
-}
-function totalStars(){
-  spCleanVerbState();
-  return state.active.filter(v=>verbPercent(v)>=100).length;
-}
-function unusedVerbs(){
-  spCleanVerbState();
-  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned].filter((v,i,a)=>v&&a.indexOf(v)===i);
-  return ALL_VERBS.map(x=>x.v).filter(v=>!used.includes(v));
-}
-function currentPickVerb(){
-  spCleanVerbState();
-  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned].filter((v,i,a)=>v&&a.indexOf(v)===i);
-  for(let i=0;i<ALL_VERBS.length;i++){
-    if(!used.includes(ALL_VERBS[i].v)){state.index=i;return ALL_VERBS[i];}
-  }
-  return null;
-}
-function startNewVerbPackage(){
-  spCleanVerbState();
-  state.learned=[...state.learned,...state.active].filter((v,i,a)=>v&&a.indexOf(v)===i);
-  state.active=[];state.known=[];state.unsure=[];state.unknown=[];
-  state.taskQueues={};state.taskDoneSets={};state.flashSession=null;state.currentGame="";
-  state.taskRewardsShown={};state.alertsShown={};
-  state.packageNo=(state.packageNo||1)+1;state.phase="select";
-  saveState();
-  if(!currentPickVerb()){
-    $("app").innerHTML=`<h2>Alle Verben fertig</h2><div class="ok">Alle Verben wurden bearbeitet.</div><button class="secondary" onclick="resetOnlyVerbProgress()">Verben neu starten</button>`;
-    return;
-  }
-  renderOneVerb();
-}
-function resetOnlyVerbProgress(){
-  if(!confirm("Nur den Verben-Fortschritt neu starten? Dein Profil bleibt erhalten."))return;
-  localStorage.removeItem(key());
-  state={phase:"select",index:0,known:[],unsure:[],unknown:[],active:[],learned:[],weak:{},currentGame:"",currentVerb:"",memoryCards:[],first:null,lock:false,skillDone:{},skillAttempts:{},skillSuccess:{},flashSession:null,taskQueues:{},taskDoneSets:{},alertsShown:{},taskRewardsShown:{},packageNo:1};
-  saveState();renderOneVerb();
-}
-function renderOneVerb(){
-  spCleanVerbState();state.phase="select";
-  const v=currentPickVerb();
-  if(!v){
-    if(state.active.length>0){state.phase="tasks";saveState();renderHome();return;}
-    $("app").innerHTML=`<h2>Keine neuen Verben gefunden</h2><div class="ok">Alle Verben wurden eingeschätzt.</div><button class="success" onclick="renderHome()">Weiter zu den Übungen</button><button class="secondary" onclick="resetOnlyVerbProgress()">Verben neu starten</button>`;
-    return;
-  }
-  $("app").innerHTML=`<h2>Verb einschätzen</h2><div class="stats" id="verbStatsBox"></div><p class="small">Entscheide schnell. Danach kommt automatisch das nächste Verb.</p><div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">${imageBox(v.v,false)}<h1 style="color:#667eea">${safeText(v.v)}</h1><p>${safeText(v.img)}</p></div><button class="success" onclick="rateVerb('${v.v}','known')">✅ kann ich</button><button onclick="rateVerb('${v.v}','unsure')">❓ unsicher</button><button onclick="rateVerb('${v.v}','unknown')">❌ kann ich nicht</button><div class="next-task-row"><button class="secondary" onclick="renderHome()">Weiter zu den Übungen</button></div>`;
-  updateVerbStatsBox();renderProgressPanel(false);renderAndHydrate();
-}
-function rateVerb(v,level){
-  spCleanVerbState();
-  ["known","unsure","unknown"].forEach(k=>state[k]=state[k].filter(x=>x!==v));
-  state[level].push(v);
-  if(!state.active.includes(v)){state.active.push(v);ensureSkillState(v);}
-  if(state.active.length>=20){
-    state.active=state.active.slice(0,20);
-    state.taskQueues={};state.taskDoneSets={};state.flashSession=null;state.phase="tasks";saveState();renderHome();
-  }else{saveState();renderOneVerb();}
-}
-function checkMilestones(){
-  if(packageComplete()){
-    const k="packageComplete_"+(state.packageNo||1);
-    state.alertsShown=state.alertsShown||{};
-    if(!state.alertsShown[k]){
-      state.alertsShown[k]=true;saveState();
-      setTimeout(()=>showAlert("20 Verben geschafft!","Du hast jetzt 20 Verben auf 100% gelernt.","🏆"),120);
-    }
-  }
-}
-function updateVerbStatsBox(){
-  try{
-    spCleanVerbState();
-    const learned=state.active.filter(v=>verbPercent(v)>=100).length;
-    const open=Math.max(0,20-learned);
-    const box=document.getElementById("verbStatsBox");
-    if(box)box.innerHTML=`<div class="stat"><div>Verben gelernt</div><div class="num">${learned}/20</div></div><div class="stat"><div>Offen</div><div class="num">${open}</div></div><div class="stat"><div>Fortschritt</div><div class="num">${Math.round((learned/20)*100)}%</div></div><div class="stat"><div>Sterne</div><div class="num">⭐ ${learned}/20</div></div>`;
-  }catch(e){}
-}
-function renderHome(){
-  spCleanVerbState();state.phase="tasks";saveState();
-  const packageDone=packageComplete();
-  $("app").innerHTML=`<h2>Verben üben</h2><div class="stats" id="verbStatsBox"></div>${packageDone?`<div class="package-done"><h3>20 Verben geschafft!</h3><p>Alle aktiven Verben sind auf 100 %. Jetzt kannst du neue Verben einschätzen.</p><button class="success" onclick="startNewVerbPackage()">Neue 20 Verben auswählen</button></div>`:""}<button class="overview-button" onclick="showVerbOverview()">Alle Verben anzeigen</button><div class="task-grid"><button class="${taskCardClass('karteikarte')}" onclick="safeRun(()=>{if(taskDone('karteikarte')){taskBlockedMessage('Karteikarten');return}startFlashcardSession();flashcards();})"><span class="big-icon">🃏</span>Karteikarten<div class="task-status">${taskCardStatus('karteikarte')}</div></button>${taskButton('memory','🖼️','Memory','memory')}${taskButton('bild_verb','✅','Bild → Verb','quiz')}${taskButton('verb_bild','🖼️','Verb → Bild','verbToImage')}${taskButton('schreiben','✍️','Schreiben','writeVerb')}${taskButton('hoeren_schreiben','🔊','Hören → Schreiben','hearWrite')}${taskButton('hoeren_sprechen','🎧','Hören → Sprechen / Schreiben','hearSpeak')}${taskButton('bild_sprechen','🎤','Bild sprechen / schreiben','imageSpeak')}${taskButton('satz_puzzle','🧩','Satz-Puzzle','sentencePuzzle')}</div><div class="next-task-row"><button class="secondary" onclick="renderOneVerb()">Weitere Verben einschätzen</button><button class="danger" onclick="resetOnlyVerbProgress()">Verben neu starten</button></div><div id="game"></div>`;
-  updateVerbStatsBox();renderProgressPanel(false);if(!packageDone)restoreCurrentTask();checkMilestones();
-}
-function typedSpeakCheck(v,skill,nextFn,inputId){
-  const val=($(inputId)||{value:""}).value;
-  const good=checkVerbAnswer(val,v);
-  const fb=$("fb")||$("cardFeedback");
-  if(good){
-    addEncounter(v,skill,true);finishQueuedVerb(skill,v,true);
-    if(fb)fb.innerHTML=`<div class="ok">Gut gemacht!</div><button class="success" onclick="${nextFn}()">weiter</button>`;
-    finishTaskIfComplete(skill,VERB_SKILL_LABELS[skill]||skill);
-  }else{
-    addEncounter(v,skill,false);finishQueuedVerb(skill,v,false);
-    if(fb)fb.innerHTML=`<div class="no">Versuch es nochmal. Richtig: <strong>${safeText(v)}</strong></div><button onclick="${nextFn}()">weiter</button>`;
-  }
-  scrollToFeedback();
-}
-function hearSpeak(){
-  saveCurrentTask("hearSpeak");state.currentGame="hearSpeak";
-  let v=nextFromTaskQueue("hoeren_sprechen");
-  if(!v){finishTaskIfComplete("hoeren_sprechen","Hören → Sprechen");return}
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`${taskProgressHtml("hoeren_sprechen","Hören → Sprechen / Schreiben")}<h3>Hören → Sprechen / Schreiben</h3><button onclick="speakTextVerb('${v}',false)">🔊 normal</button><button class="secondary" onclick="speakTextVerb('${v}',true)">🐢 langsam</button><div id="micStatus" class="small">Mikrofon aus</div><button onclick="recogVerb(t=>checkHearSpeak('${v}',t))">🎤 sprechen</button><input id="hsTyped" placeholder="Oder Verb schreiben..."><button class="success" onclick="typedSpeakCheck('${v}','hoeren_sprechen','hearSpeak','hsTyped')">Schreiben prüfen</button><p id="heard" class="small"></p><div id="fb"></div>`;
-  scrollToGame();
-}
-function checkHearSpeak(v,t){
-  const good=checkVerbAnswer(t,v);const fb=$("fb");
-  if(good){addEncounter(v,"hoeren_sprechen",true);finishQueuedVerb("hoeren_sprechen",v,true);fb.innerHTML="<div class='ok'>Gut gemacht!</div><button class='success' onclick='hearSpeak()'>weiter</button>";finishTaskIfComplete("hoeren_sprechen","Hören → Sprechen");}
-  else{addEncounter(v,"hoeren_sprechen",false);finishQueuedVerb("hoeren_sprechen",v,false);fb.innerHTML=`<div class='no'>Gehört: ${safeText(t)}<br>Richtig: <strong>${safeText(v)}</strong></div><button onclick='hearSpeak()'>weiter</button>`;}
-  scrollToFeedback();
-}
-function imageSpeak(){
-  saveCurrentTask("imageSpeak");state.currentGame="imageSpeak";
-  let v=nextFromTaskQueue("bild_sprechen");
-  if(!v){finishTaskIfComplete("bild_sprechen","Bild → Sprechen");return}
-  state.currentVerb=v;saveState();
-  $("game").innerHTML=`${taskProgressHtml("bild_sprechen","Bild → Sprechen / Schreiben")}<h3>Bild → Sprechen / Schreiben</h3>${imageBox(v,false)}<div id="micStatus" class="small">Mikrofon aus</div><button onclick="recogVerb(t=>checkImageSpeak('${v}',t))">🎤 sprechen</button><input id="isTyped" placeholder="Oder Verb schreiben..."><button class="success" onclick="typedSpeakCheck('${v}','bild_sprechen','imageSpeak','isTyped')">Schreiben prüfen</button><button class="secondary" onclick="showTranslationHelp('${v}')">Hilfe</button><p id="heard" class="small"></p><div id="fb"></div>`;
-  renderAndHydrate();scrollToGame();
-}
-function checkImageSpeak(v,t){
-  const good=checkVerbAnswer(t,v);const fb=$("fb");
-  if(good){addEncounter(v,"bild_sprechen",true);finishQueuedVerb("bild_sprechen",v,true);fb.innerHTML="<div class='ok'>Gut gemacht!</div><button class='success' onclick='imageSpeak()'>weiter</button>";finishTaskIfComplete("bild_sprechen","Bild → Sprechen");}
-  else{addEncounter(v,"bild_sprechen",false);finishQueuedVerb("bild_sprechen",v,false);fb.innerHTML=`<div class='no'>Gehört: ${safeText(t)}<br>Richtig: <strong>${safeText(v)}</strong></div><button onclick='imageSpeak()'>weiter</button>`;}
-  scrollToFeedback();
-}
-function restoreCurrentTask(){return false}
-/* ===== ENDE SPRACHPILOT FINAL FIX ===== */
+// SHOW
+function show(){
+  updatePhase();
+  current = pick();
 
+  document.getElementById("card").classList.remove("hidden");
+  document.getElementById("input").classList.remove("hidden");
+  document.getElementById("checkBtn").classList.remove("hidden");
+  document.getElementById("dontBtn").classList.remove("hidden");
 
+  document.getElementById("img").src = "bilder/"+current.de+".png";
+  document.getElementById("ru").innerText = current.ru;
+  document.getElementById("de").innerText = current.de;
 
-/* ===== FIX: MEMORY-RUNDE MIT WEITER-KNOPF ===== */
-function finishMemoryRound(){
-  saveState();
+  document.getElementById("front").classList.remove("hidden");
+  document.getElementById("back").classList.add("hidden");
 
-  if(taskDone("memory")){
-    finishTaskIfComplete("memory","Memory");
-    return;
+  document.getElementById("input").value="";
+  document.getElementById("info").innerText="";
+}
+
+// FLIP → UNSURE
+function flip(){
+  document.getElementById("front").classList.add("hidden");
+  document.getElementById("back").classList.remove("hidden");
+
+  addToPool(current.de);
+}
+
+// ADD TO POOL
+function addToPool(v){
+  if(!data.pool.includes(v) && data.pool.length < 20){
+    data.pool.push(v);
   }
 
-  const fb = $("fb");
-  if(fb){
-    fb.innerHTML = `<div class="ok">Gut gemacht! Diese Memory-Runde ist fertig.</div>
-      <button class="success" onclick="memory()">Weiter</button>
-      <button class="secondary" onclick="renderHome()">Zur Übersicht</button>`;
+  if(data.pool.length === 20){
+    data.stage = "train";
   }
-  scrollToFeedback();
+
+  save();
 }
 
-function flip(i){
-  if(state.lock)return;
-  const c=state.memoryCards[i];
-  if(!c||c.o||c.d)return;
-  c.o=true;
+// CHECK
+function check(){
+  const val = document.getElementById("input").value.trim().toLowerCase();
 
-  if(state.first===null){
-    state.first=i;
-    saveState();
-    renderMemory();
-    return;
-  }
+  if(val === current.de){
 
-  const a=state.memoryCards[state.first], b=c;
-  state.lock=true;
-  renderMemory();
+    data.progress[current.de] = (data.progress[current.de]||0)+1;
 
-  setTimeout(()=>{
-    if(a.p===b.p && a.t!==b.t){
-      a.d=b.d=true;
-      finishQueuedVerb("memory",a.v,true);
-      addEncounter(a.v,"memory",true);
-      $("fb").innerHTML="<div class='ok'>Gut gemacht!</div>";
+    if(data.stage==="collect"){
+      // known → do nothing
     }else{
-      if(a&&a.v)finishQueuedVerb("memory",a.v,false);
-      if(b&&b.v&&b.v!==a.v)finishQueuedVerb("memory",b.v,false);
-      a.o=false;
-      b.o=false;
-      $("fb").innerHTML="<div class='no'>Versuch es nochmal.</div>";
+      if(data.progress[current.de] >= 2){
+        document.getElementById("info").innerText="⭐ gelernt!";
+      }
     }
 
-    state.first=null;
-    state.lock=false;
-    saveState();
-    renderMemory();
+    next();
 
-    if(state.memoryCards.every(x=>x.d)){
-      finishMemoryRound();
-    }
-  },650);
-}
-/* ===== ENDE MEMORY-FIX ===== */
-
-
-
-/* ===== FIX: 20 TRAININGSVERBEN = NUR UNSICHER / KANN ICH NICHT ===== */
-function spUnique(arr){ return [...new Set((arr||[]).filter(Boolean))]; }
-function spTrainingVerbs(){ return spUnique([...(state.unsure||[]), ...(state.unknown||[])]).slice(0,20); }
-function spCleanSelectionState(){
-  state.known=spUnique(state.known);
-  state.unsure=spUnique(state.unsure);
-  state.unknown=spUnique(state.unknown);
-  state.learned=spUnique(state.learned);
-  state.active=spTrainingVerbs();
-  state.taskQueues=state.taskQueues||{};
-  state.taskDoneSets=state.taskDoneSets||{};
-  state.skillDone=state.skillDone||{};
-  state.skillAttempts=state.skillAttempts||{};
-  state.skillSuccess=state.skillSuccess||{};
-  state.packageNo=state.packageNo||1;
-  state.active.forEach(v=>ensureSkillState(v));
-}
-function unusedVerbs(){
-  const used=spUnique([...(state.known||[]),...(state.unsure||[]),...(state.unknown||[]),...(state.learned||[])]);
-  return ALL_VERBS.map(x=>x.v).filter(v=>!used.includes(v));
-}
-function currentPickVerb(){
-  const pool=unusedVerbs();
-  if(!pool.length) return null;
-  return ALL_VERBS.find(x=>x.v===pool[0])||null;
-}
-function packageComplete(){
-  spCleanSelectionState();
-  return state.active.length===20 && state.active.every(v=>verbPercent(v)>=100);
-}
-function totalStars(){
-  spCleanSelectionState();
-  return state.active.filter(v=>verbPercent(v)>=100).length;
-}
-function renderOneVerb(){
-  state.phase="select";
-  spCleanSelectionState();
-  const trainingCount=spTrainingVerbs().length;
-
-  if(trainingCount>=20){
-    state.active=spTrainingVerbs();
-    state.taskQueues={};
-    state.taskDoneSets={};
-    state.flashSession=null;
-    state.phase="tasks";
-    saveState();
-    renderHome();
-    return;
-  }
-
-  const v=currentPickVerb();
-  if(!v){
-    if(trainingCount>0){
-      state.active=spTrainingVerbs();
-      state.phase="tasks";
-      saveState();
-      $("app").innerHTML=`<h2>Verben üben</h2><div class="no">Es gibt keine weiteren neuen Verben. Du hast aktuell ${trainingCount}/20 Trainingsverben.</div><button class="success" onclick="renderHome()">Mit ${trainingCount} Verben üben</button><button class="secondary" onclick="resetOnlyVerbProgress()">Verben neu starten</button>`;
-      return;
-    }
-    $("app").innerHTML=`<h2>Keine weiteren Verben</h2><div class="ok">Alle Verben wurden eingeschätzt.</div><button class="secondary" onclick="resetOnlyVerbProgress()">Verben neu starten</button>`;
-    return;
-  }
-
-  $("app").innerHTML=`<h2>Verb einschätzen</h2>
-    <div class="stats" id="verbStatsBox"></div>
-    <p class="small">Ziel: 20 Trainingsverben sammeln. Nur <strong>unsicher</strong> und <strong>kann ich nicht</strong> zählen.</p>
-    <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
-      ${imageBox(v.v,false)}
-      <h1 style="color:#667eea">${safeText(v.v)}</h1>
-      <p>${safeText(v.img)}</p>
-      <p class="small">Trainingsverben: ${trainingCount}/20</p>
-    </div>
-    <button class="success" onclick="rateVerb('${v.v}','known')">✅ kann ich</button>
-    <button onclick="rateVerb('${v.v}','unsure')">❓ unsicher</button>
-    <button onclick="rateVerb('${v.v}','unknown')">❌ kann ich nicht</button>`;
-  updateVerbStatsBox();
-  renderProgressPanel(false);
-  renderAndHydrate();
-}
-function rateVerb(v,level){
-  ["known","unsure","unknown"].forEach(k=>state[k]=spUnique(state[k]).filter(x=>x!==v));
-  if(level==="known") state.known.push(v);
-  if(level==="unsure"){ state.unsure.push(v); ensureSkillState(v); }
-  if(level==="unknown"){ state.unknown.push(v); ensureSkillState(v); }
-
-  state.active=spTrainingVerbs();
-
-  if(state.active.length>=20){
-    state.active=state.active.slice(0,20);
-    state.taskQueues={};
-    state.taskDoneSets={};
-    state.flashSession=null;
-    state.phase="tasks";
-    saveState();
-    renderHome();
   }else{
-    saveState();
-    renderOneVerb();
-  }
-}
-function startNewVerbPackage(){
-  spCleanSelectionState();
-  state.learned=spUnique([...(state.learned||[]),...(state.active||[])]);
-  state.active=[];
-  state.known=[];
-  state.unsure=[];
-  state.unknown=[];
-  state.taskQueues={};
-  state.taskDoneSets={};
-  state.flashSession=null;
-  state.currentGame="";
-  state.taskRewardsShown={};
-  state.alertsShown={};
-  state.packageNo=(state.packageNo||1)+1;
-  state.phase="select";
-  saveState();
-  renderOneVerb();
-}
-function resetOnlyVerbProgress(){
-  if(!confirm("Nur Verben-Fortschritt neu starten? Dein Profil bleibt erhalten.")) return;
-  localStorage.removeItem(key());
-  state={phase:"select",index:0,known:[],unsure:[],unknown:[],active:[],learned:[],weak:{},currentGame:"",currentVerb:"",memoryCards:[],first:null,lock:false,skillDone:{},skillAttempts:{},skillSuccess:{},flashSession:null,taskQueues:{},taskDoneSets:{},alertsShown:{},taskRewardsShown:{},packageNo:1};
-  saveState();
-  renderOneVerb();
-}
-function updateVerbStatsBox(){
-  try{
-    spCleanSelectionState();
-    const learned=state.active.filter(v=>verbPercent(v)>=100).length;
-    const training=state.active.length;
-    const open=Math.max(0,20-training);
-    const box=document.getElementById("verbStatsBox");
-    if(box){
-      box.innerHTML=`<div class="stat"><div>Trainingsverben</div><div class="num">${training}/20</div></div><div class="stat"><div>Noch auswählen</div><div class="num">${open}</div></div><div class="stat"><div>Gelernt</div><div class="num">${learned}/20</div></div><div class="stat"><div>Sterne</div><div class="num">⭐ ${learned}/20</div></div>`;
-    }
-  }catch(e){}
-}
-function renderHome(){
-  spCleanSelectionState();
-  state.phase="tasks";
-  saveState();
-  const packageDone=packageComplete();
-  $("app").innerHTML=`<h2>Verben üben</h2>
-    <div class="stats" id="verbStatsBox"></div>
-    ${packageDone?`<div class="package-done"><h3>20 Verben geschafft!</h3><p>Alle aktiven Verben sind auf 100 %. Jetzt kannst du neue Verben einschätzen.</p><button class="success" onclick="startNewVerbPackage()">Neue 20 Verben auswählen</button></div>`:""}
-    <button class="overview-button" onclick="showVerbOverview()">Alle Verben anzeigen</button>
-    <div class="task-grid">
-      <button class="${taskCardClass('karteikarte')}" onclick="safeRun(()=>{if(taskDone('karteikarte')){taskBlockedMessage('Karteikarten');return}startFlashcardSession();flashcards();})"><span class="big-icon">🃏</span>Karteikarten<div class="task-status">${taskCardStatus('karteikarte')}</div></button>
-      ${taskButton('memory','🖼️','Memory','memory')}
-      ${taskButton('bild_verb','✅','Bild → Verb','quiz')}
-      ${taskButton('verb_bild','🖼️','Verb → Bild','verbToImage')}
-      ${taskButton('schreiben','✍️','Schreiben','writeVerb')}
-      ${taskButton('hoeren_schreiben','🔊','Hören → Schreiben','hearWrite')}
-      ${taskButton('hoeren_sprechen','🎧','Hören → Sprechen','hearSpeak')}
-      ${taskButton('bild_sprechen','🎤','Bild sprechen','imageSpeak')}
-      ${taskButton('satz_puzzle','🧩','Satz-Puzzle','sentencePuzzle')}
-    </div><div id="game"></div>`;
-  updateVerbStatsBox();
-  renderProgressPanel(false);
-  if(!packageDone) restoreCurrentTask();
-  checkMilestones();
-}
-/* ===== ENDE FIX ===== */
-
-
-
-const VERB_EXPLANATIONS = {"Englisch": {"lieben": "strong positive feeling for someone or something", "kaufen": "pay money and get something", "verstehen": "know the meaning", "brauchen": "it is necessary for you", "hören": "sound comes to your ears", "lernen": "get new knowledge", "wohnen": "have a fixed address", "bringen": "carry something to a person", "sein": "a person or thing exists", "schreiben": "make words with a pen or keyboard", "fotografieren": "make a picture with a camera", "telefonieren": "talk by phone", "kochen": "make food hot and ready", "leben": "not dead; be in the world", "kommen": "move to this place", "buchstabieren": "say every letter", "gehen": "move on foot", "schwimmen": "move in water", "suchen": "not found yet", "bestellen": "ask for food or a product", "weinen": "tears come from the eyes", "reparieren": "make broken things work again", "gewinnen": "be first or successful", "spielen": "do a game or sport", "springen": "move quickly up from the ground", "verlieren": "not have it anymore or not win", "fragen": "want information from a person", "verkaufen": "get money for a product", "unterschreiben": "write your name on a document", "reservieren": "keep a place for later", "buchen": "pay or organize hotel, flight, ticket", "machen": "do an activity", "malen": "make pictures with colors", "trinken": "take liquid into the mouth", "schicken": "send by post, phone, or internet", "denken": "use your head for ideas", "winken": "move your hand to say hello", "hassen": "really not like", "beißen": "use teeth on something", "gießen": "put water on plants", "reißen": "make paper or material into pieces", "putzen": "make something clean", "küssen": "touch with the lips", "tanzen": "move with music", "mixen": "put things together and stir", "reisen": "go from one place to another", "haben": "something belongs to you", "überqueren": "go from one side to the other", "grüßen": "say hello", "genießen": "feel good in this moment", "singen": "make music with the voice", "schließen": "make open become shut", "rennen": "move very fast on foot", "lachen": "make a happy sound", "warten": "stay until something happens", "arbeiten": "do a job", "finden": "discover something", "benutzen": "use for a purpose", "rechnen": "work with numbers", "zeichnen": "make pictures with a pencil", "öffnen": "make closed become open", "wiederholen": "do or say again", "schneiden": "make pieces with a knife or scissors", "streiten": "speak angrily with another person", "atmen": "air goes in and out"}, "Russisch": {"lieben": "сильное хорошее чувство", "kaufen": "платить деньги и получать вещь", "verstehen": "знать смысл", "brauchen": "это необходимо", "hören": "звук попадает в уши", "lernen": "получать новые знания", "wohnen": "иметь постоянный адрес", "bringen": "нести что-то к человеку", "sein": "человек или вещь существует", "schreiben": "делать слова ручкой или клавиатурой", "fotografieren": "делать снимок камерой", "telefonieren": "говорить по телефону", "kochen": "готовить еду горячей", "leben": "быть живым, не мёртвым", "kommen": "двигаться сюда", "buchstabieren": "называть каждую букву", "gehen": "двигаться пешком", "schwimmen": "двигаться в воде", "suchen": "ещё не найдено", "bestellen": "просить еду или товар", "weinen": "слёзы идут из глаз", "reparieren": "чинить сломанную вещь", "gewinnen": "быть первым или успешным", "spielen": "делать игру или спорт", "springen": "быстро двигаться вверх от земли", "verlieren": "больше не иметь или не победить", "fragen": "хотеть информацию от человека", "verkaufen": "получать деньги за товар", "unterschreiben": "писать имя на документе", "reservieren": "оставить место на потом", "buchen": "заранее оформить отель, рейс, билет", "machen": "делать действие", "malen": "создавать картинки красками", "trinken": "брать жидкость в рот", "schicken": "посылать по почте, телефону или интернету", "denken": "использовать голову для мыслей", "winken": "двигать рукой для приветствия", "hassen": "очень не любить", "beißen": "использовать зубы", "gießen": "лить воду на растения", "reißen": "делать бумагу или материал частями", "putzen": "делать чистым", "küssen": "касаться губами", "tanzen": "двигаться под музыку", "mixen": "соединять и мешать", "reisen": "ехать из одного места в другое", "haben": "что-то принадлежит тебе", "überqueren": "идти с одной стороны на другую", "grüßen": "говорить привет", "genießen": "чувствовать себя хорошо сейчас", "singen": "делать музыку голосом", "schließen": "делать открытое закрытым", "rennen": "быстро двигаться пешком", "lachen": "издавать радостный звук", "warten": "оставаться, пока что-то произойдёт", "arbeiten": "делать работу", "finden": "обнаружить что-то", "benutzen": "использовать для цели", "rechnen": "работать с числами", "zeichnen": "создавать картинку карандашом", "öffnen": "делать закрытое открытым", "wiederholen": "делать или говорить снова", "schneiden": "делать куски ножом или ножницами", "streiten": "говорить сердито с другим человеком", "atmen": "воздух входит и выходит"}, "Ukrainisch": {"lieben": "сильне добре почуття", "kaufen": "платити гроші й отримувати річ", "verstehen": "знати значення", "brauchen": "це необхідно", "hören": "звук потрапляє у вуха", "lernen": "отримувати нові знання", "wohnen": "мати постійну адресу", "bringen": "нести щось до людини", "sein": "людина або річ існує", "schreiben": "створювати слова ручкою або клавіатурою", "fotografieren": "робити знімок камерою", "telefonieren": "говорити телефоном", "kochen": "готувати їжу", "leben": "бути живим, не мертвим", "kommen": "рухатися сюди", "buchstabieren": "називати кожну літеру", "gehen": "рухатися пішки", "schwimmen": "рухатися у воді", "suchen": "ще не знайдено", "bestellen": "просити їжу або товар", "weinen": "сльози йдуть з очей", "reparieren": "лагодити зламану річ", "gewinnen": "бути першим або успішним", "spielen": "грати в гру або спорт", "springen": "швидко рухатися вгору від землі", "verlieren": "більше не мати або не перемогти", "fragen": "хотіти інформацію від людини", "verkaufen": "отримувати гроші за товар", "unterschreiben": "писати ім’я на документі", "reservieren": "залишити місце на потім", "buchen": "заздалегідь оформити готель, рейс, квиток", "machen": "робити дію", "malen": "створювати малюнки фарбами", "trinken": "брати рідину в рот", "schicken": "надсилати поштою, телефоном або інтернетом", "denken": "використовувати голову для думок", "winken": "рухати рукою для привітання", "hassen": "дуже не любити", "beißen": "використовувати зуби", "gießen": "лити воду на рослини", "reißen": "ділити папір або матеріал на частини", "putzen": "робити чистим", "küssen": "торкатися губами", "tanzen": "рухатися під музику", "mixen": "з’єднувати й мішати", "reisen": "їхати з одного місця в інше", "haben": "щось належить тобі", "überqueren": "йти з одного боку на інший", "grüßen": "говорити привіт", "genießen": "добре почуватися зараз", "singen": "робити музику голосом", "schließen": "робити відкрите закритим", "rennen": "швидко рухатися пішки", "lachen": "видавати радісний звук", "warten": "залишатися, поки щось станеться", "arbeiten": "робити роботу", "finden": "виявити щось", "benutzen": "використовувати для мети", "rechnen": "працювати з числами", "zeichnen": "створювати малюнок олівцем", "öffnen": "робити закрите відкритим", "wiederholen": "робити або говорити знову", "schneiden": "робити частини ножем або ножицями", "streiten": "говорити сердито з іншою людиною", "atmen": "повітря входить і виходить"}, "Türkisch": {"lieben": "çok iyi bir duygu", "kaufen": "para verip bir şey almak", "verstehen": "anlamını bilmek", "brauchen": "bu gerekli", "hören": "ses kulağa gelir", "lernen": "yeni bilgi almak", "wohnen": "sabit adresi olmak", "bringen": "bir şeyi bir kişiye taşımak", "sein": "kişi veya şey var", "schreiben": "kalemle veya klavyeyle kelime yapmak", "fotografieren": "kamerayla resim yapmak", "telefonieren": "telefonla konuşmak", "kochen": "yemeği hazır yapmak", "leben": "ölü değil, dünyada olmak", "kommen": "buraya hareket etmek", "buchstabieren": "her harfi söylemek", "gehen": "yürüyerek hareket etmek", "schwimmen": "suda hareket etmek", "suchen": "henüz bulunmadı", "bestellen": "yemek veya ürün istemek", "weinen": "gözden yaş gelmek", "reparieren": "bozuk şeyi tekrar çalışır yapmak", "gewinnen": "birinci veya başarılı olmak", "spielen": "oyun veya spor yapmak", "springen": "yerden hızlıca yukarı çıkmak", "verlieren": "artık sahip olmamak veya başarılı olmamak", "fragen": "bir kişiden bilgi istemek", "verkaufen": "ürün için para almak", "unterschreiben": "belgeye ad yazmak", "reservieren": "sonrası için yer tutmak", "buchen": "otel, uçuş veya bilet ayarlamak", "machen": "bir aktivite yapmak", "malen": "renklerle resim yapmak", "trinken": "sıvıyı ağza almak", "schicken": "posta, telefon veya internetle göndermek", "denken": "fikirler için kafayı kullanmak", "winken": "merhaba için el hareketi yapmak", "hassen": "hiç sevmemek", "beißen": "dişleri kullanmak", "gießen": "bitkilere su koymak", "reißen": "kâğıdı veya maddeyi parçalara ayırmak", "putzen": "temiz yapmak", "küssen": "dudaklarla dokunmak", "tanzen": "müzikle hareket etmek", "mixen": "birleştirip karıştırmak", "reisen": "bir yerden başka yere gitmek", "haben": "bir şey sana ait", "überqueren": "bir taraftan öbür tarafa gitmek", "grüßen": "merhaba demek", "genießen": "şu anda iyi hissetmek", "singen": "sesle müzik yapmak", "schließen": "açık olanı kapalı yapmak", "rennen": "çok hızlı yürüyerek hareket etmek", "lachen": "mutlu ses çıkarmak", "warten": "bir şey olana kadar kalmak", "arbeiten": "iş yapmak", "finden": "bir şeyi keşfetmek", "benutzen": "bir amaç için kullanmak", "rechnen": "sayılarla çalışmak", "zeichnen": "kalemle resim yapmak", "öffnen": "kapalı olanı açık yapmak", "wiederholen": "tekrar yapmak veya söylemek", "schneiden": "bıçak veya makasla parçalara ayırmak", "streiten": "başka kişiyle kızgın konuşmak", "atmen": "hava içeri girer ve çıkar"}, "Arabisch": {"lieben": "شعور جيد وقوي", "kaufen": "تدفع مالًا وتحصل على شيء", "verstehen": "تعرف المعنى", "brauchen": "هذا ضروري لك", "hören": "الصوت يصل إلى الأذن", "lernen": "تحصل على معرفة جديدة", "wohnen": "لديك عنوان ثابت", "bringen": "تحمل شيئًا إلى شخص", "sein": "شخص أو شيء موجود", "schreiben": "تكوّن كلمات بالقلم أو لوحة المفاتيح", "fotografieren": "تصنع صورة بالكاميرا", "telefonieren": "تتكلم بالهاتف", "kochen": "تجعل الطعام جاهزًا", "leben": "لست ميتًا، موجود في العالم", "kommen": "تتحرك إلى هنا", "buchstabieren": "تقول كل حرف", "gehen": "تتحرك على القدمين", "schwimmen": "تتحرك في الماء", "suchen": "لم يتم العثور عليه بعد", "bestellen": "تطلب طعامًا أو منتجًا", "weinen": "تخرج الدموع من العين", "reparieren": "تجعل الشيء المكسور يعمل", "gewinnen": "تكون الأول أو ناجحًا", "spielen": "تعمل لعبة أو رياضة", "springen": "تتحرك بسرعة إلى الأعلى من الأرض", "verlieren": "لا تملك الشيء بعد الآن أو لا تنجح", "fragen": "تريد معلومات من شخص", "verkaufen": "تحصل على مال مقابل منتج", "unterschreiben": "تكتب اسمك على وثيقة", "reservieren": "تحفظ مكانًا لوقت لاحق", "buchen": "تنظم فندقًا أو رحلة أو تذكرة مسبقًا", "machen": "تقوم بنشاط", "malen": "تصنع صورًا بالألوان", "trinken": "تأخذ سائلًا في الفم", "schicken": "ترسل بالبريد أو الهاتف أو الإنترنت", "denken": "تستخدم الرأس للأفكار", "winken": "تحرك اليد للتحية", "hassen": "لا تحب أبدًا", "beißen": "تستخدم الأسنان", "gießen": "تضع الماء على النباتات", "reißen": "تجعل الورق أو المادة قطعًا", "putzen": "تجعل الشيء نظيفًا", "küssen": "تلمس بالشفاه", "tanzen": "تتحرك مع الموسيقى", "mixen": "تجمع الأشياء وتحركها", "reisen": "تنتقل من مكان إلى آخر", "haben": "شيء ما يخصك", "überqueren": "تذهب من جانب إلى آخر", "grüßen": "تقول مرحبًا", "genießen": "تشعر بشعور جيد الآن", "singen": "تصنع موسيقى بالصوت", "schließen": "تجعل المفتوح مغلقًا", "rennen": "تتحرك بسرعة كبيرة على القدمين", "lachen": "تُصدر صوتًا سعيدًا", "warten": "تبقى حتى يحدث شيء", "arbeiten": "تقوم بعمل", "finden": "تكتشف شيئًا", "benutzen": "تستخدم لغاية معينة", "rechnen": "تعمل مع الأرقام", "zeichnen": "تصنع صورة بقلم رصاص", "öffnen": "تجعل المغلق مفتوحًا", "wiederholen": "تفعل أو تقول مرة أخرى", "schneiden": "تجعل الشيء قطعًا بسكين أو مقص", "streiten": "تتكلم بغضب مع شخص آخر", "atmen": "الهواء يدخل ويخرج"}};
-
-function nativeExplanation(v){
-  const lang=nativeLang();
-  return (VERB_EXPLANATIONS[lang]&&VERB_EXPLANATIONS[lang][v]) ||
-         (VERB_EXPLANATIONS["Englisch"]&&VERB_EXPLANATIONS["Englisch"][v]) || "";
-}
-
-function flashcards(){
-  state.currentGame="flashcards";
-  let v=nextFlashVerb(); if(!v){flashcardDoneMessage();return}
-  state.currentVerb=v; state.cardWasFlipped=false; saveState();
-  const correctNow=(state.flashSession.correct&&state.flashSession.correct[v])||0, wrongNow=(state.flashSession.wrong&&state.flashSession.wrong[v])||0;
-  $("game").innerHTML=`${flashProgressHtml()}<div class="card-task-head"><h3>Karteikarte</h3><div class="small">Antwort zählt nur vor dem Umdrehen.</div></div>
-    <div class="word-status"><span class="word-pill">${Math.min(correctNow,2)}/2 Punkte</span>${wrongNow?`<span class="word-pill">Fehler: ${wrongNow}</span>`:""}</div>
-    <div class="study-card-wrap"><div id="studyCard" class="study-card" onclick="state.cardWasFlipped=true;saveState();this.classList.toggle('flipped')">
-      <div class="study-face">
-        <div class="small">${nativeLang()}</div>
-        <div class="native-word">${safeText(nativeWord(v))}</div>
-        <div class="small" style="font-weight:800;max-width:95%;margin-top:4px">${safeText(nativeExplanation(v))}</div>
-        <p class="small">Wie heißt das auf Deutsch?</p>
-      </div>
-      <div class="study-face study-back"><div class="small">Deutsch</div><div class="german-word">${safeText(v)}</div></div>
-    </div></div>
-    <input id="cardAnswer" placeholder="Deutsches Verb..."><div class="card-actions"><button class="success" onclick="checkFlashcardAnswer('${v}')">Überprüfen</button><button onclick="speakFlashcardAnswer('${v}')">🎤 Sagen</button></div>
-    <div id="micStatus" class="small">Mikrofon aus</div><p id="heard" class="small"></p><div id="cardFeedback"></div>`;
-  scrollToGame();
-}
-/* ===== ENDE ÜBERSETZUNG + ERKLÄRUNG ===== */
-
-
-
-/* ===== CLEAN FIX: 20 UNSICHER/KANN-NICHT VERBEN ===== */
-function spVerbUnique(arr){ return [...new Set((arr||[]).filter(Boolean))]; }
-function spVerbNormalizeState(){
-  state.known=spVerbUnique(state.known);
-  state.unsure=spVerbUnique(state.unsure);
-  state.unknown=spVerbUnique(state.unknown);
-  state.learned=spVerbUnique(state.learned);
-  state.taskQueues=state.taskQueues||{};
-  state.taskDoneSets=state.taskDoneSets||{};
-  state.skillDone=state.skillDone||{};
-  state.skillAttempts=state.skillAttempts||{};
-  state.skillSuccess=state.skillSuccess||{};
-  state.packageNo=state.packageNo||1;
-}
-function spVerbTrainingList(){
-  spVerbNormalizeState();
-  return spVerbUnique([...(state.unsure||[]),...(state.unknown||[])]).slice(0,20);
-}
-function spVerbUsedForSelection(){
-  spVerbNormalizeState();
-  return spVerbUnique([...(state.known||[]),...(state.unsure||[]),...(state.unknown||[]),...(state.learned||[])]);
-}
-
-unusedVerbs=function(){
-  const used=spVerbUsedForSelection();
-  return ALL_VERBS.map(x=>x.v).filter(v=>!used.includes(v));
-};
-
-currentPickVerb=function(){
-  const pool=unusedVerbs();
-  if(!pool.length)return null;
-  return ALL_VERBS.find(x=>x.v===pool[0])||null;
-};
-
-rateVerb=function(v,level){
-  spVerbNormalizeState();
-  state.known=state.known.filter(x=>x!==v);
-  state.unsure=state.unsure.filter(x=>x!==v);
-  state.unknown=state.unknown.filter(x=>x!==v);
-
-  if(level==="known") state.known.push(v);
-  if(level==="unsure"){ state.unsure.push(v); ensureSkillState(v); }
-  if(level==="unknown"){ state.unknown.push(v); ensureSkillState(v); }
-
-  state.active=spVerbTrainingList();
-
-  if(state.active.length>=20){
-    state.active=state.active.slice(0,20);
-    state.taskQueues={};
-    state.taskDoneSets={};
-    state.flashSession=null;
-    state.phase="tasks";
-    saveState();
-    renderHome();
-    return;
+    addToPool(current.de);
+    document.getElementById("info").innerText="❌ kommt in Übung";
   }
 
-  saveState();
-  renderOneVerb();
-};
+  save();
+}
 
-renderOneVerb=function(){
-  state.phase="select";
-  spVerbNormalizeState();
+// DON'T KNOW
+function dontKnow(){
+  addToPool(current.de);
+  next();
+}
 
-  const training=spVerbTrainingList();
-  state.active=training.slice();
+// NEXT
+function next(){
+  setTimeout(show,700);
+}
 
-  if(training.length>=20){
-    state.active=training.slice(0,20);
-    state.taskQueues={};
-    state.taskDoneSets={};
-    state.flashSession=null;
-    state.phase="tasks";
-    saveState();
-    renderHome();
-    return;
-  }
+// RESET
+function resetAll(){
+  localStorage.removeItem("SP");
+  location.reload();
+}
 
-  const v=currentPickVerb();
+// SAVE
+function save(){
+  localStorage.setItem("SP", JSON.stringify(data));
+}
 
-  if(!v){
-    if(training.length>0){
-      state.active=training.slice();
-      state.phase="tasks";
-      saveState();
-      $("app").innerHTML=`<h2>Verben üben</h2><div class="no">Es gibt keine weiteren neuen Verben. Du hast aktuell ${training.length}/20 Trainingsverben.</div><button class="success" onclick="renderHome()">Mit diesen Verben üben</button><button class="secondary" onclick="startNewVerbPackage()">Neu auswählen</button>`;
-      return;
-    }
-    $("app").innerHTML=`<h2>Keine weiteren Verben</h2><div class="ok">Alle Verben wurden eingeschätzt.</div><button class="secondary" onclick="startNewVerbPackage()">Neu starten</button>`;
-    return;
-  }
-
-  $("app").innerHTML=`<h2>Verb einschätzen</h2>
-    <div class="stats" id="verbStatsBox"></div>
-    <p class="small">Ziel: Sammle 20 Trainingsverben. Nur <strong>unsicher</strong> und <strong>kann ich nicht</strong> zählen.</p>
-    <div class="card" style="box-shadow:none;background:#f7f8ff;text-align:center">
-      ${imageBox(v.v,false)}
-      <h1 style="color:#667eea">${safeText(v.v)}</h1>
-      <p>${safeText(v.img)}</p>
-      <p class="small">Trainingsverben: ${training.length}/20</p>
-    </div>
-    <button class="success" onclick="rateVerb('${v.v}','known')">✅ kann ich</button>
-    <button onclick="rateVerb('${v.v}','unsure')">❓ unsicher</button>
-    <button onclick="rateVerb('${v.v}','unknown')">❌ kann ich nicht</button>`;
-  updateVerbStatsBox();
-  renderProgressPanel(false);
-  renderAndHydrate();
-};
-
-updateVerbStatsBox=function(){
-  try{
-    const training=spVerbTrainingList().length;
-    const learned=(state.active||[]).filter(v=>verbPercent(v)>=100).length;
-    const open=Math.max(0,20-training);
-    const box=document.getElementById("verbStatsBox");
-    if(box){
-      box.innerHTML=`<div class="stat"><div>Trainingsverben</div><div class="num">${training}/20</div></div>
-      <div class="stat"><div>Noch auswählen</div><div class="num">${open}</div></div>
-      <div class="stat"><div>Gelernt</div><div class="num">${learned}/20</div></div>
-      <div class="stat"><div>Sterne</div><div class="num">⭐ ${learned}/20</div></div>`;
-    }
-  }catch(e){}
-};
-
-startNewVerbPackage=function(){
-  spVerbNormalizeState();
-  state.learned=spVerbUnique([...(state.learned||[]),...(state.active||[])]);
-  state.active=[];
-  state.known=[];
-  state.unsure=[];
-  state.unknown=[];
-  state.taskQueues={};
-  state.taskDoneSets={};
-  state.flashSession=null;
-  state.currentGame="";
-  state.taskRewardsShown={};
-  state.alertsShown={};
-  state.packageNo=(state.packageNo||1)+1;
-  state.phase="select";
-  saveState();
-  renderOneVerb();
-};
-
-const spOriginalInitCleanFix=init;
-init=async function(){
-  if(!loadProfile())return;
-  await loadState();
-  spVerbNormalizeState();
-  const training=spVerbTrainingList();
-  if(training.length>=20 || state.phase==="tasks"){
-    state.active=training.length?training.slice(0,20):spVerbUnique(state.active).slice(0,20);
-    state.phase="tasks";
-    renderHome();
-  }else{
-    state.active=training.slice();
-    state.phase="select";
-    renderOneVerb();
-  }
-};
-
-init();
-/* ===== ENDE CLEAN FIX ===== */
+show();
 
 </script>
+
 </body>
 </html>
