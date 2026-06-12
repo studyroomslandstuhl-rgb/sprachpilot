@@ -1,16 +1,1 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Thema 1</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js"></script><script>hero("Pr\u00fcfung");
-let q=Q(),w,tries=0;
-function render(){
- w=next(q); if(!w){finish(area,"pruefung.html","index.html");return}
- tries=0;
- let v=`<img class="food-img" src="${w.img}">`;
- area.innerHTML=`<div class="question">Prüfung: Schreibe Artikel + Nomen:</div>${v}<input id="ans" placeholder="Artikel + Nomen, z. B. der Apfel"><div class="actions"><button class="btn" onclick="check()">Prüfen</button><button class="btn secondary" onclick="speak(full(w))">🔊 Hören</button></div><div class="feedback" id="fb"></div>`;
- 
-}
-function check(){
- let d=diagnose(ans.value,w);
- if(d.ok){fb.textContent='Richtig!';setTimeout(render,650)}
- else{tries++;fb.innerHTML=d.msg+`<div class="hint">${tries===1?d.tip:'Richtige Antwort: '+d.sol}</div>`;bad(q,w)}
-}
-render();
-</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Thema 1</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js"></script><script>hero("Pr\u00fcfung");let q=Q(singularWords());function render(){q.cur=next(q);if(!q.cur){complete(area,"pruefung.html","index.html");return}q.tries=0;q.had=false;let visual=`<img class="food-img" src="${q.cur.image}">`;area.innerHTML=prog(q)+`<div class='question'>Prüfung: Schreibe Artikel + Nomen.</div>${visual}<input id='ans' placeholder='Artikel + Nomen, z. B. der Apfel'><button class='btn' onclick='check()'>Prüfen</button><div id='fb' class='feedback'></div><div class='actions'><button id='go' class='btn hidden' onclick='render()'>Weiter</button></div>`;}function check(){let d=diagnose(ans.value,q.cur);if(d.ok){right(q,q.cur);fb.textContent='Richtig!';setTimeout(render,700)}else{wrong(q);fb.innerHTML=fail(q,d)}}render();</script></body></html>
