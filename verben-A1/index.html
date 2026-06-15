@@ -551,6 +551,18 @@ function saveCurrentTask(task){state.currentGame=task;saveState()}
 
 function sentenceForVerb(v){
   const map={
+    
+    "arbeiten":"Meine Freundin arbeitet in einem Krankenhaus.",
+    "finden":"Unter dem Sofa finde ich meine Brille.",
+    "benutzen":"Im Unterricht benutze ich mein Wörterbuch.",
+    "rechnen":"Im Supermarkt rechne ich den Preis zusammen.",
+    "zeichnen":"Der Architekt zeichnet einen Plan.",
+    "öffnen":"Um neun Uhr öffnet der Supermarkt.",
+    "wiederholen":"Vor dem Test wiederhole ich die Verben.",
+    "schneiden":"Für den Salat schneide ich Tomaten.",
+    "streiten":"Die Geschwister streiten um das Spielzeug.",
+    "atmen":"Nach dem Sport atme ich tief ein.",
+
     "essen":"Heute esse ich mit meiner Familie Pizza.",
     "sprechen":"Im Deutschkurs spreche ich nur Deutsch.",
     "fahren":"Am Wochenende fahre ich nach Berlin.",
@@ -576,7 +588,7 @@ function sentenceForVerb(v){
     "geben":"Die Lehrerin gibt den Schülern Hausaufgaben.",
     "backen":"Am Sonntag bäckt meine Oma einen Kuchen."
   };
-  return map[v] || `Ich übe das Verb ${v}.`;
+  return map[v] || "Heute lernen wir ein neues Verb.";
 }
 
 function sentenceWords(v){const base=sentenceForVerb(v).replace(/[.?!]/g,"").split(" ");base.push(".");return base}
@@ -652,7 +664,7 @@ function renderHome(){
   const packageDone=packageComplete();
   $("app").innerHTML=`<h2>Verben üben</h2>
     <div class="mini-top-progress"><strong>Paket:</strong> ${state.packageNo||1} | <strong>Aktiv:</strong> ${state.active.length}/20 | <strong>Gelernt:</strong> ${state.learned.length} | <strong>Gesamt:</strong> ${overall()}% | <strong>Sterne:</strong> ${totalStars()}/20</div>
-    ${packageDone?`<div class="package-done"><h3>20 Verben geschafft!</h3><p>Alle aktiven Verben sind auf 100 %. Jetzt kannst du neue Verben einschätzen.</p><button class="success" onclick="startNewVerbPackage()">Neue Verben auswählen</button></div>`:""}
+    ${packageDone?`<div class="package-done"><h3>20 Verben geschafft!</h3><p>Alle aktiven Verben sind auf 100 %. Jetzt kannst du neue Verben einschätzen.</p><button class="success" onclick="startNewVerbPackage()">Weitere Verben einschätzen</button></div>`:""}
     <button class="overview-button" onclick="showVerbOverview()">Alle Verben anzeigen</button><button class="overview-button danger" onclick="resetAllVerbProgress()">Alle Fortschritte löschen</button>
     <div class="task-grid">
       <button class="${taskCardClass('karteikarte')}" onclick="safeRun(()=>{if(taskDone('karteikarte')){taskBlockedMessage('Karteikarten');return}startFlashcardSession();flashcards();})"><span class="big-icon">🃏</span>Karteikarten<div class="task-status">${taskCardStatus('karteikarte')}</div></button>
