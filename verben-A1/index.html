@@ -551,18 +551,6 @@ function saveCurrentTask(task){state.currentGame=task;saveState()}
 
 function sentenceForVerb(v){
   const map={
-    
-    "arbeiten":"Meine Freundin arbeitet in einem Krankenhaus.",
-    "finden":"Unter dem Sofa finde ich meine Brille.",
-    "benutzen":"Im Unterricht benutze ich mein Wörterbuch.",
-    "rechnen":"Im Supermarkt rechne ich den Preis zusammen.",
-    "zeichnen":"Der Architekt zeichnet einen Plan.",
-    "öffnen":"Um neun Uhr öffnet der Supermarkt.",
-    "wiederholen":"Vor dem Test wiederhole ich die Verben.",
-    "schneiden":"Für den Salat schneide ich Tomaten.",
-    "streiten":"Die Geschwister streiten um das Spielzeug.",
-    "atmen":"Nach dem Sport atme ich tief ein.",
-
     "essen":"Heute esse ich mit meiner Familie Pizza.",
     "sprechen":"Im Deutschkurs spreche ich nur Deutsch.",
     "fahren":"Am Wochenende fahre ich nach Berlin.",
@@ -588,7 +576,7 @@ function sentenceForVerb(v){
     "geben":"Die Lehrerin gibt den Schülern Hausaufgaben.",
     "backen":"Am Sonntag bäckt meine Oma einen Kuchen."
   };
-  return map[v] || "Heute lernen wir ein neues Verb.";
+  return map[v] || `Ich übe das Verb ${v}.`;
 }
 
 function sentenceWords(v){const base=sentenceForVerb(v).replace(/[.?!]/g,"").split(" ");base.push(".");return base}
@@ -1398,6 +1386,64 @@ init=async function(){
     state.phase="select";
     renderOneVerb();
   }
+};
+
+
+/* PATCH: Buttons immer sichtbar machen */
+function continueVerbSelection(){
+  state.phase = "select";
+  saveState();
+  renderOneVerb();
+}
+
+function resetAllVerbProgress(){
+  if(!confirm("Wirklich alle Fortschritte löschen und von vorne anfangen?")) return;
+  try{ localStorage.removeItem(key()); }catch(e){}
+  state = {
+    phase:"select", index:0, known:[], unsure:[], unknown:[], active:[], learned:[],
+    weak:{}, currentGame:"", currentVerb:"", memoryCards:[], first:null, lock:false,
+    skillDone:{}, skillAttempts:{}, skillSuccess:{}, flashSession:null,
+    taskQueues:{}, taskDoneSets:{}, alertsShown:{}, taskRewardsShown:{}, packageNo:1
+  };
+  saveState();
+  renderOneVerb();
+}
+
+function spEnsureMainButtons(){
+  const app = document.getElementById("app");
+  if(!app) return;
+
+  let anchor = app.querySelector(".task-grid");
+  if(!anchor) anchor = document.getElementById("game");
+
+  if(!document.getElementById("spMoreVerbsBtn")){
+    const btn = document.createElement("button");
+    btn.id = "spMoreVerbsBtn";
+    btn.className = "overview-button success";
+    btn.textContent = "Weitere Verben einschätzen";
+    btn.onclick = continueVerbSelection;
+    if(anchor) app.insertBefore(btn, anchor);
+    else app.appendChild(btn);
+  }
+
+  if(!document.getElementById("spResetAllBtn")){
+    const btn = document.createElement("button");
+    btn.id = "spResetAllBtn";
+    btn.className = "overview-button danger";
+    btn.textContent = "Alle Fortschritte löschen";
+    btn.onclick = resetAllVerbProgress;
+    if(anchor) app.insertBefore(btn, anchor);
+    else app.appendChild(btn);
+  }
+
+  const oldMore = app.querySelector('button[onclick="startNewVerbPackage()"]');
+  if(oldMore) oldMore.textContent = "Weitere Verben einschätzen";
+}
+
+const SP_OLD_RENDER_HOME = renderHome;
+renderHome = function(){
+  SP_OLD_RENDER_HOME();
+  setTimeout(spEnsureMainButtons, 20);
 };
 
 init();
