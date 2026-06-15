@@ -19,14 +19,25 @@ let progress = null;
 
 function loadProfile(){
   try{ profile = JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "null"); }catch(e){ profile=null; }
+
+  // Wichtig: Die Verben-Seite darf nie leer bleiben.
+  // Wenn noch kein SprachPilot-Profil vorhanden ist, startet sie im Gastmodus.
   if(!profile){
-    profileBox.innerHTML = `<div class="no">Bitte zuerst auf der Startseite registrieren oder einloggen.</div>`;
-    app.innerHTML = `<button onclick="location.href='../'">Zur Startseite</button>`;
-    return false;
+    profile = {
+      userId:"guest",
+      studentId:"guest",
+      vorname:"Gast",
+      nachname:"",
+      kurs:"demo",
+      muttersprache:"Englisch"
+    };
+    profileBox.innerHTML = `<div class="info">Gastmodus: Kein Profil gefunden. Die Aufgaben werden trotzdem angezeigt.</div>`;
+  }else{
+    profileBox.innerHTML = `<div class="ok">Eingeloggt: <strong>${profile.vorname||""} ${profile.nachname||""}</strong> | Kurs: ${profile.kurs||profile.kursnummer||""}</div>`;
   }
-  profileBox.innerHTML = `<div class="ok">Eingeloggt: <strong>${profile.vorname||""} ${profile.nachname||""}</strong> | Kurs: ${profile.kurs||profile.kursnummer||""}</div>`;
   return true;
 }
+
 
 function localKey(){ return "SP_VERB_A1_V2_" + (profile?.studentId || profile?.userId || "guest"); }
 
@@ -36,8 +47,13 @@ async function saveAll(){
   recalc(progress, assignment);
   saveLocal();
   renderProgress();
-  await saveProgress(profile, progress);
+  try{
+    await saveProgress(profile, progress);
+  }catch(e){
+    console.warn("Firebase speichern nicht möglich, lokale Speicherung bleibt aktiv:", e);
+  }
 }
+
 
 function renderProgress(){
   recalc(progress, assignment);
@@ -102,26 +118,37 @@ function taskContext(){
 }
 
 async function boot(){
-  if(!loadProfile()) return;
+  try{
+    loadProfile();
 
-  const remoteAssignment = await loadTeacherAssignment(profile);
-  assignment = normalizeAssignment(remoteAssignment);
+    let remoteAssignment = null;
+    try{ remoteAssignment = await loadTeacherAssignment(profile); }
+    catch(e){ console.warn("Lehrer-Konfiguration nicht geladen:", e); }
+    assignment = normalizeAssignment(remoteAssignment);
 
-  let loaded = null;
-  try{ loaded = JSON.parse(localStorage.getItem(localKey()) || "null"); }catch(e){}
-  const cloud = await loadProgress(profile);
-  progress = migrateProgress(cloud || loaded, assignment);
+    let loaded = null;
+    try{ loaded = JSON.parse(localStorage.getItem(localKey()) || "null"); }catch(e){}
 
-  const newVerbs = detectNewVerbs(assignment, progress);
-  if(newVerbs.length){
-    progress = addNewAssignedVerbs(progress, newVerbs);
-    teacherNotice.innerHTML = `<div class="info"><strong>Sie haben neue Verben zu üben:</strong> ${newVerbs.length}</div>`;
-  }else{
-    teacherNotice.innerHTML = "";
+    let cloud = null;
+    try{ cloud = await loadProgress(profile); }
+    catch(e){ console.warn("Cloud-Fortschritt nicht geladen:", e); }
+
+    progress = migrateProgress(cloud || loaded, assignment);
+
+    const newVerbs = detectNewVerbs(assignment, progress);
+    if(newVerbs.length){
+      progress = addNewAssignedVerbs(progress, newVerbs);
+      teacherNotice.innerHTML = `<div class="info"><strong>Sie haben neue Verben zu üben:</strong> ${newVerbs.length}</div>`;
+    }else{
+      teacherNotice.innerHTML = "";
+    }
+
+    await saveAll();
+    renderHome();
+  }catch(e){
+    console.error(e);
+    app.innerHTML = `<div class="no"><strong>Startfehler:</strong><br>${String(e.message || e)}</div>`;
   }
-
-  await saveAll();
-  renderHome();
 }
 
 document.getElementById("menuHome").onclick = renderHome;
