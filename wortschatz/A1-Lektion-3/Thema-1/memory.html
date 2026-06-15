@@ -1,12 +1,6 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Memory</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Thema 1</a></div>
-<section class="card">
-  <p class="small">Öffne zwei Karten und finde die Paare.</p>
-  <div id="board" class="options"></div>
-  <div id="fb" class="feedback"></div>
-  <a id="nextGame" class="btn hidden" href="pruefung.html">Nächstes Spiel →</a>
-</section><footer>© SprachPilot</footer></div><script src="app.js?v=10"></script><script>hero("Memory");
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Memory</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Thema 1</a></div><section class="card"><p class="small">Öffne zwei Karten und finde die Paare.</p><div id="board" class="options"></div><div id="fb" class="feedback"></div><a id="nextGame" class="btn hidden" href="pruefung.html">Nächstes Spiel →</a></section><footer>© SprachPilot</footer></div><script src="app.js?v=11"></script><script>hero("Memory");
 let pairs=shuffle(singularWords()).slice(0,8);
-let cards=shuffle(pairs.flatMap(w=>[{id:w.id,type:'img',html:`<img src="${w.image}" alt="">`},{id:w.id,type:'txt',html:full(w)}]));
+let cards=shuffle(pairs.flatMap(w=>[{id:w.id,html:`<img src="${w.image}" alt="">`},{id:w.id,html:full(w)}]));
 let open=[],found=0;
 board.innerHTML=cards.map((c,i)=>`<button class="opt memory-card back" data-id="${c.id}" data-html='${c.html.replace(/'/g,"&apos;")}' onclick="pick(this)">?</button>`).join('');
 function reveal(b){b.classList.remove('back');b.innerHTML=b.dataset.html}

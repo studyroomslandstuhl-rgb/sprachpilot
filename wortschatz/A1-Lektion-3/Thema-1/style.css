@@ -39,3 +39,14 @@
   max-height:120px;
   object-fit:contain;
 }
+
+.chip{
+  color:#222!important;background:#fff!important;border:2px solid #e87511!important;
+  min-height:44px;display:inline-flex!important;align-items:center;justify-content:center;
+  user-select:none;touch-action:manipulation;opacity:1!important;visibility:visible!important;
+}
+.chip.selected{outline:4px solid #27ae60;background:#fff3cd!important}
+.dropzone .chip{display:inline-flex!important;margin:6px!important}
+.memory-card{height:150px;display:flex!important;align-items:center;justify-content:center;text-align:center;font-size:19px}
+.memory-card.back{background:linear-gradient(135deg,#f28c28,#f2b84b)!important;color:white!important;border-color:#e87511!important;font-size:42px}
+.memory-card img{max-width:100%;max-height:120px;object-fit:contain}

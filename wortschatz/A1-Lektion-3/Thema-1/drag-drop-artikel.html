@@ -1,20 +1,10 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Artikel Pull & Drop</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Thema 1</a></div>
-<section class="card">
-  <div id="prog"></div>
-  <p class="small">Ziehe oder tippe ein Nomen an und wähle dann die richtige Tabelle.</p>
-  <div id="chips"></div>
-  <div class="drop-grid">
-    <div class="dropzone" data-a="der"><h2>der</h2></div>
-    <div class="dropzone" data-a="die"><h2>die</h2></div>
-    <div class="dropzone" data-a="das"><h2>das</h2></div>
-  </div>
-  <div id="fb" class="feedback"></div>
-  <a id="nextTask" class="btn hidden" href="plural.html">Nächste Aufgabe →</a>
-</section><footer>© SprachPilot</footer></div><script src="app.js?v=10"></script><script>hero("Artikel Pull & Drop");
-let pool=shuffle(singularWords().filter(w=>w.article!=='der/das')).slice(0,24),done=0,selected=null;
+<section class="card"><div id="prog"></div><p class="small">Ziehe oder tippe ein Nomen an und wähle dann die richtige Tabelle.</p><div id="chips"></div><div class="drop-grid"><div class="dropzone" data-a="der"><h2>der</h2></div><div class="dropzone" data-a="die"><h2>die</h2></div><div class="dropzone" data-a="das"><h2>das</h2></div></div><div id="fb" class="feedback"></div><a id="nextTask" class="btn hidden" href="plural.html">Nächste Aufgabe →</a></section><footer>© SprachPilot</footer></div><script src="app.js?v=11"></script><script>hero("Artikel Pull & Drop");
+let pool=shuffle(singularWords().filter(w=>w.article!=='der/das')).slice(0,20),done=0,selected=null;
 function update(){let pct=Math.round(done/pool.length*100);prog.innerHTML=`<div class="small">${done} richtig · ${pool.length-done} übrig · ${pct}%</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div>`}
-function renderChips(){chips.innerHTML=pool.map(w=>`<span class="chip" draggable="true" data-id="${w.id}" data-a="${w.article}">${w.word}</span>`).join('');document.querySelectorAll('.chip').forEach(ch=>{ch.addEventListener('dragstart',e=>e.dataTransfer.setData('id',ch.dataset.id));ch.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));selected=ch.dataset.id;ch.classList.add('selected');fb.textContent='Jetzt Tabelle wählen.';});});}
+chips.innerHTML=pool.map(w=>`<span class="chip" draggable="true" data-id="${w.id}" data-a="${w.article}">${w.word}</span>`).join('');
+document.querySelectorAll('.chip').forEach(ch=>{ch.addEventListener('dragstart',e=>e.dataTransfer.setData('id',ch.dataset.id));ch.addEventListener('click',()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));selected=ch.dataset.id;ch.classList.add('selected');fb.textContent='Jetzt Tabelle wählen.';});});
 function place(id,zone){let el=document.querySelector(`.chip[data-id="${id}"]`);let w=pool.find(x=>x.id===id);if(!el||!w)return;if(articleOk(zone.dataset.a,w)){zone.appendChild(el);el.draggable=false;el.classList.remove('selected');el.classList.add('ok');done++;selected=null;fb.textContent='Richtig!';update();if(done===pool.length){finishTask('drag-drop-artikel.html');fb.textContent='Gut gemacht! Aufgabe erledigt.';nextTask.classList.remove('hidden')}}else{fb.innerHTML='Falsche Grammatik: Der Artikel ist falsch.<div class="hint">Tipp: Achte auf der / die / das.</div>';}}
-renderChips();update();
 document.querySelectorAll('.dropzone').forEach(z=>{z.addEventListener('dragover',e=>e.preventDefault());z.addEventListener('drop',e=>{e.preventDefault();place(e.dataTransfer.getData('id'),z)});z.addEventListener('click',()=>{if(selected)place(selected,z)});});
+update();
 </script></body></html>
