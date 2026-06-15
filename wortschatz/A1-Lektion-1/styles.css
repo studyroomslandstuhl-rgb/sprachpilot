@@ -33,3 +33,13 @@ input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size
   .grid{grid-template-columns:repeat(2,1fr)}
   .native{font-size:28px}.german{font-size:32px}
 }
+
+/* FIX: Aufgaben sofort sichtbar/offen */
+.task-card{
+  color:#333!important;
+  background:#f7f8ff!important;
+  border:3px solid #dce2ff!important;
+  min-height:76px;
+}
+.task-card:hover{background:#eef2ff!important}
+#feedback button{display:block;margin:12px auto 0}
