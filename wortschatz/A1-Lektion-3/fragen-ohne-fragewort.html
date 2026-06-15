@@ -1,0 +1,14 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fragen ohne Fragewort</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Thema 1</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=11"></script><script>hero("Fragen ohne Fragewort");
+let data=[{"w": ["Sie", "kaufen", "Brot", "?"], "s": ["Kaufen", "Sie", "Brot", "?"], "v": "Kaufen", "sub": "Sie", "obj": "Brot"}, {"w": ["wir", "brauchen", "Milch", "?"], "s": ["Brauchen", "wir", "Milch", "?"], "v": "Brauchen", "sub": "wir", "obj": "Milch"}, {"w": ["du", "trinken", "Tee", "?"], "s": ["Trinkst", "du", "Tee", "?"], "v": "Trinkst", "sub": "du", "obj": "Tee"}, {"w": ["ihr", "essen", "Kuchen", "?"], "s": ["Esst", "ihr", "Kuchen", "?"], "v": "Esst", "sub": "ihr", "obj": "Kuchen"}],q=Q(data);
+function render(){
+ q.cur=next(q);if(!q.cur){complete(area,"fragen-ohne-fragewort.html","fragen-mit-fragewort.html");return}
+ q.tries=0;q.had=false;let tiles=shuffle(q.cur.w),built=[];
+ area.innerHTML=prog(q)+`<div class='question'>Baue die Frage. Setze auch das Fragezeichen.</div><div id='built' class='built'></div><div class='tiles'>${tiles.map((x,i)=>`<button class='tile' onclick='add(this,"${x}")'>${x}</button>`).join('')}</div><div id='step'></div><div id='fb' class='feedback'></div>`;
+ window.add=(b,x)=>{built.push(x);b.disabled=true;document.getElementById('built').textContent=built.join(' ');if(built.length===q.cur.w.length)check()};
+ function check(){let sol=q.cur.s.join(' ');if(built.join(' ')===sol){step.innerHTML=`<div class='question'>Konjugiere das Verb/Prädikat.</div><input id='verb'><button class='btn' onclick='checkVerb()'>Prüfen</button>`}else{wrong(q);fb.innerHTML=fail(q,{msg:'Reihenfolge falsch.',tip:'Bei Fragen steht das Verb vorn oder nach dem Fragewort. Das Fragezeichen ist ein eigenes Satzzeichen am Ende.',sol:sol})}}
+ window.checkVerb=()=>{if(norm(verb.value)===q.cur.v){mark('Verb/Prädikat',q.cur.v,()=>mark('Subjekt',q.cur.sub,()=>q.cur.obj?mark('Objekt',q.cur.obj,pass):pass()));}else{wrong(q);fb.innerHTML=fail(q,{msg:'Verb falsch konjugiert.',tip:'Achte auf das Subjekt.',sol:q.cur.v})}};
+ function mark(label,ans,nextF){step.innerHTML=`<div class='question'>Wo ist das ${label}?</div><div class='tiles'>${q.cur.s.map((x,i)=>`<button class='tile' onclick='${x===ans?'okMark()':'badMark()'}'>${x}</button>`).join('')}</div>`;window.okMark=nextF;window.badMark=()=>{wrong(q);fb.innerHTML=fail(q,{msg:'Falsch markiert.',tip:'Lies die Frage noch einmal.',sol:ans})}}
+ function pass(){right(q,q.cur);fb.textContent='Richtig!';setTimeout(render,700)}
+}
+render();
+</script></body></html>

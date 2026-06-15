@@ -1,0 +1,15 @@
+
+<!DOCTYPE html><html lang="de"><head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Übersicht</title><link rel="stylesheet" href="style.css">
+</head><body><div class="container">
+<section class="hero"><h1>SPRACHPILOT</h1><p>Thema 1 · Übersicht</p></section>
+<section class="card">
+<h2>Alle Wörter der Lektion</h2>
+<div id="list"></div>
+</section>
+<script src="app.js?v=12"></script>
+<script>
+const words=(typeof WORDS!=="undefined"?WORDS:[]);
+list.innerHTML=words.map(w=>`<div style="padding:8px;border-bottom:1px solid #ddd">${w.article||""} ${w.word||w.id}</div>`).join("");
+</script></body></html>
