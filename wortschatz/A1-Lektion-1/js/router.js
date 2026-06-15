@@ -24,7 +24,7 @@ const RENDERERS = {
 export function renderTaskOverview({app, assignment, progress, openTask}){
   app.innerHTML = `
     <h2>Aufgaben</h2>
-    <p class="small">Die Lehrerin entscheidet, welche Aufgaben und welche Verben hier erscheinen.</p>
+    
     <div class="grid">
       ${assignment.enabledTasks.map(t => {
         const title = TASK_TYPES[t]?.title || t;

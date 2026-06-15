@@ -11,7 +11,6 @@ import { progressHtml } from "../shared/ui.js";
 const app = document.getElementById("app");
 const profileBox = document.getElementById("profileBox");
 const progressBox = document.getElementById("progressBox");
-const teacherNotice = document.getElementById("teacherNotice");
 
 let profile = null;
 let assignment = null;
@@ -138,10 +137,8 @@ async function boot(){
     const newVerbs = detectNewVerbs(assignment, progress);
     if(newVerbs.length){
       progress = addNewAssignedVerbs(progress, newVerbs);
-      teacherNotice.innerHTML = `<div class="info"><strong>Sie haben neue Verben zu üben:</strong> ${newVerbs.length}</div>`;
-    }else{
-      teacherNotice.innerHTML = "";
-    }
+}else{
+}
 
     await saveAll();
     renderHome();
