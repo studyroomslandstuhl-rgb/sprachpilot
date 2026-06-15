@@ -1,0 +1,189 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1.0">
+<title>Verben A1 - SprachPilot</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);min-height:100vh;color:#222}
+main{width:min(1050px,94vw);margin:0 auto;padding:18px 0 42px}
+.card{background:white;border-radius:22px;padding:18px;box-shadow:0 12px 35px rgba(0,0,0,.22);margin-bottom:16px}
+h1,h2{color:#667eea;margin-top:0}
+h3{margin:8px 0 10px}
+button{border:0;border-radius:14px;padding:12px 16px;font-size:16px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);color:white;margin:5px;cursor:pointer}
+button.secondary{background:#eef2ff;color:#333}
+button.success{background:linear-gradient(135deg,#27ae60,#2ecc71)}
+button.danger{background:linear-gradient(135deg,#e74c3c,#c0392b)}
+button:disabled{opacity:.55;cursor:not-allowed}
+input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size:18px;margin:8px 0}
+.hidden{display:none!important}
+.small{font-size:14px;color:#666}
+.ok{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0}
+.no{background:#ffe1e1;border-left:5px solid #e74c3c;padding:12px;border-radius:10px;margin:10px 0}
+.top-link{display:inline-block;text-decoration:none;color:#667eea;font-weight:900}
+.top-link:hover{text-decoration:underline}
+.mini-top-progress{background:white;border:2px solid #dce2ff;border-radius:16px;padding:10px;margin:8px 0}
+.task-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin:12px 0}
+.task-card{min-height:82px;border-radius:18px;background:#f7f8ff!important;border:3px solid #dce2ff;color:#333;font-size:14px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;padding:8px}
+.task-card .big-icon{font-size:23px;margin-bottom:4px}
+.task-card.done-card{background:linear-gradient(135deg,#27ae60,#2ecc71)!important;color:white!important;border-color:#27ae60!important}
+.task-status{font-size:12px;margin-top:4px;opacity:.9}
+.overview-button{width:100%;margin:8px 0 10px!important;background:#eef2ff!important;color:#333!important;box-shadow:none!important}
+.img-holder{width:100%;display:flex;justify-content:center;align-items:center;margin:8px 0}
+.img-holder img{width:100%;max-width:300px;height:215px;object-fit:cover;display:block;border-radius:18px;border:3px solid #dce2ff;background:#f7f8ff}
+.mem-img-holder{width:100%;height:100%;display:flex;align-items:center;justify-content:center;overflow:hidden;border-radius:12px;background:#f7f8ff}
+.mem-img-holder img{width:100%;height:100%;object-fit:cover;display:block}
+.image-fallback{background:#f7f8ff;border:3px dashed #dce2ff;border-radius:18px;min-height:160px;display:flex;align-items:center;justify-content:center;color:#667eea;font-weight:900}
+.memory{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}
+.mem{height:112px;min-height:112px;border-radius:18px;overflow:hidden;padding:6px;display:flex;align-items:center;justify-content:center;text-align:center;background:linear-gradient(135deg,#667eea,#764ba2);color:white;font-weight:900}
+.mem.open{background:white!important;border:4px solid #667eea!important;color:#222!important}
+.mem.done{background:linear-gradient(135deg,#27ae60,#2ecc71)!important;color:white!important}
+.mem-german{font-size:16px!important;font-weight:900;line-height:1.08;word-break:break-word;overflow-wrap:anywhere}
+.quiz-options{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:12px}
+.quiz-option{width:100%;min-height:58px;text-align:left;padding:12px!important;border-radius:16px!important;font-size:17px!important;display:flex;align-items:center;gap:10px;justify-content:flex-start}
+.quiz-letter{background:white;color:#667eea;border-radius:999px;width:30px;height:30px;display:inline-flex;align-items:center;justify-content:center;font-weight:900;flex:0 0 auto}
+.task-progress{background:#f7f8ff;border:2px solid #dce2ff;border-radius:14px;padding:9px 10px;margin-bottom:12px}
+.task-progress-title{display:flex;justify-content:space-between;font-size:14px;color:#555;font-weight:700}
+.task-progress-line{height:9px;background:#ddd;border-radius:999px;overflow:hidden;margin-top:6px}
+.task-progress-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71)}
+.puzzle-answer,.puzzle-bank{display:flex;flex-wrap:wrap;gap:8px;min-height:54px;background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:10px;margin:10px 0}
+.word-chip{background:linear-gradient(135deg,#667eea,#764ba2)!important;color:white!important;border:none!important;border-radius:999px!important;padding:10px 14px!important;font-weight:800!important;margin:0!important}
+.word-chip.answer{background:#eef2ff!important;color:#333!important}
+.study-card-wrap{perspective:1000px;max-width:360px;margin:12px auto}
+.study-card{width:100%;min-height:190px;position:relative;transform-style:preserve-3d;transition:transform .5s;cursor:pointer}
+.study-card.flipped{transform:rotateY(180deg)}
+.study-face{position:absolute;inset:0;backface-visibility:hidden;border-radius:22px;background:white;border:4px solid #667eea;box-shadow:0 10px 28px rgba(0,0,0,.2);padding:16px;display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center}
+.study-back{transform:rotateY(180deg);background:#eefaf3;border-color:#27ae60}
+.native-word{font-size:38px;font-weight:900;color:#764ba2;margin:12px 0;line-height:1.1}
+.german-word{font-size:42px;font-weight:900;color:#27ae60;margin:12px 0}
+.word-status{display:flex;justify-content:center;gap:8px;margin:8px 0 10px;font-size:13px}
+.word-pill{background:#eef2ff;color:#555;border-radius:999px;padding:5px 10px;font-weight:700}
+.flash-progress-box{background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:10px 12px;margin:8px 0 12px}
+.flash-progress-title{display:flex;justify-content:space-between;align-items:center;gap:8px;font-size:15px;font-weight:800}
+.flash-progress-title span:last-child{font-size:13px;color:#666;font-weight:600}
+.flash-bar{height:10px;background:#ddd;border-radius:999px;overflow:hidden;margin:8px 0 0}
+.flash-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71);transition:width .25s}
+.card-actions{display:flex;gap:8px;align-items:center;justify-content:center;flex-wrap:wrap;margin-top:8px}
+.progress-toggle{position:fixed;top:14px;right:14px;z-index:9999;border-radius:999px;padding:10px 13px;background:#ffcc33;color:#333;border:2px solid white;box-shadow:0 8px 20px rgba(0,0,0,.25)}
+.progress-panel{position:fixed;top:0;right:0;width:min(390px,92vw);height:100vh;background:white;z-index:10000;box-shadow:-10px 0 30px rgba(0,0,0,.3);padding:18px;overflow:auto}
+.progress-row{background:#f7f8ff;border:2px solid #e0e4ff;border-radius:12px;padding:9px;margin:7px 0}
+.progress-line{height:10px;background:#ddd;border-radius:999px;overflow:hidden;margin-top:5px}
+.progress-fill{height:100%;background:linear-gradient(135deg,#27ae60,#2ecc71)}
+.progress-row-head{display:flex;align-items:center;gap:8px}
+.progress-row-head .mem-img-holder{width:62px!important;height:46px!important;flex:0 0 auto}
+.progress-row-head .mem-img-holder img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:8px}
+.overview-modal{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:9999;padding:18px;overflow:auto}
+.overview-box{background:white;border-radius:24px;max-width:980px;margin:20px auto;padding:18px;box-shadow:0 20px 50px rgba(0,0,0,.35)}
+.overview-head{display:flex;justify-content:space-between;align-items:center;gap:10px;margin-bottom:12px}
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}
+.verb-overview-card{background:#f7f8ff;border:2px solid #dce2ff;border-radius:16px;padding:9px;text-align:center}
+.verb-overview-card .mem-img-holder{height:105px!important;margin-bottom:8px}
+.verb-overview-card .mem-img-holder img{width:100%!important;height:100%!important;object-fit:cover!important;border-radius:12px}
+.verb-de{font-size:18px;font-weight:900;color:#222}
+.verb-native{font-size:13px;color:#777;margin-top:3px}
+.verb-percent{margin-top:6px;font-weight:800;color:#667eea}
+.level-alert{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:12000;display:flex;align-items:center;justify-content:center;padding:20px}
+.level-alert-box{background:white;border-radius:28px;max-width:420px;width:100%;text-align:center;padding:26px;box-shadow:0 20px 55px rgba(0,0,0,.35);border:4px solid #ffd43b}
+.level-alert-box h2{color:#7a5400;margin-bottom:10px}
+.level-alert-box .big-star{font-size:54px;margin-bottom:8px}
+.achievement,.package-done{background:#fff9db;border:3px solid #ffd43b;border-radius:22px;padding:18px;margin:14px 0;text-align:center;box-shadow:0 10px 28px rgba(0,0,0,.15)}
+.package-done{background:#e9f9ef;border-color:#27ae60}
+.star-pill{display:inline-block;background:#ffd43b;color:#4a3500;border-radius:999px;padding:7px 12px;font-weight:900;margin:4px}
+@media(max-width:520px){
+  .task-grid{grid-template-columns:repeat(2,1fr)}
+  .memory{grid-template-columns:repeat(3,1fr);gap:7px}
+  .mem{height:96px;min-height:96px}
+  .mem-german{font-size:14px!important}
+  .quiz-options{gap:8px}
+  .quiz-option{font-size:15px!important;padding:10px!important}
+  .native-word{font-size:34px}
+  .study-card{min-height:176px}
+}
+
+/* FINAL PATCH: bessere Bilder + klare Belohnungen */
+.mem-img-holder img,
+.progress-row-head .mem-img-holder img,
+.verb-overview-card .mem-img-holder img{
+  object-fit:contain!important;
+  background:#f7f8ff!important;
+}
+.img-holder img{
+  object-fit:contain!important;
+  background:#f7f8ff!important;
+}
+.bild-option .mem-img-holder img{
+  object-fit:contain!important;
+}
+.mem{
+  height:132px!important;
+  min-height:132px!important;
+}
+@media(max-width:520px){
+  .mem{
+    height:120px!important;
+    min-height:120px!important;
+  }
+}
+.next-task-row{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:center;
+  gap:8px;
+  margin-top:12px;
+}
+
+
+/* STATISTIK-KACHELN WIE BEI FRAGEN */
+.stats{
+  display:grid;
+  grid-template-columns:repeat(2,1fr);
+  gap:10px;
+  margin:14px 0;
+}
+.stat{
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:white;
+  border-radius:16px;
+  text-align:center;
+  padding:16px 10px;
+  box-shadow:0 8px 18px rgba(0,0,0,.14);
+}
+.stat .num{
+  font-size:2rem;
+  font-weight:900;
+  line-height:1.05;
+}
+.stat div:first-child{
+  font-size:16px;
+  opacity:.95;
+}
+
+</style>
+</head>
+<body>
+<button class="progress-toggle" onclick="toggleProgressPanel()">📊</button>
+<div id="progressPanel" class="progress-panel hidden"></div>
+<main>
+  <div class="card"><h1><a class="top-link" href="../">SprachPilot</a> · Verben A1</h1><div id="profileBox"></div></div>
+  <div class="card" id="app"></div>
+</main>
+
+
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="data/verbs-data.js"></script>
+<script src="tasks/01-auswahl.js"></script>
+<script src="tasks/02-karteikarten.js"></script>
+<script src="tasks/03-memory.js"></script>
+<script src="tasks/04-quiz.js"></script>
+<script src="tasks/05-schreiben.js"></script>
+<script src="tasks/06-hoeren-schreiben.js"></script>
+<script src="tasks/07-hoeren-sprechen.js"></script>
+<script src="tasks/08-bild-sprechen.js"></script>
+<script src="tasks/09-verb-zu-bild.js"></script>
+<script src="tasks/10-satzpuzzle.js"></script>
+<script src="js/core.js"></script>
+</body>
+</html>
