@@ -528,8 +528,18 @@ function speakTextVerb(t,slow=false){
   catch(e){const fb=$("fb")||$("cardFeedback"); if(fb)fb.innerHTML="<div class='no'>Hören wird auf diesem Gerät nicht unterstützt.</div>";}
 }
 function normalizeVerbAnswer(s){return clean(String(s||"").replace(/\s+/g," "))}
-function checkVerbAnswer(answer,correct){return normalizeVerbAnswer(answer)===normalizeVerbAnswer(correct)}
-function setMicStatus(txt){const m=$("micStatus");if(m)m.innerHTML=txt}
+function checkVerbAnswer(input, correct){
+  return String(input)
+    .trim()
+    .toLowerCase()
+    .normalize("NFC")
+    ===
+    String(correct)
+    .trim()
+    .toLowerCase()
+    .normalize("NFC");
+}
+  function setMicStatus(txt){const m=$("micStatus");if(m)m.innerHTML=txt}
 function recogVerb(cb){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
   if(!SR){const fb=$("cardFeedback")||$("fb"); if(fb)fb.innerHTML="<div class='no'>Mikrofon funktioniert auf diesem Gerät/Browser nicht. Bitte die Antwort schreiben.</div>";scrollToFeedback();return;}
