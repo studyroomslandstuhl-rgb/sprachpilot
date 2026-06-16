@@ -1,7 +1,0 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Das ist ...</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Thema 1</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=11"></script><script>hero("Das ist ...");
-let q=Q(singularWords());
-function sol(w){return w.countable?(w.article==='die'?'eine '+w.word:'ein '+w.word):w.word}
-function render(){q.cur=next(q);if(!q.cur){complete(area,'ein-eine.html','kein-keine.html');return}q.tries=0;q.had=false;area.innerHTML=prog(q)+`<div class='question'>Das ist ...</div><img class='food-img' src='${q.cur.image}'><input id='ans' placeholder='z. B. ein Kuchen / eine Tomate / Milch'><button class='btn' onclick='check()'>Prüfen</button><div id='fb' class='feedback'></div>`}
-function check(){let s=sol(q.cur);let a=norm(ans.value);if(a===s){right(q,q.cur);fb.textContent='Richtig!';setTimeout(render,700)}else{wrong(q);let expl=q.cur.countable?'Zählbare Nomen: ein/eine + Nomen.':'Das ist ein unzählbares Nomen und hat keine Pluralform. Deshalb benutzt man hier kein ein/eine.';fb.innerHTML=fail(q,{msg:'Falsche Grammatik oder Rechtschreibung.',tip:expl,sol:s})}}
-render();
-</script></body></html>
