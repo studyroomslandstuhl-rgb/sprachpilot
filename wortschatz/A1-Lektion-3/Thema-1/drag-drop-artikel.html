@@ -1,1 +1,130 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Artikel zuordnen</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card"><div id="prog"></div><p class="small">Wort antippen, dann Tabelle antippen. Danach Kontrollieren.</p><div id="chips"></div><div class="drop-grid"><div class="dropzone" data-a="der"><h2>der</h2></div><div class="dropzone" data-a="die"><h2>die</h2></div><div class="dropzone" data-a="das"><h2>das</h2></div></div><div class="actions"><button class="btn" onclick="control()">Kontrollieren</button></div><div id="fb" class="feedback"></div><a id="nextTask" class="btn hidden" href="plural.html">Nächste Aufgabe →</a></section><footer>© SprachPilot</footer></div><script src="app.js?v=40"></script><script>header("Artikel zuordnen");let pool=singularWords().filter(w=>w.article!=='der/das').slice(0,20),selected=null;prog.innerHTML=`<div class="small">0 von ${pool.length} kontrolliert</div><div class="progress"><div class="bar" style="width:0%"></div></div>`;chips.innerHTML=pool.map(w=>`<span class="chip" data-id="${w.id}">${w.word}</span>`).join('');document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));selected=c;c.classList.add('selected')});document.querySelectorAll('.dropzone').forEach(z=>z.onclick=()=>{if(selected){z.appendChild(selected);selected.classList.remove('selected');selected=null}});function control(){let ok=0;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('ok','no'));document.querySelectorAll('.dropzone .chip').forEach(c=>{let w=pool.find(x=>x.id===c.dataset.id);let zone=c.closest('.dropzone');if(articleOk(zone.dataset.a,w)){c.classList.add('ok');ok++;updateWordProgress(w.id)}else c.classList.add('no');let note=document.createElement('span');note.className='correction';note.textContent='richtig: '+w.article;c.after(note)});let pct=Math.round(ok/pool.length*100);prog.innerHTML=`<div class="small">${ok} von ${pool.length} richtig · ${pct}%</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div>`;if(ok===pool.length){finishTask('drag-drop-artikel.html');nextTask.classList.remove('hidden');fb.textContent='Gut gemacht!'}else fb.textContent='Korrigiere die roten Wörter und kontrolliere noch einmal.'}</script></body></html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Artikel zuordnen</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.chip{cursor:grab;user-select:none;touch-action:none;display:inline-flex;margin:5px;position:relative;z-index:5}
+.chip.selected{outline:4px solid #27ae60}
+.chip.no{background:#ffe1e1!important;border-color:#e74c3c!important;color:#9b1c1c!important}
+.chip.ok{background:#d9f7e8!important;border-color:#27ae60!important;color:#145a32!important}
+.correction{display:block;font-size:12px;font-weight:900;color:#9b1c1c;margin:4px 0 6px 8px}
+.dropzone{cursor:pointer;min-height:130px}
+.dropzone.drag-over{outline:4px dashed #27ae60}
+</style>
+</head>
+<body>
+<div class="container">
+<section class="hero"></section>
+<div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div>
+<section class="card">
+<div id="prog"></div>
+<h2 class="module-title">Artikel zuordnen</h2>
+<p class="small">Ziehe ein Wort in die richtige Tabelle oder tippe zuerst auf das Wort und dann auf die Tabelle. Nach <b>Kontrollieren</b> bleiben falsche Wörter verschiebbar.</p>
+<div class="drop-grid">
+<div class="dropzone" id="poolZone" data-a="pool"><h2>Nicht zugeordnet</h2><div id="chips"></div></div>
+</div>
+<div class="drop-grid">
+<div class="dropzone" data-a="der"><h2>der</h2></div>
+<div class="dropzone" data-a="die"><h2>die</h2></div>
+<div class="dropzone" data-a="das"><h2>das</h2></div>
+</div>
+<div class="actions">
+<button class="btn" onclick="control()">Kontrollieren</button>
+<button class="btn secondary" onclick="clearSelection()">Auswahl lösen</button>
+</div>
+<div id="fb" class="feedback"></div>
+<a id="nextTask" class="btn hidden" href="plural.html">Nächste Aufgabe →</a>
+</section>
+<footer>© SprachPilot</footer>
+</div>
+<script src="app.js?v=artikelfix-final"></script>
+<script>
+if(typeof header==="function"){header("Artikel zuordnen");}
+
+const pool=(typeof singularWords==="function"?singularWords().filter(w=>w.article!=="der/das"):WORDS.filter(w=>w.article!=="der/das")).slice(0,20);
+let selected=null;
+
+function setProgress(ok){
+ const pct=pool.length?Math.round(ok/pool.length*100):0;
+ prog.innerHTML=`<div class="small">${ok} von ${pool.length} richtig · ${pct}%</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div>`;
+}
+setProgress(0);
+
+chips.innerHTML=pool.map(w=>`<span class="chip" draggable="true" data-id="${w.id}">${w.word}</span>`).join("");
+
+function clearCorrections(){document.querySelectorAll(".correction").forEach(x=>x.remove());}
+function clearSelection(){document.querySelectorAll(".chip").forEach(x=>x.classList.remove("selected"));selected=null;}
+function cleanChip(chip){
+ chip.classList.remove("selected","ok","no");
+ let next=chip.nextElementSibling;
+ while(next&&next.classList&&next.classList.contains("correction")){
+  const tmp=next.nextElementSibling;next.remove();next=tmp;
+ }
+}
+function moveChipToZone(chip,zone){
+ if(!chip||!zone)return;
+ cleanChip(chip);
+ zone.appendChild(chip);
+ clearSelection();
+}
+function initChips(){
+ document.querySelectorAll(".chip").forEach(chip=>{
+  chip.onclick=e=>{e.preventDefault();e.stopPropagation();clearSelection();selected=chip;chip.classList.add("selected");};
+  chip.addEventListener("dragstart",e=>{selected=chip;e.dataTransfer.setData("text/plain",chip.dataset.id);e.dataTransfer.effectAllowed="move";});
+ });
+}
+function initZones(){
+ document.querySelectorAll(".dropzone").forEach(zone=>{
+  zone.onclick=e=>{if(e.target.closest(".chip"))return;if(selected)moveChipToZone(selected,zone);};
+  zone.addEventListener("dragover",e=>{e.preventDefault();zone.classList.add("drag-over");});
+  zone.addEventListener("dragleave",()=>zone.classList.remove("drag-over"));
+  zone.addEventListener("drop",e=>{e.preventDefault();zone.classList.remove("drag-over");const id=e.dataTransfer.getData("text/plain");const chip=document.querySelector(`.chip[data-id="${id}"]`);moveChipToZone(chip,zone);});
+ });
+}
+initChips();
+initZones();
+
+function isArticleCorrect(chosenArticle,word){
+ if(typeof articleOk==="function")return articleOk(chosenArticle,word);
+ return String(chosenArticle||"").toLowerCase()===String(word.article||"").toLowerCase();
+}
+
+function control(){
+ clearCorrections();
+ let ok=0;
+ document.querySelectorAll(".chip").forEach(c=>c.classList.remove("selected","ok","no"));
+ ["der","die","das"].forEach(article=>{
+  const zone=document.querySelector(`.dropzone[data-a="${article}"]`);
+  if(!zone)return;
+  zone.querySelectorAll(".chip").forEach(c=>{
+   const w=pool.find(x=>x.id===c.dataset.id);
+   if(!w)return;
+   if(isArticleCorrect(article,w)){
+    c.classList.add("ok");ok++;
+    if(typeof updateWordProgress==="function")updateWordProgress(w.id);
+   }else{
+    c.classList.add("no");
+    const note=document.createElement("span");
+    note.className="correction";
+    note.textContent="richtig: "+w.article;
+    c.after(note);
+   }
+  });
+ });
+ const notAssigned=document.querySelectorAll("#poolZone .chip").length;
+ setProgress(ok);
+ if(notAssigned>0)fb.textContent=ok+" von "+pool.length+" richtig. "+notAssigned+" Wörter sind noch nicht zugeordnet.";
+ else if(ok===pool.length){
+  fb.textContent="Alles richtig. Gut gemacht!";
+  if(typeof finishTask==="function")finishTask("drag-drop-artikel.html");
+  else if(typeof done==="function")done("drag-drop-artikel.html");
+  nextTask.classList.remove("hidden");
+ }else fb.textContent=ok+" von "+pool.length+" richtig. Korrigiere die roten Wörter. Sie bleiben verschiebbar.";
+ clearSelection();
+}
+</script>
+</body>
+</html>
