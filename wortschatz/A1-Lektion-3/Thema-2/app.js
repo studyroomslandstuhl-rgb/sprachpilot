@@ -29,3 +29,62 @@ function taskPct(file,total=WORDS.length){let s=load();if(s.done&&s.done[file])r
 function complete(area,file,next){done(file);area.innerHTML='<div class="big">Gut gemacht!</div><div class="actions"><a class="btn" href="'+next+'">Nächste Aufgabe →</a><a class="btn secondary" href="index.html">Menü</a></div>'}
 function fixImg(img){img.classList.add('missing')}
 function header(title){document.querySelector('.hero').innerHTML=`<div class="top"><a class="brand" href="../../index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="small">${title} · A1 Lektion 3 · Thema 2</div></div></a><div class="nav"><a class="btn secondary" href="../index.html">← Lektionsübersicht</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><a class="btn secondary" href="index.html">Thema 2</a></div></div>`}
+
+function pctFor(file,total=WORDS.length){
+  let s=load();
+  if(s.done&&s.done[file]) return 100;
+  let st=s[file];
+  if(st && Array.isArray(st.done)) return Math.round(st.done.length/total*100);
+  return 0;
+}
+function priceVariants(price){
+  let p = String(price||'').replace('€','').trim();
+  let parts = p.split(',');
+  let euro = parts[0] || '0';
+  let cent = parts[1] || '00';
+  let compact = euro+','+cent;
+  let euroNum = parseInt(euro,10);
+  let centNum = parseInt(cent,10);
+  let out = [
+    compact+' Euro',
+    euro+' Euro '+cent,
+    euro+' Euro '+cent+' Cent',
+    euro+' '+cent,
+    compact
+  ];
+  if(euroNum===0){
+    out.push(centNum+' Cent');
+    out.push('null Euro '+cent);
+  }
+  return out.map(simple);
+}
+function acceptablePriceSentence(ans,price){
+  let a=simple(ans);
+  if(!a.startsWith('das kostet') && !a.startsWith('das macht')) return false;
+  return priceVariants(price).some(v=>a.includes(v));
+}
+function acceptableQuestion(ans,c){
+  let a=simple(ans);
+  let targets=[
+    c.question,
+    'Was kostet '+c.text+'?',
+    'Wie viel kostet '+c.text+'?',
+    'Was macht '+c.text+'?',
+    'Wie viel kostet das?',
+    'Was kostet das?'
+  ].map(simple);
+  return targets.includes(a);
+}
+function acceptableAnswer(ans,c){
+  let a=simple(ans);
+  if(acceptablePriceSentence(ans,c.price)) return true;
+  let pvars=priceVariants(c.price);
+  let starts=[
+    simple(c.text+' kostet'),
+    simple('Der Artikel kostet'),
+    simple('Das Produkt kostet'),
+    simple('Es kostet')
+  ];
+  return starts.some(st=>a.startsWith(st)) && pvars.some(v=>a.includes(v));
+}
+

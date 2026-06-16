@@ -1,1 +1,38 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pluralgruppen</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card"><div id="chips"></div><div class="drop-grid" id="zones"></div><button class="btn" onclick="control()">Kontrollieren</button><div id="fb" class="feedback"></div><a id="nextBtn" class="btn hidden" href="memory.html">Nächste Aufgabe →</a></section><footer>© SprachPilot</footer></div><script src="app.js?v=5"></script><script>header("Pluralgruppen");let groups=['-n','-en','-er/Umlaut','-e','-s','-'];let selected=null;zones.innerHTML=groups.map(g=>`<div class="dropzone" data-g="${g}"><h2>${g}</h2></div>`).join('');chips.innerHTML=WORDS.map(w=>`<span class="chip" data-id="${w.id}">${full(w)}</span>`).join('');document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{if(c.classList.contains('ok'))return;document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));selected=c;c.classList.add('selected')});document.querySelectorAll('.dropzone').forEach(z=>z.onclick=()=>{if(selected){selected.classList.remove('selected','no');let n=selected.nextElementSibling;if(n&&n.classList.contains('correction'))n.remove();z.appendChild(selected);selected=null}});function control(){document.querySelectorAll('.correction').forEach(x=>x.remove());let ok=0;document.querySelectorAll('.dropzone .chip').forEach(c=>{let w=WORDS.find(x=>x.id===c.dataset.id);let z=c.closest('.dropzone');c.classList.remove('ok','no');if(z.dataset.g===w.pluralGroup){c.classList.add('ok');ok++}else{c.classList.add('no');let note=document.createElement('span');note.className='correction';note.textContent='richtig: '+w.pluralGroup;c.after(note)}});if(ok===WORDS.length){done('plural-drag-drop.html');nextBtn.classList.remove('hidden');fb.textContent='Gut gemacht!'}else fb.textContent='Korrigiere die roten Wörter. Rote Wörter bleiben verschiebbar.'}</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pluralgruppen</title><link rel="stylesheet" href="style.css"></head>
+<body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div>
+<section class="card"><p>Wort antippen, dann Gruppe antippen. Danach kontrollieren.</p><div id="chips"></div><div class="drop-grid" id="zones"></div>
+<button class="btn" onclick="control()">Kontrollieren</button><div id="fb" class="feedback"></div><a id="nextBtn" class="btn hidden" href="memory.html">Nächste Aufgabe →</a></section>
+<footer>© SprachPilot</footer></div><script src="app.js?v=8"></script><script>
+header("Pluralgruppen");
+let groups=['-n','-en','-er/Umlaut','-e','-s','-'];let selected=null;
+zones.innerHTML=groups.map(g=>`<div class="dropzone" data-g="${g}"><h2>${g}</h2></div>`).join('');
+chips.innerHTML=WORDS.map(w=>`<span class="chip" data-id="${w.id}">${full(w)}</span>`).join('');
+function makeSelectable(){
+ document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{
+   if(c.classList.contains('ok')) return;
+   document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));
+   selected=c;c.classList.add('selected');
+ });
+}
+makeSelectable();
+document.querySelectorAll('.dropzone').forEach(z=>z.onclick=()=>{
+ if(selected){
+   selected.classList.remove('selected','no');
+   let n=selected.nextElementSibling; if(n&&n.classList.contains('correction')) n.remove();
+   z.appendChild(selected); selected=null; makeSelectable();
+ }
+});
+function control(){
+ document.querySelectorAll('.correction').forEach(x=>x.remove());
+ let ok=0;
+ document.querySelectorAll('.dropzone .chip').forEach(c=>{
+   let w=WORDS.find(x=>x.id===c.dataset.id);
+   let z=c.closest('.dropzone');
+   c.classList.remove('ok','no');
+   if(z.dataset.g===w.pluralGroup){c.classList.add('ok');ok++}
+   else{c.classList.add('no');let note=document.createElement('span');note.className='correction';note.textContent='richtig: '+w.pluralGroup;c.after(note)}
+ });
+ if(ok===WORDS.length){done('plural-drag-drop.html');nextBtn.classList.remove('hidden');fb.textContent='Gut gemacht!'}
+ else fb.textContent='Korrigiere die roten Wörter. Rote Wörter bleiben verschiebbar.';
+}
+</script></body></html>
