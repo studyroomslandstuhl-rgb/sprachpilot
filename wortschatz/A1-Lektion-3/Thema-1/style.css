@@ -29,3 +29,23 @@ footer{text-align:center;color:white;margin-top:22px}@media(max-width:700px){bod
 .chip.no{background:#ffe1e1!important;border-color:#e74c3c!important;color:#9b1c1c!important;text-decoration:line-through}.chip.ok{background:#d9f7e8!important;border-color:#27ae60!important;color:#145a32!important}.correction{display:block;font-size:12px;font-weight:900;color:#9b1c1c;margin-left:6px;margin-top:4px}
 .word-table{display:grid;grid-template-columns:repeat(auto-fit,minmax(235px,1fr));gap:10px}.word-row{display:flex;align-items:center;gap:10px;border:2px solid #ffd39b;border-radius:16px;padding:10px;background:#fff4e6}.word-row img{width:64px;height:64px;object-fit:contain;background:white;border-radius:10px}.missing{border:3px solid #e74c3c!important}
 .tile.verb{color:#c0392b!important;border-color:#c0392b!important;background:#ffecec!important}
+
+/* Pluralgruppen-Fix */
+.chip.no{
+  background:#ffe1e1!important;
+  border-color:#e74c3c!important;
+  color:#9b1c1c!important;
+  text-decoration:line-through;
+}
+.chip.ok{
+  background:#d9f7e8!important;
+  border-color:#27ae60!important;
+  color:#145a32!important;
+}
+.correction{
+  display:block;
+  font-size:12px;
+  font-weight:900;
+  color:#9b1c1c;
+  margin:4px 0 6px 8px;
+}

@@ -1,1 +1,144 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Pluralgruppen</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card"><p class="small">Wort antippen, dann Gruppe antippen. Danach Kontrollieren.</p><div id="chips"></div><div class="drop-grid" id="zones"></div><div class="actions"><button class="btn" onclick="control()">Kontrollieren</button></div><div id="fb" class="feedback"></div><a id="nextTask" class="btn hidden" href="ein-eine.html">Nächste Aufgabe →</a></section><footer>© SprachPilot</footer></div><script src="app.js?v=40"></script><script>header("Pluralgruppen");let groups=['-/Umlaut','-e/Umlaut-e','-er/Umlaut-er','-en/-n','-s','kein Plural','-'];let pool=activeWords().slice(0,20),selected=null;zones.innerHTML=groups.map(g=>`<div class="dropzone" data-g="${g}"><h2>${g}</h2></div>`).join('');chips.innerHTML=pool.map(w=>`<span class="chip" data-id="${w.id}">${full(w)}</span>`).join('');document.querySelectorAll('.chip').forEach(c=>c.onclick=()=>{document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));selected=c;c.classList.add('selected')});document.querySelectorAll('.dropzone').forEach(z=>z.onclick=()=>{if(selected){z.appendChild(selected);selected.classList.remove('selected');selected=null}});function groupOf(w){return w.pluralGroup==='kein Plural'?'kein Plural':w.pluralGroup}function control(){let ok=0;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('ok','no'));document.querySelectorAll('.dropzone .chip').forEach(c=>{let w=pool.find(x=>x.id===c.dataset.id);let z=c.closest('.dropzone');if(z.dataset.g===groupOf(w)){c.classList.add('ok');ok++;updateWordProgress(w.id)}else c.classList.add('no');let note=document.createElement('span');note.className='correction';note.textContent='richtig: '+groupOf(w);c.after(note)});if(ok===pool.length){finishTask('plural-drag-drop.html');nextTask.classList.remove('hidden');fb.textContent='Gut gemacht!'}else fb.textContent=`${ok} von ${pool.length} richtig. Korrigiere die roten Wörter und kontrolliere noch einmal.`}</script></body></html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Pluralgruppen</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+<section class="hero"></section>
+
+<div class="actions">
+  <a class="btn secondary" href="index.html">← Zurück</a>
+</div>
+
+<section class="card">
+  <h2 class="module-title">Pluralgruppen</h2>
+  <p class="small">
+    Wort antippen, dann Gruppe antippen. Danach auf <b>Kontrollieren</b> klicken.
+    Falsche Wörter bleiben verschiebbar.
+  </p>
+
+  <div id="chips"></div>
+
+  <div class="drop-grid" id="zones"></div>
+
+  <div class="actions">
+    <button class="btn" onclick="control()">Kontrollieren</button>
+  </div>
+
+  <div id="fb" class="feedback"></div>
+  <a id="nextTask" class="btn hidden" href="memory.html">Nächste Aufgabe →</a>
+</section>
+
+<footer>© SprachPilot</footer>
+</div>
+
+<script src="app.js?v=pluralfix2"></script>
+<script>
+if(typeof header === "function"){ header("Pluralgruppen"); }
+
+const GROUPS = [
+  "-/Umlaut",
+  "-e/Umlaut-e",
+  "-er/Umlaut-er",
+  "-en/-n",
+  "-s",
+  "kein Plural",
+  "-"
+];
+
+function pg(g){
+  if(typeof normalizePluralGroup === "function") return normalizePluralGroup(g);
+  g = String(g || "").trim();
+  if(g === "-e" || g === "Umlaut-e") return "-e/Umlaut-e";
+  if(g === "-er" || g === "Umlaut-er") return "-er/Umlaut-er";
+  if(g === "-n" || g === "-en") return "-en/-n";
+  if(g === "kein Endung") return "-";
+  return g;
+}
+
+const pool = (typeof activeWords === "function" ? activeWords() : WORDS).slice(0, 20);
+let selected = null;
+
+zones.innerHTML = GROUPS.map(g =>
+  `<div class="dropzone" data-g="${g}"><h2>${g}</h2></div>`
+).join("");
+
+chips.innerHTML = pool.map(w =>
+  `<span class="chip" data-id="${w.id}">${w.article ? w.article + " " : ""}${w.word}</span>`
+).join("");
+
+function makeSelectable(){
+  document.querySelectorAll(".chip").forEach(c => {
+    c.onclick = () => {
+      if(c.classList.contains("ok")) return;
+      document.querySelectorAll(".chip").forEach(x => x.classList.remove("selected"));
+      selected = c;
+      c.classList.add("selected");
+    };
+  });
+}
+
+makeSelectable();
+
+document.querySelectorAll(".dropzone").forEach(zone => {
+  zone.onclick = () => {
+    if(!selected) return;
+
+    selected.classList.remove("selected", "no");
+    const next = selected.nextElementSibling;
+    if(next && next.classList && next.classList.contains("correction")){
+      next.remove();
+    }
+
+    zone.appendChild(selected);
+    selected = null;
+    makeSelectable();
+  };
+});
+
+function control(){
+  // Alte Korrekturen IMMER zuerst entfernen, damit nichts mehrfach erscheint.
+  document.querySelectorAll(".correction").forEach(x => x.remove());
+
+  let ok = 0;
+  const placed = document.querySelectorAll(".dropzone .chip");
+
+  placed.forEach(c => {
+    const w = pool.find(x => x.id === c.dataset.id);
+    const zone = c.closest(".dropzone");
+
+    c.classList.remove("ok", "no");
+
+    const correctGroup = pg(w.pluralGroup);
+    const chosenGroup = pg(zone.dataset.g);
+
+    if(chosenGroup === correctGroup){
+      c.classList.add("ok");
+      ok++;
+      if(typeof updateWordProgress === "function") updateWordProgress(w.id);
+    }else{
+      c.classList.add("no");
+      const note = document.createElement("span");
+      note.className = "correction";
+      note.textContent = "richtig: " + correctGroup;
+      c.after(note);
+    }
+  });
+
+  const pct = pool.length ? Math.round(ok / pool.length * 100) : 0;
+  fb.textContent = ok + " von " + pool.length + " richtig. " +
+    (ok === pool.length ? "Gut gemacht!" : "Korrigiere die roten Wörter.");
+
+  if(ok === pool.length){
+    if(typeof finishTask === "function") finishTask("plural-drag-drop.html");
+    else if(typeof done === "function") done("plural-drag-drop.html");
+    nextTask.classList.remove("hidden");
+  }
+}
+</script>
+</body>
+</html>
