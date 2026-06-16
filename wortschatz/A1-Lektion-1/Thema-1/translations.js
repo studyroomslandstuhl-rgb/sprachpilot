@@ -1,4 +1,3 @@
-// SprachPilot translations A1-Lektion-3 Thema-1
 const SP_SUPPORTED_MOTHER_LANGUAGES = [
   "Albanisch",
   "Amharisch",
@@ -3294,10 +3293,3 @@ const SP_TRANSLATIONS_A1_L3_T1 = {
     }
   }
 };
-
-function spGetTranslation(wordId, motherLanguage){
-  const entry = SP_TRANSLATIONS_A1_L3_T1[wordId];
-  if(!entry) return "";
-  const t = entry.translations || {};
-  return t[motherLanguage] || t["Englisch"] || t["Deutsch"] || entry.word || "";
-}
