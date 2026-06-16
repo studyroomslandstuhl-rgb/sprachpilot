@@ -1,0 +1,1 @@
+Thema 2 Startpaket. Bilder später in ../bilder ablegen: flasche,dose,glas,packung,tuete,becher,karton,stueck,kilo,gramm,liter.

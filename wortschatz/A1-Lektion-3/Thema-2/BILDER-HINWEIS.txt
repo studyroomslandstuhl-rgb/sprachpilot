@@ -1,0 +1,22 @@
+Thema 2 nutzt die vorhandenen Bilder aus:
+
+wortschatz/A1-Lektion-3/bilder/
+
+Vorhandene Bilder:
+apfel.png, banane.png, brot.png, butter.png, ei.png,
+fisch.png, fleisch.png, kaffee.png, kaese.png, milch.png,
+saft.png, salz.png, schinken.png, tee.png, tomate.png,
+wasser.png, zucker.png
+
+Noch zu ergänzen:
+flasche.png
+dose.png
+glas.png
+packung.png
+tuete.png
+becher.png
+karton.png
+stueck.png
+kilo.png
+gramm.png
+liter.png
