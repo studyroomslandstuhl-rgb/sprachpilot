@@ -440,9 +440,25 @@ function unusedVerbs(){
   const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
   return ALL_VERBS.map(x=>x.v).filter(v=>!used.includes(v));
 }
-function currentPickVerb(){
-  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned];
-  for(let i=state.index;i<ALL_VERBS.length;i++){if(!used.includes(ALL_VERBS[i].v)){state.index=i;return ALL_VERBS[i];}}
+  function currentPickVerb(){
+
+  const used=[
+    ...state.known,
+    ...state.unsure,
+    ...state.unknown,
+    ...state.active,
+    ...state.learned
+  ];
+
+  for(let i=0;i<ALL_VERBS.length;i++){
+
+    if(!used.includes(ALL_VERBS[i].v)){
+      state.index=i;
+      return ALL_VERBS[i];
+    }
+
+  }
+
   return null;
 }
 function packageComplete(){return (state.active||[]).length===20 && state.active.every(v=>verbPercent(v)>=100)}
