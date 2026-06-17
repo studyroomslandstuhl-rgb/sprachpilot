@@ -1,0 +1,52 @@
+/* css/menu.css */
+.sp-menu-header{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  background:#f7f8ff;
+  border:2px solid #dce2ff;
+  border-radius:18px;
+  padding:12px;
+  margin:10px 0 14px;
+}
+.sp-logo-mark{
+  width:52px;
+  height:52px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#667eea,#764ba2);
+  color:white;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-weight:900;
+  font-size:20px;
+  box-shadow:0 8px 18px rgba(0,0,0,.16);
+}
+.sp-logo-title{font-size:22px;font-weight:900;color:#667eea;line-height:1.05}
+.sp-logo-subtitle{font-size:13px;color:#666;margin-top:3px}
+.sp-menu-groups{display:grid;gap:10px;margin:12px 0}
+.sp-menu-group{background:#f7f8ff;border:2px solid #dce2ff;border-radius:18px;overflow:hidden}
+.sp-menu-toggle{
+  width:100%;
+  margin:0!important;
+  border-radius:0!important;
+  background:#eef2ff!important;
+  color:#333!important;
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  box-shadow:none!important;
+}
+.sp-menu-items{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:8px;padding:10px}
+.sp-menu-item{
+  margin:0!important;
+  background:white!important;
+  color:#333!important;
+  border:2px solid #dce2ff!important;
+  box-shadow:none!important;
+  min-height:54px;
+}
+@media(max-width:520px){
+  .sp-menu-items{grid-template-columns:1fr 1fr}
+  .sp-logo-title{font-size:20px}
+}
