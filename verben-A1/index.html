@@ -90,6 +90,7 @@ input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size
 .achievement,.package-done{background:#fff9db;border:3px solid #ffd43b;border-radius:22px;padding:18px;margin:14px 0;text-align:center;box-shadow:0 10px 28px rgba(0,0,0,.15)}
 .package-done{background:#e9f9ef;border-color:#27ae60}
 .star-pill{display:inline-block;background:#ffd43b;color:#4a3500;border-radius:999px;padding:7px 12px;font-weight:900;margin:4px}
+.helped{background:#fff3cd;border-left:5px solid #f1c40f; padding:12px;border-radius:10px; margin:10px 0;color:#5a4300;}
 @media(max-width:520px){
   .task-grid{grid-template-columns:repeat(2,1fr)}
   .memory{grid-template-columns:repeat(3,1fr);gap:7px}
@@ -862,8 +863,35 @@ function finishFlashVerb(v,good){
 }
 function checkFlashcardAnswer(v){
   const val=($("cardAnswer")||{value:""}).value, fb=$("cardFeedback");
-  if(state.cardWasFlipped){finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Versuch es nochmal.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;}
-  else if(checkVerbAnswer(val,v)){finishFlashVerb(v,true);const c=state.flashSession.correct[v]||0;fb.innerHTML=`<div class="ok">${c>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;}
+  if(state.cardWasFlipped && checkVerbAnswer(val,v)){
+  finishFlashVerb(v,false);
+
+  fb.innerHTML=`
+    <div class="helped">
+      Richtig, aber mit Hilfe! Probiere es später nochmal!
+    </div>
+    <button onclick="flashcards()">Weiter</button>
+  `;
+
+  scrollToFeedback();
+  return;
+}
+
+if(state.cardWasFlipped){
+  finishFlashVerb(v,false);
+
+  fb.innerHTML=`
+    <div class="no">
+      Noch nicht richtig.<br>
+      Richtig: <strong>${safeText(v)}</strong>
+    </div>
+    <button onclick="flashcards()">Weiter</button>
+  `;
+
+  scrollToFeedback();
+  return;
+}
+else if(checkVerbAnswer(val,v)){finishFlashVerb(v,true);const c=state.flashSession.correct[v]||0;fb.innerHTML=`<div class="ok">${c>=2?"✔ Wort fertig.":"✔ Richtig. Noch ein Punkt fehlt."}<br><strong>${v}</strong></div><button class="success" onclick="flashcards()">Weiter</button>`;}
   else{finishFlashVerb(v,false);fb.innerHTML=`<div class="no">Versuch es nochmal. Das Verb kommt am Ende noch einmal.<br>Richtig: <strong>${v}</strong></div><button onclick="flashcards()">Weiter</button>`;}
   scrollToFeedback();
 }
