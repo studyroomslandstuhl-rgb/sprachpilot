@@ -3,27 +3,43 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
   <title>SprachPilot · Teacher Dashboard</title>
+
   <link rel="stylesheet" href="css/styles.css" />
 </head>
+
 <body>
+
   <header class="topbar">
     <div class="brand">
       <div class="logo">SP</div>
+
       <div>
         <h1>Teacher Dashboard</h1>
         <p>Alle Kurse, Schüler und Fortschritte auf einen Blick</p>
       </div>
     </div>
-    <button onclick="TeacherApp.render()">Aktualisieren</button>
+
+    <button onclick="TeacherApp.render()">
+      Aktualisieren
+    </button>
   </header>
 
   <main id="app" class="teacher-shell">
-    <div class="card">Dashboard wird geladen …</div>
+    <div class="card">
+      Dashboard wird geladen …
+    </div>
   </main>
 
+  <!-- Firebase -->
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
   <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+  <!-- SprachPilot Daten -->
+  <script src="../verben-a1/data/verbs.js"></script>
+
+  <!-- Teacher Dateien -->
   <script src="js/firebase.js"></script>
   <script src="js/data.js"></script>
   <script src="js/courses.js"></script>
@@ -31,5 +47,6 @@
   <script src="js/students.js"></script>
   <script src="js/analytics.js"></script>
   <script src="js/app.js"></script>
+
 </body>
 </html>
