@@ -1,21 +1,52 @@
-const Releases = {
-  async setCourseValue(course, group, key, value){
-    if(!db || !course || !group || !key) return;
-    await db.collection("courses").doc(course).set({
-      [group]: { [key]: value },
-      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
-    }, { merge:true });
-  },
-  async toggleModule(course, moduleName, value){
-    return this.setCourseValue(course, "enabledModules", moduleName, value);
-  },
-  async toggleLesson(course, lesson, value){
-    return this.setCourseValue(course, "enabledLessons", lesson, value);
-  },
-  async toggleTask(course, task, value){
-    return this.setCourseValue(course, "enabledTasks", task, value);
-  },
-  async toggleWord(course, word, value){
-    return this.setCourseValue(course, "enabledWords", word, value);
-  }
-};
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+
+  <title>SprachPilot · Teacher Dashboard</title>
+
+  <link rel="stylesheet" href="css/styles.css" />
+</head>
+
+<body>
+
+  <header class="topbar">
+    <div class="brand">
+      <div class="logo">SP</div>
+
+      <div>
+        <h1>Teacher Dashboard</h1>
+        <p>Alle Kurse, Schüler und Fortschritte auf einen Blick</p>
+      </div>
+    </div>
+
+    <button onclick="TeacherApp.render()">
+      Aktualisieren
+    </button>
+  </header>
+
+  <main id="app" class="teacher-shell">
+    <div class="card">
+      Dashboard wird geladen …
+    </div>
+  </main>
+
+  <!-- Firebase -->
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+  <!-- SprachPilot Daten -->
+  <script src="../verben-a1/data/verbs.js"></script>
+
+  <!-- Teacher Dateien -->
+  <script src="js/firebase.js"></script>
+  <script src="js/data.js"></script>
+  <script src="js/courses.js"></script>
+  <script src="js/releases.js"></script>
+  <script src="js/students.js"></script>
+  <script src="js/analytics.js"></script>
+  <script src="js/app.js"></script>
+
+</body>
+</html>
