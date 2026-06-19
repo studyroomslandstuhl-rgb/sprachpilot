@@ -18,7 +18,7 @@ h2{color:#667eea;margin-bottom:10px}
 h3{margin:10px 0}
 .subtitle{font-size:18px;color:#666;line-height:1.4}
 label{display:block;font-weight:bold;margin-top:12px}
-input{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size:16px;margin-top:6px}
+input,select{width:100%;padding:13px;border:2px solid #ddd;border-radius:13px;font-size:16px;margin-top:6px;background:white}
 .two{display:grid;grid-template-columns:1fr 1fr;gap:12px}
 button{border:0;border-radius:15px;padding:14px 18px;font-size:16px;font-weight:800;cursor:pointer;margin-top:12px;background:linear-gradient(135deg,#667eea,#764ba2);color:white;box-shadow:0 8px 18px rgba(0,0,0,.18)}
 button.secondary{background:#eef2ff;color:#333;box-shadow:none}
@@ -75,7 +75,7 @@ footer{text-align:center;color:white;margin-top:24px;font-size:14px;opacity:.9}
 
   <div id="registerBox" class="hidden">
     <h3>Schüler registrieren</h3>
-    <p class="small">Du brauchst nur deinen Namen, deine E-Mail und den Kurscode deiner Lehrkraft.</p>
+    <p class="small">Du brauchst nur deinen Namen, deine E-Mail, deine Muttersprache und den Kurscode deiner Lehrkraft.</p>
 
     <form onsubmit="registerUser(event)">
       <div class="two">
@@ -91,6 +91,51 @@ footer{text-align:center;color:white;margin-top:24px;font-size:14px;opacity:.9}
 
       <label>E-Mail *</label>
       <input id="email" type="email" required placeholder="name@email.com">
+
+      <label>Muttersprache *</label>
+      <select id="motherLanguage" required>
+        <option value="">Bitte auswählen</option>
+        <option>Albanisch</option>
+        <option>Amharisch</option>
+        <option>Arabisch</option>
+        <option>Armenisch</option>
+        <option>Aserbaidschanisch</option>
+        <option>Bengalisch</option>
+        <option>Bosnisch</option>
+        <option>Bulgarisch</option>
+        <option>Chinesisch</option>
+        <option>Dari</option>
+        <option>Deutsch</option>
+        <option>Englisch</option>
+        <option>Farsi/Persisch</option>
+        <option>Französisch</option>
+        <option>Georgisch</option>
+        <option>Griechisch</option>
+        <option>Hindi</option>
+        <option>Italienisch</option>
+        <option>Japanisch</option>
+        <option>Kasachisch</option>
+        <option>Kroatisch</option>
+        <option>Kurdisch</option>
+        <option>Paschtu</option>
+        <option>Polnisch</option>
+        <option>Portugiesisch</option>
+        <option>Rumänisch</option>
+        <option>Russisch</option>
+        <option>Serbisch</option>
+        <option>Somali</option>
+        <option>Spanisch</option>
+        <option>Tamil</option>
+        <option>Thai</option>
+        <option>Tigrinya</option>
+        <option>Tschechisch</option>
+        <option>Türkisch</option>
+        <option>Ukrainisch</option>
+        <option>Ungarisch</option>
+        <option>Urdu</option>
+        <option>Usbekisch</option>
+        <option>Vietnamesisch</option>
+      </select>
 
       <label>Kurscode *</label>
       <input id="course" required placeholder="z. B. GLK-68">
@@ -214,12 +259,13 @@ window.registerUser=async function(e){
   const vorname=$("fname").value.trim();
   const nachname=$("lname").value.trim();
   const email=$("email").value.trim().toLowerCase();
+  const muttersprache=$("motherLanguage").value;
   const kurs=$("course").value.trim();
 
   const result=$("registerResult");
   result.innerHTML='<div class="ok">Kurscode wird geprüft...</div>';
 
-  if(!vorname || !nachname || !email || !kurs){
+  if(!vorname || !nachname || !email || !muttersprache || !kurs){
     result.innerHTML='<div class="no">Bitte alle Felder ausfüllen.</div>';
     return;
   }
@@ -247,6 +293,7 @@ window.registerUser=async function(e){
       vorname,
       nachname,
       email,
+      muttersprache,
       kurs,
       profilVollstaendig:false,
       active:true,
@@ -366,6 +413,7 @@ function renderLogged(){
       <div class="ok">
         <strong>Eingeloggt:</strong> ${safeText(p.vorname)} ${safeText(p.nachname)}
         | Kurs: ${safeText(p.kurs)}
+        | Muttersprache: ${safeText(p.muttersprache)}
         <br>
         <span class="small">Du bleibst auf diesem Gerät eingeloggt.</span>
         <br>
