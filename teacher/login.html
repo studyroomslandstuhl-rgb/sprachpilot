@@ -1,0 +1,35 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SprachPilot · Lehrer Login</title>
+  <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body>
+
+  <main class="teacher-shell">
+    <section class="card" style="max-width:420px;margin:60px auto;">
+      <h1>Lehrer-Login</h1>
+
+      <input id="email" type="email" placeholder="E-Mail">
+      <input id="password" type="password" placeholder="Passwort">
+
+      <button onclick="TeacherAuth.login()">
+        Einloggen
+      </button>
+
+      <div id="loginMsg" class="small"></div>
+    </section>
+  </main>
+
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+
+  <script src="js/firebase.js"></script>
+  <script src="js/auth.js"></script>
+
+</body>
+</html>
