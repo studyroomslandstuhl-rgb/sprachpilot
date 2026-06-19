@@ -27,7 +27,10 @@ const TeacherAuth = {
 
       const teacher = teacherDoc.data();
 
-      if(teacher.role !== "teacher" || teacher.active !== true){
+      if(
+        teacher.role !== "teacher" ||
+        teacher.active !== true
+      ){
         await auth.signOut();
         throw new Error("Lehrerzugang nicht aktiv.");
       }
@@ -35,12 +38,101 @@ const TeacherAuth = {
       location.href = "index.html";
 
     }catch(err){
-      msg.innerHTML = err.message;
+
+      msg.innerHTML =
+        "<div class='no'>" +
+        err.message +
+        "</div>";
+
+    }
+  },
+
+  async register(){
+
+    const name =
+      document.getElementById("regName").value.trim();
+
+    const email =
+      document.getElementById("regEmail").value.trim();
+
+    const password =
+      document.getElementById("regPassword").value;
+
+    const msg =
+      document.getElementById("registerMsg");
+
+    try{
+
+      const result =
+        await auth.createUserWithEmailAndPassword(
+          email,
+          password
+        );
+
+      const uid = result.user.uid;
+
+      await db
+        .collection("teachers")
+        .doc(uid)
+        .set({
+
+          name,
+          email,
+
+          role:"teacher",
+          active:true,
+
+          createdAt:
+            firebase.firestore.FieldValue.serverTimestamp()
+
+        });
+
+      msg.innerHTML =
+        "<div class='ok'>Registrierung erfolgreich.</div>";
+
+    }catch(err){
+
+      msg.innerHTML =
+        "<div class='no'>" +
+        err.message +
+        "</div>";
+
+    }
+  },
+
+  async resetPassword(){
+
+    const email =
+      document.getElementById("resetEmail").value.trim();
+
+    const msg =
+      document.getElementById("resetMsg");
+
+    try{
+
+      await auth.sendPasswordResetEmail(
+        email
+      );
+
+      msg.innerHTML =
+        "<div class='ok'>E-Mail gesendet.</div>";
+
+    }catch(err){
+
+      msg.innerHTML =
+        "<div class='no'>" +
+        err.message +
+        "</div>";
+
     }
   },
 
   async logout(){
+
     await auth.signOut();
-    location.href = "login.html";
+
+    location.href =
+      "login.html";
   }
+
 };
