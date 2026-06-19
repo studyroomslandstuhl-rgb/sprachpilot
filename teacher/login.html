@@ -3,90 +3,50 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SprachPilot · Lehrer Login</title>
-
+<title>SprachPilot · Lehrer-Login</title>
 <link rel="stylesheet" href="css/styles.css">
+
+<style>
+.login-card{
+  max-width:460px;
+  margin:70px auto;
+}
+.login-card input{
+  width:100%;
+  display:block;
+  margin-bottom:14px;
+}
+.login-actions{
+  display:flex;
+  flex-direction:column;
+  gap:8px;
+}
+</style>
 </head>
 
 <body>
 
 <main class="teacher-shell">
 
-  <section class="card" style="max-width:500px;margin:50px auto;">
-
-    <h1>Lehrerbereich</h1>
+  <section class="card login-card">
+    <h1>Lehrer-Login</h1>
 
     <label>E-Mail</label>
-    <input id="email" type="email">
+    <input id="email" type="email" placeholder="E-Mail">
 
     <label>Passwort</label>
-    <input id="password" type="password">
+    <input id="password" type="password" placeholder="Passwort">
 
-    <button onclick="TeacherAuth.login()">
-      Einloggen
-    </button>
-
-    <button class="secondary" onclick="showRegister()">
-      Als Lehrkraft registrieren
-    </button>
-
-    <button class="secondary" onclick="showReset()">
-      Passwort vergessen
-    </button>
+    <div class="login-actions">
+      <button onclick="TeacherAuth.login()">Einloggen</button>
+      <button class="secondary" onclick="TeacherAuth.register()">Als Lehrkraft registrieren</button>
+      <button class="secondary" onclick="TeacherAuth.resetPassword()">Passwort vergessen</button>
+    </div>
 
     <div id="loginMsg"></div>
-
-  </section>
-
-  <section id="registerBox" class="card hidden" style="max-width:500px;margin:20px auto;">
-
-    <h2>Lehrkraft registrieren</h2>
-
-    <label>Name</label>
-    <input id="regName">
-
-    <label>E-Mail</label>
-    <input id="regEmail" type="email">
-
-    <label>Passwort</label>
-    <input id="regPassword" type="password">
-
-    <button onclick="TeacherAuth.register()">
-      Registrieren
-    </button>
-
-    <div id="registerMsg"></div>
-
-  </section>
-
-  <section id="resetBox" class="card hidden" style="max-width:500px;margin:20px auto;">
-
-    <h2>Passwort zurücksetzen</h2>
-
-    <label>E-Mail</label>
-    <input id="resetEmail" type="email">
-
-    <button onclick="TeacherAuth.resetPassword()">
-      Reset-Link senden
-    </button>
-
-    <div id="resetMsg"></div>
-
   </section>
 
 </main>
-
-<script>
-function showRegister(){
-  document.getElementById("registerBox").classList.remove("hidden");
-  document.getElementById("resetBox").classList.add("hidden");
-}
-
-function showReset(){
-  document.getElementById("resetBox").classList.remove("hidden");
-  document.getElementById("registerBox").classList.add("hidden");
-}
-</script>
 
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
