@@ -1,35 +1,99 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SprachPilot · Lehrer Login</title>
-  <link rel="stylesheet" href="css/styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SprachPilot · Lehrer Login</title>
+
+<link rel="stylesheet" href="css/styles.css">
 </head>
 
 <body>
 
-  <main class="teacher-shell">
-    <section class="card" style="max-width:420px;margin:60px auto;">
-      <h1>Lehrer-Login</h1>
+<main class="teacher-shell">
 
-      <input id="email" type="email" placeholder="E-Mail">
-      <input id="password" type="password" placeholder="Passwort">
+  <section class="card" style="max-width:500px;margin:50px auto;">
 
-      <button onclick="TeacherAuth.login()">
-        Einloggen
-      </button>
+    <h1>Lehrerbereich</h1>
 
-      <div id="loginMsg" class="small"></div>
-    </section>
-  </main>
+    <label>E-Mail</label>
+    <input id="email" type="email">
 
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+    <label>Passwort</label>
+    <input id="password" type="password">
 
-  <script src="js/firebase.js"></script>
-  <script src="js/auth.js"></script>
+    <button onclick="TeacherAuth.login()">
+      Einloggen
+    </button>
+
+    <button class="secondary" onclick="showRegister()">
+      Als Lehrkraft registrieren
+    </button>
+
+    <button class="secondary" onclick="showReset()">
+      Passwort vergessen
+    </button>
+
+    <div id="loginMsg"></div>
+
+  </section>
+
+  <section id="registerBox" class="card hidden" style="max-width:500px;margin:20px auto;">
+
+    <h2>Lehrkraft registrieren</h2>
+
+    <label>Name</label>
+    <input id="regName">
+
+    <label>E-Mail</label>
+    <input id="regEmail" type="email">
+
+    <label>Passwort</label>
+    <input id="regPassword" type="password">
+
+    <button onclick="TeacherAuth.register()">
+      Registrieren
+    </button>
+
+    <div id="registerMsg"></div>
+
+  </section>
+
+  <section id="resetBox" class="card hidden" style="max-width:500px;margin:20px auto;">
+
+    <h2>Passwort zurücksetzen</h2>
+
+    <label>E-Mail</label>
+    <input id="resetEmail" type="email">
+
+    <button onclick="TeacherAuth.resetPassword()">
+      Reset-Link senden
+    </button>
+
+    <div id="resetMsg"></div>
+
+  </section>
+
+</main>
+
+<script>
+function showRegister(){
+  document.getElementById("registerBox").classList.remove("hidden");
+  document.getElementById("resetBox").classList.add("hidden");
+}
+
+function showReset(){
+  document.getElementById("resetBox").classList.remove("hidden");
+  document.getElementById("registerBox").classList.add("hidden");
+}
+</script>
+
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+
+<script src="js/firebase.js"></script>
+<script src="js/auth.js"></script>
 
 </body>
 </html>
