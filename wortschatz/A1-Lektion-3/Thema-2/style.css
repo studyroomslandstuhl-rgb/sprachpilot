@@ -10,3 +10,74 @@
 .memory-card{height:160px;min-height:160px;display:flex;align-items:center;justify-content:center;text-align:center;font-weight:900}
 .memory-card img{max-width:115px;max-height:115px;object-fit:contain}
 .nav{align-items:center}
+
+
+
+
+
+
+
+
+
+/* FIX: Bilder in Verpackung+Produkt / Frage+Antwort begrenzen */
+.combo-images{
+  width:100%;
+  max-width:520px;
+  margin:14px auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:14px;
+  flex-wrap:nowrap;
+}
+.combo-part{
+  width:150px;
+  height:150px;
+  max-width:42vw;
+  background:#fff;
+  border:2px solid #ffd39b;
+  border-radius:18px;
+  padding:10px;
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  justify-content:center;
+  overflow:hidden;
+}
+.combo-part img{
+  display:block;
+  max-width:100%;
+  max-height:110px;
+  width:auto !important;
+  height:auto !important;
+  object-fit:contain;
+  margin:0 auto;
+}
+.combo-plus{
+  flex:0 0 auto;
+  font-size:30px;
+  font-weight:900;
+  color:#f28c28;
+}
+.amount-badge{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  min-width:46px;
+  min-height:32px;
+  padding:4px 8px;
+  margin:0 auto 6px;
+  border-radius:12px;
+  background:#fff3cd;
+  border:2px solid #ffc107;
+  color:#7a5400;
+  font-weight:900;
+  font-size:20px;
+  line-height:1;
+}
+@media (max-width:600px){
+  .combo-images{max-width:100%;gap:8px}
+  .combo-part{width:118px;height:118px;padding:8px}
+  .combo-part img{max-height:82px}
+  .combo-plus{font-size:24px}
+}
