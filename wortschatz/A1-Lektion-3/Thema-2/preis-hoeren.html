@@ -1,7 +1,8 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preis hören</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=12"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preis hören</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=13"></script><script>
 
 header("Preis hören");
 const FILE='preis-hoeren.html'; let i=0;
+function listenCurrentPrice(){ speak(spSpeakPriceSentence(PRICE_TASKS[i])); }
 function optionsFor(correct){
   let pool=PRICE_TASKS.map(x=>x.price).filter(x=>x!==correct).sort(()=>Math.random()-.5).slice(0,3);
   return [correct,...pool].sort(()=>Math.random()-.5);
@@ -11,7 +12,7 @@ function show(){
   i=spNextIndex(FILE,PRICE_TASKS.length);
   if(i===undefined || i===null){localStorage.removeItem(spTaskStateKey(FILE)); i=spNextIndex(FILE,PRICE_TASKS.length)}
   let t=PRICE_TASKS[i], opts=optionsFor(t.price);
-  area.innerHTML=`${spProgressHtml(FILE,PRICE_TASKS.length)}<div class="question">Höre den Satz und wähle den Preis.</div><button class="btn" onclick="speak(spSpeakPriceSentence(t))">🔊 Hören</button><div class="options">${opts.map(o=>`<button class="btn secondary" onclick="choose('${o}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`;
+  area.innerHTML=`${spProgressHtml(FILE,PRICE_TASKS.length)}<div class="question">Höre den Satz und wähle den Preis.</div><button class="btn" onclick="listenCurrentPrice()">🔊 Hören</button><div class="options">${opts.map(o=>`<button class="btn secondary" onclick="choose('${o}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`;
 }
 function choose(v){
   let t=PRICE_TASKS[i];

@@ -14,31 +14,19 @@ function simple(x){return norm(x).toLowerCase().replaceAll('ä','ae').replaceAll
 function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function articleOk(a,w){return String(a||'').toLowerCase()===w.article}
 function diagnose(ans,w){let a=norm(ans);let art=(a.split(' ')[0]||'').toLowerCase();if(!['der','die','das'].includes(art))return {ok:false,msg:'Artikel fehlt.',tip:'Schreibe Artikel + Nomen.',sol:full(w)};if(!articleOk(art,w))return {ok:false,msg:'Artikel falsch.',tip:'Achte auf der/die/das.',sol:full(w)};let word=a.replace(/^(der|die|das)\s+/i,'');if(simple(word)!==simple(w.word))return {ok:false,msg:'Wort falsch.',tip:'Vergleiche mit dem Bild.',sol:full(w)};return {ok:true}}
-function speak(text,slow=false){try{speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=slow?0.55:0.82;let v=speechSynthesis.getVoices().find(x=>x.lang&&x.lang.toLowerCase().startsWith('de'));if(v)u.voice=v;speechSynthesis.speak(u)}catch(e){}}
-function startMic(btn,cb){let SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){cb('');return}btn.classList.add('active');let st=document.getElementById('micStatus');if(st)st.textContent='🎤 Mikrofon aktiv ...';let r=new SR();r.lang='de-DE';r.interimResults=false;r.maxAlternatives=1;r.onresult=e=>{btn.classList.remove('active');if(st)st.textContent='';cb(e.results[0][0].transcript)};r.onerror=()=>{btn.classList.remove('active');if(st)st.textContent='';cb('')};r.start()}
-function state(file){let s=load();s[file]=s[file]||{done:[],bad:[]};save(s);return s[file]}
-function setState(file,st){let s=load();s[file]=st;save(s)}
-function queue(file,list){let st=state(file),done=new Set(st.done||[]);return {file,q:shuffle(list.filter(w=>!done.has(w.id))),bad:(st.bad||[]).map(id=>list.find(w=>w.id===id)).filter(Boolean),done:[...done],cur:null,tries:0,had:false}}
-function next(Q){if(Q.q.length)return Q.q.shift();if(Q.bad.length){Q.q=shuffle(Q.bad);Q.bad=[];return Q.q.shift()}return null}
-function wrong(Q){Q.tries++;Q.had=true}
-function right(Q,w){if(Q.had)Q.bad.push(w);else if(!Q.done.includes(w.id))Q.done.push(w.id);setState(Q.file,{done:Q.done,bad:[...new Set(Q.bad.map(x=>x.id))]})}
-function fail(Q,d){if(Q.tries===1)return d.msg;if(Q.tries===2)return d.msg+'<div class="hint">Tipp: '+d.tip+'</div>';return d.msg+'<div class="hint">Lösung: '+d.sol+'</div>'}
-function prog(Q){let left=Q.q.length+Q.bad.length+(Q.cur?1:0),done=Q.done.length,p=Math.round(done/(done+left)*100)||0;return `<div class="small">${done} richtig · ${left} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
-function done(file){let s=load();s.done=s.done||{};s.done[file]=true;save(s)}
-function taskPct(file,total=WORDS.length){let s=load();if(s.done&&s.done[file])return 100;let st=s[file];return st?Math.round((st.done||[]).length/total*100):0}
-function complete(area,file,next){done(file);area.innerHTML='<div class="big">Gut gemacht!</div><div class="actions"><a class="btn" href="'+next+'">Nächste Aufgabe →</a><a class="btn secondary" href="index.html">Menü</a></div>'}
-function fixImg(img){img.classList.add('missing')}
-
-function byId(list,id){return list.find(x=>x.id===id)||{}}
-function comboImages(c){
-  let cont=byId(WORDS,c.container);
-  let prod=byId(PRODUCTS,c.product);
-  let amount=c.amount ? '<div class="amount-badge">'+c.amount+'</div>' : '';
-  return `<div class="combo-images">
-    <div class="combo-part">${amount}<img src="${cont.image||''}" onerror="fixImg(this)" alt=""></div>
-    <div class="combo-plus">+</div>
-    <div class="combo-part"><img src="${prod.image||''}" onerror="fixImg(this)" alt=""></div>
-  </div>`;
+function speak(text,slow=false){
+  try{
+    speechSynthesis.cancel();
+    let u=new SpeechSynthesisUtterance(String(text||''));
+    u.lang='de-DE';
+    u.rate=slow?0.55:0.82;
+    let voices=speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
+    let v=voices.find(x=>x.lang&&x.lang.toLowerCase().startsWith('de'));
+    if(v)u.voice=v;
+    speechSynthesis.speak(u);
+  }catch(e){
+    console.log('Speech error',e);
+  }
 }
 function spPriceToSpeech(price){
   let p=String(price||'').replace('€','').trim();
@@ -126,6 +114,8 @@ function acceptableAnswer(ans,c){
 function header(title){document.querySelector('.hero').innerHTML=`<div class="top"><a class="brand" href="../../index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="small">${title} · A1 Lektion 3 · Thema 2</div></div></a><div class="nav"><a class="btn secondary" href="../index.html">← Lektionsübersicht</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><a class="btn secondary" href="index.html">Thema 2</a></div></div>`}
 
 function pctFor(file,total=WORDS.length){
+  let modern=spTaskPercent(file,total);
+  if(modern!==null) return modern;
   let s=load();
   if(s.done&&s.done[file]) return 100;
   let st=s[file];
@@ -175,3 +165,14 @@ function acceptablePriceSentence(ans,price){
 
 
 
+
+
+function spTaskPercent(file,total){
+  try{
+    let st=JSON.parse(localStorage.getItem('SP_TASK_STATE_'+file)||'null');
+    if(st && Array.isArray(st.done) && st.total){
+      return Math.round(st.done.length/st.total*100)||0;
+    }
+  }catch(e){}
+  return null;
+}
