@@ -1,1 +1,111 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verpackung + Produkt</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=8"></script><script>header("Verpackung + Produkt");let i=0;function show(){if(i>=COMBOS.length){complete(area,'verpackungen.html','preis-hoeren.html');return}let c=COMBOS[i];area.innerHTML=`${prog({q:[],bad:[],cur:1,done:Array(i).fill(1)})}<div class="question">Schreibe die Kombination.</div>${comboImages(c)}<input id="ans"><button class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`}function check(){if(simple(ans.value)===simple(COMBOS[i].text)){fb.textContent='Richtig!';i++;setTimeout(show,700)}else fb.innerHTML='Falsch.<div class="hint">Lösung: '+COMBOS[i].text+'</div>'}show();</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verpackung + Produkt</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=11"></script>
+<script>
+/* Fallback: verhindert leere Aufgaben, falls app.js aus dem Cache alt geladen wird */
+if(typeof spPriceToSpeech !== "function"){
+  function spPriceToSpeech(price){
+    let p=String(price||'').replace('€','').trim();
+    let parts=p.split(',');
+    let euro=parseInt(parts[0]||'0',10);
+    let cent=parseInt((parts[1]||'00').padEnd(2,'0'),10);
+    if(euro===0) return cent+' Cent';
+    if(cent===0) return euro===1 ? 'ein Euro' : euro+' Euro';
+    return (euro===1 ? 'ein Euro' : euro+' Euro')+' '+cent+' Cent';
+  }
+}
+if(typeof spSpeakPriceSentence !== "function"){
+  function spSpeakPriceSentence(c){
+    let text=c.spoken||c.answer||'';
+    return text.replace(c.price, spPriceToSpeech(c.price)).replace(/0,(\d\d)\s*Euro/g,function(_,cent){return parseInt(cent,10)+' Cent';});
+  }
+}
+if(typeof spTaskStateKey !== "function"){
+  function spTaskStateKey(file){return 'SP_TASK_STATE_'+file;}
+}
+if(typeof spLoadTaskState !== "function"){
+  function spLoadTaskState(file,total){
+    try{
+      let st=JSON.parse(localStorage.getItem(spTaskStateKey(file))||'null');
+      if(st && Array.isArray(st.queue) && st.total===total) return st;
+    }catch(e){}
+    let queue=[...Array(total).keys()].sort(function(){return Math.random()-.5;});
+    return {total:total,queue:queue,done:[],current:null,tries:0};
+  }
+}
+if(typeof spSaveTaskState !== "function"){
+  function spSaveTaskState(file,st){localStorage.setItem(spTaskStateKey(file),JSON.stringify(st));}
+}
+if(typeof spNextIndex !== "function"){
+  function spNextIndex(file,total){
+    let st=spLoadTaskState(file,total);
+    if(st.current===null || st.current===undefined){
+      st.current=st.queue.shift();
+      st.tries=0;
+      spSaveTaskState(file,st);
+    }
+    return st.current;
+  }
+}
+if(typeof spProgressHtml !== "function"){
+  function spProgressHtml(file,total){
+    let st=spLoadTaskState(file,total);
+    let done=st.done.length;
+    let left=total-done;
+    let p=Math.round(done/total*100)||0;
+    return '<div class="small">'+done+' richtig · '+left+' übrig · '+p+'%</div><div class="progress"><div class="bar" style="width:'+p+'%"></div></div>';
+  }
+}
+if(typeof spMarkRight !== "function"){
+  function spMarkRight(file,total){
+    let st=spLoadTaskState(file,total);
+    if(st.current!==null && !st.done.includes(st.current)) st.done.push(st.current);
+    st.current=null;
+    st.tries=0;
+    spSaveTaskState(file,st);
+    return st.done.length>=total;
+  }
+}
+if(typeof spMarkWrong !== "function"){
+  function spMarkWrong(file,total){
+    let st=spLoadTaskState(file,total);
+    st.tries=(st.tries||0)+1;
+    if(st.tries>=2){
+      if(st.current!==null) st.queue.push(st.current);
+      st.current=null;
+    }
+    spSaveTaskState(file,st);
+    return st.tries;
+  }
+}
+if(typeof spFeedbackForTry !== "function"){
+  function spFeedbackForTry(tries,solution,type){
+    if(tries===1) return 'Da ist noch ein Fehler.';
+    if(tries===2) return 'Tipp: Prüfe '+(type||'Form, Wort und Preis')+'.';
+    return 'Lösung: '+solution;
+  }
+}
+</script>
+<script>
+header("Verpackung + Produkt");
+const FILE='verpackungen.html';
+let i=0;
+function show(){
+ if(spLoadTaskState(FILE,COMBOS.length).done.length>=COMBOS.length){complete(area,FILE,'preis-hoeren.html');return}
+ i=spNextIndex(FILE,COMBOS.length);
+ if(i===undefined || i===null){localStorage.removeItem(spTaskStateKey(FILE)); i=spNextIndex(FILE,COMBOS.length);} 
+ let c=COMBOS[i];
+ area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">Schreibe die Kombination.</div><div class="hint">Beispiel: eine Flasche Wasser</div>${comboImages(c)}<input id="ans"><button class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+}
+function check(){
+ let c=COMBOS[i];
+ if(simple(ans.value)===simple(c.text)){
+   fb.textContent='Richtig!';
+   let finished=spMarkRight(FILE,COMBOS.length);
+   setTimeout(show,700);
+ }else{
+   let tries=spMarkWrong(FILE,COMBOS.length);
+   fb.innerHTML=spFeedbackForTry(tries,c.text,'Menge, Verpackung und Produkt');
+   if(tries>=2)setTimeout(show,1100);
+ }
+}
+show();
+</script></body></html>
