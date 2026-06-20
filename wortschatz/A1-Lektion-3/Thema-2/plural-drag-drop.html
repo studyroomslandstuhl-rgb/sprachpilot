@@ -38,52 +38,41 @@ function control(){
 </script>
 <script>
 (function(){
-  function unlockWrongDragItems(){
-    document.querySelectorAll('.wrong,.incorrect,.fehler,.error,.bad').forEach(el=>{
-      el.setAttribute('draggable','true');
-      el.draggable = true;
-      el.style.pointerEvents = 'auto';
-      el.style.opacity = '1';
-      el.classList.remove('locked','disabled','done');
-    });
-    document.querySelectorAll('[draggable="false"]').forEach(el=>{
-      const c = el.className || "";
-      if(/wrong|incorrect|fehler|error|bad/.test(c)){
+  let dragged=null;
+  function isCorrect(el){return /\b(correct|ok|richtig)\b/.test(el.className||"");}
+  function unlock(){
+    document.querySelectorAll('[draggable], .word, .chip, .item, .drag, .card').forEach(el=>{
+      if(isCorrect(el)) return;
+      if((el.textContent||"").trim().length>0){
         el.setAttribute('draggable','true');
-        el.draggable = true;
-        el.style.pointerEvents = 'auto';
+        el.draggable=true;
+        el.style.pointerEvents='auto';
+        el.style.opacity='1';
+        el.classList.remove('locked','disabled');
       }
     });
   }
-
-  document.addEventListener('click',()=>setTimeout(unlockWrongDragItems,80),true);
-  document.addEventListener('touchend',()=>setTimeout(unlockWrongDragItems,80),true);
-
   document.addEventListener('dragstart',e=>{
-    const target = e.target.closest('[draggable], .word, .chip, .item, .card, .drag');
-    if(!target) return;
-    const text = target.dataset.id || target.dataset.word || target.textContent.trim();
-    try{
-      e.dataTransfer.setData('text/plain', text);
-      window.__spDragEl = target;
-    }catch(err){}
+    let el=e.target.closest('[draggable], .word, .chip, .item, .drag, .card');
+    if(!el || isCorrect(el)) return;
+    dragged=el;
+    try{e.dataTransfer.setData('text/plain', el.dataset.id||el.dataset.word||el.textContent.trim());}catch(err){}
   },true);
-
+  document.addEventListener('dragover',e=>{
+    if(e.target.closest('.dropzone,.drop-zone,.group,.box,.table,.column,.target,[data-group],[data-article],[data-plural]')) e.preventDefault();
+  },true);
   document.addEventListener('drop',e=>{
-    const zone = e.target.closest('.dropzone,.drop-zone,.group,.box,.table,.column,.target,[data-group],[data-article],[data-plural]');
-    if(zone && window.__spDragEl){
+    let zone=e.target.closest('.dropzone,.drop-zone,.group,.box,.table,.column,.target,[data-group],[data-article],[data-plural]');
+    if(zone && dragged){
       e.preventDefault();
-      zone.appendChild(window.__spDragEl);
-      unlockWrongDragItems();
+      zone.appendChild(dragged);
+      dragged=null;
+      setTimeout(unlock,50);
     }
   },true);
-
-  document.addEventListener('dragover',e=>{
-    const zone = e.target.closest('.dropzone,.drop-zone,.group,.box,.table,.column,.target,[data-group],[data-article],[data-plural]');
-    if(zone) e.preventDefault();
-  },true);
-
-  setInterval(unlockWrongDragItems,500);
+  document.addEventListener('click',()=>setTimeout(unlock,80),true);
+  setInterval(unlock,500);
+  unlock();
 })();
 </script>
 
