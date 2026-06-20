@@ -1,1 +1,24 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verpackung + Produkt</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=8"></script><script>header("Verpackung + Produkt");let i=0;function show(){if(i>=COMBOS.length){complete(area,'verpackungen.html','preis-hoeren.html');return}let c=COMBOS[i];area.innerHTML=`${`<div class="small">${i} richtig · ${COMBOS.length-i} übrig · ${Math.round(i/COMBOS.length*100)}%</div><div class="progress"><div class="bar" style="width:${Math.round(i/COMBOS.length*100)}%"></div></div>`}<div class="question">Schreibe die Kombination.</div><div class="hint">Beispiel: eine Flasche Wasser</div><div class="hint">Beispiel: eine Flasche Wasser</div>${comboImages(c)}<input id="ans"><button class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`}function check(){if(simple(ans.value)===simple(COMBOS[i].text)){fb.textContent='Richtig!';i++;setTimeout(show,700)}else fb.innerHTML='Falsch.<div class="hint">Lösung: '+COMBOS[i].text+'</div>'}show();</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verpackung + Produkt</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=9"></script><script>
+header("Verpackung + Produkt");
+const FILE='verpackungen.html';
+let i=0;
+function show(){
+ if(spLoadTaskState(FILE,COMBOS.length).done.length>=COMBOS.length){complete(area,FILE,'preis-hoeren.html');return}
+ i=spNextIndex(FILE,COMBOS.length);
+ let c=COMBOS[i];
+ area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">Schreibe die Kombination.</div><div class="hint">Beispiel: eine Flasche Wasser</div>${comboImages(c)}<input id="ans"><button class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+}
+function check(){
+ let c=COMBOS[i];
+ if(simple(ans.value)===simple(c.text)){
+   fb.textContent='Richtig!';
+   let finished=spMarkRight(FILE,COMBOS.length);
+   setTimeout(show,700);
+ }else{
+   let tries=spMarkWrong(FILE,COMBOS.length);
+   fb.innerHTML=spFeedbackForTry(tries,c.text,'Menge, Verpackung und Produkt');
+   if(tries>=2)setTimeout(show,1100);
+ }
+}
+show();
+</script></body></html>

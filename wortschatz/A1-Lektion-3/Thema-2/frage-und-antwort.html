@@ -1,20 +1,23 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frage & Antwort</title><link rel="stylesheet" href="style.css"></head>
 <body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div>
-<script src="app.js?v=8"></script><script>
+<script src="app.js?v=9"></script><script>
 header("Frage & Antwort");
+const FILE='frage-und-antwort.html';
 let i=0,phase='q';
 function show(){
- if(i>=COMBOS.length){complete(area,'frage-und-antwort.html','index.html');return}
+ if(spLoadTaskState(FILE,COMBOS.length).done.length>=COMBOS.length){complete(area,FILE,'index.html');return}
+ i=spNextIndex(FILE,COMBOS.length);
  let c=COMBOS[i];
  if(phase==='q'){
-  area.innerHTML=`<div class="small">${i} fertig · ${COMBOS.length-i} übrig</div><div class="progress"><div class="bar" style="width:${Math.round(i/COMBOS.length*100)}%"></div></div>
+  area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}
   <div class="question">1. Frage nach dem Preis.</div>
-  <div class="hint">Sprich oder schreibe eine Frage. Anfang: <b>Was kostet ...?</b> / <b>Wie viel kostet ...?</b> · Fragezeichen nicht vergessen.</div>
+  <div class="hint">Anfang: <b>Was kostet ...</b> / <b>Wie viel kostet ...</b></div>
   ${comboImages(c)}
   <div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayQ()"><span class="mic-icon">🎤</span>Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div>
   <div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Schreibe hier deine Frage."><button class="btn" onclick="checkQ()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
  }else{
-  area.innerHTML=`<div class="question">2. Antworte auf deine Frage.</div>
+  area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}
+  <div class="question">2. Antworte auf deine Frage.</div>
   <div class="hint">Schreibe hier deine Antwort.</div>
   ${comboImages(c)}<div class="big">${c.price}</div>
   <div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayA()"><span class="mic-icon">🎤</span>Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div>
@@ -23,10 +26,29 @@ function show(){
 }
 function writeQ(){write.classList.remove('hidden')}
 function writeA(){write.classList.remove('hidden')}
-function checkQ(){let c=COMBOS[i];if(acceptableQuestion(ans.value,c)){phase='a';show()}else fb.innerHTML='Fast. Frage mit <b>Was kostet ...</b> oder <b>Wie viel kostet ...</b>.'
-+c.question+'</div>'}
-function checkA(){let c=COMBOS[i];if(acceptableAnswer(ans.value,c)){i++;phase='q';show()}else fb.innerHTML='Fast. Antworte mit Preis und Satz. Möglich: <b>Das kostet ...</b>, <b>Das macht ...</b> oder <b>Eine Flasche Wasser kostet ...</b>.'
-+c.answer+'<br>Oder: Das kostet '+c.price.replace('€','Euro')+'.</div>'}
+function checkQ(){
+ let c=COMBOS[i];
+ if(acceptableQuestion(ans.value,c)){phase='a';show()}
+ else{
+   let tries=spMarkWrong(FILE,COMBOS.length);
+   fb.innerHTML=spFeedbackForTry(tries,c.question,'Fragewort und kostet/kosten');
+   phase='q';
+   if(tries>=2)setTimeout(show,1100);
+ }
+}
+function checkA(){
+ let c=COMBOS[i];
+ if(acceptableAnswer(ans.value,c)){
+   spMarkRight(FILE,COMBOS.length);
+   phase='q';
+   show();
+ }else{
+   let tries=spMarkWrong(FILE,COMBOS.length);
+   fb.innerHTML=spFeedbackForTry(tries,c.answer,'Antwortsatz und Preis');
+   phase='q';
+   if(tries>=2)setTimeout(show,1100);
+ }
+}
 function sayQ(){startMic(micBtn,(txt)=>{writeQ();ans.value=txt;checkQ()})}
 function sayA(){startMic(micBtn,(txt)=>{writeA();ans.value=txt;checkA()})}
 show();
