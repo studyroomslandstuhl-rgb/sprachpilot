@@ -1,1 +1,276 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SprachPilot - A1 Lektion 4</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{
+  min-height:100vh;
+  font-family:Arial, Helvetica, sans-serif;
+  background:linear-gradient(135deg,#f6c343,#f9df7b);
+  color:#222;
+  padding:18px;
+}
+.container{max-width:980px;margin:0 auto}
+.hero{
+  background:white;
+  border-radius:28px;
+  padding:28px 22px;
+  box-shadow:0 14px 38px rgba(0,0,0,.20);
+  text-align:center;
+  margin-bottom:18px;
+  border-top:10px solid #f0b400;
+}
+.logo-wrap{
+  width:104px;
+  height:104px;
+  margin:0 auto 14px;
+  border-radius:28px;
+  background:linear-gradient(135deg,#fff7d6,#ffffff);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  box-shadow:0 10px 24px rgba(240,180,0,.28);
+  border:3px solid #ffe28a;
+}
+.logo-wrap svg{width:78px;height:78px}
+h1{
+  font-size:38px;
+  color:#c98a00;
+  margin-bottom:8px;
+  letter-spacing:.3px;
+}
+.subtitle{
+  font-size:18px;
+  color:#666;
+  line-height:1.4;
+}
+.actions{
+  display:flex;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  margin:18px 0;
+}
+.btn{
+  display:inline-block;
+  text-decoration:none;
+  border-radius:15px;
+  padding:13px 18px;
+  font-size:16px;
+  font-weight:900;
+  background:#fff7d6;
+  color:#6b4700;
+  border:2px solid #ffe28a;
+}
+.info-card{
+  background:white;
+  border-radius:24px;
+  padding:22px;
+  box-shadow:0 12px 32px rgba(0,0,0,.16);
+  margin-bottom:16px;
+}
+.info-title{
+  color:#c98a00;
+  font-size:24px;
+  font-weight:900;
+  margin-bottom:8px;
+}
+.small{
+  font-size:15px;
+  color:#666;
+  line-height:1.5;
+}
+.themes{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
+  gap:14px;
+}
+.theme{
+  display:block;
+  text-decoration:none;
+  color:#222;
+  background:white;
+  border-radius:24px;
+  padding:22px;
+  box-shadow:0 12px 32px rgba(0,0,0,.18);
+  border:3px solid transparent;
+  transition:.2s;
+  position:relative;
+  overflow:hidden;
+}
+.theme:before{
+  content:"";
+  position:absolute;
+  top:0;
+  left:0;
+  right:0;
+  height:9px;
+  background:linear-gradient(135deg,#f0b400,#f9df7b);
+}
+.theme:hover{
+  border-color:#c98a00;
+  transform:translateY(-3px);
+}
+.theme-number{
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  width:42px;
+  height:42px;
+  border-radius:50%;
+  background:#fff7d6;
+  border:2px solid #ffe28a;
+  color:#c98a00;
+  font-size:22px;
+  font-weight:900;
+  margin-bottom:12px;
+}
+.theme-title{
+  font-size:22px;
+  font-weight:900;
+  color:#c98a00;
+  margin-bottom:8px;
+}
+.theme p{
+  color:#555;
+  line-height:1.4;
+  min-height:58px;
+}
+.badge{
+  display:inline-block;
+  margin-top:12px;
+  background:#fff3cd;
+  border:2px solid #f0b400;
+  color:#6b4700;
+  border-radius:999px;
+  padding:5px 10px;
+  font-weight:bold;
+  font-size:13px;
+}
+.words{
+  margin-top:12px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.word{
+  background:#fff7d6;
+  border:1px solid #ffe28a;
+  color:#6b4700;
+  border-radius:999px;
+  padding:6px 10px;
+  font-size:13px;
+  font-weight:800;
+}
+footer{
+  text-align:center;
+  color:white;
+  margin-top:24px;
+  font-size:14px;
+  opacity:.95;
+}
+@media(max-width:650px){
+  body{padding:12px}
+  h1{font-size:32px}
+  .hero{padding:24px 16px}
+  .logo-wrap{width:92px;height:92px}
+}
+</style>
+</head>
 
+<body>
+<div class="container">
+
+  <section class="hero">
+    <div class="logo-wrap" aria-label="SprachPilot Logo">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img">
+        <defs>
+          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
+            <stop offset="0" stop-color="#f0b400"/>
+            <stop offset="1" stop-color="#f9df7b"/>
+          </linearGradient>
+        </defs>
+        <circle cx="60" cy="60" r="52" fill="url(#g)"/>
+        <path d="M28 63 C43 38,70 30,91 38 C75 43,63 53,55 70 C47 66,38 63,28 63Z" fill="#fff" opacity=".95"/>
+        <path d="M54 70 C63 53,75 43,91 38 C84 57,72 75,52 91 C55 82,56 75,54 70Z" fill="#6b4700"/>
+        <circle cx="71" cy="49" r="5" fill="#f0b400"/>
+        <path d="M33 82 C43 78,50 76,58 78" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+    <h1>A1 Lektion 4: Wohnen</h1>
+    <p class="subtitle">Wähle ein Thema. Danach siehst du nur die passenden Aufgaben zu diesem Teil der Lektion.</p>
+  </section>
+
+  <div class="actions">
+    <a class="btn" href="../index.html">← Zurück zur Lektionsübersicht</a>
+  </div>
+
+  <section class="info-card">
+    <div class="info-title">Themen in Lektion 4</div>
+    <p class="small">Die Lektion ist in vier Teile geteilt. In jedem Teil lernen die Teilnehmer Wortschatz, üben kleine Dialoge und wiederholen passende Grammatik.</p>
+  </section>
+
+  <section class="themes">
+
+    <a class="theme" href="Thema-1/">
+      <div class="theme-number">1</div>
+      <div class="theme-title">Wohnung & Zimmer</div>
+      <p>Haus, Wohnung, Zimmer und Räume. Dazu Fragen mit „Wo?“ und Antworten mit „hier“ und „dort“.</p>
+      <div class="words">
+        <span class="word">Wohnung</span>
+        <span class="word">Küche</span>
+        <span class="word">Bad</span>
+        <span class="word">Wo?</span>
+      </div>
+      <span class="badge">Starten</span>
+    </a>
+
+    <a class="theme" href="Thema-2/">
+      <div class="theme-number">2</div>
+      <div class="theme-title">Möbel & Elektrogeräte</div>
+      <p>Möbel, Geräte und Bad-Wörter. Dazu Artikel und Personalpronomen: er, es, sie.</p>
+      <div class="words">
+        <span class="word">Tisch</span>
+        <span class="word">Bett</span>
+        <span class="word">Lampe</span>
+        <span class="word">er/es/sie</span>
+      </div>
+      <span class="badge">Starten</span>
+    </a>
+
+    <a class="theme" href="Thema-3/">
+      <div class="theme-number">3</div>
+      <div class="theme-title">Adjektive & Farben</div>
+      <p>Wohnungen und Möbel beschreiben: schön, hässlich, hell, dunkel, modern und Farben.</p>
+      <div class="words">
+        <span class="word">schön</span>
+        <span class="word">dunkel</span>
+        <span class="word">rot</span>
+        <span class="word">Wie gefällt?</span>
+      </div>
+      <span class="badge">Starten</span>
+    </a>
+
+    <a class="theme" href="Thema-4/">
+      <div class="theme-number">4</div>
+      <div class="theme-title">Wohnungsanzeigen & Dialoge</div>
+      <p>Anzeigen lesen, Preise, Telefonnummern und Gespräche am Telefon üben.</p>
+      <div class="words">
+        <span class="word">Miete</span>
+        <span class="word">Quadratmeter</span>
+        <span class="word">Telefon</span>
+        <span class="word">Anzeige</span>
+      </div>
+      <span class="badge">Starten</span>
+    </a>
+
+  </section>
+
+  <footer>© SprachPilot</footer>
+
+</div>
+</body>
+</html>
