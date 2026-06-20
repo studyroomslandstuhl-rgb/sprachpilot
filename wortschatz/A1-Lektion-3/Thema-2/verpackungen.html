@@ -1,62 +1,16 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Verpackung + Produkt</title>
-<style>
-*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);margin:0;padding:16px;color:#222}
-main{max-width:850px;margin:auto}.card{background:white;border-radius:20px;padding:20px;margin:14px 0;box-shadow:0 8px 24px rgba(0,0,0,.18)}
-h1,h2{color:#667eea}.task{font-size:24px;font-weight:900;background:#f0f4ff;border-radius:16px;padding:18px;margin:12px 0}
-input{width:100%;padding:14px;border:2px solid #ddd;border-radius:12px;font-size:18px}button{border:0;border-radius:14px;padding:12px 16px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);color:white;margin:6px;cursor:pointer}
-.secondary{background:#eef2ff;color:#333}.small{color:#666}.help-box{background:#f0f4ff;border-left:5px solid #667eea;padding:12px;border-radius:10px;margin:10px 0}.answer-box{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0;font-weight:700}.no{background:#ffe1e1;border-left:5px solid #e74c3c;padding:12px;border-radius:10px;margin:10px 0}.ok{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0}
-</style>
-</head>
-<body>
-<main>
-<section class="card">
-<h1>Verpackung + Produkt</h1>
-<p class="small">Schreibe die passende Menge und das Produkt. Achte auf Singular, Plural und Grammatik.</p>
-<div id="box"></div>
-</section>
-</main>
-<script>
-const TASKS=[
- {cue:"die Flasche + Wasser", answer:"eine Flasche Wasser", hint:"eine Flasche ..."},
- {cue:"die Flaschen + Wasser", answer:"drei Flaschen Wasser", hint:"drei Flaschen ..."},
- {cue:"die Dose + Cola", answer:"eine Dose Cola", hint:"eine Dose ..."},
- {cue:"die Dosen + Tomaten", answer:"vier Dosen Tomaten", hint:"vier Dosen ..."},
- {cue:"500 g + Käse", answer:"500 g Käse", hint:"500 g ..."},
- {cue:"250 g + Butter", answer:"250 g Butter", hint:"250 g ..."},
- {cue:"1 kg + Kartoffeln", answer:"1 kg Kartoffeln", hint:"1 kg ..."},
- {cue:"2 kg + Äpfel", answer:"2 kg Äpfel", hint:"2 kg ..."},
- {cue:"1 Pfund + Tomaten", answer:"1 Pfund Tomaten", hint:"1 Pfund ..."},
- {cue:"200 g + Schinken", answer:"200 g Schinken", hint:"200 g ..."}
-];
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Verpackung + Produkt</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=30"></script><script>
+header("Verpackung + Produkt");
 let i=0, tries=0;
-function norm(x){return String(x||"").toLowerCase().replace(/[.,]/g,"").replace(/\s+/g," ").trim()}
-function render(){
- const t=TASKS[i];
- tries=0;
- document.getElementById("box").innerHTML=`
-  <div class="task">${t.cue}</div>
-  <p class="small">Anfang: <strong>${t.hint}</strong></p>
-  <input id="ans" placeholder="Antwort schreiben">
-  <button onclick="check()">Kontrollieren</button>
-  <button class="secondary" onclick="next()">Weiter</button>
-  <div id="fb"></div>
-  <p>${i+1} / ${TASKS.length}</p>`;
+function show(){
+ if(i>=COMBOS.length){complete(area,'verpackungen.html','preis-hoeren.html');return}
+ let c=COMBOS[i]; tries=0;
+ area.innerHTML=`<div class="small">${i} fertig · ${COMBOS.length-i} übrig</div><div class="progress"><div class="bar" style="width:${Math.round(i/COMBOS.length*100)}%"></div></div><div class="question">Schreibe die Kombination.</div>${comboImages(c)}<input id="ans" placeholder="Antwort schreiben"><button class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
 }
 function check(){
- const t=TASKS[i], v=document.getElementById("ans").value;
- if(norm(v)===norm(t.answer)){document.getElementById("fb").innerHTML="<div class='ok'>Richtig!</div>";return}
+ let c=COMBOS[i];
+ if(simple(ans.value)===simple(c.text)){fb.textContent='Richtig!';i++;setTimeout(show,700);return}
  tries++;
- if(tries===1) document.getElementById("fb").innerHTML="<div class='no'>Noch nicht ganz. Prüfe Menge, Produkt und Großschreibung.</div>";
- else if(tries===2) document.getElementById("fb").innerHTML=`<div class='help-box'><strong>Tipp:</strong> Beginne so: ${t.hint}</div>`;
- else document.getElementById("fb").innerHTML=`<div class='answer-box'><strong>Lösung:</strong><br>${t.answer}</div>`;
+ fb.innerHTML=feedbackStep(tries,'Noch nicht ganz.','Achte auf Singular/Plural und die richtige Menge.',''+c.text);
 }
-function next(){i=(i+1)%TASKS.length;render()}
-render();
-</script>
-</body>
-</html>
+show();
+</script></body></html>
