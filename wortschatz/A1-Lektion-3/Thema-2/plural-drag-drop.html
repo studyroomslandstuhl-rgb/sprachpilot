@@ -35,45 +35,4 @@ function control(){
  if(ok===WORDS.length){done('plural-drag-drop.html');nextBtn.classList.remove('hidden');fb.textContent='Gut gemacht!'}
  else fb.textContent='Korrigiere die roten Wörter. Rote Wörter bleiben verschiebbar.';
 }
-</script>
-<script>
-(function(){
-  let dragged=null;
-  function isCorrect(el){return /\b(correct|ok|richtig)\b/.test(el.className||"");}
-  function unlock(){
-    document.querySelectorAll('[draggable], .word, .chip, .item, .drag, .card').forEach(el=>{
-      if(isCorrect(el)) return;
-      if((el.textContent||"").trim().length>0){
-        el.setAttribute('draggable','true');
-        el.draggable=true;
-        el.style.pointerEvents='auto';
-        el.style.opacity='1';
-        el.classList.remove('locked','disabled');
-      }
-    });
-  }
-  document.addEventListener('dragstart',e=>{
-    let el=e.target.closest('[draggable], .word, .chip, .item, .drag, .card');
-    if(!el || isCorrect(el)) return;
-    dragged=el;
-    try{e.dataTransfer.setData('text/plain', el.dataset.id||el.dataset.word||el.textContent.trim());}catch(err){}
-  },true);
-  document.addEventListener('dragover',e=>{
-    if(e.target.closest('.dropzone,.drop-zone,.group,.box,.table,.column,.target,[data-group],[data-article],[data-plural]')) e.preventDefault();
-  },true);
-  document.addEventListener('drop',e=>{
-    let zone=e.target.closest('.dropzone,.drop-zone,.group,.box,.table,.column,.target,[data-group],[data-article],[data-plural]');
-    if(zone && dragged){
-      e.preventDefault();
-      zone.appendChild(dragged);
-      dragged=null;
-      setTimeout(unlock,50);
-    }
-  },true);
-  document.addEventListener('click',()=>setTimeout(unlock,80),true);
-  setInterval(unlock,500);
-  unlock();
-})();
-</script>
-
-</body></html>
+</script></body></html>
