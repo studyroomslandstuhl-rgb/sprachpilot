@@ -1,229 +1,32 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Frage & Antwort</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="container">
-  <section class="hero"></section>
-  <div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div>
-  <section class="card" id="area">
-    <div class="question">Aufgabe wird geladen …</div>
-  </section>
-  <footer>© SprachPilot</footer>
-</div>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frage & Antwort</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=12"></script><script>
 
-<script src="app.js?v=15"></script>
-<script>
-
-function ensureTaskHelpers(){
-  if(typeof COMBOS === 'undefined' || !Array.isArray(COMBOS) || COMBOS.length===0){
-    area.innerHTML='<div class="feedback">Fehler: COMBOS wurden nicht geladen. Prüfe app.js.</div>';
-    return false;
+header("Frage & Antwort");
+const FILE='frage-und-antwort.html'; let i=0, phase='q';
+function show(){
+  if(spLoadTaskState(FILE,COMBOS.length).done.length>=COMBOS.length){complete(area,FILE,'index.html');return}
+  i=spNextIndex(FILE,COMBOS.length);
+  if(i===undefined || i===null){localStorage.removeItem(spTaskStateKey(FILE)); i=spNextIndex(FILE,COMBOS.length)}
+  let c=COMBOS[i];
+  if(phase==='q'){
+    area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">1. Frage nach dem Preis.</div><div class="hint">Anfang: <b>Was kostet ...</b> / <b>Wie viel kostet ...</b></div>${comboImages(c)}<div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayQ()"><span class="mic-icon">🎤</span>Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Schreibe hier deine Frage."><button class="btn" onclick="checkQ()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+  }else{
+    area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">2. Antworte auf deine Frage.</div><div class="hint">Schreibe hier deine Antwort.</div>${comboImages(c)}<div class="big">${c.price}</div><div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayA()"><span class="mic-icon">🎤</span>Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Schreibe hier deine Antwort."><button class="btn" onclick="checkA()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
   }
-
-  if(typeof spTaskStateKey !== 'function'){
-    window.spTaskStateKey = function(file){return 'SP_TASK_STATE_'+file;}
-  }
-  if(typeof spLoadTaskState !== 'function'){
-    window.spLoadTaskState = function(file,total){
-      try{
-        let st=JSON.parse(localStorage.getItem(spTaskStateKey(file))||'null');
-        if(st && Array.isArray(st.queue) && Array.isArray(st.done) && st.total===total) return st;
-      }catch(e){}
-      let queue=[...Array(total).keys()].sort(()=>Math.random()-.5);
-      return {total:total, queue:queue, done:[], current:null, tries:0};
-    }
-  }
-  if(typeof spSaveTaskState !== 'function'){
-    window.spSaveTaskState = function(file,st){localStorage.setItem(spTaskStateKey(file),JSON.stringify(st));}
-  }
-  if(typeof spNextIndex !== 'function'){
-    window.spNextIndex = function(file,total){
-      let st=spLoadTaskState(file,total);
-      if(st.current===null || st.current===undefined){
-        if(!st.queue.length && st.done.length<total){
-          st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);
-        }
-        st.current=st.queue.shift();
-        st.tries=0;
-        spSaveTaskState(file,st);
-      }
-      return st.current;
-    }
-  }
-  if(typeof spProgressHtml !== 'function'){
-    window.spProgressHtml = function(file,total){
-      let st=spLoadTaskState(file,total);
-      let done=st.done.length;
-      let left=total-done;
-      let p=Math.round(done/total*100)||0;
-      return `<div class="small">${done} richtig · ${left} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`;
-    }
-  }
-  if(typeof spMarkRight !== 'function'){
-    window.spMarkRight = function(file,total){
-      let st=spLoadTaskState(file,total);
-      if(st.current!==null && !st.done.includes(st.current)) st.done.push(st.current);
-      st.current=null;
-      st.tries=0;
-      spSaveTaskState(file,st);
-      return st.done.length>=total;
-    }
-  }
-  if(typeof spMarkWrong !== 'function'){
-    window.spMarkWrong = function(file,total){
-      let st=spLoadTaskState(file,total);
-      st.tries=(st.tries||0)+1;
-      if(st.tries>=2 && st.current!==null){
-        st.queue.push(st.current);
-        st.current=null;
-      }
-      spSaveTaskState(file,st);
-      return st.tries;
-    }
-  }
-  if(typeof spFeedbackForTry !== 'function'){
-    window.spFeedbackForTry = function(tries,solution,type){
-      if(tries===1) return 'Da ist noch ein Fehler.';
-      if(tries===2) return 'Tipp: Prüfe '+(type||'Form und Schreibweise')+'.';
-      return 'Lösung: '+solution;
-    }
-  }
-  if(typeof simple !== 'function'){
-    window.simple = function(x){
-      return String(x||'').toLowerCase().trim().replace(/[.,!?€]/g,'').replace(/\s+/g,' ');
-    }
-  }
-  if(typeof fixImg !== 'function'){
-    window.fixImg = function(img){img.classList.add('missing');}
-  }
-  if(typeof byId !== 'function'){
-    window.byId = function(list,id){return list.find(x=>x.id===id)||{};}
-  }
-  if(typeof comboImages !== 'function'){
-    window.comboImages = function(c){
-      let cont=byId(WORDS,c.container);
-      let prod=byId(PRODUCTS,c.product);
-      let amount=c.amount ? '<div class="amount-badge">'+c.amount+'</div>' : '';
-      return `<div class="combo-images">
-        <div class="combo-part">${amount}<img src="${cont.image||''}" onerror="fixImg(this)" alt=""></div>
-        <div class="combo-plus">+</div>
-        <div class="combo-part"><img src="${prod.image||''}" onerror="fixImg(this)" alt=""></div>
-      </div>`;
-    }
-  }
-  if(typeof acceptableQuestion !== 'function'){
-    window.acceptableQuestion = function(ans,c){
-      let a=simple(ans);
-      let verb=c.isPlural?'kosten':'kostet';
-      let wrong=c.isPlural?'kostet':'kosten';
-      let starts=['was '+verb,'wie viel '+verb,'wieviel '+verb].map(simple);
-      if(!starts.some(st=>a.startsWith(st))) return false;
-      if(a.includes(simple(' '+wrong+' '))) return false;
-      return true;
-    }
-  }
-  if(typeof acceptableAnswer !== 'function'){
-    window.acceptableAnswer = function(ans,c){
-      let a=simple(ans);
-      let verb=c.isPlural?'kosten':'kostet';
-      let starts=[simple(c.text+' '+verb), simple('das '+verb), simple('das macht'), simple('es '+verb)];
-      return starts.some(st=>a.startsWith(st));
-    }
-  }
-  return true;
 }
+function writeQ(){write.classList.remove('hidden')}
+function writeA(){write.classList.remove('hidden')}
+function checkQ(){
+  let c=COMBOS[i];
+  if(acceptableQuestion(ans.value,c)){phase='a';show()}
+  else{let tries=spMarkWrong(FILE,COMBOS.length);fb.innerHTML=spFeedbackForTry(tries,c.question,'Fragewort und kostet/kosten');phase='q';if(tries>=2)setTimeout(show,1200)}
+}
+function checkA(){
+  let c=COMBOS[i];
+  if(acceptableAnswer(ans.value,c)){spMarkRight(FILE,COMBOS.length);phase='q';show()}
+  else{let tries=spMarkWrong(FILE,COMBOS.length);fb.innerHTML=spFeedbackForTry(tries,c.answer,'Antwortsatz und Preis');phase='q';if(tries>=2)setTimeout(show,1200)}
+}
+function sayQ(){startMic(micBtn,(txt)=>{writeQ();ans.value=txt;checkQ()})}
+function sayA(){startMic(micBtn,(txt)=>{writeA();ans.value=txt;checkA()})}
+show();
 
-document.addEventListener('DOMContentLoaded', function(){
-  if(typeof header === 'function') header("Frage & Antwort");
-  const FILE='frage-und-antwort.html';
-  let i=0;
-  let phase='q';
-
-  function show(){
-    if(!ensureTaskHelpers()) return;
-
-    let st=spLoadTaskState(FILE,COMBOS.length);
-    if(st.done.length>=COMBOS.length){
-      if(typeof complete === 'function') complete(area,FILE,'index.html');
-      else area.innerHTML='<div class="question">Fertig!</div>';
-      return;
-    }
-
-    i=spNextIndex(FILE,COMBOS.length);
-    if(i===undefined || i===null){
-      localStorage.removeItem(spTaskStateKey(FILE));
-      i=spNextIndex(FILE,COMBOS.length);
-    }
-
-    let c=COMBOS[i];
-
-    if(phase==='q'){
-      area.innerHTML=`
-        ${spProgressHtml(FILE,COMBOS.length)}
-        <div class="question">1. Frage nach dem Preis.</div>
-        <div class="hint">Anfang: <b>Was kostet ...</b> / <b>Wie viel kostet ...</b></div>
-        ${comboImages(c)}
-        <input id="ans" placeholder="Schreibe hier deine Frage.">
-        <button class="btn" id="checkBtn">Kontrollieren</button>
-        <div id="fb" class="feedback"></div>
-      `;
-      document.getElementById('checkBtn').onclick=checkQ;
-    }else{
-      area.innerHTML=`
-        ${spProgressHtml(FILE,COMBOS.length)}
-        <div class="question">2. Antworte auf deine Frage.</div>
-        <div class="hint">Schreibe hier deine Antwort.</div>
-        ${comboImages(c)}
-        <div class="big">${c.price}</div>
-        <input id="ans" placeholder="Schreibe hier deine Antwort.">
-        <button class="btn" id="checkBtn">Kontrollieren</button>
-        <div id="fb" class="feedback"></div>
-      `;
-      document.getElementById('checkBtn').onclick=checkA;
-    }
-  }
-
-  function checkQ(){
-    let c=COMBOS[i];
-    let ans=document.getElementById('ans');
-    let fb=document.getElementById('fb');
-
-    if(acceptableQuestion(ans.value,c)){
-      phase='a';
-      show();
-    }else{
-      let tries=spMarkWrong(FILE,COMBOS.length);
-      fb.innerHTML=spFeedbackForTry(tries,c.question,'Fragewort und kostet/kosten');
-      phase='q';
-      if(tries>=2) setTimeout(show,1200);
-    }
-  }
-
-  function checkA(){
-    let c=COMBOS[i];
-    let ans=document.getElementById('ans');
-    let fb=document.getElementById('fb');
-
-    if(acceptableAnswer(ans.value,c)){
-      spMarkRight(FILE,COMBOS.length);
-      phase='q';
-      show();
-    }else{
-      let tries=spMarkWrong(FILE,COMBOS.length);
-      fb.innerHTML=spFeedbackForTry(tries,c.answer,'Antwortsatz und Preis');
-      phase='q';
-      if(tries>=2) setTimeout(show,1200);
-    }
-  }
-
-  show();
-});
-
-</script>
-</body>
-</html>
+</script></body></html>
