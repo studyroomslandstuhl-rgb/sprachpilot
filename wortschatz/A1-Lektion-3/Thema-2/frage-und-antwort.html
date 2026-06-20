@@ -18,256 +18,323 @@
 
 <script src="app.js?v=16"></script>
 <script>
-function ensureTaskHelpers(){
-  if(typeof COMBOS === 'undefined' || !Array.isArray(COMBOS) || COMBOS.length===0){
-    area.innerHTML='<div class="feedback">Fehler: COMBOS wurden nicht geladen. Prüfe app.js.</div>';
+header("Frage & Antwort");
+
+const FILE = "frage-und-antwort.html";
+let currentIndex = null;
+let phase = "question"; // question -> answer
+
+function safeSimple(x){
+  if(typeof simple === "function") return simple(x);
+  return String(x || "")
+    .toLowerCase()
+    .trim()
+    .replace(/[.,!?€]/g,"")
+    .replace(/\s+/g," ");
+}
+
+function ensureState(){
+  if(typeof COMBOS === "undefined" || !Array.isArray(COMBOS) || COMBOS.length === 0){
+    area.innerHTML = '<div class="feedback">Fehler: Die Aufgaben wurden nicht geladen. Bitte app.js prüfen.</div>';
     return false;
   }
 
-  if(typeof spTaskStateKey !== 'function'){
-    window.spTaskStateKey = function(file){return 'SP_TASK_STATE_'+file;}
+  if(typeof spTaskStateKey !== "function"){
+    window.spTaskStateKey = function(file){ return "SP_TASK_STATE_" + file; };
   }
-  if(typeof spLoadTaskState !== 'function'){
+
+  if(typeof spLoadTaskState !== "function"){
     window.spLoadTaskState = function(file,total){
       try{
-        let st=JSON.parse(localStorage.getItem(spTaskStateKey(file))||'null');
-        if(st && Array.isArray(st.queue) && Array.isArray(st.done) && st.total===total) return st;
-      }catch(e){}
-      let queue=[...Array(total).keys()].sort(()=>Math.random()-.5);
-      return {total:total, queue:queue, done:[], current:null, tries:0};
-    }
-  }
-  if(typeof spSaveTaskState !== 'function'){
-    window.spSaveTaskState = function(file,st){localStorage.setItem(spTaskStateKey(file),JSON.stringify(st));}
-  }
-  if(typeof spNextIndex !== 'function'){
-    window.spNextIndex = function(file,total){
-      let st=spLoadTaskState(file,total);
-      if(st.current===null || st.current===undefined){
-        if(!st.queue.length && st.done.length<total){
-          st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);
+        const saved = JSON.parse(localStorage.getItem(spTaskStateKey(file)) || "null");
+        if(saved && saved.total === total && Array.isArray(saved.queue) && Array.isArray(saved.done)){
+          return saved;
         }
-        st.current=st.queue.shift();
-        st.tries=0;
-        spSaveTaskState(file,st);
-      }
-      return st.current;
-    }
+      }catch(e){}
+      const queue = [...Array(total).keys()].sort(() => Math.random() - 0.5);
+      return { total, queue, done: [], current: null, tries: 0 };
+    };
   }
-  if(typeof spProgressHtml !== 'function'){
+
+  if(typeof spSaveTaskState !== "function"){
+    window.spSaveTaskState = function(file,state){
+      localStorage.setItem(spTaskStateKey(file), JSON.stringify(state));
+    };
+  }
+
+  if(typeof spNextIndex !== "function"){
+    window.spNextIndex = function(file,total){
+      const state = spLoadTaskState(file,total);
+      if(state.current === null || state.current === undefined){
+        if(!state.queue.length && state.done.length < total){
+          state.queue = [...Array(total).keys()]
+            .filter(i => !state.done.includes(i))
+            .sort(() => Math.random() - 0.5);
+        }
+        state.current = state.queue.shift();
+        state.tries = 0;
+        spSaveTaskState(file,state);
+      }
+      return state.current;
+    };
+  }
+
+  if(typeof spProgressHtml !== "function"){
     window.spProgressHtml = function(file,total){
-      let st=spLoadTaskState(file,total);
-      let done=st.done.length;
-      let left=total-done;
-      let p=Math.round(done/total*100)||0;
-      return `<div class="small">${done} richtig · ${left} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`;
-    }
+      const state = spLoadTaskState(file,total);
+      const done = state.done.length;
+      const left = total - done;
+      const percent = Math.round(done / total * 100) || 0;
+      return `<div class="small">${done} richtig · ${left} übrig · ${percent}%</div>
+              <div class="progress"><div class="bar" style="width:${percent}%"></div></div>`;
+    };
   }
-  if(typeof spMarkRight !== 'function'){
+
+  if(typeof spMarkRight !== "function"){
     window.spMarkRight = function(file,total){
-      let st=spLoadTaskState(file,total);
-      if(st.current!==null && !st.done.includes(st.current)) st.done.push(st.current);
-      st.current=null;
-      st.tries=0;
-      spSaveTaskState(file,st);
-      return st.done.length>=total;
-    }
-  }
-  if(typeof spMarkWrong !== 'function'){
-    window.spMarkWrong = function(file,total){
-      let st=spLoadTaskState(file,total);
-      st.tries=(st.tries||0)+1;
-      if(st.tries>=2 && st.current!==null){
-        st.queue.push(st.current);
-        st.current=null;
+      const state = spLoadTaskState(file,total);
+      if(state.current !== null && !state.done.includes(state.current)){
+        state.done.push(state.current);
       }
-      spSaveTaskState(file,st);
-      return st.tries;
-    }
+      state.current = null;
+      state.tries = 0;
+      spSaveTaskState(file,state);
+      return state.done.length >= total;
+    };
   }
-  if(typeof spFeedbackForTry !== 'function'){
+
+  if(typeof spMarkWrong !== "function"){
+    window.spMarkWrong = function(file,total){
+      const state = spLoadTaskState(file,total);
+      state.tries = (state.tries || 0) + 1;
+      if(state.tries >= 2 && state.current !== null){
+        state.queue.push(state.current);
+        state.current = null;
+      }
+      spSaveTaskState(file,state);
+      return state.tries;
+    };
+  }
+
+  if(typeof spFeedbackForTry !== "function"){
     window.spFeedbackForTry = function(tries,solution,type){
-      if(tries===1) return 'Da ist noch ein Fehler.';
-      if(tries===2) return 'Tipp: Prüfe '+(type||'Form und Schreibweise')+'.';
-      return 'Lösung: '+solution;
-    }
+      if(tries === 1) return "Da ist noch ein Fehler.";
+      if(tries === 2) return "Tipp: Prüfe " + (type || "Form und Schreibweise") + ".";
+      return "Lösung: " + solution;
+    };
   }
-  if(typeof simple !== 'function'){
-    window.simple = function(x){
-      return String(x||'').toLowerCase().trim().replace(/[.,!?€]/g,'').replace(/\s+/g,' ');
-    }
+
+  if(typeof byId !== "function"){
+    window.byId = function(list,id){ return list.find(x => x.id === id) || {}; };
   }
-  if(typeof fixImg !== 'function'){
-    window.fixImg = function(img){img.classList.add('missing');}
-  }
-  if(typeof byId !== 'function'){
-    window.byId = function(list,id){return list.find(x=>x.id===id)||{};}
-  }
-  if(typeof comboImages !== 'function'){
+
+  if(typeof comboImages !== "function"){
     window.comboImages = function(c){
-      let cont=byId(WORDS,c.container);
-      let prod=byId(PRODUCTS,c.product);
-      let amount=c.amount ? '<div class="amount-badge">'+c.amount+'</div>' : '';
+      const cont = byId(WORDS,c.container);
+      const prod = byId(PRODUCTS,c.product);
+      const amount = c.amount ? `<div class="amount-badge">${c.amount}</div>` : "";
       return `<div class="combo-images">
-        <div class="combo-part">${amount}<img src="${cont.image||''}" onerror="fixImg(this)" alt=""></div>
+        <div class="combo-part">${amount}<img src="${cont.image || ""}" onerror="fixImg(this)" alt=""></div>
         <div class="combo-plus">+</div>
-        <div class="combo-part"><img src="${prod.image||''}" onerror="fixImg(this)" alt=""></div>
+        <div class="combo-part"><img src="${prod.image || ""}" onerror="fixImg(this)" alt=""></div>
       </div>`;
-    }
+    };
   }
-  if(typeof acceptableQuestion !== 'function'){
+
+  if(typeof fixImg !== "function"){
+    window.fixImg = function(img){ img.classList.add("missing"); };
+  }
+
+  if(typeof acceptableQuestion !== "function"){
     window.acceptableQuestion = function(ans,c){
-      let a=simple(ans);
-      let verb=c.isPlural?'kosten':'kostet';
-      let wrong=c.isPlural?'kostet':'kosten';
-      let starts=['was '+verb,'wie viel '+verb,'wieviel '+verb].map(simple);
-      if(!starts.some(st=>a.startsWith(st))) return false;
-      if(a.includes(simple(' '+wrong+' '))) return false;
+      const a = safeSimple(ans);
+      const verb = c.isPlural ? "kosten" : "kostet";
+      const wrong = c.isPlural ? "kostet" : "kosten";
+      const starts = ["was " + verb, "wie viel " + verb, "wieviel " + verb].map(safeSimple);
+      if(!starts.some(st => a.startsWith(st))) return false;
+      if(a.includes(safeSimple(" " + wrong + " "))) return false;
       return true;
-    }
-  
-document.addEventListener('DOMContentLoaded', function(){
-  if(typeof header === 'function') header("Frage & Antwort");
-  const FILE='frage-und-antwort.html';
-  let i=0;
-  let phase='q';
-
-  function show(){
-    if(!ensureTaskHelpers()) return;
-
-    let st=spLoadTaskState(FILE,COMBOS.length);
-    if(st.done.length>=COMBOS.length){
-      if(typeof complete === 'function') complete(area,FILE,'index.html');
-      else area.innerHTML='<div class="question">Fertig!</div>';
-      return;
-    }
-
-    i=spNextIndex(FILE,COMBOS.length);
-    if(i===undefined || i===null){
-      localStorage.removeItem(spTaskStateKey(FILE));
-      i=spNextIndex(FILE,COMBOS.length);
-    }
-
-    let c=COMBOS[i];
-
-    if(phase==='q'){
-      area.innerHTML=`
-        ${spProgressHtml(FILE,COMBOS.length)}
-        <div class="question">1. Frage nach dem Preis.</div>
-        <div class="hint">Sprich die Frage. Wenn es nicht geht, kannst du sie schreiben.</div>
-        ${comboImages(c)}
-        <div class="actions">
-          <button id="micBtn" class="btn mic-btn">🎤 Frage sprechen</button>
-          <button id="writeBtn" class="btn secondary">Ich kann nicht sprechen</button>
-        </div>
-        <div id="micStatus" class="mic-status"></div>
-        <div id="writeBox" class="hidden">
-          <input id="ans" placeholder="Schreibe hier deine Frage.">
-          <button class="btn" id="checkBtn">Kontrollieren</button>
-        </div>
-        <div id="fb" class="feedback"></div>
-      `;
-      document.getElementById('micBtn').onclick=sayQ;
-      document.getElementById('writeBtn').onclick=writeQ;
-    }else{
-      area.innerHTML=`
-        ${spProgressHtml(FILE,COMBOS.length)}
-        <div class="question">2. Antworte auf deine Frage.</div>
-        <div class="hint">Sprich die Antwort. Wenn es nicht geht, kannst du sie schreiben.</div>
-        ${comboImages(c)}
-        <div class="big">${c.price}</div>
-        <div class="actions">
-          <button id="micBtn" class="btn mic-btn">🎤 Antwort sprechen</button>
-          <button id="writeBtn" class="btn secondary">Ich kann nicht sprechen</button>
-        </div>
-        <div id="micStatus" class="mic-status"></div>
-        <div id="writeBox" class="hidden">
-          <input id="ans" placeholder="Schreibe hier deine Antwort.">
-          <button class="btn" id="checkBtn">Kontrollieren</button>
-        </div>
-        <div id="fb" class="feedback"></div>
-      `;
-      document.getElementById('micBtn').onclick=sayA;
-      document.getElementById('writeBtn').onclick=writeA;
-    }
+    };
   }
 
-  function writeQ(){
-    document.getElementById('writeBox').classList.remove('hidden');
-    document.getElementById('checkBtn').onclick=checkQ;
+  if(typeof acceptableAnswer !== "function"){
+    window.acceptableAnswer = function(ans,c){
+      const a = safeSimple(ans);
+      const verb = c.isPlural ? "kosten" : "kostet";
+      const wrong = c.isPlural ? "kostet" : "kosten";
+      if(a.includes(safeSimple(" " + wrong + " "))) return false;
+
+      const price = safeSimple(c.price);
+      const priceText = safeSimple(String(c.price).replace("€","Euro"));
+      const starts = [
+        safeSimple(c.text + " " + verb),
+        safeSimple("das " + verb),
+        safeSimple("es " + verb),
+        safeSimple("das macht")
+      ];
+      return starts.some(st => a.startsWith(st)) && (a.includes(price) || a.includes(priceText) || a.includes("cent") || a.includes("euro"));
+    };
   }
 
-  function writeA(){
-    document.getElementById('writeBox').classList.remove('hidden');
-    document.getElementById('checkBtn').onclick=checkA;
+  return true;
+}
+
+function listenGerman(callback, button){
+  const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+  const status = document.getElementById("micStatus");
+
+  if(!SpeechRecognition){
+    if(status) status.textContent = "Mikrofon wird hier nicht unterstützt. Bitte schreibe.";
+    showWriteBox();
+    return;
   }
 
-  function checkQ(){
-    let c=COMBOS[i];
-    let ans=document.getElementById('ans');
-    let fb=document.getElementById('fb');
+  const rec = new SpeechRecognition();
+  rec.lang = "de-DE";
+  rec.interimResults = false;
+  rec.continuous = false;
 
-    if(acceptableQuestion(ans.value,c)){
-      phase='a';
-      show();
-    }else{
-      let tries=spMarkWrong(FILE,COMBOS.length);
-      fb.innerHTML=spFeedbackForTry(tries,c.question,'Fragewort und kostet/kosten');
-      phase='q';
-      if(tries>=2) setTimeout(show,1200);
-    }
+  if(button) button.classList.add("active");
+  if(status) status.textContent = "Ich höre zu …";
+
+  rec.onresult = function(e){
+    const text = e.results[0][0].transcript;
+    if(status) status.textContent = "Gehört: " + text;
+    callback(text);
+  };
+
+  rec.onerror = function(){
+    if(status) status.textContent = "Mikrofon hat nicht funktioniert. Bitte schreibe.";
+    showWriteBox();
+  };
+
+  rec.onend = function(){
+    if(button) button.classList.remove("active");
+  };
+
+  rec.start();
+}
+
+function currentCombo(){
+  return COMBOS[currentIndex];
+}
+
+function show(){
+  if(!ensureState()) return;
+
+  const state = spLoadTaskState(FILE,COMBOS.length);
+  if(state.done.length >= COMBOS.length){
+    if(typeof complete === "function") complete(area,FILE,"index.html");
+    else area.innerHTML = '<div class="question">Fertig!</div>';
+    return;
   }
 
-  function checkA(){
-    let c=COMBOS[i];
-    let ans=document.getElementById('ans');
-    let fb=document.getElementById('fb');
-
-    if(acceptableAnswer(ans.value,c)){
-      spMarkRight(FILE,COMBOS.length);
-      phase='q';
-      show();
-    }else{
-      let tries=spMarkWrong(FILE,COMBOS.length);
-      fb.innerHTML=spFeedbackForTry(tries,c.answer,'Antwortsatz und Preis');
-      phase='q';
-      if(tries>=2) setTimeout(show,1200);
-    }
+  currentIndex = spNextIndex(FILE,COMBOS.length);
+  if(currentIndex === undefined || currentIndex === null){
+    localStorage.removeItem(spTaskStateKey(FILE));
+    currentIndex = spNextIndex(FILE,COMBOS.length);
   }
 
-  function sayQ(){
-    const btn=document.getElementById('micBtn');
-    const status=document.getElementById('micStatus');
-    if(typeof startMic !== 'function'){
-      writeQ();
-      status.textContent='Mikrofon wird hier nicht unterstützt. Bitte schreibe die Frage.';
-      return;
-    }
-    startMic(btn,function(txt){
-      writeQ();
-      document.getElementById('ans').value=txt;
-      checkQ();
-    });
+  const c = currentCombo();
+
+  if(phase === "question"){
+    area.innerHTML = `
+      ${spProgressHtml(FILE,COMBOS.length)}
+      <div class="question">1. Frage nach dem Preis.</div>
+      <div class="hint">Sprich die Frage. Wenn das Mikrofon nicht funktioniert, kannst du schreiben.</div>
+      ${comboImages(c)}
+      <div class="actions">
+        <button id="speakBtn" class="btn mic-btn">🎤 Frage sprechen</button>
+        <button id="writeBtn" class="btn secondary">Ich kann nicht sprechen</button>
+      </div>
+      <div id="micStatus" class="mic-status"></div>
+      <div id="writeBox" class="hidden">
+        <input id="answerInput" placeholder="Schreibe hier deine Frage.">
+        <button id="checkBtn" class="btn">Kontrollieren</button>
+      </div>
+      <div id="fb" class="feedback"></div>
+    `;
+
+    document.getElementById("speakBtn").onclick = function(){
+      listenGerman(function(text){
+        checkQuestion(text);
+      }, this);
+    };
+    document.getElementById("writeBtn").onclick = showWriteBox;
+  }else{
+    area.innerHTML = `
+      ${spProgressHtml(FILE,COMBOS.length)}
+      <div class="question">2. Antworte auf deine Frage.</div>
+      <div class="hint">Sprich die Antwort. Wenn das Mikrofon nicht funktioniert, kannst du schreiben.</div>
+      ${comboImages(c)}
+      <div class="big">${c.price}</div>
+      <div class="actions">
+        <button id="speakBtn" class="btn mic-btn">🎤 Antwort sprechen</button>
+        <button id="writeBtn" class="btn secondary">Ich kann nicht sprechen</button>
+      </div>
+      <div id="micStatus" class="mic-status"></div>
+      <div id="writeBox" class="hidden">
+        <input id="answerInput" placeholder="Schreibe hier deine Antwort.">
+        <button id="checkBtn" class="btn">Kontrollieren</button>
+      </div>
+      <div id="fb" class="feedback"></div>
+    `;
+
+    document.getElementById("speakBtn").onclick = function(){
+      listenGerman(function(text){
+        checkAnswer(text);
+      }, this);
+    };
+    document.getElementById("writeBtn").onclick = showWriteBox;
   }
+}
 
-  function sayA(){
-    const btn=document.getElementById('micBtn');
-    const status=document.getElementById('micStatus');
-    if(typeof startMic !== 'function'){
-      writeA();
-      status.textContent='Mikrofon wird hier nicht unterstützt. Bitte schreibe die Antwort.';
-      return;
-    }
-    startMic(btn,function(txt){
-      writeA();
-      document.getElementById('ans').value=txt;
-      checkA();
-    });
+function showWriteBox(){
+  const box = document.getElementById("writeBox");
+  if(box) box.classList.remove("hidden");
+
+  const checkBtn = document.getElementById("checkBtn");
+  if(checkBtn){
+    checkBtn.onclick = function(){
+      const input = document.getElementById("answerInput");
+      if(phase === "question") checkQuestion(input.value);
+      else checkAnswer(input.value);
+    };
   }
+}
 
-  show();
-});
+function checkQuestion(text){
+  const c = currentCombo();
+  const fb = document.getElementById("fb");
 
+  if(acceptableQuestion(text,c)){
+    phase = "answer";
+    show();
+  }else{
+    const tries = spMarkWrong(FILE,COMBOS.length);
+    fb.innerHTML = spFeedbackForTry(tries,c.question,"Fragewort und kostet/kosten");
+    phase = "question";
+    if(tries >= 2) setTimeout(show,1200);
+  }
+}
+
+function checkAnswer(text){
+  const c = currentCombo();
+  const fb = document.getElementById("fb");
+
+  if(acceptableAnswer(text,c)){
+    spMarkRight(FILE,COMBOS.length);
+    phase = "question";
+    show();
+  }else{
+    const tries = spMarkWrong(FILE,COMBOS.length);
+    fb.innerHTML = spFeedbackForTry(tries,c.answer,"Antwortsatz und Preis");
+    phase = "question";
+    if(tries >= 2) setTimeout(show,1200);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", show);
 </script>
 </body>
 </html>
