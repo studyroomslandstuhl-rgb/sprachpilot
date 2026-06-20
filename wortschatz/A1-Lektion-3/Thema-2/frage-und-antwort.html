@@ -9,13 +9,13 @@ function show(){
  if(phase==='q'){
   area.innerHTML=`<div class="small">${i} fertig · ${COMBOS.length-i} übrig</div><div class="progress"><div class="bar" style="width:${Math.round(i/COMBOS.length*100)}%"></div></div>
   <div class="question">1. Frage nach dem Preis.</div>
-  <div class="hint">Sprich oder schreibe eine Frage. Möglich: <b>Was kostet ...?</b> oder <b>Wie viel kostet ...?</b></div>
+  <div class="hint">Sprich oder schreibe eine Frage. Anfang: <b>Was kostet ...?</b> / <b>Wie viel kostet ...?</b></div>
   ${comboImages(c)}
   <div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayQ()"><span class="mic-icon">🎤</span>Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div>
   <div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Was kostet eine Flasche Wasser?"><button class="btn" onclick="checkQ()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
  }else{
   area.innerHTML=`<div class="question">2. Antworte auf deine Frage.</div>
-  <div class="hint">Antwortmöglichkeiten: <b>${c.answer}</b> / <b>Das kostet ${c.price.replace('€','Euro')}.</b> / <b>Das macht ${c.price.replace('€','Euro')}.</b></div>
+  <div class="hint">Anfang: <b>Das kostet ...</b> / <b>Das macht ...</b></div>
   ${comboImages(c)}<div class="big">${c.price}</div>
   <div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayA()"><span class="mic-icon">🎤</span>Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div>
   <div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Das kostet ..."><button class="btn" onclick="checkA()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
