@@ -23,7 +23,7 @@ function show(){
 }
 function writeQ(){write.classList.remove('hidden')}
 function writeA(){write.classList.remove('hidden')}
-function checkQ(){let c=COMBOS[i];if(acceptableQuestion(ans.value,c)){phase='a';show()}else fb.innerHTML='Fast. Frage mit <b>Was kostet ...?</b> oder <b>Wie viel kostet ...?</b>. Fragezeichen nicht vergessen.'
+function checkQ(){let c=COMBOS[i];if(acceptableQuestion(ans.value,c)){phase='a';show()}else fb.innerHTML='Fast. Frage mit <b>Was kostet ...</b> oder <b>Wie viel kostet ...</b>.'
 +c.question+'</div>'}
 function checkA(){let c=COMBOS[i];if(acceptableAnswer(ans.value,c)){i++;phase='q';show()}else fb.innerHTML='Fast. Antworte mit Preis und Satz. Möglich: <b>Das kostet ...</b>, <b>Das macht ...</b> oder <b>Eine Flasche Wasser kostet ...</b>.'
 +c.answer+'<br>Oder: Das kostet '+c.price.replace('€','Euro')+'.</div>'}

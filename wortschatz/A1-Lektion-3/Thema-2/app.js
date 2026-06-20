@@ -1,74 +1,8 @@
 
 const WORDS=[{"id": "flasche", "article": "die", "word": "Flasche", "full": "die Flasche", "plural": "die Flaschen", "pluralGroup": "-n", "image": "../bilder/flasche.png", "translations": {"Deutsch": "Flasche", "Russisch": "бутылка", "Ukrainisch": "пляшка", "Arabisch": "زجاجة", "Türkisch": "şişe", "Rumänisch": "sticlă", "Englisch": "bottle"}}, {"id": "dose", "article": "die", "word": "Dose", "full": "die Dose", "plural": "die Dosen", "pluralGroup": "-n", "image": "../bilder/dose.png", "translations": {"Deutsch": "Dose", "Russisch": "банка", "Ukrainisch": "банка", "Arabisch": "علبة", "Türkisch": "kutu", "Rumänisch": "cutie", "Englisch": "can"}}, {"id": "glas", "article": "das", "word": "Glas", "full": "das Glas", "plural": "die Gläser", "pluralGroup": "-er/Umlaut", "image": "../bilder/glas.png", "translations": {"Deutsch": "Glas", "Russisch": "стакан", "Ukrainisch": "склянка", "Arabisch": "كأس", "Türkisch": "bardak", "Rumänisch": "pahar", "Englisch": "glass"}}, {"id": "packung", "article": "die", "word": "Packung", "full": "die Packung", "plural": "die Packungen", "pluralGroup": "-en", "image": "../bilder/packung.png", "translations": {"Deutsch": "Packung", "Russisch": "упаковка", "Ukrainisch": "упаковка", "Arabisch": "عبوة", "Türkisch": "paket", "Rumänisch": "pachet", "Englisch": "package"}}, {"id": "tuete", "article": "die", "word": "Tüte", "full": "die Tüte", "plural": "die Tüten", "pluralGroup": "-n", "image": "../bilder/tuete.png", "translations": {"Deutsch": "Tüte", "Russisch": "пакет", "Ukrainisch": "пакет", "Arabisch": "كيس", "Türkisch": "poşet", "Rumänisch": "pungă", "Englisch": "bag"}}, {"id": "becher", "article": "der", "word": "Becher", "full": "der Becher", "plural": "die Becher", "pluralGroup": "-", "image": "../bilder/becher.png", "translations": {"Deutsch": "Becher", "Russisch": "стаканчик", "Ukrainisch": "стаканчик", "Arabisch": "كوب", "Türkisch": "bardak", "Rumänisch": "pahar", "Englisch": "cup"}}, {"id": "karton", "article": "der", "word": "Karton", "full": "der Karton", "plural": "die Kartons", "pluralGroup": "-s", "image": "../bilder/karton.png", "translations": {"Deutsch": "Karton", "Russisch": "картонная коробка", "Ukrainisch": "картонна коробка", "Arabisch": "كرتون", "Türkisch": "karton", "Rumänisch": "carton", "Englisch": "carton"}}, {"id": "stueck", "article": "das", "word": "Stück", "full": "das Stück", "plural": "die Stücke", "pluralGroup": "-e", "image": "../bilder/stueck.png", "translations": {"Deutsch": "Stück", "Russisch": "кусок", "Ukrainisch": "шматок", "Arabisch": "قطعة", "Türkisch": "parça", "Rumänisch": "bucată", "Englisch": "piece"}}, {"id": "kilo", "article": "das", "word": "Kilo", "full": "das Kilo", "plural": "die Kilos", "pluralGroup": "-s", "image": "../bilder/kilo.png", "translations": {"Deutsch": "Kilo", "Russisch": "кило", "Ukrainisch": "кіло", "Arabisch": "كيلو", "Türkisch": "kilo", "Rumänisch": "kilogram", "Englisch": "kilo"}}, {"id": "gramm", "article": "das", "word": "Gramm", "full": "das Gramm", "plural": "die Gramm", "pluralGroup": "-", "image": "../bilder/gramm.png", "translations": {"Deutsch": "Gramm", "Russisch": "грамм", "Ukrainisch": "грам", "Arabisch": "غرام", "Türkisch": "gram", "Rumänisch": "gram", "Englisch": "gram"}}, {"id": "liter", "article": "der", "word": "Liter", "full": "der Liter", "plural": "die Liter", "pluralGroup": "-", "image": "../bilder/liter.png", "translations": {"Deutsch": "Liter", "Russisch": "литр", "Ukrainisch": "літр", "Arabisch": "لتر", "Türkisch": "litre", "Rumänisch": "litru", "Englisch": "liter"}}];
-const PRODUCTS=[{"id": "wasser", "article": "das", "word": "Wasser", "full": "das Wasser", "image": "../bilder/wasser.png"}, {"id": "milch", "article": "die", "word": "Milch", "full": "die Milch", "image": "../bilder/milch.png"}, {"id": "kaffee", "article": "der", "word": "Kaffee", "full": "der Kaffee", "image": "../bilder/kaffee.png"}, {"id": "zucker", "article": "der", "word": "Zucker", "full": "der Zucker", "image": "../bilder/zucker.png"}, {"id": "salz", "article": "das", "word": "Salz", "full": "das Salz", "image": "../bilder/salz.png"}, {"id": "saft", "article": "der", "word": "Saft", "full": "der Saft", "image": "../bilder/saft.png"}, {"id": "kaese", "article": "der", "word": "Käse", "full": "der Käse", "image": "../bilder/kaese.png"}, {"id": "apfel", "article": "der", "word": "Apfel", "full": "der Apfel", "image": "../bilder/apfel.png"}, {"id": "tomate", "article": "die", "word": "Tomate", "full": "die Tomate", "image": "../bilder/tomate.png"}];
-const COMBOS=[{"text": "eine Flasche Wasser", "plural": "zwei Flaschen Wasser", "container": "flasche", "product": "wasser", "price": "1,50 €", "question": "Was kostet eine Flasche Wasser?", "answer": "Eine Flasche Wasser kostet 1,50 Euro."}, {"text": "eine Packung Kaffee", "plural": "drei Packungen Kaffee", "container": "packung", "product": "kaffee", "price": "4,99 €", "question": "Was kostet eine Packung Kaffee?", "answer": "Eine Packung Kaffee kostet 4,99 Euro."}, {"text": "eine Dose Saft", "plural": "vier Dosen Saft", "container": "dose", "product": "saft", "price": "0,99 €", "question": "Was kostet eine Dose Saft?", "answer": "Eine Dose Saft kostet 0,99 Euro."}, {"text": "ein Glas Milch", "plural": "zwei Gläser Milch", "container": "glas", "product": "milch", "price": "1,20 €", "question": "Was kostet ein Glas Milch?", "answer": "Ein Glas Milch kostet 1,20 Euro."}, {"text": "eine Tüte Zucker", "plural": "zwei Tüten Zucker", "container": "tuete", "product": "zucker", "price": "1,29 €", "question": "Was kostet eine Tüte Zucker?", "answer": "Eine Tüte Zucker kostet 1,29 Euro."}, {"text": "ein Kilo Äpfel", "plural": "zwei Kilo Äpfel", "container": "kilo", "product": "apfel", "price": "2,99 €", "question": "Was kostet ein Kilo Äpfel?", "answer": "Ein Kilo Äpfel kostet 2,99 Euro."}, {"text": "100 Gramm Käse", "plural": "200 Gramm Käse", "container": "gramm", "product": "kaese", "price": "2,49 €", "question": "Was kosten 100 Gramm Käse?", "answer": "100 Gramm Käse kosten 2,49 Euro."}, {"text": "ein Liter Wasser", "plural": "zwei Liter Wasser", "container": "liter", "product": "wasser", "price": "0,80 €", "question": "Was kostet ein Liter Wasser?", "answer": "Ein Liter Wasser kostet 0,80 Euro."}];
-const PRICE_HEAR_TASKS=[
-  {price:"0,19 €",spoken:"Das kostet neunzehn Cent."},
-  {price:"0,49 €",spoken:"Das kostet neunundvierzig Cent."},
-  {price:"0,89 €",spoken:"Das macht neunundachtzig Cent."},
-  {price:"1,15 €",spoken:"Das kostet ein Euro fünfzehn."},
-  {price:"1,79 €",spoken:"Das macht ein Euro neunundsiebzig."},
-  {price:"2,35 €",spoken:"Das kostet zwei Euro fünfunddreißig."},
-  {price:"3,49 €",spoken:"Das macht drei Euro neunundvierzig."},
-  {price:"4,80 €",spoken:"Das kostet vier Euro achtzig."},
-  {price:"5,99 €",spoken:"Das macht fünf Euro neunundneunzig."},
-  {price:"7,25 €",spoken:"Das kostet sieben Euro fünfundzwanzig."},
-  {price:"8,90 €",spoken:"Das macht acht Euro neunzig."},
-  {price:"10,50 €",spoken:"Das kostet zehn Euro fünfzig."},
-  {price:"12,99 €",spoken:"Das macht zwölf Euro neunundneunzig."},
-  {price:"15,40 €",spoken:"Das kostet fünfzehn Euro vierzig."},
-  {price:"18,75 €",spoken:"Das macht achtzehn Euro fünfundsiebzig."},
-  {price:"22,30 €",spoken:"Das kostet zweiundzwanzig Euro dreißig."},
-  {price:"29,99 €",spoken:"Das macht neunundzwanzig Euro neunundneunzig."},
-  {price:"39,50 €",spoken:"Das kostet neununddreißig Euro fünfzig."},
-  {price:"64,90 €",spoken:"Das macht vierundsechzig Euro neunzig."},
-  {price:"99,99 €",spoken:"Das kostet neunundneunzig Euro neunundneunzig."}
-];
-const PRICE_WRITE_TASKS=[
-  {price:"0,35 €",spoken:"Das kostet fünfunddreißig Cent."},
-  {price:"0,75 €",spoken:"Das macht fünfundsiebzig Cent."},
-  {price:"1,05 €",spoken:"Das kostet ein Euro fünf."},
-  {price:"1,69 €",spoken:"Das macht ein Euro neunundsechzig."},
-  {price:"2,10 €",spoken:"Das kostet zwei Euro zehn."},
-  {price:"2,95 €",spoken:"Das macht zwei Euro fünfundneunzig."},
-  {price:"3,80 €",spoken:"Das kostet drei Euro achtzig."},
-  {price:"4,45 €",spoken:"Das macht vier Euro fünfundvierzig."},
-  {price:"6,20 €",spoken:"Das kostet sechs Euro zwanzig."},
-  {price:"7,70 €",spoken:"Das macht sieben Euro siebzig."},
-  {price:"9,49 €",spoken:"Das kostet neun Euro neunundvierzig."},
-  {price:"11,25 €",spoken:"Das macht elf Euro fünfundzwanzig."},
-  {price:"13,60 €",spoken:"Das kostet dreizehn Euro sechzig."},
-  {price:"16,90 €",spoken:"Das macht sechzehn Euro neunzig."},
-  {price:"21,15 €",spoken:"Das kostet einundzwanzig Euro fünfzehn."},
-  {price:"26,80 €",spoken:"Das macht sechsundzwanzig Euro achtzig."},
-  {price:"34,99 €",spoken:"Das kostet vierunddreißig Euro neunundneunzig."},
-  {price:"47,50 €",spoken:"Das macht siebenundvierzig Euro fünfzig."},
-  {price:"72,40 €",spoken:"Das kostet zweiundsiebzig Euro vierzig."},
-  {price:"100,00 €",spoken:"Das macht hundert Euro."}
-];
-const PRICE_SPEAK_TASKS=[
-  {price:"0,10 €",spoken:"Das kostet zehn Cent."},
-  {price:"0,59 €",spoken:"Das kostet neunundfünfzig Cent."},
-  {price:"0,95 €",spoken:"Das kostet fünfundneunzig Cent."},
-  {price:"1,25 €",spoken:"Das kostet ein Euro fünfundzwanzig."},
-  {price:"1,99 €",spoken:"Das kostet ein Euro neunundneunzig."},
-  {price:"2,60 €",spoken:"Das kostet zwei Euro sechzig."},
-  {price:"3,15 €",spoken:"Das kostet drei Euro fünfzehn."},
-  {price:"3,99 €",spoken:"Das kostet drei Euro neunundneunzig."},
-  {price:"5,50 €",spoken:"Das kostet fünf Euro fünfzig."},
-  {price:"6,99 €",spoken:"Das kostet sechs Euro neunundneunzig."},
-  {price:"8,25 €",spoken:"Das kostet acht Euro fünfundzwanzig."},
-  {price:"14,95 €",spoken:"Das kostet vierzehn Euro fünfundneunzig."},
-  {price:"17,30 €",spoken:"Das kostet siebzehn Euro dreißig."},
-  {price:"24,60 €",spoken:"Das kostet vierundzwanzig Euro sechzig."},
-  {price:"31,99 €",spoken:"Das kostet einunddreißig Euro neunundneunzig."},
-  {price:"42,00 €",spoken:"Das kostet zweiundvierzig Euro."},
-  {price:"55,55 €",spoken:"Das kostet fünfundfünfzig Euro fünfundfünfzig."},
-  {price:"68,90 €",spoken:"Das kostet achtundsechzig Euro neunzig."},
-  {price:"88,80 €",spoken:"Das kostet achtundachtzig Euro achtzig."},
-  {price:"96,45 €",spoken:"Das kostet sechsundneunzig Euro fünfundvierzig."}
-];
-const PRICE_TASKS=PRICE_HEAR_TASKS;
+const PRODUCTS=[{"id": "wasser", "article": "das", "word": "Wasser", "full": "das Wasser", "image": "../bilder/wasser.png"}, {"id": "milch", "article": "die", "word": "Milch", "full": "die Milch", "image": "../bilder/milch.png"}, {"id": "kaffee", "article": "der", "word": "Kaffee", "full": "der Kaffee", "image": "../bilder/kaffee.png"}, {"id": "zucker", "article": "der", "word": "Zucker", "full": "der Zucker", "image": "../bilder/zucker.png"}, {"id": "salz", "article": "das", "word": "Salz", "full": "das Salz", "image": "../bilder/salz.png"}, {"id": "saft", "article": "der", "word": "Saft", "full": "der Saft", "image": "../bilder/saft.png"}, {"id": "kaese", "article": "der", "word": "Käse", "full": "der Käse", "image": "../bilder/kaese.png"}, {"id": "apfel", "article": "der", "word": "Apfel", "full": "der Apfel", "image": "../bilder/apfel.png"}, {"id": "tomate", "article": "die", "word": "Tomate", "full": "die Tomate", "image": "../bilder/tomate.png"}, {"id": "bier", "article": "das", "word": "Bier", "full": "das Bier", "image": "../bilder/bier.png"}, {"id": "wein", "article": "das", "word": "Wein", "full": "das Wein", "image": "../bilder/wein.png"}, {"id": "tee", "article": "der", "word": "Tee", "full": "der Tee", "image": "../bilder/tee.png"}, {"id": "mehl", "article": "das", "word": "Mehl", "full": "das Mehl", "image": "../bilder/mehl.png"}, {"id": "cola", "article": "die", "word": "Cola", "full": "die Cola", "image": "../bilder/cola.png"}, {"id": "ananas", "article": "die", "word": "Ananas", "full": "die Ananas", "image": "../bilder/ananas.png"}, {"id": "joghurt", "article": "das", "word": "Joghurt", "full": "das Joghurt", "image": "../bilder/joghurt.png"}, {"id": "sahne", "article": "die", "word": "Sahne", "full": "die Sahne", "image": "../bilder/sahne.png"}, {"id": "marmelade", "article": "die", "word": "Marmelade", "full": "die Marmelade", "image": "../bilder/marmelade.png"}, {"id": "nutella", "article": "das", "word": "Nutella", "full": "das Nutella", "image": "../bilder/nutella.png"}, {"id": "chips", "article": "das", "word": "Chips", "full": "das Chips", "image": "../bilder/chips.png"}, {"id": "schokolade", "article": "die", "word": "Schokolade", "full": "die Schokolade", "image": "../bilder/schokolade.png"}, {"id": "ei", "article": "das", "word": "Ei", "full": "das Ei", "image": "../bilder/ei.png"}, {"id": "zwiebel", "article": "die", "word": "Zwiebel", "full": "die Zwiebel", "image": "../bilder/zwiebel.png"}, {"id": "brokkoli", "article": "der", "word": "Brokkoli", "full": "der Brokkoli", "image": "../bilder/brokkoli.png"}, {"id": "kohl", "article": "der", "word": "Kohl", "full": "der Kohl", "image": "../bilder/kohl.png"}, {"id": "wuerstchen", "article": "das", "word": "Würstchen", "full": "das Würstchen", "image": "../bilder/wuerstchen.png"}, {"id": "fleisch", "article": "das", "word": "Fleisch", "full": "das Fleisch", "image": "../bilder/fleisch.png"}, {"id": "fisch", "article": "der", "word": "Fisch", "full": "der Fisch", "image": "../bilder/fisch.png"}];
+const COMBOS=[{"text": "eine Flasche Wasser", "container": "flasche", "product": "wasser", "price": "0,79 €", "question": "Was kostet eine Flasche Wasser?", "answer": "Eine Flasche Wasser kostet 0,79 Euro.", "isPlural": false}, {"text": "eine Flasche Saft", "container": "flasche", "product": "saft", "price": "1,99 €", "question": "Was kostet eine Flasche Saft?", "answer": "Eine Flasche Saft kostet 1,99 Euro.", "isPlural": false}, {"text": "eine Flasche Bier", "container": "flasche", "product": "bier", "price": "1,29 €", "question": "Was kostet eine Flasche Bier?", "answer": "Eine Flasche Bier kostet 1,29 Euro.", "isPlural": false}, {"text": "eine Flasche Wein", "container": "flasche", "product": "wein", "price": "5,99 €", "question": "Was kostet eine Flasche Wein?", "answer": "Eine Flasche Wein kostet 5,99 Euro.", "isPlural": false}, {"text": "eine Packung Zucker", "container": "packung", "product": "zucker", "price": "1,29 €", "question": "Was kostet eine Packung Zucker?", "answer": "Eine Packung Zucker kostet 1,29 Euro.", "isPlural": false}, {"text": "eine Packung Kaffee", "container": "packung", "product": "kaffee", "price": "4,99 €", "question": "Was kostet eine Packung Kaffee?", "answer": "Eine Packung Kaffee kostet 4,99 Euro.", "isPlural": false}, {"text": "eine Packung Tee", "container": "packung", "product": "tee", "price": "2,49 €", "question": "Was kostet eine Packung Tee?", "answer": "Eine Packung Tee kostet 2,49 Euro.", "isPlural": false}, {"text": "eine Packung Mehl", "container": "packung", "product": "mehl", "price": "0,99 €", "question": "Was kostet eine Packung Mehl?", "answer": "Eine Packung Mehl kostet 0,99 Euro.", "isPlural": false}, {"text": "eine Dose Kaffee", "container": "dose", "product": "kaffee", "price": "3,99 €", "question": "Was kostet eine Dose Kaffee?", "answer": "Eine Dose Kaffee kostet 3,99 Euro.", "isPlural": false}, {"text": "eine Dose Bier", "container": "dose", "product": "bier", "price": "0,89 €", "question": "Was kostet eine Dose Bier?", "answer": "Eine Dose Bier kostet 0,89 Euro.", "isPlural": false}, {"text": "eine Dose Cola", "container": "dose", "product": "cola", "price": "0,99 €", "question": "Was kostet eine Dose Cola?", "answer": "Eine Dose Cola kostet 0,99 Euro.", "isPlural": false}, {"text": "eine Dose Tomaten", "container": "dose", "product": "tomate", "price": "1,29 €", "question": "Was kostet eine Dose Tomaten?", "answer": "Eine Dose Tomaten kostet 1,29 Euro.", "isPlural": false}, {"text": "eine Dose Ananas", "container": "dose", "product": "ananas", "price": "1,49 €", "question": "Was kostet eine Dose Ananas?", "answer": "Eine Dose Ananas kostet 1,49 Euro.", "isPlural": false}, {"text": "ein Becher Joghurt", "container": "becher", "product": "joghurt", "price": "0,69 €", "question": "Was kostet ein Becher Joghurt?", "answer": "Ein Becher Joghurt kostet 0,69 Euro.", "isPlural": false}, {"text": "ein Becher Sahne", "container": "becher", "product": "sahne", "price": "1,19 €", "question": "Was kostet ein Becher Sahne?", "answer": "Ein Becher Sahne kostet 1,19 Euro.", "isPlural": false}, {"text": "ein Becher Kaffee", "container": "becher", "product": "kaffee", "price": "1,49 €", "question": "Was kostet ein Becher Kaffee?", "answer": "Ein Becher Kaffee kostet 1,49 Euro.", "isPlural": false}, {"text": "ein Glas Marmelade", "container": "glas", "product": "marmelade", "price": "2,49 €", "question": "Was kostet ein Glas Marmelade?", "answer": "Ein Glas Marmelade kostet 2,49 Euro.", "isPlural": false}, {"text": "ein Glas Nutella", "container": "glas", "product": "nutella", "price": "3,49 €", "question": "Was kostet ein Glas Nutella?", "answer": "Ein Glas Nutella kostet 3,49 Euro.", "isPlural": false}, {"text": "eine Tüte Chips", "container": "tuete", "product": "chips", "price": "1,99 €", "question": "Was kostet eine Tüte Chips?", "answer": "Eine Tüte Chips kostet 1,99 Euro.", "isPlural": false}, {"text": "eine Tüte Schokolade", "container": "tuete", "product": "schokolade", "price": "2,19 €", "question": "Was kostet eine Tüte Schokolade?", "answer": "Eine Tüte Schokolade kostet 2,19 Euro.", "isPlural": false}, {"text": "zehn Eier", "container": "stueck", "amount": "10", "product": "ei", "price": "2,99 €", "question": "Was kosten zehn Eier?", "answer": "Zehn Eier kosten 2,99 Euro.", "isPlural": true}, {"text": "ein Kilo Zwiebeln", "container": "kilo", "amount": "1", "product": "zwiebel", "price": "1,49 €", "question": "Was kostet ein Kilo Zwiebeln?", "answer": "Ein Kilo Zwiebeln kostet 1,49 Euro.", "isPlural": false}, {"text": "zwei Kilo Äpfel", "container": "kilo", "amount": "2", "product": "apfel", "price": "5,98 €", "question": "Was kosten zwei Kilo Äpfel?", "answer": "Zwei Kilo Äpfel kosten 5,98 Euro.", "isPlural": true}, {"text": "drei Kilo Tomaten", "container": "kilo", "amount": "3", "product": "tomate", "price": "7,47 €", "question": "Was kosten drei Kilo Tomaten?", "answer": "Drei Kilo Tomaten kosten 7,47 Euro.", "isPlural": true}, {"text": "ein Kilo Brokkoli", "container": "kilo", "amount": "1", "product": "brokkoli", "price": "2,79 €", "question": "Was kostet ein Kilo Brokkoli?", "answer": "Ein Kilo Brokkoli kostet 2,79 Euro.", "isPlural": false}, {"text": "zwei Kilo Kohl", "container": "kilo", "amount": "2", "product": "kohl", "price": "3,98 €", "question": "Was kosten zwei Kilo Kohl?", "answer": "Zwei Kilo Kohl kosten 3,98 Euro.", "isPlural": true}, {"text": "100 Gramm Käse", "container": "gramm", "amount": "100", "product": "kaese", "price": "1,99 €", "question": "Was kosten 100 Gramm Käse?", "answer": "100 Gramm Käse kosten 1,99 Euro.", "isPlural": true}, {"text": "200 Gramm Würstchen", "container": "gramm", "amount": "200", "product": "wuerstchen", "price": "2,79 €", "question": "Was kosten 200 Gramm Würstchen?", "answer": "200 Gramm Würstchen kosten 2,79 Euro.", "isPlural": true}, {"text": "300 Gramm Fleisch", "container": "gramm", "amount": "300", "product": "fleisch", "price": "4,49 €", "question": "Was kosten 300 Gramm Fleisch?", "answer": "300 Gramm Fleisch kosten 4,49 Euro.", "isPlural": true}, {"text": "500 Gramm Fisch", "container": "gramm", "amount": "500", "product": "fisch", "price": "6,99 €", "question": "Was kosten 500 Gramm Fisch?", "answer": "500 Gramm Fisch kosten 6,99 Euro.", "isPlural": true}];
+const PRICE_TASKS=[{"price": "0,79 €", "spoken": "Eine Flasche Wasser kostet 0,79 Euro."}, {"price": "1,99 €", "spoken": "Eine Flasche Saft kostet 1,99 Euro."}, {"price": "1,29 €", "spoken": "Eine Flasche Bier kostet 1,29 Euro."}, {"price": "5,99 €", "spoken": "Eine Flasche Wein kostet 5,99 Euro."}, {"price": "1,29 €", "spoken": "Eine Packung Zucker kostet 1,29 Euro."}, {"price": "4,99 €", "spoken": "Eine Packung Kaffee kostet 4,99 Euro."}, {"price": "2,49 €", "spoken": "Eine Packung Tee kostet 2,49 Euro."}, {"price": "0,99 €", "spoken": "Eine Packung Mehl kostet 0,99 Euro."}, {"price": "3,99 €", "spoken": "Eine Dose Kaffee kostet 3,99 Euro."}, {"price": "0,89 €", "spoken": "Eine Dose Bier kostet 0,89 Euro."}, {"price": "0,99 €", "spoken": "Eine Dose Cola kostet 0,99 Euro."}, {"price": "1,29 €", "spoken": "Eine Dose Tomaten kostet 1,29 Euro."}, {"price": "1,49 €", "spoken": "Eine Dose Ananas kostet 1,49 Euro."}, {"price": "0,69 €", "spoken": "Ein Becher Joghurt kostet 0,69 Euro."}, {"price": "1,19 €", "spoken": "Ein Becher Sahne kostet 1,19 Euro."}, {"price": "1,49 €", "spoken": "Ein Becher Kaffee kostet 1,49 Euro."}, {"price": "2,49 €", "spoken": "Ein Glas Marmelade kostet 2,49 Euro."}, {"price": "3,49 €", "spoken": "Ein Glas Nutella kostet 3,49 Euro."}, {"price": "1,99 €", "spoken": "Eine Tüte Chips kostet 1,99 Euro."}, {"price": "2,19 €", "spoken": "Eine Tüte Schokolade kostet 2,19 Euro."}];
 const KEY='SP_A1_L3_T2_FIXED_V2';
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
 function save(s){localStorage.setItem(KEY,JSON.stringify(s))}
@@ -94,6 +28,18 @@ function done(file){let s=load();s.done=s.done||{};s.done[file]=true;save(s)}
 function taskPct(file,total=WORDS.length){let s=load();if(s.done&&s.done[file])return 100;let st=s[file];return st?Math.round((st.done||[]).length/total*100):0}
 function complete(area,file,next){done(file);area.innerHTML='<div class="big">Gut gemacht!</div><div class="actions"><a class="btn" href="'+next+'">Nächste Aufgabe →</a><a class="btn secondary" href="index.html">Menü</a></div>'}
 function fixImg(img){img.classList.add('missing')}
+function byId(list,id){return list.find(x=>x.id===id)||{}}
+function byId(list,id){return list.find(x=>x.id===id)||{}}
+function comboImages(c){
+  let cont=byId(WORDS,c.container);
+  let prod=byId(PRODUCTS,c.product);
+  let amount=c.amount ? '<div class="amount-badge">'+c.amount+'</div>' : '';
+  return `<div class="combo-images">
+    <div class="combo-part">${amount}<img src="${cont.image||''}" onerror="fixImg(this)" alt=""></div>
+    <div class="combo-plus">+</div>
+    <div class="combo-part"><img src="${prod.image||''}" onerror="fixImg(this)" alt=""></div>
+  </div>`;
+}
 function header(title){document.querySelector('.hero').innerHTML=`<div class="top"><a class="brand" href="../../index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="small">${title} · A1 Lektion 3 · Thema 2</div></div></a><div class="nav"><a class="btn secondary" href="../index.html">← Lektionsübersicht</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><a class="btn secondary" href="index.html">Thema 2</a></div></div>`}
 
 function pctFor(file,total=WORDS.length){
@@ -102,31 +48,6 @@ function pctFor(file,total=WORDS.length){
   let st=s[file];
   if(st && Array.isArray(st.done)) return Math.round(st.done.length/total*100);
   return 0;
-}
-
-function cleanPrice(x){
-  return String(x||'')
-    .trim()
-    .replace(/€/g,'')
-    .replace(/euro/gi,'')
-    .replace(/eur/gi,'')
-    .replace(/\s+/g,'')
-    .replace(/\./g,',')
-    .replace(/[^0-9,]/g,'')
-    .replace(/^0+(?=\d)/,'');
-}
-function findById(list,id){return list.find(x=>x.id===id)||{};}
-function comboImages(c){
-  const container=findById(WORDS,c.container);
-  const product=findById(PRODUCTS,c.product);
-  return `<div class="combo-imgs">
-    <div class="combo-box"><img class="food-img" src="${container.image||''}" onerror="fixImg(this)"><div class="small">${container.full||container.word||''}</div></div>
-    <div class="combo-plus">+</div>
-    <div class="combo-box"><img class="food-img" src="${product.image||''}" onerror="fixImg(this)"><div class="small">${product.full||product.word||''}</div></div>
-  </div>`;
-}
-function taskProgressHtml(i,total){
-  return `<div class="small">${i} richtig · ${total-i} übrig</div><div class="progress"><div class="bar" style="width:${Math.round(i/total*100)}%"></div></div>`;
 }
 function priceVariants(price){
   let p = String(price||'').replace('€','').trim();
@@ -156,25 +77,26 @@ function acceptablePriceSentence(ans,price){
 }
 function acceptableQuestion(ans,c){
   let a=simple(ans);
-  let targets=[
-    c.question,
-    'Was kostet '+c.text+'?',
-    'Wie viel kostet '+c.text+'?',
-    'Was macht '+c.text+'?',
-    'Wie viel kostet das?',
-    'Was kostet das?'
-  ].map(simple);
-  return targets.includes(a);
+  let verb=c.isPlural?'kosten':'kostet';
+  let wrong=c.isPlural?'kostet':'kosten';
+  let starts=['was '+verb,'wie viel '+verb,'wieviel '+verb].map(simple);
+  if(!starts.some(st=>a.startsWith(st))) return false;
+  if(a.includes(simple(' '+wrong+' '))) return false;
+  return true;
 }
 function acceptableAnswer(ans,c){
   let a=simple(ans);
   if(acceptablePriceSentence(ans,c.price)) return true;
+  let verb=c.isPlural?'kosten':'kostet';
+  let wrong=c.isPlural?'kostet':'kosten';
+  if(a.includes(simple(' '+wrong+' '))) return false;
   let pvars=priceVariants(c.price);
   let starts=[
-    simple(c.text+' kostet'),
-    simple('Der Artikel kostet'),
-    simple('Das Produkt kostet'),
-    simple('Es kostet')
+    simple(c.text+' '+verb),
+    simple('Der Artikel '+verb),
+    simple('Das Produkt '+verb),
+    simple('Es '+verb),
+    simple('Das '+verb)
   ];
   return starts.some(st=>a.startsWith(st)) && pvars.some(v=>a.includes(v));
 }
