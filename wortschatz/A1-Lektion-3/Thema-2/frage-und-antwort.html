@@ -1,32 +1,142 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frage & Antwort</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=12"></script><script>
-
-header("Frage & Antwort");
-const FILE='frage-und-antwort.html'; let i=0, phase='q';
-function show(){
-  if(spLoadTaskState(FILE,COMBOS.length).done.length>=COMBOS.length){complete(area,FILE,'index.html');return}
-  i=spNextIndex(FILE,COMBOS.length);
-  if(i===undefined || i===null){localStorage.removeItem(spTaskStateKey(FILE)); i=spNextIndex(FILE,COMBOS.length)}
-  let c=COMBOS[i];
-  if(phase==='q'){
-    area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">1. Frage nach dem Preis.</div><div class="hint">Anfang: <b>Was kostet ...</b> / <b>Wie viel kostet ...</b></div>${comboImages(c)}<div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayQ()"><span class="mic-icon">🎤</span>Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Schreibe hier deine Frage."><button class="btn" onclick="checkQ()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
-  }else{
-    area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">2. Antworte auf deine Frage.</div><div class="hint">Schreibe hier deine Antwort.</div>${comboImages(c)}<div class="big">${c.price}</div><div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayA()"><span class="mic-icon">🎤</span>Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Schreibe hier deine Antwort."><button class="btn" onclick="checkA()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frage & Antwort</title><link rel="stylesheet" href="style.css"></head>
+<body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div>
+<script src="app.js?v=11"></script>
+<script>
+/* Fallback: verhindert leere Aufgaben, falls app.js aus dem Cache alt geladen wird */
+if(typeof spPriceToSpeech !== "function"){
+  function spPriceToSpeech(price){
+    let p=String(price||'').replace('€','').trim();
+    let parts=p.split(',');
+    let euro=parseInt(parts[0]||'0',10);
+    let cent=parseInt((parts[1]||'00').padEnd(2,'0'),10);
+    if(euro===0) return cent+' Cent';
+    if(cent===0) return euro===1 ? 'ein Euro' : euro+' Euro';
+    return (euro===1 ? 'ein Euro' : euro+' Euro')+' '+cent+' Cent';
   }
+}
+if(typeof spSpeakPriceSentence !== "function"){
+  function spSpeakPriceSentence(c){
+    let text=c.spoken||c.answer||'';
+    return text.replace(c.price, spPriceToSpeech(c.price)).replace(/0,(\d\d)\s*Euro/g,function(_,cent){return parseInt(cent,10)+' Cent';});
+  }
+}
+if(typeof spTaskStateKey !== "function"){
+  function spTaskStateKey(file){return 'SP_TASK_STATE_'+file;}
+}
+if(typeof spLoadTaskState !== "function"){
+  function spLoadTaskState(file,total){
+    try{
+      let st=JSON.parse(localStorage.getItem(spTaskStateKey(file))||'null');
+      if(st && Array.isArray(st.queue) && st.total===total) return st;
+    }catch(e){}
+    let queue=[...Array(total).keys()].sort(function(){return Math.random()-.5;});
+    return {total:total,queue:queue,done:[],current:null,tries:0};
+  }
+}
+if(typeof spSaveTaskState !== "function"){
+  function spSaveTaskState(file,st){localStorage.setItem(spTaskStateKey(file),JSON.stringify(st));}
+}
+if(typeof spNextIndex !== "function"){
+  function spNextIndex(file,total){
+    let st=spLoadTaskState(file,total);
+    if(st.current===null || st.current===undefined){
+      st.current=st.queue.shift();
+      st.tries=0;
+      spSaveTaskState(file,st);
+    }
+    return st.current;
+  }
+}
+if(typeof spProgressHtml !== "function"){
+  function spProgressHtml(file,total){
+    let st=spLoadTaskState(file,total);
+    let done=st.done.length;
+    let left=total-done;
+    let p=Math.round(done/total*100)||0;
+    return '<div class="small">'+done+' richtig · '+left+' übrig · '+p+'%</div><div class="progress"><div class="bar" style="width:'+p+'%"></div></div>';
+  }
+}
+if(typeof spMarkRight !== "function"){
+  function spMarkRight(file,total){
+    let st=spLoadTaskState(file,total);
+    if(st.current!==null && !st.done.includes(st.current)) st.done.push(st.current);
+    st.current=null;
+    st.tries=0;
+    spSaveTaskState(file,st);
+    return st.done.length>=total;
+  }
+}
+if(typeof spMarkWrong !== "function"){
+  function spMarkWrong(file,total){
+    let st=spLoadTaskState(file,total);
+    st.tries=(st.tries||0)+1;
+    if(st.tries>=2){
+      if(st.current!==null) st.queue.push(st.current);
+      st.current=null;
+    }
+    spSaveTaskState(file,st);
+    return st.tries;
+  }
+}
+if(typeof spFeedbackForTry !== "function"){
+  function spFeedbackForTry(tries,solution,type){
+    if(tries===1) return 'Da ist noch ein Fehler.';
+    if(tries===2) return 'Tipp: Prüfe '+(type||'Form, Wort und Preis')+'.';
+    return 'Lösung: '+solution;
+  }
+}
+</script>
+<script>
+header("Frage & Antwort");
+const FILE='frage-und-antwort.html';
+let i=0,phase='q';
+function show(){
+ if(spLoadTaskState(FILE,COMBOS.length).done.length>=COMBOS.length){complete(area,FILE,'index.html');return}
+ i=spNextIndex(FILE,COMBOS.length);
+ if(i===undefined || i===null){localStorage.removeItem(spTaskStateKey(FILE)); i=spNextIndex(FILE,COMBOS.length);} 
+ let c=COMBOS[i];
+ if(phase==='q'){
+  area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}
+  <div class="question">1. Frage nach dem Preis.</div>
+  <div class="hint">Anfang: <b>Was kostet ...</b> / <b>Wie viel kostet ...</b></div>
+  ${comboImages(c)}
+  <div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayQ()"><span class="mic-icon">🎤</span>Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div>
+  <div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Schreibe hier deine Frage."><button class="btn" onclick="checkQ()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+ }else{
+  area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}
+  <div class="question">2. Antworte auf deine Frage.</div>
+  <div class="hint">Schreibe hier deine Antwort.</div>
+  ${comboImages(c)}<div class="big">${c.price}</div>
+  <div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayA()"><span class="mic-icon">🎤</span>Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div>
+  <div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Schreibe hier deine Antwort."><button class="btn" onclick="checkA()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+ }
 }
 function writeQ(){write.classList.remove('hidden')}
 function writeA(){write.classList.remove('hidden')}
 function checkQ(){
-  let c=COMBOS[i];
-  if(acceptableQuestion(ans.value,c)){phase='a';show()}
-  else{let tries=spMarkWrong(FILE,COMBOS.length);fb.innerHTML=spFeedbackForTry(tries,c.question,'Fragewort und kostet/kosten');phase='q';if(tries>=2)setTimeout(show,1200)}
+ let c=COMBOS[i];
+ if(acceptableQuestion(ans.value,c)){phase='a';show()}
+ else{
+   let tries=spMarkWrong(FILE,COMBOS.length);
+   fb.innerHTML=spFeedbackForTry(tries,c.question,'Fragewort und kostet/kosten');
+   phase='q';
+   if(tries>=2)setTimeout(show,1100);
+ }
 }
 function checkA(){
-  let c=COMBOS[i];
-  if(acceptableAnswer(ans.value,c)){spMarkRight(FILE,COMBOS.length);phase='q';show()}
-  else{let tries=spMarkWrong(FILE,COMBOS.length);fb.innerHTML=spFeedbackForTry(tries,c.answer,'Antwortsatz und Preis');phase='q';if(tries>=2)setTimeout(show,1200)}
+ let c=COMBOS[i];
+ if(acceptableAnswer(ans.value,c)){
+   spMarkRight(FILE,COMBOS.length);
+   phase='q';
+   show();
+ }else{
+   let tries=spMarkWrong(FILE,COMBOS.length);
+   fb.innerHTML=spFeedbackForTry(tries,c.answer,'Antwortsatz und Preis');
+   phase='q';
+   if(tries>=2)setTimeout(show,1100);
+ }
 }
 function sayQ(){startMic(micBtn,(txt)=>{writeQ();ans.value=txt;checkQ()})}
 function sayA(){startMic(micBtn,(txt)=>{writeA();ans.value=txt;checkA()})}
 show();
-
 </script></body></html>
