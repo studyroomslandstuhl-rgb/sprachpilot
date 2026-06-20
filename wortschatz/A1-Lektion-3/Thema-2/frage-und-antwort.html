@@ -1,31 +1,62 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frage & Antwort</title><link rel="stylesheet" href="style.css"></head>
-<body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div>
-<script src="app.js?v=8"></script><script>
-header("Frage & Antwort");
-let i=0,phase='q';
-function show(){
- if(i>=COMBOS.length){complete(area,'frage-und-antwort.html','index.html');return}
- let c=COMBOS[i];
- if(phase==='q'){
-  area.innerHTML=`<div class="small">${i} fertig · ${COMBOS.length-i} übrig</div><div class="progress"><div class="bar" style="width:${Math.round(i/COMBOS.length*100)}%"></div></div>
-  <div class="question">1. Frage nach dem Preis.</div>
-  <div class="hint">Sprich oder schreibe eine Frage. Möglich: <b>Was kostet ...?</b> oder <b>Wie viel kostet ...?</b></div>
-  ${comboImages(c)}
-  <div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayQ()"><span class="mic-icon">🎤</span>Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div>
-  <div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Was kostet eine Flasche Wasser?"><button class="btn" onclick="checkQ()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
- }else{
-  area.innerHTML=`<div class="question">2. Antworte auf deine Frage.</div>
-  <div class="hint">Antwortmöglichkeiten: <b>${c.answer}</b> / <b>Das kostet ${c.price.replace('€','Euro')}.</b> / <b>Das macht ${c.price.replace('€','Euro')}.</b></div>
-  ${comboImages(c)}<div class="big">${c.price}</div>
-  <div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayA()"><span class="mic-icon">🎤</span>Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div>
-  <div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Das kostet ..."><button class="btn" onclick="checkA()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
- }
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frage und Antwort</title>
+<style>
+*{box-sizing:border-box}body{font-family:Arial,sans-serif;background:linear-gradient(135deg,#667eea,#764ba2);margin:0;padding:16px;color:#222}
+main{max-width:900px;margin:auto}.card{background:white;border-radius:20px;padding:20px;margin:14px 0;box-shadow:0 8px 24px rgba(0,0,0,.18)}
+h1,h2{color:#667eea}.prompt{background:#f0f4ff;border-radius:16px;padding:18px;margin:12px 0;font-size:22px;font-weight:900}
+input{width:100%;padding:14px;border:2px solid #ddd;border-radius:12px;font-size:18px}button{border:0;border-radius:14px;padding:12px 16px;font-weight:800;background:linear-gradient(135deg,#667eea,#764ba2);color:white;margin:6px;cursor:pointer}
+.secondary{background:#eef2ff;color:#333}.small{color:#666}.help-box{background:#f0f4ff;border-left:5px solid #667eea;padding:12px;border-radius:10px;margin:10px 0}.answer-box{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0;font-weight:700}.no{background:#ffe1e1;border-left:5px solid #e74c3c;padding:12px;border-radius:10px;margin:10px 0}.ok{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0}
+</style>
+</head>
+<body>
+<main>
+<section class="card">
+<h1>Frage & Antwort</h1>
+<p class="small">Sprich oder schreibe die Antwort. Die Lösung erscheint erst nach mehreren Versuchen.</p>
+<div id="box"></div>
+</section>
+</main>
+<script>
+const TASKS=[
+ {item:"eine Dose Tomaten", q:"Was kostet die Dose Tomaten?", start:"Die Dose Tomaten kostet ...", a:"Die Dose Tomaten kostet 1,29 Euro."},
+ {item:"zwei Flaschen Wasser", q:"Was kosten die zwei Flaschen Wasser?", start:"Die zwei Flaschen Wasser kosten ...", a:"Die zwei Flaschen Wasser kosten 1,98 Euro."},
+ {item:"500 g Käse", q:"Wie viel kostet der Käse?", start:"Der Käse kostet ...", a:"Der Käse kostet 4,99 Euro."},
+ {item:"250 g Butter", q:"Was kostet die Butter?", start:"Die Butter kostet ...", a:"Die Butter kostet 1,89 Euro."},
+ {item:"1 kg Tomaten", q:"Wie viel kosten die Tomaten?", start:"Die Tomaten kosten ...", a:"Die Tomaten kosten 2,49 Euro."},
+ {item:"2 kg Äpfel", q:"Was kosten die Äpfel?", start:"Die Äpfel kosten ...", a:"Die Äpfel kosten 3,98 Euro."},
+ {item:"200 g Schinken", q:"Wie viel kostet der Schinken?", start:"Der Schinken kostet ...", a:"Der Schinken kostet 2,79 Euro."},
+ {item:"eine Packung Reis", q:"Was kostet die Packung Reis?", start:"Die Packung Reis kostet ...", a:"Die Packung Reis kostet 2,19 Euro."},
+ {item:"sechs Eier", q:"Was kosten die Eier?", start:"Die Eier kosten ...", a:"Die Eier kosten 2,99 Euro."},
+ {item:"ein Pfund Kartoffeln", q:"Wie viel kostet ein Pfund Kartoffeln?", start:"Ein Pfund Kartoffeln kostet ...", a:"Ein Pfund Kartoffeln kostet 0,89 Euro."}
+];
+let i=0, tries=0;
+function norm(x){return String(x||"").toLowerCase().replace(/[.,]/g,"").replace(/\s+/g," ").trim()}
+function render(){
+ const t=TASKS[i]; tries=0;
+ document.getElementById("box").innerHTML=`
+  <div class="prompt">Menge + Produkt: ${t.item}</div>
+  <h2>${t.q}</h2>
+  <p class="small">Anfang: <strong>${t.start}</strong></p>
+  <input id="ans" placeholder="Antwort schreiben">
+  <button onclick="check()">Kontrollieren</button>
+  <button class="secondary" onclick="next()">Weiter</button>
+  <div id="fb"></div>
+  <p>${i+1} / ${TASKS.length}</p>`;
 }
-function writeQ(){write.classList.remove('hidden')}
-function writeA(){write.classList.remove('hidden')}
-function checkQ(){let c=COMBOS[i];if(acceptableQuestion(ans.value,c)){phase='a';show()}else fb.innerHTML='Fast. Frage mit <b>Was kostet ...?</b> oder <b>Wie viel kostet ...?</b><div class="hint">Muster: '+c.question+'</div>'}
-function checkA(){let c=COMBOS[i];if(acceptableAnswer(ans.value,c)){i++;phase='q';show()}else fb.innerHTML='Fast. Antworte mit Preis und Satz.<div class="hint">Muster: '+c.answer+'<br>Oder: Das kostet '+c.price.replace('€','Euro')+'.</div>'}
-function sayQ(){startMic(micBtn,(txt)=>{writeQ();ans.value=txt;checkQ()})}
-function sayA(){startMic(micBtn,(txt)=>{writeA();ans.value=txt;checkA()})}
-show();
-</script></body></html>
+function check(){
+ const t=TASKS[i], v=document.getElementById("ans").value;
+ if(norm(v)===norm(t.a)){document.getElementById("fb").innerHTML="<div class='ok'>Richtig!</div>";return}
+ tries++;
+ if(tries===1) document.getElementById("fb").innerHTML="<div class='no'>Noch nicht ganz. Prüfe Subjekt, Verbform kostet/kosten und Preis.</div>";
+ else if(tries===2) document.getElementById("fb").innerHTML=`<div class='help-box'><strong>Tipp:</strong> Beginne so: ${t.start}</div>`;
+ else document.getElementById("fb").innerHTML=`<div class='answer-box'><strong>Lösung:</strong><br>${t.a}</div>`;
+}
+function next(){i=(i+1)%TASKS.length;render()}
+render();
+</script>
+</body>
+</html>

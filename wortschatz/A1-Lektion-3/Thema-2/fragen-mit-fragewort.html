@@ -1,4 +1,12 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fragen mit Fragewort</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=31"></script><script>header("Fragen mit Fragewort");
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fragen mit Fragewort</title><link rel="stylesheet" href="style.css">
+<style>
+.help-box{background:#f0f4ff;border-left:5px solid #667eea;padding:12px;border-radius:10px;margin:10px 0}
+.answer-box{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0;font-weight:700}
+.no{background:#ffe1e1;border-left:5px solid #e74c3c;padding:12px;border-radius:10px;margin:10px 0}
+.ok{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:10px;margin:10px 0}
+</style>
+
+</head><body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=31"></script><script>header("Fragen mit Fragewort");
 let data=[{"tokens": ["Wie viel", "kosten", "das Brot", "?"], "order": ["Wie viel", "kosten", "das Brot", "?"], "qword": "Wie viel", "verb": "kosten", "sub": "das Brot", "obj": ""}, {"tokens": ["Was", "kaufen", "Sie", "?"], "order": ["Was", "kaufen", "Sie", "?"], "qword": "Was", "verb": "kaufen", "sub": "Sie", "obj": ""}],idx=0,built=[];
 function render(){if(idx>=data.length){finishTask('fragen-mit-fragewort.html');area.innerHTML='<div class="big">Gut gemacht!</div><a class="btn" href="memory.html">Nächste Aufgabe →</a>';return}let cur=data[idx];built=[];area.innerHTML=`<div class="question">Baue die Frage. Setze auch ?</div><div id="built" class="built"></div><div class="tiles">${shuffle(cur.tokens).map(x=>`<button class="tile ${x===cur.verb?'verb':''}" onclick="add(this,'${x}')">${x}</button>`).join('')}</div><div class="actions"><button class="btn" onclick="control()">Kontrollieren</button><button class="btn secondary" onclick="render()">Neu starten</button></div><div id="step"></div><div id="fb" class="feedback"></div>`;window.cur=cur}
 function add(b,x){built.push(x);b.disabled=true;document.getElementById('built').textContent=built.map((v,i)=>i===0?v.charAt(0).toUpperCase()+v.slice(1):v).join(' ')}
@@ -10,4 +18,45 @@ function nextMark(){askQword()}
 function askQword(){step.innerHTML=`<div class="question">Wo ist das Fragewort?</div><div class="tiles">${cur.order.map(x=>`<button class="tile" onclick="${x===cur.qword?'pass()':'badMark()'}">${x}</button>`).join('')}</div>`}
 function pass(){idx++;fb.textContent='Richtig!';setTimeout(render,700)}
 render();
-</script></body></html>
+</script>
+<script>
+/* SprachPilot globaler 3-Stufen-Fehlerhelfer */
+window.SP_Attempts = window.SP_Attempts || {};
+function spNormalizeText(x){
+  return String(x || "")
+    .trim()
+    .toLowerCase()
+    .normalize("NFD").replace(/[\u0300-\u036f]/g,"")
+    .replace(/[.,!?;:€]/g,"")
+    .replace(/\s+/g," ");
+}
+function spErrorType(user, solution){
+  const u = String(user || "");
+  const s = String(solution || "");
+  if(u && u.toLowerCase() === s.toLowerCase() && u !== s){
+    return "Groß-/Kleinschreibung";
+  }
+  if(spNormalizeText(u) === spNormalizeText(s) && u !== s){
+    return "Zeichen / Satzzeichen";
+  }
+  if(Math.abs(u.length - s.length) <= 2){
+    return "Rechtschreibung";
+  }
+  return "Grammatik oder Wortwahl";
+}
+function spFeedback(id, user, solution){
+  window.SP_Attempts[id] = (window.SP_Attempts[id] || 0) + 1;
+  const n = window.SP_Attempts[id];
+  const type = spErrorType(user, solution);
+  if(n === 1){
+    return `<div class="no">Noch nicht ganz richtig. Fehlerbereich: <strong>${type}</strong>.</div>`;
+  }
+  if(n === 2){
+    return `<div class="help-box"><strong>Tipp:</strong> Prüfe genau Artikel, Endung, Großschreibung und fehlende Buchstaben.</div>`;
+  }
+  return `<div class="answer-box"><strong>Lösung:</strong><br>${solution}</div>`;
+}
+function spResetFeedback(id){ window.SP_Attempts[id] = 0; }
+</script>
+
+</body></html>
