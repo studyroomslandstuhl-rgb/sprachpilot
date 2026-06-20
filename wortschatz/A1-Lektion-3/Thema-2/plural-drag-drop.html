@@ -35,4 +35,56 @@ function control(){
  if(ok===WORDS.length){done('plural-drag-drop.html');nextBtn.classList.remove('hidden');fb.textContent='Gut gemacht!'}
  else fb.textContent='Korrigiere die roten Wörter. Rote Wörter bleiben verschiebbar.';
 }
-</script></body></html>
+</script>
+<script>
+(function(){
+  function unlockWrongDragItems(){
+    document.querySelectorAll('.wrong,.incorrect,.fehler,.error,.bad').forEach(el=>{
+      el.setAttribute('draggable','true');
+      el.draggable = true;
+      el.style.pointerEvents = 'auto';
+      el.style.opacity = '1';
+      el.classList.remove('locked','disabled','done');
+    });
+    document.querySelectorAll('[draggable="false"]').forEach(el=>{
+      const c = el.className || "";
+      if(/wrong|incorrect|fehler|error|bad/.test(c)){
+        el.setAttribute('draggable','true');
+        el.draggable = true;
+        el.style.pointerEvents = 'auto';
+      }
+    });
+  }
+
+  document.addEventListener('click',()=>setTimeout(unlockWrongDragItems,80),true);
+  document.addEventListener('touchend',()=>setTimeout(unlockWrongDragItems,80),true);
+
+  document.addEventListener('dragstart',e=>{
+    const target = e.target.closest('[draggable], .word, .chip, .item, .card, .drag');
+    if(!target) return;
+    const text = target.dataset.id || target.dataset.word || target.textContent.trim();
+    try{
+      e.dataTransfer.setData('text/plain', text);
+      window.__spDragEl = target;
+    }catch(err){}
+  },true);
+
+  document.addEventListener('drop',e=>{
+    const zone = e.target.closest('.dropzone,.drop-zone,.group,.box,.table,.column,.target,[data-group],[data-article],[data-plural]');
+    if(zone && window.__spDragEl){
+      e.preventDefault();
+      zone.appendChild(window.__spDragEl);
+      unlockWrongDragItems();
+    }
+  },true);
+
+  document.addEventListener('dragover',e=>{
+    const zone = e.target.closest('.dropzone,.drop-zone,.group,.box,.table,.column,.target,[data-group],[data-article],[data-plural]');
+    if(zone) e.preventDefault();
+  },true);
+
+  setInterval(unlockWrongDragItems,500);
+})();
+</script>
+
+</body></html>
