@@ -1,0 +1,24 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Artikel klicken</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=3"></script><script>
+header("Artikel klicken");
+const FILE="artikel-klick.html";
+const ITEMS=WORDS.filter(w=>w.article);
+let i=0;
+function show(){
+ if(loadTask(FILE,ITEMS.length).done.length>=ITEMS.length){complete(area,FILE,"artikel.html");return}
+ i=nextIndex(FILE,ITEMS.length);let w=ITEMS[i];
+ area.innerHTML=`${progressHtml(FILE,ITEMS.length)}
+ <div class="question">Welcher Artikel passt?</div>
+ <img class="task-img" src="${w.image}" onerror="fixImg(this)">
+ <div class="options">
+   <button class="opt" onclick="choose('der')">der</button>
+   <button class="opt" onclick="choose('die')">die</button>
+   <button class="opt" onclick="choose('das')">das</button>
+ </div><div id="fb" class="feedback"></div>`;
+}
+function choose(a){
+ let w=ITEMS[i];
+ if(a===w.article){fb.textContent="Richtig!";markRight(FILE,ITEMS.length);setTimeout(show,700)}
+ else{let tr=markWrong(FILE,ITEMS.length);fb.innerHTML=feedbackForTry(tr,w.article+" "+w.word,"Artikel");if(tr>=2)setTimeout(show,1200)}
+}
+show();
+</script></body></html>

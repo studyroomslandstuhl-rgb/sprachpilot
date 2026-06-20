@@ -1,16 +1,17 @@
-Erwartete Bilder im Ordner: wortschatz/A1-Lektion-4/bilder
+Erwartete Bilder in wortschatz/A1-Lektion-4/bilder:
 
-haus.png
-wohnung.png
-wohnzimmer.png
-schlafzimmer.png
-kinderzimmer.png
-arbeitszimmer.png
-kueche.png
-bad.png
-toilette.png
-flur.png
-balkon.png
-hier.png
-da.png
-dort.png
+haus.png – das Haus
+wohnung.png – die Wohnung
+zimmer.png – das Zimmer
+wohnzimmer.png – das Wohnzimmer
+schlafzimmer.png – das Schlafzimmer
+kinderzimmer.png – das Kinderzimmer
+arbeitszimmer.png – das Arbeitszimmer
+kueche.png – die Küche
+bad.png – das Bad
+toilette.png – die Toilette
+flur.png – der Flur
+balkon.png – der Balkon
+hier.png – hier
+da.png – da
+dort.png – dort
