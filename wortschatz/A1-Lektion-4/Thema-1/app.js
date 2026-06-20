@@ -16,9 +16,9 @@ function fixImg(img){img.classList.add("missing");img.alt="Bild fehlt"}
 function header(title){
  const h=document.querySelector(".topbar");
  if(!h)return;
- h.innerHTML=`<a class="brand" href="index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 4 · Thema 1</div></div></a>
+ h.innerHTML=`<a class="brand" href="../../index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 4 · Thema 1</div></div></a>
  <nav class="nav">
-   <a class="btn secondary" href="index.html">← Zurück</a>
+   <a class="btn secondary" href="../index.html">← Zurück</a>
    <a class="btn secondary" href="uebersicht.html">Übersicht</a>
    <a class="btn secondary" href="statistik.html">Statistik</a>
  </nav>`;
@@ -107,7 +107,7 @@ function startMic(btn,callback){
 }
 
 function placeImg(id,label){
- return `<div class="imgbox"><img src="../bilder/${id}.png" onerror="fixImg(this)" alt=""><div class="label">${label}</div></div>`;
+ return `<div class="imgbox"><img src="../bilder/${id}.png" onerror="fixImg(this)" alt=""></div>`;
 }
 function roomImg(roomId,withLabel=true){
  const w=wordById(roomId);
