@@ -1,31 +1,92 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frage & Antwort</title><link rel="stylesheet" href="style.css"></head>
-<body><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div>
-<script src="app.js?v=8"></script><script>
-header("Frage & Antwort");
-let i=0,phase='q';
-function show(){
- if(i>=COMBOS.length){complete(area,'frage-und-antwort.html','index.html');return}
- let c=COMBOS[i];
- if(phase==='q'){
-  area.innerHTML=`<div class="small">${i} fertig · ${COMBOS.length-i} übrig</div><div class="progress"><div class="bar" style="width:${Math.round(i/COMBOS.length*100)}%"></div></div>
-  <div class="question">1. Frage nach dem Preis.</div>
-  <div class="hint">Sprich oder schreibe eine Frage. Möglich: <b>Was kostet ...?</b> oder <b>Wie viel kostet ...?</b></div>
-  ${comboImages(c)}
-  <div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayQ()"><span class="mic-icon">🎤</span>Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div>
-  <div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Was kostet eine Flasche Wasser?"><button class="btn" onclick="checkQ()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
- }else{
-  area.innerHTML=`<div class="question">2. Antworte auf deine Frage.</div>
-  <div class="hint">Tipp: Beginne mit <b>Das kostet ...</b> oder <b>Die/Der/Das ... kostet ...</b></div>
-  ${comboImages(c)}<div class="big">${c.price}</div>
-  <div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayA()"><span class="mic-icon">🎤</span>Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div>
-  <div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Das kostet ..."><button class="btn" onclick="checkA()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
- }
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Frage und Antwort</title>
+<style>
+*{box-sizing:border-box}
+body{margin:0;font-family:Arial,Helvetica,sans-serif;background:#fff7ed;color:#222;padding:14px}
+.app{max-width:980px;margin:auto}.top{position:sticky;top:0;background:#fff7ed;padding:10px 0;z-index:10}
+.card{background:white;border:2px solid #fed7aa;border-radius:20px;padding:18px;margin:12px 0;box-shadow:0 8px 22px rgba(194,65,12,.12)}
+h1,h2{color:#ea580c;margin:0 0 10px}.progress{height:12px;background:#ffedd5;border-radius:999px;overflow:hidden}.progress>div{height:100%;background:#fb923c;width:0%}
+.visual{display:grid;grid-template-columns:1fr 1fr 1fr;gap:10px;align-items:center}.pic{min-height:120px;border:3px solid #fed7aa;border-radius:18px;background:#fff7ed;display:flex;align-items:center;justify-content:center;font-size:38px;font-weight:900;color:#ea580c;text-align:center;padding:10px}
+input{width:100%;padding:14px;border:2px solid #fed7aa;border-radius:14px;font-size:18px}button{border:0;border-radius:14px;padding:12px 16px;font-weight:800;background:#f97316;color:white;margin:6px 4px;cursor:pointer}.secondary{background:#ffedd5;color:#7c2d12}
+.ok{background:#dcfce7;border-left:5px solid #16a34a;padding:12px;border-radius:10px;margin:10px 0}.no{background:#fee2e2;border-left:5px solid #dc2626;padding:12px;border-radius:10px;margin:10px 0}.help-box{background:#ffedd5;border-left:5px solid #f97316;padding:12px;border-radius:10px;margin:10px 0}.answer-box{background:#dcfce7;border-left:5px solid #16a34a;padding:12px;border-radius:10px;margin:10px 0;font-weight:700}.small{color:#666}
+@media(max-width:650px){.visual{grid-template-columns:1fr}.pic{min-height:90px}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="top">
+<button class="secondary" onclick="history.back()">← Zurück</button>
+<h1>Frage & Antwort</h1>
+<div class="progress"><div id="bar"></div></div><p id="count" class="small"></p>
+</div>
+<div class="card">
+<p class="small">Bilde eine Frage. „Was“ und „Wie viel“ sind möglich. Achte auf <strong>kostet</strong> oder <strong>kosten</strong>.</p>
+<div id="box"></div>
+</div>
+</div>
+<script>
+const TASKS=[
+ {qty:"1 Flasche", qtyIcon:"🍾", prod:"Wasser", prodIcon:"💧", price:"0,79 €", plural:false},
+ {qty:"2 Flaschen", qtyIcon:"🍾🍾", prod:"Wasser", prodIcon:"💧", price:"1,58 €", plural:true},
+ {qty:"1 Dose", qtyIcon:"🥫", prod:"Tomaten", prodIcon:"🍅", price:"1,29 €", plural:false},
+ {qty:"3 Dosen", qtyIcon:"🥫🥫🥫", prod:"Mais", prodIcon:"🌽", price:"2,97 €", plural:true},
+ {qty:"500 g", qtyIcon:"500 g", prod:"Käse", prodIcon:"🧀", price:"4,99 €", plural:false},
+ {qty:"200 g", qtyIcon:"200 g", prod:"Schinken", prodIcon:"🥓", price:"2,79 €", plural:false},
+ {qty:"250 g", qtyIcon:"250 g", prod:"Butter", prodIcon:"🧈", price:"1,89 €", plural:false},
+ {qty:"1 kg", qtyIcon:"1 kg", prod:"Kartoffeln", prodIcon:"🥔", price:"1,49 €", plural:false},
+ {qty:"2 kg", qtyIcon:"2 kg", prod:"Orangen", prodIcon:"🍊", price:"3,98 €", plural:true},
+ {qty:"1 Pfund", qtyIcon:"1 Pfund", prod:"Äpfel", prodIcon:"🍎", price:"1,29 €", plural:false},
+ {qty:"6", qtyIcon:"6", prod:"Eier", prodIcon:"🥚", price:"2,99 €", plural:true},
+ {qty:"1 Packung", qtyIcon:"📦", prod:"Reis", prodIcon:"🍚", price:"2,19 €", plural:false},
+ {qty:"2 Packungen", qtyIcon:"📦📦", prod:"Nudeln", prodIcon:"🍝", price:"1,98 €", plural:true},
+ {qty:"1 Becher", qtyIcon:"🥛", prod:"Joghurt", prodIcon:"🥛", price:"0,69 €", plural:false},
+ {qty:"4 Becher", qtyIcon:"🥛🥛🥛🥛", prod:"Joghurt", prodIcon:"🥛", price:"2,76 €", plural:true},
+ {qty:"1 Glas", qtyIcon:"🫙", prod:"Marmelade", prodIcon:"🍓", price:"2,49 €", plural:false},
+ {qty:"2 Gläser", qtyIcon:"🫙🫙", prod:"Marmelade", prodIcon:"🍓", price:"4,98 €", plural:true},
+ {qty:"1 Tüte", qtyIcon:"🛍️", prod:"Chips", prodIcon:"🥔", price:"1,99 €", plural:false},
+ {qty:"2 Tüten", qtyIcon:"🛍️🛍️", prod:"Chips", prodIcon:"🥔", price:"3,98 €", plural:true},
+ {qty:"1 Netz", qtyIcon:"🟠", prod:"Zwiebeln", prodIcon:"🧅", price:"1,79 €", plural:false}
+];
+let i=0, tries=0;
+function norm(x){return String(x||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[?.,!]/g,"").replace(/\s+/g," ").trim()}
+function hasQuestionStart(v){v=norm(v);return v.startsWith("was kostet")||v.startsWith("was kosten")||v.startsWith("wie viel kostet")||v.startsWith("wie viel kosten")}
+function checkVerb(v, plural){v=norm(v); if(plural) return v.includes(" kosten "); return v.includes(" kostet ");}
+function render(){
+ const t=TASKS[i]; tries=0;
+ document.getElementById("bar").style.width=((i+1)*100/TASKS.length)+"%";
+ document.getElementById("count").textContent=(i+1)+" / "+TASKS.length;
+ document.getElementById("box").innerHTML=`
+  <div class="visual">
+    <div class="pic">${t.qtyIcon}</div>
+    <div class="pic">${t.prodIcon}</div>
+    <div class="pic">${t.price}</div>
+  </div>
+  <p class="small">Anfang: <strong>Was kostet ...?</strong> / <strong>Wie viel kostet ...?</strong> oder bei Plural <strong>Was kosten ...?</strong></p>
+  <input id="ans" placeholder="Frage schreiben">
+  <button onclick="check()">Kontrollieren</button>
+  <button class="secondary" onclick="next()">Weiter</button>
+  <div id="fb"></div>`;
 }
-function writeQ(){write.classList.remove('hidden')}
-function writeA(){write.classList.remove('hidden')}
-function checkQ(){let c=COMBOS[i];if(acceptableQuestion(ans.value,c)){phase='a';show()}else fb.innerHTML='Fast. Frage mit <b>Was kostet ...?</b> oder <b>Wie viel kostet ...?</b><div class="hint">Muster: '+c.question+'</div>'}
-function checkA(){let c=COMBOS[i];if(acceptableAnswer(ans.value,c)){i++;phase='q';show()}else fb.innerHTML='Fast. Antworte mit einem vollständigen Satz.<div class="hint">Tipp: Beginne mit Das kostet ...</div>'}
-function sayQ(){startMic(micBtn,(txt)=>{writeQ();ans.value=txt;checkQ()})}
-function sayA(){startMic(micBtn,(txt)=>{writeA();ans.value=txt;checkA()})}
-show();
-</script></body></html>
+function solution(t){
+  const verb=t.plural?"kosten":"kostet";
+  return `Was ${verb} ${t.qty} ${t.prod}?`;
+}
+function check(){
+ const t=TASKS[i], v=document.getElementById("ans").value;
+ if(hasQuestionStart(v) && checkVerb(v,t.plural)){
+   document.getElementById("fb").innerHTML="<div class='ok'>Richtig!</div>";return;
+ }
+ tries++;
+ if(tries===1) document.getElementById("fb").innerHTML="<div class='no'>Noch nicht ganz. Prüfe Fragewort und kostet/kosten.</div>";
+ else if(tries===2) document.getElementById("fb").innerHTML="<div class='help-box'><strong>Tipp:</strong> Bei mehreren Dingen brauchst du <strong>kosten</strong>. Bei einer Sache brauchst du <strong>kostet</strong>.</div>";
+ else document.getElementById("fb").innerHTML="<div class='answer-box'><strong>Beispiel:</strong><br>"+solution(t)+"</div>";
+}
+function next(){i=(i+1)%TASKS.length;render()}
+render();
+</script>
+</body>
+</html>
