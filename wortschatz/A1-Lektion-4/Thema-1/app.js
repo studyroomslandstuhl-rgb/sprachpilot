@@ -19,9 +19,8 @@ function header(title){
  h.innerHTML=`<a class="brand" href="index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 4 · Thema 1</div></div></a>
  <nav class="nav">
    <a class="btn secondary" href="index.html">← Zurück</a>
-   <a class="btn secondary" href="index.html">Übersicht</a>
+   <a class="btn secondary" href="uebersicht.html">Übersicht</a>
    <a class="btn secondary" href="statistik.html">Statistik</a>
-   <a class="btn secondary" href="index.html">Thema 1</a>
  </nav>`;
 }
 
@@ -149,4 +148,48 @@ function okIstAnswer(ans,t){
   return a.startsWith("ja") && a.includes(simple(t.place)) && (a.includes(simple(w.full))||a.includes(simple(w.word)));
  }
  return a.startsWith("nein") && a.includes(simple(t.place)) && (a.includes(simple(negIndef(w)))||a.includes(simple("kein"))||a.includes(simple("keine")));
+}
+
+
+function currentMotherLang(){
+ return localStorage.getItem("motherLanguage") || localStorage.getItem("muttersprache") || localStorage.getItem("lang") || "ru";
+}
+function translateWord(w){
+ const l=currentMotherLang();
+ if(w.tr && w.tr[l]) return w.tr[l];
+ if(w.tr && w.tr.ru) return w.tr.ru;
+ if(w.tr && w.tr.en) return w.tr.en;
+ return w.word;
+}
+function wordsForFile(file){
+ if(file==="artikel-klick.html" || file==="artikel.html") return WORDS.filter(w=>w.article);
+ if(file==="plural.html") return WORDS.filter(w=>w.plural);
+ return WORDS;
+}
+function wordProgress(wordId){
+ const wordTasks=[
+  ["karteikarten.html", WORDS],
+  ["hoeren.html", WORDS],
+  ["artikel-klick.html", WORDS.filter(w=>w.article)],
+  ["artikel.html", WORDS.filter(w=>w.article)],
+  ["plural.html", WORDS.filter(w=>w.plural)],
+  ["bild-wort.html", WORDS],
+  ["wort-bild.html", WORDS]
+ ];
+ let possible=0, doneCount=0;
+ wordTasks.forEach(([file,list])=>{
+   const index=list.findIndex(w=>w.id===wordId);
+   if(index<0) return;
+   possible++;
+   const st=loadTask(file,list.length);
+   if(st.done && st.done.includes(index)) doneCount++;
+ });
+ if(possible===0) return 0;
+ return Math.round(doneCount/possible*100);
+}
+function wordStatus(p){
+ if(p>=100) return "gelernt";
+ if(p>=50) return "in Arbeit";
+ if(p>0) return "angefangen";
+ return "neu";
 }

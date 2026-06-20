@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Übersicht – Thema 1</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.word-overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.word-card{background:white;border:1px solid #ffe28a;border-radius:20px;padding:14px;box-shadow:0 6px 14px rgba(0,0,0,.08)}
+.word-card img{width:100%;height:120px;object-fit:contain;background:#fffdf2;border-radius:14px;border:2px solid #ffe28a}
+.word-de{font-size:20px;font-weight:900;color:#c98a00;margin-top:10px}
+.word-tr{font-size:17px;color:#222;margin-top:4px}
+.word-meta{font-size:14px;color:#667085;margin-top:6px;line-height:1.4}
+</style>
+</head>
+<body>
+<div class="container">
+<header class="topbar"></header>
+<section class="card">
+  <h2>Übersicht – Wörter in Thema 1</h2>
+  <p class="small">Hier siehst du alle Wörter mit Bild, Deutsch und Muttersprache.</p>
+</section>
+<section class="word-overview-grid" id="list"></section>
+<footer>© SprachPilot</footer>
+</div>
+<script src="app.js?v=4"></script>
+<script>
+header("Übersicht");
+list.innerHTML=WORDS.map(w=>`
+ <div class="word-card">
+  <img src="${w.image}" onerror="fixImg(this)" alt="">
+  <div class="word-de">${w.full}</div>
+  <div class="word-tr">${translateWord(w)}</div>
+  <div class="word-meta">
+    ${w.article ? "Artikel: <b>"+w.article+"</b><br>" : ""}
+    ${w.plural ? "Plural: <b>"+w.plural+"</b>" : ""}
+  </div>
+ </div>
+`).join("");
+</script>
+</body>
+</html>
