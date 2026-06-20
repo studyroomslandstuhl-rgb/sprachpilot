@@ -1,0 +1,20 @@
+Benötigte Bilder für Thema 2:
+
+schrank.png
+sofa.png
+tisch.png
+stuhl.png
+bett.png
+sessel.png
+regal.png
+teppich.png
+lampe.png
+fernseher.png
+kuehlschrank.png
+waschmaschine.png
+herd.png
+wand.png
+tuer.png
+fenster.png
+dach.png
+boden.png
