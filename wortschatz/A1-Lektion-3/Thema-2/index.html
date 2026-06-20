@@ -7,7 +7,6 @@
 <section class="card"><h2>🥤 Verpackungen & Mengen</h2><div class="grid" id="mengen"></div></section>
 <section class="card"><h2>💶 Preise</h2><div class="grid" id="preise"></div></section>
 <section class="card"><h2>🛒 Im Supermarkt</h2><div class="grid" id="supermarkt"></div></section>
-<section class="card"><h2>📊 Fortschritt</h2><div class="grid" id="fortschritt"></div></section>
 
 <footer>© SprachPilot</footer></div>
 <script src="app.js?v=8"></script>
@@ -32,15 +31,11 @@ mengen.innerHTML=[
   card('verpackungen.html','📦 Verpackung + Produkt',COMBOS.length)
 ].join('');
 preise.innerHTML=[
-  card('preis-hoeren.html','🎧 Preis hören',PRICE_TASKS.length),
-  card('preis-schreiben.html','✍️ Preis schreiben',PRICE_TASKS.length),
-  card('preis-sprechen.html','🎤 Preis sprechen',PRICE_TASKS.length)
+  card('preis-hoeren.html','🎧 Preis hören',PRICE_HEAR_TASKS.length),
+  card('preis-schreiben.html','✍️ Preis schreiben',PRICE_WRITE_TASKS.length),
+  card('preis-sprechen.html','🎤 Preis sprechen',PRICE_SPEAK_TASKS.length)
 ].join('');
 supermarkt.innerHTML=[
   card('frage-und-antwort.html','❓ Frage & Antwort',COMBOS.length)
-].join('');
-fortschritt.innerHTML=[
-  `<a class="module" href="statistik.html"><h2>📊 Statistik</h2></a>`,
-  `<a class="module" href="uebersicht.html"><h2>📖 Übersicht</h2></a>`
 ].join('');
 </script></body></html>
