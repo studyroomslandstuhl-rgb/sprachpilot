@@ -1,3 +1,124 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten</title><link rel="stylesheet" href="style.css"></head><body>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Karteikarten</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 <div id="accountStrip" class="account-strip"></div>
-<div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=8"></script><script>header("Karteikarten");let Q=queue('karteikarten.html',WORDS);function render(){Q.cur=next(Q);if(!Q.cur){complete(area,'karteikarten.html','bild-wort.html');return}Q.tries=0;Q.had=false;area.innerHTML=prog(Q)+`<div class="question">Sage auf Deutsch:</div><div class="big">${tr(Q.cur)}</div><div class="actions"><button id="micBtn" class="btn mic-btn" onclick="say()"><span class="mic-icon">🎤</span>Sprechen</button><button class="btn secondary" onclick="writeIt()">Ich kann nicht sprechen</button><button class="btn secondary" onclick="flip()">Karte umdrehen</button></div><div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans"><button class="btn" onclick="check()">Kontrollieren</button></div><div id="fb" class="feedback"></div><button id="go" class="btn hidden" onclick="render()">Weiter</button>`}function writeIt(){write.classList.remove('hidden')}function flip(){wrong(Q);fb.innerHTML='Hilfe benutzt. Wort wird wiederholt.<div class="hint">'+full(Q.cur)+' · Plural: '+Q.cur.plural+'</div>';go.classList.remove('hidden')}function say(){startMic(micBtn,(txt)=>{let d=diagnose(txt,Q.cur);if(d.ok){right(Q,Q.cur);fb.textContent='Richtig!';go.classList.remove('hidden')}else{wrong(Q);fb.innerHTML=fail(Q,d)}})}function check(){let d=diagnose(ans.value,Q.cur);if(d.ok){right(Q,Q.cur);fb.textContent='Richtig!';go.classList.remove('hidden')}else{wrong(Q);fb.innerHTML=fail(Q,d)}}render();</script><script type="module" src="/js/guard.js"></script></body></html>
+
+<div class="container">
+  <section class="hero"></section>
+  <div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div>
+  <section class="card" id="area">
+    <div class="question">Aufgabe wird geladen …</div>
+  </section>
+  <footer>© SprachPilot</footer>
+</div>
+
+<script src="app.js?v=20"></script>
+<script>
+header("Karteikarten");
+
+const FILE = "karteikarten.html";
+let i = null;
+
+function cardLang(){
+  try{
+    const p = JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "{}");
+    const code = localStorage.getItem("SP_MOTHER_LANGUAGE_CODE") || localStorage.getItem("motherLanguage") || "";
+    const visible = p.muttersprache || localStorage.getItem("muttersprache") || "Russisch";
+    const codeToName = {
+      ar:"Arabisch", ru:"Russisch", en:"Englisch", uk:"Ukrainisch",
+      tr:"Türkisch", ro:"Rumänisch", ku:"Kurdisch", ja:"Japanisch",
+      pl:"Polnisch", de:"Deutsch"
+    };
+    return codeToName[String(code).toLowerCase()] || visible || "Russisch";
+  }catch(e){
+    return "Russisch";
+  }
+}
+
+function translation(w){
+  const l = cardLang();
+  return (w.translations && (w.translations[l] || w.translations.Russisch || w.translations.Englisch)) || w.word;
+}
+
+function show(){
+  if(spLoadTaskState(FILE, WORDS.length).done.length >= WORDS.length){
+    complete(area, FILE, "bild-wort.html");
+    return;
+  }
+
+  i = spNextIndex(FILE, WORDS.length);
+  if(i === undefined || i === null){
+    spResetTask(FILE);
+    i = spNextIndex(FILE, WORDS.length);
+  }
+
+  const w = WORDS[i];
+
+  area.innerHTML = `${spProgressHtml(FILE, WORDS.length)}
+    <div class="question">Sage das deutsche Wort mit Artikel.</div>
+    <div class="hint">Muttersprache: <b>${translation(w)}</b></div>
+    <img class="food-img" src="${w.image}" onerror="fixImg(this)" alt="">
+    <div class="actions">
+      <button id="micBtn" class="btn mic-btn" onclick="say()">🎤 Sprechen</button>
+      <button class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button>
+      <button class="btn secondary" onclick="flip()">Karte umdrehen</button>
+    </div>
+    <div id="micStatus" class="mic-status"></div>
+    <div id="box" class="hidden">
+      <input id="ans" placeholder="z. B. die Flasche">
+      <button class="btn" onclick="check(ans.value)">Kontrollieren</button>
+    </div>
+    <div id="fb" class="feedback"></div>`;
+}
+
+function writeBox(){
+  box.classList.remove("hidden");
+}
+
+function flip(){
+  const w = WORDS[i];
+  const tries = spMarkWrong(FILE, WORDS.length);
+  fb.innerHTML = feedbackForCard(tries, full(w), "Artikel und Wort");
+  box.classList.remove("hidden");
+  ans.value = full(w);
+}
+
+function say(){
+  startMic(micBtn, txt => {
+    writeBox();
+    ans.value = txt;
+    check(txt);
+  });
+}
+
+function check(txt){
+  const w = WORDS[i];
+
+  if(simple(txt) === simple(full(w))){
+    fb.textContent = "Richtig!";
+    spMarkRight(FILE, WORDS.length);
+    setTimeout(show, 700);
+  }else{
+    const tries = spMarkWrong(FILE, WORDS.length);
+    fb.innerHTML = feedbackForCard(tries, full(w), "Artikel und Wort");
+    // Wichtig: NICHT automatisch weitergehen.
+  }
+}
+
+function feedbackForCard(tries, solution, type){
+  if(tries === 1) return "Da ist noch ein Fehler.";
+  if(tries === 2) return "Tipp: Prüfe " + type + ".";
+  return "Lösung: " + solution;
+}
+
+show();
+</script>
+<script type="module" src="/js/guard.js"></script>
+</body>
+</html>
