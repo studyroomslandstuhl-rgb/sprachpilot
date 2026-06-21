@@ -7,7 +7,8 @@
 <link rel="stylesheet" href="../style.css">
 </head>
 <body>
-<div id="accountStrip" class="account-strip"></div><div class="container">
+<div id="accountStrip" class="account-strip"></div>
+<script type="module" src="/js/guard.js"></script><div class="container">
 <section class="hero">
   <a href="/index.html" style="text-decoration:none;color:inherit">
     <div class="logo-wrap">
@@ -96,13 +97,15 @@
 import { requireLogin, updateStudentProfile, $, safeText, renderAccountStrip, logout } from "../js/auth.js"; window.logout=logout;
 
 const p=requireLogin();
-if(p) renderAccountStrip();
+if(p){ renderAccountStrip();
 
 $("fname").value=p.vorname||"";
 $("lname").value=p.nachname||"";
 $("email").value=p.email||"";
 $("motherLanguage").value=p.muttersprache||"";
 $("course").value=p.kurs||"";
+
+}
 
 window.saveProfile=async function(){
   const result=$("result");
