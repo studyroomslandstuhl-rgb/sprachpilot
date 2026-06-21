@@ -187,3 +187,52 @@ function spTaskPercent(file,total){
   }catch(e){}
   return null;
 }
+
+
+/* Kompatibilität für ältere Aufgaben-Dateien */
+function queue(file,items){
+  return {file:file, items:items, total:items.length, cur:null, tries:0, had:false};
+}
+function next(Q){
+  let idx=spNextIndex(Q.file,Q.total);
+  if(idx===undefined || idx===null) return null;
+  return Q.items[idx];
+}
+function prog(Q){
+  return spProgressHtml(Q.file,Q.total);
+}
+function right(Q,item){
+  spMarkRight(Q.file,Q.total);
+}
+function wrong(Q){
+  Q.tries=spMarkWrong(Q.file,Q.total);
+  Q.had=true;
+}
+function fail(Q,d){
+  return spFeedbackForTry(Q.tries || 1, d.sol || d.solution || "", d.tip || d.msg || "Form");
+}
+function complete(area,file,nextFile){
+  area.innerHTML=`<div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${nextFile}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div>`;
+}
+function startMic(btn,callback){
+  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
+  const status=document.getElementById("micStatus");
+  if(!SR){if(status)status.textContent="Mikrofon wird hier nicht unterstützt. Bitte schreibe.";return}
+  const rec=new SR();
+  rec.lang="de-DE";
+  rec.interimResults=false;
+  rec.continuous=false;
+  if(btn)btn.classList.add("active");
+  if(status)status.textContent="Ich höre zu …";
+  rec.onresult=e=>{
+    const txt=e.results[0][0].transcript;
+    if(status)status.textContent="Gehört: "+txt;
+    callback(txt);
+  };
+  rec.onerror=()=>{if(status)status.textContent="Mikrofon hat nicht funktioniert. Bitte schreibe."};
+  rec.onend=()=>{if(btn)btn.classList.remove("active")};
+  rec.start();
+}
+function fixImg(img){
+  if(img){img.style.opacity=".35"; img.alt="Bild fehlt";}
+}
