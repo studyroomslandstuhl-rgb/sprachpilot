@@ -37,13 +37,37 @@ function nextIndex(file,total){
  }
  return st.current;
 }
-function markRight(file,total){let st=loadTask(file,total);if(st.current!==null&&!st.done.includes(st.current))st.done.push(st.current);st.current=null;st.tries=0;saveTask(file,st);return st.done.length>=total}
+
+function markRight(file,total){
+ let st=loadTask(file,total);
+ if(st.current!==null && st.current!==undefined){
+   if(!st.hadError){
+     if(!st.done.includes(st.current)) st.done.push(st.current);
+   }
+ }
+ st.current=null;
+ st.tries=0;
+ st.hadError=false;
+ st.repeatQueued=false;
+ saveTask(file,st);
+ return st.done.length>=total;
+}
+
 function markWrong(file,total){
  let st=loadTask(file,total);
  st.tries=(st.tries||0)+1;
+ st.hadError=true;
+
+ // Die aktuelle Aufgabe bleibt sichtbar, wird aber einmal ans Ende gestellt.
+ if(st.current!==null && st.current!==undefined && !st.repeatQueued){
+   st.queue.push(st.current);
+   st.repeatQueued=true;
+ }
+
  saveTask(file,st);
  return st.tries;
 }
+
 function progressHtml(file,total){let st=loadTask(file,total),d=st.done.length,left=total-d,p=Math.round(d/total*100)||0;return `<div class="small">${d} richtig · ${left} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
 function pct(file,total){let st=loadTask(file,total);return Math.round((st.done.length||0)/total*100)||0}
 function complete(area,file,next){area.innerHTML=`<div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${next}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div>`}
