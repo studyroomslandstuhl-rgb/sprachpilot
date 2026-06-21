@@ -135,3 +135,23 @@ footer{text-align:center;color:white;margin-top:20px}
 .gap-line{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:24px;font-weight:900;margin:18px 0;color:#1f2933}
 .gap-input{width:220px;max-width:80vw;padding:12px 14px;border:2px solid #ffe28a;border-radius:14px;font-size:20px;font-weight:900;text-align:center}
 .small-inline-img{width:70px;height:70px;object-fit:contain;border:2px solid #ffe28a;border-radius:14px;background:white;padding:5px}
+
+.color-tile{height:120px;border-radius:18px;border:3px solid #ffe28a;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:22px;background:#fff9dd;cursor:pointer;text-align:center}
+.swatch{width:92px;height:92px;border-radius:18px;border:3px solid #ddd;margin:8px auto}
+.word-overview-grid,.stat-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:14px}
+.word-card,.stat-card{background:white;border:1px solid #ffe28a;border-radius:20px;padding:14px;box-shadow:0 6px 14px rgba(0,0,0,.08)}
+.word-card img,.stat-head img{width:100%;height:110px;object-fit:contain;background:#fffdf2;border-radius:14px;border:2px solid #ffe28a}
+.word-de,.stat-word{font-size:20px;font-weight:900;color:#c98a00;margin-top:10px}
+.word-tr,.stat-tr{font-size:16px;color:#667085;margin-top:4px}
+.word-meta{font-size:14px;color:#667085;margin-top:6px;line-height:1.4}
+.stat-head{display:flex;align-items:center;gap:12px}
+.stat-head img{width:64px;height:64px}
+.status-pill{display:inline-block;margin-top:8px;border-radius:999px;padding:5px 10px;background:#fff7d6;border:1px solid #ffe28a;font-weight:900;color:#6b4700}
+.paint-grid{display:grid;grid-template-columns:repeat(5,70px);gap:8px;justify-content:center;margin:20px 0}
+.paint-cell{width:70px;height:70px;border:3px solid #555;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:900;font-size:24px;border-radius:12px;cursor:pointer}
+.palette{display:flex;gap:10px;flex-wrap:wrap;justify-content:center}
+.palette button{min-width:90px}
+.memory-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:10px}
+.memory-card{background:#fff9dd;border:2px solid #ffe28a;border-radius:16px;padding:18px;text-align:center;font-weight:900;cursor:pointer}
+.memory-card.selected{outline:4px solid #27ae60}
+.memory-card.done{background:#d9f7e8}

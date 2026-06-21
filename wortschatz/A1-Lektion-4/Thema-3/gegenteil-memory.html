@@ -1,1 +1,9 @@
-<!-- Repariert: groß/klein usw. -->
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gegenteil Memory</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=1"></script><script>
+header("Gegenteil-Memory");const FILE="gegenteil-memory.html";
+const CARDS=OPPOSITES.flatMap(p=>p).sort(()=>Math.random()-.5);let selected=[];
+area.innerHTML=`<div class="question">Finde die Gegenteile.</div><div class="memory-grid" id="grid"></div><div id="fb" class="feedback"></div>`;
+function isPair(a,b){return OPPOSITES.some(p=>(p[0]===a&&p[1]===b)||(p[0]===b&&p[1]===a))}
+function render(){grid.innerHTML=CARDS.map((id,idx)=>`<div class="memory-card" data-id="${id}" data-idx="${idx}" onclick="pick(this)">${wordById(id).word}</div>`).join("")}
+function pick(el){if(el.classList.contains("done"))return;el.classList.add("selected");selected.push(el);if(selected.length===2){let [a,b]=selected;if(isPair(a.dataset.id,b.dataset.id)){a.classList.add("done");b.classList.add("done");fb.textContent="Richtig!";if(document.querySelectorAll(".memory-card.done").length===CARDS.length){let st=loadTask(FILE,CARDS.length);st.done=[...Array(CARDS.length).keys()];saveTask(FILE,st);setTimeout(()=>complete(area,FILE,"gegenteil-zuordnen.html"),700)}}else{let tr=markWrong(FILE,CARDS.length);fb.innerHTML=feedbackForTry(tr,"Gegenteile suchen","Gegenteil");a.classList.remove("selected");b.classList.remove("selected")}selected=[]}}
+render();
+</script></body></html>

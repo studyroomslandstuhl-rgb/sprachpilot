@@ -1,20 +1,37 @@
 Benötigte Bilder in wortschatz/A1-Lektion-4/bilder:
 
-schrank.png – der Schrank
-sofa.png – das Sofa
-tisch.png – der Tisch
-stuhl.png – der Stuhl
-bett.png – das Bett
-sessel.png – der Sessel
-regal.png – das Regal
-teppich.png – der Teppich
-lampe.png – die Lampe
-fernseher.png – der Fernseher
-kuehlschrank.png – der Kühlschrank
-waschmaschine.png – die Waschmaschine
-herd.png – der Herd
-wand.png – die Wand
-tuer.png – die Tür
-fenster.png – das Fenster
-dach.png – das Dach
-boden.png – der Boden
+Farben/Adjektive optional als PNG:
+rot.png – rot
+blau.png – blau
+gruen.png – grün
+gelb.png – gelb
+schwarz.png – schwarz
+weiss.png – weiß
+grau.png – grau
+braun.png – braun
+orange.png – orange
+rosa.png – rosa
+lila.png – lila
+tuerkis.png – türkis
+gross.png – groß
+klein.png – klein
+breit.png – breit
+schmal.png – schmal
+schoen.png – schön
+haesslich.png – hässlich
+billig.png – billig
+teuer.png – teuer
+hell.png – hell
+dunkel.png – dunkel
+
+Möbelbilder für Aufgaben:
+sofa.png
+lampe.png
+teppich.png
+tisch.png
+tuer.png
+dach.png
+schrank.png
+bett.png
+sessel.png
+fernseher.png

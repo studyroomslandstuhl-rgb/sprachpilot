@@ -1,1 +1,5 @@
-<!-- Repariert: Bild -> Farbe -->
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Farbe nennen</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=1"></script><script>
+header("Farbe nennen");const FILE="farbe-nennen.html";const ITEMS=WORDS.filter(w=>w.type==="color");let i=0;
+function show(){if(loadTask(FILE,ITEMS.length).done.length>=ITEMS.length){complete(area,FILE,"moebel-farbe.html");return}i=nextIndex(FILE,ITEMS.length);let w=ITEMS[i];area.innerHTML=`${progressHtml(FILE,ITEMS.length)}<div class="question">Welche Farbe ist das?</div><div class="swatch" style="background:${colorCss(w.id)}"></div><input id="ans" placeholder="Farbe schreiben"><button class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`}
+function check(){let w=ITEMS[i];if(simple(ans.value)===simple(w.full)){fb.textContent="Richtig!";markRight(FILE,ITEMS.length);setTimeout(show,700)}else{let tr=markWrong(FILE,ITEMS.length);fb.innerHTML=feedbackForTry(tr,w.full,"Farbe");}}show();
+</script></body></html>
