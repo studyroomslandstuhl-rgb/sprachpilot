@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gegenteil Memory</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=1"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gegenteil Memory</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="accountStrip" class="account-strip"></div>
+<script type="module" src="/js/guard.js"></script><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=1"></script><script>
 header("Gegenteil-Memory");const FILE="gegenteil-memory.html";
 const CARDS=OPPOSITES.flatMap(p=>p).sort(()=>Math.random()-.5);let selected=[];
 area.innerHTML=`<div class="question">Finde die Gegenteile.</div><div class="memory-grid" id="grid"></div><div id="fb" class="feedback"></div>`;

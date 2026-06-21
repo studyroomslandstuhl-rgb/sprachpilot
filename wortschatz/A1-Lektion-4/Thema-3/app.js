@@ -25,7 +25,7 @@ function progressHtml(file,total){let st=loadTask(file,total),d=st.done.length,l
 function pct(file,total){let st=loadTask(file,total);return Math.round((st.done.length||0)/total*100)||0}
 function complete(area,file,next){area.innerHTML=`<div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${next}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div>`}
 function feedbackForTry(tries,solution,type){if(tries===1)return"Da ist noch ein Fehler.";if(tries===2)return"Tipp: Prüfe "+(type||"Form und Schreibweise")+".";return"Lösung: "+solution}
-function currentMotherLang(){return localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru"}
+function currentMotherLang(){return localStorage.getItem("SP_MOTHER_LANGUAGE_CODE")||localStorage.getItem("SP_MOTHER_LANGUAGE_CODE")||localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru"}
 function translateWord(w){let l=currentMotherLang();return (w.tr&&w.tr[l])||w.tr?.ru||w.tr?.en||w.word}
 function wordProgress(wordId){const files=["karteikarten.html","hoeren.html","farbe-nennen.html"];let possible=0,done=0;files.forEach(file=>{let idx=WORDS.findIndex(w=>w.id===wordId);if(idx<0)return;possible++;let st=loadTask(file,WORDS.length);if(st.done&&st.done.includes(idx))done++;});return possible?Math.round(done/possible*100):0}
 function wordStatus(p){if(p>=100)return"gelernt";if(p>=50)return"in Arbeit";if(p>0)return"angefangen";return"neu"}

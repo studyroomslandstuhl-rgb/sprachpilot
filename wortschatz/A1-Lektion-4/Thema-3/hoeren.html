@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=1"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="accountStrip" class="account-strip"></div>
+<script type="module" src="/js/guard.js"></script><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=1"></script><script>
 header("Hören");const FILE="hoeren.html";let i=0;
 function opts(w){return [w,...WORDS.filter(x=>x.id!==w.id).sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5)}
 function visual(x){return x.type==="color"?`<div class="color-tile" onclick="choose('${x.id}')"><div><div class="swatch" style="background:${colorCss(x.id)}"></div></div></div>`:`<div class="imgbox" onclick="choose('${x.id}')"><img src="${x.image}" onerror="fixImg(this)"></div>`}

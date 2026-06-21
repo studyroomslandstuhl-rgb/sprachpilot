@@ -1,4 +1,6 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Übersicht Thema 3</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><section class="card"><h2>Übersicht – Farben & Adjektive</h2></section><section class="word-overview-grid" id="list"></section></div><script src="app.js?v=1"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Übersicht Thema 3</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="accountStrip" class="account-strip"></div>
+<script type="module" src="/js/guard.js"></script><div class="container"><header class="topbar"></header><section class="card"><h2>Übersicht – Farben & Adjektive</h2></section><section class="word-overview-grid" id="list"></section></div><script src="app.js?v=1"></script><script>
 header("Übersicht");
 list.innerHTML=WORDS.map(w=>`<div class="word-card">${w.type==='color'?`<div class="swatch" style="background:${colorCss(w.id)}"></div>`:`<img src="${w.image}" onerror="fixImg(this)">`}<div class="word-de">${w.full}</div><div class="word-tr">${translateWord(w)}</div><div class="word-meta">${w.type==='color'?'Farbe':'Adjektiv'}</div></div>`).join("");
 </script></body></html>
