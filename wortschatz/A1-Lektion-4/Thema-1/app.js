@@ -16,7 +16,7 @@ function fixImg(img){img.classList.add("missing");img.alt="Bild fehlt"}
 function header(title){
  const h=document.querySelector(".topbar");
  if(!h)return;
- h.innerHTML=`<a class="brand" href="../../index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 4 · Thema 1</div></div></a>
+ h.innerHTML=`<a class="brand" href="/index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 4 · Thema 1</div></div></a>
  <nav class="nav">
    <a class="btn secondary" href="../index.html">← Zurück</a>
    <a class="btn secondary" href="uebersicht.html">Übersicht</a>
@@ -151,14 +151,7 @@ function okIstAnswer(ans,t){
 }
 
 
-function currentMotherLang(){
- let l = localStorage.getItem("motherLanguage") || localStorage.getItem("muttersprache") || localStorage.getItem("lang") || "ru";
- const map={
-  "Rumänisch":"ro","Romanian":"ro","romana":"ro","română":"ro","ro-RO":"ro","ro":"ro",
-  "Russisch":"ru","Russian":"ru","ru-RU":"ru",
-  "Englisch":"en","English":"en","en-US":"en","en-GB":"en",
-  "Ukrainisch":"uk","Arabic":"ar","Arabisch":"ar","Türkisch":"tr","Turkish":"tr","Polnisch":"pl","Japanisch":"ja","Kurdisch":"ku"
- };
+function currentMotherLang(){return localStorage.getItem("SP_MOTHER_LANGUAGE_CODE")||localStorage.getItem("SP_MOTHER_LANGUAGE_CODE")||localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru"};
  return map[l] || String(l).toLowerCase();
 }
 function translateWord(w){
