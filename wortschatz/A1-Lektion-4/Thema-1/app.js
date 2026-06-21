@@ -152,7 +152,14 @@ function okIstAnswer(ans,t){
 
 
 function currentMotherLang(){
- return localStorage.getItem("motherLanguage") || localStorage.getItem("muttersprache") || localStorage.getItem("lang") || "ru";
+ let l = localStorage.getItem("motherLanguage") || localStorage.getItem("muttersprache") || localStorage.getItem("lang") || "ru";
+ const map={
+  "Rumänisch":"ro","Romanian":"ro","romana":"ro","română":"ro","ro-RO":"ro","ro":"ro",
+  "Russisch":"ru","Russian":"ru","ru-RU":"ru",
+  "Englisch":"en","English":"en","en-US":"en","en-GB":"en",
+  "Ukrainisch":"uk","Arabic":"ar","Arabisch":"ar","Türkisch":"tr","Turkish":"tr","Polnisch":"pl","Japanisch":"ja","Kurdisch":"ku"
+ };
+ return map[l] || String(l).toLowerCase();
 }
 function translateWord(w){
  const l=currentMotherLang();
