@@ -111,7 +111,7 @@ function acceptableAnswer(ans,c){
 }
 
 
-function header(title){document.querySelector('.hero').innerHTML=`<div class="top"><a class="brand" href="../../index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="small">${title} · A1 Lektion 3 · Thema 2</div></div></a><div class="nav"><a class="btn secondary" href="../index.html">← Lektionsübersicht</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><a class="btn secondary" href="index.html">Thema 2</a></div></div>`}
+function header(title){document.querySelector('.hero').innerHTML=`<div class="top"><a class="brand" href="/index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="small">${title} · A1 Lektion 3 · Thema 2</div></div></a><div class="nav"><a class="btn secondary" href="../index.html">← Lektionsübersicht</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><a class="btn secondary" href="index.html">Thema 2</a></div></div>`}
 
 function pctFor(file,total=WORDS.length){
   let modern=spTaskPercent(file,total);
