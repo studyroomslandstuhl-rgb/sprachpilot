@@ -1,8 +1,10 @@
+window.TeacherFirebaseReady = false;
+window.TeacherFirebaseError = null;
+
 let db = null;
 let auth = null;
 
 try {
-
   const firebaseConfig = {
   apiKey: "AIzaSyDbl0m8JIEu7BuoLwXrdxRL4wMJAVJS468",
   authDomain: "sprachpilot-12c68.firebaseapp.com",
@@ -13,6 +15,10 @@ try {
   measurementId: "G-2XXR3FSY89"
 };
 
+  if (typeof firebase === "undefined") {
+    throw new Error("Firebase SDK wurde nicht geladen.");
+  }
+
   if (!firebase.apps.length) {
     firebase.initializeApp(firebaseConfig);
   }
@@ -20,10 +26,13 @@ try {
   db = firebase.firestore();
   auth = firebase.auth();
 
+  window.db = db;
+  window.auth = auth;
+  window.TeacherFirebaseReady = true;
+
   console.log("Teacher Firebase verbunden");
 
 } catch (err) {
-
+  window.TeacherFirebaseError = err;
   console.error("Teacher Firebase Fehler:", err);
-
 }

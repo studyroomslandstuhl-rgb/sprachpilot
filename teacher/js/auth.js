@@ -1,143 +1,175 @@
-const TeacherAuth = {
-
-  message(text,type="no"){
-    const msg=document.getElementById("loginMsg");
+(function(){
+  function el(id){return document.getElementById(id)}
+  function show(text,type="no"){
+    const msg=el("loginMsg");
     if(msg) msg.innerHTML=`<div class="${type}">${text}</div>`;
-  },
-
-  async ensureTeacherDoc(user, extra={}){
-    const ref=db.collection("teachers").doc(user.uid);
-    const snap=await ref.get();
-
-    if(!snap.exists){
-      await ref.set({
-        email:user.email || extra.email || "",
-        school:extra.school || "",
-        job:extra.job || "Lehrkraft",
-        role:"teacher",
-        active:true,
-        createdAt:firebase.firestore.FieldValue.serverTimestamp(),
-        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      }, {merge:true});
-    }else{
-      await ref.set({
-        email:user.email || snap.data().email || "",
-        role:snap.data().role || "teacher",
-        active:snap.data().active !== false,
-        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-      }, {merge:true});
+  }
+  function setBusy(buttonId,busy,textBusy,textNormal){
+    const b=el(buttonId);
+    if(!b) return;
+    b.disabled=busy;
+    b.textContent=busy ? textBusy : textNormal;
+  }
+  function readableError(err, fallback){
+    console.error(err);
+    const code=err && err.code ? err.code : "";
+    if(code==="auth/invalid-credential" || code==="auth/user-not-found" || code==="auth/wrong-password"){
+      return "E-Mail oder Passwort ist falsch. Bitte prüfen und noch einmal versuchen.";
     }
-
-    return (await ref.get()).data();
-  },
-
-  async login(){
-
-    const email = document.getElementById("email").value.trim().toLowerCase();
-    const password = document.getElementById("password").value;
-
-    this.message("");
-
-    if(!email || !password){
-      this.message("Bitte E-Mail und Passwort eingeben.");
-      return;
+    if(code==="auth/email-already-in-use"){
+      return "Diese E-Mail ist schon registriert. Bitte einloggen.";
     }
-
-    if(!auth || !db){
-      this.message("Firebase ist nicht verbunden. Bitte teacher/js/firebase.js prüfen.");
-      return;
+    if(code==="auth/weak-password"){
+      return "Das Passwort ist zu kurz. Bitte mindestens 6 Zeichen verwenden.";
     }
+    if(code==="auth/invalid-email"){
+      return "Diese E-Mail-Adresse ist ungültig.";
+    }
+    if(code==="auth/operation-not-allowed"){
+      return "Firebase Authentication ist nicht aktiviert. Bitte in Firebase unter Authentication → Sign-in method → Email/Password aktivieren.";
+    }
+    if(code==="permission-denied" || String(err.message||"").includes("Missing or insufficient permissions")){
+      return "Firebase-Regeln blockieren den Zugriff auf teachers. Bitte Firestore-Regeln prüfen.";
+    }
+    return fallback || (err.message || "Unbekannter Fehler.");
+  }
 
-    try{
-      this.message("Login wird geprüft...","ok");
+  async function ensureFirebase(){
+    if(!window.TeacherFirebaseReady || !window.auth || !window.db){
+      const err=window.TeacherFirebaseError ? window.TeacherFirebaseError.message : "Firebase ist nicht verbunden.";
+      throw new Error(err);
+    }
+  }
 
-      const result = await auth.signInWithEmailAndPassword(email,password);
-      const user = result.user;
+  window.TeacherAuth = {
 
-      const teacher = await this.ensureTeacherDoc(user,{email});
+    async ensureTeacherDoc(user, extra={}){
+      const ref=db.collection("teachers").doc(user.uid);
+      const snap=await ref.get();
 
-      if(teacher.role !== "teacher" || teacher.active === false){
-        await auth.signOut();
-        this.message("Lehrerzugang ist nicht aktiv.");
+      if(!snap.exists){
+        await ref.set({
+          email:user.email || extra.email || "",
+          school:extra.school || "",
+          job:extra.job || "Lehrkraft",
+          role:"teacher",
+          active:true,
+          createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge:true});
+      }else{
+        const old=snap.data();
+        await ref.set({
+          email:user.email || old.email || "",
+          role:old.role || "teacher",
+          active:old.active !== false,
+          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge:true});
+      }
+
+      return (await ref.get()).data();
+    },
+
+    async login(){
+      const email=el("email").value.trim().toLowerCase();
+      const password=el("password").value;
+
+      if(!email || !password){
+        show("Bitte E-Mail und Passwort eingeben.");
         return;
       }
 
-      location.href = "index.html";
+      setBusy("loginBtn",true,"Login läuft...","Einloggen");
+      show("Login wird geprüft...","ok");
 
-    }catch(err){
-      console.error(err);
-      this.message("E-Mail oder Passwort ist falsch. Bitte prüfen und noch einmal versuchen.");
-    }
-  },
+      try{
+        await ensureFirebase();
 
-  async register(){
+        const result=await auth.signInWithEmailAndPassword(email,password);
+        const user=result.user;
 
-    const email = document.getElementById("regEmail").value.trim().toLowerCase();
-    const password = document.getElementById("regPassword").value;
-    const school = document.getElementById("regSchool").value.trim();
-    const job = document.getElementById("regJob").value.trim();
+        const teacher=await this.ensureTeacherDoc(user,{email});
 
-    this.message("");
+        if(teacher.role!=="teacher" || teacher.active===false){
+          await auth.signOut();
+          show("Lehrerzugang ist nicht aktiv.");
+          return;
+        }
 
-    if(!email || !password || !school || !job){
-      this.message("Bitte alle Felder ausfüllen.");
-      return;
-    }
+        show("Login erfolgreich. Dashboard wird geöffnet...","ok");
+        setTimeout(()=>location.href="index.html",500);
 
-    if(password.length < 6){
-      this.message("Das Passwort muss mindestens 6 Zeichen haben.");
-      return;
-    }
+      }catch(err){
+        show(readableError(err,"Login nicht möglich."));
+      }finally{
+        setBusy("loginBtn",false,"Login läuft...","Einloggen");
+      }
+    },
 
-    if(!auth || !db){
-      this.message("Firebase ist nicht verbunden. Bitte teacher/js/firebase.js prüfen.");
-      return;
-    }
+    async register(){
+      const email=el("regEmail").value.trim().toLowerCase();
+      const password=el("regPassword").value;
+      const school=el("regSchool").value.trim();
+      const job=el("regJob").value.trim();
 
-    try{
-      this.message("Registrierung wird erstellt...","ok");
+      if(!email || !password || !school || !job){
+        show("Bitte alle Felder ausfüllen.");
+        return;
+      }
+      if(password.length<6){
+        show("Das Passwort muss mindestens 6 Zeichen haben.");
+        return;
+      }
 
-      const result = await auth.createUserWithEmailAndPassword(email,password);
-      const user = result.user;
+      setBusy("regBtn",true,"Registrierung läuft...","Registrieren");
+      show("Registrierung wird erstellt...","ok");
 
-      await this.ensureTeacherDoc(user,{email,school,job});
+      try{
+        await ensureFirebase();
 
-      this.message("Registrierung erfolgreich. Du wirst eingeloggt...","ok");
-      setTimeout(()=>location.href="index.html",700);
+        const result=await auth.createUserWithEmailAndPassword(email,password);
+        const user=result.user;
 
-    }catch(err){
-      console.error(err);
-      if(err.code==="auth/email-already-in-use"){
-        this.message("Diese E-Mail ist schon registriert. Bitte einloggen.");
-      }else{
-        this.message("Registrierung nicht möglich: "+(err.message||"Unbekannter Fehler"));
+        await this.ensureTeacherDoc(user,{email,school,job});
+
+        show("Registrierung erfolgreich. Dashboard wird geöffnet...","ok");
+        setTimeout(()=>location.href="index.html",800);
+
+      }catch(err){
+        show(readableError(err,"Registrierung nicht möglich."));
+      }finally{
+        setBusy("regBtn",false,"Registrierung läuft...","Registrieren");
+      }
+    },
+
+    async resetPassword(){
+      const email=el("resetEmail").value.trim().toLowerCase();
+
+      if(!email){
+        show("Bitte E-Mail eingeben.");
+        return;
+      }
+
+      setBusy("resetBtn",true,"Wird gesendet...","Reset-Link senden");
+      show("Reset-Link wird gesendet...","ok");
+
+      try{
+        await ensureFirebase();
+        await auth.sendPasswordResetEmail(email);
+        show("Reset-Link wurde an deine E-Mail gesendet.","ok");
+      }catch(err){
+        show(readableError(err,"Reset-Link konnte nicht gesendet werden."));
+      }finally{
+        setBusy("resetBtn",false,"Wird gesendet...","Reset-Link senden");
+      }
+    },
+
+    async logout(){
+      try{
+        if(auth) await auth.signOut();
+      }finally{
+        location.href="login.html";
       }
     }
-  },
-
-  async resetPassword(){
-
-    const email = document.getElementById("resetEmail").value.trim().toLowerCase();
-
-    this.message("");
-
-    if(!email){
-      this.message("Bitte E-Mail eingeben.");
-      return;
-    }
-
-    try{
-      await auth.sendPasswordResetEmail(email);
-      this.message("Reset-Link wurde an deine E-Mail gesendet.","ok");
-    }catch(err){
-      console.error(err);
-      this.message("Reset-Link konnte nicht gesendet werden.");
-    }
-  },
-
-  async logout(){
-    if(auth) await auth.signOut();
-    location.href = "login.html";
-  }
-
-};
+  };
+})();
