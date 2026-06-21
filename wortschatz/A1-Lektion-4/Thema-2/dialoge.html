@@ -1,6 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dialoge</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="accountStrip" class="account-strip"></div>
-<script type="module" src="/js/guard.js"></script><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=5"></script><script>header("Dialoge");
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dialoge</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=5"></script><script>header("Dialoge");
 const FILE="dialoge.html";
 let i=0;
 
@@ -18,7 +16,10 @@ function show(){
  const secondParts = t.line2.split("___");
 
  area.innerHTML=`${progressHtml(FILE,DIALOG_TASKS.length)}
- <div class="question">Schreibe das Wort und das passende Pronomen.</div><div class="gap-dialog">
+ <div class="question">Schreibe das Wort und das passende Pronomen.</div>
+ <div class="hint">Erste Lücke: Wort mit Artikel. Zweite Lücke: er / es / sie.</div>
+
+ <div class="gap-dialog">
    <div class="gap-line">
      <span>Ist</span>
      <input id="noun" class="gap-input" placeholder="der/die/das ...">
