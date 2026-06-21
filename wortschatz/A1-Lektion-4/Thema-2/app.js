@@ -73,9 +73,7 @@ function pct(file,total){let st=loadTask(file,total);return Math.round((st.done.
 function complete(area,file,next){area.innerHTML=`<div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${next}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div>`}
 function feedbackForTry(tries,solution,type){if(tries===1)return"Da ist noch ein Fehler.";if(tries===2)return"Tipp: Prüfe "+(type||"Form und Schreibweise")+".";return"Lösung: "+solution}
 
-function currentMotherLang(){
- let lang=localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru";
- const map={"Rumänisch":"ro","Romanian":"ro","ro-RO":"ro","romana":"ro","română":"ro","Russisch":"ru","Russian":"ru","Englisch":"en","English":"en","Ukrainisch":"uk","Ukrainian":"uk","Arabisch":"ar","Türkisch":"tr","Turkish":"tr","Polnisch":"pl","Japanisch":"ja","Kurdisch":"ku"};
+function currentMotherLang(){return localStorage.getItem("SP_MOTHER_LANGUAGE_CODE")||localStorage.getItem("SP_MOTHER_LANGUAGE_CODE")||localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru"};
  return map[lang]||lang;
 }
 function translateWord(w){let l=currentMotherLang();return (w.tr&&w.tr[l])||w.tr?.ru||w.tr?.en||w.word}
