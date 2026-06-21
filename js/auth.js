@@ -110,3 +110,35 @@ export async function updateStudentProfile({vorname,nachname,email,muttersprache
 
   return newProfile;
 }
+
+
+export function requireLogin(){
+  const p=getActiveProfile();
+  if(!p){
+    const target=location.pathname + location.search + location.hash;
+    location.href="/login/?redirect="+encodeURIComponent(target);
+    return null;
+  }
+  return p;
+}
+
+export function loginUrlForCurrent(){
+  const target=location.pathname + location.search + location.hash;
+  return "/login/?redirect="+encodeURIComponent(target);
+}
+
+export function getRedirectTarget(defaultTarget="/index.html"){
+  const params=new URLSearchParams(location.search);
+  return params.get("redirect") || sessionStorage.getItem("SP_AFTER_LOGIN") || defaultTarget;
+}
+
+export function renderAccountStrip(rootId="accountStrip"){
+  const el=document.getElementById(rootId);
+  if(!el) return;
+  const p=getActiveProfile();
+  if(!p){
+    el.innerHTML=`<span class="who">Nicht eingeloggt</span><a href="${loginUrlForCurrent()}">Login</a><a href="/register/?redirect=${encodeURIComponent(location.pathname+location.search+location.hash)}">Registrieren</a>`;
+    return;
+  }
+  el.innerHTML=`<span class="who">${safeText(p.vorname||"")} ${safeText(p.nachname||"")} · ${safeText(p.kurs||"")}</span><a href="/dashboard/">Dashboard</a><a href="/profile/">Profil</a><button onclick="logout()">Abmelden</button>`;
+}
