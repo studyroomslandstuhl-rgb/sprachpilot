@@ -1,21 +1,46 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dialoge</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=3"></script><script>
-header("Dialoge");
-const FILE="dialoge.html";let i=0;
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dialoge</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=4"></script><script>header("Dialoge");
+const FILE="dialoge.html";
+let i=0;
+
 function show(){
- if(loadTask(FILE,DIALOG_TASKS.length).done.length>=DIALOG_TASKS.length){complete(area,FILE,"pruefung.html");return}
+ if(loadTask(FILE,DIALOG_TASKS.length).done.length>=DIALOG_TASKS.length){
+   complete(area,FILE,"pruefung.html");
+   return;
+ }
+
  i=nextIndex(FILE,DIALOG_TASKS.length);
- let t=DIALOG_TASKS[i], w=wordById(t.id);
+ let t=DIALOG_TASKS[i];
+ let w=wordById(t.id);
+
+ const firstRest = t.line1.replace("Ist ___ ","").replace("?","");
+ const secondParts = t.line2.split("___");
+
  area.innerHTML=`${progressHtml(FILE,DIALOG_TASKS.length)}
  <div class="question">Schreibe das Wort und das passende Pronomen.</div>
+ <div class="hint">Erste Lücke: Wort mit Artikel. Zweite Lücke: er / es / sie.</div>
+
  <div class="gap-dialog">
-   <div class="gap-line">Ist <input id="noun" class="gap-input" placeholder="der/die/das ..."> <img class="small-inline-img" src="${w.image}" onerror="fixImg(this)"> ${t.line1.replace("Ist ___ ","").replace("?","")}?</div>
-   <div class="gap-line">${t.line2.split("___")[0]}<input id="pronoun" class="gap-input" placeholder="er/es/sie">${t.line2.split("___")[1]}</div>
+   <div class="gap-line">
+     <span>Ist</span>
+     <input id="noun" class="gap-input" placeholder="der/die/das ...">
+     <img class="small-inline-img" src="${w.image}" onerror="fixImg(this)" alt="">
+     <span>${firstRest}?</span>
+   </div>
+
+   <div class="gap-line">
+     <span>${secondParts[0]}</span>
+     <input id="pronoun" class="gap-input" placeholder="er/es/sie">
+     <span>${secondParts[1] || ""}</span>
+   </div>
  </div>
+
  <button class="btn" onclick="check()">Kontrollieren</button>
  <div id="fb" class="feedback"></div>`;
 }
+
 function check(){
  let t=DIALOG_TASKS[i];
+
  if(okDialog(noun.value,pronoun.value,t)){
    fb.textContent="Richtig!";
    markRight(FILE,DIALOG_TASKS.length);
@@ -23,8 +48,7 @@ function check(){
  }else{
    let tr=markWrong(FILE,DIALOG_TASKS.length);
    fb.innerHTML=feedbackForTry(tr,t.answerNoun+" / "+t.answerPronoun,"Nomen mit Artikel und Pronomen");
-   if(tr>=2)setTimeout(show,1400);
  }
 }
-show();
-</script></body></html>
+
+show();</script></body></html>
