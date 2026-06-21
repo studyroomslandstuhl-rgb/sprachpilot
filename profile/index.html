@@ -1,1 +1,126 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SprachPilot – Profil</title>
+<link rel="stylesheet" href="../style.css">
+</head>
+<body>
+<div class="container">
+<section class="hero">
+  <a href="/index.html" style="text-decoration:none;color:inherit">
+    <div class="logo-wrap">
+      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
+        <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#667eea"/><stop offset="1" stop-color="#764ba2"/></linearGradient></defs>
+        <circle cx="60" cy="60" r="52" fill="url(#g)"/>
+        <path d="M28 63 C43 38,70 30,91 38 C75 43,63 53,55 70 C47 66,38 63,28 63Z" fill="#fff" opacity=".95"/>
+        <path d="M54 70 C63 53,75 43,91 38 C84 57,72 75,52 91 C55 82,56 75,54 70Z" fill="#ffcc33"/>
+        <circle cx="71" cy="49" r="5" fill="#667eea"/>
+      </svg>
+    </div>
+    <h1>SprachPilot</h1>
+  </a>
+  <p class="subtitle">Profil bearbeiten</p>
+</section>
 
+<section class="card">
+  <h2>Meine Daten</h2>
+  <p class="small">Du kannst deine Daten ändern. Der Kurscode bleibt fest.</p>
+
+  <div class="two">
+    <div><label>Vorname *</label><input id="fname"></div>
+    <div><label>Nachname *</label><input id="lname"></div>
+  </div>
+
+  <label>E-Mail *</label>
+  <input id="email" type="email">
+
+  <label>Muttersprache *</label>
+  <select id="motherLanguage">
+        <option value="">Bitte auswählen</option>
+        <option>Albanisch</option>
+        <option>Amharisch</option>
+        <option>Arabisch</option>
+        <option>Armenisch</option>
+        <option>Aserbaidschanisch</option>
+        <option>Bengalisch</option>
+        <option>Bosnisch</option>
+        <option>Bulgarisch</option>
+        <option>Chinesisch</option>
+        <option>Dari</option>
+        <option>Deutsch</option>
+        <option>Englisch</option>
+        <option>Farsi/Persisch</option>
+        <option>Französisch</option>
+        <option>Georgisch</option>
+        <option>Griechisch</option>
+        <option>Hindi</option>
+        <option>Italienisch</option>
+        <option>Japanisch</option>
+        <option>Kasachisch</option>
+        <option>Kroatisch</option>
+        <option>Kurdisch</option>
+        <option>Paschtu</option>
+        <option>Polnisch</option>
+        <option>Portugiesisch</option>
+        <option>Rumänisch</option>
+        <option>Russisch</option>
+        <option>Serbisch</option>
+        <option>Somali</option>
+        <option>Spanisch</option>
+        <option>Tamil</option>
+        <option>Thai</option>
+        <option>Tigrinya</option>
+        <option>Tschechisch</option>
+        <option>Türkisch</option>
+        <option>Ukrainisch</option>
+        <option>Ungarisch</option>
+        <option>Urdu</option>
+        <option>Usbekisch</option>
+        <option>Vietnamesisch</option>
+      </select>
+
+  <label>Kurscode</label>
+  <input id="course" disabled>
+
+  <button class="success" onclick="saveProfile()">Speichern</button>
+  <a class="btn secondary" href="../">Zur Startseite</a>
+  <div id="result"></div>
+</section>
+
+<footer>© SprachPilot</footer>
+</div>
+
+<script type="module">
+import { getActiveProfile, updateStudentProfile, $, safeText } from "../js/auth.js";
+
+const p=getActiveProfile();
+if(!p) location.href="../login/";
+
+$("fname").value=p.vorname||"";
+$("lname").value=p.nachname||"";
+$("email").value=p.email||"";
+$("motherLanguage").value=p.muttersprache||"";
+$("course").value=p.kurs||"";
+
+window.saveProfile=async function(){
+  const result=$("result");
+  result.innerHTML='<div class="ok">Profil wird gespeichert...</div>';
+
+  try{
+    const newP=await updateStudentProfile({
+      vorname:$("fname").value,
+      nachname:$("lname").value,
+      email:$("email").value,
+      muttersprache:$("motherLanguage").value
+    });
+    result.innerHTML='<div class="ok">Gespeichert. Die Muttersprache wird ab jetzt in den Übungen verwendet.</div>';
+  }catch(err){
+    console.error(err);
+    result.innerHTML='<div class="no">Profil konnte nicht gespeichert werden.</div>';
+  }
+}
+</script>
+</body>
+</html>
