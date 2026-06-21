@@ -4,107 +4,56 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SprachPilot · Lehrer Login</title>
-
 <link rel="stylesheet" href="css/styles.css">
-
 <style>
-.login-wrapper{
-  max-width:520px;
-  margin:70px auto;
-}
-
-.login-card{
-  background:white;
-  border-radius:24px;
-  padding:30px;
-  box-shadow:0 10px 30px rgba(0,0,0,.18);
-}
-
-.login-card h1{
-  color:#667eea;
-  text-align:center;
-  margin-bottom:8px;
-}
-
-.login-card p{
-  text-align:center;
-  color:#666;
-  margin-bottom:22px;
-}
-
-.login-card label{
-  display:block;
-  margin-top:12px;
-  font-weight:bold;
-  color:#667eea;
-}
-
-.login-card input{
-  width:100%;
-  padding:13px;
-  border:2px solid #ddd;
-  border-radius:12px;
-  margin-top:6px;
-  font-size:16px;
-}
-
-.login-buttons{
-  display:flex;
-  flex-direction:column;
-  gap:10px;
-  margin-top:20px;
-}
-
-.mode-box{
-  margin-top:18px;
-  padding-top:14px;
-  border-top:2px solid #eef2ff;
-}
-
-.hidden{
-  display:none!important;
-}
-
-.msg{
-  margin-top:14px;
-}
+.login-wrapper{max-width:520px;margin:70px auto}
+.login-card{background:white;border-radius:24px;padding:30px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
+.login-card h1{color:#667eea;text-align:center;margin-bottom:8px}
+.login-card p{text-align:center;color:#666;margin-bottom:22px}
+.login-card label{display:block;margin-top:12px;font-weight:bold;color:#667eea}
+.login-card input{width:100%;padding:13px;border:2px solid #ddd;border-radius:12px;margin-top:6px;font-size:16px}
+.login-buttons{display:flex;flex-direction:column;gap:10px;margin-top:20px}
+.mode-box{margin-top:18px;padding-top:14px;border-top:2px solid #eef2ff}
+.hidden{display:none!important}
+.msg{margin-top:14px}
+.ok{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:12px;margin:10px 0;color:#145a32}
+.no{background:#ffe1e1;border-left:5px solid #e74c3c;padding:12px;border-radius:12px;margin:10px 0;color:#7b1d1d}
+button{border:0;border-radius:14px;padding:13px 16px;font-size:16px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);color:white}
+button.secondary{background:#eef2ff;color:#333}
+button:disabled{opacity:.55;cursor:not-allowed}
+.small{font-size:13px;color:#666}
 </style>
 </head>
-
 <body>
 
 <div class="login-wrapper">
-
   <div class="login-card">
 
     <h1>Lehrerbereich</h1>
     <p>Einloggen, registrieren oder Passwort zurücksetzen</p>
 
     <div id="loginMode">
-
       <label>E-Mail</label>
-      <input id="email" type="email" placeholder="lehrer@email.de">
+      <input id="email" type="email" placeholder="lehrer@email.de" autocomplete="email">
 
       <label>Passwort</label>
-      <input id="password" type="password" placeholder="Passwort">
+      <input id="password" type="password" placeholder="Passwort" autocomplete="current-password">
 
       <div class="login-buttons">
-        <button onclick="TeacherAuth.login()">Einloggen</button>
+        <button id="loginBtn" onclick="TeacherAuth.login()">Einloggen</button>
         <button class="secondary" onclick="showRegisterMode()">Als Lehrkraft registrieren</button>
         <button class="secondary" onclick="showResetMode()">Passwort vergessen</button>
       </div>
-
     </div>
 
     <div id="registerMode" class="hidden mode-box">
-
       <h2>Lehrkraft registrieren</h2>
 
       <label>E-Mail</label>
-      <input id="regEmail" type="email" placeholder="lehrer@email.de">
+      <input id="regEmail" type="email" placeholder="lehrer@email.de" autocomplete="email">
 
       <label>Passwort</label>
-      <input id="regPassword" type="password" placeholder="mindestens 6 Zeichen">
+      <input id="regPassword" type="password" placeholder="mindestens 6 Zeichen" autocomplete="new-password">
 
       <label>Schule / Institution</label>
       <input id="regSchool" type="text" placeholder="z. B. VHS, Sprachschule, Bildungsträger">
@@ -113,52 +62,47 @@
       <input id="regJob" type="text" placeholder="z. B. DaF-Lehrkraft, Kursleitung">
 
       <div class="login-buttons">
-        <button onclick="TeacherAuth.register()">Registrieren</button>
+        <button id="regBtn" onclick="TeacherAuth.register()">Registrieren</button>
         <button class="secondary" onclick="showLoginMode()">Zurück zum Login</button>
       </div>
-
     </div>
 
     <div id="resetMode" class="hidden mode-box">
-
       <h2>Passwort vergessen</h2>
 
       <label>E-Mail</label>
-      <input id="resetEmail" type="email" placeholder="lehrer@email.de">
+      <input id="resetEmail" type="email" placeholder="lehrer@email.de" autocomplete="email">
 
       <div class="login-buttons">
-        <button onclick="TeacherAuth.resetPassword()">Reset-Link senden</button>
+        <button id="resetBtn" onclick="TeacherAuth.resetPassword()">Reset-Link senden</button>
         <button class="secondary" onclick="showLoginMode()">Zurück zum Login</button>
       </div>
-
     </div>
 
     <div id="loginMsg" class="msg"></div>
-
+    <p class="small">Falls nichts passiert: Seite neu laden und prüfen, ob Firebase Authentication aktiviert ist.</p>
   </div>
-
 </div>
 
 <script>
+function msgClear(){document.getElementById("loginMsg").innerHTML=""}
 function showLoginMode(){
   document.getElementById("loginMode").classList.remove("hidden");
   document.getElementById("registerMode").classList.add("hidden");
   document.getElementById("resetMode").classList.add("hidden");
-  document.getElementById("loginMsg").innerHTML="";
+  msgClear();
 }
-
 function showRegisterMode(){
   document.getElementById("loginMode").classList.add("hidden");
   document.getElementById("registerMode").classList.remove("hidden");
   document.getElementById("resetMode").classList.add("hidden");
-  document.getElementById("loginMsg").innerHTML="";
+  msgClear();
 }
-
 function showResetMode(){
   document.getElementById("loginMode").classList.add("hidden");
   document.getElementById("registerMode").classList.add("hidden");
   document.getElementById("resetMode").classList.remove("hidden");
-  document.getElementById("loginMsg").innerHTML="";
+  msgClear();
 }
 </script>
 
@@ -168,6 +112,19 @@ function showResetMode(){
 
 <script src="js/firebase.js"></script>
 <script src="js/auth.js"></script>
+
+<script>
+window.addEventListener("load",()=>{
+  setTimeout(()=>{
+    if(!window.TeacherAuth){
+      document.getElementById("loginMsg").innerHTML="<div class='no'>Lehrer-Login konnte nicht geladen werden. Datei teacher/js/auth.js fehlt oder hat einen Fehler.</div>";
+    }else if(!window.TeacherFirebaseReady){
+      const err=window.TeacherFirebaseError ? window.TeacherFirebaseError.message : "Unbekannter Firebase-Fehler";
+      document.getElementById("loginMsg").innerHTML="<div class='no'>Firebase ist nicht verbunden: "+err+"</div>";
+    }
+  },500);
+});
+</script>
 
 </body>
 </html>
