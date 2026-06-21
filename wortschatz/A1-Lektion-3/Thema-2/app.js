@@ -6,7 +6,18 @@ const PRICE_TASKS=[{"price": "0,79 €", "spoken": "Eine Flasche Wasser kostet 7
 const KEY='SP_A1_L3_T2_FIXED_V2';
 function load(){try{return JSON.parse(localStorage.getItem(KEY)||'{}')}catch(e){return {}}}
 function save(s){localStorage.setItem(KEY,JSON.stringify(s))}
-function lang(){try{let p=JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'{}');return p.muttersprache||p.motherLanguage||'Russisch'}catch(e){return 'Russisch'}}
+function lang(){
+ try{
+  let p=JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'{}');
+  let visible=p.muttersprache||localStorage.getItem('muttersprache')||'Russisch';
+  let code=localStorage.getItem('SP_MOTHER_LANGUAGE_CODE')||localStorage.getItem('motherLanguage')||'';
+  const codeToName={
+   ar:'Arabisch',ru:'Russisch',en:'Englisch',uk:'Ukrainisch',tr:'Türkisch',
+   ro:'Rumänisch',ku:'Kurdisch',ja:'Japanisch',pl:'Polnisch',de:'Deutsch'
+  };
+  return codeToName[String(code).toLowerCase()] || visible || 'Russisch';
+ }catch(e){return 'Russisch'}
+}
 function tr(w){return (w.translations&&(w.translations[lang()]||w.translations.Russisch||w.translations.Englisch))||w.word}
 function full(w){return w.full||w.article+' '+w.word}
 function norm(x){return String(x||'').trim().replace(/\s+/g,' ')}

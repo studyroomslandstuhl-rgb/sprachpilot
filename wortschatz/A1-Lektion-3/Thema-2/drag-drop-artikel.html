@@ -1,7 +1,7 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Artikel zuordnen</title><link rel="stylesheet" href="style.css"></head>
 <body>
 <div id="accountStrip" class="account-strip"></div>
-<script type="module" src="/js/guard.js"></script><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div>
+<div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div>
 <section class="card"><p>Wort antippen, dann Gruppe antippen. Danach kontrollieren.</p><div id="chips"></div>
 <div class="drop-grid"><div class="dropzone" data-a="der"><h2>der</h2></div><div class="dropzone" data-a="die"><h2>die</h2></div><div class="dropzone" data-a="das"><h2>das</h2></div></div>
 <button class="btn" onclick="control()">Kontrollieren</button><div id="fb" class="feedback"></div><a id="nextBtn" class="btn hidden" href="plural.html">Nächste Aufgabe →</a></section>
@@ -80,4 +80,4 @@ function control(){
 makeSelectable();
 setupZones();
 </script>
-</body></html>
+<script type="module" src="/js/guard.js"></script></body></html>
