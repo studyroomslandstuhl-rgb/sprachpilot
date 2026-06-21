@@ -1,24 +1,22 @@
 
-const WORDS=[{"id": "haus", "article": "das", "word": "Haus", "full": "das Haus", "plural": "die Häuser", "pluralGroup": "-er/Umlaut", "image": "../bilder/haus.png", "tr": {"ru": "дом", "en": "house", "uk": "будинок", "ar": "البيت", "ku": "mal", "tr": "ev", "ro": "casă", "ja": "家", "pl": "dom"}}, {"id": "wohnung", "article": "die", "word": "Wohnung", "full": "die Wohnung", "plural": "die Wohnungen", "pluralGroup": "-en", "image": "../bilder/wohnung.png", "tr": {"ru": "квартира", "en": "apartment", "uk": "квартира", "ar": "الشقة", "ku": "apartman", "tr": "daire", "ro": "apartament", "ja": "アパート", "pl": "mieszkanie"}}, {"id": "zimmer", "article": "das", "word": "Zimmer", "full": "das Zimmer", "plural": "die Zimmer", "pluralGroup": "-", "image": "../bilder/zimmer.png", "tr": {"ru": "комната", "en": "room", "uk": "кімната", "ar": "الغرفة", "ku": "ode", "tr": "oda", "ro": "cameră", "ja": "部屋", "pl": "pokój"}}, {"id": "wohnzimmer", "article": "das", "word": "Wohnzimmer", "full": "das Wohnzimmer", "plural": "die Wohnzimmer", "pluralGroup": "-", "image": "../bilder/wohnzimmer.png", "tr": {"ru": "гостиная", "en": "living room", "uk": "вітальня", "ar": "غرفة المعيشة", "ku": "odeya rûniştinê", "tr": "oturma odası", "ro": "living", "ja": "リビング", "pl": "salon"}}, {"id": "schlafzimmer", "article": "das", "word": "Schlafzimmer", "full": "das Schlafzimmer", "plural": "die Schlafzimmer", "pluralGroup": "-", "image": "../bilder/schlafzimmer.png", "tr": {"ru": "спальня", "en": "bedroom", "uk": "спальня", "ar": "غرفة النوم", "ku": "odeya razanê", "tr": "yatak odası", "ro": "dormitor", "ja": "寝室", "pl": "sypialnia"}}, {"id": "kinderzimmer", "article": "das", "word": "Kinderzimmer", "full": "das Kinderzimmer", "plural": "die Kinderzimmer", "pluralGroup": "-", "image": "../bilder/kinderzimmer.png", "tr": {"ru": "детская комната", "en": "children's room", "uk": "дитяча кімната", "ar": "غرفة الأطفال", "ku": "odeya zarokan", "tr": "çocuk odası", "ro": "camera copiilor", "ja": "子ども部屋", "pl": "pokój dziecięcy"}}, {"id": "arbeitszimmer", "article": "das", "word": "Arbeitszimmer", "full": "das Arbeitszimmer", "plural": "die Arbeitszimmer", "pluralGroup": "-", "image": "../bilder/arbeitszimmer.png", "tr": {"ru": "кабинет", "en": "study", "uk": "кабінет", "ar": "غرفة العمل", "ku": "odeya xebatê", "tr": "çalışma odası", "ro": "birou", "ja": "書斎", "pl": "gabinet"}}, {"id": "kueche", "article": "die", "word": "Küche", "full": "die Küche", "plural": "die Küchen", "pluralGroup": "-n", "image": "../bilder/kueche.png", "tr": {"ru": "кухня", "en": "kitchen", "uk": "кухня", "ar": "المطبخ", "ku": "metbex", "tr": "mutfak", "ro": "bucătărie", "ja": "キッチン", "pl": "kuchnia"}}, {"id": "bad", "article": "das", "word": "Bad", "full": "das Bad", "plural": "die Bäder", "pluralGroup": "-er/Umlaut", "image": "../bilder/bad.png", "tr": {"ru": "ванная", "en": "bathroom", "uk": "ванна кімната", "ar": "الحمام", "ku": "serşok", "tr": "banyo", "ro": "baie", "ja": "浴室", "pl": "łazienka"}}, {"id": "toilette", "article": "die", "word": "Toilette", "full": "die Toilette", "plural": "die Toiletten", "pluralGroup": "-n", "image": "../bilder/toilette.png", "tr": {"ru": "туалет", "en": "toilet", "uk": "туалет", "ar": "المرحاض", "ku": "tûwalet", "tr": "tuvalet", "ro": "toaletă", "ja": "トイレ", "pl": "toaleta"}}, {"id": "flur", "article": "der", "word": "Flur", "full": "der Flur", "plural": "die Flure", "pluralGroup": "-e", "image": "../bilder/flur.png", "tr": {"ru": "коридор", "en": "hallway", "uk": "коридор", "ar": "الممر", "ku": "korîdor", "tr": "koridor", "ro": "hol", "ja": "廊下", "pl": "korytarz"}}, {"id": "balkon", "article": "der", "word": "Balkon", "full": "der Balkon", "plural": "die Balkone", "pluralGroup": "-e", "image": "../bilder/balkon.png", "tr": {"ru": "балкон", "en": "balcony", "uk": "балкон", "ar": "الشرفة", "ku": "balkon", "tr": "balkon", "ro": "balcon", "ja": "バルコニー", "pl": "balkon"}}, {"id": "hier", "article": "", "word": "hier", "full": "hier", "plural": "", "pluralGroup": "", "image": "../bilder/hier.png", "tr": {"ru": "здесь", "en": "here", "uk": "тут", "ar": "هنا", "ku": "li vir", "tr": "burada", "ro": "aici", "ja": "ここ", "pl": "tutaj"}}, {"id": "da", "article": "", "word": "da", "full": "da", "plural": "", "pluralGroup": "", "image": "../bilder/da.png", "tr": {"ru": "тут / там", "en": "there / here", "uk": "тут / там", "ar": "هناك / هنا", "ku": "li wir", "tr": "orada / burada", "ro": "acolo / aici", "ja": "そこ", "pl": "tam / tu"}}, {"id": "dort", "article": "", "word": "dort", "full": "dort", "plural": "", "pluralGroup": "", "image": "../bilder/dort.png", "tr": {"ru": "там", "en": "there", "uk": "там", "ar": "هناك", "ku": "li wirê", "tr": "orada", "ro": "acolo", "ja": "あそこ", "pl": "tam"}}];
-const WO_TASKS=[{"room": "kueche", "place": "hier", "question": "Wo ist die Küche?", "answer": "Die Küche ist hier."}, {"room": "bad", "place": "dort", "question": "Wo ist das Bad?", "answer": "Das Bad ist dort."}, {"room": "flur", "place": "da", "question": "Wo ist der Flur?", "answer": "Der Flur ist da."}, {"room": "balkon", "place": "hier", "question": "Wo ist der Balkon?", "answer": "Der Balkon ist hier."}, {"room": "wohnzimmer", "place": "dort", "question": "Wo ist das Wohnzimmer?", "answer": "Das Wohnzimmer ist dort."}, {"room": "schlafzimmer", "place": "da", "question": "Wo ist das Schlafzimmer?", "answer": "Das Schlafzimmer ist da."}, {"room": "kinderzimmer", "place": "hier", "question": "Wo ist das Kinderzimmer?", "answer": "Das Kinderzimmer ist hier."}, {"room": "arbeitszimmer", "place": "dort", "question": "Wo ist das Arbeitszimmer?", "answer": "Das Arbeitszimmer ist dort."}, {"room": "toilette", "place": "hier", "question": "Wo ist die Toilette?", "answer": "Die Toilette ist hier."}, {"room": "wohnung", "place": "da", "question": "Wo ist die Wohnung?", "answer": "Die Wohnung ist da."}];
-const IST_TASKS=[{"room": "kueche", "place": "hier", "positive": true, "question": "Ist hier eine Küche?", "answer": "Ja, hier ist die Küche."}, {"room": "bad", "place": "dort", "positive": true, "question": "Ist dort ein Bad?", "answer": "Ja, dort ist das Bad."}, {"room": "balkon", "place": "hier", "positive": false, "actual": "flur", "question": "Ist hier ein Balkon?", "answer": "Nein, hier ist kein Balkon. Hier ist der Flur."}, {"room": "flur", "place": "da", "positive": true, "question": "Ist da ein Flur?", "answer": "Ja, da ist der Flur."}, {"room": "wohnzimmer", "place": "dort", "positive": false, "actual": "schlafzimmer", "question": "Ist dort ein Wohnzimmer?", "answer": "Nein, dort ist kein Wohnzimmer. Dort ist das Schlafzimmer."}, {"room": "schlafzimmer", "place": "hier", "positive": true, "question": "Ist hier ein Schlafzimmer?", "answer": "Ja, hier ist das Schlafzimmer."}, {"room": "kinderzimmer", "place": "da", "positive": false, "actual": "bad", "question": "Ist da ein Kinderzimmer?", "answer": "Nein, da ist kein Kinderzimmer. Da ist das Bad."}, {"room": "arbeitszimmer", "place": "dort", "positive": true, "question": "Ist dort ein Arbeitszimmer?", "answer": "Ja, dort ist das Arbeitszimmer."}, {"room": "toilette", "place": "hier", "positive": false, "actual": "kueche", "question": "Ist hier eine Toilette?", "answer": "Nein, hier ist keine Toilette. Hier ist die Küche."}, {"room": "wohnung", "place": "da", "positive": true, "question": "Ist da eine Wohnung?", "answer": "Ja, da ist die Wohnung."}];
-const KEY="SP_L4_T1_V2";
+const WORDS=[{"id": "schrank", "article": "der", "word": "Schrank", "full": "der Schrank", "plural": "die Schränke", "pluralGroup": "-e/Umlaut", "image": "../bilder/schrank.png", "category": "Möbel", "pronoun": "er", "tr": {"ru": "шкаф", "en": "cabinet / wardrobe", "uk": "шафа", "ar": "الخزانة", "ku": "dolab", "tr": "dolap", "ro": "dulap", "ja": "戸棚 / クローゼット", "pl": "szafa"}}, {"id": "sofa", "article": "das", "word": "Sofa", "full": "das Sofa", "plural": "die Sofas", "pluralGroup": "-s", "image": "../bilder/sofa.png", "category": "Möbel", "pronoun": "es", "tr": {"ru": "диван", "en": "sofa", "uk": "диван", "ar": "الأريكة", "ku": "sofa", "tr": "kanepe", "ro": "canapea", "ja": "ソファ", "pl": "sofa"}}, {"id": "tisch", "article": "der", "word": "Tisch", "full": "der Tisch", "plural": "die Tische", "pluralGroup": "-e", "image": "../bilder/tisch.png", "category": "Möbel", "pronoun": "er", "tr": {"ru": "стол", "en": "table", "uk": "стіл", "ar": "الطاولة", "ku": "mase", "tr": "masa", "ro": "masă", "ja": "テーブル", "pl": "stół"}}, {"id": "stuhl", "article": "der", "word": "Stuhl", "full": "der Stuhl", "plural": "die Stühle", "pluralGroup": "-e/Umlaut", "image": "../bilder/stuhl.png", "category": "Möbel", "pronoun": "er", "tr": {"ru": "стул", "en": "chair", "uk": "стілець", "ar": "الكرسي", "ku": "kursî", "tr": "sandalye", "ro": "scaun", "ja": "椅子", "pl": "krzesło"}}, {"id": "bett", "article": "das", "word": "Bett", "full": "das Bett", "plural": "die Betten", "pluralGroup": "-en", "image": "../bilder/bett.png", "category": "Möbel", "pronoun": "es", "tr": {"ru": "кровать", "en": "bed", "uk": "ліжко", "ar": "السرير", "ku": "nivîn", "tr": "yatak", "ro": "pat", "ja": "ベッド", "pl": "łóżko"}}, {"id": "sessel", "article": "der", "word": "Sessel", "full": "der Sessel", "plural": "die Sessel", "pluralGroup": "-", "image": "../bilder/sessel.png", "category": "Möbel", "pronoun": "er", "tr": {"ru": "кресло", "en": "armchair", "uk": "крісло", "ar": "الكرسي المريح", "ku": "kursiya rehet", "tr": "koltuk", "ro": "fotoliu", "ja": "肘掛け椅子", "pl": "fotel"}}, {"id": "regal", "article": "das", "word": "Regal", "full": "das Regal", "plural": "die Regale", "pluralGroup": "-e", "image": "../bilder/regal.png", "category": "Möbel", "pronoun": "es", "tr": {"ru": "полка / стеллаж", "en": "shelf", "uk": "полиця / стелаж", "ar": "الرف", "ku": "ref", "tr": "raf", "ro": "raft", "ja": "棚", "pl": "regał"}}, {"id": "teppich", "article": "der", "word": "Teppich", "full": "der Teppich", "plural": "die Teppiche", "pluralGroup": "-e", "image": "../bilder/teppich.png", "category": "Möbel", "pronoun": "er", "tr": {"ru": "ковёр", "en": "carpet", "uk": "килим", "ar": "السجادة", "ku": "xalî", "tr": "halı", "ro": "covor", "ja": "カーペット", "pl": "dywan"}}, {"id": "lampe", "article": "die", "word": "Lampe", "full": "die Lampe", "plural": "die Lampen", "pluralGroup": "-n", "image": "../bilder/lampe.png", "category": "Elektrogeräte", "pronoun": "sie", "tr": {"ru": "лампа", "en": "lamp", "uk": "лампа", "ar": "المصباح", "ku": "çira", "tr": "lamba", "ro": "lampă", "ja": "ランプ", "pl": "lampa"}}, {"id": "fernseher", "article": "der", "word": "Fernseher", "full": "der Fernseher", "plural": "die Fernseher", "pluralGroup": "-", "image": "../bilder/fernseher.png", "category": "Elektrogeräte", "pronoun": "er", "tr": {"ru": "телевизор", "en": "TV", "uk": "телевізор", "ar": "التلفاز", "ku": "televîzyon", "tr": "televizyon", "ro": "televizor", "ja": "テレビ", "pl": "telewizor"}}, {"id": "kuehlschrank", "article": "der", "word": "Kühlschrank", "full": "der Kühlschrank", "plural": "die Kühlschränke", "pluralGroup": "-e/Umlaut", "image": "../bilder/kuehlschrank.png", "category": "Elektrogeräte", "pronoun": "er", "tr": {"ru": "холодильник", "en": "fridge", "uk": "холодильник", "ar": "الثلاجة", "ku": "sarincok", "tr": "buzdolabı", "ro": "frigider", "ja": "冷蔵庫", "pl": "lodówka"}}, {"id": "waschmaschine", "article": "die", "word": "Waschmaschine", "full": "die Waschmaschine", "plural": "die Waschmaschinen", "pluralGroup": "-n", "image": "../bilder/waschmaschine.png", "category": "Elektrogeräte", "pronoun": "sie", "tr": {"ru": "стиральная машина", "en": "washing machine", "uk": "пральна машина", "ar": "الغسالة", "ku": "makîneya cilşûştinê", "tr": "çamaşır makinesi", "ro": "mașină de spălat", "ja": "洗濯機", "pl": "pralka"}}, {"id": "herd", "article": "der", "word": "Herd", "full": "der Herd", "plural": "die Herde", "pluralGroup": "-e", "image": "../bilder/herd.png", "category": "Elektrogeräte", "pronoun": "er", "tr": {"ru": "плита", "en": "stove", "uk": "плита", "ar": "الموقد", "ku": "ocax", "tr": "ocak", "ro": "aragaz", "ja": "コンロ", "pl": "kuchenka"}}, {"id": "wand", "article": "die", "word": "Wand", "full": "die Wand", "plural": "die Wände", "pluralGroup": "-e/Umlaut", "image": "../bilder/wand.png", "category": "Wohnung", "pronoun": "sie", "tr": {"ru": "стена", "en": "wall", "uk": "стіна", "ar": "الجدار", "ku": "dîwar", "tr": "duvar", "ro": "perete", "ja": "壁", "pl": "ściana"}}, {"id": "tuer", "article": "die", "word": "Tür", "full": "die Tür", "plural": "die Türen", "pluralGroup": "-en", "image": "../bilder/tuer.png", "category": "Wohnung", "pronoun": "sie", "tr": {"ru": "дверь", "en": "door", "uk": "двері", "ar": "الباب", "ku": "derî", "tr": "kapı", "ro": "ușă", "ja": "ドア", "pl": "drzwi"}}, {"id": "fenster", "article": "das", "word": "Fenster", "full": "das Fenster", "plural": "die Fenster", "pluralGroup": "-", "image": "../bilder/fenster.png", "category": "Wohnung", "pronoun": "es", "tr": {"ru": "окно", "en": "window", "uk": "вікно", "ar": "النافذة", "ku": "pace", "tr": "pencere", "ro": "fereastră", "ja": "窓", "pl": "okno"}}, {"id": "dach", "article": "das", "word": "Dach", "full": "das Dach", "plural": "die Dächer", "pluralGroup": "-er/Umlaut", "image": "../bilder/dach.png", "category": "Wohnung", "pronoun": "es", "tr": {"ru": "крыша", "en": "roof", "uk": "дах", "ar": "السقف / السطح", "ku": "ban", "tr": "çatı", "ro": "acoperiș", "ja": "屋根", "pl": "dach"}}, {"id": "boden", "article": "der", "word": "Boden", "full": "der Boden", "plural": "die Böden", "pluralGroup": "-/Umlaut", "image": "../bilder/boden.png", "category": "Wohnung", "pronoun": "er", "tr": {"ru": "пол", "en": "floor", "uk": "підлога", "ar": "الأرضية", "ku": "erd", "tr": "zemin", "ro": "podea", "ja": "床", "pl": "podłoga"}}];
+const DIALOG_TASKS=[{"id": "schrank", "question": "Ist der Schrank groß?", "answer": "Ja, er ist groß."}, {"id": "sofa", "question": "Ist das Sofa bequem?", "answer": "Ja, es ist bequem."}, {"id": "tisch", "question": "Ist der Tisch braun?", "answer": "Ja, er ist braun."}, {"id": "stuhl", "question": "Ist der Stuhl bequem?", "answer": "Nein, er ist unbequem."}, {"id": "bett", "question": "Ist das Bett weich?", "answer": "Ja, es ist weich."}, {"id": "sessel", "question": "Ist der Sessel modern?", "answer": "Nein, er ist altmodisch."}, {"id": "regal", "question": "Ist das Regal hoch?", "answer": "Ja, es ist hoch."}, {"id": "teppich", "question": "Ist der Teppich neu?", "answer": "Ja, er ist neu."}, {"id": "lampe", "question": "Ist die Lampe hell?", "answer": "Ja, sie ist hell."}, {"id": "fernseher", "question": "Ist der Fernseher groß?", "answer": "Ja, er ist groß."}, {"id": "kuehlschrank", "question": "Ist der Kühlschrank voll?", "answer": "Ja, er ist voll."}, {"id": "waschmaschine", "question": "Ist die Waschmaschine neu?", "answer": "Ja, sie ist neu."}, {"id": "herd", "question": "Ist der Herd sauber?", "answer": "Nein, er ist schmutzig."}, {"id": "wand", "question": "Ist die Wand weiß?", "answer": "Ja, sie ist weiß."}, {"id": "tuer", "question": "Ist die Tür offen?", "answer": "Nein, sie ist geschlossen."}, {"id": "fenster", "question": "Ist das Fenster offen?", "answer": "Ja, es ist offen."}, {"id": "dach", "question": "Ist das Dach neu?", "answer": "Ja, es ist neu."}, {"id": "boden", "question": "Ist der Boden sauber?", "answer": "Ja, er ist sauber."}];
+const KEY="SP_L4_T2_V2";
 
 function simple(x){
  return String(x||"").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss").replace(/[.,!?]/g,"").replace(/\s+/g," ");
 }
-function load(){try{return JSON.parse(localStorage.getItem(KEY)||"{}")}catch(e){return {}}}
-function save(s){localStorage.setItem(KEY,JSON.stringify(s))}
 function full(w){return w.full}
 function wordById(id){return WORDS.find(w=>w.id===id)||{}}
-function fixImg(img){img.classList.add("missing");img.alt="Bild fehlt"}
+function fixImg(img){img.classList.add("missing"); img.alt="Bild fehlt"}
 
-function header(title){
+function header(title,isThemeOverview=false){
  const h=document.querySelector(".topbar");
  if(!h)return;
- h.innerHTML=`<a class="brand" href="../../index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 4 · Thema 1</div></div></a>
+ const backHref=isThemeOverview ? "../index.html" : "index.html";
+ h.innerHTML=`<a class="brand" href="/index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 4 · Thema 2</div></div></a>
  <nav class="nav">
-   <a class="btn secondary" href="../index.html">← Zurück</a>
+   <a class="btn secondary" href="${backHref}">← Zurück</a>
    <a class="btn secondary" href="uebersicht.html">Übersicht</a>
    <a class="btn secondary" href="statistik.html">Statistik</a>
  </nav>`;
@@ -26,10 +24,7 @@ function header(title){
 
 function taskKey(file){return KEY+"_"+file}
 function loadTask(file,total){
- try{
-  let st=JSON.parse(localStorage.getItem(taskKey(file))||"null");
-  if(st&&st.total===total&&Array.isArray(st.queue)&&Array.isArray(st.done))return st;
- }catch(e){}
+ try{let st=JSON.parse(localStorage.getItem(taskKey(file))||"null");if(st&&st.total===total&&Array.isArray(st.queue)&&Array.isArray(st.done))return st;}catch(e){}
  let queue=[...Array(total).keys()].sort(()=>Math.random()-.5);
  return {total,queue,done:[],current:null,tries:0};
 }
@@ -42,154 +37,42 @@ function nextIndex(file,total){
  }
  return st.current;
 }
-function markRight(file,total){
- let st=loadTask(file,total);
- if(st.current!==null&&!st.done.includes(st.current))st.done.push(st.current);
- st.current=null;st.tries=0;saveTask(file,st);
- return st.done.length>=total;
+function markRight(file,total){let st=loadTask(file,total);if(st.current!==null&&!st.done.includes(st.current))st.done.push(st.current);st.current=null;st.tries=0;saveTask(file,st);return st.done.length>=total}
+function markWrong(file,total){let st=loadTask(file,total);st.tries=(st.tries||0)+1;if(st.tries>=2&&st.current!==null){st.queue.push(st.current);st.current=null}saveTask(file,st);return st.tries}
+function progressHtml(file,total){let st=loadTask(file,total),d=st.done.length,left=total-d,p=Math.round(d/total*100)||0;return `<div class="small">${d} richtig · ${left} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
+function pct(file,total){let st=loadTask(file,total);return Math.round((st.done.length||0)/total*100)||0}
+function complete(area,file,next){area.innerHTML=`<div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${next}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div>`}
+function feedbackForTry(tries,solution,type){if(tries===1)return"Da ist noch ein Fehler.";if(tries===2)return"Tipp: Prüfe "+(type||"Form und Schreibweise")+".";return"Lösung: "+solution}
+
+function currentMotherLang(){return localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru"}
+function translateWord(w){let l=currentMotherLang();return (w.tr&&w.tr[l])||w.tr?.ru||w.tr?.en||w.word}
+function wordProgress(wordId){
+ const tasks=[
+  ["karteikarten.html",WORDS],
+  ["hoeren.html",WORDS],
+  ["artikel-klick.html",WORDS],
+  ["artikel.html",WORDS],
+  ["plural.html",WORDS],
+  ["bild-wort.html",WORDS],
+  ["wort-bild.html",WORDS],
+  ["kategorien.html",WORDS],
+  ["dialoge.html",DIALOG_TASKS.map(t=>wordById(t.id))]
+ ];
+ let possible=0, done=0;
+ tasks.forEach(([file,list])=>{let idx=list.findIndex(w=>w.id===wordId);if(idx<0)return;possible++;let st=loadTask(file,list.length);if(st.done&&st.done.includes(idx))done++;});
+ return possible?Math.round(done/possible*100):0;
 }
-function markWrong(file,total){
- let st=loadTask(file,total);
- st.tries=(st.tries||0)+1;
- if(st.tries>=2&&st.current!==null){st.queue.push(st.current);st.current=null}
- saveTask(file,st);
- return st.tries;
-}
-function progressHtml(file,total){
- let st=loadTask(file,total), d=st.done.length, left=total-d, p=Math.round(d/total*100)||0;
- return `<div class="small">${d} richtig · ${left} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`;
-}
-function pct(file,total){
- let st=loadTask(file,total);
- return Math.round((st.done.length||0)/total*100)||0;
-}
-function complete(area,file,next){
- area.innerHTML=`<div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${next}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div>`;
-}
-function feedbackForTry(tries,solution,type){
- if(tries===1)return"Da ist noch ein Fehler.";
- if(tries===2)return"Tipp: Prüfe "+(type||"Form und Schreibweise")+".";
- return"Lösung: "+solution;
-}
+function wordStatus(p){if(p>=100)return"gelernt";if(p>=50)return"in Arbeit";if(p>0)return"angefangen";return"neu"}
 
 function speak(text,slow=false){
- const msg=String(text||"").trim();
- if(!msg)return;
+ const msg=String(text||"").trim(); if(!msg)return;
  if(!("speechSynthesis" in window)){alert("Dein Browser unterstützt Vorlesen nicht.");return}
- function run(){
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(msg);
-  u.lang="de-DE";
-  u.rate=slow?0.65:0.9;
-  const voices=speechSynthesis.getVoices?speechSynthesis.getVoices():[];
-  const de=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith("de"));
-  if(de)u.voice=de;
-  speechSynthesis.speak(u);
- }
- const voices=speechSynthesis.getVoices?speechSynthesis.getVoices():[];
- if(voices.length===0&&"onvoiceschanged" in speechSynthesis){speechSynthesis.onvoiceschanged=run;setTimeout(run,250)}else run();
+ function run(){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(msg);u.lang="de-DE";u.rate=slow?0.65:0.9;const voices=speechSynthesis.getVoices?speechSynthesis.getVoices():[];const de=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith("de"));if(de)u.voice=de;speechSynthesis.speak(u)}
+ const voices=speechSynthesis.getVoices?speechSynthesis.getVoices():[]; if(voices.length===0&&"onvoiceschanged" in speechSynthesis){speechSynthesis.onvoiceschanged=run;setTimeout(run,250)}else run();
 }
+function startMic(btn,callback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const status=document.getElementById("micStatus");if(!SR){if(status)status.textContent="Mikrofon wird hier nicht unterstützt. Bitte schreibe.";return}const rec=new SR();rec.lang="de-DE";rec.interimResults=false;rec.continuous=false;if(btn)btn.classList.add("active");if(status)status.textContent="Ich höre zu …";rec.onresult=e=>{let txt=e.results[0][0].transcript;if(status)status.textContent="Gehört: "+txt;callback(txt)};rec.onerror=()=>{if(status)status.textContent="Mikrofon hat nicht funktioniert. Bitte schreibe."};rec.onend=()=>{if(btn)btn.classList.remove("active")};rec.start()}
 
-function startMic(btn,callback){
- const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- const status=document.getElementById("micStatus");
- if(!SR){if(status)status.textContent="Mikrofon wird hier nicht unterstützt. Bitte schreibe.";return}
- const rec=new SR();
- rec.lang="de-DE";
- rec.interimResults=false;
- rec.continuous=false;
- if(btn)btn.classList.add("active");
- if(status)status.textContent="Ich höre zu …";
- rec.onresult=e=>{let txt=e.results[0][0].transcript;if(status)status.textContent="Gehört: "+txt;callback(txt)};
- rec.onerror=()=>{if(status)status.textContent="Mikrofon hat nicht funktioniert. Bitte schreibe."};
- rec.onend=()=>{if(btn)btn.classList.remove("active")};
- rec.start();
-}
-
-function placeImg(id,label){
- return `<div class="imgbox"><img src="../bilder/${id}.png" onerror="fixImg(this)" alt=""></div>`;
-}
-function roomImg(roomId,withLabel=true){
- const w=wordById(roomId);
- return `<div class="imgbox"><img src="${w.image}" onerror="fixImg(this)" alt="">${withLabel?`<div class="label">${w.full}</div>`:""}</div>`;
-}
-function comboPlaceRoom(place,roomId){
- return `<div class="imgrow">${placeImg(place,place)}<div class="plus">+</div>${roomImg(roomId,false)}</div>`;
-}
-
-function okWoQuestion(ans,t){
- const w=wordById(t.room);
- let a=simple(ans);
- return a.startsWith("wo ist") && (a.includes(simple(w.full)) || a.includes(simple(w.word)));
-}
-function okWoAnswer(ans,t){
- const w=wordById(t.room);
- let a=simple(ans);
- return (a.includes(simple(w.full))||a.includes(simple(w.word))) && a.includes(simple(t.place));
-}
-function indefinite(w){
- if(w.article==="die")return"eine "+w.word;
- if(w.article==="der")return"ein "+w.word;
- return"ein "+w.word;
-}
-function negIndef(w){
- if(w.article==="die")return"keine "+w.word;
- return"kein "+w.word;
-}
-function okIstQuestion(ans,t){
- const w=wordById(t.room);
- let a=simple(ans);
- return a.startsWith("ist "+t.place) && (a.includes(simple(indefinite(w)))||a.includes(simple(w.word)));
-}
-function okIstAnswer(ans,t){
- const w=wordById(t.room);
- let a=simple(ans);
- if(t.positive){
-  return a.startsWith("ja") && a.includes(simple(t.place)) && (a.includes(simple(w.full))||a.includes(simple(w.word)));
- }
- return a.startsWith("nein") && a.includes(simple(t.place)) && (a.includes(simple(negIndef(w)))||a.includes(simple("kein"))||a.includes(simple("keine")));
-}
-
-
-function currentMotherLang(){
- return localStorage.getItem("motherLanguage") || localStorage.getItem("muttersprache") || localStorage.getItem("lang") || "ru";
-}
-function translateWord(w){
- const l=currentMotherLang();
- if(w.tr && w.tr[l]) return w.tr[l];
- if(w.tr && w.tr.ru) return w.tr.ru;
- if(w.tr && w.tr.en) return w.tr.en;
- return w.word;
-}
-function wordsForFile(file){
- if(file==="artikel-klick.html" || file==="artikel.html") return WORDS.filter(w=>w.article);
- if(file==="plural.html") return WORDS.filter(w=>w.plural);
- return WORDS;
-}
-function wordProgress(wordId){
- const wordTasks=[
-  ["karteikarten.html", WORDS],
-  ["hoeren.html", WORDS],
-  ["artikel-klick.html", WORDS.filter(w=>w.article)],
-  ["artikel.html", WORDS.filter(w=>w.article)],
-  ["plural.html", WORDS.filter(w=>w.plural)],
-  ["bild-wort.html", WORDS],
-  ["wort-bild.html", WORDS]
- ];
- let possible=0, doneCount=0;
- wordTasks.forEach(([file,list])=>{
-   const index=list.findIndex(w=>w.id===wordId);
-   if(index<0) return;
-   possible++;
-   const st=loadTask(file,list.length);
-   if(st.done && st.done.includes(index)) doneCount++;
- });
- if(possible===0) return 0;
- return Math.round(doneCount/possible*100);
-}
-function wordStatus(p){
- if(p>=100) return "gelernt";
- if(p>=50) return "in Arbeit";
- if(p>0) return "angefangen";
- return "neu";
-}
+function indefinite(w){return w.article==="die"?"eine "+w.word:"ein "+w.word}
+function negIndef(w){return w.article==="die"?"keine "+w.word:"kein "+w.word}
+function roomImg(id,label=true){const w=wordById(id);return `<div class="imgbox"><img src="${w.image}" onerror="fixImg(this)" alt="">${label?`<div class="label">${w.full}</div>`:""}</div>`}
+function okDialogAnswer(ans,t){let w=wordById(t.id),a=simple(ans),target=simple(t.answer); if(a===target)return true; return a.includes(simple(w.pronoun)) && (target.includes("ja")?a.includes("ja"):a.includes("nein"));}

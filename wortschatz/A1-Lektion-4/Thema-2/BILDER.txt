@@ -1,20 +1,20 @@
-Benötigte Bilder für Thema 2:
+Benötigte Bilder in wortschatz/A1-Lektion-4/bilder:
 
-schrank.png
-sofa.png
-tisch.png
-stuhl.png
-bett.png
-sessel.png
-regal.png
-teppich.png
-lampe.png
-fernseher.png
-kuehlschrank.png
-waschmaschine.png
-herd.png
-wand.png
-tuer.png
-fenster.png
-dach.png
-boden.png
+schrank.png – der Schrank
+sofa.png – das Sofa
+tisch.png – der Tisch
+stuhl.png – der Stuhl
+bett.png – das Bett
+sessel.png – der Sessel
+regal.png – das Regal
+teppich.png – der Teppich
+lampe.png – die Lampe
+fernseher.png – der Fernseher
+kuehlschrank.png – der Kühlschrank
+waschmaschine.png – die Waschmaschine
+herd.png – der Herd
+wand.png – die Wand
+tuer.png – die Tür
+fenster.png – das Fenster
+dach.png – das Dach
+boden.png – der Boden

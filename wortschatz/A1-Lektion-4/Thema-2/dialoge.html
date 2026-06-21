@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dialoge</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=1"></script><script>
+header("Dialoge");const FILE="dialoge.html";let i=0,phase="q";
+function show(){if(loadTask(FILE,DIALOG_TASKS.length).done.length>=DIALOG_TASKS.length){complete(area,FILE,"pruefung.html");return}i=nextIndex(FILE,DIALOG_TASKS.length);let t=DIALOG_TASKS[i],w=wordById(t.id);
+ if(phase==="q"){area.innerHTML=`${progressHtml(FILE,DIALOG_TASKS.length)}<div class="question">Frage hören und Antwort sprechen.</div><img class="task-img" src="${w.image}" onerror="fixImg(this)"><div class="hint"><b>${t.question}</b></div><button class="btn" onclick="speak('${t.question}')">🔊 Frage hören</button><div class="actions"><button id="mic" class="btn mic-btn" onclick="sayA()">🎤 Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="Antwort schreiben"><button class="btn" onclick="checkA(ans.value)">Kontrollieren</button></div><div id="fb" class="feedback"></div>`}}
+function writeA(){box.classList.remove("hidden")}
+function sayA(){startMic(mic,txt=>{writeA();ans.value=txt;checkA(txt)})}
+function checkA(txt){let t=DIALOG_TASKS[i];if(okDialogAnswer(txt,t)){fb.textContent="Richtig!";markRight(FILE,DIALOG_TASKS.length);setTimeout(show,700)}else{let tr=markWrong(FILE,DIALOG_TASKS.length);fb.innerHTML=feedbackForTry(tr,t.answer,"Pronomen er/es/sie und Antwort");if(tr>=2)setTimeout(show,1200)}}
+show();
+</script></body></html>
