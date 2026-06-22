@@ -274,3 +274,18 @@ button:hover{
     width:95vw;
   }
 }
+
+.teacher-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:16px;margin-bottom:18px}
+.stat h2{font-size:42px;color:#667eea;margin:0}
+.teacher-actions{display:flex;gap:10px;flex-wrap:wrap;margin:12px 0}
+.teacher-actions input{flex:1;min-width:220px;padding:12px;border:2px solid #ddd;border-radius:12px}
+.course-card,.student-row{background:#f8f9ff;border:2px solid #eef2ff;border-radius:18px;padding:16px;margin:12px 0}
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.chip-on,.chip-off{border:0;border-radius:999px;padding:8px 12px;font-weight:800;cursor:pointer}
+.chip-on{background:#d9f7e8;color:#145a32}
+.chip-off{background:#ffe1e1;color:#7b1d1d}
+.student-row{display:grid;grid-template-columns:1.2fr 1fr;gap:16px;align-items:center}
+.progress-mini span{font-size:12px;font-weight:800;color:#555}
+.progress-mini div{height:8px;background:#e9ecff;border-radius:999px;overflow:hidden;margin:3px 0 8px}
+.progress-mini b{display:block;height:100%;background:linear-gradient(135deg,#667eea,#764ba2)}
+@media(max-width:700px){.student-row{grid-template-columns:1fr}}
