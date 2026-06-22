@@ -29,7 +29,7 @@
       return "Firebase Authentication ist nicht aktiviert. Bitte in Firebase unter Authentication → Sign-in method → Email/Password aktivieren.";
     }
     if(code==="permission-denied" || String(err.message||"").includes("Missing or insufficient permissions")){
-      return "Firebase-Regeln blockieren den Zugriff auf teachers. Bitte Firestore-Regeln prüfen.";
+      return "Firebase-Regeln blockieren den Zugriff. Bitte Firestore-Regeln prüfen.";
     }
     return fallback || (err.message || "Unbekannter Fehler.");
   }
@@ -42,7 +42,6 @@
   }
 
   window.TeacherAuth = {
-
     async ensureTeacherDoc(user, extra={}){
       const ref=db.collection("teachers").doc(user.uid);
       const snap=await ref.get();
