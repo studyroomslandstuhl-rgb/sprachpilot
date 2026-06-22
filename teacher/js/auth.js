@@ -1,4 +1,6 @@
 (function(){
+  const OWNER_EMAILS = ["studyroomslandstuhl@gmail.com"];
+
   function el(id){return document.getElementById(id)}
   function show(text,type="no"){
     const msg=el("loginMsg");
@@ -41,32 +43,57 @@
     }
   }
 
-  window.TeacherAuth = {
-    async ensureTeacherDoc(user, extra={}){
-      const ref=db.collection("teachers").doc(user.uid);
-      const snap=await ref.get();
+  function setTeacherMode(user, teacher){
+    localStorage.setItem("SP_TEACHER_MODE","1");
+    localStorage.setItem("SP_USER_ROLE", teacher.role || "teacher");
+    localStorage.setItem("SP_TEACHER_EMAIL", user.email || teacher.email || "");
+    localStorage.setItem("SP_TEACHER_ID", user.uid);
+  }
 
-      if(!snap.exists){
-        await ref.set({
-          email:user.email || extra.email || "",
-          school:extra.school || "",
-          job:extra.job || "Lehrkraft",
-          role:"teacher",
-          active:true,
-          createdAt:firebase.firestore.FieldValue.serverTimestamp(),
-          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-        }, {merge:true});
-      }else{
-        const old=snap.data();
-        await ref.set({
-          email:user.email || old.email || "",
-          role:old.role || "teacher",
-          active:old.active !== false,
-          updatedAt:firebase.firestore.FieldValue.serverTimestamp()
-        }, {merge:true});
-      }
+  function clearTeacherMode(){
+    localStorage.removeItem("SP_TEACHER_MODE");
+    localStorage.removeItem("SP_USER_ROLE");
+    localStorage.removeItem("SP_TEACHER_EMAIL");
+    localStorage.removeItem("SP_TEACHER_ID");
+  }
+
+  window.TeacherAuth = {
+    OWNER_EMAILS,
+
+    async ensureOwnerDoc(user){
+      const email=(user.email||"").toLowerCase();
+      if(!OWNER_EMAILS.includes(email)) return null;
+
+      const ref=db.collection("teachers").doc(user.uid);
+      await ref.set({
+        email,
+        firstName:"Alisa",
+        lastName:"",
+        school:"SprachPilot",
+        job:"Owner",
+        role:"owner",
+        active:true,
+        approved:true,
+        owner:true,
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge:true});
 
       return (await ref.get()).data();
+    },
+
+    async getApprovedTeacher(user){
+      const owner = await this.ensureOwnerDoc(user);
+      if(owner) return owner;
+
+      const pending=await db.collection("teachers_pending").doc(user.uid).get();
+      if(pending.exists){
+        return {pending:true,...pending.data()};
+      }
+
+      const approved=await db.collection("teachers").doc(user.uid).get();
+      if(!approved.exists) return null;
+
+      return approved.data();
     },
 
     async login(){
@@ -86,15 +113,37 @@
 
         const result=await auth.signInWithEmailAndPassword(email,password);
         const user=result.user;
+        const teacher=await this.getApprovedTeacher(user);
 
-        const teacher=await this.ensureTeacherDoc(user,{email});
-
-        if(teacher.role!=="teacher" || teacher.active===false){
+        if(!teacher){
           await auth.signOut();
-          show("Lehrerzugang ist nicht aktiv.");
+          clearTeacherMode();
+          show("Dieser Account ist noch nicht als Lehrer registriert. Bitte zuerst registrieren.");
           return;
         }
 
+        if(teacher.pending || teacher.approved===false){
+          await auth.signOut();
+          clearTeacherMode();
+          show("Dein Lehrerkonto wartet noch auf Freigabe durch die Administratorin.");
+          return;
+        }
+
+        if(teacher.active===false){
+          await auth.signOut();
+          clearTeacherMode();
+          show("Dieser Lehrerzugang ist deaktiviert.");
+          return;
+        }
+
+        if(!["owner","admin","teacher"].includes(teacher.role)){
+          await auth.signOut();
+          clearTeacherMode();
+          show("Dieser Account hat keine gültige Lehrerrolle.");
+          return;
+        }
+
+        setTeacherMode(user, teacher);
         show("Login erfolgreich. Dashboard wird geöffnet...","ok");
         setTimeout(()=>location.href="index.html",500);
 
@@ -106,12 +155,14 @@
     },
 
     async register(){
+      const firstName=(el("regFirstName")?.value || "").trim();
+      const lastName=(el("regLastName")?.value || "").trim();
       const email=el("regEmail").value.trim().toLowerCase();
       const password=el("regPassword").value;
       const school=el("regSchool").value.trim();
       const job=el("regJob").value.trim();
 
-      if(!email || !password || !school || !job){
+      if(!firstName || !lastName || !email || !password || !school || !job){
         show("Bitte alle Felder ausfüllen.");
         return;
       }
@@ -129,10 +180,35 @@
         const result=await auth.createUserWithEmailAndPassword(email,password);
         const user=result.user;
 
-        await this.ensureTeacherDoc(user,{email,school,job});
+        const ownerAutoApprove=OWNER_EMAILS.includes(email);
+        if(ownerAutoApprove){
+          await db.collection("teachers").doc(user.uid).set({
+            firstName,lastName,email,school,job,
+            role:"owner",
+            owner:true,
+            active:true,
+            approved:true,
+            createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+          }, {merge:true});
+          show("Owner-Registrierung erfolgreich. Dashboard wird geöffnet...","ok");
+          setTeacherMode(user,{email,role:"owner"});
+          setTimeout(()=>location.href="index.html",800);
+          return;
+        }
 
-        show("Registrierung erfolgreich. Dashboard wird geöffnet...","ok");
-        setTimeout(()=>location.href="index.html",800);
+        await db.collection("teachers_pending").doc(user.uid).set({
+          firstName,lastName,email,school,job,
+          role:"teacher",
+          approved:false,
+          active:false,
+          requestedAt:firebase.firestore.FieldValue.serverTimestamp(),
+          createdAt:firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge:true});
+
+        await auth.signOut();
+        clearTeacherMode();
+        show("Registrierung eingegangen. Bitte warte auf Freigabe durch die Administratorin.","ok");
 
       }catch(err){
         show(readableError(err,"Registrierung nicht möglich."));
@@ -165,6 +241,7 @@
 
     async logout(){
       try{
+        clearTeacherMode();
         if(auth) await auth.signOut();
       }finally{
         location.href="login.html";
