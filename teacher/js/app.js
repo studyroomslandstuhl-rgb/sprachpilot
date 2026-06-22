@@ -141,10 +141,15 @@ const TeacherApp = {
 
   safe(s){
     return String(s||"")
-      .replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")
-      .replace(/"/g,"&quot;").replace(/'/g,"&#039;");
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;")
+      .replace(/'/g,"&#039;");
   }
 };
+
+window.TeacherApp = TeacherApp;
 
 firebase.auth().onAuthStateChanged(async user => {
   if(!user){
