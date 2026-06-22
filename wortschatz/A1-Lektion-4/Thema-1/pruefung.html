@@ -1,4 +1,328 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=4"></script><script>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prüfung</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <header class="topbar"></header>
+  <main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main>
+  <footer>© SprachPilot</footer>
+</div>
+
+<script src="app.js?v=10"></script>
+<script>
 header("Prüfung");
-area.innerHTML=`<div class="question">Prüfung</div><div class="hint">Die Prüfung bauen wir, wenn alle Einzelaufgaben getestet sind.</div><div class="actions"><a class="btn" href="index.html">Zum Menü</a></div>`;
-</script></body></html>
+
+const FILE = "pruefung.html";
+const EXAM_KEY = "SP_L4_T1_EXAM_ITEMS_V1";
+const EXAM_TOTAL = 20;
+
+function examSimple(x){
+  return String(x||"")
+    .toLowerCase()
+    .trim()
+    .normalize("NFD")
+    .replace(/[\u0300-\u036f]/g,"")
+    .replace(/ß/g,"ss")
+    .replace(/[.,!?]/g,"")
+    .replace(/\s+/g," ");
+}
+
+function examFail(tries, solution, hint){
+  if(tries === 1) return "Da ist noch ein Fehler.";
+  if(tries === 2) return "Tipp: " + hint;
+  return "Lösung: " + solution + "<br><b>Schreibe/klicke die richtige Antwort, damit es weitergeht.</b>";
+}
+
+function examState(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(taskKey(FILE)) || "null");
+    if(saved && Array.isArray(saved.done) && saved.total) return saved;
+  }catch(e){}
+  return {total:EXAM_TOTAL,done:[],current:null,tries:0};
+}
+
+function saveExamState(st){
+  localStorage.setItem(taskKey(FILE), JSON.stringify(st));
+}
+
+function buildExamItems(){
+  const items = [];
+
+  (WORDS || []).forEach((w,idx)=>{
+    if(w.article) items.push({type:"article", wordIndex:idx});
+    if(w.full) items.push({type:"image-word", wordIndex:idx});
+    if(w.plural) items.push({type:"plural", wordIndex:idx});
+  });
+
+  if(typeof WO_TASKS !== "undefined" && Array.isArray(WO_TASKS)){
+    WO_TASKS.forEach((t,idx)=>items.push({type:"wo", taskIndex:idx}));
+  }
+
+  if(typeof IST_TASKS !== "undefined" && Array.isArray(IST_TASKS)){
+    IST_TASKS.forEach((t,idx)=>items.push({type:"ist", taskIndex:idx}));
+  }
+
+  const mixed = items.sort(()=>Math.random()-.5).slice(0, Math.min(EXAM_TOTAL, items.length));
+  localStorage.setItem(EXAM_KEY, JSON.stringify(mixed));
+  return mixed;
+}
+
+function getExamItems(){
+  try{
+    const saved = JSON.parse(localStorage.getItem(EXAM_KEY) || "null");
+    if(Array.isArray(saved) && saved.length) return saved;
+  }catch(e){}
+  return buildExamItems();
+}
+
+function resetExam(){
+  localStorage.removeItem(EXAM_KEY);
+  localStorage.removeItem(taskKey(FILE));
+  show();
+}
+
+function currentItem(){
+  const items = getExamItems();
+  let st = examState();
+  st.total = items.length;
+
+  if(st.done.length >= items.length){
+    saveExamState(st);
+    return null;
+  }
+
+  if(st.current === null || st.current === undefined || st.done.includes(st.current)){
+    const remaining = items.map((_,i)=>i).filter(i=>!st.done.includes(i));
+    st.current = remaining[Math.floor(Math.random()*remaining.length)];
+    st.tries = 0;
+    saveExamState(st);
+  }
+
+  return items[st.current];
+}
+
+function correctCurrent(){
+  const items = getExamItems();
+  const st = examState();
+
+  if(st.current !== null && st.current !== undefined && !st.done.includes(st.current)){
+    st.done.push(st.current);
+  }
+
+  st.current = null;
+  st.tries = 0;
+  st.total = items.length;
+  saveExamState(st);
+}
+
+function wrongCurrent(){
+  const st = examState();
+  st.tries = (st.tries || 0) + 1;
+  saveExamState(st);
+  return st.tries;
+}
+
+function examProgress(){
+  const items = getExamItems();
+  const st = examState();
+  const done = st.done.length;
+  const total = items.length || 1;
+  const p = Math.round(done/total*100);
+
+  return `<div class="small">${done} richtig · ${total-done} übrig · ${p}%</div>
+          <div class="progress"><div class="bar" style="width:${p}%"></div></div>`;
+}
+
+function show(){
+  const item = currentItem();
+
+  if(!item){
+    area.innerHTML = `
+      <div class="question">Prüfung geschafft!</div>
+      <div class="hint">Du hast alle Prüfungsaufgaben richtig gelöst.</div>
+      <div class="actions">
+        <button class="btn" onclick="resetExam()">Prüfung neu starten</button>
+        <a class="btn secondary" href="index.html">Zum Menü</a>
+      </div>`;
+    return;
+  }
+
+  if(item.type === "article") return showArticle(item);
+  if(item.type === "image-word") return showImageWord(item);
+  if(item.type === "plural") return showPlural(item);
+  if(item.type === "wo") return showWo(item);
+  if(item.type === "ist") return showIst(item);
+
+  correctCurrent();
+  show();
+}
+
+function showArticle(item){
+  const w = WORDS[item.wordIndex];
+
+  area.innerHTML = `${examProgress()}
+    <div class="question">Welcher Artikel passt?</div>
+    <img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">
+    <div class="hint">___ ${w.word}</div>
+    <div class="options">
+      ${["der","die","das"].map(a=>`<button class="opt" onclick="checkArticle('${a}')">${a}</button>`).join("")}
+    </div>
+    <div id="fb" class="feedback"></div>`;
+}
+
+function checkArticle(a){
+  const item = currentItem();
+  const w = WORDS[item.wordIndex];
+
+  if(a === w.article){
+    fb.textContent = "Richtig!";
+    correctCurrent();
+    setTimeout(show,700);
+  }else{
+    const tr = wrongCurrent();
+    fb.innerHTML = examFail(tr, w.full, "Prüfe den Artikel der/die/das.");
+  }
+}
+
+function showImageWord(item){
+  const w = WORDS[item.wordIndex];
+
+  area.innerHTML = `${examProgress()}
+    <div class="question">Schreibe das Wort mit Artikel.</div>
+    <img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">
+    <input id="ans" placeholder="z.B. das Haus">
+    <button class="btn" onclick="checkImageWord()">Kontrollieren</button>
+    <div id="fb" class="feedback"></div>`;
+}
+
+function checkImageWord(){
+  const item = currentItem();
+  const w = WORDS[item.wordIndex];
+
+  if(examSimple(ans.value) === examSimple(w.full)){
+    fb.textContent = "Richtig!";
+    correctCurrent();
+    setTimeout(show,700);
+  }else{
+    const tr = wrongCurrent();
+    fb.innerHTML = examFail(tr, w.full, "Schreibe Artikel + Wort.");
+  }
+}
+
+function showPlural(item){
+  const w = WORDS[item.wordIndex];
+
+  area.innerHTML = `${examProgress()}
+    <div class="question">Schreibe den Plural.</div>
+    <div class="hint">${w.full}</div>
+    <input id="ans" placeholder="Plural">
+    <button class="btn" onclick="checkPlural()">Kontrollieren</button>
+    <div id="fb" class="feedback"></div>`;
+}
+
+function checkPlural(){
+  const item = currentItem();
+  const w = WORDS[item.wordIndex];
+
+  if(examSimple(ans.value) === examSimple(w.plural)){
+    fb.textContent = "Richtig!";
+    correctCurrent();
+    setTimeout(show,700);
+  }else{
+    const tr = wrongCurrent();
+    fb.innerHTML = examFail(tr, w.plural, "Achte auf die Pluralendung.");
+  }
+}
+
+function placeWord(placeId){
+  if(placeId === "hier") return "hier";
+  if(placeId === "da") return "da";
+  if(placeId === "dort") return "dort";
+  return placeId || "";
+}
+
+function showWo(item){
+  const t = WO_TASKS[item.taskIndex];
+  const w = wordById(t.room);
+  const p = placeWord(t.place);
+
+  area.innerHTML = `${examProgress()}
+    <div class="question">Frage und antworte.</div>
+    <div class="hint">Benutze: <b>wo ist ...?</b> und <b>... ist ${p}</b>.</div>
+    <div class="imgrow">
+      <div class="imgbox"><img src="${w.image}" onerror="fixImg(this)" alt=""></div>
+      <div class="imgbox"><img src="../bilder/${p}.png" onerror="fixImg(this)" alt=""></div>
+    </div>
+    <label>Frage</label>
+    <input id="q" placeholder="Wo ist ...?">
+    <label>Antwort</label>
+    <input id="a" placeholder="... ist hier/da/dort.">
+    <button class="btn" onclick="checkWo()">Kontrollieren</button>
+    <div id="fb" class="feedback"></div>`;
+}
+
+function checkWo(){
+  const item = currentItem();
+  const t = WO_TASKS[item.taskIndex];
+
+  if(okWoQuestion(q.value,t) && okWoAnswer(a.value,t)){
+    fb.textContent = "Richtig!";
+    correctCurrent();
+    setTimeout(show,700);
+  }else{
+    const w = wordById(t.room);
+    const p = placeWord(t.place);
+    const solution = `Wo ist ${w.full}? / ${w.full} ist ${p}.`;
+    const tr = wrongCurrent();
+    fb.innerHTML = examFail(tr, solution, "Prüfe Fragewort, Artikel und Ort.");
+  }
+}
+
+function showIst(item){
+  const t = IST_TASKS[item.taskIndex];
+  const w = wordById(t.room);
+  const p = placeWord(t.place);
+
+  area.innerHTML = `${examProgress()}
+    <div class="question">Frage und antworte.</div>
+    <div class="hint">Übe <b>ein/kein</b> mit hier/da/dort.</div>
+    <div class="imgrow">
+      <div class="imgbox"><img src="${w.image}" onerror="fixImg(this)" alt=""></div>
+      <div class="imgbox"><img src="../bilder/${p}.png" onerror="fixImg(this)" alt=""></div>
+    </div>
+    <label>Frage</label>
+    <input id="q" placeholder="Ist hier/da/dort ...?">
+    <label>Antwort</label>
+    <input id="a" placeholder="Ja/Nein, ...">
+    <button class="btn" onclick="checkIst()">Kontrollieren</button>
+    <div id="fb" class="feedback"></div>`;
+}
+
+function checkIst(){
+  const item = currentItem();
+  const t = IST_TASKS[item.taskIndex];
+
+  if(okIstQuestion(q.value,t) && okIstAnswer(a.value,t)){
+    fb.textContent = "Richtig!";
+    correctCurrent();
+    setTimeout(show,700);
+  }else{
+    const w = wordById(t.room);
+    const p = placeWord(t.place);
+    const solution = t.positive
+      ? `Ist ${p} ${indefinite(w)}? / Ja, ${p} ist ${w.full}.`
+      : `Ist ${p} ${indefinite(w)}? / Nein, ${p} ist ${negIndef(w)}.`;
+    const tr = wrongCurrent();
+    fb.innerHTML = examFail(tr, solution, "Prüfe Ort, ein/kein und Artikel.");
+  }
+}
+
+show();
+</script>
+</body>
+</html>
