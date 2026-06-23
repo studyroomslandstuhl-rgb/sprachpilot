@@ -42,20 +42,84 @@ export function saveActiveProfile(st,courseData,docId=null){
 export function logout(){localStorage.removeItem("SP_USER_PROFILE");localStorage.removeItem("SP_KEEP_LOGGED_IN");localStorage.removeItem("SP_STUDENT_ID");location.href="/index.html"}
 
 export async function findStudentByEmailAndCourse(email,courseInput){
- const emailNorm=normText(email);
- const variants=[...new Set([String(courseInput||"").trim(),String(courseInput||"").trim().toLowerCase(),String(courseInput||"").trim().toUpperCase()].filter(Boolean))];
- for(const course of variants){
-   const q1=query(collection(db,"students"),where("email","==",emailNorm),where("kurs","==",course),limit(1));
-   const snap=await getDocs(q1);
-   if(!snap.empty){const d=snap.docs[0];return {id:d.id,data:d.data()};}
- }
- for(const course of variants){
-   const q2=query(collection(db,"students"),where("kurs","==",course),limit(80));
-   const snap=await getDocs(q2);
-   const match=snap.docs.find(d=>normText(d.data().email)===emailNorm);
-   if(match) return {id:match.id,data:match.data()};
- }
- return null;
+  const emailNorm=normText(email);
+  const courseRaw=String(courseInput||"").trim();
+  const courseNorm=courseRaw.toLowerCase();
+
+  // 1) Direkte Dokument-ID-Varianten prüfen
+  const possibleIds=[
+    makeStudentId(emailNorm,courseRaw),
+    makeStudentId(emailNorm,courseNorm),
+    makeStudentId(emailNorm,courseRaw.toUpperCase())
+  ];
+
+  for(const id of [...new Set(possibleIds)]){
+    try{
+      const direct=await getDoc(doc(db,"students",id));
+      if(direct.exists()) return {id:direct.id,data:direct.data()};
+    }catch(e){
+      console.warn("direct student lookup failed", e);
+    }
+  }
+
+  // 2) Robuste Feldsuche mit mehreren Kurs-Feldnamen
+  const courseVariants=[...new Set([
+    courseRaw,
+    courseNorm,
+    courseRaw.toUpperCase()
+  ].filter(Boolean))];
+
+  const courseFields=["kurs","courseCode","kursnummer"];
+
+  for(const field of courseFields){
+    for(const course of courseVariants){
+      try{
+        const q1=query(
+          collection(db,"students"),
+          where("email","==",emailNorm),
+          where(field,"==",course),
+          limit(5)
+        );
+        const snap=await getDocs(q1);
+        if(!snap.empty){
+          const d=snap.docs[0];
+          return {id:d.id,data:d.data()};
+        }
+      }catch(e){
+        console.warn("student field query failed", field, e);
+      }
+    }
+  }
+
+  // 3) Fallback: E-Mail suchen und Kurs lokal vergleichen
+  try{
+    const q2=query(collection(db,"students"),where("email","==",emailNorm),limit(50));
+    const snap=await getDocs(q2);
+    const match=snap.docs.find(d=>{
+      const data=d.data();
+      const k=String(data.kurs||data.courseCode||data.kursnummer||"").trim().toLowerCase();
+      return k===courseNorm;
+    });
+    if(match) return {id:match.id,data:match.data()};
+  }catch(e){
+    console.warn("student email fallback failed", e);
+  }
+
+  // 4) Letzter Fallback für alte Daten: kleine Liste lesen und normalisiert vergleichen
+  try{
+    const snap=await getDocs(query(collection(db,"students"),limit(500)));
+    const match=snap.docs.find(d=>{
+      const data=d.data();
+      const e=normText(data.email);
+      const k=String(data.kurs||data.courseCode||data.kursnummer||"").trim().toLowerCase();
+      return e===emailNorm && k===courseNorm;
+    });
+    if(match) return {id:match.id,data:match.data()};
+  }catch(e){
+    console.warn("student full fallback failed", e);
+  }
+
+  return null;
 }
 
 export async function registerStudent({vorname,nachname,email,muttersprache,kurs}){
@@ -72,13 +136,40 @@ export async function registerStudent({vorname,nachname,email,muttersprache,kurs
 }
 
 export async function loginStudent(email,kurs){
- const emailNorm=normText(email);
- const courseLoaded=await loadCourse(kurs);
- if(!courseLoaded) throw new Error("COURSE_NOT_FOUND");
- const found=await findStudentByEmailAndCourse(emailNorm,courseLoaded.id);
- if(!found) throw new Error("STUDENT_NOT_FOUND");
- await updateDoc(doc(db,"students",found.id),{lastLogin:serverTimestamp()});
- return saveActiveProfile(found.data,courseLoaded.data,found.id);
+  const emailNorm=normText(email);
+  const courseRaw=String(kurs||"").trim();
+
+  const found=await findStudentByEmailAndCourse(emailNorm,courseRaw);
+  if(!found) throw new Error("STUDENT_NOT_FOUND");
+
+  const st=found.data;
+  const realCourse=st.kurs || st.courseCode || st.kursnummer || courseRaw;
+
+  let courseData={};
+  try{
+    const courseLoaded=await loadCourse(realCourse);
+    courseData=courseLoaded?.data || {};
+  }catch(e){
+    console.warn("course load skipped", e);
+  }
+
+  try{
+    await updateDoc(doc(db,"students",found.id),{
+      lastLogin:serverTimestamp()
+    });
+  }catch(e){
+    console.warn("lastLogin update failed", e);
+  }
+
+  const normalizedStudent={
+    ...st,
+    studentId:st.studentId || found.id,
+    userId:st.userId || st.studentId || found.id,
+    email:emailNorm,
+    kurs:realCourse
+  };
+
+  return saveActiveProfile(normalizedStudent,courseData,found.id);
 }
 
 
