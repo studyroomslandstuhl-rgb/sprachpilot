@@ -119,3 +119,21 @@ footer{text-align:center;color:white;margin-top:20px}
   .task-title{font-size:24px}
   .imgbox{width:128px;height:128px}
 }
+
+.example-box{
+  background:#fff8dc;
+  border:2px solid #ffd966;
+  border-radius:16px;
+  padding:12px;
+  margin:10px 0 14px;
+  line-height:1.5;
+}
+.example-box b{color:#7a5400}
+.step-note{
+  background:#eef2ff;
+  border-left:5px solid #667eea;
+  border-radius:12px;
+  padding:10px;
+  margin:10px 0;
+  color:#333;
+}
