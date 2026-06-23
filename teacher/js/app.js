@@ -373,35 +373,50 @@ const TeacherApp = {
 
   async toggleModule(courseId,moduleName){
     const course=this.state.courses.find(c=>c.id===courseId);
-    const current=(course?.enabledModules||{})[moduleName]!==false;
-    const update={};
-    update[`enabledModules.${moduleName}`]=!current;
-    update.updatedAt=firebase.firestore.FieldValue.serverTimestamp();
-    await db.collection("courses").doc(courseId).set(update,{merge:true});
+    const enabledModules={...(course?.enabledModules||{})};
+    const current=enabledModules[moduleName]!==false;
+    enabledModules[moduleName]=!current;
+
+    await db.collection("courses").doc(courseId).set({
+      enabledModules,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+
     await this.loadData();
-    this.showReleasePanel(String(course.courseCode||course.id));
+    const fresh=this.state.courses.find(c=>c.id===courseId);
+    this.showReleasePanel(String(fresh.courseCode||fresh.id));
   },
 
   async toggleTask(courseId,key){
     const course=this.state.courses.find(c=>c.id===courseId);
-    const current=(course?.enabledTasks||{})[key]!==false;
-    const update={};
-    update[`enabledTasks.${key}`]=!current;
-    update.updatedAt=firebase.firestore.FieldValue.serverTimestamp();
-    await db.collection("courses").doc(courseId).set(update,{merge:true});
+    const enabledTasks={...(course?.enabledTasks||{})};
+    const current=enabledTasks[key]!==false;
+    enabledTasks[key]=!current;
+
+    await db.collection("courses").doc(courseId).set({
+      enabledTasks,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+
     await this.loadData();
-    this.showReleasePanel(String(course.courseCode||course.id));
+    const fresh=this.state.courses.find(c=>c.id===courseId);
+    this.showReleasePanel(String(fresh.courseCode||fresh.id));
   },
 
   async toggleWord(courseId,key){
     const course=this.state.courses.find(c=>c.id===courseId);
-    const current=(course?.enabledWords||{})[key]!==false;
-    const update={};
-    update[`enabledWords.${key}`]=!current;
-    update.updatedAt=firebase.firestore.FieldValue.serverTimestamp();
-    await db.collection("courses").doc(courseId).set(update,{merge:true});
+    const enabledWords={...(course?.enabledWords||{})};
+    const current=enabledWords[key]!==false;
+    enabledWords[key]=!current;
+
+    await db.collection("courses").doc(courseId).set({
+      enabledWords,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+
     await this.loadData();
-    this.showReleasePanel(String(course.courseCode||course.id));
+    const fresh=this.state.courses.find(c=>c.id===courseId);
+    this.showReleasePanel(String(fresh.courseCode||fresh.id));
   },
 
   openStudentLinks(courseCode){
