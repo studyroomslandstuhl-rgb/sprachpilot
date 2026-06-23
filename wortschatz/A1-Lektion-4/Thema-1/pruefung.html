@@ -1,4 +1,221 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=31"></script><script>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Prüfung</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <header class="topbar"></header>
+  <main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main>
+  <footer>© SprachPilot</footer>
+</div>
+
+<script src="app.js?v=40"></script>
+<script>
 header("Prüfung");
-area.innerHTML=`<div class="question">Prüfung</div><div class="hint">Die Prüfung bauen wir, wenn alle Einzelaufgaben getestet sind.</div><div class="actions"><a class="btn" href="index.html">Zum Menü</a></div>`;
-</script></body></html>
+
+const FILE="pruefung.html";
+const EXAM_KEY="SP_L4_T1_EXAM_V4";
+const EXAM_HISTORY_KEY="SP_L4_T1_EXAM_HISTORY_V1";
+const EXAM_TOTAL=20;
+
+function editDistance(a,b){
+ a=simple(a); b=simple(b);
+ const dp=Array.from({length:a.length+1},()=>Array(b.length+1).fill(0));
+ for(let i=0;i<=a.length;i++)dp[i][0]=i;
+ for(let j=0;j<=b.length;j++)dp[0][j]=j;
+ for(let i=1;i<=a.length;i++){
+  for(let j=1;j<=b.length;j++){
+   dp[i][j]=Math.min(dp[i-1][j]+1,dp[i][j-1]+1,dp[i-1][j-1]+(a[i-1]===b[j-1]?0:1));
+  }
+ }
+ return dp[a.length][b.length];
+}
+
+function history(){try{return JSON.parse(localStorage.getItem(EXAM_HISTORY_KEY)||"[]")}catch(e){return[]}}
+function saveHistory(h){localStorage.setItem(EXAM_HISTORY_KEY,JSON.stringify(h))}
+
+function buildItems(){
+ const items=[];
+ WORDS.forEach((w,idx)=>{
+  if(w.article)items.push({type:"article",wordIndex:idx});
+  if(w.full)items.push({type:"image-word",wordIndex:idx});
+  if(w.plural)items.push({type:"plural",wordIndex:idx});
+ });
+ WO_TASKS.forEach((t,idx)=>items.push({type:"wo",taskIndex:idx}));
+ IST_TASKS.forEach((t,idx)=>items.push({type:"ist",taskIndex:idx}));
+ return items.sort(()=>Math.random()-.5).slice(0,Math.min(EXAM_TOTAL,items.length));
+}
+
+function state(){
+ try{
+  const s=JSON.parse(localStorage.getItem(EXAM_KEY)||"null");
+  if(s&&Array.isArray(s.items))return s;
+ }catch(e){}
+ const s={items:buildItems(),current:0,tries:0,score:0,maxScore:0,details:[],startedAt:new Date().toISOString(),waiting:false};
+ localStorage.setItem(EXAM_KEY,JSON.stringify(s));
+ return s;
+}
+function saveState(s){localStorage.setItem(EXAM_KEY,JSON.stringify(s))}
+function resetExam(){localStorage.removeItem(EXAM_KEY);show()}
+
+function progress(s){
+ const p=Math.round((s.current/(s.items.length||1))*100);
+ return `<div class="small">Aufgabe ${Math.min(s.current+1,s.items.length)} / ${s.items.length} · bisher ${s.score} / ${s.maxScore} Punkte</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`;
+}
+
+function pointsFor(type,answer,solution,tries){
+ let max=10, minus=0;
+ if(type==="article"){
+   minus=tries*3;
+ }else if(type==="image-word"){
+   const a=simple(answer), sol=simple(solution);
+   const solArt=sol.split(" ")[0], aArt=a.split(" ")[0];
+   if(aArt!==solArt) minus+=3;
+   minus+=Math.min(5,editDistance(a,sol));
+   minus+=Math.max(0,tries-1);
+ }else{
+   minus+=Math.min(8,tries);
+   minus+=Math.min(4,editDistance(answer,solution));
+ }
+ return Math.max(0,max-minus);
+}
+
+function correct(solution,answer,type){
+ const s=state();
+ const pts=pointsFor(type,answer||solution,solution,s.tries||0);
+ s.score+=pts;
+ s.maxScore+=10;
+ s.details.push({type,solution,answer:answer||"",tries:s.tries||0,points:pts});
+ s.current++;
+ s.tries=0;
+ s.waiting=false;
+ saveState(s);
+ setTimeout(show,500);
+}
+
+function wrong(solution,answer,type){
+ const s=state();
+ s.tries=(s.tries||0)+1;
+ saveState(s);
+ if(s.tries<3){
+   fb.innerHTML=s.tries===1 ? "Da ist noch ein Fehler." : "Tipp: Prüfen Sie Artikel, Wort und Satz.";
+   return;
+ }
+ // Nach 3 Fehlern: als falsch werten, Lösung zeigen, aber erst nach Klick weiter.
+ s.score+=0;
+ s.maxScore+=10;
+ s.details.push({type,solution,answer:answer||"",tries:s.tries,points:0});
+ s.waiting=true;
+ saveState(s);
+ fb.innerHTML=`<div class="solution-box"><b>Lösung:</b><br>${solution}</div><button class="btn" onclick="nextAfterWrong()">Weiter</button>`;
+}
+
+function nextAfterWrong(){
+ const s=state();
+ s.current++;
+ s.tries=0;
+ s.waiting=false;
+ saveState(s);
+ show();
+}
+
+function finish(s){
+ const percent=s.maxScore?Math.round(s.score/s.maxScore*100):0;
+ const h=history();
+ h.push({date:new Date().toISOString(),score:s.score,maxScore:s.maxScore,percent,stars:starsForPercent(percent),details:s.details});
+ saveHistory(h);
+ localStorage.removeItem(EXAM_KEY);
+ const doneCount=Math.max(0,Math.min(100,percent));
+ const task={total:100,queue:[],done:[...Array(doneCount).keys()],current:null,tries:0,examPercent:percent,attempts:h.length};
+ localStorage.setItem(taskKey(FILE),JSON.stringify(task));
+ area.innerHTML=`<div class="question">Prüfung beendet</div>
+ <div class="exam-score">${percent}%</div>
+ <div class="hint">${starsHtml(starsForPercent(percent))}<br>Versuch: ${h.length} · Punkte: ${s.score} / ${s.maxScore}</div>
+ <div class="card">${s.details.map((d,i)=>`<div class="exam-result-row"><span>${i+1}. ${d.type}</span><b>${d.points}/10</b></div>`).join("")}</div>
+ <div class="actions"><button class="btn" onclick="resetExam()">Prüfung neu starten</button><a class="btn secondary" href="index.html">Zum Menü</a></div>`;
+}
+
+function show(){
+ if(!allPrereqComplete()){
+   area.innerHTML=`<div class="question">Prüfung noch gesperrt</div>
+   <div class="hint">Du musst zuerst alle anderen Aufgaben in Thema 1 mit 100% abschließen.</div>
+   <div class="exam-score">${prereqPercent()}%</div>
+   <a class="btn" href="index.html">Zurück zum Menü</a>`;
+   return;
+ }
+
+ const s=state();
+ if(s.current>=s.items.length){finish(s);return}
+
+ const item=s.items[s.current];
+ if(item.type==="article")return showArticle(item,s);
+ if(item.type==="image-word")return showImageWord(item,s);
+ if(item.type==="plural")return showPlural(item,s);
+ if(item.type==="wo")return showWo(item,s);
+ if(item.type==="ist")return showIst(item,s);
+
+ s.current++;saveState(s);show();
+}
+
+function showArticle(item,s){
+ const w=WORDS[item.wordIndex];
+ area.innerHTML=`${progress(s)}<div class="question">Welcher Artikel passt?</div><img class="task-img" src="${w.image}" onerror="fixImg(this)" alt=""><div class="hint">___ ${w.word}</div><div class="options">${["der","die","das"].map(a=>`<button class="opt" onclick="checkArticle('${a}')">${a}</button>`).join("")}</div><div id="fb" class="feedback"></div>`;
+}
+function checkArticle(a){
+ const item=state().items[state().current], w=WORDS[item.wordIndex];
+ if(a===w.article){fb.textContent="Richtig!";correct(w.full,a,"article")}
+ else{wrong(w.full,a,"article")}
+}
+
+function showImageWord(item,s){
+ const w=WORDS[item.wordIndex];
+ area.innerHTML=`${progress(s)}<div class="question">Schreibe das Wort mit Artikel.</div><img class="task-img" src="${w.image}" onerror="fixImg(this)" alt=""><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkImageWord()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+}
+function checkImageWord(){
+ const item=state().items[state().current], w=WORDS[item.wordIndex];
+ if(simple(ans.value)===simple(w.full)){fb.textContent="Richtig!";correct(w.full,ans.value,"image-word")}
+ else{wrong(w.full,ans.value,"image-word")}
+}
+
+function showPlural(item,s){
+ const w=WORDS[item.wordIndex];
+ area.innerHTML=`${progress(s)}<div class="question">Schreibe den Plural.</div><div class="hint">${w.full}</div><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkPlural()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+}
+function checkPlural(){
+ const item=state().items[state().current], w=WORDS[item.wordIndex];
+ if(simple(ans.value)===simple(w.plural)){fb.textContent="Richtig!";correct(w.plural,ans.value,"plural")}
+ else{wrong(w.plural,ans.value,"plural")}
+}
+
+function showWo(item,s){
+ const t=WO_TASKS[item.taskIndex], p=t.place;
+ area.innerHTML=`${progress(s)}<div class="question">Frage und antworte.</div><div class="hint">Schreibe Frage und Antwort.</div><div class="imgrow">${roomImg(t.room,false)}${placeImg(p,p)}</div><label>Frage</label><input id="q" placeholder="Schreiben Sie die Antwort hier"><label>Antwort</label><input id="a" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkWo()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+}
+function checkWo(){
+ const item=state().items[state().current], t=WO_TASKS[item.taskIndex];
+ const solution=t.question+" / "+t.answer;
+ const answer=q.value+" / "+a.value;
+ if(okWoQuestion(q.value,t)&&okWoAnswer(a.value,t)){fb.textContent="Richtig!";correct(solution,answer,"wo")}
+ else{wrong(solution,answer,"wo")}
+}
+
+function showIst(item,s){
+ const t=IST_TASKS[item.taskIndex], shown=t.positive?t.room:t.actual, p=t.place;
+ area.innerHTML=`${progress(s)}<div class="question">Frage und antworte.</div><div class="hint">Übe ein/kein.</div>${comboPlaceRoom(p,shown)}<label>Frage</label><input id="q" placeholder="Schreiben Sie die Antwort hier"><label>Antwort</label><input id="a" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkIst()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+}
+function checkIst(){
+ const item=state().items[state().current], t=IST_TASKS[item.taskIndex];
+ const solution=t.question+" / "+t.answer;
+ const answer=q.value+" / "+a.value;
+ if(okIstQuestion(q.value,t)&&okIstAnswer(a.value,t)){fb.textContent="Richtig!";correct(solution,answer,"ist")}
+ else{wrong(solution,answer,"ist")}
+}
+
+show();
+</script>
+</body>
+</html>

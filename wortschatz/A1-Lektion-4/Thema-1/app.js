@@ -69,7 +69,7 @@ function complete(area,file,next){
 function feedbackForTry(tries,solution,type){
  if(tries===1)return"Da ist noch ein Fehler.";
  if(tries===2)return"Tipp: Prüfe "+(type||"Form und Schreibweise")+".";
- return"Lösung: "+solution+"<br><b>Bitte gib jetzt die richtige Antwort ein. Erst dann geht es weiter.</b>";
+ return"Lösung: "+solution;
 }
 
 function speak(text,slow=false){
@@ -168,6 +168,47 @@ function okIstAnswer(ans,t){
  return (startsNein && a.includes(place) && (hasNegEin || notHere || hasWord)) || notHere;
 }
 
+
+function prerequisiteTasks(){
+ return [
+  ["karteikarten.html",WORDS.length],
+  ["hoeren.html",WORDS.length],
+  ["artikel-klick.html",WORDS.filter(w=>w.article).length],
+  ["artikel.html",WORDS.filter(w=>w.article).length],
+  ["plural.html",WORDS.filter(w=>w.plural).length],
+  ["bild-wort.html",WORDS.length],
+  ["wort-bild.html",WORDS.length],
+  ["wo-ist.html",WO_TASKS.length],
+  ["ist-hier.html",IST_TASKS.length]
+ ];
+}
+function prereqPercent(){
+ const tasks=prerequisiteTasks();
+ if(!tasks.length)return 0;
+ return Math.round(tasks.reduce((sum,t)=>sum+pct(t[0],t[1]),0)/tasks.length)||0;
+}
+function allPrereqComplete(){
+ return prerequisiteTasks().every(t=>pct(t[0],t[1])>=100);
+}
+function examHistory(){
+ try{return JSON.parse(localStorage.getItem("SP_L4_T1_EXAM_HISTORY_V1")||"[]")}catch(e){return[]}
+}
+function bestExamResult(){
+ const h=examHistory();
+ if(!h.length)return null;
+ return h.reduce((best,x)=>(!best||Number(x.percent||0)>Number(best.percent||0)?x:best),null);
+}
+function starsForPercent(p){
+ p=Number(p||0);
+ if(p>=100)return 3;
+ if(p>=70)return 2;
+ if(p>=50)return 1;
+ return 0;
+}
+function starsHtml(n){
+ n=Number(n||0);
+ return `<span class="stars">${"★".repeat(n)}${"☆".repeat(3-n)}</span>`;
+}
 
 function currentMotherLang(){
  let fromProfile="";

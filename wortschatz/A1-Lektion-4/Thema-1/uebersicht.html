@@ -20,13 +20,21 @@
 <section class="card">
   <h2>Übersicht – Wörter in Thema 1</h2>
   <p class="small">Hier siehst du alle Wörter mit Bild, Deutsch und Muttersprache.</p>
-</section>
+<div id="examSummary"></div></section>
 <section class="word-overview-grid" id="list"></section>
 <footer>© SprachPilot</footer>
 </div>
-<script src="app.js?v=4"></script>
+<script src="app.js?v=40"></script>
 <script>
 header("Übersicht");
+
+const best=bestExamResult();
+if(best){
+  const stars=starsForPercent(best.percent);
+  examSummary.innerHTML=`<div class="exam-done-box"><b>Thema abgeschlossen!</b><br>Prüfung: <b>${best.percent}%</b> · ${starsHtml(stars)}<br>Punkte: ${best.score}/${best.maxScore} · Versuche: ${examHistory().length}</div>`;
+}else{
+  examSummary.innerHTML=`<div class="hint">Prüfung noch nicht abgeschlossen.</div>`;
+}
 list.innerHTML=WORDS.map(w=>`
  <div class="word-card">
   <img src="${w.image}" onerror="fixImg(this)" alt="">
