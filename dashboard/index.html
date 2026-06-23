@@ -2,74 +2,126 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SprachPilot – Dashboard</title>
 <link rel="stylesheet" href="../style.css">
+<style>
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:16px}
+.dash-card{background:white;border-radius:22px;padding:18px;box-shadow:0 10px 26px rgba(0,0,0,.12);border:2px solid #eef2ff}
+.dash-card h3{color:#667eea;margin-bottom:8px}
+.star-total{font-size:44px;color:#f5b301;letter-spacing:3px;text-align:center}
+.star-line{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #eee;padding:8px 0}
+.locked{opacity:.5;filter:grayscale(.3)}
+</style>
 </head>
 <body>
 <div id="accountStrip" class="account-strip"></div>
 <div class="container">
 <section class="hero">
-  <a href="/index.html" style="text-decoration:none;color:inherit">
-    <div class="logo-wrap">
-      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg">
-        <defs><linearGradient id="g" x1="0" x2="1" y1="0" y2="1"><stop offset="0" stop-color="#667eea"/><stop offset="1" stop-color="#764ba2"/></linearGradient></defs>
-        <circle cx="60" cy="60" r="52" fill="url(#g)"/>
-        <path d="M28 63 C43 38,70 30,91 38 C75 43,63 53,55 70 C47 66,38 63,28 63Z" fill="#fff" opacity=".95"/>
-        <path d="M54 70 C63 53,75 43,91 38 C84 57,72 75,52 91 C55 82,56 75,54 70Z" fill="#ffcc33"/>
-        <circle cx="71" cy="49" r="5" fill="#667eea"/>
-      </svg>
-    </div>
-    <h1>SprachPilot</h1>
-  </a>
-  <p class="subtitle">Dein Lernstand und deine freigeschalteten Bereiche.</p>
+  <a href="/index.html" style="text-decoration:none;color:inherit"><h1>SprachPilot</h1></a>
+  <p class="subtitle">Dein Dashboard</p>
 </section>
 
 <section class="card">
-  <h2>Dashboard</h2>
-  <div id="studentBox"></div>
+  <h2>Dein Lernstand</h2>
+  <div id="studentBox">Dashboard wird geladen …</div>
 </section>
 
-<section class="dashboard-grid" id="progressGrid"></section>
+<section class="dash-grid" id="dashGrid"></section>
 
 <footer>© SprachPilot</footer>
 </div>
 
 <script type="module">
-import { requireLogin, renderAccountStrip, logout, safeText } from "../js/auth.js";
+import { getActiveProfile, refreshActiveProfile, logout, safeText, renderAccountStrip } from "../js/auth.js";
 window.logout=logout;
 
-const p=requireLogin();
-if(p){
+function examHistory(key){
+  try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}
+}
+function bestExam(key){
+  const h=examHistory(key);
+  if(!h.length)return null;
+  return h.reduce((best,x)=>(!best||Number(x.percent||0)>Number(best.percent||0)?x:best),null);
+}
+function starsForPercent(p){
+  p=Number(p||0);
+  if(p>=100)return 3;
+  if(p>=70)return 2;
+  if(p>=50)return 1;
+  return 0;
+}
+function starsHtml(n){
+  n=Number(n||0);
+  return "★".repeat(n)+"☆".repeat(3-n);
+}
+
+const availableTopics=[
+  {title:"Lektion 4 · Thema 1", key:"SP_L4_T1_EXAM_HISTORY_V1", max:3, href:"../wortschatz/A1-Lektion-4/Thema-1/"}
+];
+
+function moduleEnabled(p,name){
+  const c=p?.assignments||{};
+  return c.enabledModules?.[name]!==false;
+}
+
+async function init(){
+  if(localStorage.getItem("SP_TEACHER_MODE")==="1"){
+    location.href="../teacher/index.html";
+    return;
+  }
+
+  try{ await refreshActiveProfile(); }catch(e){ console.warn(e); }
+  const p=getActiveProfile();
+  if(!p){
+    location.href="../login/?redirect="+encodeURIComponent("/dashboard/");
+    return;
+  }
+
   renderAccountStrip();
 
-  document.querySelector("#studentBox").innerHTML=`
-    <div class="ok">
-      <strong>${safeText(p.vorname)} ${safeText(p.nachname)}</strong><br>
-      Kurs: ${safeText(p.kurs)} · Muttersprache: ${safeText(p.muttersprache)}
+  studentBox.innerHTML=`<div class="ok"><strong>Eingeloggt:</strong> ${safeText(p.vorname||"")} ${safeText(p.nachname||"")}<br>Kurs: ${safeText(p.kurs||"")} · Muttersprache: ${safeText(p.muttersprache||"")}</div>`;
+
+  let earned=0, possible=0;
+  const topicLines=availableTopics.map(t=>{
+    possible+=t.max;
+    const best=bestExam(t.key);
+    const stars=best?starsForPercent(best.percent):0;
+    earned+=stars;
+    return `<div class="star-line"><span>${t.title}</span><b>${starsHtml(stars)} ${best?best.percent+"%":"offen"}</b></div>`;
+  }).join("");
+
+  const fragen=moduleEnabled(p,"Fragen A1");
+  const wortschatz=moduleEnabled(p,"Wortschatz");
+  const verben=moduleEnabled(p,"Verben A1");
+
+  dashGrid.innerHTML=`
+    <div class="dash-card">
+      <h3>Sterne</h3>
+      <div class="star-total">${earned} / ${possible}</div>
+      ${topicLines}
+    </div>
+
+    <div class="dash-card ${fragen?'':'locked'}">
+      <h3>Fragen A1</h3>
+      <p>${fragen?'Freigeschaltet':'Noch nicht freigeschaltet'}</p>
+      ${fragen?'<a class="btn" href="../fragen-A1/">Öffnen</a>':'<span class="badge">Gesperrt</span>'}
+    </div>
+
+    <div class="dash-card ${wortschatz?'':'locked'}">
+      <h3>Wortschatz</h3>
+      <p>${wortschatz?'Freigeschaltet':'Noch nicht freigeschaltet'}</p>
+      ${wortschatz?'<a class="btn" href="../wortschatz/">Öffnen</a>':'<span class="badge">Gesperrt</span>'}
+    </div>
+
+    <div class="dash-card ${verben?'':'locked'}">
+      <h3>Verben A1</h3>
+      <p>${verben?'Freigeschaltet':'Noch nicht freigeschaltet'}</p>
+      ${verben?'<a class="btn" href="../verben-A1/">Öffnen</a>':'<span class="badge">Gesperrt</span>'}
     </div>
   `;
-
-  const c=p.assignments||{};
-  const modules=[
-    {key:"Fragen A1",title:"Fragen A1",href:"../fragen-A1/",progress:p.fragenFortschritt||0},
-    {key:"Wortschatz",title:"Wortschatz",href:"../wortschatz/",progress:p.wortschatzFortschritt||0},
-    {key:"Verben A1",title:"Verben A1",href:"../verben-A1/",progress:p.verbenFortschritt||0},
-    {key:"Grammatik",title:"Grammatik",href:"../grammatik/",progress:p.grammatikFortschritt||0}
-  ];
-
-  document.querySelector("#progressGrid").innerHTML=modules.map(m=>{
-    const enabled=c.enabledModules?.[m.key]!==false;
-    return `
-      <div class="progress-card-small ${enabled?'':'locked'}">
-        <div class="progress-title">${m.title}</div>
-        <span class="status-pill">${enabled?'Freigeschaltet':'Gesperrt'}</span>
-        <div class="progressbar"><span style="width:${m.progress}%"></span></div>
-        <p><b>${m.progress}%</b> fertig</p>
-        ${enabled?`<a class="btn" href="${m.href}">Weiterlernen</a>`:`<p class="small">Dieser Bereich ist für deinen Kurs noch nicht freigeschaltet.</p>`}
-      </div>`;
-  }).join("");
 }
+init();
 </script>
 </body>
 </html>
