@@ -8,7 +8,6 @@
 </head>
 <body>
 <div id="accountStrip" class="account-strip"></div>
-<script type="module" src="/js/guard.js"></script>
 <div class="container">
 <section class="hero">
   <a href="/index.html" style="text-decoration:none;color:inherit">
@@ -27,50 +26,74 @@
 </section>
 
 <section class="card">
-  <h2>Dashboard</h2>
+  <h2>Dein Dashboard</h2>
   <div id="studentBox"></div>
 </section>
 
-<section class="dashboard-grid" id="progressGrid"></section>
+<section class="modules" id="modules"></section>
 
 <footer>© SprachPilot</footer>
 </div>
 
 <script type="module">
-import { requireLogin, renderAccountStrip, logout, safeText } from "../js/auth.js";
+import { getActiveProfile, refreshActiveProfile, logout, safeText, renderAccountStrip } from "../js/auth.js?v=studentfix2";
 window.logout=logout;
 
-const p=requireLogin();
-if(p){
+async function init(){
+  try{
+    if(localStorage.getItem("SP_TEACHER_MODE")==="1"){
+      location.href="../teacher/index.html";
+      return;
+    }
+
+    await refreshActiveProfile();
+  }catch(e){
+    console.warn("refresh skipped", e);
+  }
+
+  const p=getActiveProfile();
+
+  if(!p){
+    location.href="../login/?redirect="+encodeURIComponent("/dashboard/");
+    return;
+  }
+
   renderAccountStrip();
 
   document.querySelector("#studentBox").innerHTML=`
     <div class="ok">
-      <strong>${safeText(p.vorname)} ${safeText(p.nachname)}</strong><br>
+      <strong>Eingeloggt:</strong> ${safeText(p.vorname)} ${safeText(p.nachname)}<br>
       Kurs: ${safeText(p.kurs)} · Muttersprache: ${safeText(p.muttersprache)}
     </div>
   `;
 
   const c=p.assignments||{};
-  const modules=[
-    {key:"Fragen A1",title:"Fragen A1",href:"../fragen-A1/",progress:p.fragenFortschritt||0},
-    {key:"Wortschatz",title:"Wortschatz",href:"../wortschatz/",progress:p.wortschatzFortschritt||0},
-    {key:"Verben A1",title:"Verben A1",href:"../verben-A1/",progress:p.verbenFortschritt||0},
-    {key:"Grammatik",title:"Grammatik",href:"../grammatik/",progress:p.grammatikFortschritt||0}
-  ];
+  const verben=c.enabledModules?.["Verben A1"]!==false;
+  const fragen=c.enabledModules?.["Fragen A1"]!==false;
+  const wortschatz=c.enabledModules?.["Wortschatz"]!==false;
 
-  document.querySelector("#progressGrid").innerHTML=modules.map(m=>{
-    const enabled=c.enabledModules?.[m.key]!==false;
-    return `
-      <div class="progress-card-small ${enabled?'':'locked'}">
-        <div class="progress-title">${m.title}</div>
-        <span class="status-pill">${enabled?'Freigeschaltet':'Gesperrt'}</span>
-        <div class="progressbar"><span style="width:${m.progress}%"></span></div>
-        <p><b>${m.progress}%</b> fertig</p>
-        ${enabled?`<a class="btn" href="${m.href}">Weiterlernen</a>`:`<p class="small">Dieser Bereich ist für deinen Kurs noch nicht freigeschaltet.</p>`}
-      </div>`;
-  }).join("");
+  document.querySelector("#modules").innerHTML=`
+    <a class="module" href="${fragen?'../fragen-A1/':'#'}" ${fragen?'':'onclick="return false;" style="opacity:.55"'}>
+      <div class="module-title">Fragen A1</div>
+      <p>${fragen?'Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.':'Für deinen Kurs noch nicht freigeschaltet.'}</p>
+      <span class="badge">${fragen?'Starten':'Gesperrt'}</span>
+    </a>
+
+    <a class="module" href="${wortschatz?'../wortschatz/':'#'}" ${wortschatz?'':'onclick="return false;" style="opacity:.55"'}>
+      <div class="module-title">Wortschatz</div>
+      <p>${wortschatz?'Schritte Plus Neu':'Für deinen Kurs noch nicht freigeschaltet.'}</p>
+      <span class="badge">${wortschatz?'Starten':'Gesperrt'}</span>
+    </a>
+
+    <a class="module" href="${verben?'../verben-A1/':'#'}" ${verben?'':'onclick="return false;" style="opacity:.55"'}>
+      <div class="module-title">Verben A1</div>
+      <p>${verben?'Verben mit Bildern, Karteikarten, Sprechen, Schreiben und Wiederholung.':'Für deinen Kurs noch nicht freigeschaltet.'}</p>
+      <span class="badge">${verben?'Starten':'Gesperrt'}</span>
+    </a>
+  `;
 }
+
+init();
 </script>
 </body>
 </html>
