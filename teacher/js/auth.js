@@ -1,161 +1,251 @@
-import { db, doc, getDoc, setDoc, updateDoc, serverTimestamp, collection, query, where, getDocs, limit } from "./firebase.js";
-export function $(id){return document.getElementById(id)}
-export function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
-export function normText(s){return String(s||"").trim().toLowerCase()}
-export function normId(s){return String(s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
-export function makeStudentId(email,course){return normId(course)+"_"+normId(email)}
-export function getActiveProfile(){
-  if(localStorage.getItem("SP_TEACHER_MODE")==="1"){
-    return {
-      role:"teacher",
-      teacherMode:true,
-      vorname:"Lehrer",
-      nachname:"",
-      email:localStorage.getItem("SP_TEACHER_EMAIL")||"",
-      kurs:"Lehrer-Modus",
-      muttersprache:"Deutsch",
-      motherLanguageCode:"de",
-      assignments:{teacherMode:true}
-    };
+(function(){
+  const OWNER_EMAILS = ["studyroomslandstuhl@gmail.com"];
+
+  function el(id){return document.getElementById(id)}
+  function show(text,type="no"){
+    const msg=el("loginMsg");
+    if(msg) msg.innerHTML=`<div class="${type}">${text}</div>`;
   }
-  try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}
-  catch(e){return null}
-}
-export function makeProfile(st,courseData,docId=null){
-  return {
-    userId:st.studentId,
-    studentId:st.studentId,
-    docId:docId || st.docId || st.studentId,
-    vorname:st.vorname,
-    nachname:st.nachname,
-    email:st.email,
-    kurs:st.kurs,
-    kursnummer:st.kurs,
-    muttersprache:st.muttersprache||"Englisch",
-    profilVollstaendig:st.profilVollstaendig||false,
-    assignments:courseData||{},
-    firebase:true,
-    keepLoggedIn:true
+  function setBusy(buttonId,busy,textBusy,textNormal){
+    const b=el(buttonId);
+    if(!b) return;
+    b.disabled=busy;
+    b.textContent=busy ? textBusy : textNormal;
   }
-}
-export function saveActiveProfile(st,courseData,docId=null){
-  const p=makeProfile(st,courseData,docId);
-  localStorage.setItem("SP_USER_PROFILE",JSON.stringify(p));
-  localStorage.setItem("SP_KEEP_LOGGED_IN","1");
-  localStorage.setItem("SP_STUDENT_ID",p.studentId);
-  localStorage.setItem("motherLanguage",p.muttersprache);
-  localStorage.setItem("muttersprache",p.muttersprache);
-  return p
-}
-export function logout(){
-  localStorage.removeItem("SP_USER_PROFILE");
-  localStorage.removeItem("SP_KEEP_LOGGED_IN");
-  localStorage.removeItem("SP_STUDENT_ID");
-  localStorage.removeItem("motherLanguage");
-  localStorage.removeItem("muttersprache");
-  localStorage.removeItem("SP_MOTHER_LANGUAGE_CODE");
-  localStorage.removeItem("SP_TEACHER_MODE");
-  localStorage.removeItem("SP_USER_ROLE");
-  localStorage.removeItem("SP_TEACHER_EMAIL");
-  localStorage.removeItem("SP_TEACHER_ID");
-  location.href="/index.html";
-}
+  function readableError(err, fallback){
+    console.error(err);
+    const code=err && err.code ? err.code : "";
+    if(code==="auth/invalid-credential" || code==="auth/user-not-found" || code==="auth/wrong-password"){
+      return "E-Mail oder Passwort ist falsch. Bitte prüfen und noch einmal versuchen.";
+    }
+    if(code==="auth/email-already-in-use"){
+      return "Diese E-Mail ist schon registriert. Bitte einloggen.";
+    }
+    if(code==="auth/weak-password"){
+      return "Das Passwort ist zu kurz. Bitte mindestens 6 Zeichen verwenden.";
+    }
+    if(code==="auth/invalid-email"){
+      return "Diese E-Mail-Adresse ist ungültig.";
+    }
+    if(code==="auth/operation-not-allowed"){
+      return "Firebase Authentication ist nicht aktiviert. Bitte in Firebase unter Authentication → Sign-in method → Email/Password aktivieren.";
+    }
+    if(code==="permission-denied" || String(err.message||"").includes("Missing or insufficient permissions")){
+      return "Firebase-Regeln blockieren den Zugriff. Bitte Firestore-Regeln prüfen.";
+    }
+    return fallback || (err.message || "Unbekannter Fehler.");
+  }
 
-export async function registerStudent({vorname,nachname,email,muttersprache,kurs}){
- const emailNorm=normText(email);
- const courseLoaded=await loadCourse(kurs);
- if(!courseLoaded) throw new Error("COURSE_NOT_FOUND");
- const existing=await findStudentByEmailAndCourse(emailNorm,courseLoaded.id);
- if(existing) throw new Error("STUDENT_EXISTS");
- const studentId=makeStudentId(emailNorm,courseLoaded.id);
- const st={studentId,userId:studentId,vorname,nachname,email:emailNorm,muttersprache,kurs:courseLoaded.id,profilVollstaendig:false,active:true,fragenFortschritt:0,verbenFortschritt:0,wortschatzFortschritt:0,createdAt:serverTimestamp(),lastLogin:serverTimestamp()};
- await setDoc(doc(db,"students",studentId),st);
- await setDoc(doc(db,"progress",studentId),{studentId,kurs:courseLoaded.id,fragen:{progress:0,state:{}},verben:{progress:0,stars:0,state:{}},wortschatz:{progress:0,state:{}},grammatik:{progress:0,state:{}},updatedAt:serverTimestamp()});
- return saveActiveProfile(st,courseLoaded.data,studentId);
-}
+  async function ensureFirebase(){
+    if(!window.TeacherFirebaseReady || !window.auth || !window.db){
+      const err=window.TeacherFirebaseError ? window.TeacherFirebaseError.message : "Firebase ist nicht verbunden.";
+      throw new Error(err);
+    }
+  }
 
-export async function loginStudent(email,kurs){
- const emailNorm=normText(email);
- const courseLoaded=await loadCourse(kurs);
- if(!courseLoaded) throw new Error("COURSE_NOT_FOUND");
- const found=await findStudentByEmailAndCourse(emailNorm,courseLoaded.id);
- if(!found) throw new Error("STUDENT_NOT_FOUND");
- await updateDoc(doc(db,"students",found.id),{lastLogin:serverTimestamp()});
- return saveActiveProfile(found.data,courseLoaded.data,found.id);
-}
+  function setTeacherMode(user, teacher){
+    localStorage.setItem("SP_TEACHER_MODE","1");
+    localStorage.setItem("SP_USER_ROLE", teacher.role || "teacher");
+    localStorage.setItem("SP_TEACHER_EMAIL", user.email || teacher.email || "");
+    localStorage.setItem("SP_TEACHER_ID", user.uid);
+  }
 
+  function clearTeacherMode(){
+    localStorage.removeItem("SP_TEACHER_MODE");
+    localStorage.removeItem("SP_USER_ROLE");
+    localStorage.removeItem("SP_TEACHER_EMAIL");
+    localStorage.removeItem("SP_TEACHER_ID");
+  }
 
-export async function updateStudentProfile({vorname,nachname,email,muttersprache}){
-  const p=getActiveProfile();
-  if(!p) throw new Error("NOT_LOGGED_IN");
+  window.TeacherAuth = {
+    OWNER_EMAILS,
 
-  const docId=p.docId || p.studentId;
-  const emailNorm=normText(email);
+    async ensureOwnerDoc(user){
+      const email=(user.email||"").toLowerCase();
+      if(!OWNER_EMAILS.includes(email)) return null;
 
-  const updateData={
-    vorname:String(vorname||"").trim(),
-    nachname:String(nachname||"").trim(),
-    email:emailNorm,
-    muttersprache:String(muttersprache||"").trim(),
-    updatedAt:serverTimestamp()
+      const ref=db.collection("teachers").doc(user.uid);
+      await ref.set({
+        email,
+        firstName:"Alisa",
+        lastName:"",
+        school:"SprachPilot",
+        job:"Owner",
+        role:"owner",
+        active:true,
+        approved:true,
+        owner:true,
+        updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+      }, {merge:true});
+
+      return (await ref.get()).data();
+    },
+
+    async getApprovedTeacher(user){
+      const owner = await this.ensureOwnerDoc(user);
+      if(owner) return owner;
+
+      const pending=await db.collection("teachers_pending").doc(user.uid).get();
+      if(pending.exists){
+        return {pending:true,...pending.data()};
+      }
+
+      const approved=await db.collection("teachers").doc(user.uid).get();
+      if(!approved.exists) return null;
+
+      return approved.data();
+    },
+
+    async login(){
+      const email=el("email").value.trim().toLowerCase();
+      const password=el("password").value;
+
+      if(!email || !password){
+        show("Bitte E-Mail und Passwort eingeben.");
+        return;
+      }
+
+      setBusy("loginBtn",true,"Login läuft...","Einloggen");
+      show("Login wird geprüft...","ok");
+
+      try{
+        await ensureFirebase();
+
+        const result=await auth.signInWithEmailAndPassword(email,password);
+        const user=result.user;
+        const teacher=await this.getApprovedTeacher(user);
+
+        if(!teacher){
+          await auth.signOut();
+          clearTeacherMode();
+          show("Dieser Account ist noch nicht als Lehrer registriert. Bitte zuerst registrieren.");
+          return;
+        }
+
+        if(teacher.pending || teacher.approved===false){
+          await auth.signOut();
+          clearTeacherMode();
+          show("Dein Lehrerkonto wartet noch auf Freigabe durch die Administratorin.");
+          return;
+        }
+
+        if(teacher.active===false){
+          await auth.signOut();
+          clearTeacherMode();
+          show("Dieser Lehrerzugang ist deaktiviert.");
+          return;
+        }
+
+        if(!["owner","admin","teacher"].includes(teacher.role)){
+          await auth.signOut();
+          clearTeacherMode();
+          show("Dieser Account hat keine gültige Lehrerrolle.");
+          return;
+        }
+
+        setTeacherMode(user, teacher);
+        show("Login erfolgreich. Dashboard wird geöffnet...","ok");
+        setTimeout(()=>location.href="index.html",500);
+
+      }catch(err){
+        show(readableError(err,"Login nicht möglich."));
+      }finally{
+        setBusy("loginBtn",false,"Login läuft...","Einloggen");
+      }
+    },
+
+    async register(){
+      const firstName=(el("regFirstName")?.value || "").trim();
+      const lastName=(el("regLastName")?.value || "").trim();
+      const email=el("regEmail").value.trim().toLowerCase();
+      const password=el("regPassword").value;
+      const school=el("regSchool").value.trim();
+      const job=el("regJob").value.trim();
+
+      if(!firstName || !lastName || !email || !password || !school || !job){
+        show("Bitte alle Felder ausfüllen.");
+        return;
+      }
+      if(password.length<6){
+        show("Das Passwort muss mindestens 6 Zeichen haben.");
+        return;
+      }
+
+      setBusy("regBtn",true,"Registrierung läuft...","Registrieren");
+      show("Registrierung wird erstellt...","ok");
+
+      try{
+        await ensureFirebase();
+
+        const result=await auth.createUserWithEmailAndPassword(email,password);
+        const user=result.user;
+
+        const ownerAutoApprove=OWNER_EMAILS.includes(email);
+        if(ownerAutoApprove){
+          await db.collection("teachers").doc(user.uid).set({
+            firstName,lastName,email,school,job,
+            role:"owner",
+            owner:true,
+            active:true,
+            approved:true,
+            createdAt:firebase.firestore.FieldValue.serverTimestamp(),
+            updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+          }, {merge:true});
+          show("Owner-Registrierung erfolgreich. Dashboard wird geöffnet...","ok");
+          setTeacherMode(user,{email,role:"owner"});
+          setTimeout(()=>location.href="index.html",800);
+          return;
+        }
+
+        await db.collection("teachers_pending").doc(user.uid).set({
+          firstName,lastName,email,school,job,
+          role:"teacher",
+          approved:false,
+          active:false,
+          requestedAt:firebase.firestore.FieldValue.serverTimestamp(),
+          createdAt:firebase.firestore.FieldValue.serverTimestamp()
+        }, {merge:true});
+
+        await auth.signOut();
+        clearTeacherMode();
+        show("Registrierung eingegangen. Bitte warte auf Freigabe durch die Administratorin.","ok");
+
+      }catch(err){
+        show(readableError(err,"Registrierung nicht möglich."));
+      }finally{
+        setBusy("regBtn",false,"Registrierung läuft...","Registrieren");
+      }
+    },
+
+    async resetPassword(){
+      const email=el("resetEmail").value.trim().toLowerCase();
+
+      if(!email){
+        show("Bitte E-Mail eingeben.");
+        return;
+      }
+
+      setBusy("resetBtn",true,"Wird gesendet...","Reset-Link senden");
+      show("Reset-Link wird gesendet...","ok");
+
+      try{
+        await ensureFirebase();
+        await auth.sendPasswordResetEmail(email);
+        show("Reset-Link wurde an deine E-Mail gesendet.","ok");
+      }catch(err){
+        show(readableError(err,"Reset-Link konnte nicht gesendet werden."));
+      }finally{
+        setBusy("resetBtn",false,"Wird gesendet...","Reset-Link senden");
+      }
+    },
+
+    async logout(){
+      try{
+        clearTeacherMode();
+        if(auth) await auth.signOut();
+      }finally{
+        location.href="login.html";
+      }
+    }
   };
-
-  if(!updateData.vorname || !updateData.nachname || !updateData.email || !updateData.muttersprache){
-    throw new Error("MISSING_FIELDS");
-  }
-
-  await updateDoc(doc(db,"students",docId),updateData);
-
-  const newProfile={...p,...updateData,email:emailNorm};
-  localStorage.setItem("SP_USER_PROFILE",JSON.stringify(newProfile));
-  localStorage.setItem("motherLanguage",updateData.muttersprache);
-  localStorage.setItem("muttersprache",updateData.muttersprache);
-
-  return newProfile;
-}
-
-
-export function requireLogin(){
-  const p=getActiveProfile();
-  if(!p){
-    const target=location.pathname + location.search + location.hash;
-    location.href="/login/?redirect="+encodeURIComponent(target);
-    return null;
-  }
-
-  if(p.teacherMode){
-    renderAccountStrip();
-    return p;
-  }
-
-  refreshActiveProfile().then(()=>renderAccountStrip()).catch(()=>{});
-  return p;
-}
-
-export function loginUrlForCurrent(){
-  const target=location.pathname + location.search + location.hash;
-  return "/login/?redirect="+encodeURIComponent(target);
-}
-
-export function getRedirectTarget(defaultTarget="/index.html"){
-  const params=new URLSearchParams(location.search);
-  return params.get("redirect") || sessionStorage.getItem("SP_AFTER_LOGIN") || defaultTarget;
-}
-
-export function renderAccountStrip(rootId="accountStrip"){
-  const el=document.getElementById(rootId);
-  if(!el) return;
-
-  const p=getActiveProfile();
-  if(!p){
-    el.innerHTML=`<span class="who">Nicht eingeloggt</span><a href="${loginUrlForCurrent()}">Anmelden</a>`;
-    return;
-  }
-
-  if(p.teacherMode){
-    el.innerHTML=`<span class="who">Lehrer-Modus · ${safeText(p.email||"")}</span><a href="/teacher/index.html">Teacher Dashboard</a><button onclick="logout()">Abmelden</button>`;
-    return;
-  }
-
-  el.innerHTML=`<span class="who">${safeText(p.vorname||"")} ${safeText(p.nachname||"")} · ${safeText(p.kurs||"")}</span><a href="/dashboard/">Dashboard</a><button onclick="logout()">Abmelden</button>`;
-}
+})();
