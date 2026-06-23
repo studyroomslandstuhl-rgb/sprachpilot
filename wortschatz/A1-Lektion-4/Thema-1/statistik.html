@@ -21,13 +21,14 @@
 <section class="card">
   <h2>Statistik – Wörter</h2>
   <p class="small">Hier siehst du, wie viel Prozent jedes Wortes gelernt wurde.</p>
-</section>
+<div id="examStats"></div></section>
 <section class="stat-grid" id="stats"></section>
 <footer>© SprachPilot</footer>
 </div>
-<script src="app.js?v=42"></script>
+<script src="app.js?v=50"></script>
 <script>
 header("Statistik");
+examStats.innerHTML=bestExamSummaryHtml();
 stats.innerHTML=WORDS.map(w=>{
  const p=wordProgress(w.id);
  return `

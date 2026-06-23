@@ -280,3 +280,40 @@ function wordStatus(p){
  if(p>0) return "angefangen";
  return "neu";
 }
+
+
+function examHistory(){
+ try{return JSON.parse(localStorage.getItem("SP_L4_T1_EXAM_HISTORY_V1")||"[]")}catch(e){return[]}
+}
+function bestExamResult(){
+ const h=examHistory();
+ if(!h.length)return null;
+ return h.reduce((best,x)=>(!best||Number(x.percent||0)>Number(best.percent||0)?x:best),null);
+}
+function starsForPercent(p){
+ p=Number(p||0);
+ if(p>=100)return 3;
+ if(p>=70)return 2;
+ if(p>=50)return 1;
+ return 0;
+}
+function starsHtml(n){
+ n=Number(n||0);
+ return `<span class="stars">${"★".repeat(n)}${"☆".repeat(3-n)}</span>`;
+}
+function topicCompleted(){
+ const best=bestExamResult();
+ return !!best && Number(best.percent||0)>=50;
+}
+function bestExamSummaryHtml(){
+ const best=bestExamResult();
+ if(!best){
+   return `<div class="exam-done-box muted"><b>Prüfung noch nicht abgeschlossen</b><br>Noch keine Sterne gesammelt.</div>`;
+ }
+ const stars=starsForPercent(best.percent);
+ return `<div class="exam-done-box">
+   <b>Thema abgeschlossen!</b><br>
+   Prüfung: <b>${best.percent}%</b> · ${starsHtml(stars)}<br>
+   Punkte: ${best.score}/${best.maxScore} · Versuche: ${examHistory().length}
+ </div>`;
+}
