@@ -5,9 +5,24 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SprachPilot – Dashboard</title>
 <link rel="stylesheet" href="../style.css">
+<style>
+.dashboard-menu{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px}
+.dash-card{background:white;border-radius:24px;padding:20px;box-shadow:0 12px 30px rgba(0,0,0,.14);border:2px solid #eef2ff}
+.dash-card h3{color:#667eea;font-size:26px;margin-bottom:8px}
+.dash-card p{color:#666;line-height:1.4}
+.dash-card .btn{margin:8px 6px 0 0;padding:10px 13px;font-size:14px}
+.lesson-box{background:#f8f9ff;border:2px solid #eef2ff;border-radius:18px;margin:12px 0;padding:12px}
+.lesson-box summary{font-weight:900;color:#333;cursor:pointer}
+.topic-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin-top:10px}
+.topic-card{background:white;border-radius:16px;padding:12px;border:1px solid #e6e9ff}
+.topic-card b{display:block;color:#667eea;margin-bottom:6px}
+.locked{opacity:.45;filter:grayscale(.3)}
+.small-note{font-size:13px;color:#777;margin-top:8px}
+</style>
 </head>
 <body>
 <div id="accountStrip" class="account-strip"></div>
+
 <div class="container">
 <section class="hero">
   <a href="/index.html" style="text-decoration:none;color:inherit">
@@ -22,7 +37,7 @@
     </div>
     <h1>SprachPilot</h1>
   </a>
-  <p class="subtitle">Dein Lernstand und deine freigeschalteten Bereiche.</p>
+  <p class="subtitle">Dein Menü und deine freigeschalteten Inhalte.</p>
 </section>
 
 <section class="card">
@@ -30,29 +45,105 @@
   <div id="studentBox"></div>
 </section>
 
-<section class="modules" id="modules"></section>
+<section id="menuArea"></section>
 
 <footer>© SprachPilot</footer>
 </div>
 
 <script type="module">
-import { getActiveProfile, refreshActiveProfile, logout, safeText, renderAccountStrip } from "../js/auth.js?v=studentfix2";
+import { getActiveProfile, refreshActiveProfile, logout, safeText, renderAccountStrip } from "../js/auth.js?v=studentdash1";
 window.logout=logout;
 
-async function init(){
-  try{
-    if(localStorage.getItem("SP_TEACHER_MODE")==="1"){
-      location.href="../teacher/index.html";
-      return;
+const STRUCTURE = {
+  wortschatz: [
+    {
+      key:"Wortschatz/A1 Lektion 3",
+      title:"A1 Lektion 3 · Einkaufen",
+      href:"../wortschatz/A1-Lektion-3/",
+      topics:[
+        {key:"Thema 1", title:"Thema 1", href:"../wortschatz/A1-Lektion-3/Thema-1/"},
+        {key:"Thema 2", title:"Thema 2", href:"../wortschatz/A1-Lektion-3/Thema-2/"}
+      ]
+    },
+    {
+      key:"Wortschatz/A1 Lektion 4",
+      title:"A1 Lektion 4 · Wohnung",
+      href:"../wortschatz/A1-Lektion-4/",
+      topics:[
+        {key:"Thema 1", title:"Thema 1 · Wohnung & Zimmer", href:"../wortschatz/A1-Lektion-4/Thema-1/"},
+        {key:"Thema 2", title:"Thema 2 · Möbel & Adjektive", href:"../wortschatz/A1-Lektion-4/Thema-2/"},
+        {key:"Thema 3", title:"Thema 3 · Farben", href:"../wortschatz/A1-Lektion-4/Thema-3/"}
+      ]
     }
+  ]
+};
 
+function enabledModule(p, name){
+  const c=p.assignments||{};
+  return c.enabledModules?.[name] !== false;
+}
+
+function enabledLesson(p, key){
+  const c=p.assignments||{};
+  return c.enabledLessons?.[key] !== false;
+}
+
+function enabledTaskPrefix(p, prefix){
+  const c=p.assignments||{};
+  const tasks=c.enabledTasks||{};
+  const relevant=Object.keys(tasks).filter(k=>k.startsWith(prefix));
+  if(!relevant.length) return true;
+  return relevant.some(k=>tasks[k]!==false);
+}
+
+function moduleCard({title,desc,href,enabled,extra=""}){
+  return `<div class="dash-card ${enabled?'':'locked'}">
+    <h3>${title}</h3>
+    <p>${enabled?desc:'Dieser Bereich ist für deinen Kurs noch nicht freigeschaltet.'}</p>
+    ${enabled?`<a class="btn" href="${href}">Öffnen</a>${extra}`:`<span class="badge">Gesperrt</span>`}
+  </div>`;
+}
+
+function wortschatzMenu(p){
+  if(!enabledModule(p,"Wortschatz")) return "";
+
+  return `<div class="dash-card">
+    <h3>Wortschatz</h3>
+    <p>Deine freigeschalteten Wortschatz-Lektionen und Themen.</p>
+    <a class="btn" href="../wortschatz/">Wortschatz-Übersicht</a>
+
+    ${STRUCTURE.wortschatz.map(lesson=>{
+      const lessonOn=enabledLesson(p,lesson.key);
+      const topicHtml=lesson.topics.map(t=>{
+        const topicPrefix=`${lesson.key}/${t.key}`;
+        const on=lessonOn && enabledTaskPrefix(p,topicPrefix);
+        return `<div class="topic-card ${on?'':'locked'}">
+          <b>${safeText(t.title)}</b>
+          ${on?`<a class="btn secondary" href="${t.href}">Starten</a>`:`<span class="badge">Gesperrt</span>`}
+        </div>`;
+      }).join("");
+
+      return `<details class="lesson-box" ${lessonOn?'open':''}>
+        <summary>${safeText(lesson.title)} ${lessonOn?'':'· gesperrt'}</summary>
+        <div class="topic-grid">${topicHtml}</div>
+      </details>`;
+    }).join("")}
+  </div>`;
+}
+
+async function init(){
+  if(localStorage.getItem("SP_TEACHER_MODE")==="1"){
+    location.href="../teacher/index.html";
+    return;
+  }
+
+  try{
     await refreshActiveProfile();
   }catch(e){
-    console.warn("refresh skipped", e);
+    console.warn("Profil konnte nicht aktualisiert werden", e);
   }
 
   const p=getActiveProfile();
-
   if(!p){
     location.href="../login/?redirect="+encodeURIComponent("/dashboard/");
     return;
@@ -67,29 +158,41 @@ async function init(){
     </div>
   `;
 
-  const c=p.assignments||{};
-  const verben=c.enabledModules?.["Verben A1"]!==false;
-  const fragen=c.enabledModules?.["Fragen A1"]!==false;
-  const wortschatz=c.enabledModules?.["Wortschatz"]!==false;
+  const fragenOn=enabledModule(p,"Fragen A1");
+  const verbenOn=enabledModule(p,"Verben A1");
+  const wortschatzOn=enabledModule(p,"Wortschatz");
+  const grammatikOn=enabledModule(p,"Grammatik");
 
-  document.querySelector("#modules").innerHTML=`
-    <a class="module" href="${fragen?'../fragen-A1/':'#'}" ${fragen?'':'onclick="return false;" style="opacity:.55"'}>
-      <div class="module-title">Fragen A1</div>
-      <p>${fragen?'Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.':'Für deinen Kurs noch nicht freigeschaltet.'}</p>
-      <span class="badge">${fragen?'Starten':'Gesperrt'}</span>
-    </a>
+  document.querySelector("#menuArea").innerHTML=`
+    <div class="dashboard-menu">
+      ${moduleCard({
+        title:"Fragen A1",
+        desc:"Fragen und Antworten üben.",
+        href:"../fragen-A1/",
+        enabled:fragenOn
+      })}
 
-    <a class="module" href="${wortschatz?'../wortschatz/':'#'}" ${wortschatz?'':'onclick="return false;" style="opacity:.55"'}>
-      <div class="module-title">Wortschatz</div>
-      <p>${wortschatz?'Schritte Plus Neu':'Für deinen Kurs noch nicht freigeschaltet.'}</p>
-      <span class="badge">${wortschatz?'Starten':'Gesperrt'}</span>
-    </a>
+      ${wortschatzMenu(p)}
 
-    <a class="module" href="${verben?'../verben-A1/':'#'}" ${verben?'':'onclick="return false;" style="opacity:.55"'}>
-      <div class="module-title">Verben A1</div>
-      <p>${verben?'Verben mit Bildern, Karteikarten, Sprechen, Schreiben und Wiederholung.':'Für deinen Kurs noch nicht freigeschaltet.'}</p>
-      <span class="badge">${verben?'Starten':'Gesperrt'}</span>
-    </a>
+      ${moduleCard({
+        title:"Verben A1",
+        desc:"Verben mit Bildern, Karteikarten, Hören, Schreiben und Sprechen üben.",
+        href:"../verben-A1/",
+        enabled:verbenOn
+      })}
+
+      ${moduleCard({
+        title:"Grammatik",
+        desc:"Grammatikübungen.",
+        href:"../grammatik/",
+        enabled:grammatikOn
+      })}
+    </div>
+
+    <section class="card">
+      <h2>Hinweis</h2>
+      <p class="small-note">Du siehst hier nur die Inhalte, die für deinen Kurs freigeschaltet sind. Wenn etwas fehlt, frage deine Lehrkraft.</p>
+    </section>
   `;
 }
 
