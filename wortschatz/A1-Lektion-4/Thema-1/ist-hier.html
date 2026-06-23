@@ -1,26 +1,58 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ist …?</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=40"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ist …?</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=42"></script><script>
 header("Ist hier/da/dort …?");
-const FILE="ist-hier.html";let i=0,phase="q";
+const FILE="ist-hier.html";
+let i=0,phase="example";
 function shownRoom(t){return t.positive?t.room:t.actual}
+function exampleDoneKey(){return taskKey(FILE)+"_exampleDone"}
 function show(){
- if(loadTask(FILE,IST_TASKS.length).done.length>=IST_TASKS.length){complete(area,FILE,"pruefung.html");return}
- i=nextIndex(FILE,IST_TASKS.length);let t=IST_TASKS[i], w=wordById(t.room), actual=shownRoom(t);
+ const done=loadTask(FILE,IST_TASKS.length).done.length;
+ if(done>=IST_TASKS.length){complete(area,FILE,"pruefung.html");return}
+
+ if(phase==="example" && localStorage.getItem(exampleDoneKey())!=="1"){
+  area.innerHTML=`${progressHtml(FILE,IST_TASKS.length)}
+  <div class="question">Beispiel</div>
+  <div class="example-box">
+    <b>So funktioniert die Aufgabe:</b><br>
+    Bild: Küche + hier<br>
+    Frage: <b>Ist hier eine Küche?</b><br>
+    Antwort positiv: <b>Ja, hier ist die Küche.</b><br>
+    Antwort negativ: <b>Nein, hier ist keine Küche.</b>
+  </div>
+  <div class="step-note">Jetzt kommen die Aufgaben. Danach gibt es keine vorgegebene Lösung mehr.</div>
+  <button class="btn" onclick="localStorage.setItem(exampleDoneKey(),'1');phase='q';show()">Aufgabe 1 starten</button>`;
+  return;
+ }
+
+ i=nextIndex(FILE,IST_TASKS.length);
+ let t=IST_TASKS[i], actual=shownRoom(t);
+ const number=loadTask(FILE,IST_TASKS.length).done.length+1;
+
  if(phase==="q"){
-  area.innerHTML=`${progressHtml(FILE,IST_TASKS.length)}<div class="question">1. Bilde die Frage mit „Ist ...?“</div><div class="example-box">
-  <b>Beispiel:</b><br>
-  Bild: Küche + hier<br>
-  Frage: <b>Ist hier eine Küche?</b><br>
-  Antwort positiv: <b>Ja, hier ist die Küche.</b><br>
-  Antwort negativ: <b>Nein, hier ist keine Küche.</b>
-</div><div class="step-note">Schreibe oder sprich eine ganze Frage mit ein/eine.</div>${comboPlaceRoom(t.place,t.room)}<div class="actions"><button id="mic" class="btn mic-btn" onclick="sayQ()">🎤 Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkQ()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+  area.innerHTML=`${progressHtml(FILE,IST_TASKS.length)}
+  <div class="question">Aufgabe ${number}: Bilde die Frage mit „Ist …?“</div>
+  <div class="step-note">Schreibe oder sprich eine ganze Frage mit ein/eine.</div>
+  ${comboPlaceRoom(t.place,t.room)}
+  <div class="actions"><button id="mic" class="btn mic-btn" onclick="sayQ()">🎤 Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div>
+  <div id="micStatus" class="mic-status"></div>
+  <div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkQ()">Kontrollieren</button></div>
+  <div id="fb" class="feedback"></div>`;
  }else{
-  area.innerHTML=`${progressHtml(FILE,IST_TASKS.length)}<div class="question">2. Antworte mit Ja oder Nein.</div><div class="step-note">Schreibe oder sprich einen ganzen Antwortsatz.</div>${comboPlaceRoom(t.place,actual)}<div class="actions"><button id="mic" class="btn mic-btn" onclick="sayA()">🎤 Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkA()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+  area.innerHTML=`${progressHtml(FILE,IST_TASKS.length)}
+  <div class="question">Aufgabe ${number}: Antworte mit Ja oder Nein.</div>
+  <div class="step-note">Schreibe oder sprich einen ganzen Antwortsatz.</div>
+  ${comboPlaceRoom(t.place,actual)}
+  <div class="actions"><button id="mic" class="btn mic-btn" onclick="sayA()">🎤 Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div>
+  <div id="micStatus" class="mic-status"></div>
+  <div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkA()">Kontrollieren</button></div>
+  <div id="fb" class="feedback"></div>`;
  }
 }
-function writeQ(){box.classList.remove("hidden")}function writeA(){box.classList.remove("hidden")}
+function writeQ(){box.classList.remove("hidden")}
+function writeA(){box.classList.remove("hidden")}
 function checkQText(txt){let t=IST_TASKS[i];if(okIstQuestion(txt,t)){phase="a";show()}else{let tr=markWrong(FILE,IST_TASKS.length);fb.innerHTML=feedbackForTry(tr,t.question,"Frage mit Ist + Ort + ein/eine");phase="q";}}
 function checkAText(txt){let t=IST_TASKS[i];if(okIstAnswer(txt,t)){markRight(FILE,IST_TASKS.length);phase="q";show()}else{let tr=markWrong(FILE,IST_TASKS.length);fb.innerHTML=feedbackForTry(tr,t.answer,"Ja/Nein und ein/kein");phase="a";}}
-function checkQ(){checkQText(ans.value)}function checkA(){checkAText(ans.value)}
+function checkQ(){checkQText(ans.value)}
+function checkA(){checkAText(ans.value)}
 function sayQ(){startMic(mic,txt=>{writeQ();ans.value=txt;checkQText(txt)})}
 function sayA(){startMic(mic,txt=>{writeA();ans.value=txt;checkAText(txt)})}
 show();

@@ -13,15 +13,27 @@ function full(w){return w.full}
 function wordById(id){return WORDS.find(w=>w.id===id)||{}}
 function fixImg(img){img.classList.add("missing");img.alt="Bild fehlt"}
 
-function header(title){
+function header(title,isThemeOverview=false){
  const h=document.querySelector(".topbar");
  if(!h)return;
- h.innerHTML=`<a class="brand" href="../../index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 4 · Thema 1</div></div></a>
+ const backHref=isThemeOverview ? "../index.html" : "index.html";
+ h.innerHTML=`<a class="brand" href="/index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 4 · Thema 1</div></div></a>
  <nav class="nav">
-   <a class="btn secondary" href="../index.html">← Zurück</a>
+   <a class="btn secondary" href="${backHref}">← Zurück</a>
    <a class="btn secondary" href="uebersicht.html">Übersicht</a>
    <a class="btn secondary" href="statistik.html">Statistik</a>
+   <button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>
  </nav>`;
+}
+
+function resetThemeProgress(){
+ if(!confirm("Möchten Sie wirklich alle Fortschritte in diesem Thema löschen?")) return;
+ Object.keys(localStorage).forEach(k=>{
+   if(k.startsWith(KEY) || k.startsWith("SP_L4_T1_EXAM_")){
+     localStorage.removeItem(k);
+   }
+ });
+ location.href="index.html";
 }
 
 function taskKey(file){return KEY+"_"+file}
@@ -33,7 +45,10 @@ function loadTask(file,total){
  let queue=[...Array(total).keys()].sort(()=>Math.random()-.5);
  return {total,queue,done:[],current:null,tries:0};
 }
-function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(st))}
+function saveTask(file,st){
+ localStorage.setItem(taskKey(file),JSON.stringify(st));
+ try{window.dispatchEvent(new CustomEvent("sprachpilot-progress",{detail:{file,st}}))}catch(e){}
+}
 function nextIndex(file,total){
  let st=loadTask(file,total);
  if(st.current===null||st.current===undefined){
@@ -51,7 +66,6 @@ function markRight(file,total){
 function markWrong(file,total){
  let st=loadTask(file,total);
  st.tries=(st.tries||0)+1;
- // Niemals automatisch weitergehen: Die Aufgabe bleibt, bis die richtige Antwort gegeben wurde.
  saveTask(file,st);
  return st.tries;
 }
