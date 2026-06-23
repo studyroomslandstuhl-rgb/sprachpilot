@@ -120,30 +120,19 @@ footer{text-align:center;color:white;margin-top:20px}
   .imgbox{width:128px;height:128px}
 }
 
-.exam-done-box{
-  margin-top:16px;
-  background:#fff8dc;
-  border:2px solid #ffd966;
-  border-radius:18px;
-  padding:14px;
-  text-align:center;
-  font-size:18px;
-  line-height:1.5;
+.neg-target{
+  position:relative;
+  border:3px solid #e74c3c!important;
 }
-.exam-done-box.muted{background:#f5f6fa;border-color:#e6e9ff;color:#667085}
-.stars{
-  font-size:28px;
-  color:#f5b301;
-  letter-spacing:2px;
-  white-space:nowrap;
+.neg-target .cross{
+  position:absolute;
+  inset:0;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:70px;
+  font-weight:900;
+  color:#e74c3c;
+  background:rgba(255,255,255,.45);
+  pointer-events:none;
 }
-
-.stars-card{
-  background:linear-gradient(135deg,#fff8dc,#fff);
-  border:2px solid #ffd966;
-  border-radius:22px;
-  padding:16px;
-  text-align:center;
-  box-shadow:0 8px 22px rgba(0,0,0,.08);
-}
-.stars-card .big-stars{font-size:36px;color:#f5b301;letter-spacing:3px}

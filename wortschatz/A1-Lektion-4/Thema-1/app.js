@@ -43,7 +43,7 @@ function loadTask(file,total){
   if(st&&st.total===total&&Array.isArray(st.queue)&&Array.isArray(st.done))return st;
  }catch(e){}
  let queue=[...Array(total).keys()].sort(()=>Math.random()-.5);
- return {total,queue,done:[],current:null,tries:0};
+ return {total,queue,done:[],current:null,tries:0,hadWrong:false};
 }
 function saveTask(file,st){
  localStorage.setItem(taskKey(file),JSON.stringify(st));
@@ -59,13 +59,32 @@ function nextIndex(file,total){
 }
 function markRight(file,total){
  let st=loadTask(file,total);
- if(st.current!==null&&!st.done.includes(st.current))st.done.push(st.current);
- st.current=null;st.tries=0;saveTask(file,st);
+ const current=st.current;
+
+ if(current!==null && current!==undefined){
+   if(st.hadWrong || (st.tries||0)>0){
+     // Nach Fehlern wird die Aufgabe zwar nach richtiger Korrektur verlassen,
+     // aber nicht als gelernt gezählt. Sie kommt später nochmal.
+     if(!st.done.includes(current) && !st.queue.includes(current)){
+       st.queue.push(current);
+     }
+   }else{
+     // Nur fehlerfrei beim ersten Versuch zählt als Fortschritt.
+     if(!st.done.includes(current)) st.done.push(current);
+   }
+ }
+
+ st.current=null;
+ st.tries=0;
+ st.hadWrong=false;
+ saveTask(file,st);
  return st.done.length>=total;
 }
 function markWrong(file,total){
  let st=loadTask(file,total);
  st.tries=(st.tries||0)+1;
+ st.hadWrong=true;
+ // Nicht automatisch weitergehen: Die aktuelle Aufgabe bleibt stehen.
  saveTask(file,st);
  return st.tries;
 }
@@ -90,18 +109,36 @@ function speak(text,slow=false){
  const msg=String(text||"").trim();
  if(!msg)return;
  if(!("speechSynthesis" in window)){alert("Dein Browser unterstützt Vorlesen nicht.");return}
- function run(){
-  speechSynthesis.cancel();
-  const u=new SpeechSynthesisUtterance(msg);
-  u.lang="de-DE";
-  u.rate=slow?0.65:0.9;
-  const voices=speechSynthesis.getVoices?speechSynthesis.getVoices():[];
-  const de=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith("de"));
-  if(de)u.voice=de;
-  speechSynthesis.speak(u);
+
+ function pickGermanVoice(){
+   const voices=speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
+   return (
+     voices.find(v=>v.lang==="de-DE" && /google|microsoft|anna|katja|deutsch|german/i.test(v.name||"")) ||
+     voices.find(v=>v.lang==="de-DE") ||
+     voices.find(v=>String(v.lang||"").toLowerCase().startsWith("de")) ||
+     null
+   );
  }
- const voices=speechSynthesis.getVoices?speechSynthesis.getVoices():[];
- if(voices.length===0&&"onvoiceschanged" in speechSynthesis){speechSynthesis.onvoiceschanged=run;setTimeout(run,250)}else run();
+
+ function run(){
+   speechSynthesis.cancel();
+   const u=new SpeechSynthesisUtterance(msg);
+   u.lang="de-DE";
+   u.rate=slow?0.68:0.86;
+   u.pitch=1;
+   u.volume=1;
+   const voice=pickGermanVoice();
+   if(voice) u.voice=voice;
+   speechSynthesis.speak(u);
+ }
+
+ const voices=speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
+ if(!voices.length && "onvoiceschanged" in speechSynthesis){
+   speechSynthesis.onvoiceschanged=run;
+   setTimeout(run,300);
+ }else{
+   run();
+ }
 }
 
 function startMic(btn,callback){
@@ -131,15 +168,30 @@ function comboPlaceRoom(place,roomId){
  return `<div class="imgrow">${placeImg(place,place)}<div class="plus">+</div>${roomImg(roomId,false)}</div>`;
 }
 
+function negComboPlaceRoom(place,wrongRoomId,actualRoomId){
+ const wrong=wordById(wrongRoomId);
+ const actual=wordById(actualRoomId);
+ return `<div class="imgrow">
+  <div class="imgbox neg-target"><img src="${wrong.image}" onerror="fixImg(this)" alt=""><div class="cross">✕</div></div>
+  <div class="plus">→</div>
+  ${placeImg(place,place)}
+  <div class="plus">+</div>
+  <div class="imgbox"><img src="${actual.image}" onerror="fixImg(this)" alt=""></div>
+ </div>`;
+}
+
+
 function okWoQuestion(ans,t){
  const w=wordById(t.room);
  let a=simple(ans);
- return a.startsWith("wo ist") && (a.includes(simple(w.full)) || a.includes(simple(w.word)));
+ // Muss sein: "Wo ist die Küche?" / "Wo ist das Bad?" / "Wo ist der Flur?"
+ return a.startsWith("wo ist") && a.includes(simple(w.full));
 }
 function okWoAnswer(ans,t){
  const w=wordById(t.room);
  let a=simple(ans);
- return (a.includes(simple(w.full))||a.includes(simple(w.word))) && a.includes(simple(t.place));
+ // Antwort muss bestimmten Artikel enthalten: "Die Küche ist hier."
+ return a.includes(simple(w.full)) && a.includes(simple(t.place));
 }
 function indefinite(w){
  if(w.article==="die")return"eine "+w.word;
@@ -153,33 +205,30 @@ function negIndef(w){
 function okIstQuestion(ans,t){
  const w=wordById(t.room);
  let a=simple(ans);
- return a.startsWith("ist "+t.place) && (a.includes(simple(indefinite(w)))||a.includes(simple(w.word)));
+ // Muss sein: "Ist hier eine Küche?" / "Ist da ein Flur?"
+ return a.startsWith("ist "+simple(t.place)) && a.includes(simple(indefinite(w)));
 }
 function okIstAnswer(ans,t){
  const w=wordById(t.room);
  let a=simple(ans);
  const place=simple(t.place);
- const full=simple(w.full);
- const word=simple(w.word);
- const indef=simple(indefinite(w));
- const neg=simple(negIndef(w));
 
  if(t.positive){
-  return a.startsWith("ja") && a.includes(place) &&
-    (a.includes(full) || a.includes(word) || a.includes(indef));
+  // Positive Antwort: "Ja, hier ist die Küche."
+  return a.startsWith("ja") && a.includes(place) && a.includes(simple(w.full));
  }
 
- // Akzeptiert:
- // Nein, hier ist keine Küche.
- // Nein, hier ist kein Balkon.
- // Die Küche ist nicht hier.
- // Hier ist nicht die Küche.
- const startsNein=a.startsWith("nein");
- const hasNegEin=a.includes(neg) || a.includes("kein") || a.includes("keine");
- const hasWord=a.includes(full) || a.includes(word);
- const notHere=hasWord && a.includes("nicht") && a.includes(place);
+ const actual=wordById(t.actual);
+ const targetNeg=simple(negIndef(w));       // keine Toilette / kein Balkon
+ const actualIndef=simple(indefinite(actual)); // eine Küche / ein Flur
 
- return (startsNein && a.includes(place) && (hasNegEin || notHere || hasWord)) || notHere;
+ // Negative Antwort:
+ // "Nein, hier ist keine Toilette. Hier ist eine Küche."
+ return a.startsWith("nein") &&
+        a.includes(place) &&
+        a.includes(targetNeg) &&
+        actual && actual.id &&
+        a.includes(actualIndef);
 }
 
 

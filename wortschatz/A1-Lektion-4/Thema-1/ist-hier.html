@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ist …?</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=42"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ist …?</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=70"></script><script>
 header("Ist hier/da/dort …?");
 const FILE="ist-hier.html";
 let i=0,phase="example";
@@ -39,8 +39,8 @@ function show(){
  }else{
   area.innerHTML=`${progressHtml(FILE,IST_TASKS.length)}
   <div class="question">Aufgabe ${number}: Antworte mit Ja oder Nein.</div>
-  <div class="step-note">Schreibe oder sprich einen ganzen Antwortsatz.</div>
-  ${comboPlaceRoom(t.place,actual)}
+  <div class="step-note">Schreibe oder sprich einen ganzen Antwortsatz. Bei ✕: Nein, hier ist kein/keine … Hier ist ein/eine …</div>
+  ${t.positive ? comboPlaceRoom(t.place,actual) : negComboPlaceRoom(t.place,t.room,t.actual)}
   <div class="actions"><button id="mic" class="btn mic-btn" onclick="sayA()">🎤 Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div>
   <div id="micStatus" class="mic-status"></div>
   <div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkA()">Kontrollieren</button></div>
