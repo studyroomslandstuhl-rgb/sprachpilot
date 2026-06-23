@@ -13,13 +13,12 @@ function full(w){return w.full}
 function wordById(id){return WORDS.find(w=>w.id===id)||{}}
 function fixImg(img){img.classList.add("missing");img.alt="Bild fehlt"}
 
-function header(title,isThemeOverview=false){
+function header(title){
  const h=document.querySelector(".topbar");
  if(!h)return;
- const backHref=isThemeOverview ? "../index.html" : "index.html";
- h.innerHTML=`<a class="brand" href="/index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 4 · Thema 1</div></div></a>
+ h.innerHTML=`<a class="brand" href="../../index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 4 · Thema 1</div></div></a>
  <nav class="nav">
-   <a class="btn secondary" href="${backHref}">← Zurück</a>
+   <a class="btn secondary" href="../index.html">← Zurück</a>
    <a class="btn secondary" href="uebersicht.html">Übersicht</a>
    <a class="btn secondary" href="statistik.html">Statistik</a>
  </nav>`;
@@ -52,7 +51,7 @@ function markRight(file,total){
 function markWrong(file,total){
  let st=loadTask(file,total);
  st.tries=(st.tries||0)+1;
- if(st.tries>=2&&st.current!==null){st.queue.push(st.current);st.current=null}
+ // Niemals automatisch weitergehen: Die Aufgabe bleibt, bis die richtige Antwort gegeben wurde.
  saveTask(file,st);
  return st.tries;
 }
@@ -70,7 +69,7 @@ function complete(area,file,next){
 function feedbackForTry(tries,solution,type){
  if(tries===1)return"Da ist noch ein Fehler.";
  if(tries===2)return"Tipp: Prüfe "+(type||"Form und Schreibweise")+".";
- return"Lösung: "+solution;
+ return"Lösung: "+solution+"<br><b>Bitte gib jetzt die richtige Antwort ein. Erst dann geht es weiter.</b>";
 }
 
 function speak(text,slow=false){
@@ -145,15 +144,40 @@ function okIstQuestion(ans,t){
 function okIstAnswer(ans,t){
  const w=wordById(t.room);
  let a=simple(ans);
+ const place=simple(t.place);
+ const full=simple(w.full);
+ const word=simple(w.word);
+ const indef=simple(indefinite(w));
+ const neg=simple(negIndef(w));
+
  if(t.positive){
-  return a.startsWith("ja") && a.includes(simple(t.place)) && (a.includes(simple(w.full))||a.includes(simple(w.word)));
+  return a.startsWith("ja") && a.includes(place) &&
+    (a.includes(full) || a.includes(word) || a.includes(indef));
  }
- return a.startsWith("nein") && a.includes(simple(t.place)) && (a.includes(simple(negIndef(w)))||a.includes(simple("kein"))||a.includes(simple("keine")));
+
+ // Akzeptiert:
+ // Nein, hier ist keine Küche.
+ // Nein, hier ist kein Balkon.
+ // Die Küche ist nicht hier.
+ // Hier ist nicht die Küche.
+ const startsNein=a.startsWith("nein");
+ const hasNegEin=a.includes(neg) || a.includes("kein") || a.includes("keine");
+ const hasWord=a.includes(full) || a.includes(word);
+ const notHere=hasWord && a.includes("nicht") && a.includes(place);
+
+ return (startsNein && a.includes(place) && (hasNegEin || notHere || hasWord)) || notHere;
 }
 
 
 function currentMotherLang(){
- const raw=localStorage.getItem("SP_MOTHER_LANGUAGE_CODE")||localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru";
+ let fromProfile="";
+ try{
+   const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");
+   if(p){
+     fromProfile=p.motherLanguageCode||p.muttersprache||p.motherLanguage||"";
+   }
+ }catch(e){}
+ const raw=fromProfile||localStorage.getItem("SP_MOTHER_LANGUAGE_CODE")||localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru";
  const n=String(raw).trim().toLowerCase();
  const map={
   "arabisch":"ar","russisch":"ru","englisch":"en","ukrainisch":"uk","kurdisch":"ku","türkisch":"tr","tuerkisch":"tr",
