@@ -122,12 +122,10 @@ export function requireLogin(){
     location.href="/login/?redirect="+encodeURIComponent(target);
     return null;
   }
-
   if(p.teacherMode){
     renderAccountStrip();
     return p;
   }
-
   refreshActiveProfile().then(()=>renderAccountStrip()).catch(()=>{});
   return p;
 }
