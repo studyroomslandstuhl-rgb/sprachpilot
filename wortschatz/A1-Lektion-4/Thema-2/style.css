@@ -136,3 +136,31 @@ footer{text-align:center;color:white;margin-top:20px}
   background:rgba(255,255,255,.45);
   pointer-events:none;
 }
+
+/* Dialoge – kleines Bild im Satz, großer Satz */
+.small-inline-img{
+  width:60px;
+  height:60px;
+  object-fit:contain;
+  vertical-align:middle;
+}
+
+.dialog-line{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-size:28px;
+  font-weight:700;
+  line-height:1.5;
+  text-align:center;
+}
+
+.gap-input{
+  min-width:220px;
+}
+
+.question{
+  font-size:34px;
+}
