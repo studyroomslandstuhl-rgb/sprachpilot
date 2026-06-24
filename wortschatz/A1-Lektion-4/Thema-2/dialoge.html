@@ -1,4 +1,20 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dialoge</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=100"></script><script>header("Dialoge");
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dialoge</title><link rel="stylesheet" href="style.css">
+<style>
+.small-inline-img{
+  width:60px;
+  height:60px;
+  object-fit:contain;
+}
+.dialog-line{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  flex-wrap:wrap;
+  font-size:28px;
+  font-weight:700;
+}
+</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=100"></script><script>header("Dialoge");
 const FILE="dialoge.html";
 let i=0;
 
@@ -20,14 +36,14 @@ function show(){
  <div class="step-note">Erste Lücke: Wort mit Artikel. Zweite Lücke: er / es / sie.</div>
 
  <div class="gap-dialog">
-   <div class="gap-line">
+   <div class="gap-line dialog-line">
      <span>Ist</span>
      <input id="noun" class="gap-input" placeholder="Schreiben Sie die Antwort hier">
      <img class="small-inline-img" src="${w.image}" onerror="fixImg(this)" alt="">
      <span>${firstRest}?</span>
    </div>
 
-   <div class="gap-line">
+   <div class="gap-line dialog-line">
      <span>${secondParts[0]}</span>
      <input id="pronoun" class="gap-input" placeholder="Schreiben Sie die Antwort hier">
      <span>${secondParts[1] || ""}</span>
