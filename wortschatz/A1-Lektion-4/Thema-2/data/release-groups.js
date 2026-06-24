@@ -1,1 +1,8 @@
-export const RELEASE_GROUPS={book:{label:"Buchwortschatz"},extra:{label:"Zusatzwortschatz"}};
+export const RELEASE_GROUPS = {
+  "book": {
+    "label": "Im Buch"
+  },
+  "extra": {
+    "label": "Nicht im Buch"
+  }
+};
