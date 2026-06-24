@@ -250,7 +250,7 @@ export function renderAccountStrip(rootId="accountStrip"){
     <div class="account-links">
       <a href="/dashboard/">📊 Dashboard</a>
       <a href="/profile/">👤 Profil</a>
-      <button onclick="logout()">🚪 Abmelden</button>
+      <button onclick="logout()">Abmelden</button>
     </div>
   `;
 }  const el=document.getElementById(rootId);
