@@ -6,160 +6,199 @@
 <title>SprachPilot – Dashboard</title>
 <link rel="stylesheet" href="../style.css">
 <style>
-.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:16px}
+.dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:16px;margin-top:16px}
 .dash-card{background:white;border-radius:22px;padding:18px;box-shadow:0 10px 26px rgba(0,0,0,.12);border:2px solid #eef2ff}
 .dash-card h3{color:#667eea;margin-bottom:8px}
+.lesson-card{background:#f8f9ff;border:2px solid #eef2ff;border-radius:18px;margin:12px 0;padding:12px}
+.lesson-card summary{font-weight:900;color:#333;cursor:pointer}
+.theme-card{background:white;border:1px solid #e6e9ff;border-radius:16px;margin:10px 0;padding:12px}
+.theme-head{display:flex;justify-content:space-between;gap:10px;align-items:center}
+.task-list,.word-list{display:flex;flex-wrap:wrap;gap:6px;margin-top:8px}
+.pill{display:inline-block;border-radius:999px;padding:5px 9px;font-size:12px;font-weight:800;background:#eef2ff;color:#333}
+.pill.done{background:#d9f7e8;color:#166534}.pill.locked{background:#eee;color:#777}.pill.exam{background:#fff3cd;border:1px solid #ffc107;color:#7a5400}
 .star-total{font-size:44px;color:#f5b301;letter-spacing:3px;text-align:center;font-weight:900}
 .star-line{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #eee;padding:8px 0;align-items:center}
-.locked{opacity:.55;filter:grayscale(.3)}
-.quick-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
-.topic-status{font-size:13px;color:#666;margin-top:4px}
+.topic-status{font-size:13px;color:#666;margin-top:4px}.small-muted{font-size:13px;color:#777;line-height:1.45}
 </style>
 </head>
 <body>
 <div id="accountStrip" class="account-strip"></div>
-
 <div class="container">
 <section class="hero">
   <a href="/index.html" style="text-decoration:none;color:inherit"><h1>SprachPilot</h1></a>
   <p class="subtitle">Dein Dashboard</p>
 </section>
-
-<section class="card">
-  <h2>Dein Lernstand</h2>
-  <div id="studentBox">Dashboard wird geladen …</div>
-</section>
-
+<section class="card"><h2>Dein Lernstand</h2><div id="studentBox">Dashboard wird geladen …</div></section>
 <section class="dash-grid" id="dashGrid"></section>
-
 <footer>© SprachPilot</footer>
 </div>
 
 <script type="module">
-import { getActiveProfile, logout, safeText, renderAccountStrip } from "../js/auth.js?v=dashfix2";
+import { getActiveProfile, logout, safeText, renderAccountStrip } from "../js/auth.js?v=dashrelease1";
+import { db, doc, getDoc } from "../js/firebase.js";
 window.logout=logout;
 
-function examHistory(key){
-  try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}
+const CATALOG={
+  wortschatz:{
+    title:"Wortschatz",
+    lessons:{
+      "A1-Lektion-4":{
+        title:"A1 Lektion 4 · Wohnung",
+        href:"../wortschatz/A1-Lektion-4/",
+        themes:{
+          "Thema-1":{
+            title:"Thema 1 · Wohnung & Zimmer",
+            href:"../wortschatz/A1-Lektion-4/Thema-1/",
+            examKey:"SP_L4_T1_EXAM_HISTORY_V1",
+            tasks:{
+              "karteikarten":"Karteikarten","hoeren":"Hören","artikel-klick":"Artikel klicken","artikel":"Artikel schreiben","plural":"Plural",
+              "bild-wort":"Bild → Wort","wort-bild":"Wort → Bild","wo-ist":"Wo ist …?","ist-hier":"Ist hier …?"
+            },
+            words:["Haus","Wohnung","Zimmer","Küche","Bad","Toilette","Wohnzimmer","Schlafzimmer","Kinderzimmer","Arbeitszimmer","Flur","Balkon","Garten","Garage","hier","da","dort"]
+          },
+          "Thema-2":{title:"Thema 2",href:"../wortschatz/A1-Lektion-4/Thema-2/",examKey:"SP_L4_T2_EXAM_HISTORY_V1",tasks:{},words:[]},
+          "Thema-3":{title:"Thema 3",href:"../wortschatz/A1-Lektion-4/Thema-3/",examKey:"SP_L4_T3_EXAM_HISTORY_V1",tasks:{},words:[]},
+          "Thema-4":{title:"Thema 4",href:"../wortschatz/A1-Lektion-4/Thema-4/",examKey:"SP_L4_T4_EXAM_HISTORY_V1",tasks:{},words:[]}
+        }
+      }
+    }
+  }
+};
+
+function getProfileFallback(){
+  let p=getActiveProfile();
+  if(p) return p;
+  try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}
 }
+async function loadCourseData(profile){
+  const code=profile?.kurs||profile?.kursnummer||profile?.courseCode;
+  let data=profile?.assignments||{};
+  if(!code) return data;
+  try{
+    const snap=await getDoc(doc(db,"courses",String(code)));
+    if(snap.exists()) data={...data,...snap.data()};
+  }catch(e){console.warn("Kursdaten konnten nicht geladen werden:",e)}
+  return data||{};
+}
+function examHistory(key){try{return JSON.parse(localStorage.getItem(key)||"[]")}catch(e){return[]}}
 function bestExam(key){
   const h=examHistory(key);
   if(!h.length)return null;
   return h.reduce((best,x)=>(!best||Number(x.percent||0)>Number(best.percent||0)?x:best),null);
 }
-function starsForPercent(p){
-  p=Number(p||0);
-  if(p>=100)return 3;
-  if(p>=70)return 2;
-  if(p>=50)return 1;
-  return 0;
+function starsForPercent(p){p=Number(p||0);if(p>=100)return 3;if(p>=70)return 2;if(p>=50)return 1;return 0}
+function starsHtml(n){n=Number(n||0);return "★".repeat(n)+"☆".repeat(3-n)}
+function legacyIsOn(obj,key){if(!obj)return true;return obj[key]!==false}
+
+function getRelease(courseData,moduleKey,lessonKey,themeKey){
+  const releases=courseData.releases||courseData.release||{};
+  const mod=releases[moduleKey]||{};
+  const lesson=(mod.lessons||mod.lektionen||{})[lessonKey]||{};
+  const theme=(lesson.themes||lesson.themen||{})[themeKey]||{};
+  return {
+    lessonOn: lesson.enabled!==false && legacyIsOn(courseData.enabledLessons,`${moduleKey}/${lessonKey}`),
+    themeOn: theme.enabled!==false && legacyIsOn(courseData.enabledThemes,`${moduleKey}/${lessonKey}/${themeKey}`),
+    tasks: theme.tasks || theme.aufgaben || {},
+    words: theme.words || theme.woerter || {}
+  };
 }
-function starsHtml(n){
-  n=Number(n||0);
-  return "★".repeat(n)+"☆".repeat(3-n);
-}
-
-const availableTopics=[
-  {title:"Lektion 4 · Thema 1", key:"SP_L4_T1_EXAM_HISTORY_V1", max:3, href:"../wortschatz/A1-Lektion-4/Thema-1/"},
-  {title:"Lektion 4 · Thema 2", key:"SP_L4_T2_EXAM_HISTORY_V1", max:3, href:"../wortschatz/A1-Lektion-4/Thema-2/"},
-  {title:"Lektion 4 · Thema 3", key:"SP_L4_T3_EXAM_HISTORY_V1", max:3, href:"../wortschatz/A1-Lektion-4/Thema-3/"},
-  {title:"Lektion 4 · Thema 4", key:"SP_L4_T4_EXAM_HISTORY_V1", max:3, href:"../wortschatz/A1-Lektion-4/Thema-4/"}
-];
-
-function moduleEnabled(p,name){
-  const c=p?.assignments||{};
-  return c.enabledModules?.[name]!==false;
-}
-
-function getProfileFallback(){
-  let p=getActiveProfile();
-  if(p) return p;
-
-  try{
-    p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");
-    if(p) return p;
-  }catch(e){}
-
+function taskProgressKey(themeHref,taskKey){
+  if(themeHref.includes("Thema-1")) return "SP_L4T1_"+taskKey+".html";
   return null;
 }
+function localTaskPercent(themeHref,taskKey){
+  const k=taskProgressKey(themeHref,taskKey);
+  if(!k)return 0;
+  try{
+    const st=JSON.parse(localStorage.getItem(k)||"null");
+    if(!st||!st.total)return 0;
+    return Math.round((st.done?.length||0)/st.total*100);
+  }catch(e){return 0}
+}
+function allReleasedTasksComplete(theme,release){
+  const taskKeys=Object.keys(theme.tasks||{});
+  const released=taskKeys.filter(k=>release.tasks?.[k]!==false);
+  if(!released.length)return false;
+  return released.every(k=>localTaskPercent(theme.href,k)>=100);
+}
 
-function moduleCard(title,desc,href,enabled){
-  return `
-    <div class="dash-card ${enabled?'':'locked'}">
-      <h3>${title}</h3>
-      <p>${enabled?desc:"Noch nicht freigeschaltet."}</p>
-      <div class="quick-links">
-        ${enabled?`<a class="btn" href="${href}">Öffnen</a>`:`<span class="badge">Gesperrt</span>`}
-      </div>
-    </div>
-  `;
+function renderStarsCard(courseData){
+  let earned=0, possible=0, lines=[];
+  for(const [moduleKey,module] of Object.entries(CATALOG)){
+    for(const [lessonKey,lesson] of Object.entries(module.lessons)){
+      for(const [themeKey,theme] of Object.entries(lesson.themes)){
+        const release=getRelease(courseData,moduleKey,lessonKey,themeKey);
+        if(!release.lessonOn || !release.themeOn) continue;
+        possible+=3;
+        const best=bestExam(theme.examKey);
+        const stars=best?starsForPercent(best.percent):0;
+        earned+=stars;
+        lines.push(`<div class="star-line"><span>${safeText(lesson.title)}<br><span class="topic-status">${safeText(theme.title)} · ${best?best.percent+"%":"noch offen"}</span></span><b>${starsHtml(stars)}</b></div>`);
+      }
+    }
+  }
+  if(possible===0) lines.push(`<p class="small-muted">Noch keine Themen freigeschaltet.</p>`);
+  return `<div class="dash-card"><h3>Gesammelte Sterne</h3><div class="star-total">${earned} / ${possible}</div>${lines.join("")}</div>`;
+}
+
+function renderWortschatz(courseData){
+  const moduleKey="wortschatz", module=CATALOG[moduleKey];
+  let lessonsHtml="";
+  for(const [lessonKey,lesson] of Object.entries(module.lessons)){
+    const anyTheme=Object.keys(lesson.themes).some(themeKey=>{
+      const r=getRelease(courseData,moduleKey,lessonKey,themeKey);
+      return r.lessonOn && r.themeOn;
+    });
+    if(!anyTheme) continue;
+    lessonsHtml+=`<details class="lesson-card" open><summary>${safeText(lesson.title)}</summary>`;
+    for(const [themeKey,theme] of Object.entries(lesson.themes)){
+      const r=getRelease(courseData,moduleKey,lessonKey,themeKey);
+      if(!r.lessonOn || !r.themeOn) continue;
+      const best=bestExam(theme.examKey);
+      const releasedTasks=Object.keys(theme.tasks||{}).filter(k=>r.tasks?.[k]!==false);
+      const examOpen=allReleasedTasksComplete(theme,r);
+      const tasksHtml=releasedTasks.length
+        ? releasedTasks.map(k=>`<span class="pill ${localTaskPercent(theme.href,k)>=100?'done':''}">${safeText(theme.tasks[k])}: ${localTaskPercent(theme.href,k)}%</span>`).join("")
+        : `<span class="pill">Aufgaben werden später angezeigt</span>`;
+      const wordsArr=Object.keys(r.words||{}).length ? Object.entries(r.words).filter(([_,on])=>on!==false).map(([w])=>w) : (theme.words||[]);
+      const wordsHtml=wordsArr.length ? wordsArr.map(w=>`<span class="pill">${safeText(w)}</span>`).join("") : `<span class="pill locked">Wörter nicht einzeln begrenzt</span>`;
+      lessonsHtml+=`
+        <div class="theme-card">
+          <div class="theme-head">
+            <div><b>${safeText(theme.title)}</b><div class="topic-status">${best?`Prüfung: ${best.percent}% · ${starsHtml(starsForPercent(best.percent))}`:`Prüfung: ${examOpen?"freigeschaltet":"noch gesperrt"}`}</div></div>
+            <a class="btn secondary" href="${theme.href}">Öffnen</a>
+          </div>
+          <h4>Aufgaben</h4><div class="task-list">${tasksHtml}<span class="pill exam">Prüfung: ${examOpen?"offen":"automatisch gesperrt"}</span></div>
+          <h4>Wörter</h4><div class="word-list">${wordsHtml}</div>
+        </div>`;
+    }
+    lessonsHtml+=`</details>`;
+  }
+  if(!lessonsHtml) lessonsHtml=`<p class="small-muted">Noch keine Wortschatz-Lektionen freigeschaltet.</p>`;
+  return `<div class="dash-card"><h3>Wortschatz</h3>${lessonsHtml}</div>`;
+}
+function renderSimpleModule(title,href){
+  return `<div class="dash-card"><h3>${title}</h3><p class="small-muted">Modul ist sichtbar. Inhalte werden später über Lektion/Thema/Aufgabe gesteuert.</p><a class="btn" href="${href}">Öffnen</a></div>`;
 }
 
 async function init(){
-  if(localStorage.getItem("SP_TEACHER_MODE")==="1"){
-    location.href="../teacher/index.html";
-    return;
-  }
-
-  let p=getProfileFallback();
-
+  if(localStorage.getItem("SP_TEACHER_MODE")==="1"){location.href="../teacher/index.html";return}
+  const p=getProfileFallback();
   if(!p){
-    studentBox.innerHTML=`
-      <div class="no">
-        Profil konnte nicht geladen werden. Bitte erneut einloggen.
-        <br><a class="btn secondary" href="../login/?redirect=/dashboard/">Zum Login</a>
-      </div>
-    `;
+    studentBox.innerHTML=`<div class="no">Profil konnte nicht geladen werden. Bitte erneut einloggen.<br><a class="btn secondary" href="../login/?redirect=/dashboard/">Zum Login</a></div>`;
     return;
   }
-
   renderAccountStrip();
-
-  studentBox.innerHTML=`
-    <div class="ok">
-      <strong>Eingeloggt:</strong> ${safeText(p.vorname||"")} ${safeText(p.nachname||"")}<br>
-      Kurs: ${safeText(p.kurs||"")} · Muttersprache: ${safeText(p.muttersprache||"")}
-    </div>
-  `;
-
-  let earned=0;
-  let possible=0;
-
-  const topicLines=availableTopics.map(t=>{
-    possible+=t.max;
-    const best=bestExam(t.key);
-    const stars=best?starsForPercent(best.percent):0;
-    earned+=stars;
-    return `
-      <div class="star-line">
-        <span>
-          ${t.title}
-          <div class="topic-status">${best?`Prüfung: ${best.percent}% · ${best.score||0}/${best.maxScore||0} Punkte`:"noch keine Prüfung"}</div>
-        </span>
-        <b>${starsHtml(stars)}</b>
-      </div>
-    `;
-  }).join("");
-
-  const fragen=moduleEnabled(p,"Fragen A1");
-  const wortschatz=moduleEnabled(p,"Wortschatz");
-  const verben=moduleEnabled(p,"Verben A1");
-  const grammatik=moduleEnabled(p,"Grammatik");
-
+  const courseData=await loadCourseData(p);
+  studentBox.innerHTML=`<div class="ok"><strong>Eingeloggt:</strong> ${safeText(p.vorname||"")} ${safeText(p.nachname||"")}<br>Kurs: ${safeText(p.kurs||"")} · Muttersprache: ${safeText(p.muttersprache||"")}</div>`;
   dashGrid.innerHTML=`
-    <div class="dash-card">
-      <h3>Gesammelte Sterne</h3>
-      <div class="star-total">${earned} / ${possible}</div>
-      ${topicLines}
-    </div>
-
-    ${moduleCard("Fragen A1","Fragen und Antworten üben.","../fragen-A1/",fragen)}
-    ${moduleCard("Wortschatz","Wortschatz-Lektionen und Themen üben.","../wortschatz/",wortschatz)}
-    ${moduleCard("Verben A1","Verben mit Bildern, Schreiben, Hören und Sprechen.","../verben-A1/",verben)}
-    ${moduleCard("Grammatik","Grammatikübungen.","../grammatik/",grammatik)}
+    ${renderStarsCard(courseData)}
+    ${renderWortschatz(courseData)}
+    ${renderSimpleModule("Fragen A1","../fragen-A1/")}
+    ${renderSimpleModule("Verben A1","../verben-A1/")}
+    ${renderSimpleModule("Grammatik","../grammatik/")}
   `;
 }
-
 init();
 </script>
 </body>
