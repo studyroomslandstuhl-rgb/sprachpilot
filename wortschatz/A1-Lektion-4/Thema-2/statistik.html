@@ -1,4 +1,24 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Statistik – Thema 2</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><section class="card"><h2>Statistik – Wörter</h2><p class="small">Lernstand pro Wort.</p></section><section class="stat-grid" id="stats"></section><footer>© SprachPilot</footer></div><script src="app.js?v=30"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Statistik – Thema 2</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><section class="card"><h2>Statistik – Thema 2</h2><p class="small">Fortschritt pro Wort.</p></section><section id="list"></section><footer>© SprachPilot</footer></div><script src="app.js?v=50"></script><script>
 header("Statistik");
-stats.innerHTML=WORDS.map(w=>{const p=wordProgress(w.id);return `<div class="stat-card"><div class="stat-head"><img src="${w.image}" onerror="fixImg(this)"><div><div class="stat-word">${w.full}</div><div class="stat-tr">${translateWord(w)}</div></div></div><div class="progress"><div class="bar" style="width:${p}%"></div></div><b>${p}%</b> · <span class="status-pill">${wordStatus(p)}</span></div>`}).join("");
+function groupOf(w){return w.releaseGroup || (w.set==="plus" ? "extra" : "book")}
+function labelOf(g){return g==="book" ? "Im Buch" : "Nicht im Buch"}
+
+list.innerHTML=["book","extra"].map(g=>{
+ const arr=WORDS.filter(w=>groupOf(w)===g);
+ if(!arr.length)return "";
+ return `<div class="word-section">
+  <span class="group-badge ${g}">${labelOf(g)}</span>
+  <div class="word-overview-grid">
+   ${arr.map(w=>{
+    const p=wordProgress(w.id);
+    return `<div class="word-card">
+      <img src="${w.image}" onerror="fixImg(this)" alt="">
+      <div class="word-de">${w.full}</div>
+      <div class="word-meta">Status: <b>${wordStatus(p)}</b><br>Fortschritt: <b>${p}%</b><br>Gruppe: <b>${labelOf(groupOf(w))}</b></div>
+      <div class="progress"><div class="bar" style="width:${p}%"></div></div>
+    </div>`;
+   }).join("")}
+  </div>
+ </div>`;
+}).join("");
 </script></body></html>

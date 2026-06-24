@@ -35,6 +35,16 @@ function resetThemeProgress(){
  location.href="index.html";
 }
 
+function resetThemeProgress(){
+ if(!confirm("Möchten Sie wirklich alle Fortschritte in diesem Thema löschen?")) return;
+ Object.keys(localStorage).forEach(k=>{
+   if(k.startsWith(KEY) || k.startsWith("SP_L4_T2_EXAM_")){
+     localStorage.removeItem(k);
+   }
+ });
+ location.href="index.html";
+}
+
 function taskKey(file){return KEY+"_"+file}
 function loadTask(file,total){
  try{let st=JSON.parse(localStorage.getItem(taskKey(file))||"null");if(st&&st.total===total&&Array.isArray(st.queue)&&Array.isArray(st.done))return st;}catch(e){}

@@ -141,3 +141,11 @@ footer{text-align:center;color:white;margin-top:20px}
 .example-box{background:#fff8dc;border:2px solid #ffd966;border-radius:16px;padding:12px;margin:10px 0 14px;line-height:1.5}
 .example-box b{color:#7a5400}
 .step-note{background:#eef2ff;border-left:5px solid #667eea;border-radius:12px;padding:10px;margin:10px 0;color:#333}
+
+.word-section{margin:18px 0}
+.word-section h3{color:#667eea;margin-bottom:10px}
+.group-badge{display:inline-block;border-radius:999px;padding:5px 10px;font-size:12px;font-weight:900;margin-bottom:8px}
+.group-badge.book{background:#d9f7e8;color:#166534;border:1px solid #8ce0b3}
+.group-badge.extra{background:#fff3cd;color:#7a5400;border:1px solid #ffc107}
+.word-card .word-meta{line-height:1.45}
+.module.locked{opacity:.55;filter:grayscale(.3)}
