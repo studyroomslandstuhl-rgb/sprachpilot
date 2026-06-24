@@ -39,7 +39,15 @@ export function saveActiveProfile(st,courseData,docId=null){
   localStorage.setItem("muttersprache",p.muttersprache);
   return p
 }
-export function logout(){localStorage.removeItem("SP_USER_PROFILE");localStorage.removeItem("SP_KEEP_LOGGED_IN");localStorage.removeItem("SP_STUDENT_ID");location.href="/index.html"}
+export function logout(){
+  localStorage.removeItem("SP_USER_PROFILE");
+  localStorage.removeItem("SP_KEEP_LOGGED_IN");
+  localStorage.removeItem("SP_STUDENT_ID");
+  localStorage.removeItem("motherLanguage");
+  localStorage.removeItem("muttersprache");
+  localStorage.removeItem("SP_MOTHER_LANGUAGE_CODE");
+  location.href="/index.html";
+}
 
 export async function findStudentByEmailAndCourse(email,courseInput){
   const emailNorm=normText(email);
@@ -230,7 +238,10 @@ export function renderAccountStrip(rootId="accountStrip"){
 
   if(!p){
     el.innerHTML=`
-      <div class="who">Nicht eingeloggt</div>
+      <div class="who">
+        Nicht eingeloggt
+      </div>
+
       <div class="account-links">
         <a href="${loginUrlForCurrent()}">🔑 Login</a>
         <a href="/register/?redirect=${encodeURIComponent(location.pathname+location.search+location.hash)}">📝 Registrieren</a>
@@ -243,6 +254,7 @@ export function renderAccountStrip(rootId="accountStrip"){
     <div class="who">
       ${safeText(p.vorname||"")} ${safeText(p.nachname||"")} · ${safeText(p.kurs||"")}
     </div>
+
     <div class="account-links">
       <a href="/dashboard/">📊 Dashboard</a>
       <a href="/profile/">👤 Profil</a>
