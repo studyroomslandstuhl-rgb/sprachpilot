@@ -40,7 +40,58 @@
         <option>Urdu</option>
         <option>Usbekisch</option>
         <option>Vietnamesisch</option>
-      </select><label>Kurscode *</label><input id="course" required placeholder="z. B. GLK-68"><button class="success" type="submit">Registrieren</button><a class="btn secondary" href="../login/">Ich habe schon ein Profil</a><div id="registerResult"></div></form></section><footer>© SprachPilot</footer></div><script type="module">
-import { registerStudent, $, safeText, getRedirectTarget } from "../js/auth.js";
-$("registerForm").addEventListener("submit",async e=>{e.preventDefault();const vorname=$("fname").value.trim(),nachname=$("lname").value.trim(),email=$("email").value.trim().toLowerCase(),muttersprache=$("motherLanguage").value,kurs=$("course").value.trim(),result=$("registerResult");if(!vorname||!nachname||!email||!muttersprache||!kurs){result.innerHTML='<div class="no">Bitte alle Felder ausfüllen.</div>';return}result.innerHTML='<div class="ok">Kurscode wird geprüft...</div>';try{await registerStudent({vorname,nachname,email,muttersprache,kurs});location.href=getRedirectTarget("../")}catch(err){console.error(err);if(err.message==="COURSE_NOT_FOUND")result.innerHTML=`<div class="no">Dieser Kurscode existiert nicht: ${safeText(kurs)}</div>`;else if(err.message==="STUDENT_EXISTS")result.innerHTML='<div class="no">Dieses Profil existiert schon. Bitte einloggen.</div>';else result.innerHTML='<div class="no">Registrierung nicht möglich. Bitte Firebase-Regeln prüfen.</div>'}});
+      </select><label>Kurscode *</label><input id="course" required placeholder="z. B. GLK-68"><button class="success" type="button" id="registerBtn" onclick="doRegister()">Registrieren</button><a class="btn secondary" href="../login/">Ich habe schon ein Profil</a><div id="registerResult"></div></form></section><footer>© SprachPilot</footer></div><script type="module">
+import { registerStudent, $, safeText, getRedirectTarget } from "../js/auth.js?v=regfix2";
+
+function showMsg(html){
+  const result=$("registerResult");
+  if(result) result.innerHTML=html;
+}
+
+window.doRegister = async function(){
+  const btn=$("registerBtn");
+  const vorname=$("fname")?.value.trim() || "";
+  const nachname=$("lname")?.value.trim() || "";
+  const email=$("email")?.value.trim().toLowerCase() || "";
+  const muttersprache=$("motherLanguage")?.value || "";
+  const kurs=$("course")?.value.trim() || "";
+
+  if(!vorname || !nachname || !email || !muttersprache || !kurs){
+    showMsg('<div class="no">Bitte alle Felder ausfüllen.</div>');
+    return;
+  }
+
+  try{
+    if(btn){btn.disabled=true;btn.textContent="Registrierung läuft...";}
+    showMsg('<div class="ok">Kurscode wird geprüft...</div>');
+
+    await registerStudent({vorname,nachname,email,muttersprache,kurs});
+
+    showMsg('<div class="ok">Registrierung erfolgreich. Du wirst weitergeleitet...</div>');
+    setTimeout(()=>{ location.href=getRedirectTarget("../dashboard/"); }, 500);
+
+  }catch(err){
+    console.error("Registrierung Fehler:", err);
+    if(err.message==="COURSE_NOT_FOUND"){
+      showMsg(`<div class="no">Dieser Kurscode existiert nicht: ${safeText(kurs)}</div>`);
+    }else if(err.message==="STUDENT_EXISTS"){
+      showMsg('<div class="no">Dieses Profil existiert schon. Bitte einloggen.</div>');
+    }else if(String(err.message||"").includes("Missing or insufficient permissions")){
+      showMsg('<div class="no">Firebase-Regeln blockieren die Registrierung.</div>');
+    }else{
+      showMsg(`<div class="no">Registrierung nicht möglich: ${safeText(err.message||"Unbekannter Fehler")}</div>`);
+    }
+  }finally{
+    if(btn){btn.disabled=false;btn.textContent="Registrieren";}
+  }
+};
+
+// Extra Schutz: Falls jemand Enter drückt, kein normales Neuladen.
+const form=$("registerForm");
+if(form){
+  form.addEventListener("submit", e=>{
+    e.preventDefault();
+    window.doRegister();
+  });
+}
 </script></body></html>
