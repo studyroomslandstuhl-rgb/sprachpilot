@@ -1,0 +1,55 @@
+{
+  "releases": {
+    "wortschatz": {
+      "lessons": {
+        "A1-Lektion-4": {
+          "enabled": true,
+          "themes": {
+            "Thema-2": {
+              "enabled": true,
+              "wordGroups": {
+                "basis_moebel": true,
+                "basis_elektro": true,
+                "basis_wohnung": true,
+                "plus_kueche": false,
+                "plus_bad": false
+              },
+              "words": {
+                "schrank": true,
+                "sofa": true,
+                "tisch": true,
+                "stuhl": true,
+                "bett": true,
+                "sessel": true,
+                "regal": true,
+                "teppich": true,
+                "lampe": true,
+                "fernseher": true,
+                "kuehlschrank": true,
+                "waschmaschine": true,
+                "herd": true,
+                "wand": true,
+                "tuer": true,
+                "fenster": true,
+                "dach": true,
+                "boden": true,
+                "elektrogeraet": true
+              },
+              "tasks": {
+                "karteikarten": true,
+                "hoeren": true,
+                "artikel-klick": true,
+                "artikel": true,
+                "plural": true,
+                "bild-wort": true,
+                "wort-bild": true,
+                "kategorien": true,
+                "dialoge": true
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

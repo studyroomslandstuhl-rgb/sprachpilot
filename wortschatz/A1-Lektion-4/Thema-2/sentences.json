@@ -1,0 +1,126 @@
+{
+  "schrank": {
+    "full": "der Schrank",
+    "sentence": "Der schrank ist schön."
+  },
+  "sofa": {
+    "full": "das Sofa",
+    "sentence": "Das sofa ist schön."
+  },
+  "tisch": {
+    "full": "der Tisch",
+    "sentence": "Der tisch ist schön."
+  },
+  "stuhl": {
+    "full": "der Stuhl",
+    "sentence": "Der stuhl ist schön."
+  },
+  "bett": {
+    "full": "das Bett",
+    "sentence": "Das bett ist schön."
+  },
+  "sessel": {
+    "full": "der Sessel",
+    "sentence": "Der sessel ist schön."
+  },
+  "regal": {
+    "full": "das Regal",
+    "sentence": "Das regal ist schön."
+  },
+  "teppich": {
+    "full": "der Teppich",
+    "sentence": "Der teppich ist schön."
+  },
+  "lampe": {
+    "full": "die Lampe",
+    "sentence": "Die lampe funktioniert gut."
+  },
+  "fernseher": {
+    "full": "der Fernseher",
+    "sentence": "Der fernseher funktioniert gut."
+  },
+  "kuehlschrank": {
+    "full": "der Kühlschrank",
+    "sentence": "Der kühlschrank funktioniert gut."
+  },
+  "waschmaschine": {
+    "full": "die Waschmaschine",
+    "sentence": "Die waschmaschine funktioniert gut."
+  },
+  "herd": {
+    "full": "der Herd",
+    "sentence": "Der herd funktioniert gut."
+  },
+  "wand": {
+    "full": "die Wand",
+    "sentence": "Die wand ist im Haus."
+  },
+  "tuer": {
+    "full": "die Tür",
+    "sentence": "Die tür ist im Haus."
+  },
+  "fenster": {
+    "full": "das Fenster",
+    "sentence": "Das fenster ist im Haus."
+  },
+  "dach": {
+    "full": "das Dach",
+    "sentence": "Das dach ist im Haus."
+  },
+  "boden": {
+    "full": "der Boden",
+    "sentence": "Der boden ist im Haus."
+  },
+  "elektrogeraet": {
+    "full": "das Elektrogerät",
+    "sentence": "Das Elektrogerät ist neu."
+  },
+  "spuele": {
+    "full": "die Spüle",
+    "sentence": "Die Spüle ist in der Küche."
+  },
+  "spuelmaschine": {
+    "full": "die Spülmaschine",
+    "sentence": "Die Spülmaschine ist neben der Spüle."
+  },
+  "backofen": {
+    "full": "der Backofen",
+    "sentence": "Der Backofen ist heiß."
+  },
+  "mikrowelle": {
+    "full": "die Mikrowelle",
+    "sentence": "Die Mikrowelle steht in der Küche."
+  },
+  "toaster": {
+    "full": "der Toaster",
+    "sentence": "Der Toaster ist klein."
+  },
+  "wasserkocher": {
+    "full": "der Wasserkocher",
+    "sentence": "Der Wasserkocher ist weiß."
+  },
+  "abzug": {
+    "full": "der Abzug",
+    "sentence": "Der Abzug ist über dem Herd."
+  },
+  "kuechenschrank": {
+    "full": "der Küchenschrank",
+    "sentence": "Der Küchenschrank ist groß."
+  },
+  "toilette": {
+    "full": "die Toilette",
+    "sentence": "Die Toilette ist im Bad."
+  },
+  "badewanne": {
+    "full": "die Badewanne",
+    "sentence": "Die Badewanne ist groß."
+  },
+  "dusche": {
+    "full": "die Dusche",
+    "sentence": "Die Dusche ist modern."
+  },
+  "waschbecken": {
+    "full": "das Waschbecken",
+    "sentence": "Das Waschbecken ist im Bad."
+  }
+}

@@ -1,20 +1,35 @@
 Benötigte Bilder in wortschatz/A1-Lektion-4/bilder:
 
-schrank.png – der Schrank
-sofa.png – das Sofa
-tisch.png – der Tisch
-stuhl.png – der Stuhl
-bett.png – das Bett
-sessel.png – der Sessel
-regal.png – das Regal
-teppich.png – der Teppich
-lampe.png – die Lampe
-fernseher.png – der Fernseher
-kuehlschrank.png – der Kühlschrank
-waschmaschine.png – die Waschmaschine
-herd.png – der Herd
-wand.png – die Wand
-tuer.png – die Tür
-fenster.png – das Fenster
-dach.png – das Dach
-boden.png – der Boden
+Hinweis: Bilder später selbst hochladen. Dateinamen müssen exakt so heißen.
+
+schrank.png – der Schrank – basis / basis_moebel
+sofa.png – das Sofa – basis / basis_moebel
+tisch.png – der Tisch – basis / basis_moebel
+stuhl.png – der Stuhl – basis / basis_moebel
+bett.png – das Bett – basis / basis_moebel
+sessel.png – der Sessel – basis / basis_moebel
+regal.png – das Regal – basis / basis_moebel
+teppich.png – der Teppich – basis / basis_moebel
+lampe.png – die Lampe – basis / basis_elektro
+fernseher.png – der Fernseher – basis / basis_elektro
+kuehlschrank.png – der Kühlschrank – basis / basis_elektro
+waschmaschine.png – die Waschmaschine – basis / basis_elektro
+herd.png – der Herd – basis / basis_elektro
+wand.png – die Wand – basis / basis_wohnung
+tuer.png – die Tür – basis / basis_wohnung
+fenster.png – das Fenster – basis / basis_wohnung
+dach.png – das Dach – basis / basis_wohnung
+boden.png – der Boden – basis / basis_wohnung
+elektrogeraet.png – das Elektrogerät – basis / basis_elektro
+spuele.png – die Spüle – plus / plus_kueche
+spuelmaschine.png – die Spülmaschine – plus / plus_kueche
+backofen.png – der Backofen – plus / plus_kueche
+mikrowelle.png – die Mikrowelle – plus / plus_kueche
+toaster.png – der Toaster – plus / plus_kueche
+wasserkocher.png – der Wasserkocher – plus / plus_kueche
+abzug.png – der Abzug – plus / plus_kueche
+kuechenschrank.png – der Küchenschrank – plus / plus_kueche
+toilette.png – die Toilette – plus / plus_bad
+badewanne.png – die Badewanne – plus / plus_bad
+dusche.png – die Dusche – plus / plus_bad
+waschbecken.png – das Waschbecken – plus / plus_bad

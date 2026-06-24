@@ -1,8 +1,65 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kategorien</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=5"></script><script>
-header("Kategorien");const FILE="kategorien.html";let selected=null;
-area.innerHTML=`<p>Tippe ein Wort an und dann die passende Gruppe.</p><div id="chips"></div><div class="drop-grid"><div class="dropzone" data-c="Möbel"><h2>Möbel</h2></div><div class="dropzone" data-c="Elektrogeräte"><h2>Elektrogeräte</h2></div><div class="dropzone" data-c="Wohnung"><h2>Wohnung</h2></div></div><button class="btn" onclick="control()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kategorien</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=20"></script><script>
+header("Kategorien");
+const FILE="kategorien.html";
+let selected=null;
+const CATEGORIES=[...new Set(WORDS.map(w=>w.category))];
+
+area.innerHTML=`<p>Tippe ein Wort an und dann die passende Gruppe.</p>
+<div id="chips"></div>
+<div class="drop-grid">${CATEGORIES.map(c=>`<div class="dropzone" data-c="${c}"><h2>${c}</h2></div>`).join("")}</div>
+<button class="btn" onclick="control()">Kontrollieren</button>
+<div id="fb" class="feedback"></div>`;
+
 chips.innerHTML=WORDS.map(w=>`<span class="chip" data-id="${w.id}">${w.full}</span>`).join("");
-function bind(){document.querySelectorAll(".chip").forEach(c=>c.onclick=e=>{e.stopPropagation();if(c.classList.contains("ok"))return;document.querySelectorAll(".chip").forEach(x=>x.classList.remove("selected"));selected=c;c.classList.add("selected")})}
-document.querySelectorAll(".dropzone").forEach(z=>z.onclick=()=>{if(!selected)return;selected.classList.remove("selected","no");let n=selected.nextElementSibling;if(n&&n.classList.contains("correction"))n.remove();z.appendChild(selected);selected=null;bind()});bind();
-function control(){document.querySelectorAll(".correction").forEach(x=>x.remove());let ok=0;document.querySelectorAll(".dropzone .chip").forEach(c=>{let w=wordById(c.dataset.id),z=c.closest(".dropzone");c.classList.remove("ok","no","selected");if(z.dataset.c===w.category){c.classList.add("ok");ok++}else{c.classList.add("no");let note=document.createElement("span");note.className="correction";note.textContent="richtig: "+w.category;c.after(note)}});bind();if(ok===WORDS.length){let st=loadTask(FILE,WORDS.length);st.done=[...Array(WORDS.length).keys()];saveTask(FILE,st);fb.textContent="Gut gemacht!";setTimeout(()=>location.href="dialoge.html",700)}else fb.textContent="Korrigiere die roten Wörter."}
+
+function bind(){
+ document.querySelectorAll(".chip").forEach(c=>c.onclick=e=>{
+  e.stopPropagation();
+  if(c.classList.contains("ok"))return;
+  document.querySelectorAll(".chip").forEach(x=>x.classList.remove("selected"));
+  selected=c;
+  c.classList.add("selected");
+ });
+}
+
+document.querySelectorAll(".dropzone").forEach(z=>z.onclick=()=>{
+ if(!selected)return;
+ selected.classList.remove("selected","no");
+ let n=selected.nextElementSibling;
+ if(n&&n.classList.contains("correction"))n.remove();
+ z.appendChild(selected);
+ selected=null;
+ bind();
+});
+
+bind();
+
+function control(){
+ document.querySelectorAll(".correction").forEach(x=>x.remove());
+ let ok=0;
+ document.querySelectorAll(".dropzone .chip").forEach(c=>{
+  let w=wordById(c.dataset.id),z=c.closest(".dropzone");
+  c.classList.remove("ok","no","selected");
+  if(z.dataset.c===w.category){
+   c.classList.add("ok");
+   ok++;
+  }else{
+   c.classList.add("no");
+   let note=document.createElement("span");
+   note.className="correction";
+   note.textContent="richtig: "+w.category;
+   c.after(note);
+  }
+ });
+ bind();
+ if(ok===WORDS.length){
+  let st=loadTask(FILE,WORDS.length);
+  st.done=[...Array(WORDS.length).keys()];
+  saveTask(FILE,st);
+  fb.textContent="Gut gemacht!";
+  setTimeout(()=>location.href="dialoge.html",700);
+ }else{
+  fb.textContent="Korrigiere die roten Wörter.";
+ }
+}
 </script></body></html>
