@@ -9,13 +9,16 @@
 .dash-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px;margin-top:16px}
 .dash-card{background:white;border-radius:22px;padding:18px;box-shadow:0 10px 26px rgba(0,0,0,.12);border:2px solid #eef2ff}
 .dash-card h3{color:#667eea;margin-bottom:8px}
-.star-total{font-size:44px;color:#f5b301;letter-spacing:3px;text-align:center}
-.star-line{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #eee;padding:8px 0}
-.locked{opacity:.5;filter:grayscale(.3)}
+.star-total{font-size:44px;color:#f5b301;letter-spacing:3px;text-align:center;font-weight:900}
+.star-line{display:flex;justify-content:space-between;gap:12px;border-bottom:1px solid #eee;padding:8px 0;align-items:center}
+.locked{opacity:.55;filter:grayscale(.3)}
+.quick-links{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}
+.topic-status{font-size:13px;color:#666;margin-top:4px}
 </style>
 </head>
 <body>
 <div id="accountStrip" class="account-strip"></div>
+
 <div class="container">
 <section class="hero">
   <a href="/index.html" style="text-decoration:none;color:inherit"><h1>SprachPilot</h1></a>
@@ -33,7 +36,7 @@
 </div>
 
 <script type="module">
-import { getActiveProfile, refreshActiveProfile, logout, safeText, renderAccountStrip } from "../js/auth.js";
+import { getActiveProfile, logout, safeText, renderAccountStrip } from "../js/auth.js?v=dashfix2";
 window.logout=logout;
 
 function examHistory(key){
@@ -57,12 +60,39 @@ function starsHtml(n){
 }
 
 const availableTopics=[
-  {title:"Lektion 4 · Thema 1", key:"SP_L4_T1_EXAM_HISTORY_V1", max:3, href:"../wortschatz/A1-Lektion-4/Thema-1/"}
+  {title:"Lektion 4 · Thema 1", key:"SP_L4_T1_EXAM_HISTORY_V1", max:3, href:"../wortschatz/A1-Lektion-4/Thema-1/"},
+  {title:"Lektion 4 · Thema 2", key:"SP_L4_T2_EXAM_HISTORY_V1", max:3, href:"../wortschatz/A1-Lektion-4/Thema-2/"},
+  {title:"Lektion 4 · Thema 3", key:"SP_L4_T3_EXAM_HISTORY_V1", max:3, href:"../wortschatz/A1-Lektion-4/Thema-3/"},
+  {title:"Lektion 4 · Thema 4", key:"SP_L4_T4_EXAM_HISTORY_V1", max:3, href:"../wortschatz/A1-Lektion-4/Thema-4/"}
 ];
 
 function moduleEnabled(p,name){
   const c=p?.assignments||{};
   return c.enabledModules?.[name]!==false;
+}
+
+function getProfileFallback(){
+  let p=getActiveProfile();
+  if(p) return p;
+
+  try{
+    p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");
+    if(p) return p;
+  }catch(e){}
+
+  return null;
+}
+
+function moduleCard(title,desc,href,enabled){
+  return `
+    <div class="dash-card ${enabled?'':'locked'}">
+      <h3>${title}</h3>
+      <p>${enabled?desc:"Noch nicht freigeschaltet."}</p>
+      <div class="quick-links">
+        ${enabled?`<a class="btn" href="${href}">Öffnen</a>`:`<span class="badge">Gesperrt</span>`}
+      </div>
+    </div>
+  `;
 }
 
 async function init(){
@@ -71,56 +101,65 @@ async function init(){
     return;
   }
 
-  try{ await refreshActiveProfile(); }catch(e){ console.warn(e); }
-  const p=getActiveProfile();
+  let p=getProfileFallback();
+
   if(!p){
-    location.href="../login/?redirect="+encodeURIComponent("/dashboard/");
+    studentBox.innerHTML=`
+      <div class="no">
+        Profil konnte nicht geladen werden. Bitte erneut einloggen.
+        <br><a class="btn secondary" href="../login/?redirect=/dashboard/">Zum Login</a>
+      </div>
+    `;
     return;
   }
 
   renderAccountStrip();
 
-  studentBox.innerHTML=`<div class="ok"><strong>Eingeloggt:</strong> ${safeText(p.vorname||"")} ${safeText(p.nachname||"")}<br>Kurs: ${safeText(p.kurs||"")} · Muttersprache: ${safeText(p.muttersprache||"")}</div>`;
+  studentBox.innerHTML=`
+    <div class="ok">
+      <strong>Eingeloggt:</strong> ${safeText(p.vorname||"")} ${safeText(p.nachname||"")}<br>
+      Kurs: ${safeText(p.kurs||"")} · Muttersprache: ${safeText(p.muttersprache||"")}
+    </div>
+  `;
 
-  let earned=0, possible=0;
+  let earned=0;
+  let possible=0;
+
   const topicLines=availableTopics.map(t=>{
     possible+=t.max;
     const best=bestExam(t.key);
     const stars=best?starsForPercent(best.percent):0;
     earned+=stars;
-    return `<div class="star-line"><span>${t.title}</span><b>${starsHtml(stars)} ${best?best.percent+"%":"offen"}</b></div>`;
+    return `
+      <div class="star-line">
+        <span>
+          ${t.title}
+          <div class="topic-status">${best?`Prüfung: ${best.percent}% · ${best.score||0}/${best.maxScore||0} Punkte`:"noch keine Prüfung"}</div>
+        </span>
+        <b>${starsHtml(stars)}</b>
+      </div>
+    `;
   }).join("");
 
   const fragen=moduleEnabled(p,"Fragen A1");
   const wortschatz=moduleEnabled(p,"Wortschatz");
   const verben=moduleEnabled(p,"Verben A1");
+  const grammatik=moduleEnabled(p,"Grammatik");
 
   dashGrid.innerHTML=`
     <div class="dash-card">
-      <h3>Sterne</h3>
+      <h3>Gesammelte Sterne</h3>
       <div class="star-total">${earned} / ${possible}</div>
       ${topicLines}
     </div>
 
-    <div class="dash-card ${fragen?'':'locked'}">
-      <h3>Fragen A1</h3>
-      <p>${fragen?'Freigeschaltet':'Noch nicht freigeschaltet'}</p>
-      ${fragen?'<a class="btn" href="../fragen-A1/">Öffnen</a>':'<span class="badge">Gesperrt</span>'}
-    </div>
-
-    <div class="dash-card ${wortschatz?'':'locked'}">
-      <h3>Wortschatz</h3>
-      <p>${wortschatz?'Freigeschaltet':'Noch nicht freigeschaltet'}</p>
-      ${wortschatz?'<a class="btn" href="../wortschatz/">Öffnen</a>':'<span class="badge">Gesperrt</span>'}
-    </div>
-
-    <div class="dash-card ${verben?'':'locked'}">
-      <h3>Verben A1</h3>
-      <p>${verben?'Freigeschaltet':'Noch nicht freigeschaltet'}</p>
-      ${verben?'<a class="btn" href="../verben-A1/">Öffnen</a>':'<span class="badge">Gesperrt</span>'}
-    </div>
+    ${moduleCard("Fragen A1","Fragen und Antworten üben.","../fragen-A1/",fragen)}
+    ${moduleCard("Wortschatz","Wortschatz-Lektionen und Themen üben.","../wortschatz/",wortschatz)}
+    ${moduleCard("Verben A1","Verben mit Bildern, Schreiben, Hören und Sprechen.","../verben-A1/",verben)}
+    ${moduleCard("Grammatik","Grammatikübungen.","../grammatik/",grammatik)}
   `;
 }
+
 init();
 </script>
 </body>
