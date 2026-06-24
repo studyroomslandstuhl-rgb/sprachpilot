@@ -227,6 +227,35 @@ export function renderAccountStrip(rootId="accountStrip"){
   const el=document.getElementById(rootId);
   if(!el) return;
   const p=getActiveProfile();
+
+  if(!p){
+    el.innerHTML=`
+      <div class="who">
+        Nicht eingeloggt
+      </div>
+
+      <div class="account-links">
+        <a href="${loginUrlForCurrent()}">🔑 Login</a>
+        <a href="/register/?redirect=${encodeURIComponent(location.pathname+location.search+location.hash)}">📝 Registrieren</a>
+      </div>
+    `;
+    return;
+  }
+
+  el.innerHTML=`
+    <div class="who">
+      ${safeText(p.vorname||"")} ${safeText(p.nachname||"")} · ${safeText(p.kurs||"")}
+    </div>
+
+    <div class="account-links">
+      <a href="/dashboard/">📊 Dashboard</a>
+      <a href="/profile/">👤 Profil</a>
+      <button onclick="logout()">🚪 Abmelden</button>
+    </div>
+  `;
+}  const el=document.getElementById(rootId);
+  if(!el) return;
+  const p=getActiveProfile();
   if(!p){
     el.innerHTML=`<span class="who">Nicht eingeloggt</span><a href="${loginUrlForCurrent()}">Login</a><a href="/register/?redirect=${encodeURIComponent(location.pathname+location.search+location.hash)}">Registrieren</a>`;
     return;
