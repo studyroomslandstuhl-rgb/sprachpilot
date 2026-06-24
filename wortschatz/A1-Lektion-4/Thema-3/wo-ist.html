@@ -1,20 +1,20 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wo ist …?</title><link rel="stylesheet" href="style.css"></head><body>
 <div id="accountStrip" class="account-strip"></div>
-<script type="module" src="/js/guard.js"></script><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=5"></script><script>
+<script type="module" src="/js/guard.js"></script><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=90"></script><script>
 header("Wo ist …?");
 const FILE="wo-ist.html";let i=0,phase="q";
 function show(){
  if(loadTask(FILE,WO_TASKS.length).done.length>=WO_TASKS.length){complete(area,FILE,"ist-hier.html");return}
  i=nextIndex(FILE,WO_TASKS.length);let t=WO_TASKS[i], w=wordById(t.room);
  if(phase==="q"){
-  area.innerHTML=`${progressHtml(FILE,WO_TASKS.length)}<div class="question">1. Frage nach dem Ort.</div><div class="hint">Anfang: Wo ist ...</div><div class="imgrow">${roomImg(t.room,false)}</div><div class="actions"><button id="mic" class="btn mic-btn" onclick="sayQ()">🎤 Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="Wo ist ...?"><button class="btn" onclick="checkQ()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+  area.innerHTML=`${progressHtml(FILE,WO_TASKS.length)}<div class="question">1. Frage nach dem Ort.</div><div class="hint">Anfang: Wo ist ...</div><div class="imgrow">${roomImg(t.room,false)}</div><div class="actions"><button id="mic" class="btn mic-btn" onclick="sayQ()">🎤 Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkQ()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
  }else{
-  area.innerHTML=`${progressHtml(FILE,WO_TASKS.length)}<div class="question">2. Antworte mit hier, da oder dort.</div><div class="hint">Sage: ${w.full} ist ${t.place}.</div>${comboPlaceRoom(t.place,t.room)}<div class="actions"><button id="mic" class="btn mic-btn" onclick="sayA()">🎤 Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="... ist hier/da/dort."><button class="btn" onclick="checkA()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+  area.innerHTML=`${progressHtml(FILE,WO_TASKS.length)}<div class="question">2. Antworte mit hier, da oder dort.</div><div class="hint">Sage: ${w.full} ist ${t.place}.</div>${comboPlaceRoom(t.place,t.room)}<div class="actions"><button id="mic" class="btn mic-btn" onclick="sayA()">🎤 Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkA()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
  }
 }
 function writeQ(){box.classList.remove("hidden")}function writeA(){box.classList.remove("hidden")}
-function checkQText(txt){let t=WO_TASKS[i];if(okWoQuestion(txt,t)){phase="a";show()}else{let tr=markWrong(FILE,WO_TASKS.length);fb.innerHTML=feedbackForTry(tr,t.question,"Frage mit Wo ist");phase="q";if(tr>=2)setTimeout(show,1200)}}
-function checkAText(txt){let t=WO_TASKS[i];if(okWoAnswer(txt,t)){markRight(FILE,WO_TASKS.length);phase="q";show()}else{let tr=markWrong(FILE,WO_TASKS.length);fb.innerHTML=feedbackForTry(tr,t.answer,"Antwort mit hier/da/dort");phase="q";if(tr>=2)setTimeout(show,1200)}}
+function checkQText(txt){let t=WO_TASKS[i];if(okWoQuestion(txt,t)){phase="a";show()}else{let tr=markWrong(FILE,WO_TASKS.length);fb.innerHTML=feedbackForTry(tr,t.question,"Frage mit Wo ist");phase="q";}}
+function checkAText(txt){let t=WO_TASKS[i];if(okWoAnswer(txt,t)){markRight(FILE,WO_TASKS.length);phase="q";show()}else{let tr=markWrong(FILE,WO_TASKS.length);fb.innerHTML=feedbackForTry(tr,t.answer,"Antwort mit hier/da/dort");phase="q";}}
 function checkQ(){checkQText(ans.value)}function checkA(){checkAText(ans.value)}
 function sayQ(){startMic(mic,txt=>{writeQ();ans.value=txt;checkQText(txt)})}
 function sayA(){startMic(mic,txt=>{writeA();ans.value=txt;checkAText(txt)})}

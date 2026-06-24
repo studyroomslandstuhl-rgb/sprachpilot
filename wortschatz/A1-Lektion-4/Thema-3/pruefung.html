@@ -1,5 +1,73 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="accountStrip" class="account-strip"></div>
-<script type="module" src="/js/guard.js"></script><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=1"></script><script>
-header("Prüfung");area.innerHTML=`<div class="question">Prüfung</div><div class="hint">Die Prüfung bauen wir nach dem Test der Einzelaufgaben.</div><a class="btn" href="index.html">Zum Menü</a>`;
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung – Thema 2</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=90"></script><script>
+header("Prüfung");
+const FILE="pruefung.html";
+const MAX=20;
+let items=[],pos=0,score=0,results=[];
+
+function makeItems(){
+ const pool=[...WORDS].sort(()=>Math.random()-.5).slice(0,MAX);
+ return pool.map(w=>{
+   const type=Math.random()<0.5?"full":"plural";
+   return {w,type,question:type==="full"?`Schreibe das Wort mit Artikel.`:`Schreibe den Plural.`,answer:type==="full"?w.full:w.plural};
+ });
+}
+
+function start(){
+ if(!allPrereqComplete()){
+   area.innerHTML=`<div class="question">Prüfung gesperrt</div><div class="no">Die Prüfung wird erst freigeschaltet, wenn alle anderen Aufgaben in Thema 2 bei 100% sind.</div><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div>`;
+   return;
+ }
+ items=makeItems();pos=0;score=0;results=[];show();
+}
+
+function points(user,answer,type){
+ const u=simple(user), a=simple(answer);
+ if(u===a)return 10;
+ let p=10;
+ if(type==="full"){
+   const ansArt=simple(answer).split(" ")[0];
+   const userArt=u.split(" ")[0]||"";
+   if(ansArt!==userArt)p-=3;
+ }
+ const dist=Math.abs(u.length-a.length);
+ p-=Math.min(4,dist);
+ return Math.max(0,p);
+}
+
+function show(){
+ if(pos>=items.length){finish();return}
+ const it=items[pos],w=it.w;
+ area.innerHTML=`<div class="small">Prüfungsaufgabe ${pos+1} / ${items.length}</div><div class="question">${it.question}</div><img class="task-img" src="${w.image}" onerror="fixImg(this)" alt=""><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+}
+
+function check(){
+ const it=items[pos];
+ const user=ans.value;
+ const p=points(user,it.answer,it.type);
+ score+=p;
+ results.push({question:it.question,answer:it.answer,user,points:p});
+ if(p===10){
+   fb.innerHTML=`<div class="ok">Richtig! +10 Punkte</div><button class="btn" onclick="next()">Weiter</button>`;
+ }else{
+   fb.innerHTML=`<div class="solution-box"><b>Lösung:</b> ${it.answer}<br><b>Deine Antwort:</b> ${user||"-"}<br><b>Punkte:</b> ${p}/10</div><button class="btn" onclick="next()">Weiter</button>`;
+ }
+}
+
+function next(){pos++;show()}
+
+function finish(){
+ const max=items.length*10;
+ const percent=Math.round(score/max*100);
+ const stars=starsForPercent(percent);
+ const result={score,maxScore:max,percent,stars};
+ saveExamResult(result);
+
+ let st=loadTask(FILE,100);
+ st.done=[...Array(percent).keys()];
+ st.total=100;
+ saveTask(FILE,st);
+
+ area.innerHTML=`<div class="question">Prüfung beendet</div><div class="exam-score">${percent}%</div><div>${starsHtml(stars)}</div><div class="ok">Punkte: ${score}/${max}</div><div class="actions"><button class="btn" onclick="start()">Prüfung neu starten</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`;
+}
+start();
 </script></body></html>

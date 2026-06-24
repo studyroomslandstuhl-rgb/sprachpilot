@@ -1,37 +1,36 @@
 Benötigte Bilder in wortschatz/A1-Lektion-4/bilder:
 
-Farben/Adjektive optional als PNG:
-rot.png – rot
-blau.png – blau
-gruen.png – grün
-gelb.png – gelb
-schwarz.png – schwarz
-weiss.png – weiß
-grau.png – grau
-braun.png – braun
-orange.png – orange
-rosa.png – rosa
-lila.png – lila
-tuerkis.png – türkis
-gross.png – groß
-klein.png – klein
-breit.png – breit
-schmal.png – schmal
-schoen.png – schön
-haesslich.png – hässlich
-billig.png – billig
-teuer.png – teuer
-hell.png – hell
-dunkel.png – dunkel
-
-Möbelbilder für Aufgaben:
-sofa.png
-lampe.png
-teppich.png
-tisch.png
-tuer.png
-dach.png
-schrank.png
-bett.png
-sessel.png
-fernseher.png
+schrank.png – der Schrank – book
+kuehlschrank.png – der Kühlschrank – book
+gefrierschrank.png – der Gefrierschrank – book
+kaffeemaschine.png – die Kaffeemaschine – book
+sofa.png – das Sofa – book
+kaffeetisch.png – der Kaffeetisch – book
+tisch.png – der Tisch – book
+stuhl.png – der Stuhl – book
+bett.png – das Bett – book
+fernseher.png – der Fernseher – book
+teppich.png – der Teppich – book
+sessel.png – der Sessel – book
+lampe.png – die Lampe – book
+herd.png – der Herd – book
+elektrogeraet.png – das Elektrogerät – book
+dusche.png – die Dusche – book
+badewanne.png – die Badewanne – book
+toilette.png – die Toilette – book
+waschbecken.png – das Waschbecken – book
+tuer.png – die Tür – extra
+fenster.png – das Fenster – extra
+dach.png – das Dach – extra
+boden.png – der Boden – extra
+wand.png – die Wand – extra
+spuele.png – die Spüle – extra
+spuelmaschine.png – die Spülmaschine – extra
+backofen.png – der Backofen – extra
+mikrowelle.png – die Mikrowelle – extra
+toaster.png – der Toaster – extra
+wasserkocher.png – der Wasserkocher – extra
+abzug.png – der Abzug – extra
+kuechenschrank.png – der Küchenschrank – extra
+regal.png – das Regal – book
+waschmaschine.png – die Waschmaschine – book
