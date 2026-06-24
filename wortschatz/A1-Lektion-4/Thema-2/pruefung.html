@@ -1,319 +1,73 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Prüfung</title>
-<link rel="stylesheet" href="style.css">
-</head>
-<body>
-<div class="container">
-  <header class="topbar"></header>
-  <main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main>
-  <footer>© SprachPilot</footer>
-</div>
-
-<script src="app.js?v=50"></script>
-<script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung – Thema 2</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=70"></script><script>
 header("Prüfung");
+const FILE="pruefung.html";
+const MAX=20;
+let items=[],pos=0,score=0,results=[];
 
-const FILE = "pruefung.html";
-const EXAM_KEY = "SP_L4_T2_EXAM_ITEMS_V1";
-const EXAM_TOTAL = 20;
-
-function examSimple(x){
-  return String(x||"")
-    .toLowerCase()
-    .trim()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g,"")
-    .replace(/ß/g,"ss")
-    .replace(/[.,!?]/g,"")
-    .replace(/\s+/g," ");
+function makeItems(){
+ const pool=[...WORDS].sort(()=>Math.random()-.5).slice(0,MAX);
+ return pool.map(w=>{
+   const type=Math.random()<0.5?"full":"plural";
+   return {w,type,question:type==="full"?`Schreibe das Wort mit Artikel.`:`Schreibe den Plural.`,answer:type==="full"?w.full:w.plural};
+ });
 }
 
-function examFail(tries, solution, hint){
-  if(tries === 1) return "Da ist noch ein Fehler.";
-  if(tries === 2) return "Tipp: " + hint;
-  return "Lösung: " + solution + "<br><b>Schreibe/klicke die richtige Antwort, damit es weitergeht.</b>";
+function start(){
+ if(!allPrereqComplete()){
+   area.innerHTML=`<div class="question">Prüfung gesperrt</div><div class="no">Die Prüfung wird erst freigeschaltet, wenn alle anderen Aufgaben in Thema 2 bei 100% sind.</div><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div>`;
+   return;
+ }
+ items=makeItems();pos=0;score=0;results=[];show();
 }
 
-function examState(){
-  try{
-    const saved = JSON.parse(localStorage.getItem(taskKey(FILE)) || "null");
-    if(saved && Array.isArray(saved.done) && saved.total) return saved;
-  }catch(e){}
-  return {total:EXAM_TOTAL,done:[],current:null,tries:0};
-}
-
-function saveExamState(st){
-  localStorage.setItem(taskKey(FILE), JSON.stringify(st));
-}
-
-function buildExamItems(){
-  const items = [];
-
-  (WORDS || []).forEach((w,idx)=>{
-    if(w.article){
-      items.push({type:"article", wordIndex:idx});
-    }
-    if(w.full){
-      items.push({type:"image-word", wordIndex:idx});
-    }
-    if(w.plural){
-      items.push({type:"plural", wordIndex:idx});
-    }
-    if(w.category){
-      items.push({type:"category", wordIndex:idx});
-    }
-  });
-
-  if(typeof DIALOG_TASKS !== "undefined" && Array.isArray(DIALOG_TASKS)){
-    DIALOG_TASKS.forEach((t,idx)=>{
-      items.push({type:"dialog", dialogIndex:idx});
-    });
-  }
-
-  const mixed = items.sort(()=>Math.random()-.5).slice(0, Math.min(EXAM_TOTAL, items.length));
-  localStorage.setItem(EXAM_KEY, JSON.stringify(mixed));
-  return mixed;
-}
-
-function getExamItems(){
-  try{
-    const saved = JSON.parse(localStorage.getItem(EXAM_KEY) || "null");
-    if(Array.isArray(saved) && saved.length) return saved;
-  }catch(e){}
-  return buildExamItems();
-}
-
-function resetExam(){
-  localStorage.removeItem(EXAM_KEY);
-  localStorage.removeItem(taskKey(FILE));
-  show();
-}
-
-function currentItem(){
-  const items = getExamItems();
-  let st = examState();
-  st.total = items.length;
-
-  if(st.done.length >= items.length){
-    saveExamState(st);
-    return null;
-  }
-
-  if(st.current === null || st.current === undefined || st.done.includes(st.current)){
-    const remaining = items.map((_,i)=>i).filter(i=>!st.done.includes(i));
-    st.current = remaining[Math.floor(Math.random()*remaining.length)];
-    st.tries = 0;
-    saveExamState(st);
-  }
-
-  return items[st.current];
-}
-
-function correctCurrent(){
-  const items = getExamItems();
-  const st = examState();
-  if(st.current !== null && st.current !== undefined && !st.done.includes(st.current)){
-    st.done.push(st.current);
-  }
-  st.current = null;
-  st.tries = 0;
-  st.total = items.length;
-  saveExamState(st);
-}
-
-function wrongCurrent(){
-  const st = examState();
-  st.tries = (st.tries || 0) + 1;
-  saveExamState(st);
-  return st.tries;
-}
-
-function examProgress(){
-  const items = getExamItems();
-  const st = examState();
-  const done = st.done.length;
-  const total = items.length || 1;
-  const p = Math.round(done/total*100);
-  return `<div class="small">${done} richtig · ${total-done} übrig · ${p}%</div>
-          <div class="progress"><div class="bar" style="width:${p}%"></div></div>`;
-}
-
-function wordOptions(correct, field){
-  return [correct, ...WORDS.filter(w=>w && w[field] && w.id!==correct.id).sort(()=>Math.random()-.5).slice(0,3)]
-    .sort(()=>Math.random()-.5);
+function points(user,answer,type){
+ const u=simple(user), a=simple(answer);
+ if(u===a)return 10;
+ let p=10;
+ if(type==="full"){
+   const ansArt=simple(answer).split(" ")[0];
+   const userArt=u.split(" ")[0]||"";
+   if(ansArt!==userArt)p-=3;
+ }
+ const dist=Math.abs(u.length-a.length);
+ p-=Math.min(4,dist);
+ return Math.max(0,p);
 }
 
 function show(){
-  const item = currentItem();
-
-  if(!item){
-    area.innerHTML = `
-      <div class="question">Prüfung geschafft!</div>
-      <div class="hint">Du hast alle Prüfungsaufgaben richtig gelöst.</div>
-      <div class="actions">
-        <button class="btn" onclick="resetExam()">Prüfung neu starten</button>
-        <a class="btn secondary" href="index.html">Zum Menü</a>
-      </div>`;
-    return;
-  }
-
-  const st = examState();
-
-  if(item.type === "article") return showArticle(item, st);
-  if(item.type === "image-word") return showImageWord(item, st);
-  if(item.type === "plural") return showPlural(item, st);
-  if(item.type === "category") return showCategory(item, st);
-  if(item.type === "dialog") return showDialog(item, st);
-
-  correctCurrent();
-  show();
+ if(pos>=items.length){finish();return}
+ const it=items[pos],w=it.w;
+ area.innerHTML=`<div class="small">Prüfungsaufgabe ${pos+1} / ${items.length}</div><div class="question">${it.question}</div><img class="task-img" src="${w.image}" onerror="fixImg(this)" alt=""><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
 }
 
-function showArticle(item, st){
-  const w = WORDS[item.wordIndex];
-  area.innerHTML = `${examProgress()}
-    <div class="question">Welcher Artikel passt?</div>
-    <img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">
-    <div class="hint">___ ${w.word}</div>
-    <div class="options">
-      ${["der","die","das"].map(a=>`<button class="opt" onclick="checkArticle('${a}')">${a}</button>`).join("")}
-    </div>
-    <div id="fb" class="feedback"></div>`;
+function check(){
+ const it=items[pos];
+ const user=ans.value;
+ const p=points(user,it.answer,it.type);
+ score+=p;
+ results.push({question:it.question,answer:it.answer,user,points:p});
+ if(p===10){
+   fb.innerHTML=`<div class="ok">Richtig! +10 Punkte</div><button class="btn" onclick="next()">Weiter</button>`;
+ }else{
+   fb.innerHTML=`<div class="solution-box"><b>Lösung:</b> ${it.answer}<br><b>Deine Antwort:</b> ${user||"-"}<br><b>Punkte:</b> ${p}/10</div><button class="btn" onclick="next()">Weiter</button>`;
+ }
 }
 
-function checkArticle(a){
-  const item = currentItem();
-  const w = WORDS[item.wordIndex];
-  if(a === w.article){
-    fb.textContent = "Richtig!";
-    correctCurrent();
-    setTimeout(show,700);
-  }else{
-    const tr = wrongCurrent();
-    fb.innerHTML = examFail(tr, w.full, "Prüfe den Artikel der/die/das.");
-  }
+function next(){pos++;show()}
+
+function finish(){
+ const max=items.length*10;
+ const percent=Math.round(score/max*100);
+ const stars=starsForPercent(percent);
+ const result={score,maxScore:max,percent,stars};
+ saveExamResult(result);
+
+ let st=loadTask(FILE,100);
+ st.done=[...Array(percent).keys()];
+ st.total=100;
+ saveTask(FILE,st);
+
+ area.innerHTML=`<div class="question">Prüfung beendet</div><div class="exam-score">${percent}%</div><div>${starsHtml(stars)}</div><div class="ok">Punkte: ${score}/${max}</div><div class="actions"><button class="btn" onclick="start()">Prüfung neu starten</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`;
 }
-
-function showImageWord(item, st){
-  const w = WORDS[item.wordIndex];
-  area.innerHTML = `${examProgress()}
-    <div class="question">Schreibe das Wort mit Artikel.</div>
-    <img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">
-    <input id="ans" placeholder="Schreiben Sie die Antwort hier">
-    <button class="btn" onclick="checkImageWord()">Kontrollieren</button>
-    <div id="fb" class="feedback"></div>`;
-}
-
-function checkImageWord(){
-  const item = currentItem();
-  const w = WORDS[item.wordIndex];
-  if(examSimple(ans.value) === examSimple(w.full)){
-    fb.textContent = "Richtig!";
-    correctCurrent();
-    setTimeout(show,700);
-  }else{
-    const tr = wrongCurrent();
-    fb.innerHTML = examFail(tr, w.full, "Schreibe Artikel + Wort.");
-  }
-}
-
-function showPlural(item, st){
-  const w = WORDS[item.wordIndex];
-  area.innerHTML = `${examProgress()}
-    <div class="question">Schreibe den Plural.</div>
-    <div class="hint">${w.full}</div>
-    <input id="ans" placeholder="Schreiben Sie die Antwort hier">
-    <button class="btn" onclick="checkPlural()">Kontrollieren</button>
-    <div id="fb" class="feedback"></div>`;
-}
-
-function checkPlural(){
-  const item = currentItem();
-  const w = WORDS[item.wordIndex];
-  if(examSimple(ans.value) === examSimple(w.plural)){
-    fb.textContent = "Richtig!";
-    correctCurrent();
-    setTimeout(show,700);
-  }else{
-    const tr = wrongCurrent();
-    fb.innerHTML = examFail(tr, w.plural, "Achte auf die Pluralendung.");
-  }
-}
-
-function showCategory(item, st){
-  const w = WORDS[item.wordIndex];
-  const cats = ["Möbel","Elektrogeräte","Wohnung"];
-  area.innerHTML = `${examProgress()}
-    <div class="question">Zu welcher Gruppe gehört das Wort?</div>
-    <img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">
-    <div class="hint">${w.full}</div>
-    <div class="options">
-      ${cats.map(c=>`<button class="opt" onclick="checkCategory('${c}')">${c}</button>`).join("")}
-    </div>
-    <div id="fb" class="feedback"></div>`;
-}
-
-function checkCategory(c){
-  const item = currentItem();
-  const w = WORDS[item.wordIndex];
-  if(c === w.category){
-    fb.textContent = "Richtig!";
-    correctCurrent();
-    setTimeout(show,700);
-  }else{
-    const tr = wrongCurrent();
-    fb.innerHTML = examFail(tr, w.category, "Prüfe die Kategorie.");
-  }
-}
-
-function showDialog(item, st){
-  const t = DIALOG_TASKS[item.dialogIndex];
-  const w = wordById(t.id);
-  const firstRest = t.line1.replace("Ist ___ ","").replace("?","");
-  const secondParts = t.line2.split("___");
-
-  area.innerHTML = `${examProgress()}
-    <div class="question">Ergänze das Wort und das Pronomen.</div>
-    <div class="hint">Erste Lücke: Wort mit Artikel. Zweite Lücke: er / es / sie.</div>
-
-    <div class="gap-dialog">
-      <div class="gap-line">
-        <span>Ist</span>
-        <input id="noun" class="gap-input" placeholder="Schreiben Sie die Antwort hier">
-        <img class="small-inline-img" src="${w.image}" onerror="fixImg(this)" alt="">
-        <span>${firstRest}?</span>
-      </div>
-      <div class="gap-line">
-        <span>${secondParts[0]}</span>
-        <input id="pronoun" class="gap-input" placeholder="Schreiben Sie die Antwort hier">
-        <span>${secondParts[1] || ""}</span>
-      </div>
-    </div>
-
-    <button class="btn" onclick="checkDialog()">Kontrollieren</button>
-    <div id="fb" class="feedback"></div>`;
-}
-
-function checkDialog(){
-  const item = currentItem();
-  const t = DIALOG_TASKS[item.dialogIndex];
-
-  if(examSimple(noun.value) === examSimple(t.answerNoun) &&
-     examSimple(pronoun.value) === examSimple(t.answerPronoun)){
-    fb.textContent = "Richtig!";
-    correctCurrent();
-    setTimeout(show,700);
-  }else{
-    const tr = wrongCurrent();
-    fb.innerHTML = examFail(tr, t.answerNoun + " / " + t.answerPronoun, "Prüfe Artikel, Nomen und Pronomen.");
-  }
-}
-
-show();
-</script>
-</body>
-</html>
+start();
+</script></body></html>

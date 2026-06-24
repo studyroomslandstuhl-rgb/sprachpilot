@@ -5,6 +5,74 @@ const VOCABULARY_SETS={"basis": {"label": "Buchwortschatz / Basis", "groups": ["
 const DIALOG_TASKS=[{"id": "schrank", "adj": "groß", "answerNoun": "der Schrank", "answerPronoun": "er", "line1": "Ist ___ groß?", "line2": "Ja, ___ ist groß und schön."}, {"id": "sofa", "adj": "schön", "answerNoun": "das Sofa", "answerPronoun": "es", "line1": "Ist ___ schön?", "line2": "Ja, ___ ist schön, aber teuer."}, {"id": "tisch", "adj": "breit", "answerNoun": "der Tisch", "answerPronoun": "er", "line1": "Ist ___ breit?", "line2": "Ja, ___ ist breit und braun."}, {"id": "stuhl", "adj": "billig", "answerNoun": "der Stuhl", "answerPronoun": "er", "line1": "Ist ___ billig?", "line2": "Nein, ___ ist teuer."}, {"id": "bett", "adj": "groß", "answerNoun": "das Bett", "answerPronoun": "es", "line1": "Ist ___ groß?", "line2": "Ja, ___ ist groß und weiß."}, {"id": "sessel", "adj": "hässlich", "answerNoun": "der Sessel", "answerPronoun": "er", "line1": "Ist ___ hässlich?", "line2": "Nein, ___ ist schön."}, {"id": "regal", "adj": "schmal", "answerNoun": "das Regal", "answerPronoun": "es", "line1": "Ist ___ schmal?", "line2": "Ja, ___ ist schmal, aber hoch."}, {"id": "teppich", "adj": "dunkel", "answerNoun": "der Teppich", "answerPronoun": "er", "line1": "Ist ___ dunkel?", "line2": "Ja, ___ ist dunkel und blau."}, {"id": "lampe", "adj": "hell", "answerNoun": "die Lampe", "answerPronoun": "sie", "line1": "Ist ___ hell?", "line2": "Ja, ___ ist hell und schön."}, {"id": "fernseher", "adj": "teuer", "answerNoun": "der Fernseher", "answerPronoun": "er", "line1": "Ist ___ teuer?", "line2": "Ja, ___ ist teuer, aber schön."}, {"id": "kuehlschrank", "adj": "groß", "answerNoun": "der Kühlschrank", "answerPronoun": "er", "line1": "Ist ___ groß?", "line2": "Ja, ___ ist groß und weiß."}, {"id": "waschmaschine", "adj": "weiß", "answerNoun": "die Waschmaschine", "answerPronoun": "sie", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß und teuer."}, {"id": "herd", "adj": "schwarz", "answerNoun": "der Herd", "answerPronoun": "er", "line1": "Ist ___ schwarz?", "line2": "Nein, ___ ist weiß."}, {"id": "wand", "adj": "weiß", "answerNoun": "die Wand", "answerPronoun": "sie", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß, aber hässlich."}, {"id": "tuer", "adj": "breit", "answerNoun": "die Tür", "answerPronoun": "sie", "line1": "Ist ___ breit?", "line2": "Nein, ___ ist schmal."}, {"id": "fenster", "adj": "hell", "answerNoun": "das Fenster", "answerPronoun": "es", "line1": "Ist ___ hell?", "line2": "Ja, ___ ist hell und groß."}, {"id": "dach", "adj": "rot", "answerNoun": "das Dach", "answerPronoun": "es", "line1": "Ist ___ rot?", "line2": "Ja, ___ ist rot und schön."}, {"id": "boden", "adj": "braun", "answerNoun": "der Boden", "answerPronoun": "er", "line1": "Ist ___ braun?", "line2": "Ja, ___ ist braun, aber dunkel."}, {"id": "elektrogeraet", "adj": "teuer", "answerNoun": "das Elektrogerät", "answerPronoun": "es", "line1": "Ist ___ teuer?", "line2": "Ja, ___ ist teuer."}, {"id": "spuele", "adj": "weiß", "answerNoun": "die Spüle", "answerPronoun": "sie", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}, {"id": "spuelmaschine", "adj": "teuer", "answerNoun": "die Spülmaschine", "answerPronoun": "sie", "line1": "Ist ___ teuer?", "line2": "Ja, ___ ist teuer."}, {"id": "backofen", "adj": "weiß", "answerNoun": "der Backofen", "answerPronoun": "er", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}, {"id": "mikrowelle", "adj": "weiß", "answerNoun": "die Mikrowelle", "answerPronoun": "sie", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}, {"id": "toaster", "adj": "weiß", "answerNoun": "der Toaster", "answerPronoun": "er", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}, {"id": "wasserkocher", "adj": "weiß", "answerNoun": "der Wasserkocher", "answerPronoun": "er", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}, {"id": "abzug", "adj": "breit", "answerNoun": "der Abzug", "answerPronoun": "er", "line1": "Ist ___ breit?", "line2": "Ja, ___ ist breit."}, {"id": "kuechenschrank", "adj": "braun", "answerNoun": "der Küchenschrank", "answerPronoun": "er", "line1": "Ist ___ braun?", "line2": "Ja, ___ ist braun."}, {"id": "toilette", "adj": "weiß", "answerNoun": "die Toilette", "answerPronoun": "sie", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}, {"id": "badewanne", "adj": "weiß", "answerNoun": "die Badewanne", "answerPronoun": "sie", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}, {"id": "dusche", "adj": "schön", "answerNoun": "die Dusche", "answerPronoun": "sie", "line1": "Ist ___ schön?", "line2": "Ja, ___ ist schön."}, {"id": "waschbecken", "adj": "weiß", "answerNoun": "das Waschbecken", "answerPronoun": "es", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}];
 const KEY="SP_L4_T2_FINAL_V3";
 
+function currentMotherLang(){
+ let fromProfile="";
+ try{
+   const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");
+   if(p) fromProfile=p.motherLanguageCode||p.muttersprache||p.motherLanguage||"";
+ }catch(e){}
+ const raw=fromProfile||localStorage.getItem("SP_MOTHER_LANGUAGE_CODE")||localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru";
+ const n=String(raw).trim().toLowerCase();
+ const map={"arabisch":"ar","russisch":"ru","englisch":"en","ukrainisch":"uk","kurdisch":"ku","türkisch":"tr","tuerkisch":"tr","rumänisch":"ro","rumaenisch":"ro","japanisch":"ja","polnisch":"pl","deutsch":"de"};
+ return map[n]||n||"ru";
+}
+function translateWord(w){
+ let l=currentMotherLang();
+ return (w.tr&&w.tr[l])||w.tr?.ru||w.tr?.en||w.word;
+}
+
+function prerequisiteTasks(){
+ return [
+  ["karteikarten.html",WORDS.length],
+  ["hoeren.html",WORDS.length],
+  ["artikel-klick.html",WORDS.length],
+  ["artikel.html",WORDS.length],
+  ["plural.html",WORDS.length],
+  ["bild-wort.html",WORDS.length],
+  ["wort-bild.html",WORDS.length],
+  ["kategorien.html",WORDS.length],
+  ["dialoge.html",DIALOG_TASKS.length]
+ ];
+}
+function allPrereqComplete(){
+ return prerequisiteTasks().every(t=>pct(t[0],t[1])>=100);
+}
+function prereqPercent(){
+ const t=prerequisiteTasks();
+ return Math.round(t.reduce((s,x)=>s+pct(x[0],x[1]),0)/t.length)||0;
+}
+function examHistory(){
+ try{return JSON.parse(localStorage.getItem("SP_L4_T2_EXAM_HISTORY_V1")||"[]")}catch(e){return[]}
+}
+function saveExamResult(result){
+ const h=examHistory();
+ h.push({...result,date:new Date().toISOString()});
+ localStorage.setItem("SP_L4_T2_EXAM_HISTORY_V1",JSON.stringify(h));
+ localStorage.setItem("SP_L4_T2_EXAM_BEST",JSON.stringify(bestExamResultFrom(h)));
+}
+function bestExamResultFrom(h){
+ if(!h||!h.length)return null;
+ return h.reduce((best,x)=>(!best||Number(x.percent||0)>Number(best.percent||0)?x:best),null);
+}
+function bestExamResult(){return bestExamResultFrom(examHistory())}
+function starsForPercent(p){
+ p=Number(p||0);
+ if(p>=100)return 3;
+ if(p>=70)return 2;
+ if(p>=50)return 1;
+ return 0;
+}
+function starsHtml(n){
+ n=Number(n||0);
+ return `<span class="stars">${"★".repeat(n)}${"☆".repeat(3-n)}</span>`;
+}
+function bestExamSummaryHtml(){
+ const best=bestExamResult();
+ if(!best)return `<div class="exam-done-box muted"><b>Prüfung noch nicht abgeschlossen</b><br>Noch keine Sterne gesammelt.</div>`;
+ const stars=starsForPercent(best.percent);
+ return `<div class="exam-done-box" id="examDoneBox"><b>Thema abgeschlossen!</b><br>Prüfung: <b>${best.percent}%</b> · ${starsHtml(stars)}<br>Punkte: ${best.score}/${best.maxScore} · Versuche: ${examHistory().length}</div>`;
+}
+
 function simple(x){
  return String(x||"").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss").replace(/[.,!?]/g,"").replace(/\s+/g," ");
 }
@@ -23,6 +91,16 @@ function header(title,isThemeOverview=false){
    <a class="btn secondary" href="statistik.html">Statistik</a>
    <button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>
  </nav>`;
+}
+
+function resetThemeProgress(){
+ if(!confirm("Möchten Sie wirklich alle Fortschritte in diesem Thema löschen?")) return;
+ Object.keys(localStorage).forEach(k=>{
+   if(k.startsWith(KEY)||k.startsWith("SP_L4_T2_EXAM_")){
+     localStorage.removeItem(k);
+   }
+ });
+ location.href="index.html";
 }
 
 function resetThemeProgress(){
@@ -107,6 +185,28 @@ function feedbackForTry(tries,solution,type){
  if(tries===1)return"Da ist noch ein Fehler.";
  if(tries===2)return"Tipp: Prüfe "+(type||"Form und Schreibweise")+".";
  return"Lösung: "+solution;
+}
+function wordProgress(wordId){
+ const tasks=[
+  ["karteikarten.html",WORDS],
+  ["hoeren.html",WORDS],
+  ["artikel-klick.html",WORDS],
+  ["artikel.html",WORDS],
+  ["plural.html",WORDS],
+  ["bild-wort.html",WORDS],
+  ["wort-bild.html",WORDS],
+  ["kategorien.html",WORDS],
+  ["dialoge.html",DIALOG_TASKS.map(t=>wordById(t.id))]
+ ];
+ let possible=0, done=0;
+ tasks.forEach(([file,list])=>{
+   let idx=list.findIndex(w=>w&&w.id===wordId);
+   if(idx<0)return;
+   possible++;
+   let st=loadTask(file,list.length);
+   if(st.done&&st.done.includes(idx))done++;
+ });
+ return possible?Math.round(done/possible*100):0;
 }
 function wordStatus(p){if(p>=100)return"gelernt";if(p>=50)return"in Arbeit";if(p>0)return"angefangen";return"neu"}
 
