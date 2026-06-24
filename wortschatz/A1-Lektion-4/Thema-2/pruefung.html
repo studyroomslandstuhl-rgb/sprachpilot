@@ -13,7 +13,7 @@
   <footer>© SprachPilot</footer>
 </div>
 
-<script src="app.js?v=20"></script>
+<script src="app.js?v=30"></script>
 <script>
 header("Prüfung");
 
@@ -203,7 +203,7 @@ function showImageWord(item, st){
   area.innerHTML = `${examProgress()}
     <div class="question">Schreibe das Wort mit Artikel.</div>
     <img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">
-    <input id="ans" placeholder="z.B. das Sofa">
+    <input id="ans" placeholder="Schreiben Sie die Antwort hier">
     <button class="btn" onclick="checkImageWord()">Kontrollieren</button>
     <div id="fb" class="feedback"></div>`;
 }
@@ -226,7 +226,7 @@ function showPlural(item, st){
   area.innerHTML = `${examProgress()}
     <div class="question">Schreibe den Plural.</div>
     <div class="hint">${w.full}</div>
-    <input id="ans" placeholder="Plural">
+    <input id="ans" placeholder="Schreiben Sie die Antwort hier">
     <button class="btn" onclick="checkPlural()">Kontrollieren</button>
     <div id="fb" class="feedback"></div>`;
 }
@@ -283,13 +283,13 @@ function showDialog(item, st){
     <div class="gap-dialog">
       <div class="gap-line">
         <span>Ist</span>
-        <input id="noun" class="gap-input" placeholder="der/die/das ...">
+        <input id="noun" class="gap-input" placeholder="Schreiben Sie die Antwort hier">
         <img class="small-inline-img" src="${w.image}" onerror="fixImg(this)" alt="">
         <span>${firstRest}?</span>
       </div>
       <div class="gap-line">
         <span>${secondParts[0]}</span>
-        <input id="pronoun" class="gap-input" placeholder="er/es/sie">
+        <input id="pronoun" class="gap-input" placeholder="Schreiben Sie die Antwort hier">
         <span>${secondParts[1] || ""}</span>
       </div>
     </div>

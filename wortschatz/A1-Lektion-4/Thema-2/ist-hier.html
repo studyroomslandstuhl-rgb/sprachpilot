@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Ist …?</title><link rel="stylesheet" href="style.css"></head><body>
 <div id="accountStrip" class="account-strip"></div>
-<script type="module" src="/js/guard.js"></script><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=20"></script><script>
+<script type="module" src="/js/guard.js"></script><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=30"></script><script>
 header("Ist hier/da/dort …?");
 const FILE="ist-hier.html";let i=0,phase="q";
 function shownRoom(t){return t.positive?t.room:t.actual}
@@ -8,14 +8,14 @@ function show(){
  if(loadTask(FILE,IST_TASKS.length).done.length>=IST_TASKS.length){complete(area,FILE,"pruefung.html");return}
  i=nextIndex(FILE,IST_TASKS.length);let t=IST_TASKS[i], w=wordById(t.room), actual=shownRoom(t);
  if(phase==="q"){
-  area.innerHTML=`${progressHtml(FILE,IST_TASKS.length)}<div class="question">1. Bilde die Frage mit „Ist ...?“</div><div class="hint">Anfang: Ist ${t.place} ...?</div>${comboPlaceRoom(t.place,t.room)}<div class="actions"><button id="mic" class="btn mic-btn" onclick="sayQ()">🎤 Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="Ist hier eine Küche?"><button class="btn" onclick="checkQ()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+  area.innerHTML=`${progressHtml(FILE,IST_TASKS.length)}<div class="question">1. Bilde die Frage mit „Ist ...?“</div><div class="hint">Anfang: Ist ${t.place} ...?</div>${comboPlaceRoom(t.place,t.room)}<div class="actions"><button id="mic" class="btn mic-btn" onclick="sayQ()">🎤 Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkQ()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
  }else{
-  area.innerHTML=`${progressHtml(FILE,IST_TASKS.length)}<div class="question">2. Antworte mit Ja oder Nein.</div><div class="hint">${t.positive?"Positive Antwort: Ja, ...":"Negative Antwort: Nein, kein/keine ..."}</div>${comboPlaceRoom(t.place,actual)}<div class="actions"><button id="mic" class="btn mic-btn" onclick="sayA()">🎤 Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="Ja, ... / Nein, ..."><button class="btn" onclick="checkA()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+  area.innerHTML=`${progressHtml(FILE,IST_TASKS.length)}<div class="question">2. Antworte mit Ja oder Nein.</div><div class="hint">${t.positive?"Positive Antwort: Ja, ...":"Negative Antwort: Nein, kein/keine ..."}</div>${comboPlaceRoom(t.place,actual)}<div class="actions"><button id="mic" class="btn mic-btn" onclick="sayA()">🎤 Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkA()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
  }
 }
 function writeQ(){box.classList.remove("hidden")}function writeA(){box.classList.remove("hidden")}
-function checkQText(txt){let t=IST_TASKS[i];if(okIstQuestion(txt,t)){phase="a";show()}else{let tr=markWrong(FILE,IST_TASKS.length);fb.innerHTML=feedbackForTry(tr,t.question,"Frage mit Ist + Ort + ein/eine");phase="q";if(tr>=2)setTimeout(show,1200)}}
-function checkAText(txt){let t=IST_TASKS[i];if(okIstAnswer(txt,t)){markRight(FILE,IST_TASKS.length);phase="q";show()}else{let tr=markWrong(FILE,IST_TASKS.length);fb.innerHTML=feedbackForTry(tr,t.answer,"Ja/Nein und ein/kein");phase="q";if(tr>=2)setTimeout(show,1200)}}
+function checkQText(txt){let t=IST_TASKS[i];if(okIstQuestion(txt,t)){phase="a";show()}else{let tr=markWrong(FILE,IST_TASKS.length);fb.innerHTML=feedbackForTry(tr,t.question,"Frage mit Ist + Ort + ein/eine");phase="q";}}
+function checkAText(txt){let t=IST_TASKS[i];if(okIstAnswer(txt,t)){markRight(FILE,IST_TASKS.length);phase="q";show()}else{let tr=markWrong(FILE,IST_TASKS.length);fb.innerHTML=feedbackForTry(tr,t.answer,"Ja/Nein und ein/kein");phase="q";}}
 function checkQ(){checkQText(ans.value)}function checkA(){checkAText(ans.value)}
 function sayQ(){startMic(mic,txt=>{writeQ();ans.value=txt;checkQText(txt)})}
 function sayA(){startMic(mic,txt=>{writeA();ans.value=txt;checkAText(txt)})}

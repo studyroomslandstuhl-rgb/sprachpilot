@@ -21,16 +21,30 @@ function header(title,isThemeOverview=false){
    <a class="btn secondary" href="${backHref}">← Zurück</a>
    <a class="btn secondary" href="uebersicht.html">Übersicht</a>
    <a class="btn secondary" href="statistik.html">Statistik</a>
+   <button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>
  </nav>`;
+}
+
+function resetThemeProgress(){
+ if(!confirm("Möchten Sie wirklich alle Fortschritte in diesem Thema löschen?")) return;
+ Object.keys(localStorage).forEach(k=>{
+   if(k.startsWith(KEY) || k.startsWith("SP_L4_T2_EXAM_")){
+     localStorage.removeItem(k);
+   }
+ });
+ location.href="index.html";
 }
 
 function taskKey(file){return KEY+"_"+file}
 function loadTask(file,total){
  try{let st=JSON.parse(localStorage.getItem(taskKey(file))||"null");if(st&&st.total===total&&Array.isArray(st.queue)&&Array.isArray(st.done))return st;}catch(e){}
  let queue=[...Array(total).keys()].sort(()=>Math.random()-.5);
- return {total,queue,done:[],current:null,tries:0};
+ return {total,queue,done:[],current:null,tries:0,hadError:false,repeatQueued:false};
 }
-function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(st))}
+function saveTask(file,st){
+ localStorage.setItem(taskKey(file),JSON.stringify(st));
+ try{window.dispatchEvent(new CustomEvent("sprachpilot-progress",{detail:{file,st}}))}catch(e){}
+}
 function nextIndex(file,total){
  let st=loadTask(file,total);
  if(st.current===null||st.current===undefined){
@@ -42,11 +56,18 @@ function nextIndex(file,total){
 
 function markRight(file,total){
  let st=loadTask(file,total);
- if(st.current!==null && st.current!==undefined){
-   if(!st.hadError){
-     if(!st.done.includes(st.current)) st.done.push(st.current);
+ const current=st.current;
+
+ if(current!==null && current!==undefined){
+   if(st.hadError || (st.tries||0)>0){
+     if(!st.done.includes(current) && !st.queue.includes(current)){
+       st.queue.push(current);
+     }
+   }else{
+     if(!st.done.includes(current)) st.done.push(current);
    }
  }
+
  st.current=null;
  st.tries=0;
  st.hadError=false;
@@ -60,7 +81,6 @@ function markWrong(file,total){
  st.tries=(st.tries||0)+1;
  st.hadError=true;
 
- // Die aktuelle Aufgabe bleibt sichtbar, wird aber einmal ans Ende gestellt.
  if(st.current!==null && st.current!==undefined && !st.repeatQueued){
    st.queue.push(st.current);
    st.repeatQueued=true;
@@ -73,33 +93,47 @@ function markWrong(file,total){
 function progressHtml(file,total){let st=loadTask(file,total),d=st.done.length,left=total-d,p=Math.round(d/total*100)||0;return `<div class="small">${d} richtig · ${left} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
 function pct(file,total){let st=loadTask(file,total);return Math.round((st.done.length||0)/total*100)||0}
 function complete(area,file,next){area.innerHTML=`<div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${next}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div>`}
-function feedbackForTry(tries,solution,type){if(tries===1)return"Da ist noch ein Fehler.";if(tries===2)return"Tipp: Prüfe "+(type||"Form und Schreibweise")+".";return"Lösung: "+solution}
-
-function currentMotherLang(){return localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru"}
-function translateWord(w){let l=currentMotherLang();return (w.tr&&w.tr[l])||w.tr?.ru||w.tr?.en||w.word}
-function wordProgress(wordId){
- const tasks=[
-  ["karteikarten.html",WORDS],
-  ["hoeren.html",WORDS],
-  ["artikel-klick.html",WORDS],
-  ["artikel.html",WORDS],
-  ["plural.html",WORDS],
-  ["bild-wort.html",WORDS],
-  ["wort-bild.html",WORDS],
-  ["kategorien.html",WORDS],
-  ["dialoge.html",DIALOG_TASKS.map(t=>wordById(t.id))]
- ];
- let possible=0, done=0;
- tasks.forEach(([file,list])=>{let idx=list.findIndex(w=>w.id===wordId);if(idx<0)return;possible++;let st=loadTask(file,list.length);if(st.done&&st.done.includes(idx))done++;});
- return possible?Math.round(done/possible*100):0;
+function feedbackForTry(tries,solution,type){
+ if(tries===1)return"Da ist noch ein Fehler.";
+ if(tries===2)return"Tipp: Prüfe "+(type||"Form und Schreibweise")+".";
+ return"Lösung: "+solution;
 }
 function wordStatus(p){if(p>=100)return"gelernt";if(p>=50)return"in Arbeit";if(p>0)return"angefangen";return"neu"}
 
 function speak(text,slow=false){
- const msg=String(text||"").trim(); if(!msg)return;
+ const msg=String(text||"").trim();
+ if(!msg)return;
  if(!("speechSynthesis" in window)){alert("Dein Browser unterstützt Vorlesen nicht.");return}
- function run(){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(msg);u.lang="de-DE";u.rate=slow?0.65:0.9;const voices=speechSynthesis.getVoices?speechSynthesis.getVoices():[];const de=voices.find(v=>v.lang&&v.lang.toLowerCase().startsWith("de"));if(de)u.voice=de;speechSynthesis.speak(u)}
- const voices=speechSynthesis.getVoices?speechSynthesis.getVoices():[]; if(voices.length===0&&"onvoiceschanged" in speechSynthesis){speechSynthesis.onvoiceschanged=run;setTimeout(run,250)}else run();
+
+ function pickGermanVoice(){
+   const voices=speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
+   return (
+     voices.find(v=>v.lang==="de-DE" && /google|microsoft|anna|katja|deutsch|german/i.test(v.name||"")) ||
+     voices.find(v=>v.lang==="de-DE") ||
+     voices.find(v=>String(v.lang||"").toLowerCase().startsWith("de")) ||
+     null
+   );
+ }
+
+ function run(){
+   speechSynthesis.cancel();
+   const u=new SpeechSynthesisUtterance(msg);
+   u.lang="de-DE";
+   u.rate=slow?0.68:0.86;
+   u.pitch=1;
+   u.volume=1;
+   const voice=pickGermanVoice();
+   if(voice) u.voice=voice;
+   speechSynthesis.speak(u);
+ }
+
+ const voices=speechSynthesis.getVoices ? speechSynthesis.getVoices() : [];
+ if(!voices.length && "onvoiceschanged" in speechSynthesis){
+   speechSynthesis.onvoiceschanged=run;
+   setTimeout(run,300);
+ }else{
+   run();
+ }
 }
 function startMic(btn,callback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const status=document.getElementById("micStatus");if(!SR){if(status)status.textContent="Mikrofon wird hier nicht unterstützt. Bitte schreibe.";return}const rec=new SR();rec.lang="de-DE";rec.interimResults=false;rec.continuous=false;if(btn)btn.classList.add("active");if(status)status.textContent="Ich höre zu …";rec.onresult=e=>{let txt=e.results[0][0].transcript;if(status)status.textContent="Gehört: "+txt;callback(txt)};rec.onerror=()=>{if(status)status.textContent="Mikrofon hat nicht funktioniert. Bitte schreibe."};rec.onend=()=>{if(btn)btn.classList.remove("active")};rec.start()}
 

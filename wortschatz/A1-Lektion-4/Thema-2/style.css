@@ -135,3 +135,9 @@ footer{text-align:center;color:white;margin-top:20px}
 .gap-line{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:24px;font-weight:900;margin:18px 0;color:#1f2933}
 .gap-input{width:220px;max-width:80vw;padding:12px 14px;border:2px solid #ffe28a;border-radius:14px;font-size:20px;font-weight:900;text-align:center}
 .small-inline-img{width:70px;height:70px;object-fit:contain;border:2px solid #ffe28a;border-radius:14px;background:white;padding:5px}
+
+.danger-btn{background:#e74c3c!important;color:white!important;border:0!important}
+
+.example-box{background:#fff8dc;border:2px solid #ffd966;border-radius:16px;padding:12px;margin:10px 0 14px;line-height:1.5}
+.example-box b{color:#7a5400}
+.step-note{background:#eef2ff;border-left:5px solid #667eea;border-radius:12px;padding:10px;margin:10px 0;color:#333}
