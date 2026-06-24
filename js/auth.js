@@ -238,10 +238,7 @@ export function renderAccountStrip(rootId="accountStrip"){
 
   if(!p){
     el.innerHTML=`
-      <div class="who">
-        Nicht eingeloggt
-      </div>
-
+      <div class="who">Nicht eingeloggt</div>
       <div class="account-links">
         <a href="${loginUrlForCurrent()}">🔑 Login</a>
         <a href="/register/?redirect=${encodeURIComponent(location.pathname+location.search+location.hash)}">📝 Registrieren</a>
@@ -254,7 +251,6 @@ export function renderAccountStrip(rootId="accountStrip"){
     <div class="who">
       ${safeText(p.vorname||"")} ${safeText(p.nachname||"")} · ${safeText(p.kurs||"")}
     </div>
-
     <div class="account-links">
       <a href="/dashboard/">📊 Dashboard</a>
       <a href="/profile/">👤 Profil</a>
