@@ -1,0 +1,1 @@
+export const ADJECTIVES=["modern","schön","hässlich","breit","schmal","groß","klein","hell","dunkel","teuer","billig"];

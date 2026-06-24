@@ -1,0 +1,1 @@
+export const COLORS=["schwarz","grau","weiß","grün","braun","blau","rot","gelb","hellrot","dunkelrot","hellblau","dunkelblau","hellgrün","dunkelgrün","hellbraun","dunkelbraun","hellgrau","dunkelgrau","hellgelb","dunkelgelb"];

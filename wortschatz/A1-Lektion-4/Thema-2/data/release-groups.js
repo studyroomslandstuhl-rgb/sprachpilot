@@ -1,0 +1,1 @@
+export const RELEASE_GROUPS={book:{label:"Buchwortschatz"},extra:{label:"Zusatzwortschatz"}};
