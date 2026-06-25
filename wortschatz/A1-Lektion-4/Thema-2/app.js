@@ -4,14 +4,20 @@ const VOCABULARY_SETS={basis:"Im Buch",plus:"Nicht im Buch"};
 const DIALOG_TASKS=[{"id": "schrank", "adj": "groß", "answerNoun": "der Schrank", "answerPronoun": "er", "line1": "Ist ___ groß?", "line2": "Ja, ___ ist groß."}, {"id": "kuehlschrank", "adj": "neu", "answerNoun": "der Kühlschrank", "answerPronoun": "er", "line1": "Ist ___ neu?", "line2": "Ja, ___ ist neu."}, {"id": "sofa", "adj": "bequem", "answerNoun": "das Sofa", "answerPronoun": "es", "line1": "Ist ___ bequem?", "line2": "Ja, ___ ist bequem."}, {"id": "tisch", "adj": "braun", "answerNoun": "der Tisch", "answerPronoun": "er", "line1": "Ist ___ braun?", "line2": "Ja, ___ ist braun."}, {"id": "stuhl", "adj": "modern", "answerNoun": "der Stuhl", "answerPronoun": "er", "line1": "Ist ___ modern?", "line2": "Ja, ___ ist modern."}, {"id": "bett", "adj": "bequem", "answerNoun": "das Bett", "answerPronoun": "es", "line1": "Ist ___ bequem?", "line2": "Ja, ___ ist bequem."}, {"id": "fernseher", "adj": "teuer", "answerNoun": "der Fernseher", "answerPronoun": "er", "line1": "Ist ___ teuer?", "line2": "Ja, ___ ist teuer."}, {"id": "teppich", "adj": "schön", "answerNoun": "der Teppich", "answerPronoun": "er", "line1": "Ist ___ schön?", "line2": "Ja, ___ ist schön."}, {"id": "sessel", "adj": "grau", "answerNoun": "der Sessel", "answerPronoun": "er", "line1": "Ist ___ grau?", "line2": "Ja, ___ ist grau."}, {"id": "lampe", "adj": "hell", "answerNoun": "die Lampe", "answerPronoun": "sie", "line1": "Ist ___ hell?", "line2": "Ja, ___ ist hell."}, {"id": "herd", "adj": "neu", "answerNoun": "der Herd", "answerPronoun": "er", "line1": "Ist ___ neu?", "line2": "Ja, ___ ist neu."}, {"id": "elektrogeraet", "adj": "modern", "answerNoun": "das Elektrogerät", "answerPronoun": "es", "line1": "Ist ___ modern?", "line2": "Ja, ___ ist modern."}, {"id": "dusche", "adj": "modern", "answerNoun": "die Dusche", "answerPronoun": "sie", "line1": "Ist ___ modern?", "line2": "Ja, ___ ist modern."}, {"id": "badewanne", "adj": "groß", "answerNoun": "die Badewanne", "answerPronoun": "sie", "line1": "Ist ___ groß?", "line2": "Ja, ___ ist groß."}, {"id": "toilette", "adj": "sauber", "answerNoun": "die Toilette", "answerPronoun": "sie", "line1": "Ist ___ sauber?", "line2": "Ja, ___ ist sauber."}, {"id": "waschbecken", "adj": "weiß", "answerNoun": "das Waschbecken", "answerPronoun": "es", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}, {"id": "kommode", "adj": "braun", "answerNoun": "die Kommode", "answerPronoun": "sie", "line1": "Ist ___ braun?", "line2": "Ja, ___ ist braun."}, {"id": "nachttisch", "adj": "klein", "answerNoun": "der Nachttisch", "answerPronoun": "er", "line1": "Ist ___ klein?", "line2": "Ja, ___ ist klein."}, {"id": "bild", "adj": "schön", "answerNoun": "das Bild", "answerPronoun": "es", "line1": "Ist ___ schön?", "line2": "Ja, ___ ist schön."}, {"id": "tuer", "adj": "weiß", "answerNoun": "die Tür", "answerPronoun": "sie", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}, {"id": "fenster", "adj": "groß", "answerNoun": "das Fenster", "answerPronoun": "es", "line1": "Ist ___ groß?", "line2": "Ja, ___ ist groß."}, {"id": "dach", "adj": "rot", "answerNoun": "das Dach", "answerPronoun": "es", "line1": "Ist ___ rot?", "line2": "Ja, ___ ist rot."}, {"id": "boden", "adj": "braun", "answerNoun": "der Boden", "answerPronoun": "er", "line1": "Ist ___ braun?", "line2": "Ja, ___ ist braun."}, {"id": "wand", "adj": "weiß", "answerNoun": "die Wand", "answerPronoun": "sie", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}, {"id": "spuele", "adj": "sauber", "answerNoun": "die Spüle", "answerPronoun": "sie", "line1": "Ist ___ sauber?", "line2": "Ja, ___ ist sauber."}, {"id": "spuelmaschine", "adj": "neu", "answerNoun": "die Spülmaschine", "answerPronoun": "sie", "line1": "Ist ___ neu?", "line2": "Ja, ___ ist neu."}, {"id": "backofen", "adj": "modern", "answerNoun": "der Backofen", "answerPronoun": "er", "line1": "Ist ___ modern?", "line2": "Ja, ___ ist modern."}, {"id": "mikrowelle", "adj": "klein", "answerNoun": "die Mikrowelle", "answerPronoun": "sie", "line1": "Ist ___ klein?", "line2": "Ja, ___ ist klein."}, {"id": "toaster", "adj": "weiß", "answerNoun": "der Toaster", "answerPronoun": "er", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}, {"id": "wasserkocher", "adj": "neu", "answerNoun": "der Wasserkocher", "answerPronoun": "er", "line1": "Ist ___ neu?", "line2": "Ja, ___ ist neu."}, {"id": "abzug", "adj": "modern", "answerNoun": "der Abzug", "answerPronoun": "er", "line1": "Ist ___ modern?", "line2": "Ja, ___ ist modern."}, {"id": "kuechenschrank", "adj": "groß", "answerNoun": "der Küchenschrank", "answerPronoun": "er", "line1": "Ist ___ groß?", "line2": "Ja, ___ ist groß."}, {"id": "kaffeetisch", "adj": "klein", "answerNoun": "der Kaffeetisch", "answerPronoun": "er", "line1": "Ist ___ klein?", "line2": "Ja, ___ ist klein."}, {"id": "gefrierschrank", "adj": "weiß", "answerNoun": "der Gefrierschrank", "answerPronoun": "er", "line1": "Ist ___ weiß?", "line2": "Ja, ___ ist weiß."}, {"id": "kaffeemaschine", "adj": "modern", "answerNoun": "die Kaffeemaschine", "answerPronoun": "sie", "line1": "Ist ___ modern?", "line2": "Ja, ___ ist modern."}];
 
 const KEY="SP_L4_T2_FINAL_V3";
+const EXAM_UNLOCK_KEY="SP_L4_T2_EXAM_UNLOCKED";
+const CATEGORY_TASK_ALLOWED=["Möbel","Elektrogeräte","Bad"];
+const CATEGORY_TASK_EXCLUDE_IDS=["spuele","dach","tuer","wand","boden","fenster","bild"];
+function categoryTaskWords(){return WORDS.filter(w=>CATEGORY_TASK_ALLOWED.includes(w.category)&&!CATEGORY_TASK_EXCLUDE_IDS.includes(w.id))}
 function currentMotherLang(){let fromProfile="";try{const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");if(p)fromProfile=p.motherLanguageCode||p.muttersprache||p.motherLanguage||p.mother_language||""}catch(e){}const raw=fromProfile||localStorage.getItem("SP_MOTHER_LANGUAGE_CODE")||localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru";const n=String(raw).trim().toLowerCase();const map={"arabisch":"ar","russisch":"ru","englisch":"en","ukrainisch":"uk","kurdisch":"ku","türkisch":"tr","tuerkisch":"tr","rumänisch":"ro","rumaenisch":"ro","japanisch":"ja","polnisch":"pl","deutsch":"de"};return map[n]||n||"ru"}
 function translateWord(w){let l=currentMotherLang();return(w.tr&&w.tr[l])||w.tr?.ru||w.tr?.en||w.word}
 function currentUserLabel(){try{const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||localStorage.getItem("sprachpilotUser")||"null");if(p){const name=[p.firstName||p.vorname||p.name,p.lastName||p.nachname].filter(Boolean).join(" ")||p.displayName||p.email||"Schüler/in";const course=p.courseCode||p.kurs||p.course||p.kursCode||localStorage.getItem("SP_COURSE_CODE")||"Kurs";return `${name} · ${course}`}}catch(e){}return `Schüler/in · ${localStorage.getItem("SP_COURSE_CODE")||"Kurs"}`}
-function prerequisiteTasks(){return [["karteikarten.html",WORDS.length],["hoeren.html",WORDS.length],["artikel-klick.html",WORDS.length],["artikel.html",WORDS.length],["plural.html",WORDS.length],["bild-wort.html",WORDS.length],["wort-bild.html",WORDS.length],["kategorien.html",WORDS.length],["dialoge.html",DIALOG_TASKS.length]]}
+function prerequisiteTasks(){const catLen=categoryTaskWords().length;return [["karteikarten.html",WORDS.length],["hoeren.html",WORDS.length],["artikel-klick.html",WORDS.length],["artikel.html",WORDS.length],["plural.html",WORDS.length],["bild-wort.html",WORDS.length],["wort-bild.html",WORDS.length],["kategorien.html",catLen],["dialoge.html",DIALOG_TASKS.length]]}
 function allPrereqComplete(){return prerequisiteTasks().every(t=>pct(t[0],t[1])>=100)}
+function setExamUnlocked(){localStorage.setItem(EXAM_UNLOCK_KEY,"1")}
+function isExamUnlocked(){if(localStorage.getItem(EXAM_UNLOCK_KEY)==="1")return true;if(allPrereqComplete()){setExamUnlocked();return true}return false}
 function prereqPercent(){const t=prerequisiteTasks();return Math.round(t.reduce((s,x)=>s+pct(x[0],x[1]),0)/t.length)||0}
 function examHistory(){try{return JSON.parse(localStorage.getItem("SP_L4_T2_EXAM_HISTORY_V1")||"[]")}catch(e){return[]}}
-function saveExamResult(result){const h=examHistory();h.push({...result,date:new Date().toISOString()});localStorage.setItem("SP_L4_T2_EXAM_HISTORY_V1",JSON.stringify(h));localStorage.setItem("SP_L4_T2_EXAM_BEST",JSON.stringify(bestExamResultFrom(h)))}
+function saveExamResult(result){setExamUnlocked();const h=examHistory();h.push({...result,date:new Date().toISOString()});localStorage.setItem("SP_L4_T2_EXAM_HISTORY_V1",JSON.stringify(h));localStorage.setItem("SP_L4_T2_EXAM_BEST",JSON.stringify(bestExamResultFrom(h)))}
 function bestExamResultFrom(h){if(!h||!h.length)return null;return h.reduce((best,x)=>(!best||Number(x.percent||0)>Number(best.percent||0)?x:best),null)}
 function bestExamResult(){return bestExamResultFrom(examHistory())}
 function starsForPercent(p){p=Number(p||0);if(p>=100)return 3;if(p>=70)return 2;if(p>=50)return 1;return 0}
@@ -22,32 +28,52 @@ function full(w){return w.full}
 function wordById(id){return WORDS.find(w=>w.id===id)||{}}
 function fixImg(img){img.classList.add("missing");img.alt="Bild fehlt"}
 function esc(s){return String(s||"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]))}
+function currentDirPath(){return String(location.pathname||"").replace(/[^/]*$/,"")}
 function globalRootPath(){
  const p=String(location.pathname||"");
  const markers=[
   "/wortschatz-A1-Lektion-4/Thema-2/",
   "/wortschatz-A1-Lektion-4_Thema-2/",
   "/wortschatz-a1-lektion-4/thema-2/",
+  "/lektion-4/thema-2/",
   "/thema-2/",
   "/Thema-2/"
  ];
+ const low=p.toLowerCase();
  for(const m of markers){
-  const low=p.toLowerCase();
   const ml=m.toLowerCase();
   const i=low.indexOf(ml);
   if(i>=0)return p.slice(0,i+1)||"/";
  }
- return "/";
+ const dir=currentDirPath();
+ if(dir && dir!=="/") return dir.replace(/[^/]+\/$/,"");
+ return "./";
 }
-function globalPage(page){return globalRootPath()+page}
-function goHome(e){if(e)e.preventDefault();location.href=globalPage("index.html")}
-function goDashboard(e){if(e)e.preventDefault();location.href=globalPage("dashboard.html")}
-function goProfile(e){if(e)e.preventDefault();location.href=globalPage("profil.html")}
+function cleanPath(x){return String(x||"").replace(/\/+/g,"/").replace("http:/","http://").replace("https:/","https://")}
+function globalPage(page){return cleanPath(globalRootPath()+page)}
+function linkCandidates(names){
+ const list=[];
+ const root=globalRootPath();
+ names.forEach(n=>{list.push(cleanPath(root+n));list.push(cleanPath("../"+n));list.push(cleanPath("../../"+n));list.push(cleanPath("/"+n));list.push(cleanPath(n))});
+ return [...new Set(list)];
+}
+async function goFirstWorking(e,names){
+ if(e)e.preventDefault();
+ const candidates=linkCandidates(names);
+ if(location.protocol==="file:"){location.href=candidates[0];return}
+ for(const href of candidates){
+  try{const r=await fetch(href,{method:"HEAD",cache:"no-store"});if(r.ok){location.href=href;return}}catch(err){}
+ }
+ location.href=candidates[0];
+}
+function goHome(e){goFirstWorking(e,["index.html"])}
+function goDashboard(e){goFirstWorking(e,["dashboard.html","student-dashboard.html","dashboard/index.html"])}
+function goProfile(e){goFirstWorking(e,["profil.html","profile.html","student-profile.html"])}
 function header(title,isThemeOverview=false){
  const h=document.querySelector(".topbar");
  if(!h)return;
  const backHref=isThemeOverview?"../index.html":"index.html";
- h.innerHTML=`<div class="topbar-main"><a class="brand" href="${globalPage("index.html")}" onclick="goHome(event)"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 4 · Thema 2</div></div></a><div class="account-tools"><span class="account-pill">${esc(currentUserLabel())}</span><a class="account-link" href="${globalPage("dashboard.html")}" onclick="goDashboard(event)">📊 Dashboard</a><a class="account-link" href="${globalPage("profil.html")}" onclick="goProfile(event)">👤 Profil</a><button class="account-link account-btn" type="button" onclick="logoutUser()">🚪 Abmelden</button></div></div><nav class="nav"><a class="btn secondary" href="${backHref}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button></nav>`
+ h.innerHTML=`<div class="topbar-main"><a class="brand" href="${globalPage("index.html")}" onclick="goHome(event)"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 4 · Thema 2</div></div></a><div class="account-tools"><span class="account-pill">${esc(currentUserLabel())}</span><a class="account-link" href="${linkCandidates(["dashboard.html","student-dashboard.html","dashboard/index.html"])[0]}" onclick="goDashboard(event)">📊 Dashboard</a><a class="account-link" href="${linkCandidates(["profil.html","profile.html","student-profile.html"])[0]}" onclick="goProfile(event)">👤 Profil</a><button class="account-link account-btn" type="button" onclick="logoutUser()">🚪 Abmelden</button></div></div><nav class="nav"><a class="btn secondary" href="${backHref}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button></nav>`
 }
 function logoutUser(){
  if(!confirm("Möchten Sie sich abmelden?"))return;
@@ -71,7 +97,7 @@ function progressHtml(file,total){let st=loadTask(file,total),d=Math.min(st.done
 function realLoadTask(file,total){const saved=sessionStorage.getItem(practiceFlag(file));sessionStorage.removeItem(practiceFlag(file));let st=loadTask(file,total);if(saved!==null)sessionStorage.setItem(practiceFlag(file),saved);return st}
 function pct(file,total){let st=realLoadTask(file,total);const doneCount=Math.min(st.done.length||0,total||0);return Math.min(100,Math.round((doneCount/(total||1))*100)||0)}
 function complete(target,file,nextHref="index.html"){if(isPracticeMode(file))stopPractice(file);target.innerHTML=`<div class="small">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="finish-box"><div class="finish-icon">✓</div><div class="question">Aufgabe geschafft!</div><div class="big">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="actions"><button class="btn" onclick="startPractice('${file}')">Nochmal üben</button><a class="btn green" href="${nextHref}" onclick="stopPractice('${file}')">Weiter</a><a class="btn secondary" href="index.html" onclick="stopPractice('${file}')">Zurück zum Thema</a></div></div>`}
-function wordProgress(wordId){const tasks=[["karteikarten.html",WORDS],["hoeren.html",WORDS],["artikel-klick.html",WORDS],["artikel.html",WORDS],["plural.html",WORDS],["bild-wort.html",WORDS],["wort-bild.html",WORDS],["kategorien.html",WORDS],["dialoge.html",DIALOG_TASKS.map(t=>wordById(t.id))]];let possible=0,done=0;tasks.forEach(([file,list])=>{let idx=list.findIndex(w=>w&&w.id===wordId);if(idx<0)return;possible++;let st=realLoadTask(file,list.length);if(st.done&&st.done.includes(idx))done++});return possible?Math.round(done/possible*100):0}
+function wordProgress(wordId){const tasks=[["karteikarten.html",WORDS],["hoeren.html",WORDS],["artikel-klick.html",WORDS],["artikel.html",WORDS],["plural.html",WORDS],["bild-wort.html",WORDS],["wort-bild.html",WORDS],["kategorien.html",categoryTaskWords()],["dialoge.html",DIALOG_TASKS.map(t=>wordById(t.id))]];let possible=0,done=0;tasks.forEach(([file,list])=>{let idx=list.findIndex(w=>w&&w.id===wordId);if(idx<0)return;possible++;let st=realLoadTask(file,list.length);if(st.done&&st.done.includes(idx))done++});return possible?Math.round(done/possible*100):0}
 function wordStatus(p){if(p>=100)return"gelernt";if(p>=50)return"in Arbeit";if(p>0)return"angefangen";return"neu"}
 function speak(text,slow=false){const msg=String(text||"").trim();if(!msg)return;if(!("speechSynthesis" in window)){alert("Dein Browser unterstützt Vorlesen nicht.");return}function pickGermanVoice(){const voices=speechSynthesis.getVoices?speechSynthesis.getVoices():[];return voices.find(v=>v.lang==="de-DE"&&/google|microsoft|anna|katja|deutsch|german/i.test(v.name||""))||voices.find(v=>v.lang==="de-DE")||voices.find(v=>String(v.lang||"").toLowerCase().startsWith("de"))||null}function run(){speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(msg);u.lang="de-DE";u.rate=slow?0.68:0.86;u.pitch=1;u.volume=1;const voice=pickGermanVoice();if(voice)u.voice=voice;speechSynthesis.speak(u)}const voices=speechSynthesis.getVoices?speechSynthesis.getVoices():[];if(!voices.length&&"onvoiceschanged" in speechSynthesis){speechSynthesis.onvoiceschanged=run;setTimeout(run,300)}else run()}
 function startMic(btn,callback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const status=document.getElementById("micStatus");if(!SR){if(status)status.textContent="Mikrofon wird hier nicht unterstützt. Bitte schreibe.";return}const rec=new SR();rec.lang="de-DE";rec.interimResults=false;rec.continuous=false;if(btn)btn.classList.add("active");if(status)status.textContent="Ich höre zu …";rec.onresult=e=>{let txt=e.results[0][0].transcript;if(status)status.textContent="Gehört: "+txt;callback(txt)};rec.onerror=()=>{if(status)status.textContent="Mikrofon hat nicht funktioniert. Bitte schreibe."};rec.onend=()=>{if(btn)btn.classList.remove("active")};rec.start()}
