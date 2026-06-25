@@ -1,15 +1,48 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung – Thema 2</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=100"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung – Thema 2</title><link rel="stylesheet" href="style.css">
+<style>
+.exam-option-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}
+.exam-option{border:2px solid #ffe28a;background:#fff9dd;border-radius:16px;padding:12px;font-weight:900;cursor:pointer;text-align:center}
+.exam-option img{width:100%;height:100px;object-fit:contain;display:block;margin-bottom:6px}
+.exam-task-label{text-align:center;font-size:18px;font-weight:900;color:#7a5100;margin-bottom:8px}
+.solution-box{background:#ffe1e1;border-left:5px solid #e74c3c;border-radius:14px;padding:12px;margin:12px 0;line-height:1.5}
+.exam-score{font-size:44px;font-weight:900;color:#667eea;text-align:center;margin:16px 0}
+</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=150"></script><script>
 header("Prüfung");
 const FILE="pruefung.html";
-const MAX=20;
+const MAX_TASKS=20;
 let items=[],pos=0,score=0,results=[];
 
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+
 function makeItems(){
- const pool=[...WORDS].sort(()=>Math.random()-.5).slice(0,MAX);
- return pool.map(w=>{
-   const type=Math.random()<0.5?"full":"plural";
-   return {w,type,question:type==="full"?`Schreibe das Wort mit Artikel.`:`Schreibe den Plural.`,answer:type==="full"?w.full:w.plural};
+ const types=["full","plural","article","imageToWord","listen","dialog","category","wordToImage"];
+ const selected=shuffle(WORDS).slice(0,Math.min(MAX_TASKS,WORDS.length));
+ let last="";
+ return selected.map((w,idx)=>{
+   let pool=types.filter(t=>t!==last);
+   let type=pool[idx%pool.length];
+   last=type;
+   return makeItem(w,type);
  });
+}
+
+function makeItem(w,type){
+ if(type==="full")return{type,w,question:"Schreibe das Wort mit Artikel.",answer:w.full};
+ if(type==="plural")return{type,w,question:"Schreibe den Plural.",answer:w.plural};
+ if(type==="article")return{type,w,question:`Wähle den richtigen Artikel: ___ ${w.word}`,answer:w.article,options:["der","die","das"]};
+ if(type==="imageToWord")return{type,w,question:"Was ist das? Schreibe mit Artikel.",answer:w.full};
+ if(type==="listen")return{type,w,question:"Höre und schreibe das Wort mit Artikel.",answer:w.full};
+ if(type==="category")return{type,w,question:`Welche Kategorie passt zu ${w.full}?`,answer:w.category,options:shuffle([...new Set(WORDS.map(x=>x.category))]).slice(0,4)};
+ if(type==="dialog"){
+   const t=DIALOG_TASKS.find(d=>d.id===w.id)||{answerNoun:w.full,answerPronoun:w.pronoun,adj:"schön",line1:"Ist ___ schön?",line2:"Ja, ___ ist schön."};
+   return{type,w,dialog:t,question:"Ergänze den Dialog.",answer:t.answerNoun+" / "+t.answerPronoun};
+ }
+ if(type==="wordToImage"){
+   let options=shuffle([w,...WORDS.filter(x=>x.id!==w.id)]).slice(0,4);
+   if(!options.find(x=>x.id===w.id))options[0]=w;
+   return{type,w,question:`Wähle das passende Bild: ${w.full}`,answer:w.id,options:shuffle(options)};
+ }
+ return{type,w,question:"Schreibe das Wort mit Artikel.",answer:w.full};
 }
 
 function start(){
@@ -20,54 +53,58 @@ function start(){
  items=makeItems();pos=0;score=0;results=[];show();
 }
 
+function n(x){return simple(x)}
 function points(user,answer,type){
- const u=simple(user), a=simple(answer);
+ const u=n(user),a=n(answer);
  if(u===a)return 10;
  let p=10;
- if(type==="full"){
-   const ansArt=simple(answer).split(" ")[0];
-   const userArt=u.split(" ")[0]||"";
+ if(["full","imageToWord","listen"].includes(type)){
+   const ansArt=a.split(" ")[0],userArt=u.split(" ")[0]||"";
    if(ansArt!==userArt)p-=3;
  }
- const dist=Math.abs(u.length-a.length);
- p-=Math.min(4,dist);
+ p-=Math.min(5,Math.abs(u.length-a.length)||1);
  return Math.max(0,p);
 }
 
 function show(){
  if(pos>=items.length){finish();return}
  const it=items[pos],w=it.w;
- area.innerHTML=`<div class="small">Prüfungsaufgabe ${pos+1} / ${items.length}</div><div class="question">${it.question}</div><img class="task-img" src="${w.image}" onerror="fixImg(this)" alt=""><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
-}
-
-function check(){
- const it=items[pos];
- const user=ans.value;
- const p=points(user,it.answer,it.type);
- score+=p;
- results.push({question:it.question,answer:it.answer,user,points:p});
- if(p===10){
-   fb.innerHTML=`<div class="ok">Richtig! +10 Punkte</div><button class="btn" onclick="next()">Weiter</button>`;
- }else{
-   fb.innerHTML=`<div class="solution-box"><b>Lösung:</b> ${it.answer}<br><b>Deine Antwort:</b> ${user||"-"}<br><b>Punkte:</b> ${p}/10</div><button class="btn" onclick="next()">Weiter</button>`;
+ let html=`<div class="small">Prüfungsaufgabe ${pos+1} / ${items.length}</div><div class="exam-task-label">${it.question}</div>`;
+ if(["full","plural","imageToWord"].includes(it.type)){
+   html+=`<img class="task-img" src="${w.image}" onerror="fixImg(this)" alt=""><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkText()">Kontrollieren</button>`;
+ }else if(it.type==="listen"){
+   html+=`<div class="actions"><button class="btn" onclick="speak('${w.full.replace(/'/g,"\\'")}')">🔊 Hören</button><button class="btn secondary" onclick="speak('${w.full.replace(/'/g,"\\'")}',true)">Langsam</button></div><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkText()">Kontrollieren</button>`;
+ }else if(it.type==="article"||it.type==="category"){
+   html+=`<div class="exam-option-grid">${it.options.map(o=>`<button class="exam-option" onclick="checkChoice('${String(o).replace(/'/g,"\\'")}')">${o}</button>`).join("")}</div>`;
+ }else if(it.type==="wordToImage"){
+   html+=`<div class="exam-option-grid">${it.options.map(o=>`<button class="exam-option" onclick="checkChoice('${o.id}')"><img src="${o.image}" onerror="fixImg(this)" alt="">${o.full}</button>`).join("")}</div>`;
+ }else if(it.type==="dialog"){
+   const t=it.dialog,firstRest=t.line1.replace("Ist ___ ","").replace("?",""),secondParts=t.line2.split("___");
+   html+=`<img class="small-inline-img" src="${w.image}" onerror="fixImg(this)" alt=""><div class="gap-line dialog-line"><span>Ist</span><input id="noun" class="gap-input" placeholder="Schreiben Sie die Antwort hier"><span>${firstRest}?</span></div><div class="gap-line dialog-line"><span>${secondParts[0]}</span><input id="pronoun" class="gap-input" placeholder="Schreiben Sie die Antwort hier"><span>${secondParts[1]||""}</span></div><button class="btn" onclick="checkDialog()">Kontrollieren</button>`;
  }
+ html+=`<div id="fb" class="feedback"></div>`;
+ area.innerHTML=html;
 }
 
+function checkText(){grade(ans.value,items[pos].answer,items[pos].type)}
+function checkChoice(value){grade(value,items[pos].answer,items[pos].type)}
+function checkDialog(){
+ const it=items[pos],answer=it.dialog.answerNoun+" / "+it.dialog.answerPronoun,user=(noun.value||"")+" / "+(pronoun.value||"");
+ grade(user,answer,it.type);
+}
+function grade(user,answer,type){
+ let p=(n(user)===n(answer))?10:points(user,answer,type);
+ if(["article","category","wordToImage"].includes(type))p=(n(user)===n(answer))?10:0;
+ score+=p;results.push({type,word:items[pos].w.id,answer,user,points:p});
+ fb.innerHTML=p===10?`<div class="ok">Richtig! +10 Punkte</div><button class="btn" onclick="next()">Weiter</button>`:`<div class="solution-box"><b>Lösung:</b> ${answer}<br><b>Deine Antwort:</b> ${user||"-"}<br><b>Punkte:</b> ${p}/10</div><button class="btn" onclick="next()">Weiter</button>`;
+}
 function next(){pos++;show()}
-
 function finish(){
- const max=items.length*10;
- const percent=Math.round(score/max*100);
- const stars=starsForPercent(percent);
- const result={score,maxScore:max,percent,stars};
- saveExamResult(result);
-
+ const max=items.length*10,safeScore=Math.min(score,max),percent=Math.min(100,Math.round(safeScore/max*100)),stars=starsForPercent(percent);
+ saveExamResult({score:safeScore,maxScore:max,percent,stars,items:results});
  let st=loadTask(FILE,100);
- st.done=[...Array(percent).keys()];
- st.total=100;
- saveTask(FILE,st);
-
- area.innerHTML=`<div class="question">Prüfung beendet</div><div class="exam-score">${percent}%</div><div>${starsHtml(stars)}</div><div class="ok">Punkte: ${score}/${max}</div><div class="actions"><button class="btn" onclick="start()">Prüfung neu starten</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`;
+ st.total=100;st.done=[...Array(percent).keys()];st.queue=[];st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(FILE,st);
+ area.innerHTML=`<div class="question">Prüfung beendet</div><div class="exam-score">${percent}%</div><div>${starsHtml(stars)}</div><div class="ok">Punkte: ${safeScore}/${max}</div><div class="actions"><button class="btn" onclick="start()">Prüfung neu starten</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`;
 }
 start();
 </script></body></html>
