@@ -226,3 +226,16 @@ function okIstQuestion(txt,t){return simple(txt)===simple(t.question)}
 function okIstAnswer(txt,t){return simple(txt)===simple(t.answer)}
 
 try{window.addEventListener("load",()=>syncDashboardProgress())}catch(e){}
+
+/* ===== SprachPilot Standard-Header FINAL v232: einheitlich für alle Themen ===== */
+function header(title,isThemeOverview=false){
+ const h=document.querySelector(".topbar");
+ if(!h)return;
+ const backHref=isThemeOverview?"../index.html":"index.html";
+ const home=(typeof HOME_URL!=="undefined"?HOME_URL:"/index.html");
+ const dashboard=(typeof DASHBOARD_URL!=="undefined"?DASHBOARD_URL:"/student-dashboard/index.html");
+ const profile=(typeof PROFILE_URL!=="undefined"?PROFILE_URL:"/profile/index.html");
+ const label=(typeof currentUserLabel==="function"?currentUserLabel():"Schüler/in");
+ const safe=(typeof esc==="function"?esc:function(s){return String(s||"").replace(/[&<>'"]/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]||m})});
+ h.innerHTML=`<div class="topbar-main"><a class="brand" href="${home}" onclick="goHome(event)"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${safe(title)} · A1 Lektion 4 · Thema 2</div></div></a><div class="account-tools"><span class="account-pill">${safe(label)}</span><a class="account-link" href="${dashboard}" onclick="goDashboard(event)">📊 Dashboard</a><a class="account-link" href="${profile}" onclick="goProfile(event)">👤 Profil</a><button class="account-link account-btn" type="button" onclick="logoutUser()">🚪 Abmelden</button></div></div><nav class="nav"><a class="btn secondary" href="${backHref}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button></nav>`;
+}

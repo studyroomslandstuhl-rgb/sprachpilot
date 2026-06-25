@@ -287,3 +287,81 @@ footer{text-align:center;color:white;margin-top:20px}
 .module .icon{min-height:78px;display:flex;align-items:center;justify-content:center}
 .module:nth-child(3) .icon{font-size:42px;line-height:1.08;min-height:78px}
 @media(max-width:700px){.module:nth-child(3) .icon{font-size:34px}}
+
+/* ===== SprachPilot Referenzdesign FINAL v232: Header/Kacheln einheitlich ===== */
+.topbar{
+  display:flex!important;
+  flex-direction:column!important;
+  align-items:stretch!important;
+  justify-content:flex-start!important;
+  gap:14px!important;
+  background:white!important;
+  border-radius:24px!important;
+  padding:18px 22px!important;
+  margin-bottom:20px!important;
+  box-shadow:0 10px 24px rgba(0,0,0,.10)!important;
+  border:1px solid #ffe7a8!important;
+}
+.topbar-main{
+  width:100%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:space-between!important;
+  gap:16px!important;
+  flex-wrap:wrap!important;
+}
+.topbar .brand{flex:1 1 360px!important;min-width:260px!important}
+.account-tools{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;flex-wrap:wrap!important}
+.account-pill,.account-link{
+  border:2px solid #ffe28a!important;
+  background:#fff9dd!important;
+  color:#5a3b00!important;
+  border-radius:999px!important;
+  padding:8px 13px!important;
+  font-weight:900!important;
+  text-decoration:none!important;
+  font-family:inherit!important;
+  font-size:14px!important;
+  line-height:1.15!important;
+  box-shadow:none!important;
+}
+.account-btn{cursor:pointer!important;appearance:none!important}
+.nav{
+  width:100%!important;
+  display:flex!important;
+  justify-content:flex-start!important;
+  align-items:center!important;
+  gap:10px!important;
+  flex-wrap:wrap!important;
+}
+.btn.secondary,.topbar .nav .btn.secondary{
+  background:linear-gradient(135deg,#fff3b0,#f0c000)!important;
+  color:#4b3100!important;
+  border:2px solid #d99600!important;
+  box-shadow:0 6px 14px rgba(217,150,0,.14)!important;
+}
+.danger-btn,.topbar .nav .danger-btn{
+  background:linear-gradient(135deg,#fff3b0,#e8b400)!important;
+  color:#6b2b00!important;
+  border:2px solid #b87900!important;
+  box-shadow:0 6px 14px rgba(217,150,0,.14)!important;
+}
+.module{display:flex!important;flex-direction:column!important}
+.module .progress{margin-top:auto!important}
+.module .icon.article-icon,.module:nth-child(3) .icon{
+  font-size:34px!important;
+  line-height:1.05!important;
+  min-height:78px!important;
+  margin:8px 0 8px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  white-space:nowrap!important;
+}
+@media(max-width:700px){
+  .topbar-main{align-items:flex-start!important}
+  .account-tools{width:100%!important;justify-content:flex-start!important}
+  .nav{justify-content:flex-start!important}
+  .account-pill,.account-link{font-size:13px!important;padding:7px 10px!important}
+  .module .icon.article-icon,.module:nth-child(3) .icon{font-size:28px!important;min-height:66px!important}
+}
