@@ -5,8 +5,9 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Schüler-Dashboard · SprachPilot</title>
 <style>
-:root{--yellow:#ffd84d;--yellow2:#fff4bf;--green:#16a34a;--red:#ef4444;--ink:#1f2937;--muted:#6b7280;--card:#fff;--line:#f1d77a;--shadow:0 14px 35px rgba(90,70,0,.12)}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#ffdc53 0,#ffe889 44%,#fff8d7 100%);color:var(--ink);min-height:100vh}.wrap{max-width:1160px;margin:0 auto;padding:18px}.top{background:#fff;border-radius:26px;padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}.logo{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,#ffd84d,#ffb800);display:grid;place-items:center;font-weight:900}.brand h1{margin:0;font-size:26px}.sub{font-size:14px;color:var(--muted);margin-top:3px}.userbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.pill,.navbtn{border:1px solid #f3d66b;background:#fffdf2;border-radius:999px;padding:9px 13px;font-weight:700;color:#5b4a00;text-decoration:none}.navbtn:hover{background:#fff6bf}.logout{border:0;cursor:pointer}.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin:18px 0}.card{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:20px;border:1px solid rgba(255,215,77,.55)}.progressHead{display:flex;align-items:center;gap:18px}.circle{width:104px;height:104px;border-radius:50%;background:conic-gradient(var(--green) calc(var(--p)*1%),#f3f4f6 0);display:grid;place-items:center;font-weight:900;font-size:26px;position:relative;flex:0 0 auto}.circle:after{content:"";position:absolute;inset:10px;background:#fff;border-radius:50%}.circle span{position:relative;z-index:2}.bar{height:13px;background:#f3f4f6;border-radius:999px;overflow:hidden;margin:12px 0}.fill{height:100%;background:linear-gradient(90deg,#22c55e,#86efac);border-radius:999px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#fff8d7;border:1px solid #f4d65f;border-radius:18px;padding:14px;text-align:center}.stat b{display:block;font-size:25px}.sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:24px 0 12px}.sectionTitle h2{margin:0;font-size:22px}.count{background:#dcfce7;color:#166534;border-radius:999px;padding:6px 10px;font-weight:800}.contentGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.topic{background:#fff;border-radius:22px;border:1px solid #f1d77a;box-shadow:0 10px 24px rgba(90,70,0,.09);padding:16px}.topicTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.topic h3{margin:0 0 5px;font-size:18px}.small{color:var(--muted);font-size:14px}.stars{font-size:22px;color:#f59e0b;letter-spacing:1px;white-space:nowrap}.tasks{margin-top:12px;display:grid;gap:8px}.task{display:flex;align-items:center;justify-content:space-between;background:#fffdf2;border:1px solid #f5e4a0;border-radius:14px;padding:8px 10px;font-size:14px}.open{display:inline-flex;margin-top:14px;padding:10px 14px;border-radius:999px;background:#1f2937;color:white;text-decoration:none;font-weight:800}.locked{opacity:.55;filter:grayscale(.35)}.leader{display:grid;gap:9px}.rank{display:flex;align-items:center;gap:10px;background:#fffdf2;border:1px solid #f4d65f;border-radius:16px;padding:10px}.rankNo{width:34px;height:34px;border-radius:12px;background:#ffd84d;display:grid;place-items:center;font-weight:900}.empty{padding:18px;border-radius:18px;background:#fffdf2;border:1px dashed #d8b84d;color:#7c6500}.badge{font-size:12px;border-radius:999px;padding:5px 8px;font-weight:800}.ok{background:#dcfce7;color:#166534}.wait{background:#f3f4f6;color:#4b5563}@media(max-width:800px){.hero{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.progressHead{align-items:flex-start}.circle{width:86px;height:86px;font-size:22px}.brand h1{font-size:22px}}
+:root{--yellow:#ffd84d;--yellow2:#fff4bf;--green:#16a34a;--red:#ef4444;--ink:#1f2937;--muted:#6b7280;--card:#fff;--line:#f1d77a;--soft:#fff8d7;--shadow:0 14px 35px rgba(90,70,0,.12)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#ffdc53 0,#ffe889 44%,#fff8d7 100%);color:var(--ink);min-height:100vh}.wrap{max-width:1180px;margin:0 auto;padding:18px}.top{background:#fff;border-radius:26px;padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}.logo{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,#ffd84d,#ffb800);display:grid;place-items:center;font-weight:900}.brand h1{margin:0;font-size:26px}.sub{font-size:14px;color:var(--muted);margin-top:3px}.userbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.pill,.navbtn{border:1px solid #f3d66b;background:#fffdf2;border-radius:999px;padding:9px 13px;font-weight:700;color:#5b4a00;text-decoration:none}.navbtn:hover{background:#fff6bf}.logout{border:0;cursor:pointer}.hero{display:grid;grid-template-columns:1.15fr .85fr;gap:16px;margin:18px 0}.card{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:18px;border:1px solid rgba(255,215,77,.55)}.progressHead{display:flex;align-items:center;gap:18px}.circle{width:104px;height:104px;border-radius:50%;background:conic-gradient(var(--green) calc(var(--p)*1%),#f3f4f6 0);display:grid;place-items:center;font-weight:900;font-size:26px;position:relative;flex:0 0 auto}.circle:after{content:"";position:absolute;inset:10px;background:#fff;border-radius:50%}.circle span{position:relative;z-index:2}.bar{height:12px;background:#f3f4f6;border-radius:999px;overflow:hidden;margin:10px 0}.fill{height:100%;background:linear-gradient(90deg,#22c55e,#86efac);border-radius:999px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#fff8d7;border:1px solid #f4d65f;border-radius:18px;padding:14px;text-align:center}.stat b{display:block;font-size:25px}.sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:24px 0 12px}.sectionTitle h2{margin:0;font-size:22px}.count{background:#dcfce7;color:#166534;border-radius:999px;padding:6px 10px;font-weight:800}.small{color:var(--muted);font-size:14px}.stars{font-size:20px;color:#f59e0b;letter-spacing:1px;white-space:nowrap}.badge{font-size:12px;border-radius:999px;padding:5px 8px;font-weight:800}.ok{background:#dcfce7;color:#166534}.wait{background:#f3f4f6;color:#4b5563}.empty{padding:18px;border-radius:18px;background:#fffdf2;border:1px dashed #d8b84d;color:#7c6500}.modules{display:grid;gap:12px}.acc{background:#fff;border:1px solid #f1d77a;border-radius:22px;box-shadow:0 10px 24px rgba(90,70,0,.09);overflow:hidden}.acc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px}.acc>summary::-webkit-details-marker{display:none}.sumLeft{display:flex;align-items:center;gap:12px;min-width:0}.arrow{width:32px;height:32px;border-radius:11px;background:#fff5bf;display:grid;place-items:center;font-weight:900;flex:0 0 auto;transition:.15s transform}.acc[open] .arrow{transform:rotate(90deg)}.sumTitle{font-size:18px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sumSub{font-size:13px;color:var(--muted);margin-top:2px}.sumRight{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.miniPct{font-size:20px;font-weight:900}.accBody{padding:0 16px 16px;border-top:1px solid #f7e7a4;background:linear-gradient(180deg,#fffdf4,#fff)}.lesson{margin-top:12px;background:#fffdf2;border:1px solid #f6e39a;border-radius:18px;padding:12px}.lessonHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.lesson h3{margin:0;font-size:16px}.themeGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:10px}.theme{background:#fff;border:1px solid #f4d65f;border-radius:16px;padding:12px}.themeTop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.theme h4{margin:0 0 3px;font-size:15px}.themeMeta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.chip{font-size:12px;padding:5px 8px;border-radius:999px;background:#fff6bf;border:1px solid #efd164;color:#6b5600;font-weight:800}.taskList{display:grid;gap:6px;margin-top:10px}.task{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;background:#fffdf2;border:1px solid #f5e4a0;border-radius:12px;padding:7px 9px;font-size:13px}.taskName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.task b{font-size:13px}.leader{display:grid;gap:8px}.rank{display:grid;grid-template-columns:34px 1fr auto auto auto;align-items:center;gap:10px;background:#fffdf2;border:1px solid #f4d65f;border-radius:16px;padding:10px}.rankNo{width:34px;height:34px;border-radius:12px;background:#ffd84d;display:grid;place-items:center;font-weight:900}.rankVal{text-align:right;font-weight:900}.rankVal span{display:block;font-size:11px;color:var(--muted);font-weight:700}.footNote{font-size:12px;color:var(--muted);margin-top:10px}.mutedLink{color:inherit;text-decoration:none}.locked{opacity:.62;filter:grayscale(.25)}
+@media(max-width:800px){.hero{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr 1fr}.progressHead{align-items:flex-start}.circle{width:86px;height:86px;font-size:22px}.brand h1{font-size:22px}.rank{grid-template-columns:34px 1fr auto}.rankVal:nth-last-child(-n+2){display:none}.sumRight{justify-content:flex-start}.acc>summary{align-items:flex-start;flex-direction:column}.sumLeft{width:100%}}
 </style>
 </head>
 <body>
@@ -29,7 +30,7 @@
           <h2 style="margin:0">Dein Lernstand</h2>
           <div class="small" id="summaryText">Noch keine Fortschritte gespeichert.</div>
           <div class="bar"><div class="fill" id="totalFill" style="width:0%"></div></div>
-          <div class="small">Hier siehst du deine freigeschalteten Inhalte, Sterne und Punkte.</div>
+          <div class="small">Alle freigeschalteten Module, Lektionen und Themen an einem Ort.</div>
         </div>
       </div>
     </div>
@@ -43,7 +44,7 @@
   </section>
 
   <div class="sectionTitle"><h2>Freigeschaltete Inhalte</h2><span class="count" id="contentCount">0 Inhalte</span></div>
-  <section class="contentGrid" id="contentGrid"></section>
+  <section class="modules" id="contentGrid"></section>
 
   <div class="sectionTitle"><h2>Rangliste im Kurs</h2><span class="count" id="courseName">Kurs</span></div>
   <section class="card leader" id="leaderboard"></section>
@@ -55,11 +56,91 @@ function profile(){return readJSON("SP_USER_PROFILE", readJSON("sprachpilotUser"
 function userName(){const p=profile();return [p.firstName||p.vorname||p.name,p.lastName||p.nachname].filter(Boolean).join(" ")||p.displayName||p.email||"Schüler/in"}
 function courseCode(){const p=profile();return p.courseCode||p.kurs||p.course||p.kursCode||localStorage.getItem("SP_COURSE_CODE")||"Kurs"}
 function studentId(){const p=profile();return p.studentId||p.uid||p.email||p.id||userName()}
-function stars(n){n=Number(n||0);return "★".repeat(n)+"☆".repeat(Math.max(0,3-n))}
-function allProgress(){const all=readJSON("SP_DASHBOARD_PROGRESS",{});const one=readJSON("SP_PROGRESS_WORTSCHATZ_A1_L4_T2",null);if(one)all[one.id||"wortschatz-a1-lektion-4-thema-2"]=one;return Object.values(all)}
-function ensureLeaderboard(){const course=courseCode(), id=studentId(), name=userName();let board=readJSON("SP_COURSE_LEADERBOARD",{});if(!board[course])board[course]={};const total=Number(localStorage.getItem("SP_POINTS_TOTAL")||0)||0;if(!board[course][id]||Number(board[course][id].points||0)<total){board[course][id]={studentId:id,name,points:total,updatedAt:new Date().toISOString()};localStorage.setItem("SP_COURSE_LEADERBOARD",JSON.stringify(board))}return board}
-function render(){const name=userName(), course=courseCode();document.getElementById("userPill").textContent=name+" · "+course;document.getElementById("courseName").textContent=course;const data=allProgress();const avg=data.length?Math.round(data.reduce((s,x)=>s+Number(x.percent||0),0)/data.length):0;const totalStars=data.reduce((s,x)=>s+Number(x.exam?.stars||0),0);const done=data.filter(x=>Number(x.percent||0)>=100||Number(x.exam?.percent||0)>=100).length;const points=Number(localStorage.getItem("SP_POINTS_TOTAL")||0)||0;document.getElementById("totalCircle").style.setProperty("--p",avg);document.getElementById("totalCircle").innerHTML="<span>"+avg+"%</span>";document.getElementById("totalFill").style.width=avg+"%";document.getElementById("summaryText").textContent=data.length?done+" von "+data.length+" Inhalten abgeschlossen":"Noch keine Inhalte abgeschlossen.";document.getElementById("pointsTotal").textContent=points;document.getElementById("starsTotal").textContent=totalStars;document.getElementById("doneTotal").textContent=done;document.getElementById("contentCount").textContent=data.length+" Inhalte";const grid=document.getElementById("contentGrid");if(!data.length){grid.innerHTML='<div class="empty">Noch keine freigeschalteten Inhalte gefunden. Öffne zuerst eine Aufgabe oder ein Thema.</div>'}else{grid.innerHTML=data.map(x=>{const percent=Math.min(100,Number(x.percent||0));const exam=x.exam||{};const taskDone=Number(x.completedTasks||0);const taskTotal=Number(x.totalTasks||0);return `<article class="topic"><div class="topicTop"><div><h3>${esc(x.title||"Inhalt")}</h3><div class="small">${esc(x.subtitle||"")}</div></div><span class="badge ${exam.unlocked?'ok':'wait'}">${exam.unlocked?'Prüfung offen':'in Arbeit'}</span></div><div class="bar"><div class="fill" style="width:${percent}%"></div></div><div class="small"><b>${percent}%</b> · ${taskDone}/${taskTotal} Aufgaben</div><div class="small">Prüfung: ${exam.attempted?`<b>${exam.percent}%</b> <span class="stars">${stars(exam.stars)}</span>`:"noch nicht gemacht"}</div><div class="tasks">${(x.tasks||[]).slice(0,10).map(t=>`<div class="task"><span>${esc((t.file||"").replace(".html","").replaceAll("-"," → "))}</span><b>${Number(t.percent||0)}%</b></div>`).join("")}</div><a class="open" href="/wortschatz-A1-Lektion-4/Thema-2/index.html">Öffnen</a></article>`}).join("")}
-const board=ensureLeaderboard();const list=Object.values(board[course]||{}).sort((a,b)=>Number(b.points||0)-Number(a.points||0));const leader=document.getElementById("leaderboard");leader.innerHTML=list.length?list.map((x,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div style="flex:1"><b>${esc(x.name||"Schüler/in")}</b><div class="small">${esc(course)}</div></div><b>${Number(x.points||0)} Punkte</b></div>`).join(""):'<div class="empty">Noch keine Punkte in diesem Kurs.</div>'}
+function stars(n){n=Math.max(0,Math.min(3,Number(n||0)));return "★".repeat(n)+"☆".repeat(3-n)}
+function clamp(n){return Math.max(0,Math.min(100,Math.round(Number(n)||0)))}
+function labelFile(file){return String(file||"").replace(".html","").replaceAll("-"," → ").replace("artikel → klick","Artikel klicken").replace("bild → wort","Bild → Wort").replace("wort → bild","Wort → Bild").replace("ist → hier","Ist hier?").replace("wo → ist","Wo ist?").replace(/^./,c=>c.toUpperCase())}
+function allProgress(){
+  const all=readJSON("SP_DASHBOARD_PROGRESS",{});
+  const one=readJSON("SP_PROGRESS_WORTSCHATZ_A1_L4_T2",null);
+  if(one) all[one.id||"wortschatz-a1-lektion-4-thema-2"]=one;
+  return Object.values(all).filter(Boolean).map(normalizeItem).sort((a,b)=>String(a.moduleTitle+a.lessonLabel+a.themeLabel).localeCompare(String(b.moduleTitle+b.lessonLabel+b.themeLabel),'de'));
+}
+function normalizeItem(x){
+  const moduleKey=x.module||x.moduleId||"wortschatz";
+  const moduleTitle=moduleKey==="wortschatz"?"Wortschatz":moduleKey==="verben"?"Verben":moduleKey==="fragen"?"Fragen":moduleKey==="grammatik"?"Grammatik":String(moduleKey||"Modul");
+  const level=x.level||"A1";
+  const lesson=x.lesson||x.lektion||"";
+  const theme=x.theme||x.topic||x.thema||"";
+  return {...x,moduleKey,moduleTitle,level,lesson,theme,lessonLabel:`${level}${lesson?" · Lektion "+lesson:""}`,themeLabel:theme?`Thema ${theme}`:"Thema",percent:clamp(x.percent),taskPercent:clamp(x.taskPercent||x.percent)};
+}
+function groupData(data){
+  const modules={};
+  data.forEach(item=>{
+    const mKey=item.moduleKey||"module";
+    if(!modules[mKey]) modules[mKey]={title:item.moduleTitle||mKey,items:[],lessons:{}};
+    modules[mKey].items.push(item);
+    const lKey=item.lessonLabel||"Lektion";
+    if(!modules[mKey].lessons[lKey]) modules[mKey].lessons[lKey]={title:lKey,items:[]};
+    modules[mKey].lessons[lKey].items.push(item);
+  });
+  return Object.values(modules);
+}
+function avg(items,key="percent"){return items.length?clamp(items.reduce((s,x)=>s+Number(x[key]||0),0)/items.length):0}
+function sumStars(items){return items.reduce((s,x)=>s+Number(x.exam?.stars||0),0)}
+function sumDone(items){return items.filter(x=>Number(x.percent||0)>=100||Number(x.exam?.percent||0)>=100).length}
+function currentTotals(data){return{points:Number(localStorage.getItem("SP_POINTS_TOTAL")||0)||0,stars:sumStars(data),progress:avg(data),done:sumDone(data)}}
+function ensureLeaderboard(data){
+  const course=courseCode(), id=studentId(), name=userName(), totals=currentTotals(data);
+  let board=readJSON("SP_COURSE_LEADERBOARD",{});
+  if(!board[course]) board[course]={};
+  const old=board[course][id]||{};
+  board[course][id]={studentId:id,name,points:Math.max(Number(old.points||0),totals.points),stars:Math.max(Number(old.stars||0),totals.stars),progress:Math.max(Number(old.progress||0),totals.progress),done:Math.max(Number(old.done||0),totals.done),updatedAt:new Date().toISOString()};
+  localStorage.setItem("SP_COURSE_LEADERBOARD",JSON.stringify(board));
+  return board;
+}
+function renderModules(data){
+  const grid=document.getElementById("contentGrid");
+  if(!data.length){grid.innerHTML='<div class="empty">Noch keine freigeschalteten Inhalte gefunden. Öffne zuerst eine Aufgabe oder ein Thema.</div>';return}
+  const modules=groupData(data);
+  grid.innerHTML=modules.map((m,i)=>{
+    const mp=avg(m.items), ms=sumStars(m.items), done=sumDone(m.items);
+    const lessons=Object.values(m.lessons).map(l=>{
+      const lp=avg(l.items), ls=sumStars(l.items);
+      const themes=l.items.map(x=>themeHtml(x)).join("");
+      return `<div class="lesson"><div class="lessonHead"><div><h3>${esc(l.title)}</h3><div class="small">${l.items.length} Thema${l.items.length===1?"":"en"}</div></div><div class="sumRight"><span class="stars">${stars(Math.min(3,ls))}</span><b>${lp}%</b></div></div><div class="bar"><div class="fill" style="width:${lp}%"></div></div><div class="themeGrid">${themes}</div></div>`;
+    }).join("");
+    return `<details class="acc" ${i===0?"open":""}><summary><div class="sumLeft"><span class="arrow">›</span><div><div class="sumTitle">${esc(m.title)}</div><div class="sumSub">${done}/${m.items.length} Inhalte fertig</div></div></div><div class="sumRight"><span class="stars">${stars(Math.min(3,ms))}</span><span class="miniPct">${mp}%</span></div></summary><div class="accBody">${lessons}</div></details>`;
+  }).join("");
+}
+function themeHtml(x){
+  const exam=x.exam||{};
+  const percent=clamp(x.percent);
+  const tasks=(x.tasks||[]).map(t=>`<div class="task"><span class="taskName">${esc(labelFile(t.file||t.title||"Aufgabe"))}</span><b>${clamp(t.percent)}%</b></div>`).join("");
+  return `<article class="theme"><div class="themeTop"><div><h4>${esc(x.themeLabel)} · ${esc(x.title||"Inhalt")}</h4><div class="small">${esc(x.subtitle||"")}</div></div><span class="badge ${exam.unlocked?'ok':'wait'}">${exam.unlocked?'Prüfung offen':'in Arbeit'}</span></div><div class="bar"><div class="fill" style="width:${percent}%"></div></div><div class="themeMeta"><span class="chip">${percent}%</span><span class="chip">${Number(x.completedTasks||0)}/${Number(x.totalTasks||0)} Aufgaben</span>${exam.attempted?`<span class="chip">${stars(exam.stars)} ${clamp(exam.percent)}%</span>`:""}</div><details class="taskDetails"><summary class="small" style="cursor:pointer;margin-top:8px;font-weight:800">Aufgaben anzeigen</summary><div class="taskList">${tasks||'<div class="small">Noch keine Aufgaben gespeichert.</div>'}</div></details></article>`;
+}
+function render(){
+  const data=allProgress();
+  const totals=currentTotals(data), course=courseCode();
+  document.getElementById("userPill").textContent=userName()+" · "+course;
+  document.getElementById("courseName").textContent=course;
+  document.getElementById("totalCircle").style.setProperty("--p",totals.progress);
+  document.getElementById("totalCircle").innerHTML="<span>"+totals.progress+"%</span>";
+  document.getElementById("totalFill").style.width=totals.progress+"%";
+  document.getElementById("summaryText").textContent=data.length?totals.done+" von "+data.length+" Inhalten abgeschlossen":"Noch keine Inhalte abgeschlossen.";
+  document.getElementById("pointsTotal").textContent=totals.points;
+  document.getElementById("starsTotal").textContent=totals.stars;
+  document.getElementById("doneTotal").textContent=totals.done;
+  document.getElementById("contentCount").textContent=data.length+" Inhalte";
+  renderModules(data);
+  renderLeaderboard(data);
+}
+function renderLeaderboard(data){
+  const course=courseCode();
+  const board=ensureLeaderboard(data);
+  const list=Object.values(board[course]||{}).sort((a,b)=>(Number(b.points||0)-Number(a.points||0))||(Number(b.stars||0)-Number(a.stars||0))||(Number(b.progress||0)-Number(a.progress||0)));
+  const leader=document.getElementById("leaderboard");
+  leader.innerHTML=list.length?list.map((x,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div><b>${esc(x.name||"Schüler/in")}</b><div class="small">${esc(course)}</div></div><div class="rankVal">${Number(x.points||0)}<span>Punkte</span></div><div class="rankVal">${Number(x.stars||0)}<span>Sterne</span></div><div class="rankVal">${clamp(x.progress)}%<span>Fortschritt</span></div></div>`).join(""):'<div class="empty">Noch keine Punkte in diesem Kurs.</div>';
+}
 function logout(){if(!confirm("Möchten Sie sich abmelden?"))return;["SP_USER_PROFILE","sprachpilotUser","SP_CURRENT_USER","SP_LOGIN"].forEach(k=>localStorage.removeItem(k));location.href="/index.html"}
 render();
 </script>
