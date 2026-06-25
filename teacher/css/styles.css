@@ -316,3 +316,18 @@ button:hover{
 .task-pill.notdone{background:#fff3cd;border-color:#ffd967}
 button.danger,.danger{background:#ffdddd!important;color:#7b1d1d!important}
 @media(max-width:700px){.dash-top{grid-template-columns:1fr 1fr 1fr}.create-course input{min-width:100%}}
+
+
+/* Compact detailed progress for teacher */
+.student-summary-metrics{display:flex;gap:6px;flex-wrap:wrap;align-items:center;justify-content:flex-end}
+.compact-progress{padding-top:8px}
+.progress-overview{display:grid;grid-template-columns:repeat(auto-fit,minmax(120px,1fr));gap:8px;margin-bottom:10px}
+.metric{background:#f8f9ff;border:1px solid #e6e9ff;border-radius:12px;padding:8px;text-align:center}
+.metric b{display:block;color:#667eea;font-size:18px;line-height:1.1}
+.metric span{display:block;color:#667085;font-size:11px;font-weight:800;margin-top:3px}
+.module-detail>summary,.topic-detail>summary{background:#fbfcff}
+.topic-metrics{display:flex;flex-wrap:wrap;gap:6px;margin:8px 0}
+.compact-task-grid{grid-template-columns:repeat(auto-fit,minmax(210px,1fr))}
+.task-pill small{display:block;color:#667085;font-size:11px;margin-top:3px;font-weight:600}
+.pill.exam{background:#fff3cd;color:#7a5400;border:1px solid #ffd967}
+@media(max-width:700px){.student-summary-metrics{justify-content:flex-start}.compact-task-grid{grid-template-columns:1fr}}
