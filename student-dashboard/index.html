@@ -144,5 +144,37 @@ function renderLeaderboard(data){
 function logout(){if(!confirm("Möchten Sie sich abmelden?"))return;["SP_USER_PROFILE","sprachpilotUser","SP_CURRENT_USER","SP_LOGIN"].forEach(k=>localStorage.removeItem(k));location.href="/index.html"}
 render();
 </script>
+
+<script type="module">
+import { loadCurrentStudentProgress, loadCourseRanking } from "/js/progress.js?v=230";
+function safeLocal(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
+function normalizeTopic(id,t,moduleKey="wortschatz"){
+  return {id,module:moduleKey,moduleTitle:t.moduleTitle||"Wortschatz",level:t.level||"A1",lesson:t.lesson||"",theme:t.theme||"",title:t.title||id,percent:t.progressPercent||t.current?.percent||0,completedTasks:t.completedTasks||0,totalTasks:t.totalTasks||0,tasks:Object.values(t.tasks||{}).map(x=>({file:x.file,title:x.title,percent:x.percent})),exam:t.exam||{},points:t.lifetime?.points||0};
+}
+async function loadFirebaseDashboard(){
+  try{
+    const p=await loadCurrentStudentProgress();
+    if(p && p.studentId){
+      const all={};
+      ["wortschatz","fragen","verben","grammatik"].forEach(moduleKey=>{
+        Object.entries(p[moduleKey]||{}).forEach(([id,t])=>{
+          if(t && typeof t==="object" && !["state","progress","stars"].includes(id)) all[id]=normalizeTopic(id,t,moduleKey);
+        });
+      });
+      safeLocal("SP_DASHBOARD_PROGRESS",all);
+      if(p.totals){localStorage.setItem("SP_POINTS_TOTAL",Number(p.totals.points||0));}
+      const ranking=await loadCourseRanking(p.kurs);
+      if(Array.isArray(ranking)){
+        const board={}; board[p.kurs||"Kurs"]={};
+        ranking.forEach(r=>{board[p.kurs||"Kurs"][r.studentId||r.id]={studentId:r.studentId||r.id,name:r.studentName||r.email||"Schüler/in",points:r.totals?.points||0,stars:r.totals?.stars||0,progress:r.totals?.progressPercent||0,done:r.totals?.completedTasks||0,updatedAt:r.totals?.updatedAt||""}});
+        safeLocal("SP_COURSE_LEADERBOARD",board);
+      }
+      if(typeof render==="function") render();
+    }
+  }catch(e){console.warn("Dashboard Firebase-Daten nicht geladen",e)}
+}
+loadFirebaseDashboard();
+</script>
+
 </body>
 </html>
