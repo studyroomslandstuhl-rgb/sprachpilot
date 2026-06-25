@@ -1,6 +1,51 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=100"></script><script>
-header("Hören");const FILE="hoeren.html";let i=0;
-function opts(w){return [w,...WORDS.filter(x=>x.id!==w.id).sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5)}
-function show(){if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){complete(area,FILE,"artikel-klick.html");return}i=nextIndex(FILE,WORDS.length);let w=WORDS[i],o=opts(w);area.innerHTML=`${progressHtml(FILE,WORDS.length)}<div class="question">Höre und wähle das richtige Bild.</div><button class="btn" onclick="speak('${w.full}')">🔊 Hören</button><div class="imgrow">${o.map(x=>`<div class="imgbox" onclick="choose('${x.id}')"><img src="${x.image}" onerror="fixImg(this)"></div>`).join("")}</div><div id="fb" class="feedback"></div>`}
-function choose(id){let w=WORDS[i];if(id===w.id){fb.textContent="Richtig!";markRight(FILE,WORDS.length);setTimeout(show,700)}else{let tr=markWrong(FILE,WORDS.length);fb.innerHTML=feedbackForTry(tr,w.full,"Hören und Bild");}}show();
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören</title><link rel="stylesheet" href="style.css">
+<style>
+.click-card{cursor:pointer;pointer-events:auto;transition:.15s}
+.click-card:hover{transform:scale(1.03);border-color:#f7c600}
+.click-card.wrong{border-color:#e74c3c!important;background:#ffe1e1!important}
+.click-card.correct{border-color:#2e9e4f!important;background:#d9f7e8!important}
+</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=180"></script><script>
+header("Hören");
+const FILE="hoeren.html";
+let i=0;
+let locked=false;
+
+function opts(w){
+  return [w,...WORDS.filter(x=>x.id!==w.id).sort(()=>Math.random()-.5).slice(0,3)].sort(()=>Math.random()-.5);
+}
+
+function show(){
+  locked=false;
+  if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){
+    complete(area,FILE,"artikel-klick.html");
+    return;
+  }
+  i=nextIndex(FILE,WORDS.length);
+  let w=WORDS[i], o=opts(w);
+  area.innerHTML=`${progressHtml(FILE,WORDS.length)}
+    <div class="question">Höre und wähle das richtige Bild.</div>
+    <div class="actions">
+      <button class="btn" onclick="speak('${w.full.replace(/'/g,"\\'")}')">🔊 Hören</button>
+      <button class="btn secondary" onclick="speak('${w.full.replace(/'/g,"\\'")}',true)">Langsam</button>
+    </div>
+    <div class="imgrow">${o.map(x=>`<div class="imgbox click-card" onclick="choose('${x.id}',this)"><img src="${x.image}" onerror="fixImg(this)" alt=""></div>`).join("")}</div>
+    <div id="fb" class="feedback"></div>`;
+}
+
+function choose(id,el){
+  if(locked)return;
+  let w=WORDS[i];
+  if(id===w.id){
+    locked=true;
+    el.classList.add("correct");
+    fb.textContent="Richtig!";
+    markRight(FILE,WORDS.length);
+    setTimeout(show,700);
+  }else{
+    el.classList.add("wrong");
+    const tries=markWrong(FILE,WORDS.length);
+    fb.innerHTML=feedbackForTry(tries,w.full,"Hören und Bild");
+  }
+}
+show();
 </script></body></html>

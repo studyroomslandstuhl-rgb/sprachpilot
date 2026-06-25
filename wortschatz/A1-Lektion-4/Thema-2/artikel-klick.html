@@ -1,5 +1,44 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Artikel klicken</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=100"></script><script>
-header("Artikel klicken");const FILE="artikel-klick.html";let i=0;
-function show(){if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){complete(area,FILE,"artikel.html");return}i=nextIndex(FILE,WORDS.length);let w=WORDS[i];area.innerHTML=`${progressHtml(FILE,WORDS.length)}<div class="question">Welcher Artikel passt?</div><img class="task-img" src="${w.image}" onerror="fixImg(this)"><div class="options"><button class="opt" onclick="choose('der')">der</button><button class="opt" onclick="choose('die')">die</button><button class="opt" onclick="choose('das')">das</button></div><div id="fb" class="feedback"></div>`}
-function choose(a){let w=WORDS[i];if(a===w.article){fb.textContent="Richtig!";markRight(FILE,WORDS.length);setTimeout(show,700)}else{let tr=markWrong(FILE,WORDS.length);fb.innerHTML=feedbackForTry(tr,w.article+" "+w.word,"Artikel");}}show();
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Artikel klicken</title><link rel="stylesheet" href="style.css">
+<style>
+.click-opt{cursor:pointer;pointer-events:auto}
+.click-opt.wrong{background:#ffe1e1!important;border-color:#e74c3c!important;color:#9b1c1c!important}
+.click-opt.correct{background:#d9f7e8!important;border-color:#2e9e4f!important;color:#145a32!important}
+</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=180"></script><script>
+header("Artikel klicken");
+const FILE="artikel-klick.html";
+let i=0;
+let locked=false;
+
+function show(){
+  locked=false;
+  if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){
+    complete(area,FILE,"artikel.html");
+    return;
+  }
+  i=nextIndex(FILE,WORDS.length);
+  let w=WORDS[i];
+  area.innerHTML=`${progressHtml(FILE,WORDS.length)}
+    <div class="question">Wähle den richtigen Artikel.</div>
+    <img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">
+    <div class="big">___ ${w.word}</div>
+    <div class="options">${["der","die","das"].map(a=>`<button class="opt click-opt" onclick="choose('${a}',this)">${a}</button>`).join("")}</div>
+    <div id="fb" class="feedback"></div>`;
+}
+
+function choose(article,el){
+  if(locked)return;
+  let w=WORDS[i];
+  if(article===w.article){
+    locked=true;
+    el.classList.add("correct");
+    fb.textContent="Richtig!";
+    markRight(FILE,WORDS.length);
+    setTimeout(show,700);
+  }else{
+    el.classList.add("wrong");
+    const tries=markWrong(FILE,WORDS.length);
+    fb.innerHTML=feedbackForTry(tries,w.full,"Artikel");
+  }
+}
+show();
 </script></body></html>

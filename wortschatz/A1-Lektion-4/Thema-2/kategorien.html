@@ -1,65 +1,49 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kategorien</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=100"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kategorien</title><link rel="stylesheet" href="style.css">
+<style>
+.click-opt{cursor:pointer;pointer-events:auto}
+.click-opt.wrong{background:#ffe1e1!important;border-color:#e74c3c!important;color:#9b1c1c!important}
+.click-opt.correct{background:#d9f7e8!important;border-color:#2e9e4f!important;color:#145a32!important}
+</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=180"></script><script>
 header("Kategorien");
 const FILE="kategorien.html";
-let selected=null;
-const CATEGORIES=[...new Set(WORDS.map(w=>w.category))];
+let i=0;
+let locked=false;
 
-area.innerHTML=`<p>Tippe ein Wort an und dann die passende Gruppe.</p>
-<div id="chips"></div>
-<div class="drop-grid">${CATEGORIES.map(c=>`<div class="dropzone" data-c="${c}"><h2>${c}</h2></div>`).join("")}</div>
-<button class="btn" onclick="control()">Kontrollieren</button>
-<div id="fb" class="feedback"></div>`;
-
-chips.innerHTML=WORDS.map(w=>`<span class="chip" data-id="${w.id}">${w.full}</span>`).join("");
-
-function bind(){
- document.querySelectorAll(".chip").forEach(c=>c.onclick=e=>{
-  e.stopPropagation();
-  if(c.classList.contains("ok"))return;
-  document.querySelectorAll(".chip").forEach(x=>x.classList.remove("selected"));
-  selected=c;
-  c.classList.add("selected");
- });
+function categories(){
+  return [...new Set(WORDS.map(w=>w.category))].filter(Boolean);
 }
 
-document.querySelectorAll(".dropzone").forEach(z=>z.onclick=()=>{
- if(!selected)return;
- selected.classList.remove("selected","no");
- let n=selected.nextElementSibling;
- if(n&&n.classList.contains("correction"))n.remove();
- z.appendChild(selected);
- selected=null;
- bind();
-});
-
-bind();
-
-function control(){
- document.querySelectorAll(".correction").forEach(x=>x.remove());
- let ok=0;
- document.querySelectorAll(".dropzone .chip").forEach(c=>{
-  let w=wordById(c.dataset.id),z=c.closest(".dropzone");
-  c.classList.remove("ok","no","selected");
-  if(z.dataset.c===w.category){
-   c.classList.add("ok");
-   ok++;
-  }else{
-   c.classList.add("no");
-   let note=document.createElement("span");
-   note.className="correction";
-   note.textContent="richtig: "+w.category;
-   c.after(note);
+function show(){
+  locked=false;
+  if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){
+    complete(area,FILE,"dialoge.html");
+    return;
   }
- });
- bind();
- if(ok===WORDS.length){
-  let st=loadTask(FILE,WORDS.length);
-  st.done=[...Array(WORDS.length).keys()];
-  saveTask(FILE,st);
-  fb.textContent="Gut gemacht!";
-  setTimeout(()=>location.href="dialoge.html",700);
- }else{
-  fb.textContent="Korrigiere die roten Wörter.";
- }
+  i=nextIndex(FILE,WORDS.length);
+  let w=WORDS[i];
+  let cats=categories();
+  area.innerHTML=`${progressHtml(FILE,WORDS.length)}
+    <div class="question">Welche Kategorie passt?</div>
+    <img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">
+    <div class="big">${w.full}</div>
+    <div class="options">${cats.map(c=>`<button class="opt click-opt" onclick="choose('${c.replace(/'/g,"\\'")}',this)">${c}</button>`).join("")}</div>
+    <div id="fb" class="feedback"></div>`;
 }
+
+function choose(cat,el){
+  if(locked)return;
+  let w=WORDS[i];
+  if(cat===w.category){
+    locked=true;
+    el.classList.add("correct");
+    fb.textContent="Richtig!";
+    markRight(FILE,WORDS.length);
+    setTimeout(show,700);
+  }else{
+    el.classList.add("wrong");
+    const tries=markWrong(FILE,WORDS.length);
+    fb.innerHTML=feedbackForTry(tries,w.category,"Kategorie");
+  }
+}
+show();
 </script></body></html>

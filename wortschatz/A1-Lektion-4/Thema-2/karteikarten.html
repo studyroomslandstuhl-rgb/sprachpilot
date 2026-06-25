@@ -1,9 +1,98 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=70"></script><script>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Karteikarten</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
+<div class="container">
+  <header class="topbar"></header>
+  <section class="card" id="area">
+    <div class="question">Aufgabe wird geladen …</div>
+  </section>
+  <footer>© SprachPilot</footer>
+</div>
+
+<script src="app.js?v=180"></script>
+<script>
 header("Karteikarten");
-const FILE="karteikarten.html";let i=0;
-function show(){if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){complete(area,FILE,"hoeren.html");return}i=nextIndex(FILE,WORDS.length);let w=WORDS[i];area.innerHTML=`${progressHtml(FILE,WORDS.length)}<div class="question">Sage das deutsche Wort mit Artikel.</div><div class="hint">Muttersprache: <b>${translateWord(w)}</b></div><img class="task-img" src="${w.image}" onerror="fixImg(this)"><div class="actions"><button id="mic" class="btn mic-btn" onclick="say()">🎤 Sprechen</button><button class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="check(ans.value)">Kontrollieren</button></div><div id="fb" class="feedback"></div>`}
-function writeBox(){box.classList.remove("hidden")}
-function say(){startMic(mic,txt=>{writeBox();ans.value=txt;check(txt)})}
-function check(txt){let w=WORDS[i];if(simple(txt)===simple(w.full)){fb.textContent="Richtig!";markRight(FILE,WORDS.length);setTimeout(show,700)}else{let tr=markWrong(FILE,WORDS.length);fb.innerHTML=feedbackForTry(tr,w.full,"Artikel und Wort");}}
+
+const FILE = "karteikarten.html";
+let i = null;
+
+function show(){
+  if(loadTask(FILE, WORDS.length).done.length >= WORDS.length){
+    complete(area, FILE, "hoeren.html");
+    return;
+  }
+
+  i = nextIndex(FILE, WORDS.length);
+  if(i === undefined || i === null){
+    localStorage.removeItem(taskKey(FILE));
+    i = nextIndex(FILE, WORDS.length);
+  }
+
+  const w = WORDS[i];
+
+  area.innerHTML = `${progressHtml(FILE, WORDS.length)}
+    <div class="question">Sage das deutsche Wort mit Artikel.</div>
+    <div class="hint">Muttersprache: <b>${translateWord(w)}</b></div>
+    <img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">
+    <div class="actions">
+      <button id="micBtn" class="btn mic-btn" onclick="say()">🎤 Sprechen</button>
+      <button class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button>
+      <button class="btn secondary" onclick="flip()">Karte umdrehen</button>
+    </div>
+    <div id="micStatus" class="mic-status"></div>
+    <div id="box" class="hidden">
+      <input id="ans" placeholder="Schreiben Sie die Antwort hier">
+      <button class="btn" onclick="check(ans.value)">Kontrollieren</button>
+    </div>
+    <div id="fb" class="feedback"></div>`;
+}
+
+function writeBox(){
+  box.classList.remove("hidden");
+}
+
+function flip(){
+  const w = WORDS[i];
+  const tries = markWrong(FILE, WORDS.length);
+  fb.innerHTML = feedbackForCard(tries, full(w), "Artikel und Wort");
+  box.classList.remove("hidden");
+  ans.value = full(w);
+}
+
+function say(){
+  startMic(micBtn, txt => {
+    writeBox();
+    ans.value = txt;
+    check(txt);
+  });
+}
+
+function check(txt){
+  const w = WORDS[i];
+
+  if(simple(txt) === simple(full(w))){
+    fb.textContent = "Richtig!";
+    markRight(FILE, WORDS.length);
+    setTimeout(show, 700);
+  }else{
+    const tries = markWrong(FILE, WORDS.length);
+    fb.innerHTML = feedbackForCard(tries, full(w), "Artikel und Wort");
+  }
+}
+
+function feedbackForCard(tries, solution, type){
+  if(tries === 1) return "Da ist noch ein Fehler.";
+  if(tries === 2) return "Tipp: Prüfe " + type + ".";
+  return "Lösung: " + solution;
+}
+
 show();
-</script></body></html>
+</script>
+</body>
+</html>
