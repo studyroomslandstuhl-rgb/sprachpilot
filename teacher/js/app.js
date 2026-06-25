@@ -7,6 +7,13 @@ const TeacherApp = {
     pending:[]
   },
 
+  techProgressKeys:new Set(["state","progress","stars","activeVerbs","learnedVerbs","known","unknown","unsure","updatedAt","lastActive","lastLogin","totals","current","profile","metadata"]),
+  isTopicRecord(key,value){return !this.techProgressKeys.has(key) && value && typeof value==="object" && !Array.isArray(value) && !!(value.tasks || value.exam || value.current || value.lifetime || value.progressPercent || value.title || value.moduleTitle)},
+  listLen(x){return Array.isArray(x)?x.length:(x&&typeof x==="object"?Object.keys(x).length:0)},
+  verbStats(mod={}){const learned=this.listLen(mod.learnedVerbs||mod.known||mod.state?.learnedVerbs||mod.state?.known||[]);const active=this.listLen(mod.activeVerbs||mod.state?.activeVerbs||mod.state?.active||[]);const known=this.listLen(mod.known||mod.state?.known||[]);const unsure=this.listLen(mod.unsure||mod.state?.unsure||[]);const unknown=this.listLen(mod.unknown||mod.state?.unknown||[]);return{learned,active,known,unsure,unknown,contentsDone:Math.floor(learned/20),packagePercent:Math.min(100,Math.round(((learned%20)||(learned?20:0))/20*100))}},
+  realStudentName(s){return [s.vorname||s.firstName||s.name, s.nachname||s.lastName].filter(Boolean).join(" ").trim() || s.displayName || s.email || ""},
+  isRealStudent(s){return !!this.realStudentName(s)},
+
   modules:[
     {key:"Fragen A1", href:"../fragen-A1/", title:"Fragen A1"},
     {key:"Wortschatz", href:"../wortschatz/", title:"Wortschatz"},
@@ -135,7 +142,7 @@ const TeacherApp = {
   },
 
   visibleStudents(courseIds){
-    return this.state.students.filter(s=>courseIds.includes(String(s.kurs||s.courseCode||s.kursnummer||"")));
+    return this.state.students.filter(s=>courseIds.includes(String(s.kurs||s.courseCode||s.kursnummer||"")) && this.isRealStudent(s));
   },
 
   pendingSection(){
@@ -160,7 +167,7 @@ const TeacherApp = {
   courseAccordion(c){
     const courseCode=String(c.courseCode||c.id);
     const courseName=String(c.courseName||c.name||c.id);
-    const students=this.state.students.filter(s=>String(s.kurs||s.courseCode||s.kursnummer||"")===courseCode);
+    const students=this.state.students.filter(s=>String(s.kurs||s.courseCode||s.kursnummer||"")===courseCode && this.isRealStudent(s));
 
     return `<details class="course-accordion">
       <summary>
@@ -208,7 +215,7 @@ const TeacherApp = {
     const last=this.formatTime(p.lastActive || p.updatedAt || s.lastLogin);
     return `<details class="student-accordion">
       <summary>
-        <span><b>${this.safe((s.vorname||"")+" "+(s.nachname||""))}</b><small>${this.safe(s.email||"")} · ${this.safe(s.muttersprache||"")} · zuletzt aktiv: ${this.safe(last)}</small></span>
+        <span><b>${this.safe(this.realStudentName(s))}</b><small>${this.safe(s.email||"")} · ${this.safe(s.muttersprache||"")} · zuletzt aktiv: ${this.safe(last)}</small></span>
         <span class="student-summary-metrics">
           <span class="pill ok">${this.percent(totals.progressPercent)}%</span>
           <span class="pill">⭐ ${Number(totals.stars||0)}</span>
@@ -242,7 +249,8 @@ const TeacherApp = {
 
   moduleAccordion(label,key,p,fallback){
     const mod=p?.[key] || {};
-    const topics=Object.entries(mod).filter(([k,v])=>v && typeof v==="object" && !["state","activeVerbs","known","unknown","unsure"].includes(k));
+    if(key==="verben") return this.verbenModuleAccordion(label,mod,fallback);
+    const topics=Object.entries(mod).filter(([k,v])=>this.isTopicRecord(k,v));
     const percent=this.modulePercent(p,key,fallback);
     const topicHtml=topics.length ? topics.map(([topicId,topic])=>this.topicDetail(topicId,topic)).join("") : this.legacyModuleDetail(key,p,mod);
     return `<details class="tiny-accordion module-detail">
@@ -251,18 +259,31 @@ const TeacherApp = {
     </details>`;
   },
 
+  verbenModuleAccordion(label,mod={},fallback=0){
+    const v=this.verbStats(mod);
+    const packagePercent=v.packagePercent;
+    return `<details class="tiny-accordion module-detail">
+      <summary><span>${this.safe(label)}</span><span class="pill">${v.learned} Verben gelernt</span></summary>
+      <div class="inside">
+        <div class="progress-line"><div class="progress-fill" style="width:${packagePercent}%"></div></div>
+        <div class="topic-metrics">
+          <span class="pill">${v.learned} Verben gelernt</span>
+          <span class="pill">${v.contentsDone} Inhalt${v.contentsDone===1?"":"e"} fertig</span>
+          <span class="pill">1 Inhalt = 20 Verben</span>
+        </div>
+        <div class="task-grid compact-task-grid">
+          <div class="task-pill done"><span>Sicher/gelernt</span><b>${v.known||v.learned}</b></div>
+          <div class="task-pill"><span>Aktiv</span><b>${v.active}</b></div>
+          <div class="task-pill"><span>Unsicher</span><b>${v.unsure}</b></div>
+          <div class="task-pill notdone"><span>Unbekannt</span><b>${v.unknown}</b></div>
+        </div>
+      </div>
+    </details>`;
+  },
+
   legacyModuleDetail(key,p,mod){
     if(key==="wortschatz") return this.wortschatzLegacyDetail(p);
-    if(key==="verben"){
-      const active=mod.activeVerbs || mod.state?.active || [];
-      const known=mod.known || [], unsure=mod.unsure || [], unknown=mod.unknown || [];
-      return `<div class="task-grid">
-        <div class="task-pill"><span>Aktive Verben</span><b>${active.length||0}</b></div>
-        <div class="task-pill done"><span>Kann</span><b>${known.length||0}</b></div>
-        <div class="task-pill"><span>Unsicher</span><b>${unsure.length||0}</b></div>
-        <div class="task-pill notdone"><span>Kann nicht</span><b>${unknown.length||0}</b></div>
-      </div>`;
-    }
+    if(key==="verben") return this.verbenModuleAccordion("Verben",mod,0);
     return `<p class="small">Noch keine Detaildaten gespeichert.</p>`;
   },
 
@@ -272,7 +293,7 @@ const TeacherApp = {
     const lifetime=topic.lifetime || {};
     const tasks=topic.tasks || {};
     const taskRows=Object.entries(tasks).length ? Object.entries(tasks).map(([taskKey,task])=>this.taskDetail(taskKey,task)).join("") : `<p class="small">Noch keine Aufgaben gespeichert.</p>`;
-    return `<details class="tiny-accordion topic-detail" ${pct>0?'open':''}>
+    return `<details class="tiny-accordion topic-detail">
       <summary>
         <span>${this.safe(topic.title || topicId)}</span>
         <span class="student-summary-metrics"><span class="pill ${pct>=100?'ok':pct>0?'warn':''}">${pct}%</span>${exam.attempted?`<span class="pill exam">Prüfung ${this.percent(exam.bestPercent||exam.lastPercent)}% · ⭐ ${Number(exam.stars||0)}</span>`:""}<span class="pill">${Number(lifetime.points||0)} Punkte</span></span>
@@ -310,7 +331,7 @@ const TeacherApp = {
 
   modulePercent(p,key,fallback){
     const mod=p?.[key] || {};
-    const topics=Object.entries(mod).filter(([k,v])=>v && typeof v==="object" && !["state","activeVerbs","known","unknown","unsure"].includes(k));
+    const topics=Object.entries(mod).filter(([k,v])=>this.isTopicRecord(k,v));
     if(topics.length){
       return this.percent(topics.reduce((sum,[_,topic])=>sum+this.percent(topic.progressPercent || topic.current?.percent || 0),0)/topics.length);
     }
