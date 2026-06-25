@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SprachPilot – A1 Lektion 4</title>
+<title>SprachPilot – Lektion 4: Wohnen</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
@@ -131,7 +131,10 @@ body{
 }
 .intro h2{
   font-size:28px;
-  margin-bottom:8px;
+  margin-bottom:0;
+}
+.lesson-title-card{
+  padding:26px 28px;
 }
 .intro p{
   color:var(--sp-muted);
@@ -307,14 +310,11 @@ body{
 
     <nav class="lesson-nav">
       <a class="nav-btn" href="../index.html">← Zurück</a>
-      <a class="nav-btn" href="/student-dashboard/index.html">Dashboard</a>
-      <a class="nav-btn primary" href="/profile/index.html">Profil</a>
     </nav>
   </header>
 
-  <section class="intro">
-    <h2>A1 Lektion 4: Wohnen</h2>
-    <p>Wähle ein Thema. Nicht freigegebene Themen bleiben gesperrt und werden erst sichtbar, wenn deine Lehrkraft sie freigibt.</p>
+  <section class="intro lesson-title-card">
+    <h2>Lektion 4: Wohnen</h2>
   </section>
 
   <section class="theme-grid" id="themeGrid"></section>
@@ -323,7 +323,7 @@ body{
 </div>
 
 <script type="module">
-import { getActiveProfile, logout, safeText } from "/js/auth.js?v=l4overview235";
+import { getActiveProfile, logout, safeText } from "/js/auth.js?v=l4overview236";
 import { db, doc, getDoc } from "/js/firebase.js";
 window.logout=logout;
 
@@ -396,52 +396,39 @@ function explicitValue(obj,keys){
 }
 
 function themeRelease(courseData,themeId){
-  const moduleKeys=["wortschatz","Wortschatz"];
-  const lessonKeys=["A1-Lektion-4","A1 Lektion 4","A1/Lektion-4"];
-  const themeNames={"Thema-1":"Thema 1","Thema-2":"Thema 2","Thema-3":"Thema 3","Thema-4":"Thema 4","Thema-5":"Thema 5"};
-  const themeName=themeNames[themeId] || themeId;
+  const moduleKey="wortschatz";
+  const lessonKey="A1-Lektion-4";
 
-  const lessonFlatKeys=[
-    "wortschatz/A1-Lektion-4",
-    "Wortschatz/A1 Lektion 4",
-    "A1-Lektion-4",
-    "A1 Lektion 4"
+  const lessonKeys=[
+    `${moduleKey}/${lessonKey}`,
+    lessonKey,
+    `A1/Lektion-4`,
+    `A1-Lektion-4`
   ];
-  const themeFlatKeys=[
-    `wortschatz/A1-Lektion-4/${themeId}`,
-    `Wortschatz/A1 Lektion 4/${themeName}`,
-    `A1-Lektion-4/${themeId}`,
-    `A1 Lektion 4/${themeName}`,
+  const themeKeys=[
+    `${moduleKey}/${lessonKey}/${themeId}`,
+    `${lessonKey}/${themeId}`,
     `A1/Lektion-4/${themeId}`,
-    themeId,
-    themeName
+    themeId
   ];
 
-  const moduleLegacy=explicitValue(courseData.enabledModules,["Wortschatz","wortschatz"]);
-  if(moduleLegacy===false) return false;
-
-  const lessonLegacy=explicitValue(courseData.enabledLessons,lessonFlatKeys);
+  const lessonLegacy=explicitValue(courseData.enabledLessons,lessonKeys);
   if(lessonLegacy===false) return false;
 
-  const themeLegacy=explicitValue(courseData.enabledThemes,themeFlatKeys);
+  const themeLegacy=explicitValue(courseData.enabledThemes,themeKeys);
   if(themeLegacy===false) return false;
   if(themeLegacy===true) return true;
 
   const releases=courseData.releases || courseData.release || {};
-  for(const mk of moduleKeys){
-    const mod=releases[mk] || {};
-    const lessons=mod.lessons || mod.lektionen || {};
-    for(const lk of lessonKeys){
-      const lesson=lessons[lk] || {};
-      if(lesson.enabled===false) return false;
-      const themes=lesson.themes || lesson.themen || {};
-      const theme=themes[themeId] || themes[themeName] || {};
-      if(theme.enabled===false) return false;
-      if(theme.enabled===true) return true;
-    }
-  }
+  const mod=releases[moduleKey] || releases.Wortschatz || {};
+  const lesson=(mod.lessons || mod.lektionen || {})[lessonKey] || {};
+  if(lesson.enabled===false) return false;
 
-  const direct=(courseData.themes || courseData.themen || {})[themeId] || (courseData.themes || courseData.themen || {})[themeName];
+  const theme=(lesson.themes || lesson.themen || {})[themeId] || {};
+  if(theme.enabled===false) return false;
+  if(theme.enabled===true) return true;
+
+  const direct=(courseData.themes || courseData.themen || {})[themeId];
   if(direct===false || direct?.enabled===false) return false;
   if(direct===true || direct?.enabled===true) return true;
 
