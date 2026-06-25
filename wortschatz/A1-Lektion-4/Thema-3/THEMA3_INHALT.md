@@ -27,3 +27,15 @@ Thema: Farben, Adjektive, Reaktionen, gefallen/gefällt, nicht/kein/keine.
 - Bei Plural zeigt die Aufgabe zwei gleiche Bilder nebeneinander, z. B. zwei Stühle.
 - So erkennen Lernende besser: „Wie gefällt dir der Stuhl?“ vs. „Wie gefallen dir die Stühle?“
 - Antwort bleibt: Singular mit er/es/sie + ist, Plural mit sie + sind.
+
+## Fix v306
+
+- Hören: 4 Möbelbilder pro Aufgabe fest gesetzt.
+- Hören/Langsam: langsame Version bleibt deutlich langsamer.
+- Farben-Aufgabe: oben steht das Farbwort, unten 4 Farbbilder.
+- Farben/Übersicht: keine CSS-Farbflächen, nur Bilddateien.
+- Neue Farben ergänzt: rosa, dunkelrosa, hellrosa, lila, dunkellila, helllila, türkis, dunkeltürkis, helltürkis.
+- „die Möbel“ aus dem Vokabular entfernt.
+- Gut/Ganz gut: gleicher Smiley und gleiche Akzeptanz.
+- Gefallen: lange Erklärung gekürzt.
+- Abschluss-Weiter: nächste Aufgabe startet nicht automatisch; es erscheint zuerst ein Startbildschirm.

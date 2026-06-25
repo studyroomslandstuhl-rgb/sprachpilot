@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gefallen Thema 3</title><link rel="stylesheet" href="style.css?v=305"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=305"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gefallen Thema 3</title><link rel="stylesheet" href="style.css?v=306"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=306"></script><script>
 header('Farben & Adjektive');
 const file='gefallen.html',total=GEFAELLEN_TASKS.length;
 let phase='question';
@@ -41,7 +41,7 @@ function render(){
   }else{
     area.innerHTML=progressHtml(file,total)+
       instruction('Antworte mit der Reaktion und einem ganzen Satz.')+
-      exampleBox('Singular: Sehr gut. Er ist bequem.<br>Auch richtig: Gut. Er ist bequem.<br>Auch richtig: Sehr gut. Er ist sehr bequem.<br><br>Plural: Wie gefallen dir die Stühle?<br>Gut. Sie sind modern.')+
+      exampleBox('Frage: Wie gefällt dir der Sessel?<br>Antwort: Sehr gut. Er ist bequem.')+
       `<div class="imgrow three-img">${taskItemImg(t)}<div class="smile-card">${r.emoji}</div>${visualWord(t.adj)}</div>
        <input id="a" placeholder="Schreiben Sie die Antwort hier">
        <div class="actions">
@@ -75,5 +75,5 @@ function checkAnswer(fromSpeech=false){
     fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.answer,'Reaktion, Pronomen und ist/sind')+'</div>';
   }
 }
-render();
+maybeStart(render,'gefallen.html');
 </script></body></html>

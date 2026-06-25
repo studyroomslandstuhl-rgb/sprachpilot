@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören Thema 3</title><link rel="stylesheet" href="style.css?v=305"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=305"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören Thema 3</title><link rel="stylesheet" href="style.css?v=306"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=306"></script><script>
 header('Farben & Adjektive');
 const file='hoeren.html', total=HEARING_TASKS.length;
 let selectedColor=null;
@@ -14,7 +14,8 @@ function render(){
   selectedColor=null;
   let t=HEARING_TASKS[i], color=colorById(t.color), item=furnitureById(t.item);
   let colorOpts=t.options.map(colorById);
-  let itemOpts=shuffle([item,...shuffle(FURNITURE.filter(f=>!f.plural&&f.id!==item.id)).slice(0,3)]);
+  let itemOpts=(t.items||[t.item]).map(furnitureById).filter(Boolean).slice(0,4);
+  if(itemOpts.length<4){itemOpts=[...itemOpts,...FURNITURE.filter(f=>!itemOpts.some(x=>x.id===f.id)).slice(0,4-itemOpts.length)];}
   area.innerHTML=progressHtml(file,total)+
   `<div class="question">Höre. Wähle zuerst die Farbe, dann das Möbel.</div>
    <div class="actions"><button class="btn" onclick="speak('${item.full} ist ${color.word}.')">▶️ Hören</button><button class="btn secondary" onclick="speak('${item.full} ist ${color.word}.',true)">🐢 Langsam</button></div>
@@ -51,5 +52,5 @@ function pickItem(id){
     fb.innerHTML='<div class="no">'+feedbackForTry(tr,item.full,'das Möbel')+'</div>';
   }
 }
-render();
+maybeStart(render,'hoeren.html');
 </script></body></html>

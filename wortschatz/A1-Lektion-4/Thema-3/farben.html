@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Farben Thema 3</title><link rel="stylesheet" href="style.css?v=305"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=305"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Farben Thema 3</title><link rel="stylesheet" href="style.css?v=306"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=306"></script><script>
 header('Farben & Adjektive');
 const file='farben.html',total=COLORS.length;
 function render(){
@@ -7,7 +7,7 @@ function render(){
   let c=COLORS[i],opts=shuffle([c,...shuffle(COLORS.filter(x=>x.id!==c.id)).slice(0,3)]);
   area.innerHTML=progressHtml(file,total)+
     instruction('Welche Farbe ist das? Wähle das richtige Bild.')+
-    colorImg(c,'task-img')+
+    `<div class="big">${c.word}</div>`+
     `<div class="options image-grid-4">${opts.map(o=>`<button class="opt image-only" onclick="check('${o.id}')">${colorImg(o,'choice-img')}</button>`).join('')}</div>
      <div id="fb" class="feedback"></div>`;
 }
@@ -21,5 +21,5 @@ function check(id){
     fb.innerHTML='<div class="no">'+feedbackForTry(t,c.word,'die Farbe')+'</div>'
   }
 }
-render();
+maybeStart(render,'farben.html');
 </script></body></html>

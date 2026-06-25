@@ -25,7 +25,16 @@ const COLORS=[
 {id:"hellgrau",word:"hellgrau",img:"hellgrau.png",hex:"#d1d5db",tr:{en:"light gray",ru:"светло-серый",uk:"світло-сірий",ar:"رمادي فاتح",tr:"açık gri",ro:"gri deschis",ja:"明るい灰色",pl:"jasnoszary",ku:"gewira ronahî"}},
 {id:"braun",word:"braun",img:"braun.png",hex:"#92400e",tr:{en:"brown",ru:"коричневый",uk:"коричневий",ar:"بني",tr:"kahverengi",ro:"maro",ja:"茶色",pl:"brązowy",ku:"qehweyî"}},
 {id:"dunkelbraun",word:"dunkelbraun",img:"dunkelbraun.png",hex:"#451a03",tr:{en:"dark brown",ru:"тёмно-коричневый",uk:"темно-коричневий",ar:"بني داكن",tr:"koyu kahverengi",ro:"maro închis",ja:"暗い茶色",pl:"ciemny brąz",ku:"qehweya tarî"}},
-{id:"hellbraun",word:"hellbraun",img:"hellbraun.png",hex:"#b45309",tr:{en:"light brown",ru:"светло-коричневый",uk:"світло-коричневий",ar:"بني فاتح",tr:"açık kahverengi",ro:"maro deschis",ja:"明るい茶色",pl:"jasny brąz",ku:"qehweya ronahî"}}
+{id:"hellbraun",word:"hellbraun",img:"hellbraun.png",hex:"#b45309",tr:{en:"light brown",ru:"светло-коричневый",uk:"світло-коричневий",ar:"بني فاتح",tr:"açık kahverengi",ro:"maro deschis",ja:"明るい茶色",pl:"jasny brąz",ku:"qehweya ronahî"}},
+{id:"rosa",word:"rosa",img:"rosa.png",hex:"#f9a8d4",tr:{en:"pink",ru:"розовый",uk:"рожевий",ar:"وردي",tr:"pembe",ro:"roz",ja:"ピンク",pl:"różowy",ku:"pembe"}},
+{id:"dunkelrosa",word:"dunkelrosa",img:"dunkelrosa.png",hex:"#be185d",tr:{en:"dark pink",ru:"тёмно-розовый",uk:"темно-рожевий",ar:"وردي داكن",tr:"koyu pembe",ro:"roz închis",ja:"濃いピンク",pl:"ciemnoróżowy",ku:"pembeya tarî"}},
+{id:"hellrosa",word:"hellrosa",img:"hellrosa.png",hex:"#fbcfe8",tr:{en:"light pink",ru:"светло-розовый",uk:"світло-рожевий",ar:"وردي فاتح",tr:"açık pembe",ro:"roz deschis",ja:"薄いピンク",pl:"jasnoróżowy",ku:"pembeya ronahî"}},
+{id:"lila",word:"lila",img:"lila.png",hex:"#a855f7",tr:{en:"purple",ru:"фиолетовый",uk:"фіолетовий",ar:"بنفسجي",tr:"mor",ro:"mov",ja:"紫",pl:"fioletowy",ku:"binefşî"}},
+{id:"dunkellila",word:"dunkellila",img:"dunkellila.png",hex:"#6b21a8",tr:{en:"dark purple",ru:"тёмно-фиолетовый",uk:"темно-фіолетовий",ar:"بنفسجي داكن",tr:"koyu mor",ro:"mov închis",ja:"濃い紫",pl:"ciemnofioletowy",ku:"binefşiya tarî"}},
+{id:"helllila",word:"helllila",img:"helllila.png",hex:"#d8b4fe",tr:{en:"light purple",ru:"светло-фиолетовый",uk:"світло-фіолетовий",ar:"بنفسجي فاتح",tr:"açık mor",ro:"mov deschis",ja:"薄い紫",pl:"jasnofioletowy",ku:"binefşiya ronahî"}},
+{id:"tuerkis",word:"türkis",img:"tuerkis.png",hex:"#14b8a6",tr:{en:"turquoise",ru:"бирюзовый",uk:"бірюзовий",ar:"تركوازي",tr:"turkuaz",ro:"turcoaz",ja:"ターコイズ",pl:"turkusowy",ku:"turqûaz"}},
+{id:"dunkeltuerkis",word:"dunkeltürkis",img:"dunkeltuerkis.png",hex:"#0f766e",tr:{en:"dark turquoise",ru:"тёмно-бирюзовый",uk:"темно-бірюзовий",ar:"تركوازي داكن",tr:"koyu turkuaz",ro:"turcoaz închis",ja:"濃いターコイズ",pl:"ciemnoturkusowy",ku:"turqûaza tarî"}},
+{id:"helltuerkis",word:"helltürkis",img:"helltuerkis.png",hex:"#5eead4",tr:{en:"light turquoise",ru:"светло-бирюзовый",uk:"світло-бірюзовий",ar:"تركوازي فاتح",tr:"açık turkuaz",ro:"turcoaz deschis",ja:"薄いターコイズ",pl:"jasnoturkusowy",ku:"turqûaza ronahî"}}
 ];
 
 const ADJECTIVES=[
@@ -57,14 +66,13 @@ const FURNITURE=[
 {id:"bett",article:"das",word:"Bett",full:"das Bett",pron:"es",pronCap:"Es",img:"bett.png",plural:"die Betten",pluralWord:"Betten"},
 {id:"schrank",article:"der",word:"Schrank",full:"der Schrank",pron:"er",pronCap:"Er",img:"schrank.png",plural:"die Schränke",pluralWord:"Schränke"},
 {id:"lampe",article:"die",word:"Lampe",full:"die Lampe",pron:"sie",pronCap:"Sie",img:"lampe.png",plural:"die Lampen",pluralWord:"Lampen"},
-{id:"waschbecken",article:"das",word:"Waschbecken",full:"das Waschbecken",pron:"es",pronCap:"Es",img:"waschbecken.png",plural:"die Waschbecken",pluralWord:"Waschbecken"},
-{id:"moebel",article:"die",word:"Möbel",full:"die Möbel",pron:"sie",pronCap:"Sie",img:"moebel.png",plural:true,pluralWord:"Möbel"}
+{id:"waschbecken",article:"das",word:"Waschbecken",full:"das Waschbecken",pron:"es",pronCap:"Es",img:"waschbecken.png",plural:"die Waschbecken",pluralWord:"Waschbecken"}
 ];
 
 const REACTIONS=[
 {id:"sehr-gut",word:"Sehr gut.",emoji:"🤩",score:4},
 {id:"gut",word:"Gut.",emoji:"🙂",score:3},
-{id:"ganz-gut",word:"Ganz gut.",emoji:"😊",score:3},
+{id:"ganz-gut",word:"Ganz gut.",emoji:"🙂",score:3},
 {id:"es-geht",word:"Es geht.",emoji:"😐",score:2},
 {id:"nicht-so-gut",word:"Nicht so gut.",emoji:"🙁",score:1}
 ];
@@ -76,27 +84,36 @@ const PAIRS=[
 const CARDS=[...COLORS.map(x=>({...x,type:"color"})),...ADJECTIVES.map(x=>({...x,type:"adj"}))];
 
 const HEARING_TASKS=[
-{color:"rot",options:["rot","dunkelrot","hellrot","orange"],item:"stuhl"},
-{color:"dunkelrot",options:["dunkelrot","rot","hellrot","dunkelbraun"],item:"sessel"},
-{color:"hellrot",options:["hellrot","rot","dunkelrot","hellorange"],item:"sofa"},
-{color:"blau",options:["blau","dunkelblau","hellblau","grau"],item:"tisch"},
-{color:"dunkelblau",options:["dunkelblau","blau","hellblau","schwarz"],item:"schrank"},
-{color:"hellblau",options:["hellblau","blau","dunkelblau","weiss"],item:"bett"},
-{color:"gruen",options:["gruen","dunkelgruen","hellgruen","gelb"],item:"lampe"},
-{color:"dunkelgruen",options:["dunkelgruen","gruen","hellgruen","dunkelgrau"],item:"sofa"},
-{color:"hellgruen",options:["hellgruen","gruen","dunkelgruen","hellgelb"],item:"sessel"},
-{color:"gelb",options:["gelb","dunkelgelb","hellgelb","orange"],item:"stuhl"},
-{color:"dunkelgelb",options:["dunkelgelb","gelb","hellgelb","dunkelorange"],item:"tisch"},
-{color:"hellgelb",options:["hellgelb","gelb","dunkelgelb","weiss"],item:"bett"},
-{color:"orange",options:["orange","dunkelorange","hellorange","gelb"],item:"schrank"},
-{color:"dunkelorange",options:["dunkelorange","orange","hellorange","braun"],item:"lampe"},
-{color:"hellorange",options:["hellorange","orange","dunkelorange","hellgelb"],item:"sessel"},
-{color:"grau",options:["grau","dunkelgrau","hellgrau","schwarz"],item:"sofa"},
-{color:"dunkelgrau",options:["dunkelgrau","grau","hellgrau","dunkelblau"],item:"stuhl"},
-{color:"hellgrau",options:["hellgrau","grau","dunkelgrau","weiss"],item:"tisch"},
-{color:"braun",options:["braun","dunkelbraun","hellbraun","orange"],item:"bett"},
-{color:"dunkelbraun",options:["dunkelbraun","braun","hellbraun","schwarz"],item:"schrank"},
-{color:"hellbraun",options:["hellbraun","braun","dunkelbraun","hellorange"],item:"sessel"}
+{color:"rot",options:["rot","dunkelrot","hellrot","orange"],item:"stuhl",items:["stuhl","sessel","sofa","tisch"]},
+{color:"dunkelrot",options:["dunkelrot","rot","hellrot","dunkelbraun"],item:"sessel",items:["sessel","stuhl","bett","schrank"]},
+{color:"hellrot",options:["hellrot","rot","dunkelrot","hellorange"],item:"sofa",items:["sofa","tisch","lampe","bett"]},
+{color:"blau",options:["blau","dunkelblau","hellblau","tuerkis"],item:"tisch",items:["tisch","stuhl","sofa","schrank"]},
+{color:"dunkelblau",options:["dunkelblau","blau","hellblau","dunkeltuerkis"],item:"schrank",items:["schrank","bett","sessel","lampe"]},
+{color:"hellblau",options:["hellblau","blau","dunkelblau","helltuerkis"],item:"bett",items:["bett","tisch","stuhl","waschbecken"]},
+{color:"gruen",options:["gruen","dunkelgruen","hellgruen","tuerkis"],item:"lampe",items:["lampe","stuhl","schrank","sofa"]},
+{color:"dunkelgruen",options:["dunkelgruen","gruen","hellgruen","dunkeltuerkis"],item:"sofa",items:["sofa","bett","tisch","sessel"]},
+{color:"hellgruen",options:["hellgruen","gruen","dunkelgruen","helltuerkis"],item:"sessel",items:["sessel","stuhl","lampe","waschbecken"]},
+{color:"gelb",options:["gelb","dunkelgelb","hellgelb","orange"],item:"stuhl",items:["stuhl","tisch","bett","schrank"]},
+{color:"dunkelgelb",options:["dunkelgelb","gelb","hellgelb","dunkelorange"],item:"tisch",items:["tisch","stuhl","sofa","sessel"]},
+{color:"hellgelb",options:["hellgelb","gelb","dunkelgelb","hellorange"],item:"bett",items:["bett","lampe","tisch","waschbecken"]},
+{color:"orange",options:["orange","dunkelorange","hellorange","gelb"],item:"schrank",items:["schrank","bett","stuhl","sofa"]},
+{color:"dunkelorange",options:["dunkelorange","orange","hellorange","braun"],item:"lampe",items:["lampe","tisch","sessel","bett"]},
+{color:"hellorange",options:["hellorange","orange","dunkelorange","hellgelb"],item:"sessel",items:["sessel","stuhl","schrank","sofa"]},
+{color:"grau",options:["grau","dunkelgrau","hellgrau","schwarz"],item:"sofa",items:["sofa","stuhl","bett","lampe"]},
+{color:"dunkelgrau",options:["dunkelgrau","grau","hellgrau","schwarz"],item:"stuhl",items:["stuhl","sessel","tisch","schrank"]},
+{color:"hellgrau",options:["hellgrau","grau","dunkelgrau","weiss"],item:"tisch",items:["tisch","bett","sofa","waschbecken"]},
+{color:"braun",options:["braun","dunkelbraun","hellbraun","orange"],item:"bett",items:["bett","schrank","stuhl","sofa"]},
+{color:"dunkelbraun",options:["dunkelbraun","braun","hellbraun","schwarz"],item:"schrank",items:["schrank","bett","sessel","lampe"]},
+{color:"hellbraun",options:["hellbraun","braun","dunkelbraun","hellorange"],item:"sessel",items:["sessel","stuhl","tisch","bett"]},
+{color:"rosa",options:["rosa","dunkelrosa","hellrosa","lila"],item:"stuhl",items:["stuhl","sessel","sofa","lampe"]},
+{color:"dunkelrosa",options:["dunkelrosa","rosa","hellrosa","dunkellila"],item:"sofa",items:["sofa","stuhl","bett","schrank"]},
+{color:"hellrosa",options:["hellrosa","rosa","dunkelrosa","helllila"],item:"lampe",items:["lampe","sessel","tisch","waschbecken"]},
+{color:"lila",options:["lila","dunkellila","helllila","rosa"],item:"sessel",items:["sessel","stuhl","bett","schrank"]},
+{color:"dunkellila",options:["dunkellila","lila","helllila","dunkelblau"],item:"schrank",items:["schrank","sofa","tisch","lampe"]},
+{color:"helllila",options:["helllila","lila","dunkellila","hellrosa"],item:"bett",items:["bett","sessel","stuhl","waschbecken"]},
+{color:"tuerkis",options:["tuerkis","dunkeltuerkis","helltuerkis","blau"],item:"tisch",items:["tisch","stuhl","sofa","lampe"]},
+{color:"dunkeltuerkis",options:["dunkeltuerkis","tuerkis","helltuerkis","dunkelgruen"],item:"waschbecken",items:["waschbecken","bett","tisch","schrank"]},
+{color:"helltuerkis",options:["helltuerkis","tuerkis","dunkeltuerkis","hellblau"],item:"sofa",items:["sofa","sessel","stuhl","lampe"]}
 ];
 
 const CONTRAST_TASKS=[
@@ -220,8 +237,23 @@ function markRight(file,total){let st=loadTask(file,total),cur=st.current;if(cur
 function pct(file,total){let st=loadTask(file,total);return Math.round((st.done.length||0)/total*100)||0}
 function progressHtml(file,total){let st=loadTask(file,total),p=pct(file,total);return `<div class="small">${st.done.length} richtig · ${total-st.done.length} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
 function feedbackForTry(tries,solution,type){if(tries===1)return"Da ist noch ein Fehler.";if(tries===2)return"Tipp: Prüfe "+(type||"Form und Schreibweise")+".";return"Lösung: "+solution}
-function complete(area,file,next="index.html"){syncTask(file,loadTask(file,getTotal(file)));area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Aufgabe geschafft!</div><div class="big">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="actions finish-actions"><button class="btn" onclick="resetOneTask('${file}')">Nochmal üben</button><a class="btn green" href="${next}">Weiter</a><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>`}
+function complete(area,file,next="index.html"){syncTask(file,loadTask(file,getTotal(file)));area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Aufgabe geschafft!</div><div class="big">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="actions finish-actions"><button class="btn" onclick="resetOneTask('${file}')">Nochmal üben</button><a class="btn green" href="${next}?done=1">Weiter</a><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>`}
 function resetOneTask(file){localStorage.removeItem(taskKey(file));location.reload()}
+
+function maybeStart(renderFn,file){
+  try{
+    const params=new URLSearchParams(location.search);
+    if(params.get('done')==='1'){
+      const title=TASK_TITLES[file]||'Aufgabe';
+      const target=typeof area!=='undefined'?area:document.getElementById('area');
+      if(target){
+        target.innerHTML=`<div class="finish-box"><div class="question">${safe(title)}</div><p class="small">Die Aufgabe startet erst, wenn du auf „Starten“ klickst.</p><div class="actions finish-actions"><button class="btn green" onclick="history.replaceState(null,'',location.pathname); (${renderFn.name||'render'})()">Starten</button><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>`;
+        return;
+      }
+    }
+  }catch(e){}
+  renderFn();
+}
 function getTotal(file){return {"karteikarten.html":CARDS.length,"hoeren.html":HEARING_TASKS.length,"farben.html":COLORS.length,"memory.html":PAIRS.length*2,"gegenteile.html":CONTRAST_TASKS.length,"kein.html":KEIN_TASKS.length,"reaktionen.html":REACTIONS.length,"gefallen.html":GEFAELLEN_TASKS.length,"saetze-bauen.html":SENTENCES.length,"schreiben.html":WRITING.length}[file]||1}
 function taskDoneCount(){return TASK_FILES.filter(f=>pct(f,getTotal(f))>=100).length}
 function allPrereqComplete(){return TASK_FILES.every(f=>pct(f,getTotal(f))>=100)}
