@@ -57,13 +57,17 @@ function userName(){const p=profile();return [p.firstName||p.vorname||p.name,p.l
 function courseCode(){const p=profile();return p.courseCode||p.kurs||p.course||p.kursCode||localStorage.getItem("SP_COURSE_CODE")||"Kurs"}
 function studentId(){const p=profile();return p.studentId||p.uid||p.email||p.id||userName()}
 function stars(n){n=Math.max(0,Math.min(3,Number(n||0)));return "★".repeat(n)+"☆".repeat(3-n)}
+const TECH_KEYS=new Set(["state","progress","stars","activeVerbs","learnedVerbs","known","unknown","unsure","updatedAt","lastActive","lastLogin","totals","current"]);
+function listLen(x){return Array.isArray(x)?x.length:(x&&typeof x==="object"?Object.keys(x).length:0)}
+function verbStats(mod={}){const learned=listLen(mod.learnedVerbs||mod.known||mod.state?.learnedVerbs||mod.state?.known||[]);const active=listLen(mod.activeVerbs||mod.state?.activeVerbs||mod.state?.active||[]);const known=listLen(mod.known||mod.state?.known||[]);const unsure=listLen(mod.unsure||mod.state?.unsure||[]);const unknown=listLen(mod.unknown||mod.state?.unknown||[]);return{learned,active,known,unsure,unknown,contentsDone:Math.floor(learned/20),packagePercent:Math.min(100,Math.round(((learned%20)||(learned?20:0))/20*100))}}
+function isTopicRecord(k,v){return !TECH_KEYS.has(k)&&v&&typeof v==="object"&&!Array.isArray(v)&&(v.tasks||v.exam||v.current||v.lifetime||v.progressPercent||v.title)}
 function clamp(n){return Math.max(0,Math.min(100,Math.round(Number(n)||0)))}
 function labelFile(file){return String(file||"").replace(".html","").replaceAll("-"," → ").replace("artikel → klick","Artikel klicken").replace("bild → wort","Bild → Wort").replace("wort → bild","Wort → Bild").replace("ist → hier","Ist hier?").replace("wo → ist","Wo ist?").replace(/^./,c=>c.toUpperCase())}
 function allProgress(){
   const all=readJSON("SP_DASHBOARD_PROGRESS",{});
   const one=readJSON("SP_PROGRESS_WORTSCHATZ_A1_L4_T2",null);
   if(one) all[one.id||"wortschatz-a1-lektion-4-thema-2"]=one;
-  return Object.values(all).filter(Boolean).map(normalizeItem).sort((a,b)=>String(a.moduleTitle+a.lessonLabel+a.themeLabel).localeCompare(String(b.moduleTitle+b.lessonLabel+b.themeLabel),'de'));
+  return Object.values(all).filter(Boolean).filter(x=>!(String(x.module||x.moduleId||"").toLowerCase()==="verben" && !x.isVerbSummary)).map(normalizeItem).sort((a,b)=>String(a.moduleTitle+a.lessonLabel+a.themeLabel).localeCompare(String(b.moduleTitle+b.lessonLabel+b.themeLabel),'de'));
 }
 function normalizeItem(x){
   const moduleKey=x.module||x.moduleId||"wortschatz";
@@ -71,13 +75,13 @@ function normalizeItem(x){
   const level=x.level||"A1";
   const lesson=x.lesson||x.lektion||"";
   const theme=x.theme||x.topic||x.thema||"";
-  return {...x,moduleKey,moduleTitle,level,lesson,theme,lessonLabel:`${level}${lesson?" · Lektion "+lesson:""}`,themeLabel:theme?`Thema ${theme}`:"Thema",percent:clamp(x.percent),taskPercent:clamp(x.taskPercent||x.percent)};
+  return {...x,moduleKey,moduleTitle,level,lesson,theme,lessonLabel:`${level}${lesson?" · Lektion "+lesson:""}`,themeLabel:x.isVerbSummary?"Verben A1":(theme?`Thema ${theme}`:"Thema"),percent:clamp(x.percent),taskPercent:clamp(x.taskPercent||x.percent)};
 }
 function groupData(data){
   const modules={};
   data.forEach(item=>{
     const mKey=item.moduleKey||"module";
-    if(!modules[mKey]) modules[mKey]={title:item.moduleTitle||mKey,items:[],lessons:{}};
+    if(!modules[mKey]) modules[mKey]={key:mKey,title:item.moduleTitle||mKey,items:[],lessons:{}};
     modules[mKey].items.push(item);
     const lKey=item.lessonLabel||"Lektion";
     if(!modules[mKey].lessons[lKey]) modules[mKey].lessons[lKey]={title:lKey,items:[]};
@@ -102,21 +106,27 @@ function renderModules(data){
   const grid=document.getElementById("contentGrid");
   if(!data.length){grid.innerHTML='<div class="empty">Noch keine freigeschalteten Inhalte gefunden. Öffne zuerst eine Aufgabe oder ein Thema.</div>';return}
   const modules=groupData(data);
-  grid.innerHTML=modules.map((m,i)=>{
+  grid.innerHTML=modules.map((m)=>{
+    const isVerben=m.key==="verben";
     const mp=avg(m.items), ms=sumStars(m.items), done=sumDone(m.items);
+    const verbItem=isVerben?m.items.find(x=>x.isVerbSummary)||{}:null;
+    const verbLine=isVerben?`${Number(verbItem.learned||0)} Verben gelernt · ${Number(verbItem.contentsDone||0)} Inhalt${Number(verbItem.contentsDone||0)===1?"":"e"} fertig`:null;
     const lessons=Object.values(m.lessons).map(l=>{
       const lp=avg(l.items), ls=sumStars(l.items);
       const themes=l.items.map(x=>themeHtml(x)).join("");
-      return `<div class="lesson"><div class="lessonHead"><div><h3>${esc(l.title)}</h3><div class="small">${l.items.length} Thema${l.items.length===1?"":"en"}</div></div><div class="sumRight"><span class="stars">${stars(Math.min(3,ls))}</span><b>${lp}%</b></div></div><div class="bar"><div class="fill" style="width:${lp}%"></div></div><div class="themeGrid">${themes}</div></div>`;
+      return `<div class="lesson"><div class="lessonHead"><div><h3>${esc(isVerben?"Verben A1":l.title)}</h3><div class="small">${isVerben?esc(verbLine):(l.items.length+" Thema"+(l.items.length===1?"":"en"))}</div></div><div class="sumRight">${isVerben?`<b>${Number(verbItem.learned||0)} Verben</b>`:`<span class="stars">${stars(Math.min(3,ls))}</span><b>${lp}%</b>`}</div></div><div class="bar"><div class="fill" style="width:${isVerben?Number(verbItem.packagePercent||0):lp}%"></div></div><div class="themeGrid">${themes}</div></div>`;
     }).join("");
-    return `<details class="acc" ${i===0?"open":""}><summary><div class="sumLeft"><span class="arrow">›</span><div><div class="sumTitle">${esc(m.title)}</div><div class="sumSub">${done}/${m.items.length} Inhalte fertig</div></div></div><div class="sumRight"><span class="stars">${stars(Math.min(3,ms))}</span><span class="miniPct">${mp}%</span></div></summary><div class="accBody">${lessons}</div></details>`;
+    return `<details class="acc"><summary><div class="sumLeft"><span class="arrow">›</span><div><div class="sumTitle">${esc(m.title)}</div><div class="sumSub">${isVerben?esc(verbLine):(done+"/"+m.items.length+" Inhalte fertig")}</div></div></div><div class="sumRight">${isVerben?`<span class="miniPct">${Number(verbItem.learned||0)} Verben</span>`:`<span class="stars">${stars(Math.min(3,ms))}</span><span class="miniPct">${mp}%</span>`}</div></summary><div class="accBody">${lessons}</div></details>`;
   }).join("");
 }
 function themeHtml(x){
+  if(x.isVerbSummary){
+    return `<article class="theme"><div class="themeTop"><div><h4>Verben A1</h4><div class="small">${Number(x.learned||0)} Verben gelernt</div></div><span class="badge ok">${Number(x.contentsDone||0)} Inhalt${Number(x.contentsDone||0)===1?"":"e"}</span></div><div class="bar"><div class="fill" style="width:${Number(x.packagePercent||0)}%"></div></div><div class="themeMeta"><span class="chip">Aktiv: ${Number(x.active||0)}</span><span class="chip">Sicher: ${Number(x.known||0)}</span><span class="chip">Unsicher: ${Number(x.unsure||0)}</span><span class="chip">Unbekannt: ${Number(x.unknown||0)}</span></div></article>`;
+  }
   const exam=x.exam||{};
   const percent=clamp(x.percent);
   const tasks=(x.tasks||[]).map(t=>`<div class="task"><span class="taskName">${esc(labelFile(t.file||t.title||"Aufgabe"))}</span><b>${clamp(t.percent)}%</b></div>`).join("");
-  return `<article class="theme"><div class="themeTop"><div><h4>${esc(x.themeLabel)} · ${esc(x.title||"Inhalt")}</h4><div class="small">${esc(x.subtitle||"")}</div></div><span class="badge ${exam.unlocked?'ok':'wait'}">${exam.unlocked?'Prüfung offen':'in Arbeit'}</span></div><div class="bar"><div class="fill" style="width:${percent}%"></div></div><div class="themeMeta"><span class="chip">${percent}%</span><span class="chip">${Number(x.completedTasks||0)}/${Number(x.totalTasks||0)} Aufgaben</span>${exam.attempted?`<span class="chip">${stars(exam.stars)} ${clamp(exam.percent)}%</span>`:""}</div><details class="taskDetails"><summary class="small" style="cursor:pointer;margin-top:8px;font-weight:800">Aufgaben anzeigen</summary><div class="taskList">${tasks||'<div class="small">Noch keine Aufgaben gespeichert.</div>'}</div></details></article>`;
+  return `<article class="theme"><div class="themeTop"><div><h4>${esc(x.themeLabel)} · ${esc(x.title||"Inhalt")}</h4><div class="small">${esc(x.subtitle||"")}</div></div><span class="badge ${exam.unlocked?'ok':'wait'}">${exam.unlocked?'Prüfung offen':'in Arbeit'}</span></div><div class="bar"><div class="fill" style="width:${percent}%"></div></div><div class="themeMeta"><span class="chip">${percent}%</span><span class="chip">${Number(x.completedTasks||0)}/${Number(x.totalTasks||0)} Aufgaben</span>${exam.attempted?`<span class="chip">${stars(exam.stars)} ${clamp(exam.percent||exam.bestPercent)}%</span>`:""}</div><details class="taskDetails"><summary class="small" style="cursor:pointer;margin-top:8px;font-weight:800">Aufgaben anzeigen</summary><div class="taskList">${tasks||'<div class="small">Noch keine Aufgaben gespeichert.</div>'}</div></details></article>`;
 }
 function render(){
   const data=allProgress();
@@ -137,7 +147,7 @@ function render(){
 function renderLeaderboard(data){
   const course=courseCode();
   const board=ensureLeaderboard(data);
-  const list=Object.values(board[course]||{}).sort((a,b)=>(Number(b.points||0)-Number(a.points||0))||(Number(b.stars||0)-Number(a.stars||0))||(Number(b.progress||0)-Number(a.progress||0)));
+  const list=Object.values(board[course]||{}).filter(x=>String(x.name||"").trim() && String(x.name||"").trim()!=="Schüler/in").sort((a,b)=>(Number(b.points||0)-Number(a.points||0))||(Number(b.stars||0)-Number(a.stars||0))||(Number(b.progress||0)-Number(a.progress||0)));
   const leader=document.getElementById("leaderboard");
   leader.innerHTML=list.length?list.map((x,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div><b>${esc(x.name||"Schüler/in")}</b><div class="small">${esc(course)}</div></div><div class="rankVal">${Number(x.points||0)}<span>Punkte</span></div><div class="rankVal">${Number(x.stars||0)}<span>Sterne</span></div><div class="rankVal">${clamp(x.progress)}%<span>Fortschritt</span></div></div>`).join(""):'<div class="empty">Noch keine Punkte in diesem Kurs.</div>';
 }
@@ -146,27 +156,32 @@ render();
 </script>
 
 <script type="module">
-import { loadCurrentStudentProgress, loadCourseRanking } from "/js/progress.js?v=230";
+import { loadCurrentStudentProgress, loadCourseRanking, migrateLegacyLocalProgress } from "/js/progress.js?v=232";
 function safeLocal(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
 function normalizeTopic(id,t,moduleKey="wortschatz"){
   return {id,module:moduleKey,moduleTitle:t.moduleTitle||"Wortschatz",level:t.level||"A1",lesson:t.lesson||"",theme:t.theme||"",title:t.title||id,percent:t.progressPercent||t.current?.percent||0,completedTasks:t.completedTasks||0,totalTasks:t.totalTasks||0,tasks:Object.values(t.tasks||{}).map(x=>({file:x.file,title:x.title,percent:x.percent})),exam:t.exam||{},points:t.lifetime?.points||0};
 }
 async function loadFirebaseDashboard(){
   try{
+    await migrateLegacyLocalProgress();
     const p=await loadCurrentStudentProgress();
     if(p && p.studentId){
       const all={};
-      ["wortschatz","fragen","verben","grammatik"].forEach(moduleKey=>{
+      ["wortschatz","fragen","grammatik"].forEach(moduleKey=>{
         Object.entries(p[moduleKey]||{}).forEach(([id,t])=>{
-          if(t && typeof t==="object" && !["state","progress","stars"].includes(id)) all[id]=normalizeTopic(id,t,moduleKey);
+          if(isTopicRecord(id,t)) all[id]=normalizeTopic(id,t,moduleKey);
         });
       });
+      const vs=verbStats(p.verben||{});
+      if(vs.learned || vs.active || vs.known || vs.unsure || vs.unknown){
+        all["verben-a1"]={id:"verben-a1",module:"verben",moduleTitle:"Verben",level:"A1",lesson:"",theme:"",title:"Verben A1",isVerbSummary:true,learned:vs.learned,active:vs.active,known:vs.known,unsure:vs.unsure,unknown:vs.unknown,contentsDone:vs.contentsDone,packagePercent:vs.packagePercent,percent:vs.packagePercent,tasks:[],exam:{}};
+      }
       safeLocal("SP_DASHBOARD_PROGRESS",all);
       if(p.totals){localStorage.setItem("SP_POINTS_TOTAL",Number(p.totals.points||0));}
       const ranking=await loadCourseRanking(p.kurs);
       if(Array.isArray(ranking)){
         const board={}; board[p.kurs||"Kurs"]={};
-        ranking.forEach(r=>{board[p.kurs||"Kurs"][r.studentId||r.id]={studentId:r.studentId||r.id,name:r.studentName||r.email||"Schüler/in",points:r.totals?.points||0,stars:r.totals?.stars||0,progress:r.totals?.progressPercent||0,done:r.totals?.completedTasks||0,updatedAt:r.totals?.updatedAt||""}});
+        ranking.forEach(r=>{board[p.kurs||"Kurs"][r.studentId||r.id]={studentId:r.studentId||r.id,name:r.studentName||r.name||r.email||"",points:r.totals?.points||0,stars:r.totals?.stars||0,progress:r.totals?.progressPercent||0,done:r.totals?.completedTasks||0,updatedAt:r.totals?.updatedAt||""}});
         safeLocal("SP_COURSE_LEADERBOARD",board);
       }
       if(typeof render==="function") render();
