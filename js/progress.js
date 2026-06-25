@@ -2,6 +2,23 @@ import { db, doc, getDoc, setDoc, serverTimestamp, collection, query, where, get
 import { getActiveProfile } from "./auth.js";
 
 const MODULE_KEYS = ["fragen","wortschatz","verben","grammatik"];
+const TECH_PROGRESS_KEYS = new Set([
+  "state","progress","stars","activeVerbs","learnedVerbs","known","unknown","unsure","updatedAt","lastActive","lastLogin","lastPage","lastAction","totals","current","profile","metadata"
+]);
+function isTopicRecord(key,value){
+  if(TECH_PROGRESS_KEYS.has(key)) return false;
+  if(!value || typeof value!=="object" || Array.isArray(value)) return false;
+  return !!(value.tasks || value.exam || value.current || value.lifetime || value.progressPercent || value.title || value.moduleTitle);
+}
+function verbListLength(x){ return Array.isArray(x) ? x.length : (x && typeof x==="object" ? Object.keys(x).length : 0); }
+function verbStats(mod={}){
+  const learned=verbListLength(mod.learnedVerbs || mod.known || mod.state?.learnedVerbs || mod.state?.known || []);
+  const active=verbListLength(mod.activeVerbs || mod.state?.activeVerbs || mod.state?.active || []);
+  const known=verbListLength(mod.known || mod.state?.known || []);
+  const unsure=verbListLength(mod.unsure || mod.state?.unsure || []);
+  const unknown=verbListLength(mod.unknown || mod.state?.unknown || []);
+  return {learned, active, known, unsure, unknown, contentsDone: Math.floor(learned/20), currentPackagePercent: Math.min(100, Math.round(((learned % 20) || (learned?20:0))/20*100))};
+}
 
 function nowIso(){ return new Date().toISOString(); }
 function cleanId(s){ return String(s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"") || "item"; }
@@ -34,7 +51,7 @@ function recalcTotals(progress){
   MODULE_KEYS.forEach(moduleKey=>{
     const mod=progress[moduleKey]||{};
     Object.entries(mod).forEach(([topicKey,topic])=>{
-      if(!topic || typeof topic!=="object" || ["progress","state","stars"].includes(topicKey)) return;
+      if(!isTopicRecord(topicKey, topic)) return;
       const lifetime=topic.lifetime||{};
       points += Number(lifetime.points||0);
       const pct=clampPercent(topic.progressPercent ?? topic.current?.percent ?? 0);
@@ -43,6 +60,14 @@ function recalcTotals(progress){
       Object.values(tasks).forEach(t=>{ if(t && t.completed) completedTasks++; });
       if(topic.exam?.attempted){ completedExams++; stars += Number(topic.exam.stars||0); }
     });
+    if(moduleKey==="verben"){
+      const vs=verbStats(mod);
+      if(vs.learned || vs.active || vs.known || vs.unsure || vs.unknown){
+        progressSum += vs.currentPackagePercent;
+        progressCount++;
+        completedTasks += vs.contentsDone;
+      }
+    }
   });
   return {
     points,
@@ -211,7 +236,42 @@ async function loadCourseRanking(courseCode=getCourse()){
   const snap=await getDocs(q);
   return snap.docs.map(d=>({id:d.id,...d.data()}));
 }
-const API={recordTaskProgress,recordExamResult,recordThemeReset,touch,loadCurrentStudentProgress,loadCourseRanking};
+
+async function migrateLegacyLocalProgress(){
+  try{
+    const flag="SP_PROGRESS_LEGACY_MIGRATED_V3";
+    if(localStorage.getItem(flag)==="1") return;
+    const taskSets=[
+      {key:"SP_L4_T1_V2", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"1", title:"A1 Lektion 4 · Thema 1", files:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","wo-ist.html","ist-hier.html"]},
+      {key:"SP_L4_T2_FINAL_V3", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"2", title:"A1 Lektion 4 · Thema 2", files:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","kategorien.html","dialoge.html"]}
+    ];
+    for(const set of taskSets){
+      for(const file of set.files){
+        let st=null;
+        try{ st=JSON.parse(localStorage.getItem(set.key+"_"+file)||"null"); }catch(e){}
+        if(!st || !st.total) continue;
+        const done=Array.isArray(st.done)?st.done.length:0;
+        const percent=clampPercent(done/Number(st.total||1)*100);
+        if(percent<=0) continue;
+        await recordTaskProgress({...set,file,taskKey:file,taskTitle:taskTitleFromFile(file),total:Number(st.total||0),done,percent,completed:percent>=100,wrongItems:st.wrongItems||[]});
+      }
+    }
+    const exams=[
+      {key:"SP_L4_T1_EXAM_HISTORY_V1", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"1", title:"A1 Lektion 4 · Thema 1"},
+      {key:"SP_L4_T2_EXAM_HISTORY_V1", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"2", title:"A1 Lektion 4 · Thema 2"}
+    ];
+    for(const ex of exams){
+      let hist=[];
+      try{ hist=JSON.parse(localStorage.getItem(ex.key)||"[]"); }catch(e){}
+      if(!Array.isArray(hist) || !hist.length) continue;
+      const best=hist.reduce((b,x)=> Number(x.percent||0)>Number(b.percent||0)?x:b, hist[0]);
+      await recordExamResult({...ex, score:Number(best.score||0), maxScore:Number(best.maxScore||200)||200, percent:Number(best.percent||0), stars:Number(best.stars||0)});
+    }
+    localStorage.setItem(flag,"1");
+  }catch(err){ console.warn("SPProgress legacy migration failed", err); }
+}
+
+const API={recordTaskProgress,recordExamResult,recordThemeReset,touch,loadCurrentStudentProgress,loadCourseRanking,migrateLegacyLocalProgress};
 window.SPProgress=API;
 const q=window.SP_PROGRESS_QUEUE||[];
 window.SP_PROGRESS_QUEUE=[];
@@ -219,4 +279,4 @@ for(const item of q){
   if(item && API[item.method]) API[item.method](item.payload||{});
 }
 try{ touch({action:"page-open"}); }catch(e){}
-export { recordTaskProgress, recordExamResult, recordThemeReset, touch, loadCurrentStudentProgress, loadCourseRanking };
+export { recordTaskProgress, recordExamResult, recordThemeReset, touch, loadCurrentStudentProgress, loadCourseRanking, migrateLegacyLocalProgress, verbStats };
