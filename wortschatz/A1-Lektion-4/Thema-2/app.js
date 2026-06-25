@@ -9,6 +9,27 @@ const DASHBOARD_TOPIC_KEY="SP_PROGRESS_WORTSCHATZ_A1_L4_T2";
 const DASHBOARD_ALL_KEY="SP_DASHBOARD_PROGRESS";
 const DASHBOARD_LEGACY_KEY="SP_L4_T2_DASHBOARD_PROGRESS";
 const DASHBOARD_URL="/student-dashboard/index.html";
+
+const SP_PROGRESS_META={module:"wortschatz",moduleTitle:"Wortschatz",level:"A1",lesson:"4",theme:"2",topicId:"wortschatz-a1-lektion-4-thema-2",title:"A1 Lektion 4 · Thema 2"};
+function queueProgress(method,payload){
+ const data={...SP_PROGRESS_META,...(payload||{})};
+ if(window.SPProgress&&typeof window.SPProgress[method]==="function"){
+   window.SPProgress[method](data);
+ }else{
+   window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];
+   window.SP_PROGRESS_QUEUE.push({method,payload:data});
+ }
+}
+function itemNameFor(file,index){
+ try{
+   let item=null;
+   if(file==="kategorien.html") item=categoryTaskWords()[index];
+   else if(file==="dialoge.html") item=wordById(DIALOG_TASKS[index]?.id);
+   else item=wordsForFile(file)[index] || WORDS[index];
+   return item?.full || item?.word || item?.id || String(index);
+ }catch(e){return String(index)}
+}
+
 const PROFILE_URL="/profile/index.html";
 const HOME_URL="/index.html";
 const CATEGORY_TASK_ALLOWED=["Möbel","Elektrogeräte","Bad"];
@@ -110,7 +131,7 @@ function setExamUnlocked(){localStorage.setItem(EXAM_UNLOCK_KEY,"1");syncDashboa
 function isExamUnlocked(){if(localStorage.getItem(EXAM_UNLOCK_KEY)==="1"){syncDashboardProgress();return true}if(allPrereqComplete()){setExamUnlocked();return true}syncDashboardProgress();return false}
 function prereqPercent(){const t=prerequisiteTasks();return Math.round(t.reduce((s,x)=>s+pct(x[0],x[1]),0)/t.length)||0}
 function examHistory(){try{return JSON.parse(localStorage.getItem("SP_L4_T2_EXAM_HISTORY_V1")||"[]")}catch(e){return[]}}
-function saveExamResult(result){setExamUnlocked();const h=examHistory();h.push({...result,date:new Date().toISOString()});localStorage.setItem("SP_L4_T2_EXAM_HISTORY_V1",JSON.stringify(h));localStorage.setItem("SP_L4_T2_EXAM_BEST",JSON.stringify(bestExamResultFrom(h)));awardPoints(Number(result?.score||0)||0,"exam-score",{theme:"wortschatz-a1-lektion-4-thema-2",percent:result?.percent||0,stars:result?.stars||0});syncDashboardProgress()}
+function saveExamResult(result){setExamUnlocked();const h=examHistory();h.push({...result,date:new Date().toISOString()});localStorage.setItem("SP_L4_T2_EXAM_HISTORY_V1",JSON.stringify(h));localStorage.setItem("SP_L4_T2_EXAM_BEST",JSON.stringify(bestExamResultFrom(h)));awardPoints(Number(result?.score||0)||0,"exam-score",{theme:"wortschatz-a1-lektion-4-thema-2",percent:result?.percent||0,stars:result?.stars||0});queueProgress("recordExamResult",{score:Number(result?.score||0)||0,maxScore:Number(result?.maxScore||200)||200,percent:result?.percent||0,stars:result?.stars||0});syncDashboardProgress()}
 function bestExamResultFrom(h){if(!h||!h.length)return null;return h.reduce((best,x)=>(!best||Number(x.percent||0)>Number(best.percent||0)?x:best),null)}
 function bestExamResult(){return bestExamResultFrom(examHistory())}
 function starsForPercent(p){p=Number(p||0);if(p>=100)return 3;if(p>=70)return 2;if(p>=50)return 1;return 0}
@@ -173,7 +194,7 @@ function logoutUser(){
  ["SP_USER_PROFILE","sprachpilotUser","SP_CURRENT_USER","SP_LOGIN","SP_COURSE_CODE"].forEach(k=>localStorage.removeItem(k));
  location.href=HOME_URL;
 }
-function resetThemeProgress(){if(!confirm("Möchten Sie wirklich alle Fortschritte in diesem Thema löschen?"))return;Object.keys(localStorage).forEach(k=>{if(k.startsWith("SP_L4_T2_FINAL_")||k.startsWith("SP_L4_T2_EXAM_"))localStorage.removeItem(k)});Object.keys(sessionStorage).forEach(k=>{if(k.startsWith("SP_L4_T2_PRACTICE_"))sessionStorage.removeItem(k)});clearDashboardProgress();location.href="index.html"}
+function resetThemeProgress(){if(!confirm("Möchten Sie wirklich alle Fortschritte in diesem Thema löschen?"))return;queueProgress("recordThemeReset",{});Object.keys(localStorage).forEach(k=>{if(k.startsWith("SP_L4_T2_FINAL_")||k.startsWith("SP_L4_T2_EXAM_"))localStorage.removeItem(k)});Object.keys(sessionStorage).forEach(k=>{if(k.startsWith("SP_L4_T2_PRACTICE_"))sessionStorage.removeItem(k)});clearDashboardProgress();setTimeout(()=>{location.href="index.html"},350)}
 function practiceFlag(file){return "SP_L4_T2_PRACTICE_"+file}
 function isPracticeMode(file){return sessionStorage.getItem(practiceFlag(file))==="1"}
 function taskKey(file){return KEY+"_"+file+(isPracticeMode(file)?"_PRACTICE":"")}
@@ -181,10 +202,10 @@ function resetPractice(file){localStorage.removeItem(KEY+"_"+file+"_PRACTICE")}
 function startPractice(file){sessionStorage.setItem(practiceFlag(file),"1");resetPractice(file);location.reload()}
 function stopPractice(file){sessionStorage.removeItem(practiceFlag(file))}
 function loadTask(file,total){try{let st=JSON.parse(localStorage.getItem(taskKey(file))||"null");if(st&&Array.isArray(st.queue)&&Array.isArray(st.done)){if(st.total!==total){st.total=total;st.done=[...new Set(st.done.filter(i=>Number.isInteger(i)&&i>=0&&i<total))];st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(file,st)}return st}}catch(e){}let queue=[...Array(total).keys()].sort(()=>Math.random()-.5);return{total,queue,done:[],current:null,tries:0,hadError:false,repeatQueued:false}}
-function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(st));try{window.dispatchEvent(new CustomEvent("sprachpilot-progress",{detail:{file,st}}))}catch(e){}syncDashboardProgress()}
+function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(st));try{window.dispatchEvent(new CustomEvent("sprachpilot-progress",{detail:{file,st}}))}catch(e){}syncDashboardProgress();try{queueProgress("recordTaskProgress",{file,taskKey:file,taskTitle:file.replace(".html",""),total:st.total||0,done:(st.done||[]).length,percent:pct(file,st.total||1),completed:(st.done||[]).length>=(st.total||1),tries:st.tries||0,wrongItems:st.wrongItems||[],lastWrongItem:st.lastWrongItem||""})}catch(e){}}
 function nextIndex(file,total){let st=loadTask(file,total);if(st.current===null||st.current===undefined){if(!st.queue.length&&st.done.length<total)st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=st.queue.shift();st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(file,st)}return st.current}
 function markRight(file,total){let st=loadTask(file,total);const current=st.current;if(current!==null&&current!==undefined){if(st.hadError||(st.tries||0)>0){if(!st.done.includes(current)&&!st.queue.includes(current))st.queue.push(current)}else{if(!st.done.includes(current)){st.done.push(current);awardPoints(2,"task-first-try",{theme:"wortschatz-a1-lektion-4-thema-2",file,item:current})}}}st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(file,st);return st.done.length>=total}
-function markWrong(file,total){let st=loadTask(file,total);st.tries=(st.tries||0)+1;st.hadError=true;if(st.current!==null&&st.current!==undefined&&!st.repeatQueued){st.queue.push(st.current);st.repeatQueued=true}saveTask(file,st);return st.tries}
+function markWrong(file,total){let st=loadTask(file,total);st.tries=(st.tries||0)+1;st.hadError=true;const wrongName=itemNameFor(file,st.current);st.wrongItems=[...new Set([...(st.wrongItems||[]),wrongName].filter(Boolean))];st.lastWrongItem=wrongName;if(st.current!==null&&st.current!==undefined&&!st.repeatQueued){st.queue.push(st.current);st.repeatQueued=true}saveTask(file,st);return st.tries}
 function feedbackForTry(tries,solution,type){if(tries===1)return `<div class="no">Da ist noch ein Fehler.</div>`;if(tries===2)return `<div class="no">Tipp: Prüfe ${esc(type||"die Antwort")}.</div>`;return `<div class="no">Lösung: ${esc(solution)}</div>`}
 function progressHtml(file,total){let st=loadTask(file,total),d=Math.min(st.done.length,total),left=Math.max(0,total-d),p=Math.min(100,Math.round(d/(total||1)*100)||0);const practice=isPracticeMode(file)?" · Wiederholung":"";return `<div class="small">${d} richtig · ${left} übrig · ${p}%${practice}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
 function realLoadTask(file,total){const saved=sessionStorage.getItem(practiceFlag(file));sessionStorage.removeItem(practiceFlag(file));let st=loadTask(file,total);if(saved!==null)sessionStorage.setItem(practiceFlag(file),saved);return st}

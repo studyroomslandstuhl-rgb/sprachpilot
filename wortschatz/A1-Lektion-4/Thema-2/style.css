@@ -282,3 +282,8 @@ footer{text-align:center;color:white;margin-top:20px}
   .exam-summary-grid{grid-template-columns:1fr}
   .exam-done-box.exam-summary-wide{text-align:left}
 }
+
+/* Smaller article icon so task progress bars stay aligned */
+.module .icon{min-height:78px;display:flex;align-items:center;justify-content:center}
+.module:nth-child(3) .icon{font-size:42px;line-height:1.08;min-height:78px}
+@media(max-width:700px){.module:nth-child(3) .icon{font-size:34px}}
