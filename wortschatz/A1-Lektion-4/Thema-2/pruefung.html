@@ -6,11 +6,11 @@
 .exam-task-label{text-align:center;font-size:18px;font-weight:900;color:#7a5100;margin-bottom:8px}
 .solution-box{background:#ffe1e1;border-left:5px solid #e74c3c;border-radius:14px;padding:12px;margin:12px 0;line-height:1.5}
 .exam-score{font-size:44px;font-weight:900;color:#667eea;text-align:center;margin:16px 0}
-</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=150"></script><script>
+</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=220"></script><script>
 header("Prüfung");
 const FILE="pruefung.html";
 const MAX_TASKS=20;
-let items=[],pos=0,score=0,results=[];
+let items=[],pos=0,score=0,results=[],answered=false;
 
 function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 
@@ -32,10 +32,10 @@ function makeItem(w,type){
  if(type==="article")return{type,w,question:`Wähle den richtigen Artikel: ___ ${w.word}`,answer:w.article,options:["der","die","das"]};
  if(type==="imageToWord")return{type,w,question:"Was ist das? Schreibe mit Artikel.",answer:w.full};
  if(type==="listen")return{type,w,question:"Höre und schreibe das Wort mit Artikel.",answer:w.full};
- if(type==="category")return{type,w,question:`Welche Kategorie passt zu ${w.full}?`,answer:w.category,options:shuffle([...new Set(WORDS.map(x=>x.category))]).slice(0,4)};
+ if(type==="category"){let cats=[...new Set(WORDS.map(x=>x.category))].filter(Boolean);let options=shuffle([w.category,...cats.filter(c=>c!==w.category)]).slice(0,4);return{type,w,question:`Welche Kategorie passt zu ${w.full}?`,answer:w.category,options};}
  if(type==="dialog"){
    const t=DIALOG_TASKS.find(d=>d.id===w.id)||{answerNoun:w.full,answerPronoun:w.pronoun,adj:"schön",line1:"Ist ___ schön?",line2:"Ja, ___ ist schön."};
-   return{type,w,dialog:t,question:"Ergänze den Dialog.",answer:t.answerNoun+" / "+t.answerPronoun};
+   return{type,w,dialog:t,question:"Schreiben Sie das Nomen mit Artikel und das Pronomen.",answer:t.answerNoun+" / "+t.answerPronoun};
  }
  if(type==="wordToImage"){
    let options=shuffle([w,...WORDS.filter(x=>x.id!==w.id)]).slice(0,4);
@@ -60,13 +60,14 @@ function points(user,answer,type){
  let p=10;
  if(["full","imageToWord","listen"].includes(type)){
    const ansArt=a.split(" ")[0],userArt=u.split(" ")[0]||"";
-   if(ansArt!==userArt)p-=3;
+   if(ansArt!==userArt)p-=4;
  }
  p-=Math.min(5,Math.abs(u.length-a.length)||1);
  return Math.max(0,p);
 }
 
 function show(){
+ answered=false;
  if(pos>=items.length){finish();return}
  const it=items[pos],w=it.w;
  let html=`<div class="small">Prüfungsaufgabe ${pos+1} / ${items.length}</div><div class="exam-task-label">${it.question}</div>`;
@@ -93,6 +94,8 @@ function checkDialog(){
  grade(user,answer,it.type);
 }
 function grade(user,answer,type){
+ if(answered)return;
+ answered=true;
  let p=(n(user)===n(answer))?10:points(user,answer,type);
  if(["article","category","wordToImage"].includes(type))p=(n(user)===n(answer))?10:0;
  score+=p;results.push({type,word:items[pos].w.id,answer,user,points:p});

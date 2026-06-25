@@ -1,33 +1,32 @@
-# Lektion 4 · Thema 2 – Wortschatz-Sets
+# Thema 2 Wortgruppen
 
-## Basis / Buchwortschatz
-### basis_moebel
+## Im Buch
 - der Schrank
+- der Kühlschrank
 - das Sofa
 - der Tisch
 - der Stuhl
 - das Bett
-- der Sessel
-- das Regal
-- der Teppich
-
-### basis_elektro
-- die Lampe
 - der Fernseher
-- der Kühlschrank
-- die Waschmaschine
+- der Teppich
+- der Sessel
+- die Lampe
 - der Herd
 - das Elektrogerät
+- die Dusche
+- die Badewanne
+- die Toilette
+- das Waschbecken
 
-### basis_wohnung
-- die Wand
+## Nicht im Buch
+- die Kommode
+- der Nachttisch
+- das Bild
 - die Tür
 - das Fenster
 - das Dach
 - der Boden
-
-## Erweiterter Wortschatz
-### plus_kueche
+- die Wand
 - die Spüle
 - die Spülmaschine
 - der Backofen
@@ -36,12 +35,6 @@
 - der Wasserkocher
 - der Abzug
 - der Küchenschrank
-
-### plus_bad
-- die Toilette
-- die Badewanne
-- die Dusche
-- das Waschbecken
-
-## Nicht ergänzt
-Zimmer-Wörter wie Nachttisch, Kommode, Spiegel und Bild wurden nicht ergänzt.
+- der Kaffeetisch
+- der Gefrierschrank
+- die Kaffeemaschine
