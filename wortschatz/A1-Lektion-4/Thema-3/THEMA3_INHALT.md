@@ -19,3 +19,11 @@ Thema: Farben, Adjektive, Reaktionen, gefallen/gefällt, nicht/kein/keine.
 - Gefallen kann gesprochen oder geschrieben werden.
 - Sätze bauen: 20 Aufgaben, Singular/Plural gemischt, Bilder zeigen trotzdem einzelne Möbelstücke.
 - Schreiben: 15 Sätze, nur Bilder + Beispiel/Aufgabenstellung.
+
+
+## Fix v304 · Gefallen Singular/Plural
+
+- In Aufgabe „Gefallen“ zeigt Singular genau ein Bild.
+- Bei Plural zeigt die Aufgabe zwei gleiche Bilder nebeneinander, z. B. zwei Stühle.
+- So erkennen Lernende besser: „Wie gefällt dir der Stuhl?“ vs. „Wie gefallen dir die Stühle?“
+- Antwort bleibt: Singular mit er/es/sie + ist, Plural mit sie + sind.

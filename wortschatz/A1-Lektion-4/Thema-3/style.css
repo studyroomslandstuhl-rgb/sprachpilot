@@ -97,3 +97,22 @@ body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-g
   .smile-card{width:108px;height:108px;font-size:48px}
   .word-memory .memory-card{font-size:19px}
 }
+
+
+/* Thema 3 · Gefallen: Singular = ein Bild, Plural = zwei gleiche Bilder */
+.plural-visual{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  flex-wrap:nowrap;
+  margin:12px auto;
+}
+.plural-visual .small-copy{
+  max-width:150px;
+  height:150px;
+  margin:0;
+}
+@media(max-width:700px){
+  .plural-visual .small-copy{max-width:130px;height:130px;}
+}
