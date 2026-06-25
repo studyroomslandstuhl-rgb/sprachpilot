@@ -116,3 +116,15 @@ body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-g
 @media(max-width:700px){
   .plural-visual .small-copy{max-width:130px;height:130px;}
 }
+
+/* Thema 3 v305 */
+.image-grid-4{
+  grid-template-columns:repeat(4,minmax(0,1fr));
+}
+.color-img.missing{
+  object-fit:contain;
+  padding:18px;
+}
+@media(max-width:700px){
+  .image-grid-4{grid-template-columns:repeat(2,minmax(0,1fr));}
+}

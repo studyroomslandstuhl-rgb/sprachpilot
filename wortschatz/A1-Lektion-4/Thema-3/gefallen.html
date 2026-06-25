@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gefallen Thema 3</title><link rel="stylesheet" href="style.css?v=304"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=304"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gefallen Thema 3</title><link rel="stylesheet" href="style.css?v=305"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=305"></script><script>
 header('Farben & Adjektive');
 const file='gefallen.html',total=GEFAELLEN_TASKS.length;
 let phase='question';
@@ -9,32 +9,46 @@ function taskItemImg(t){
   }
   return img(src,'task-img');
 }
+function visualWord(id){
+  const c=COLORS.find(x=>x.id===id);
+  if(c) return colorImg(c,'task-img');
+  const a=ADJECTIVES.find(x=>x.id===id);
+  return img((a&&a.img)||id+'.png','task-img');
+}
+function normalizeGefallenAnswer(txt){
+  let low=simple(txt).replace(/^ganz gut\b/,'gut').replace(/^sehr gut\b/,'gut');
+  low=low.replace(/\ber ist sehr\b/g,'er ist');
+  low=low.replace(/\bsie ist sehr\b/g,'sie ist');
+  low=low.replace(/\bes ist sehr\b/g,'es ist');
+  low=low.replace(/\bsie sind sehr\b/g,'sie sind');
+  return low.trim();
+}
 function render(){
   let i=nextIndex(file,total);
   if(i===null)return complete(area,file,'saetze-bauen.html');
-  let t=GEFAELLEN_TASKS[i],r=reactionById(t.reaction),a=adjById(t.adj);
+  let t=GEFAELLEN_TASKS[i],r=reactionById(t.reaction);
   if(phase==='question'){
     area.innerHTML=progressHtml(file,total)+
-    instruction('Bilde zuerst die Frage mit „gefällt“ oder „gefallen“.')+
-    exampleBox('Ein Bild = Singular: Wie gefällt dir der Sessel?<br>Zwei gleiche Bilder = Plural: Wie gefallen dir die Stühle?')+
-    `<div class="imgrow">${taskItemImg(t)}</div>
-     <input id="q" placeholder="Schreiben Sie die Frage hier">
-     <div class="actions">
-       <button class="btn mic-btn" onclick="startMic(this,v=>{q.value=v;checkQuestion(true)})">🎤 Frage sprechen</button>
-       <button class="btn" onclick="checkQuestion(false)">Kontrollieren</button>
-     </div>
-     <div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
+      instruction('Bilde zuerst die Frage mit „gefällt“ oder „gefallen“.')+
+      exampleBox('Ein Bild = Singular: Wie gefällt dir der Sessel?<br>Zwei gleiche Bilder = Plural: Wie gefallen dir die Stühle?')+
+      `<div class="imgrow">${taskItemImg(t)}</div>
+       <input id="q" placeholder="Schreiben Sie die Frage hier">
+       <div class="actions">
+         <button class="btn mic-btn" onclick="startMic(this,v=>{q.value=v;checkQuestion(true)})">🎤 Frage sprechen</button>
+         <button class="btn" onclick="checkQuestion(false)">Kontrollieren</button>
+       </div>
+       <div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
   }else{
     area.innerHTML=progressHtml(file,total)+
-    instruction('Antworte mit der Reaktion und einem ganzen Satz.')+
-    exampleBox('Singular: Sehr gut. Er ist bequem.<br>Plural: Sehr gut. Sie sind bequem.')+
-    `<div class="imgrow three-img">${taskItemImg(t)}<div class="smile-card">${r.emoji}</div>${img(a.img,'task-img')}</div>
-     <input id="a" placeholder="Schreiben Sie die Antwort hier">
-     <div class="actions">
-       <button class="btn mic-btn" onclick="startMic(this,v=>{a.value=v;checkAnswer(true)})">🎤 Antwort sprechen</button>
-       <button class="btn" onclick="checkAnswer(false)">Kontrollieren</button>
-     </div>
-     <div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
+      instruction('Antworte mit der Reaktion und einem ganzen Satz.')+
+      exampleBox('Singular: Sehr gut. Er ist bequem.<br>Auch richtig: Gut. Er ist bequem.<br>Auch richtig: Sehr gut. Er ist sehr bequem.<br><br>Plural: Wie gefallen dir die Stühle?<br>Gut. Sie sind modern.')+
+      `<div class="imgrow three-img">${taskItemImg(t)}<div class="smile-card">${r.emoji}</div>${visualWord(t.adj)}</div>
+       <input id="a" placeholder="Schreiben Sie die Antwort hier">
+       <div class="actions">
+         <button class="btn mic-btn" onclick="startMic(this,v=>{a.value=v;checkAnswer(true)})">🎤 Antwort sprechen</button>
+         <button class="btn" onclick="checkAnswer(false)">Kontrollieren</button>
+       </div>
+       <div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
   }
 }
 function checkQuestion(fromSpeech=false){
@@ -42,7 +56,7 @@ function checkQuestion(fromSpeech=false){
   if(isExactSentence(q.value,t.question,fromSpeech)){
     fb.innerHTML='<div class="ok">Richtig. Jetzt die Antwort.</div>';
     phase='answer';
-    setTimeout(render,400);
+    setTimeout(render,350);
   }else{
     let tr=markWrong(file,total,t.question);
     fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.question,'gefällt/gefallen und Artikel')+'</div>';
@@ -50,10 +64,12 @@ function checkQuestion(fromSpeech=false){
 }
 function checkAnswer(fromSpeech=false){
   let st=loadTask(file,total),t=GEFAELLEN_TASKS[st.current];
-  if(isExactSentence(a.value,t.answer,fromSpeech)){
+  const expected=normalizeGefallenAnswer(t.answer);
+  const actual=normalizeGefallenAnswer(a.value);
+  if(actual===expected){
     fb.innerHTML='<div class="ok">Richtig!</div>';
     phase='question';
-    setTimeout(()=>{markRight(file,total)?complete(area,file,'saetze-bauen.html'):render()},500)
+    setTimeout(()=>{markRight(file,total)?complete(area,file,'saetze-bauen.html'):render()},420)
   }else{
     let tr=markWrong(file,total,t.answer);
     fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.answer,'Reaktion, Pronomen und ist/sind')+'</div>';

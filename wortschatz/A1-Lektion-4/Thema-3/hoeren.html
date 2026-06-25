@@ -1,8 +1,8 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören Thema 3</title><link rel="stylesheet" href="style.css?v=304"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=304"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören Thema 3</title><link rel="stylesheet" href="style.css?v=305"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=305"></script><script>
 header('Farben & Adjektive');
 const file='hoeren.html', total=HEARING_TASKS.length;
 let selectedColor=null;
-function colorButton(c,task){
+function colorButton(c){
   return `<button class="opt image-only" data-color="${c.id}" onclick="pickColor('${c.id}')">${colorImg(c,'choice-img')}</button>`;
 }
 function itemButton(it){
@@ -17,11 +17,10 @@ function render(){
   let itemOpts=shuffle([item,...shuffle(FURNITURE.filter(f=>!f.plural&&f.id!==item.id)).slice(0,3)]);
   area.innerHTML=progressHtml(file,total)+
   `<div class="question">Höre. Wähle zuerst die Farbe, dann das Möbel.</div>
-   <div class="actions"><button class="btn" onclick="speak('${item.full} ist ${color.word}.')">▶️ Hören</button><button class="btn secondary" onclick="speak('${item.full} ist ${color.word}.',true)">Langsam</button></div>
-   <h3>1. Farbe</h3><div class="options">${colorOpts.map(c=>colorButton(c,t)).join('')}</div>
-   <h3>2. Möbel</h3><div class="options locked-options" id="itemOptions">${itemOpts.map(it=>itemButton(it)).join('')}</div>
+   <div class="actions"><button class="btn" onclick="speak('${item.full} ist ${color.word}.')">▶️ Hören</button><button class="btn secondary" onclick="speak('${item.full} ist ${color.word}.',true)">🐢 Langsam</button></div>
+   <h3>1. Farbe</h3><div class="options image-grid-4">${colorOpts.map(c=>colorButton(c)).join('')}</div>
+   <h3>2. Möbel</h3><div class="options image-grid-4 locked-options" id="itemOptions">${itemOpts.map(it=>itemButton(it)).join('')}</div>
    <div id="fb" class="feedback"></div>`;
-  speak(item.full+' ist '+color.word+'.');
 }
 function pickColor(id){
   let st=loadTask(file,total),t=HEARING_TASKS[st.current];
@@ -45,7 +44,7 @@ function pickItem(id){
   if(id===t.item){
     if(btn)btn.classList.add('selected');
     fb.innerHTML='<div class="ok">Richtig!</div>';
-    setTimeout(()=>{markRight(file,total)?complete(area,file,'farben.html'):render()},650)
+    setTimeout(()=>{markRight(file,total)?complete(area,file,'farben.html'):render()},280)
   }else{
     if(btn)btn.classList.add('wrong');
     let tr=markWrong(file,total,item.full);

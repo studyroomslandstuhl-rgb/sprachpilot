@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reaktionen Thema 3</title><link rel="stylesheet" href="style.css?v=304"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=304"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reaktionen Thema 3</title><link rel="stylesheet" href="style.css?v=305"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=305"></script><script>
 header('Farben & Adjektive');
 const file='reaktionen.html',total=REACTIONS.length;
 function render(){
@@ -13,7 +13,8 @@ function render(){
 }
 function check(id){
   let st=loadTask(file,total),r=REACTIONS[st.current];
-  if(id===r.id){
+  const eq=(a,b)=>([a,b].every(x=>['gut','ganz-gut'].includes(x)))||a===b;
+  if(eq(id,r.id)){
     fb.innerHTML='<div class="ok">Richtig!</div>';
     setTimeout(()=>{markRight(file,total)?complete(area,file,'gefallen.html'):render()},500)
   }else{

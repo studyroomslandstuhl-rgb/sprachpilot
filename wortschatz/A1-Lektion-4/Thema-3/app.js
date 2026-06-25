@@ -42,7 +42,7 @@ const ADJECTIVES=[
 {id:"neu",word:"neu",img:"neu.png",tr:{en:"new",ru:"новый",uk:"новий",ar:"جديد",tr:"yeni",ro:"nou",ja:"新しい",pl:"nowy",ku:"nû"}},
 {id:"alt",word:"alt",img:"alt.png",tr:{en:"old",ru:"старый",uk:"старий",ar:"قديم",tr:"eski",ro:"vechi",ja:"古い",pl:"stary",ku:"kevn"}},
 {id:"modern",word:"modern",img:"modern.png",tr:{en:"modern",ru:"современный",uk:"сучасний",ar:"حديث",tr:"modern",ro:"modern",ja:"モダン",pl:"nowoczesny",ku:"modern"}},
-{id:"altmodisch",word:"altmodisch",img:"alt.png",tr:{en:"old-fashioned",ru:"старомодный",uk:"старомодний",ar:"قديم الطراز",tr:"modası geçmiş",ro:"demodat",ja:"古風",pl:"staromodny",ku:"kevnşop"}},
+{id:"altmodisch",word:"altmodisch",img:"altmodisch.png",tr:{en:"old-fashioned",ru:"старомодный",uk:"старомодний",ar:"قديم الطراز",tr:"modası geçmiş",ro:"demodat",ja:"古風",pl:"staromodny",ku:"kevnşop"}},
 {id:"sauber",word:"sauber",img:"sauber.png",tr:{en:"clean",ru:"чистый",uk:"чистий",ar:"نظيف",tr:"temiz",ro:"curat",ja:"清潔",pl:"czysty",ku:"paqij"}},
 {id:"schmutzig",word:"schmutzig",img:"schmutzig.png",tr:{en:"dirty",ru:"грязный",uk:"брудний",ar:"متسخ",tr:"kirli",ro:"murdar",ja:"汚い",pl:"brudny",ku:"qirêj"}},
 {id:"bequem",word:"bequem",img:"bequem.png",tr:{en:"comfortable",ru:"удобный",uk:"зручний",ar:"مريح",tr:"rahat",ro:"comod",ja:"快適",pl:"wygodny",ku:"rihet"}},
@@ -62,10 +62,11 @@ const FURNITURE=[
 ];
 
 const REACTIONS=[
-{id:"sehr-gut",word:"Sehr gut.",emoji:"😍",score:4},
-{id:"gut",word:"Gut.",emoji:"😊",score:3},
+{id:"sehr-gut",word:"Sehr gut.",emoji:"🤩",score:4},
+{id:"gut",word:"Gut.",emoji:"🙂",score:3},
+{id:"ganz-gut",word:"Ganz gut.",emoji:"😊",score:3},
 {id:"es-geht",word:"Es geht.",emoji:"😐",score:2},
-{id:"nicht-so-gut",word:"Nicht so gut.",emoji:"😟",score:1}
+{id:"nicht-so-gut",word:"Nicht so gut.",emoji:"🙁",score:1}
 ];
 
 const PAIRS=[
@@ -117,22 +118,21 @@ const CONTRAST_TASKS=[
 ];
 
 const GEFAELLEN_TASKS=[
+{item:"stuhl",reaction:"gut",adj:"rot",question:"Wie gefällt dir der Stuhl?",answer:"Gut. Er ist rot."},
 {item:"sessel",reaction:"sehr-gut",adj:"bequem",question:"Wie gefällt dir der Sessel?",answer:"Sehr gut. Er ist bequem."},
-{item:"stuhl",reaction:"nicht-so-gut",adj:"unbequem",question:"Wie gefällt dir der Stuhl?",answer:"Nicht so gut. Er ist unbequem."},
-{item:"waschbecken",reaction:"nicht-so-gut",adj:"schmutzig",question:"Wie gefällt dir das Waschbecken?",answer:"Nicht so gut. Es ist schmutzig."},
-{item:"waschbecken",reaction:"sehr-gut",adj:"sauber",question:"Wie gefällt dir das Waschbecken?",answer:"Sehr gut. Es ist sauber."},
 {item:"sofa",reaction:"gut",adj:"modern",question:"Wie gefällt dir das Sofa?",answer:"Gut. Es ist modern."},
+{item:"tisch",reaction:"ganz-gut",adj:"hellblau",question:"Wie gefällt dir der Tisch?",answer:"Ganz gut. Er ist hellblau."},
+{item:"bett",reaction:"nicht-so-gut",adj:"teuer",question:"Wie gefällt dir das Bett?",answer:"Nicht so gut. Es ist teuer."},
 {item:"schrank",reaction:"nicht-so-gut",adj:"altmodisch",question:"Wie gefällt dir der Schrank?",answer:"Nicht so gut. Er ist altmodisch."},
 {item:"lampe",reaction:"sehr-gut",adj:"hell",question:"Wie gefällt dir die Lampe?",answer:"Sehr gut. Sie ist hell."},
-{item:"tisch",reaction:"es-geht",adj:"klein",question:"Wie gefällt dir der Tisch?",answer:"Es geht. Er ist klein."},
-{item:"bett",reaction:"gut",adj:"neu",question:"Wie gefällt dir das Bett?",answer:"Gut. Es ist neu."},
+{item:"waschbecken",reaction:"nicht-so-gut",adj:"schmutzig",question:"Wie gefällt dir das Waschbecken?",answer:"Nicht so gut. Es ist schmutzig."},
+{item:"stuhl",reaction:"nicht-so-gut",adj:"unbequem",question:"Wie gefällt dir der Stuhl?",answer:"Nicht so gut. Er ist unbequem."},
+{item:"sessel",reaction:"ganz-gut",adj:"dunkelgruen",question:"Wie gefällt dir der Sessel?",answer:"Ganz gut. Er ist dunkelgrün."},
 {item:"stuehle",plural:true,itemImg:"stuhl.png",full:"die Stühle",question:"Wie gefallen dir die Stühle?",reaction:"gut",adj:"modern",answer:"Gut. Sie sind modern."},
-{item:"sofas",plural:true,itemImg:"sofa.png",full:"die Sofas",question:"Wie gefallen dir die Sofas?",reaction:"sehr-gut",adj:"schoen",answer:"Sehr gut. Sie sind schön."},
+{item:"sofas",plural:true,itemImg:"sofa.png",full:"die Sofas",question:"Wie gefallen dir die Sofas?",reaction:"sehr-gut",adj:"bequem",answer:"Sehr gut. Sie sind bequem."},
 {item:"lampen",plural:true,itemImg:"lampe.png",full:"die Lampen",question:"Wie gefallen dir die Lampen?",reaction:"nicht-so-gut",adj:"dunkel",answer:"Nicht so gut. Sie sind dunkel."},
-{item:"schraenke",plural:true,itemImg:"schrank.png",full:"die Schränke",question:"Wie gefallen dir die Schränke?",reaction:"es-geht",adj:"alt",answer:"Es geht. Sie sind alt."},
-{item:"sessel",reaction:"gut",adj:"schoen",question:"Wie gefällt dir der Sessel?",answer:"Gut. Er ist schön."},
-{item:"bett",reaction:"nicht-so-gut",adj:"teuer",question:"Wie gefällt dir das Bett?",answer:"Nicht so gut. Es ist teuer."},
-{item:"tisch",reaction:"sehr-gut",adj:"breit",question:"Wie gefällt dir der Tisch?",answer:"Sehr gut. Er ist breit."}
+{item:"betten",plural:true,itemImg:"bett.png",full:"die Betten",question:"Wie gefallen dir die Betten?",reaction:"gut",adj:"sauber",answer:"Gut. Sie sind sauber."},
+{item:"schraenke",plural:true,itemImg:"schrank.png",full:"die Schränke",question:"Wie gefallen dir die Schränke?",reaction:"ganz-gut",adj:"altmodisch",answer:"Ganz gut. Sie sind altmodisch."}
 ];
 
 const SENTENCES=[
@@ -143,18 +143,18 @@ const SENTENCES=[
 {img:"sofa.png",text:"Das Sofa ist modern.",words:["Das","Sofa","ist","modern."]},
 {img:"schrank.png",text:"Der Schrank ist altmodisch.",words:["Der","Schrank","ist","altmodisch."]},
 {img:"lampe.png",text:"Die Lampe ist hell.",words:["Die","Lampe","ist","hell."]},
-{img:"tisch.png",text:"Der Tisch ist klein.",words:["Der","Tisch","ist","klein."]},
+{img:"tisch.png",text:"Der Tisch ist hellblau.",words:["Der","Tisch","ist","hellblau."]},
 {img:"bett.png",text:"Das Bett ist neu.",words:["Das","Bett","ist","neu."]},
 {img:"schrank.png",text:"Der Schrank ist breit.",words:["Der","Schrank","ist","breit."]},
 {img:"stuhl.png",text:"Die Stühle sind bequem.",words:["Die","Stühle","sind","bequem."]},
-{img:"sofa.png",text:"Die Sofas sind schön.",words:["Die","Sofas","sind","schön."]},
+{img:"sofa.png",text:"Die Sofas sind modern.",words:["Die","Sofas","sind","modern."]},
 {img:"lampe.png",text:"Die Lampen sind hell.",words:["Die","Lampen","sind","hell."]},
 {img:"bett.png",text:"Die Betten sind teuer.",words:["Die","Betten","sind","teuer."]},
 {img:"waschbecken.png",text:"Die Waschbecken sind sauber.",words:["Die","Waschbecken","sind","sauber."]},
 {img:"sessel.png",text:"Die Sessel sind altmodisch.",words:["Die","Sessel","sind","altmodisch."]},
-{img:"sessel.png",text:"Der Sessel ist alt.",words:["Der","Sessel","ist","alt."]},
+{img:"sessel.png",text:"Der Sessel ist dunkelgrün.",words:["Der","Sessel","ist","dunkelgrün."]},
 {img:"stuhl.png",text:"Der Stuhl ist billig.",words:["Der","Stuhl","ist","billig."]},
-{img:"sofa.png",text:"Das Sofa ist dunkel.",words:["Das","Sofa","ist","dunkel."]},
+{img:"sofa.png",text:"Das Sofa ist dunkelrot.",words:["Das","Sofa","ist","dunkelrot."]},
 {img:"tisch.png",text:"Die Tische sind schmal.",words:["Die","Tische","sind","schmal."]}
 ];
 
@@ -182,17 +182,16 @@ const WRITING=[
 {imgs:["waschbecken.png","sauber.png"],text:"Das Waschbecken ist sauber."},
 {imgs:["waschbecken.png","schmutzig.png"],text:"Das Waschbecken ist schmutzig."},
 {imgs:["sofa.png","modern.png"],text:"Das Sofa ist modern."},
-{imgs:["schrank.png","alt.png"],text:"Der Schrank ist altmodisch."},
+{imgs:["schrank.png","altmodisch.png"],text:"Der Schrank ist altmodisch."},
 {imgs:["lampe.png","hell.png"],text:"Die Lampe ist hell."},
-{imgs:["tisch.png","klein.png"],text:"Der Tisch ist klein."},
+{imgs:["tisch.png","hellblau.png"],text:"Der Tisch ist hellblau."},
 {imgs:["bett.png","neu.png"],text:"Das Bett ist neu."},
 {imgs:["schrank.png","breit.png"],text:"Der Schrank ist breit."},
 {imgs:["sessel.png","schoen.png"],text:"Der Sessel ist schön."},
 {imgs:["stuhl.png","billig.png"],text:"Der Stuhl ist billig."},
-{imgs:["sofa.png","dunkel.png"],text:"Das Sofa ist dunkel."},
+{imgs:["sofa.png","dunkelrot.png"],text:"Das Sofa ist dunkelrot."},
 {imgs:["bett.png","teuer.png"],text:"Das Bett ist teuer."},
-{imgs:["lampe.png","modern.png"],text:"Die Lampe ist modern."},
-{imgs:["tisch.png","schmal.png"],text:"Der Tisch ist schmal."}
+{imgs:["lampe.png","modern.png"],text:"Die Lampe ist modern."}
 ];
 
 function $(id){return document.getElementById(id)}
@@ -202,7 +201,7 @@ function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function currentMotherLang(){try{let p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");let raw=p?.motherLanguageCode||p?.muttersprache||p?.motherLanguage||localStorage.getItem("motherLanguage")||"en";let n=String(raw).trim().toLowerCase();let map={"russisch":"ru","englisch":"en","ukrainisch":"uk","arabisch":"ar","türkisch":"tr","tuerkisch":"tr","rumänisch":"ro","rumaenisch":"ro","japanisch":"ja","polnisch":"pl","kurdisch":"ku","deutsch":"de"};return map[n]||n||"en"}catch(e){return"en"}}
 function translate(x){let l=currentMotherLang();return x.tr?.[l]||x.tr?.en||x.word}
 function img(name,cls="task-img"){return `<img class="${cls}" src="../bilder/${name}" onerror="fixImg(this)" alt="">`}
-function colorImg(c,cls="task-img"){return `<img class="${cls} color-img" src="../bilder/${c.img||c.id+'.png'}" onerror="this.replaceWith(colorSwatchNode('${c.hex||'#ddd'}'))" alt="">`}
+function colorImg(c,cls="task-img"){return `<img class="${cls} color-img" src="../bilder/${c.img||c.id+'.png'}" onerror="fixImg(this)" alt="">`}
 function colorSwatchNode(hex){let d=document.createElement('div');d.className='swatch-img';d.style.background=hex;return d}
 function fixImg(el){el.classList.add("missing");el.alt="Bild fehlt"}
 function swatch(c,small=false){return `<div class="swatch ${small?'small':''}" style="background:${c.hex};${c.id==='weiss'?'border-color:#cbd5e1':''}"></div>`}
@@ -236,7 +235,7 @@ function resetThemeProgress(){if(!confirm("Möchten Sie wirklich alle Fortschrit
 function syncTask(file,st){try{const total=Number(st.total||getTotal(file));const done=Array.isArray(st.done)?st.done.length:0;const percent=Math.round(done/total*100)||0;const payload={...THEME,file,taskKey:file,taskTitle:TASK_TITLES[file]||file,total,done,percent,completed:percent>=100,wrongItems:st.wrongItems||[]};if(window.SPProgress?.recordTaskProgress)window.SPProgress.recordTaskProgress(payload);else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:"recordTaskProgress",payload});import('/js/progress.js').catch(()=>{})}}catch(e){}}
 function syncExam(result){try{const payload={...THEME,score:result.score,maxScore:result.maxScore,percent:result.percent,stars:result.stars};if(window.SPProgress?.recordExamResult)window.SPProgress.recordExamResult(payload);else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:"recordExamResult",payload});import('/js/progress.js').catch(()=>{})}}catch(e){}}
 function syncReset(){try{const payload={...THEME};if(window.SPProgress?.recordThemeReset)window.SPProgress.recordThemeReset(payload);else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:"recordThemeReset",payload});import('/js/progress.js').catch(()=>{})}}catch(e){}}
-function speak(text,slow=false){if(!('speechSynthesis'in window))return;const run=()=>{speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(String(text||''));u.lang='de-DE';u.rate=slow ? 0.52 : 0.92;u.pitch=1;u.volume=1;let voices=speechSynthesis.getVoices();let v=voices.find(v=>v.lang==='de-DE'&&/google|microsoft|anna|katja|deutsch|german/i.test(v.name||''))||voices.find(v=>v.lang==='de-DE')||voices.find(v=>String(v.lang||'').startsWith('de'));if(v)u.voice=v;speechSynthesis.speak(u)};if(!speechSynthesis.getVoices().length){speechSynthesis.onvoiceschanged=run;setTimeout(run,250)}else run()}
+function speak(text,slow=false){if(!('speechSynthesis'in window))return;const run=()=>{speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(String(text||''));u.lang='de-DE';u.rate=slow ? 0.38 : 0.98;u.pitch=1;u.volume=1;let voices=speechSynthesis.getVoices();let v=voices.find(v=>v.lang==='de-DE'&&/google|microsoft|anna|katja|deutsch|german/i.test(v.name||''))||voices.find(v=>v.lang==='de-DE')||voices.find(v=>String(v.lang||'').startsWith('de'));if(v)u.voice=v;speechSynthesis.speak(u)};if(!speechSynthesis.getVoices().length){speechSynthesis.onvoiceschanged=run;setTimeout(run,250)}else run()}
 function startMic(btn,callback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const status=$('micStatus');if(!SR){if(status)status.textContent='Mikrofon geht hier nicht. Bitte schreibe.';return}let rec=new SR();rec.lang='de-DE';rec.interimResults=false;rec.continuous=false;if(btn)btn.classList.add('active');if(status)status.textContent='Ich höre zu …';rec.onresult=e=>{let txt=e.results[0][0].transcript;if(status)status.textContent='Gehört: '+txt;callback(txt,true)};rec.onerror=()=>{if(status)status.textContent='Mikrofon hat nicht funktioniert. Bitte schreibe.'};rec.onend=()=>{if(btn)btn.classList.remove('active')};rec.start()}
 function normalizeSentence(s){return simple(s).replace(/\s+/g,' ').trim()}
 function isLooseSentence(ans,sol){return normalizeSentence(ans)===normalizeSentence(sol)}
