@@ -1,1 +1,67 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Schüler-Dashboard · SprachPilot</title>
+<style>
+:root{--yellow:#ffd84d;--yellow2:#fff4bf;--green:#16a34a;--red:#ef4444;--ink:#1f2937;--muted:#6b7280;--card:#fff;--line:#f1d77a;--shadow:0 14px 35px rgba(90,70,0,.12)}
+*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#ffdc53 0,#ffe889 44%,#fff8d7 100%);color:var(--ink);min-height:100vh}.wrap{max-width:1160px;margin:0 auto;padding:18px}.top{background:#fff;border-radius:26px;padding:16px 18px;box-shadow:var(--shadow);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}.logo{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,#ffd84d,#ffb800);display:grid;place-items:center;font-weight:900}.brand h1{margin:0;font-size:26px}.sub{font-size:14px;color:var(--muted);margin-top:3px}.userbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.pill,.navbtn{border:1px solid #f3d66b;background:#fffdf2;border-radius:999px;padding:9px 13px;font-weight:700;color:#5b4a00;text-decoration:none}.navbtn:hover{background:#fff6bf}.logout{border:0;cursor:pointer}.hero{display:grid;grid-template-columns:1.2fr .8fr;gap:16px;margin:18px 0}.card{background:#fff;border-radius:24px;box-shadow:var(--shadow);padding:20px;border:1px solid rgba(255,215,77,.55)}.progressHead{display:flex;align-items:center;gap:18px}.circle{width:104px;height:104px;border-radius:50%;background:conic-gradient(var(--green) calc(var(--p)*1%),#f3f4f6 0);display:grid;place-items:center;font-weight:900;font-size:26px;position:relative;flex:0 0 auto}.circle:after{content:"";position:absolute;inset:10px;background:#fff;border-radius:50%}.circle span{position:relative;z-index:2}.bar{height:13px;background:#f3f4f6;border-radius:999px;overflow:hidden;margin:12px 0}.fill{height:100%;background:linear-gradient(90deg,#22c55e,#86efac);border-radius:999px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#fff8d7;border:1px solid #f4d65f;border-radius:18px;padding:14px;text-align:center}.stat b{display:block;font-size:25px}.sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:24px 0 12px}.sectionTitle h2{margin:0;font-size:22px}.count{background:#dcfce7;color:#166534;border-radius:999px;padding:6px 10px;font-weight:800}.contentGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:14px}.topic{background:#fff;border-radius:22px;border:1px solid #f1d77a;box-shadow:0 10px 24px rgba(90,70,0,.09);padding:16px}.topicTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.topic h3{margin:0 0 5px;font-size:18px}.small{color:var(--muted);font-size:14px}.stars{font-size:22px;color:#f59e0b;letter-spacing:1px;white-space:nowrap}.tasks{margin-top:12px;display:grid;gap:8px}.task{display:flex;align-items:center;justify-content:space-between;background:#fffdf2;border:1px solid #f5e4a0;border-radius:14px;padding:8px 10px;font-size:14px}.open{display:inline-flex;margin-top:14px;padding:10px 14px;border-radius:999px;background:#1f2937;color:white;text-decoration:none;font-weight:800}.locked{opacity:.55;filter:grayscale(.35)}.leader{display:grid;gap:9px}.rank{display:flex;align-items:center;gap:10px;background:#fffdf2;border:1px solid #f4d65f;border-radius:16px;padding:10px}.rankNo{width:34px;height:34px;border-radius:12px;background:#ffd84d;display:grid;place-items:center;font-weight:900}.empty{padding:18px;border-radius:18px;background:#fffdf2;border:1px dashed #d8b84d;color:#7c6500}.badge{font-size:12px;border-radius:999px;padding:5px 8px;font-weight:800}.ok{background:#dcfce7;color:#166534}.wait{background:#f3f4f6;color:#4b5563}@media(max-width:800px){.hero{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr}.progressHead{align-items:flex-start}.circle{width:86px;height:86px;font-size:22px}.brand h1{font-size:22px}}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header class="top">
+    <a class="brand" href="/index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="sub">Schüler-Dashboard</div></div></a>
+    <div class="userbar">
+      <span class="pill" id="userPill">Schüler/in · Kurs</span>
+      <a class="navbtn" href="/profile/index.html">👤 Profil</a>
+      <a class="navbtn" href="/index.html">🏠 Start</a>
+      <button class="navbtn logout" onclick="logout()">🚪 Abmelden</button>
+    </div>
+  </header>
 
+  <section class="hero">
+    <div class="card">
+      <div class="progressHead">
+        <div class="circle" id="totalCircle" style="--p:0"><span>0%</span></div>
+        <div style="flex:1">
+          <h2 style="margin:0">Dein Lernstand</h2>
+          <div class="small" id="summaryText">Noch keine Fortschritte gespeichert.</div>
+          <div class="bar"><div class="fill" id="totalFill" style="width:0%"></div></div>
+          <div class="small">Hier siehst du deine freigeschalteten Inhalte, Sterne und Punkte.</div>
+        </div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="stats">
+        <div class="stat"><b id="pointsTotal">0</b><span>Punkte</span></div>
+        <div class="stat"><b id="starsTotal">0</b><span>Sterne</span></div>
+        <div class="stat"><b id="doneTotal">0</b><span>fertig</span></div>
+      </div>
+    </div>
+  </section>
+
+  <div class="sectionTitle"><h2>Freigeschaltete Inhalte</h2><span class="count" id="contentCount">0 Inhalte</span></div>
+  <section class="contentGrid" id="contentGrid"></section>
+
+  <div class="sectionTitle"><h2>Rangliste im Kurs</h2><span class="count" id="courseName">Kurs</span></div>
+  <section class="card leader" id="leaderboard"></section>
+</div>
+<script>
+function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(f))}catch(e){return f}}
+function esc(s){return String(s||"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]))}
+function profile(){return readJSON("SP_USER_PROFILE", readJSON("sprachpilotUser", null)) || {}}
+function userName(){const p=profile();return [p.firstName||p.vorname||p.name,p.lastName||p.nachname].filter(Boolean).join(" ")||p.displayName||p.email||"Schüler/in"}
+function courseCode(){const p=profile();return p.courseCode||p.kurs||p.course||p.kursCode||localStorage.getItem("SP_COURSE_CODE")||"Kurs"}
+function studentId(){const p=profile();return p.studentId||p.uid||p.email||p.id||userName()}
+function stars(n){n=Number(n||0);return "★".repeat(n)+"☆".repeat(Math.max(0,3-n))}
+function allProgress(){const all=readJSON("SP_DASHBOARD_PROGRESS",{});const one=readJSON("SP_PROGRESS_WORTSCHATZ_A1_L4_T2",null);if(one)all[one.id||"wortschatz-a1-lektion-4-thema-2"]=one;return Object.values(all)}
+function ensureLeaderboard(){const course=courseCode(), id=studentId(), name=userName();let board=readJSON("SP_COURSE_LEADERBOARD",{});if(!board[course])board[course]={};const total=Number(localStorage.getItem("SP_POINTS_TOTAL")||0)||0;if(!board[course][id]||Number(board[course][id].points||0)<total){board[course][id]={studentId:id,name,points:total,updatedAt:new Date().toISOString()};localStorage.setItem("SP_COURSE_LEADERBOARD",JSON.stringify(board))}return board}
+function render(){const name=userName(), course=courseCode();document.getElementById("userPill").textContent=name+" · "+course;document.getElementById("courseName").textContent=course;const data=allProgress();const avg=data.length?Math.round(data.reduce((s,x)=>s+Number(x.percent||0),0)/data.length):0;const totalStars=data.reduce((s,x)=>s+Number(x.exam?.stars||0),0);const done=data.filter(x=>Number(x.percent||0)>=100||Number(x.exam?.percent||0)>=100).length;const points=Number(localStorage.getItem("SP_POINTS_TOTAL")||0)||0;document.getElementById("totalCircle").style.setProperty("--p",avg);document.getElementById("totalCircle").innerHTML="<span>"+avg+"%</span>";document.getElementById("totalFill").style.width=avg+"%";document.getElementById("summaryText").textContent=data.length?done+" von "+data.length+" Inhalten abgeschlossen":"Noch keine Inhalte abgeschlossen.";document.getElementById("pointsTotal").textContent=points;document.getElementById("starsTotal").textContent=totalStars;document.getElementById("doneTotal").textContent=done;document.getElementById("contentCount").textContent=data.length+" Inhalte";const grid=document.getElementById("contentGrid");if(!data.length){grid.innerHTML='<div class="empty">Noch keine freigeschalteten Inhalte gefunden. Öffne zuerst eine Aufgabe oder ein Thema.</div>'}else{grid.innerHTML=data.map(x=>{const percent=Math.min(100,Number(x.percent||0));const exam=x.exam||{};const taskDone=Number(x.completedTasks||0);const taskTotal=Number(x.totalTasks||0);return `<article class="topic"><div class="topicTop"><div><h3>${esc(x.title||"Inhalt")}</h3><div class="small">${esc(x.subtitle||"")}</div></div><span class="badge ${exam.unlocked?'ok':'wait'}">${exam.unlocked?'Prüfung offen':'in Arbeit'}</span></div><div class="bar"><div class="fill" style="width:${percent}%"></div></div><div class="small"><b>${percent}%</b> · ${taskDone}/${taskTotal} Aufgaben</div><div class="small">Prüfung: ${exam.attempted?`<b>${exam.percent}%</b> <span class="stars">${stars(exam.stars)}</span>`:"noch nicht gemacht"}</div><div class="tasks">${(x.tasks||[]).slice(0,10).map(t=>`<div class="task"><span>${esc((t.file||"").replace(".html","").replaceAll("-"," → "))}</span><b>${Number(t.percent||0)}%</b></div>`).join("")}</div><a class="open" href="/wortschatz-A1-Lektion-4/Thema-2/index.html">Öffnen</a></article>`}).join("")}
+const board=ensureLeaderboard();const list=Object.values(board[course]||{}).sort((a,b)=>Number(b.points||0)-Number(a.points||0));const leader=document.getElementById("leaderboard");leader.innerHTML=list.length?list.map((x,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div style="flex:1"><b>${esc(x.name||"Schüler/in")}</b><div class="small">${esc(course)}</div></div><b>${Number(x.points||0)} Punkte</b></div>`).join(""):'<div class="empty">Noch keine Punkte in diesem Kurs.</div>'}
+function logout(){if(!confirm("Möchten Sie sich abmelden?"))return;["SP_USER_PROFILE","sprachpilotUser","SP_CURRENT_USER","SP_LOGIN"].forEach(k=>localStorage.removeItem(k));location.href="/index.html"}
+render();
+</script>
+</body>
+</html>
