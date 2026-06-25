@@ -1,1 +1,0 @@
-Thema 3 basiert auf deinem Umsetzungsplan.
