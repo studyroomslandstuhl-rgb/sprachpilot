@@ -1,7 +1,7 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 4 – Thema 1</title><link rel="stylesheet" href="style.css?v=232"></head><body>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 4 – Thema 1</title><link rel="stylesheet" href="style.css?v=233"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=233"></head><body>
 <script type="module" src="/js/guard.js"></script>
 <div class="container"><header class="topbar"></header>
-<section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Wohnung, Zimmer, hier/da/dort verstehen und Fragen sprechen.</p><div id="topicExamSummary"></div></div></section>
+<section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div class="progress-main"><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Wohnung, Zimmer, hier/da/dort verstehen und Fragen sprechen.</p><div id="topicExamSummary"></div></div></section>
 <section class="grid">
 <a class="module" href="karteikarten.html"><div class="num">1. Karteikarten</div><div class="icon">🃏</div><p>Lerne die Wörter.</p><div class="progress"><div class="bar" id="bar_1"></div></div><div class="small" id="txt_1">0%</div><div class="start">Starten</div></a>
 <a class="module" href="hoeren.html"><div class="num">2. Hören</div><div class="icon">🎧</div><p>Höre und wähle das Bild.</p><div class="progress"><div class="bar" id="bar_2"></div></div><div class="small" id="txt_2">0%</div><div class="start">Starten</div></a>
@@ -13,7 +13,7 @@
 <a class="module" href="wo-ist.html"><div class="num">8. Wo ist …?</div><div class="icon">❓</div><p>Frage und antworte.</p><div class="progress"><div class="bar" id="bar_8"></div></div><div class="small" id="txt_8">0%</div><div class="start">Starten</div></a>
 <a class="module" href="ist-hier.html"><div class="num">9. Ist hier …?</div><div class="icon">✅❌</div><p>Antworte mit Ja oder Nein.</p><div class="progress"><div class="bar" id="bar_9"></div></div><div class="small" id="txt_9">0%</div><div class="start">Starten</div></a>
 <a class="module" href="pruefung.html" id="examLink"><div class="num">10. Prüfung</div><div class="icon">🏅</div><p>Teste dein Wissen.</p><div class="progress"><div class="bar" id="bar_10"></div></div><div class="small" id="txt_10">0%</div><div class="start">Starten</div></a>
-</section><footer>© SprachPilot</footer></div><script src="app.js?v=232"></script><script>
+</section><footer>© SprachPilot</footer></div><script src="app.js?v=233"></script><script>
 header("Wohnung & Zimmer", true);
 const tasks=prerequisiteTasks().concat([["pruefung.html",100]]);
 let sum=0;

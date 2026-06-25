@@ -449,3 +449,33 @@ function header(title,isThemeOverview=false){
  const safe=(typeof esc==="function"?esc:function(s){return String(s||"").replace(/[&<>'"]/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]||m})});
  h.innerHTML=`<div class="topbar-main"><a class="brand" href="${home}" onclick="goHome(event)"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${safe(title)} · A1 Lektion 4 · Thema 1</div></div></a><div class="account-tools"><span class="account-pill">${safe(label)}</span><a class="account-link" href="${dashboard}" onclick="goDashboard(event)">📊 Dashboard</a><a class="account-link" href="${profile}" onclick="goProfile(event)">👤 Profil</a><button class="account-link account-btn" type="button" onclick="logoutUser()">🚪 Abmelden</button></div></div><nav class="nav"><a class="btn secondary" href="${backHref}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button></nav>`;
 }
+
+
+/* ===== SprachPilot Lektion 4 Standard-Code v233: Header + Fortschritt identisch ===== */
+function spL4ThemeNumber(){try{const k=String(typeof KEY!=="undefined"?KEY:"");if(k.includes("T1"))return "1";if(k.includes("T2"))return "2";if(k.includes("T3"))return "3";if(k.includes("T4"))return "4";}catch(e){}return "";}
+function spL4Safe(s){if(typeof esc==="function")return esc(s);return String(s||"").replace(/[&<>'"]/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]||m})}
+function spL4UserLabel(){return typeof currentUserLabel==="function"?currentUserLabel():"Schüler/in";}
+function spL4HomeUrl(){return typeof HOME_URL!=="undefined"?HOME_URL:"/index.html";}
+function spL4DashboardUrl(){return "/student-dashboard/index.html";}
+function spL4ProfileUrl(){return "/profile/index.html";}
+function header(title,isThemeOverview=false){
+ const h=document.querySelector(".topbar");
+ if(!h)return;
+ const backHref=isThemeOverview?"../index.html":"index.html";
+ const themeNo=spL4ThemeNumber();
+ h.innerHTML=`<div class="topbar-main"><a class="brand" href="${spL4HomeUrl()}" onclick="goHome(event)"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${spL4Safe(title)} · A1 Lektion 4${themeNo?" · Thema "+themeNo:""}</div></div></a><div class="account-tools"><span class="account-pill">${spL4Safe(spL4UserLabel())}</span><a class="account-link" href="${spL4DashboardUrl()}" onclick="goDashboard(event)">📊 Dashboard</a><a class="account-link" href="${spL4ProfileUrl()}" onclick="goProfile(event)">👤 Profil</a><button class="account-link account-btn" type="button" onclick="logoutUser()">🚪 Abmelden</button></div></div><nav class="nav"><a class="btn secondary" href="${backHref}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button></nav>`;
+}
+function starsHtml(n){n=Number(n||0);return `<span class="stars">${"★".repeat(n)}${"☆".repeat(Math.max(0,3-n))}</span>`;}
+function bestExamSummaryHtml(){
+ const best=typeof bestExamResult==="function"?bestExamResult():null;
+ if(!best)return "";
+ const stars=typeof starsForPercent==="function"?starsForPercent(best.percent):0;
+ const attempts=typeof examHistory==="function"?examHistory().length:(best.attempts||1);
+ const score=best.score ?? Math.round(Number(best.percent||0)*2);
+ const maxScore=best.maxScore ?? 200;
+ return `<div class="exam-done-box exam-summary-wide"><div class="exam-summary-title"><span class="exam-check">✓</span><span>Thema abgeschlossen!</span></div><div class="exam-summary-grid"><div class="exam-summary-item"><span>Prüfung</span><strong>${Number(best.percent||0)}% ${starsHtml(stars)}</strong></div><div class="exam-summary-item"><span>Punkte</span><strong>${score}/${maxScore}</strong></div><div class="exam-summary-item"><span>Versuche</span><strong>${attempts}</strong></div></div></div>`;
+}
+function complete(target,file,nextHref="index.html"){
+ if(typeof isPracticeMode==="function" && isPracticeMode(file) && typeof stopPractice==="function")stopPractice(file);
+ target.innerHTML=`<div class="small">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="finish-box"><div class="finish-icon">✓</div><div class="question">Aufgabe geschafft!</div><div class="big">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="actions"><button class="btn" onclick="startPractice('${file}')">Nochmal üben</button><a class="btn green" href="${nextHref}" onclick="stopPractice('${file}')">Weiter</a><a class="btn secondary" href="index.html" onclick="stopPractice('${file}')">Zurück zum Thema</a></div></div>`;
+}
