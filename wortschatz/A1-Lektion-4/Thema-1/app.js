@@ -436,3 +436,16 @@ function dashboardProgressData(){const tasks=prerequisiteTasks().map(([file,tota
 var __spDashboardSyncing=false;
 function syncDashboardProgress(){if(__spDashboardSyncing)return;__spDashboardSyncing=true;try{const data=dashboardProgressData();localStorage.setItem(DASHBOARD_TOPIC_KEY,JSON.stringify(data));localStorage.setItem(DASHBOARD_LEGACY_KEY,JSON.stringify(data));let all={};try{all=JSON.parse(localStorage.getItem(DASHBOARD_ALL_KEY)||"{}")}catch(e){all={}}all[data.id]=data;localStorage.setItem(DASHBOARD_ALL_KEY,JSON.stringify(all));try{window.dispatchEvent(new CustomEvent("sprachpilot-dashboard-progress",{detail:data}))}catch(e){}}catch(e){}__spDashboardSyncing=false}
 try{window.addEventListener("load",()=>{syncDashboardProgress();queueProgress("touch",{action:"page-open"})})}catch(e){}
+
+/* ===== SprachPilot Standard-Header FINAL v232: einheitlich für alle Themen ===== */
+function header(title,isThemeOverview=false){
+ const h=document.querySelector(".topbar");
+ if(!h)return;
+ const backHref=isThemeOverview?"../index.html":"index.html";
+ const home=(typeof HOME_URL!=="undefined"?HOME_URL:"/index.html");
+ const dashboard=(typeof DASHBOARD_URL!=="undefined"?DASHBOARD_URL:"/student-dashboard/index.html");
+ const profile=(typeof PROFILE_URL!=="undefined"?PROFILE_URL:"/profile/index.html");
+ const label=(typeof currentUserLabel==="function"?currentUserLabel():"Schüler/in");
+ const safe=(typeof esc==="function"?esc:function(s){return String(s||"").replace(/[&<>'"]/g,function(m){return {"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]||m})});
+ h.innerHTML=`<div class="topbar-main"><a class="brand" href="${home}" onclick="goHome(event)"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${safe(title)} · A1 Lektion 4 · Thema 1</div></div></a><div class="account-tools"><span class="account-pill">${safe(label)}</span><a class="account-link" href="${dashboard}" onclick="goDashboard(event)">📊 Dashboard</a><a class="account-link" href="${profile}" onclick="goProfile(event)">👤 Profil</a><button class="account-link account-btn" type="button" onclick="logoutUser()">🚪 Abmelden</button></div></div><nav class="nav"><a class="btn secondary" href="${backHref}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button></nav>`;
+}
