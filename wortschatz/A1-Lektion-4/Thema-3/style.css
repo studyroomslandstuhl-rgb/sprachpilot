@@ -128,3 +128,10 @@ body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-g
 @media(max-width:700px){
   .image-grid-4{grid-template-columns:repeat(2,minmax(0,1fr));}
 }
+
+/* Thema 3 v307 Statistik-Standard */
+.stat-word-card .progress{margin-top:auto}
+.word-status{font-weight:900;border-radius:999px;padding:7px 10px;background:#fff9dd;border:1px solid #ffe28a;color:#6b4700;margin-top:8px;font-size:14px}
+.word-status.gelernt{background:var(--green-soft);border-color:var(--green);color:#145a32}
+.word-status.unsicher{background:var(--red-soft);border-color:var(--red);color:#9b1c1c}
+.word-status.in-arbeit{background:#fff4bf;border-color:#f7c600;color:#6b4700}

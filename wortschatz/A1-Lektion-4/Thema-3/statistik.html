@@ -1,1 +1,38 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Statistik Thema 3</title><link rel="stylesheet" href="style.css?v=306"></head><body><div class="container"><header class="topbar"></header><section class="card"><h2>Statistik – Thema 3</h2><p class="small">Fortschritt pro Aufgabe.</p></section><section id="stats"></section><footer>© SprachPilot</footer></div><script src="app.js?v=306"></script><script>header('Farben & Adjektive');stats.innerHTML='<section class="grid">'+TASK_FILES.map(f=>{let p=pct(f,getTotal(f));return `<div class="module"><h3>${TASK_TITLES[f]}</h3><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="big">${p}%</div><p>${p>=100?'gelernt':p>0?'in Arbeit':'neu'}</p></div>`}).join('')+'</section>';</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Statistik Thema 3</title><link rel="stylesheet" href="style.css?v=307"></head><body><div class="container"><header class="topbar"></header><section class="card"><h2>Statistik – Thema 3</h2><p class="small">Lernstand pro Wort.</p></section><section id="stats"></section><footer>© SprachPilot</footer></div><script src="app.js?v=307"></script><script>
+header('Farben & Adjektive');
+function allWrongWords(){
+  const words=[];
+  TASK_FILES.forEach(f=>{
+    try{
+      const st=JSON.parse(localStorage.getItem(taskKey(f))||'{}');
+      if(Array.isArray(st.wrongItems))words.push(...st.wrongItems.map(simple));
+    }catch(e){}
+  });
+  return words.join(' | ');
+}
+function overallWordProgress(){
+  const vals=TASK_FILES.map(f=>pct(f,getTotal(f))).filter(x=>Number.isFinite(x));
+  if(!vals.length)return 0;
+  return Math.round(vals.reduce((a,b)=>a+b,0)/vals.length);
+}
+const wrongText=allWrongWords();
+const baseProgress=overallWordProgress();
+function statusForWord(x){
+  const labels=[x.word,x.full,x.id,x.plural,x.pluralWord].filter(Boolean).map(simple);
+  const hasWrong=labels.some(w=>wrongText.includes(w));
+  let p=baseProgress;
+  if(hasWrong)p=Math.min(p,50);
+  const text=p>=100&&!hasWrong?'gelernt':hasWrong?'unsicher':p>0?'in Arbeit':'neu';
+  return {p,text,cls:text.replace(' ','-')};
+}
+function statCard(x,type){
+  const st=statusForWord(x);
+  const visual=type==='color'?colorImg(x,'task-img'):type==='reaction'?`<div class="smile-card" style="margin:0 auto 12px">${x.emoji}</div>`:img(x.img||x.id+'.png','task-img');
+  return `<div class="module stat-word-card"><div>${visual}</div><h3>${safe(x.full||x.word)}</h3><p>${type==='reaction'?'':safe(translate(x))}</p><div class="progress"><div class="bar" style="width:${st.p}%"></div></div><div class="word-status ${st.cls}">${st.text} · ${st.p}%</div></div>`;
+}
+stats.innerHTML=`
+<section class="card"><h2>Farben <span class="small">${COLORS.length}</span></h2><div class="grid">${COLORS.map(x=>statCard(x,'color')).join('')}</div></section>
+<section class="card"><h2>Möbel / Dinge <span class="small">${FURNITURE.length}</span></h2><div class="grid">${FURNITURE.map(x=>statCard({...x,tr:{en:x.full}},'furniture')).join('')}</div></section>
+<section class="card"><h2>Adjektive <span class="small">${ADJECTIVES.length}</span></h2><div class="grid">${ADJECTIVES.map(x=>statCard(x,'adj')).join('')}</div></section>
+<section class="card"><h2>Reaktionen <span class="small">${REACTIONS.length}</span></h2><div class="grid">${REACTIONS.map(x=>statCard(x,'reaction')).join('')}</div></section>`;
+</script></body></html>
