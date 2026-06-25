@@ -5,19 +5,82 @@ const DIALOG_TASKS=[{"id": "schrank", "adj": "groß", "answerNoun": "der Schrank
 
 const KEY="SP_L4_T2_FINAL_V3";
 const EXAM_UNLOCK_KEY="SP_L4_T2_EXAM_UNLOCKED";
+const DASHBOARD_TOPIC_KEY="SP_PROGRESS_WORTSCHATZ_A1_L4_T2";
+const DASHBOARD_ALL_KEY="SP_DASHBOARD_PROGRESS";
+const DASHBOARD_LEGACY_KEY="SP_L4_T2_DASHBOARD_PROGRESS";
+const DASHBOARD_URL="/dashboard/index.html";
+const PROFILE_URL="/profile/index.html";
+const HOME_URL="/index.html";
 const CATEGORY_TASK_ALLOWED=["Möbel","Elektrogeräte","Bad"];
 const CATEGORY_TASK_EXCLUDE_IDS=["spuele","dach","tuer","wand","boden","fenster","bild"];
 function categoryTaskWords(){return WORDS.filter(w=>CATEGORY_TASK_ALLOWED.includes(w.category)&&!CATEGORY_TASK_EXCLUDE_IDS.includes(w.id))}
 function currentMotherLang(){let fromProfile="";try{const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");if(p)fromProfile=p.motherLanguageCode||p.muttersprache||p.motherLanguage||p.mother_language||""}catch(e){}const raw=fromProfile||localStorage.getItem("SP_MOTHER_LANGUAGE_CODE")||localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru";const n=String(raw).trim().toLowerCase();const map={"arabisch":"ar","russisch":"ru","englisch":"en","ukrainisch":"uk","kurdisch":"ku","türkisch":"tr","tuerkisch":"tr","rumänisch":"ro","rumaenisch":"ro","japanisch":"ja","polnisch":"pl","deutsch":"de"};return map[n]||n||"ru"}
 function translateWord(w){let l=currentMotherLang();return(w.tr&&w.tr[l])||w.tr?.ru||w.tr?.en||w.word}
 function currentUserLabel(){try{const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||localStorage.getItem("sprachpilotUser")||"null");if(p){const name=[p.firstName||p.vorname||p.name,p.lastName||p.nachname].filter(Boolean).join(" ")||p.displayName||p.email||"Schüler/in";const course=p.courseCode||p.kurs||p.course||p.kursCode||localStorage.getItem("SP_COURSE_CODE")||"Kurs";return `${name} · ${course}`}}catch(e){}return `Schüler/in · ${localStorage.getItem("SP_COURSE_CODE")||"Kurs"}`}
+let __spDashboardSyncing=false;
+function safeTaskPercent(file,total){
+ try{
+  const st=JSON.parse(localStorage.getItem(KEY+"_"+file)||"null");
+  if(!st||!Array.isArray(st.done))return 0;
+  const done=[...new Set(st.done)].filter(i=>Number.isInteger(i)&&i>=0&&i<total).length;
+  return Math.min(100,Math.round(done/(total||1)*100)||0);
+ }catch(e){return 0}
+}
+function dashboardTaskSummary(){
+ return prerequisiteTasks().map(([file,total])=>{
+  const percent=safeTaskPercent(file,total);
+  return {file,total,percent,done:percent>=100,updatedAt:new Date().toISOString()};
+ });
+}
+function dashboardProgressData(){
+ const tasks=dashboardTaskSummary();
+ const best=bestExamResult();
+ let unlocked=localStorage.getItem(EXAM_UNLOCK_KEY)==="1" || tasks.every(t=>t.percent>=100);
+ if(unlocked)localStorage.setItem(EXAM_UNLOCK_KEY,"1");
+ const examPercent=best?Math.min(100,Number(best.percent||0)):0;
+ const examStars=best?starsForPercent(examPercent):0;
+ const taskAverage=tasks.length?Math.round(tasks.reduce((s,t)=>s+t.percent,0)/tasks.length):0;
+ const totalPercent=Math.min(100,Math.round((taskAverage+examPercent)/2)||0);
+ return {
+  id:"wortschatz-a1-lektion-4-thema-2",
+  module:"wortschatz",level:"A1",lesson:4,theme:2,topic:2,
+  title:"Möbel & Elektrogeräte",subtitle:"A1 Lektion 4 · Thema 2",
+  user:currentUserLabel(),
+  percent:totalPercent,taskPercent:taskAverage,
+  tasks,completedTasks:tasks.filter(t=>t.percent>=100).length,totalTasks:tasks.length,
+  exam:{unlocked,attempted:!!best,percent:examPercent,stars:examStars,attempts:examHistory().length,best},
+  words:WORDS.map(w=>({id:w.id,full:w.full,group:w.group||w.wordGroup||"",percent:wordProgress(w.id),status:wordStatus(wordProgress(w.id))})),
+  updatedAt:new Date().toISOString()
+ };
+}
+function syncDashboardProgress(){
+ if(__spDashboardSyncing)return;
+ __spDashboardSyncing=true;
+ try{
+  const data=dashboardProgressData();
+  localStorage.setItem(DASHBOARD_TOPIC_KEY,JSON.stringify(data));
+  localStorage.setItem(DASHBOARD_LEGACY_KEY,JSON.stringify(data));
+  let all={};
+  try{all=JSON.parse(localStorage.getItem(DASHBOARD_ALL_KEY)||"{}")}catch(e){all={}}
+  all[data.id]=data;
+  localStorage.setItem(DASHBOARD_ALL_KEY,JSON.stringify(all));
+  try{window.dispatchEvent(new CustomEvent("sprachpilot-dashboard-progress",{detail:data}))}catch(e){}
+ }catch(e){}
+ __spDashboardSyncing=false;
+}
+function clearDashboardProgress(){
+ localStorage.removeItem(DASHBOARD_TOPIC_KEY);
+ localStorage.removeItem(DASHBOARD_LEGACY_KEY);
+ try{const all=JSON.parse(localStorage.getItem(DASHBOARD_ALL_KEY)||"{}");delete all["wortschatz-a1-lektion-4-thema-2"];localStorage.setItem(DASHBOARD_ALL_KEY,JSON.stringify(all))}catch(e){}
+}
+
 function prerequisiteTasks(){const catLen=categoryTaskWords().length;return [["karteikarten.html",WORDS.length],["hoeren.html",WORDS.length],["artikel-klick.html",WORDS.length],["artikel.html",WORDS.length],["plural.html",WORDS.length],["bild-wort.html",WORDS.length],["wort-bild.html",WORDS.length],["kategorien.html",catLen],["dialoge.html",DIALOG_TASKS.length]]}
 function allPrereqComplete(){return prerequisiteTasks().every(t=>pct(t[0],t[1])>=100)}
-function setExamUnlocked(){localStorage.setItem(EXAM_UNLOCK_KEY,"1")}
-function isExamUnlocked(){if(localStorage.getItem(EXAM_UNLOCK_KEY)==="1")return true;if(allPrereqComplete()){setExamUnlocked();return true}return false}
+function setExamUnlocked(){localStorage.setItem(EXAM_UNLOCK_KEY,"1");syncDashboardProgress()}
+function isExamUnlocked(){if(localStorage.getItem(EXAM_UNLOCK_KEY)==="1"){syncDashboardProgress();return true}if(allPrereqComplete()){setExamUnlocked();return true}syncDashboardProgress();return false}
 function prereqPercent(){const t=prerequisiteTasks();return Math.round(t.reduce((s,x)=>s+pct(x[0],x[1]),0)/t.length)||0}
 function examHistory(){try{return JSON.parse(localStorage.getItem("SP_L4_T2_EXAM_HISTORY_V1")||"[]")}catch(e){return[]}}
-function saveExamResult(result){setExamUnlocked();const h=examHistory();h.push({...result,date:new Date().toISOString()});localStorage.setItem("SP_L4_T2_EXAM_HISTORY_V1",JSON.stringify(h));localStorage.setItem("SP_L4_T2_EXAM_BEST",JSON.stringify(bestExamResultFrom(h)))}
+function saveExamResult(result){setExamUnlocked();const h=examHistory();h.push({...result,date:new Date().toISOString()});localStorage.setItem("SP_L4_T2_EXAM_HISTORY_V1",JSON.stringify(h));localStorage.setItem("SP_L4_T2_EXAM_BEST",JSON.stringify(bestExamResultFrom(h)));syncDashboardProgress()}
 function bestExamResultFrom(h){if(!h||!h.length)return null;return h.reduce((best,x)=>(!best||Number(x.percent||0)>Number(best.percent||0)?x:best),null)}
 function bestExamResult(){return bestExamResultFrom(examHistory())}
 function starsForPercent(p){p=Number(p||0);if(p>=100)return 3;if(p>=70)return 2;if(p>=50)return 1;return 0}
@@ -66,21 +129,21 @@ async function goFirstWorking(e,names){
  }
  location.href=candidates[0];
 }
-function goHome(e){goFirstWorking(e,["index.html"])}
-function goDashboard(e){goFirstWorking(e,["dashboard.html","student-dashboard.html","dashboard/index.html"])}
-function goProfile(e){goFirstWorking(e,["profil.html","profile.html","student-profile.html"])}
+function goHome(e){if(e)e.preventDefault();location.href=HOME_URL}
+function goDashboard(e){if(e)e.preventDefault();syncDashboardProgress();location.href=DASHBOARD_URL}
+function goProfile(e){if(e)e.preventDefault();location.href=PROFILE_URL}
 function header(title,isThemeOverview=false){
  const h=document.querySelector(".topbar");
  if(!h)return;
  const backHref=isThemeOverview?"../index.html":"index.html";
- h.innerHTML=`<div class="topbar-main"><a class="brand" href="${globalPage("index.html")}" onclick="goHome(event)"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 4 · Thema 2</div></div></a><div class="account-tools"><span class="account-pill">${esc(currentUserLabel())}</span><a class="account-link" href="${linkCandidates(["dashboard.html","student-dashboard.html","dashboard/index.html"])[0]}" onclick="goDashboard(event)">📊 Dashboard</a><a class="account-link" href="${linkCandidates(["profil.html","profile.html","student-profile.html"])[0]}" onclick="goProfile(event)">👤 Profil</a><button class="account-link account-btn" type="button" onclick="logoutUser()">🚪 Abmelden</button></div></div><nav class="nav"><a class="btn secondary" href="${backHref}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button></nav>`
+ h.innerHTML=`<div class="topbar-main"><a class="brand" href="${HOME_URL}" onclick="goHome(event)"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 4 · Thema 2</div></div></a><div class="account-tools"><span class="account-pill">${esc(currentUserLabel())}</span><a class="account-link" href="${DASHBOARD_URL}" onclick="goDashboard(event)">📊 Dashboard</a><a class="account-link" href="${PROFILE_URL}" onclick="goProfile(event)">👤 Profil</a><button class="account-link account-btn" type="button" onclick="logoutUser()">🚪 Abmelden</button></div></div><nav class="nav"><a class="btn secondary" href="${backHref}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button></nav>`
 }
 function logoutUser(){
  if(!confirm("Möchten Sie sich abmelden?"))return;
  ["SP_USER_PROFILE","sprachpilotUser","SP_CURRENT_USER","SP_LOGIN","SP_COURSE_CODE"].forEach(k=>localStorage.removeItem(k));
- location.href=globalPage("index.html");
+ location.href=HOME_URL;
 }
-function resetThemeProgress(){if(!confirm("Möchten Sie wirklich alle Fortschritte in diesem Thema löschen?"))return;Object.keys(localStorage).forEach(k=>{if(k.startsWith("SP_L4_T2_FINAL_")||k.startsWith("SP_L4_T2_EXAM_"))localStorage.removeItem(k)});Object.keys(sessionStorage).forEach(k=>{if(k.startsWith("SP_L4_T2_PRACTICE_"))sessionStorage.removeItem(k)});location.href="index.html"}
+function resetThemeProgress(){if(!confirm("Möchten Sie wirklich alle Fortschritte in diesem Thema löschen?"))return;Object.keys(localStorage).forEach(k=>{if(k.startsWith("SP_L4_T2_FINAL_")||k.startsWith("SP_L4_T2_EXAM_"))localStorage.removeItem(k)});Object.keys(sessionStorage).forEach(k=>{if(k.startsWith("SP_L4_T2_PRACTICE_"))sessionStorage.removeItem(k)});clearDashboardProgress();location.href="index.html"}
 function practiceFlag(file){return "SP_L4_T2_PRACTICE_"+file}
 function isPracticeMode(file){return sessionStorage.getItem(practiceFlag(file))==="1"}
 function taskKey(file){return KEY+"_"+file+(isPracticeMode(file)?"_PRACTICE":"")}
@@ -88,7 +151,7 @@ function resetPractice(file){localStorage.removeItem(KEY+"_"+file+"_PRACTICE")}
 function startPractice(file){sessionStorage.setItem(practiceFlag(file),"1");resetPractice(file);location.reload()}
 function stopPractice(file){sessionStorage.removeItem(practiceFlag(file))}
 function loadTask(file,total){try{let st=JSON.parse(localStorage.getItem(taskKey(file))||"null");if(st&&Array.isArray(st.queue)&&Array.isArray(st.done)){if(st.total!==total){st.total=total;st.done=[...new Set(st.done.filter(i=>Number.isInteger(i)&&i>=0&&i<total))];st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(file,st)}return st}}catch(e){}let queue=[...Array(total).keys()].sort(()=>Math.random()-.5);return{total,queue,done:[],current:null,tries:0,hadError:false,repeatQueued:false}}
-function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(st));try{window.dispatchEvent(new CustomEvent("sprachpilot-progress",{detail:{file,st}}))}catch(e){}}
+function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(st));try{window.dispatchEvent(new CustomEvent("sprachpilot-progress",{detail:{file,st}}))}catch(e){}syncDashboardProgress()}
 function nextIndex(file,total){let st=loadTask(file,total);if(st.current===null||st.current===undefined){if(!st.queue.length&&st.done.length<total)st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=st.queue.shift();st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(file,st)}return st.current}
 function markRight(file,total){let st=loadTask(file,total);const current=st.current;if(current!==null&&current!==undefined){if(st.hadError||(st.tries||0)>0){if(!st.done.includes(current)&&!st.queue.includes(current))st.queue.push(current)}else{if(!st.done.includes(current))st.done.push(current)}}st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(file,st);return st.done.length>=total}
 function markWrong(file,total){let st=loadTask(file,total);st.tries=(st.tries||0)+1;st.hadError=true;if(st.current!==null&&st.current!==undefined&&!st.repeatQueued){st.queue.push(st.current);st.repeatQueued=true}saveTask(file,st);return st.tries}
@@ -110,3 +173,5 @@ function okWoQuestion(txt,t){return simple(txt)===simple(t.question)}
 function okWoAnswer(txt,t){return simple(txt)===simple(t.answer)}
 function okIstQuestion(txt,t){return simple(txt)===simple(t.question)}
 function okIstAnswer(txt,t){return simple(txt)===simple(t.answer)}
+
+try{window.addEventListener("load",()=>syncDashboardProgress())}catch(e){}
