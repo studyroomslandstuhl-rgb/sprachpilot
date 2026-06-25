@@ -252,7 +252,7 @@ export function renderAccountStrip(rootId="accountStrip"){
       ${safeText(p.vorname||"")} ${safeText(p.nachname||"")} · ${safeText(p.kurs||"")}
     </div>
     <div class="account-links">
-      <a href="/dashboard/">📊 Dashboard</a>
+      <a href="/student-dashboard/index.html">📊 Dashboard</a>
       <a href="/profile/">👤 Profil</a>
       <button onclick="logout()">🚪 Abmelden</button>
     </div>
