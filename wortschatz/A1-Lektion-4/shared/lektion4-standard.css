@@ -1,4 +1,4 @@
-/* SprachPilot Lektion 4 Standarddesign v233
+/* SprachPilot Lektion 4 Standarddesign v234
    Diese Datei ist der feste gemeinsame Design-Code für alle Themen in Lektion 4.
    Thema 1, 2, 3, 4 usw. sollen diese Klassen identisch nutzen. */
 :root{
@@ -157,4 +157,54 @@ body{background:linear-gradient(135deg,#ffd83d,#fff0a7)!important;color:var(--sp
   .module{min-height:250px!important;padding:14px!important;}
   .module .icon{height:58px!important;font-size:38px!important;}
   .module .article-icon{font-size:27px!important;}
+}
+
+/* ===== SprachPilot Lektion 4 Farbstandard v234 =====
+   Referenz: nicht alle Buttons gold.
+   Account: helle/weiße Pills; Navigation: helle Buttons; Fortschritte löschen: gold gefüllt. */
+.account-pill{
+  background:#fff9dd!important;
+  border:2px solid #f3dc84!important;
+  color:#5a3b00!important;
+  border-radius:999px!important;
+  box-shadow:none!important;
+}
+.account-link{
+  background:#fffdf6!important;
+  border:2px solid #f3dc84!important;
+  color:#5a3b00!important;
+  border-radius:999px!important;
+  box-shadow:none!important;
+}
+.account-btn{
+  background:#fffdf6!important;
+  border:2px solid #f3dc84!important;
+  color:#5a3b00!important;
+}
+.nav .btn.secondary,.topbar .nav .btn.secondary,.btn.secondary{
+  background:#fffdf6!important;
+  border:2px solid #f3dc84!important;
+  color:#5a3b00!important;
+  box-shadow:none!important;
+}
+.nav .btn.secondary:hover,.topbar .nav .btn.secondary:hover,.btn.secondary:hover{
+  background:#fff8d7!important;
+}
+.nav .danger-btn,.topbar .nav .danger-btn,.danger-btn{
+  background:linear-gradient(135deg,#ffde3d,#f3bd00)!important;
+  border:2px solid #d9a300!important;
+  color:#4b3100!important;
+  box-shadow:0 6px 14px rgba(217,150,0,.16)!important;
+}
+.nav .danger-btn:hover,.topbar .nav .danger-btn:hover,.danger-btn:hover{
+  background:linear-gradient(135deg,#ffd52b,#e7aa00)!important;
+}
+.module .icon.article-icon,.module:nth-child(3) .icon{
+  font-size:32px!important;
+  line-height:1.05!important;
+  min-height:70px!important;
+  margin:6px 0!important;
+}
+@media(max-width:700px){
+  .module .icon.article-icon,.module:nth-child(3) .icon{font-size:27px!important;min-height:62px!important}
 }
