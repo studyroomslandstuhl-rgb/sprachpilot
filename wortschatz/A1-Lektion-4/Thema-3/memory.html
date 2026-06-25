@@ -1,1 +1,36 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Memory Thema 3</title><link rel="stylesheet" href="style.css?v=300"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=300"></script><script>header('Farben & Adjektive');const file='memory.html',total=16;let base=shuffle([...ADJECTIVES.filter(a=>['bequem','unbequem','sauber','schmutzig','modern','schoen','haesslich','hell'].includes(a.id))]).slice(0,8);let cards=shuffle(base.flatMap(x=>[{pair:x.id,type:'word',html:x.word},{pair:x.id,type:'img',html:img(x.img,'task-img')} ]));let first=null,done=new Set();function render(){let st=loadTask(file,total);if(st.done.length>=total)return complete(area,file,'gegenteile.html');area.innerHTML=progressHtml(file,total)+`<div class="question">Finde Paare.</div><div class="memory-grid">${cards.map((c,i)=>`<div class="memory-card ${done.has(i)?'done':''}" onclick="pick(${i})">${done.has(i)||i===first?c.html:'?'}</div>`).join('')}</div><div id="fb" class="feedback"></div>`}function pick(i){if(done.has(i))return;if(first===null){first=i;render();return}if(first===i)return;let c1=cards[first],c2=cards[i];if(c1.pair===c2.pair&&c1.type!==c2.type){done.add(first);done.add(i);let st=loadTask(file,total);st.done=[...done];st.current=0;saveTask(file,st);first=null;fb.innerHTML='<div class="ok">Richtig!</div>';setTimeout(render,400)}else{let t=markWrong(file,total,c1.pair);fb.innerHTML='<div class="no">'+feedbackForTry(t,'Suche Wort + Bild.','das Paar')+'</div>';first=null;setTimeout(render,700)}}render();</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gegenteile-Memory Thema 3</title><link rel="stylesheet" href="style.css?v=301"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=301"></script><script>
+header('Farben & Adjektive');
+const file='memory.html', total=16;
+const base=PAIRS.map(([a,b])=>({a:adjById(a).word,b:adjById(b).word,id:a+'-'+b}));
+let cards=shuffle(base.flatMap(p=>[{pair:p.id,word:p.a},{pair:p.id,word:p.b}]));
+let first=null,done=new Set();
+function render(){
+  let st=loadTask(file,total);
+  if(done.size===0 && Array.isArray(st.done) && st.done.length) done=new Set(st.done);
+  if(done.size>=total)return complete(area,file,'gegenteile.html');
+  area.innerHTML=progressHtml(file,total)+
+  `<div class="question">Finde die Gegenteile.</div>
+   <div class="hint">Nur Wörter. Suche z. B. schön ↔ hässlich.</div>
+   <div class="memory-grid word-memory">${cards.map((c,i)=>`<button class="memory-card ${done.has(i)?'done':''} ${i===first?'selected':''}" onclick="pick(${i})">${done.has(i)||i===first?safe(c.word):'?'}</button>`).join('')}</div>
+   <div id="fb" class="feedback"></div>`;
+}
+function saveMemory(){
+  let st=loadTask(file,total);st.done=[...done];st.current=0;saveTask(file,st);
+}
+function pick(i){
+  if(done.has(i))return;
+  if(first===null){first=i;render();return}
+  if(first===i)return;
+  let c1=cards[first],c2=cards[i];
+  if(c1.pair===c2.pair){
+    done.add(first);done.add(i);saveMemory();first=null;
+    fb.innerHTML='<div class="ok">Richtig!</div>';
+    setTimeout(render,350);
+  }else{
+    let t=markWrong(file,total,c1.word+' / '+c2.word);
+    fb.innerHTML='<div class="no">'+feedbackForTry(t,'Suche das Gegenteil.','das Gegensatzpaar')+'</div>';
+    first=null;setTimeout(render,650);
+  }
+}
+render();
+</script></body></html>

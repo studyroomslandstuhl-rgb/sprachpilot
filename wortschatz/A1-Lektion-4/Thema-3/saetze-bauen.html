@@ -1,1 +1,29 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sätze bauen Thema 3</title><link rel="stylesheet" href="style.css?v=300"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=300"></script><script>header('Farben & Adjektive');const file='saetze-bauen.html',total=SENTENCES.length;let chosen=[];function render(){let i=nextIndex(file,total);if(i===null)return complete(area,file,'schreiben.html');let t=SENTENCES[i];chosen=[];area.innerHTML=progressHtml(file,total)+`<div class="question">Baue den Satz.</div><div class="hint">Achtung: ist oder sind?</div><div class="order-slot" id="slot"></div><div class="word-bank">${shuffle([...t.words,'ist','sind'].filter((v,i,a)=>a.indexOf(v)===i)).map(w=>`<button class="chip" onclick="addWord('${w.replace(/'/g,"\\'")}')">${w}</button>`).join('')}</div><div class="actions"><button class="btn" onclick="check()">Kontrollieren</button><button class="btn secondary" onclick="render()">Neu ordnen</button></div><div id="fb" class="feedback"></div>`}function addWord(w){chosen.push(w);slot.textContent=chosen.join(' ')}function check(){let st=loadTask(file,total),t=SENTENCES[st.current];let ans=chosen.join(' ');if(isExactSentence(ans,t.text)){fb.innerHTML='<div class="ok">Richtig!</div>';setTimeout(()=>{markRight(file,total)?complete(area,file,'schreiben.html'):render()},500)}else{let tr=markWrong(file,total,t.text);fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.text,'Wortstellung und ist/sind')+'</div>'}}render();</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sätze bauen Thema 3</title><link rel="stylesheet" href="style.css?v=301"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=301"></script><script>
+header('Farben & Adjektive');
+const file='saetze-bauen.html',total=SENTENCES.length;
+let chosen=[];
+function render(){
+  let i=nextIndex(file,total);
+  if(i===null)return complete(area,file,'schreiben.html');
+  let t=SENTENCES[i];chosen=[];
+  area.innerHTML=progressHtml(file,total)+
+  instruction('Baue den Satz. Achte auf „ist“ oder „sind“.')+
+  `${img(t.img,'task-img')}
+   <div class="order-slot" id="slot"></div>
+   <div class="word-bank">${shuffle([...t.words,'ist','sind'].filter((v,i,a)=>a.indexOf(v)===i)).map(w=>`<button class="chip" onclick="addWord('${w.replace(/'/g,"\\'")}')">${w}</button>`).join('')}</div>
+   <div class="actions"><button class="btn" onclick="check()">Kontrollieren</button><button class="btn secondary" onclick="render()">Neu ordnen</button></div>
+   <div id="fb" class="feedback"></div>`;
+}
+function addWord(w){chosen.push(w);slot.textContent=chosen.join(' ')}
+function check(){
+  let st=loadTask(file,total),t=SENTENCES[st.current];let ans=chosen.join(' ');
+  if(isExactSentence(ans,t.text,false)){
+    fb.innerHTML='<div class="ok">Richtig!</div>';
+    setTimeout(()=>{markRight(file,total)?complete(area,file,'schreiben.html'):render()},500)
+  }else{
+    let tr=markWrong(file,total,t.text);
+    fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.text,'Wortstellung und ist/sind')+'</div>';
+  }
+}
+render();
+</script></body></html>

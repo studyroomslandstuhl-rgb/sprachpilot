@@ -1,1 +1,56 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören Thema 3</title><link rel="stylesheet" href="style.css?v=300"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=300"></script><script>header('Farben & Adjektive');const file='hoeren.html', total=12;let selectedColor=null,selectedItem=null;const pool=[...Array(total).keys()].map((_,i)=>({item:FURNITURE[i%FURNITURE.length],color:COLORS[i%COLORS.length]}));function render(){let i=nextIndex(file,total);if(i===null)return complete(area,file,'farben.html');let t=pool[i];let colors=shuffle([t.color,...shuffle(COLORS.filter(c=>c.id!==t.color.id)).slice(0,3)]);let items=shuffle([t.item,...shuffle(FURNITURE.filter(f=>f.id!==t.item.id)).slice(0,3)]);area.innerHTML=progressHtml(file,total)+`<div class="question">Höre und wähle.</div><div class="actions"><button class="btn" onclick="speak('${t.item.full} ist ${t.color.word}.')">▶️ Hören</button><button class="btn secondary" onclick="speak('${t.item.full} ist ${t.color.word}.',true)">Langsam</button></div><h3>Farbe</h3><div class="options">${colors.map(c=>`<button class="opt" data-color="${c.id}" onclick="pickColor('${c.id}',this)">${swatch(c,true)}<br>${c.word}</button>`).join('')}</div><h3>Bild</h3><div class="options">${items.map(it=>`<button class="opt" data-item="${it.id}" onclick="pickItem('${it.id}',this)">${img(it.img,'task-img')}<br>${it.full}</button>`).join('')}</div><div class="actions"><button class="btn" onclick="check()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;speak(t.item.full+' ist '+t.color.word+'.')}function pickColor(id,el){selectedColor=id;document.querySelectorAll('[data-color]').forEach(x=>x.classList.remove('selected'));el.classList.add('selected')}function pickItem(id,el){selectedItem=id;document.querySelectorAll('[data-item]').forEach(x=>x.classList.remove('selected'));el.classList.add('selected')}function check(){let st=loadTask(file,total),t=pool[st.current];if(selectedColor===t.color.id&&selectedItem===t.item.id){fb.innerHTML='<div class="ok">Richtig!</div>';selectedColor=selectedItem=null;setTimeout(()=>{markRight(file,total)?complete(area,file,'farben.html'):render()},500)}else{let tr=markWrong(file,total,t.item.full+' '+t.color.word);fb.innerHTML='<div class="no">'+feedbackForTry(tr,`${t.item.full} ist ${t.color.word}.`,'Farbe und Bild')+'</div>'}}render();</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören Thema 3</title><link rel="stylesheet" href="style.css?v=301"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=301"></script><script>
+header('Farben & Adjektive');
+const file='hoeren.html', total=HEARING_TASKS.length;
+let selectedColor=null;
+function colorButton(c,task){
+  return `<button class="opt image-only" data-color="${c.id}" onclick="pickColor('${c.id}')">${colorImg(c,'choice-img')}</button>`;
+}
+function itemButton(it){
+  return `<button class="opt image-only" data-item="${it.id}" onclick="pickItem('${it.id}')">${img(it.img,'choice-img')}</button>`;
+}
+function render(){
+  let i=nextIndex(file,total);
+  if(i===null)return complete(area,file,'farben.html');
+  selectedColor=null;
+  let t=HEARING_TASKS[i], color=colorById(t.color), item=furnitureById(t.item);
+  let colorOpts=t.options.map(colorById);
+  let itemOpts=shuffle([item,...shuffle(FURNITURE.filter(f=>!f.plural&&f.id!==item.id)).slice(0,3)]);
+  area.innerHTML=progressHtml(file,total)+
+  `<div class="question">Höre. Wähle zuerst die Farbe, dann das Möbel.</div>
+   <div class="actions"><button class="btn" onclick="speak('${item.full} ist ${color.word}.')">▶️ Hören</button><button class="btn secondary" onclick="speak('${item.full} ist ${color.word}.',true)">Langsam</button></div>
+   <h3>1. Farbe</h3><div class="options">${colorOpts.map(c=>colorButton(c,t)).join('')}</div>
+   <h3>2. Möbel</h3><div class="options locked-options" id="itemOptions">${itemOpts.map(it=>itemButton(it)).join('')}</div>
+   <div id="fb" class="feedback"></div>`;
+  speak(item.full+' ist '+color.word+'.');
+}
+function pickColor(id){
+  let st=loadTask(file,total),t=HEARING_TASKS[st.current];
+  document.querySelectorAll('[data-color]').forEach(x=>x.classList.remove('selected','wrong'));
+  let btn=document.querySelector(`[data-color="${id}"]`);
+  if(id===t.color){
+    selectedColor=id; if(btn)btn.classList.add('selected');
+    itemOptions.classList.remove('locked-options');
+    fb.innerHTML='<div class="ok">Farbe richtig. Wähle jetzt das Möbel.</div>';
+  }else{
+    if(btn)btn.classList.add('wrong');
+    let tr=markWrong(file,total,colorById(t.color).word);
+    fb.innerHTML='<div class="no">'+feedbackForTry(tr,colorById(t.color).word,'die Farbe')+'</div>';
+  }
+}
+function pickItem(id){
+  let st=loadTask(file,total),t=HEARING_TASKS[st.current],item=furnitureById(t.item);
+  if(!selectedColor){fb.innerHTML='<div class="no">Wähle zuerst die Farbe.</div>';return}
+  document.querySelectorAll('[data-item]').forEach(x=>x.classList.remove('selected','wrong'));
+  let btn=document.querySelector(`[data-item="${id}"]`);
+  if(id===t.item){
+    if(btn)btn.classList.add('selected');
+    fb.innerHTML='<div class="ok">Richtig!</div>';
+    setTimeout(()=>{markRight(file,total)?complete(area,file,'farben.html'):render()},650)
+  }else{
+    if(btn)btn.classList.add('wrong');
+    let tr=markWrong(file,total,item.full);
+    fb.innerHTML='<div class="no">'+feedbackForTry(tr,item.full,'das Möbel')+'</div>';
+  }
+}
+render();
+</script></body></html>

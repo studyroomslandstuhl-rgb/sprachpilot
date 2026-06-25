@@ -1,5 +1,68 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung Thema 3</title><link rel="stylesheet" href="style.css?v=300"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=300"></script><script>header('Farben & Adjektive');if(!examUnlocked()){area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p>Schließe zuerst alle Aufgaben mit 100% ab.</p><div class="actions"><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>'}else startExam();function startExam(){let tasks=shuffle([...WRITING.map(x=>({type:'write',...x})),...GEFAELLEN_TASKS.map(x=>({type:'gefallen',...x})),...CONTRAST_TASKS.map(x=>({type:'contrast',text:x.sentence,...x}))]).slice(0,20);let pos=0,score=0,max=tasks.length*10;function render(){if(pos>=tasks.length)return finish();let t=tasks[pos];let body='';if(t.type==='gefallen'){let f=furnitureById(t.item);body=`${img(f.img)}<div class="hint">Reaktion: ${t.reaction} · Adjektiv: ${t.adj}</div><input id="answer" placeholder="Schreiben Sie die Antwort hier">`;}
-else if(t.type==='contrast'){body=`${img(t.img)}<div class="hint">${t.wrong} / ${t.right}</div><input id="answer" placeholder="Schreiben Sie die Antwort hier">`;}
-else{let f=furnitureById(t.item),a=adjById(t.adj);body=`<div class="imgrow">${img(f.img,'task-img')}${img(a.img,'task-img')}</div><input id="answer" placeholder="Schreiben Sie die Antwort hier">`;}
-area.innerHTML=`<div class="small">${pos+1} / ${tasks.length}</div><div class="progress"><div class="bar" style="width:${Math.round(pos/tasks.length*100)}%"></div></div><div class="question">Schreibe den Satz.</div>${body}<div class="actions"><button class="btn" onclick="window.checkExam()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;}
-window.checkExam=function(){let t=tasks[pos],sol=t.type==='gefallen'?t.answer:t.text;let ok=isExactSentence(answer.value,sol)||String(answer.value||'').trim()===sol;if(ok){score+=10;fb.innerHTML='<div class="ok">Richtig!</div><div class="actions"><button class="btn green" onclick="window.nextExam()">Weiter</button></div>'}else{fb.innerHTML='<div class="no">Lösung: '+sol+'</div><div class="actions"><button class="btn green" onclick="window.nextExam()">Weiter</button></div>'}};window.nextExam=function(){pos++;render()};function finish(){let percent=Math.min(100,Math.round(score/max*100));let stars=starsForPercent(percent);let result={score,maxScore:max,percent,stars,date:new Date().toISOString()};let hist=examHistory();hist.push(result);localStorage.setItem('SP_L4_T3_EXAM_HISTORY_V1',JSON.stringify(hist));syncExam(result);area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig!</div><div class="big">${percent}% erreicht.</div><div>${starsHtml(stars)}</div><div class="summary-row"><div class="summary-tile">Punkte<br>${score}/${max}</div><div class="summary-tile">Versuch<br>${hist.length}</div></div><div class="actions"><button class="btn" onclick="location.reload()">Nochmal</button><a class="btn green" href="index.html">Zurück zum Thema</a></div></div>`}render()}</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung Thema 3</title><link rel="stylesheet" href="style.css?v=301"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=301"></script><script>
+header('Farben & Adjektive');
+if(!examUnlocked()){
+  area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p>Schließe zuerst alle Aufgaben mit 100% ab.</p><div class="actions"><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>';
+}else startExam();
+
+function contrastBody(t){
+  let f=furnitureById(t.item);
+  let wrong=ADJECTIVES.find(x=>simple(x.word)===simple(t.wrong));
+  let right=ADJECTIVES.find(x=>simple(x.word)===simple(t.right));
+  return instruction('Schreibe zwei Sätze mit „nicht“ und „sehr“.')+
+    `<div class="imgrow three-img">${wrong?img(wrong.img,'task-img'):''}${right?img(right.img,'task-img'):''}${img(f.img,'task-img')}</div>
+     <input id="answer" placeholder="Schreiben Sie die Antwort hier">`;
+}
+function gefallenBody(t){
+  let r=reactionById(t.reaction),a=adjById(t.adj);
+  let itemHtml=t.itemImg?img(t.itemImg,'task-img'):img(furnitureById(t.item).img,'task-img');
+  return instruction('Antworten Sie passend zum Smiley und Bild.')+
+    `<div class="imgrow three-img">${itemHtml}<div class="smile-card">${r.emoji}</div>${img(a.img,'task-img')}</div>
+     <input id="answer" placeholder="Schreiben Sie die Antwort hier">`;
+}
+function writingBody(t){
+  return instruction('Schreiben Sie einen Satz zu den Bildern.')+
+    `<div class="imgrow">${t.imgs.map(x=>img(x,'task-img')).join('')}</div>
+     <input id="answer" placeholder="Schreiben Sie die Antwort hier">`;
+}
+function startExam(){
+  let tasks=shuffle([
+    ...WRITING.map(x=>({type:'write',solution:x.text,...x})),
+    ...GEFAELLEN_TASKS.map(x=>({type:'gefallen',solution:x.answer,...x})),
+    ...CONTRAST_TASKS.map(x=>({type:'contrast',solution:x.sentence,...x}))
+  ]).slice(0,20);
+  let pos=0,score=0,max=tasks.length*10;
+  function render(){
+    if(pos>=tasks.length)return finish();
+    let t=tasks[pos], body=t.type==='gefallen'?gefallenBody(t):(t.type==='contrast'?contrastBody(t):writingBody(t));
+    area.innerHTML=`<div class="small">${pos+1} / ${tasks.length}</div>
+      <div class="progress"><div class="bar" style="width:${Math.round(pos/tasks.length*100)}%"></div></div>
+      <div class="question">Schreibe die Antwort.</div>${body}
+      <div class="actions"><button class="btn" onclick="window.checkExam()">Kontrollieren</button></div>
+      <div id="fb" class="feedback"></div>`;
+  }
+  window.checkExam=function(){
+    let t=tasks[pos], sol=t.solution;
+    let ok=isExactSentence(answer.value,sol,false);
+    if(ok){
+      score+=10;
+      fb.innerHTML='<div class="ok">Richtig!</div><div class="actions"><button class="btn green" onclick="window.nextExam()">Weiter</button></div>';
+    }else{
+      fb.innerHTML='<div class="no">Lösung: '+safe(sol)+'</div><div class="actions"><button class="btn green" onclick="window.nextExam()">Weiter</button></div>';
+    }
+  };
+  window.nextExam=function(){pos++;render()};
+  function finish(){
+    let percent=Math.min(100,Math.round(score/max*100));
+    let stars=starsForPercent(percent);
+    let result={score,maxScore:max,percent,stars,date:new Date().toISOString()};
+    let hist=examHistory();hist.push(result);
+    localStorage.setItem('SP_L4_T3_EXAM_HISTORY_V1',JSON.stringify(hist));
+    syncExam(result);
+    area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig!</div>
+      <div class="big">${percent}% erreicht.</div><div>${starsHtml(stars)}</div>
+      <div class="summary-row"><div class="summary-tile">Punkte<br>${score}/${max}</div><div class="summary-tile">Versuch<br>${hist.length}</div></div>
+      <div class="actions finish-actions"><button class="btn" onclick="location.reload()">Nochmal</button><a class="btn green" href="index.html">Zurück zum Thema</a></div></div>`;
+  }
+  render();
+}
+</script></body></html>
