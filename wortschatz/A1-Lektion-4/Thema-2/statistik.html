@@ -1,11 +1,155 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Statistik – Thema 2</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><section class="card"><h2>Statistik – Thema 2</h2><p class="small">Fortschritt pro Wort.</p><div id="examStats"></div></section><section id="list"></section><footer>© SprachPilot</footer></div><script src="app.js?v=220"></script><script>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Statistik – Thema 2</title>
+<link rel="stylesheet" href="style.css">
+<style>
+.stats-intro{margin-bottom:18px;}
+.stats-exam{margin-bottom:18px;}
+.stats-section{margin-bottom:24px;}
+.stats-title{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+  background:white;
+  border-radius:20px;
+  padding:14px 18px;
+  margin-bottom:14px;
+  font-size:20px;
+  font-weight:900;
+  box-shadow:0 8px 18px rgba(0,0,0,.08);
+}
+.stats-title.book{border:2px solid #8ce0b3;background:#f0fff6;color:#166534;}
+.stats-title.extra{border:2px solid #ffc107;background:#fff8dc;color:#7a5400;}
+.stats-grid{
+  display:grid;
+  grid-template-columns:repeat(2,minmax(0,1fr));
+  gap:12px;
+}
+.stats-word-card{
+  background:white;
+  border:1px solid #ffe7a8;
+  border-radius:20px;
+  padding:10px;
+  box-shadow:0 8px 18px rgba(0,0,0,.10);
+  text-align:center;
+  min-height:260px;
+  display:flex;
+  flex-direction:column;
+  justify-content:space-between;
+}
+.stats-word-card img{
+  width:100%;
+  height:115px;
+  object-fit:contain;
+  background:white;
+  border:2px solid #ffe28a;
+  border-radius:16px;
+  margin-bottom:8px;
+}
+.stats-word-de{
+  font-size:17px;
+  font-weight:900;
+  color:#111;
+  line-height:1.2;
+  margin-bottom:5px;
+}
+.stats-word-tr{
+  color:#7a5100;
+  font-weight:800;
+  font-size:15px;
+  line-height:1.2;
+  min-height:20px;
+  margin-bottom:8px;
+}
+.stats-status{
+  font-size:13px;
+  color:#334155;
+  border-top:1px solid #f1e2aa;
+  padding-top:8px;
+  margin-top:auto;
+}
+.stats-percent{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:8px;
+  font-weight:900;
+  margin-bottom:6px;
+}
+.stats-badge{
+  background:#fff7cc;
+  border:1px solid #f5d04d;
+  border-radius:999px;
+  padding:3px 8px;
+  font-size:12px;
+  color:#6b4a00;
+}
+.stats-word-card .progress{
+  height:12px;
+  margin:4px 0 0;
+}
+@media(min-width:700px){
+  .stats-grid{grid-template-columns:repeat(3,minmax(0,1fr));}
+  .stats-word-card img{height:135px;}
+}
+@media(min-width:1000px){.stats-grid{grid-template-columns:repeat(4,minmax(0,1fr));}}
+@media(min-width:1200px){.stats-grid{grid-template-columns:repeat(5,minmax(0,1fr));}}
+</style>
+</head>
+<body>
+<div class="container">
+<header class="topbar"></header>
+
+<section class="card stats-intro">
+  <h2>Statistik – Thema 2</h2>
+  <p class="small">Fortschritt pro Wort.</p>
+  <div id="examStats" class="stats-exam"></div>
+</section>
+
+<section id="list"></section>
+
+<footer>© SprachPilot</footer>
+</div>
+
+<script src="app.js?v=220"></script>
+<script>
 header("Statistik");
-examStats.innerHTML=bestExamSummaryHtml();
-function groupOf(w){return w.releaseGroup || (w.set==="plus" ? "extra" : "book")}
-function labelOf(g){return g==="book" ? "Im Buch" : "Nicht im Buch"}
-list.innerHTML=["book","extra"].map(g=>{
- const arr=WORDS.filter(w=>groupOf(w)===g);
- if(!arr.length)return "";
- return `<div class="word-section"><span class="group-badge ${g}">${labelOf(g)}</span><div class="word-overview-grid">${arr.map(w=>{const p=wordProgress(w.id);return `<div class="word-card"><img src="${w.image}" onerror="fixImg(this)" alt=""><div class="word-de">${w.full}</div><div class="word-meta">Status: <b>${wordStatus(p)}</b><br>Fortschritt: <b>${p}%</b><br>Gruppe: <b>${labelOf(groupOf(w))}</b></div><div class="progress"><div class="bar" style="width:${p}%"></div></div></div>`}).join("")}</div></div>`;
+
+const best = bestExamResult();
+examStats.innerHTML = best ? bestExamSummaryHtml() : "";
+
+function groupOf(w){
+  return w.releaseGroup || (w.set==="plus" ? "extra" : "book");
+}
+function labelOf(g){
+  return g==="book" ? "Im Buch" : "Nicht im Buch";
+}
+function card(w){
+  const p = wordProgress(w.id);
+  return `<div class="stats-word-card">
+    <img src="${w.image}" onerror="fixImg(this)" alt="">
+    <div class="stats-word-de">${w.full}</div>
+    <div class="stats-word-tr">${translateWord(w)}</div>
+    <div class="stats-status">
+      <div class="stats-percent"><span>${p}%</span><span class="stats-badge">${wordStatus(p)}</span></div>
+      <div class="progress"><div class="bar" style="width:${p}%"></div></div>
+    </div>
+  </div>`;
+}
+
+const listEl = document.getElementById("list");
+listEl.innerHTML = ["book","extra"].map(g=>{
+  const arr = WORDS.filter(w=>groupOf(w)===g);
+  if(!arr.length) return "";
+  return `<div class="stats-section">
+    <div class="stats-title ${g}"><span>${labelOf(g)}</span><span>${arr.length}</span></div>
+    <div class="stats-grid">${arr.map(card).join("")}</div>
+  </div>`;
 }).join("");
-</script></body></html>
+</script>
+</body>
+</html>
