@@ -2,277 +2,475 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SprachPilot - A1 Lektion 4</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SprachPilot – A1 Lektion 4</title>
 <style>
 *{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --sp-yellow:#f3c400;
+  --sp-yellow-dark:#c99a00;
+  --sp-yellow-soft:#fff8d9;
+  --sp-border:#eadb8b;
+  --sp-text:#20242b;
+  --sp-muted:#6b7280;
+  --sp-white:#fff;
+  --sp-bg1:#f7cf35;
+  --sp-bg2:#f9df7b;
+  --sp-shadow:0 12px 34px rgba(0,0,0,.12);
+}
 body{
   min-height:100vh;
   font-family:Arial, Helvetica, sans-serif;
-  background:linear-gradient(135deg,#f6c343,#f9df7b);
-  color:#222;
-  padding:18px;
+  background:linear-gradient(135deg,var(--sp-bg1),var(--sp-bg2));
+  color:var(--sp-text);
+  padding:24px;
 }
-.container{max-width:980px;margin:0 auto}
-.hero{
-  background:white;
-  border-radius:28px;
-  padding:28px 22px;
-  box-shadow:0 14px 38px rgba(0,0,0,.20);
-  text-align:center;
-  margin-bottom:18px;
-  border-top:10px solid #f0b400;
+.page{max-width:1180px;margin:0 auto}
+.sp-shell{
+  background:rgba(255,255,255,.94);
+  border-radius:30px;
+  box-shadow:var(--sp-shadow);
+  padding:22px 26px;
+  margin-bottom:22px;
 }
-.logo-wrap{
-  width:104px;
-  height:104px;
-  margin:0 auto 14px;
-  border-radius:28px;
-  background:linear-gradient(135deg,#fff7d6,#ffffff);
+.sp-head{
+  display:flex;
+  justify-content:space-between;
+  align-items:flex-start;
+  gap:22px;
+}
+.sp-brand{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  text-decoration:none;
+  color:inherit;
+}
+.sp-logo{
+  width:74px;
+  height:74px;
+  border-radius:18px;
+  background:linear-gradient(135deg,#f7d000,#efbd00);
   display:flex;
   align-items:center;
   justify-content:center;
-  box-shadow:0 10px 24px rgba(240,180,0,.28);
-  border:3px solid #ffe28a;
+  color:white;
+  font-size:28px;
+  font-weight:900;
+  letter-spacing:.5px;
+  box-shadow:0 10px 22px rgba(222,170,0,.24);
 }
-.logo-wrap svg{width:78px;height:78px}
-h1{
-  font-size:38px;
-  color:#c98a00;
-  margin-bottom:8px;
-  letter-spacing:.3px;
+.sp-title h1{
+  font-size:34px;
+  line-height:1.05;
+  font-weight:900;
+  letter-spacing:.2px;
 }
-.subtitle{
-  font-size:18px;
-  color:#666;
-  line-height:1.4;
-}
-.actions{
-  display:flex;
-  justify-content:center;
-  gap:10px;
-  flex-wrap:wrap;
-  margin:18px 0;
-}
-.btn{
-  display:inline-block;
-  text-decoration:none;
-  border-radius:15px;
-  padding:13px 18px;
+.sp-subtitle{
+  color:var(--sp-muted);
   font-size:16px;
-  font-weight:900;
-  background:#fff7d6;
-  color:#6b4700;
-  border:2px solid #ffe28a;
+  margin-top:6px;
 }
-.info-card{
-  background:white;
-  border-radius:24px;
-  padding:22px;
-  box-shadow:0 12px 32px rgba(0,0,0,.16);
-  margin-bottom:16px;
+.account-area{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:10px;
+  align-items:center;
+  max-width:620px;
 }
-.info-title{
-  color:#c98a00;
-  font-size:24px;
-  font-weight:900;
-  margin-bottom:8px;
-}
-.small{
+.account-pill,.account-link,.nav-btn{
+  border:2px solid var(--sp-border);
+  background:rgba(255,255,255,.72);
+  color:#594100;
+  border-radius:18px;
+  padding:10px 14px;
   font-size:15px;
-  color:#666;
-  line-height:1.5;
-}
-.themes{
-  display:grid;
-  grid-template-columns:repeat(auto-fit,minmax(230px,1fr));
-  gap:14px;
-}
-.theme{
-  display:block;
+  font-weight:900;
   text-decoration:none;
-  color:#222;
-  background:white;
-  border-radius:24px;
-  padding:22px;
-  box-shadow:0 12px 32px rgba(0,0,0,.18);
-  border:3px solid transparent;
-  transition:.2s;
-  position:relative;
-  overflow:hidden;
-}
-.theme:before{
-  content:"";
-  position:absolute;
-  top:0;
-  left:0;
-  right:0;
-  height:9px;
-  background:linear-gradient(135deg,#f0b400,#f9df7b);
-}
-.theme:hover{
-  border-color:#c98a00;
-  transform:translateY(-3px);
-}
-.theme-number{
+  min-height:44px;
   display:inline-flex;
   align-items:center;
   justify-content:center;
-  width:42px;
-  height:42px;
-  border-radius:50%;
-  background:#fff7d6;
-  border:2px solid #ffe28a;
-  color:#c98a00;
+  gap:6px;
+}
+.account-pill{
+  background:var(--sp-yellow-soft);
+  color:#55503f;
+  min-width:210px;
+}
+.account-link:hover,.nav-btn:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 14px rgba(201,154,0,.13);
+}
+.logout-btn{
+  cursor:pointer;
+  font-family:inherit;
+}
+.lesson-nav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:20px;
+}
+.nav-btn{
+  min-width:128px;
+  background:rgba(255,255,255,.72);
+}
+.nav-btn.primary{
+  background:linear-gradient(135deg,#f7d000,#efbd00);
+  border-color:#f0ca2f;
+  color:#4b3700;
+}
+.intro{
+  background:rgba(255,255,255,.88);
+  border-radius:26px;
+  box-shadow:var(--sp-shadow);
+  padding:24px 26px;
+  margin-bottom:18px;
+}
+.intro h2{
+  font-size:28px;
+  margin-bottom:8px;
+}
+.intro p{
+  color:var(--sp-muted);
+  font-size:17px;
+  line-height:1.45;
+}
+.theme-grid{
+  display:grid;
+  grid-template-columns:repeat(auto-fit,minmax(245px,1fr));
+  gap:18px;
+}
+.theme-card{
+  position:relative;
+  min-height:260px;
+  background:rgba(255,255,255,.96);
+  border:2px solid rgba(234,219,139,.85);
+  border-radius:26px;
+  padding:22px;
+  box-shadow:0 10px 26px rgba(0,0,0,.10);
+  text-decoration:none;
+  color:inherit;
+  display:flex;
+  flex-direction:column;
+  transition:.18s ease;
+  overflow:hidden;
+}
+.theme-card:before{
+  content:"";
+  position:absolute;
+  left:0;top:0;right:0;
+  height:8px;
+  background:linear-gradient(90deg,#f7d000,#f1bd00);
+}
+.theme-card:hover{
+  transform:translateY(-3px);
+  box-shadow:0 14px 32px rgba(0,0,0,.14);
+  border-color:#e1bd2f;
+}
+.theme-card.locked{
+  filter:grayscale(.95);
+  opacity:.68;
+  cursor:not-allowed;
+  pointer-events:auto;
+  background:#f4f4f4;
+  border-color:#d6d6d6;
+}
+.theme-card.locked:before{background:#cfcfcf}
+.theme-top{
+  display:flex;
+  justify-content:space-between;
+  gap:12px;
+  align-items:flex-start;
+  margin-bottom:12px;
+}
+.theme-number{
+  width:46px;
+  height:46px;
+  border-radius:16px;
+  background:linear-gradient(135deg,#ffe56d,#f2c400);
+  display:flex;
+  align-items:center;
+  justify-content:center;
   font-size:22px;
   font-weight:900;
-  margin-bottom:12px;
+  color:#4c3800;
+  flex:0 0 auto;
+}
+.locked .theme-number{
+  background:#d7d7d7;
+  color:#777;
+}
+.theme-status{
+  border-radius:999px;
+  padding:7px 10px;
+  font-size:13px;
+  font-weight:900;
+  background:#fff8d9;
+  border:1px solid var(--sp-border);
+  color:#665000;
+}
+.theme-status.locked{
+  background:#e8e8e8;
+  border-color:#d1d1d1;
+  color:#777;
 }
 .theme-title{
   font-size:22px;
   font-weight:900;
-  color:#c98a00;
   margin-bottom:8px;
 }
-.theme p{
-  color:#555;
+.theme-desc{
+  color:#5f6670;
   line-height:1.4;
-  min-height:58px;
-}
-.badge{
-  display:inline-block;
-  margin-top:12px;
-  background:#fff3cd;
-  border:2px solid #f0b400;
-  color:#6b4700;
-  border-radius:999px;
-  padding:5px 10px;
-  font-weight:bold;
-  font-size:13px;
+  font-size:15.5px;
+  min-height:66px;
 }
 .words{
-  margin-top:12px;
+  margin-top:15px;
   display:flex;
-  gap:8px;
+  gap:7px;
   flex-wrap:wrap;
 }
 .word{
-  background:#fff7d6;
-  border:1px solid #ffe28a;
-  color:#6b4700;
+  background:#fff8d9;
+  color:#5f4700;
+  border:1px solid var(--sp-border);
   border-radius:999px;
-  padding:6px 10px;
-  font-size:13px;
+  padding:6px 9px;
+  font-size:12.5px;
   font-weight:800;
 }
-footer{
-  text-align:center;
-  color:white;
-  margin-top:24px;
-  font-size:14px;
-  opacity:.95;
+.locked .word{background:#eee;color:#777;border-color:#ddd}
+.card-footer{
+  margin-top:auto;
+  padding-top:18px;
 }
-@media(max-width:650px){
-  body{padding:12px}
-  h1{font-size:32px}
-  .hero{padding:24px 16px}
-  .logo-wrap{width:92px;height:92px}
+.start-btn{
+  width:100%;
+  border:2px solid #e6c832;
+  background:white;
+  color:#9a7600;
+  border-radius:16px;
+  padding:12px 14px;
+  text-align:center;
+  font-weight:900;
+}
+.locked .start-btn{
+  background:#e7e7e7;
+  color:#777;
+  border-color:#d1d1d1;
+}
+.note{
+  margin-top:16px;
+  color:rgba(255,255,255,.95);
+  text-align:center;
+  font-size:14px;
+}
+@media(max-width:760px){
+  body{padding:14px}
+  .sp-shell{padding:18px}
+  .sp-head{flex-direction:column}
+  .account-area{justify-content:flex-start;max-width:none}
+  .account-pill{min-width:0}
+  .lesson-nav{margin-top:16px}
+  .sp-title h1{font-size:28px}
+  .sp-logo{width:62px;height:62px;font-size:24px}
+  .theme-grid{grid-template-columns:1fr}
 }
 </style>
 </head>
 
 <body>
-<div id="accountStrip" class="account-strip"></div>
 <script type="module" src="/js/guard.js"></script>
-<div class="container">
+<div class="page">
 
-  <section class="hero">
-    <div class="logo-wrap" aria-label="SprachPilot Logo">
-      <svg viewBox="0 0 120 120" xmlns="http://www.w3.org/2000/svg" role="img">
-        <defs>
-          <linearGradient id="g" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0" stop-color="#f0b400"/>
-            <stop offset="1" stop-color="#f9df7b"/>
-          </linearGradient>
-        </defs>
-        <circle cx="60" cy="60" r="52" fill="url(#g)"/>
-        <path d="M28 63 C43 38,70 30,91 38 C75 43,63 53,55 70 C47 66,38 63,28 63Z" fill="#fff" opacity=".95"/>
-        <path d="M54 70 C63 53,75 43,91 38 C84 57,72 75,52 91 C55 82,56 75,54 70Z" fill="#6b4700"/>
-        <circle cx="71" cy="49" r="5" fill="#f0b400"/>
-        <path d="M33 82 C43 78,50 76,58 78" stroke="#fff" stroke-width="7" stroke-linecap="round" fill="none"/>
-      </svg>
+  <header class="sp-shell">
+    <div class="sp-head">
+      <a class="sp-brand" href="/index.html">
+        <div class="sp-logo">SP</div>
+        <div class="sp-title">
+          <h1>SprachPilot</h1>
+          <div class="sp-subtitle">Wortschatz · A1 Lektion 4 · Wohnen</div>
+        </div>
+      </a>
+
+      <div class="account-area">
+        <span class="account-pill" id="accountPill">Profil wird geladen …</span>
+        <a class="account-link" href="/student-dashboard/index.html">📊 Dashboard</a>
+        <a class="account-link" href="/profile/index.html">👤 Profil</a>
+        <button class="account-link logout-btn" type="button" onclick="logout()">🚪 Abmelden</button>
+      </div>
     </div>
-    <h1>A1 Lektion 4: Wohnen</h1>
-    <p class="subtitle">Wähle ein Thema. Danach siehst du nur die passenden Aufgaben zu diesem Teil der Lektion.</p>
+
+    <nav class="lesson-nav">
+      <a class="nav-btn" href="../index.html">← Zurück</a>
+      <a class="nav-btn" href="/student-dashboard/index.html">Dashboard</a>
+      <a class="nav-btn primary" href="/profile/index.html">Profil</a>
+    </nav>
+  </header>
+
+  <section class="intro">
+    <h2>A1 Lektion 4: Wohnen</h2>
+    <p>Wähle ein Thema. Nicht freigegebene Themen bleiben gesperrt und werden erst sichtbar, wenn deine Lehrkraft sie freigibt.</p>
   </section>
 
-  <div class="actions">
-    <a class="btn" href="../index.html">← Zurück zur Lektionsübersicht</a>
-  </div>
+  <section class="theme-grid" id="themeGrid"></section>
 
-  <section class="info-card">
-    <div class="info-title">Themen in Lektion 4</div>
-    <p class="small">Die Lektion ist in vier Teile geteilt. In jedem Teil lernen die Teilnehmer Wortschatz, üben kleine Dialoge und wiederholen passende Grammatik.</p>
-  </section>
-
-  <section class="themes">
-
-    <a class="theme" href="Thema-1/">
-      <div class="theme-number">1</div>
-      <div class="theme-title">Wohnung & Zimmer</div>
-      <p>Haus, Wohnung, Zimmer und Räume. Dazu Fragen mit „Wo?“ und Antworten mit „hier“ und „dort“.</p>
-      <div class="words">
-        <span class="word">Wohnung</span>
-        <span class="word">Küche</span>
-        <span class="word">Bad</span>
-        <span class="word">Wo?</span>
-      </div>
-      <span class="badge">Starten</span>
-    </a>
-
-    <a class="theme" href="Thema-2/">
-      <div class="theme-number">2</div>
-      <div class="theme-title">Möbel & Elektrogeräte</div>
-      <p>Möbel, Geräte und Bad-Wörter. Dazu Artikel und Personalpronomen: er, es, sie.</p>
-      <div class="words">
-        <span class="word">Tisch</span>
-        <span class="word">Bett</span>
-        <span class="word">Lampe</span>
-        <span class="word">er/es/sie</span>
-      </div>
-      <span class="badge">Starten</span>
-    </a>
-
-    <a class="theme" href="Thema-3/">
-      <div class="theme-number">3</div>
-      <div class="theme-title">Adjektive & Farben</div>
-      <p>Wohnungen und Möbel beschreiben: schön, hässlich, hell, dunkel, modern und Farben.</p>
-      <div class="words">
-        <span class="word">schön</span>
-        <span class="word">dunkel</span>
-        <span class="word">rot</span>
-        <span class="word">Wie gefällt?</span>
-      </div>
-      <span class="badge">Starten</span>
-    </a>
-
-    <a class="theme" href="Thema-4/">
-      <div class="theme-number">4</div>
-      <div class="theme-title">Wohnungsanzeigen & Dialoge</div>
-      <p>Anzeigen lesen, Preise, Telefonnummern und Gespräche am Telefon üben.</p>
-      <div class="words">
-        <span class="word">Miete</span>
-        <span class="word">Quadratmeter</span>
-        <span class="word">Telefon</span>
-        <span class="word">Anzeige</span>
-      </div>
-      <span class="badge">Starten</span>
-    </a>
-
-  </section>
-
-  <footer>© SprachPilot</footer>
-
+  <footer class="note">© SprachPilot</footer>
 </div>
+
+<script type="module">
+import { getActiveProfile, logout, safeText } from "/js/auth.js?v=l4overview234";
+import { db, doc, getDoc } from "/js/firebase.js";
+window.logout=logout;
+
+const THEMES=[
+  {
+    id:"Thema-1",
+    number:"1",
+    title:"Wohnung & Zimmer",
+    href:"Thema-1/",
+    desc:"Wohnung, Zimmer, Räume und Fragen mit Wo.",
+    words:["Wohnung","Küche","Bad","Wo?"]
+  },
+  {
+    id:"Thema-2",
+    number:"2",
+    title:"Möbel & Elektrogeräte",
+    href:"Thema-2/",
+    desc:"Möbel, Elektrogeräte, Artikel, Plural und Pronomen.",
+    words:["Tisch","Bett","Lampe","er/es/sie"]
+  },
+  {
+    id:"Thema-3",
+    number:"3",
+    title:"Farben & Adjektive",
+    href:"Thema-3/",
+    desc:"Farben, Gegenteile und einfache Sätze mit ist/sind.",
+    words:["rot","schön","klein","gefällt"]
+  },
+  {
+    id:"Thema-4",
+    number:"4",
+    title:"Wohnung suchen",
+    href:"Thema-4/",
+    desc:"Anzeigen lesen, Miete verstehen und Wohnungen vergleichen.",
+    words:["Miete","qm","Kaution","Anzeige"]
+  },
+  {
+    id:"Thema-5",
+    number:"5",
+    title:"Am Telefon",
+    href:"Thema-5/",
+    desc:"Kleinanzeigen, Möbel kaufen und kurze Telefongespräche.",
+    words:["noch da?","Adresse","Preis","Termin"]
+  }
+];
+
+function profile(){
+  try{return getActiveProfile() || JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}
+}
+
+async function loadCourseData(p){
+  const code=p?.kurs || p?.kursnummer || p?.courseCode;
+  let data=p?.assignments || {};
+  if(!code) return data || {};
+  try{
+    const snap=await getDoc(doc(db,"courses",String(code)));
+    if(snap.exists()) data={...data,...snap.data()};
+  }catch(e){
+    console.warn("Kursdaten konnten nicht geladen werden:",e);
+  }
+  return data || {};
+}
+
+function explicitValue(obj,keys){
+  if(!obj || typeof obj!=="object") return undefined;
+  for(const k of keys){
+    if(Object.prototype.hasOwnProperty.call(obj,k)) return obj[k];
+  }
+  return undefined;
+}
+
+function themeRelease(courseData,themeId){
+  const moduleKey="wortschatz";
+  const lessonKey="A1-Lektion-4";
+
+  const lessonKeys=[
+    `${moduleKey}/${lessonKey}`,
+    lessonKey,
+    `A1/Lektion-4`,
+    `A1-Lektion-4`
+  ];
+  const themeKeys=[
+    `${moduleKey}/${lessonKey}/${themeId}`,
+    `${lessonKey}/${themeId}`,
+    `A1/Lektion-4/${themeId}`,
+    themeId
+  ];
+
+  const lessonLegacy=explicitValue(courseData.enabledLessons,lessonKeys);
+  if(lessonLegacy===false) return false;
+
+  const themeLegacy=explicitValue(courseData.enabledThemes,themeKeys);
+  if(themeLegacy===false) return false;
+  if(themeLegacy===true) return true;
+
+  const releases=courseData.releases || courseData.release || {};
+  const mod=releases[moduleKey] || releases.Wortschatz || {};
+  const lesson=(mod.lessons || mod.lektionen || {})[lessonKey] || {};
+  if(lesson.enabled===false) return false;
+
+  const theme=(lesson.themes || lesson.themen || {})[themeId] || {};
+  if(theme.enabled===false) return false;
+  if(theme.enabled===true) return true;
+
+  const direct=(courseData.themes || courseData.themen || {})[themeId];
+  if(direct===false || direct?.enabled===false) return false;
+  if(direct===true || direct?.enabled===true) return true;
+
+  // Wenn noch keine Freigabe-Struktur existiert, bleiben bestehende Inhalte offen.
+  return true;
+}
+
+function renderThemes(courseData){
+  themeGrid.innerHTML=THEMES.map(t=>{
+    const open=themeRelease(courseData,t.id);
+    const tag=open?"Starten":"Gesperrt";
+    const cls=open?"theme-card":"theme-card locked";
+    const words=t.words.map(w=>`<span class="word">${safeText(w)}</span>`).join("");
+    const body=`
+      <div class="theme-top">
+        <div class="theme-number">${safeText(t.number)}</div>
+        <span class="theme-status ${open?"":"locked"}">${tag}</span>
+      </div>
+      <div class="theme-title">${safeText(t.title)}</div>
+      <p class="theme-desc">${safeText(t.desc)}</p>
+      <div class="words">${words}</div>
+      <div class="card-footer"><div class="start-btn">${tag}</div></div>
+    `;
+    if(open){
+      return `<a class="${cls}" href="${t.href}">${body}</a>`;
+    }
+    return `<div class="${cls}" aria-disabled="true">${body}</div>`;
+  }).join("");
+}
+
+async function init(){
+  const p=profile();
+  const pill=document.getElementById("accountPill");
+  if(p){
+    pill.textContent=`${p.vorname||""} ${p.nachname||""} · ${p.kurs||p.kursnummer||""}`.trim();
+  }else{
+    pill.textContent="Nicht eingeloggt";
+  }
+  const data=await loadCourseData(p);
+  renderThemes(data);
+}
+init();
+</script>
 </body>
 </html>
