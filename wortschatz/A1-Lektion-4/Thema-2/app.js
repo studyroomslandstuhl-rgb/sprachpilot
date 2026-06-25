@@ -8,7 +8,7 @@ const EXAM_UNLOCK_KEY="SP_L4_T2_EXAM_UNLOCKED";
 const DASHBOARD_TOPIC_KEY="SP_PROGRESS_WORTSCHATZ_A1_L4_T2";
 const DASHBOARD_ALL_KEY="SP_DASHBOARD_PROGRESS";
 const DASHBOARD_LEGACY_KEY="SP_L4_T2_DASHBOARD_PROGRESS";
-const DASHBOARD_URL="/dashboard/index.html";
+const DASHBOARD_URL="/student-dashboard/index.html";
 const PROFILE_URL="/profile/index.html";
 const HOME_URL="/index.html";
 const CATEGORY_TASK_ALLOWED=["Möbel","Elektrogeräte","Bad"];
@@ -17,6 +17,33 @@ function categoryTaskWords(){return WORDS.filter(w=>CATEGORY_TASK_ALLOWED.includ
 function currentMotherLang(){let fromProfile="";try{const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");if(p)fromProfile=p.motherLanguageCode||p.muttersprache||p.motherLanguage||p.mother_language||""}catch(e){}const raw=fromProfile||localStorage.getItem("SP_MOTHER_LANGUAGE_CODE")||localStorage.getItem("motherLanguage")||localStorage.getItem("muttersprache")||localStorage.getItem("lang")||"ru";const n=String(raw).trim().toLowerCase();const map={"arabisch":"ar","russisch":"ru","englisch":"en","ukrainisch":"uk","kurdisch":"ku","türkisch":"tr","tuerkisch":"tr","rumänisch":"ro","rumaenisch":"ro","japanisch":"ja","polnisch":"pl","deutsch":"de"};return map[n]||n||"ru"}
 function translateWord(w){let l=currentMotherLang();return(w.tr&&w.tr[l])||w.tr?.ru||w.tr?.en||w.word}
 function currentUserLabel(){try{const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||localStorage.getItem("sprachpilotUser")||"null");if(p){const name=[p.firstName||p.vorname||p.name,p.lastName||p.nachname].filter(Boolean).join(" ")||p.displayName||p.email||"Schüler/in";const course=p.courseCode||p.kurs||p.course||p.kursCode||localStorage.getItem("SP_COURSE_CODE")||"Kurs";return `${name} · ${course}`}}catch(e){}return `Schüler/in · ${localStorage.getItem("SP_COURSE_CODE")||"Kurs"}`}
+function currentCourseCode(){try{const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||localStorage.getItem("sprachpilotUser")||"null");return String(p?.courseCode||p?.kurs||p?.course||p?.kursCode||localStorage.getItem("SP_COURSE_CODE")||"Kurs")}catch(e){return String(localStorage.getItem("SP_COURSE_CODE")||"Kurs")}}
+function currentStudentName(){try{const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||localStorage.getItem("sprachpilotUser")||"null");if(p)return [p.firstName||p.vorname||p.name,p.lastName||p.nachname].filter(Boolean).join(" ")||p.displayName||p.email||"Schüler/in"}catch(e){}return "Schüler/in"}
+function currentStudentId(){try{const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||localStorage.getItem("sprachpilotUser")||"null");return String(p?.studentId||p?.uid||p?.email||p?.id||currentStudentName())}catch(e){return currentStudentName()}}
+function awardPoints(amount,reason,meta={}){
+ amount=Math.max(0,Math.round(Number(amount)||0));
+ if(!amount)return;
+ const now=new Date().toISOString();
+ const course=currentCourseCode();
+ const studentId=currentStudentId();
+ const name=currentStudentName();
+ const entry={amount,reason,meta,course,studentId,name,date:now};
+ let ledger=[];try{ledger=JSON.parse(localStorage.getItem("SP_POINTS_LEDGER")||"[]")}catch(e){ledger=[]}
+ ledger.push(entry);localStorage.setItem("SP_POINTS_LEDGER",JSON.stringify(ledger));
+ const total=(Number(localStorage.getItem("SP_POINTS_TOTAL")||0)||0)+amount;
+ localStorage.setItem("SP_POINTS_TOTAL",String(total));
+ let byCourse={};try{byCourse=JSON.parse(localStorage.getItem("SP_POINTS_BY_COURSE")||"{}")}catch(e){byCourse={}}
+ byCourse[course]=(Number(byCourse[course]||0)||0)+amount;localStorage.setItem("SP_POINTS_BY_COURSE",JSON.stringify(byCourse));
+ let board={};try{board=JSON.parse(localStorage.getItem("SP_COURSE_LEADERBOARD")||"{}")}catch(e){board={}}
+ if(!board[course])board[course]={};
+ if(!board[course][studentId])board[course][studentId]={studentId,name,points:0,updatedAt:now};
+ board[course][studentId].name=name;
+ board[course][studentId].points=(Number(board[course][studentId].points||0)||0)+amount;
+ board[course][studentId].updatedAt=now;
+ localStorage.setItem("SP_COURSE_LEADERBOARD",JSON.stringify(board));
+ try{syncDashboardProgress()}catch(e){}
+}
+function pointsSummary(){const course=currentCourseCode();let byCourse={};try{byCourse=JSON.parse(localStorage.getItem("SP_POINTS_BY_COURSE")||"{}")}catch(e){}return{total:Number(localStorage.getItem("SP_POINTS_TOTAL")||0)||0,course:course,coursePoints:Number(byCourse[course]||0)||0}}
 let __spDashboardSyncing=false;
 function safeTaskPercent(file,total){
  try{
@@ -41,14 +68,17 @@ function dashboardProgressData(){
  const examStars=best?starsForPercent(examPercent):0;
  const taskAverage=tasks.length?Math.round(tasks.reduce((s,t)=>s+t.percent,0)/tasks.length):0;
  const totalPercent=Math.min(100,Math.round((taskAverage+examPercent)/2)||0);
+ const points=pointsSummary();
  return {
   id:"wortschatz-a1-lektion-4-thema-2",
   module:"wortschatz",level:"A1",lesson:4,theme:2,topic:2,
   title:"Möbel & Elektrogeräte",subtitle:"A1 Lektion 4 · Thema 2",
+  url:cleanPath(currentDirPath()+"index.html"),
   user:currentUserLabel(),
   percent:totalPercent,taskPercent:taskAverage,
   tasks,completedTasks:tasks.filter(t=>t.percent>=100).length,totalTasks:tasks.length,
   exam:{unlocked,attempted:!!best,percent:examPercent,stars:examStars,attempts:examHistory().length,best},
+  points,
   words:WORDS.map(w=>({id:w.id,full:w.full,group:w.group||w.wordGroup||"",percent:wordProgress(w.id),status:wordStatus(wordProgress(w.id))})),
   updatedAt:new Date().toISOString()
  };
@@ -80,12 +110,12 @@ function setExamUnlocked(){localStorage.setItem(EXAM_UNLOCK_KEY,"1");syncDashboa
 function isExamUnlocked(){if(localStorage.getItem(EXAM_UNLOCK_KEY)==="1"){syncDashboardProgress();return true}if(allPrereqComplete()){setExamUnlocked();return true}syncDashboardProgress();return false}
 function prereqPercent(){const t=prerequisiteTasks();return Math.round(t.reduce((s,x)=>s+pct(x[0],x[1]),0)/t.length)||0}
 function examHistory(){try{return JSON.parse(localStorage.getItem("SP_L4_T2_EXAM_HISTORY_V1")||"[]")}catch(e){return[]}}
-function saveExamResult(result){setExamUnlocked();const h=examHistory();h.push({...result,date:new Date().toISOString()});localStorage.setItem("SP_L4_T2_EXAM_HISTORY_V1",JSON.stringify(h));localStorage.setItem("SP_L4_T2_EXAM_BEST",JSON.stringify(bestExamResultFrom(h)));syncDashboardProgress()}
+function saveExamResult(result){setExamUnlocked();const h=examHistory();h.push({...result,date:new Date().toISOString()});localStorage.setItem("SP_L4_T2_EXAM_HISTORY_V1",JSON.stringify(h));localStorage.setItem("SP_L4_T2_EXAM_BEST",JSON.stringify(bestExamResultFrom(h)));awardPoints(Number(result?.score||0)||0,"exam-score",{theme:"wortschatz-a1-lektion-4-thema-2",percent:result?.percent||0,stars:result?.stars||0});syncDashboardProgress()}
 function bestExamResultFrom(h){if(!h||!h.length)return null;return h.reduce((best,x)=>(!best||Number(x.percent||0)>Number(best.percent||0)?x:best),null)}
 function bestExamResult(){return bestExamResultFrom(examHistory())}
 function starsForPercent(p){p=Number(p||0);if(p>=100)return 3;if(p>=70)return 2;if(p>=50)return 1;return 0}
 function starsHtml(n){n=Number(n||0);return `<span class="stars">${"★".repeat(n)}${"☆".repeat(3-n)}</span>`}
-function bestExamSummaryHtml(){const best=bestExamResult();if(!best)return "";const stars=starsForPercent(best.percent);return `<div class="exam-done-box exam-summary-wide"><div class="exam-summary-title"><span class="exam-check">✓</span><span> Thema abgeschlossen!</span></div><div class="exam-summary-grid"><div class="exam-summary-item"><span>Prüfung </span><strong>${best.percent}% ${starsHtml(stars)}</strong></div><div class="exam-summary-item"><span>Punkte: </span><strong>${best.score}/${best.maxScore}</strong></div><div class="exam-summary-item"><span>Versuche: </span><strong>${examHistory().length}</strong></div></div></div>`}
+function bestExamSummaryHtml(){const best=bestExamResult();if(!best)return "";const stars=starsForPercent(best.percent);return `<div class="exam-done-box exam-summary-wide"><div class="exam-summary-title"><span class="exam-check">✓</span><span>Thema abgeschlossen!</span></div><div class="exam-summary-grid"><div class="exam-summary-item"><span>Prüfung</span><strong>${best.percent}% ${starsHtml(stars)}</strong></div><div class="exam-summary-item"><span>Punkte</span><strong>${best.score}/${best.maxScore}</strong></div><div class="exam-summary-item"><span>Versuche</span><strong>${examHistory().length}</strong></div></div></div>`}
 function simple(x){return String(x||"").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss").replace(/[.,!?]/g,"").replace(/\s+/g," ")}
 function full(w){return w.full}
 function wordById(id){return WORDS.find(w=>w.id===id)||{}}
@@ -153,7 +183,7 @@ function stopPractice(file){sessionStorage.removeItem(practiceFlag(file))}
 function loadTask(file,total){try{let st=JSON.parse(localStorage.getItem(taskKey(file))||"null");if(st&&Array.isArray(st.queue)&&Array.isArray(st.done)){if(st.total!==total){st.total=total;st.done=[...new Set(st.done.filter(i=>Number.isInteger(i)&&i>=0&&i<total))];st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(file,st)}return st}}catch(e){}let queue=[...Array(total).keys()].sort(()=>Math.random()-.5);return{total,queue,done:[],current:null,tries:0,hadError:false,repeatQueued:false}}
 function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(st));try{window.dispatchEvent(new CustomEvent("sprachpilot-progress",{detail:{file,st}}))}catch(e){}syncDashboardProgress()}
 function nextIndex(file,total){let st=loadTask(file,total);if(st.current===null||st.current===undefined){if(!st.queue.length&&st.done.length<total)st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=st.queue.shift();st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(file,st)}return st.current}
-function markRight(file,total){let st=loadTask(file,total);const current=st.current;if(current!==null&&current!==undefined){if(st.hadError||(st.tries||0)>0){if(!st.done.includes(current)&&!st.queue.includes(current))st.queue.push(current)}else{if(!st.done.includes(current))st.done.push(current)}}st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(file,st);return st.done.length>=total}
+function markRight(file,total){let st=loadTask(file,total);const current=st.current;if(current!==null&&current!==undefined){if(st.hadError||(st.tries||0)>0){if(!st.done.includes(current)&&!st.queue.includes(current))st.queue.push(current)}else{if(!st.done.includes(current)){st.done.push(current);awardPoints(2,"task-first-try",{theme:"wortschatz-a1-lektion-4-thema-2",file,item:current})}}}st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(file,st);return st.done.length>=total}
 function markWrong(file,total){let st=loadTask(file,total);st.tries=(st.tries||0)+1;st.hadError=true;if(st.current!==null&&st.current!==undefined&&!st.repeatQueued){st.queue.push(st.current);st.repeatQueued=true}saveTask(file,st);return st.tries}
 function feedbackForTry(tries,solution,type){if(tries===1)return `<div class="no">Da ist noch ein Fehler.</div>`;if(tries===2)return `<div class="no">Tipp: Prüfe ${esc(type||"die Antwort")}.</div>`;return `<div class="no">Lösung: ${esc(solution)}</div>`}
 function progressHtml(file,total){let st=loadTask(file,total),d=Math.min(st.done.length,total),left=Math.max(0,total-d),p=Math.min(100,Math.round(d/(total||1)*100)||0);const practice=isPracticeMode(file)?" · Wiederholung":"";return `<div class="small">${d} richtig · ${left} übrig · ${p}%${practice}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
