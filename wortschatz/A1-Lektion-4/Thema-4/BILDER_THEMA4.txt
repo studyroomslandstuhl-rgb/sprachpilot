@@ -1,0 +1,17 @@
+Benötigte Bilder in ../bilder/ für Thema 4 (falls noch nicht vorhanden):
+wohnung.png
+anzeige.png
+miete.png
+nebenkosten.png
+kaution.png
+kaltmiete.png
+warmmiete.png
+strom.png
+heizung.png
+wasser.png
+muell.png  (sichtbares Wort: der Müll)
+vermieter.png
+besichtigungstermin.png
+unterlagen.png
+schufa.png
+Zusätzlich optional: internet.png, zeitung.png, schwarzes-brett.png, makler.png, telefonnummer.png, mietvertrag.png, umzug.png, anmeldung.png, rathaus.png

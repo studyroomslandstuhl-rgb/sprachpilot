@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Anzeige lesen</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=thema4v1"></script><script>header("Anzeige lesen",{back:"index.html"});
+
+const FILE="anzeige-lesen.html";const ITEMS=[];ADS.forEach((ad,ai)=>ad.qs.forEach((q,qi)=>ITEMS.push({ad,ai,qi,q:q[0],answers:q[1]})));let i=null;
+function answerOk(v,item){if(!strictSentenceOk(v))return false;return item.answers.some(a=>eq(v,a))}
+function show(){if(pct(FILE,ITEMS.length)>=100)return complete(area,FILE,"welche-anzeige-passt.html");i=nextIndex(FILE,ITEMS.length);const item=ITEMS[i];area.innerHTML=`${progressHtml(FILE,ITEMS.length)}<div class="question">Anzeige lesen</div><div class="ad-box">${esc(item.ad.text)}</div><div class="hint"><b>${esc(item.q)}</b><br>Antworte in einem ganzen Satz.</div><div class="input-row"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="check()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`}
+function check(){const item=ITEMS[i];if(answerOk(ans.value,item)){fb.className='feedback good';fb.textContent='Richtig!';markRight(FILE,ITEMS.length);setTimeout(show,650)}else{const tr=markWrong(FILE,ITEMS.length);const hint=!strictSentenceOk(ans.value)?'Ganzer Satz, Großschreibung und Punkt am Ende.':'Prüfe die Information in der Anzeige.';fb.className='feedback bad';fb.innerHTML=feedbackForTry(tr,item.answers[0],hint)}}
+show();
+
+</script></body></html>

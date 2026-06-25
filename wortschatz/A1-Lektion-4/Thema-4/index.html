@@ -1,1 +1,18 @@
-
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Thema 4 – Wohnungsanzeigen</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><section class="hero"><h2>Wohnungsanzeigen lesen und verstehen</h2><p class="small">Kosten, Größe, Zimmer, Abkürzungen und passende Anzeigen.</p></section><section class="task-grid" id="tasks"></section><footer>© SprachPilot</footer></div><script src="app.js?v=thema4v1"></script><script>
+header("Wohnungsanzeigen",{back:"../index.html"});
+const TASKS=[
+ ["karteikarten.html","Karteikarten","Neue Wörter üben","🃏",WORDS.length],
+ ["hoeren.html","Hören","Höre und wähle Wort und Bild","🔊",HOREN_IDS.length],
+ ["schreibe-mit-artikel.html","Schreibe mit Artikel","Schreib die Wörter richtig","✍️",ARTICLE_WRITE_IDS.length],
+ ["artikel.html","Artikel","der, die oder das?","🔤",NOUNS.length],
+ ["plural.html","Plural","Pluralformen üben","🔢",NOUNS.length],
+ ["paare-finden.html","Paare finden","Verbinde, was zusammengehört","🔗",PAIRS.length],
+ ["woerter-verstehen.html","Wörter verstehen","Wähle die Erklärung","💡",MEANING_TASKS.length],
+ ["anzeige-lesen.html","Anzeige lesen","Antworte in ganzen Sätzen","📄",ADS.reduce((s,a)=>s+a.qs.length,0)],
+ ["welche-anzeige-passt.html","Welche Anzeige passt?","Ordne Situationen und Anzeigen zu","🏠",MATCH_SITUATIONS.length],
+ ["reihenfolge.html","Reihenfolge","Was kommt zuerst?","➡️",1]
+];
+const examLocked=!isExamUnlocked();
+tasks.innerHTML=TASKS.map(t=>{const p=pct(t[0],t[4]);return `<a class="task-card" href="${t[0]}"><div><div class="task-icon">${t[3]}</div><h3>${t[1]}</h3><p>${t[2]}</p></div><div><div class="progress"><div class="bar" style="width:${p}%"></div></div><span class="badge ${p>=100?'done':''}">${p>=100?'Fertig':'Starten'} · ${p}%</span></div></a>`}).join("")+`<a class="task-card ${examLocked?'locked':''}" href="${examLocked?'#':'pruefung.html'}"><div><div class="task-icon">⭐</div><h3>Prüfung</h3><p>Teste dein Wissen</p></div><span class="badge ${examLocked?'locked':''}">${examLocked?'Prüfung gesperrt':'Starten'}</span></a>`;
+syncDashboardProgress();
+</script></body></html>

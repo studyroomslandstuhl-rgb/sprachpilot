@@ -1,0 +1,9 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Plural</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=thema4v1"></script><script>header("Plural",{back:"index.html"});
+
+const FILE="plural.html";let i=null;
+function pluralOk(input,w){const s=simple(input); if(simple(w.plural)===s)return true; if(w.plural==='kein Plural'&&(s==='kein plural'||s==='keinen plural'||s==='-'))return true; return false}
+function show(){if(pct(FILE,NOUNS.length)>=100)return complete(area,FILE,"paare-finden.html");i=nextIndex(FILE,NOUNS.length);const w=NOUNS[i];area.innerHTML=`${progressHtml(FILE,NOUNS.length)}<div class="question">Schreibe den Plural.</div>${imgTag(w)}<div class="hint">${esc(w.full)}</div><div class="input-row"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="check()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`}
+function check(){const w=NOUNS[i];if(pluralOk(ans.value,w)){fb.className='feedback good';fb.textContent='Richtig!';markRight(FILE,NOUNS.length);setTimeout(show,650)}else{const tr=markWrong(FILE,NOUNS.length);fb.className='feedback bad';fb.innerHTML=feedbackForTry(tr,w.plural,'Prüfe die Pluralform.')}}
+show();
+
+</script></body></html>

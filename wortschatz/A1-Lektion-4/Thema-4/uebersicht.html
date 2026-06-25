@@ -1,0 +1,6 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Übersicht</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="content"></main><footer>© SprachPilot</footer></div><script src="app.js?v=thema4v1"></script><script>header("Übersicht",{back:"index.html"});
+
+const groups=[...new Set(WORDS.map(w=>w.group))];
+document.getElementById('content').innerHTML=groups.map(g=>{const list=WORDS.filter(w=>w.group===g);return `<section class="overview-group"><div class="group-title"><span>${esc(g)}</span><span>${list.length}</span></div><div class="word-grid">${list.map(w=>`<div class="word-card">${imgTag(w,'small-img')}<div class="word-full">${esc(w.full)}</div><div class="word-tr">${esc(translateWord(w))}</div>${w.plural?`<div class="word-plural">Plural: ${esc(w.plural)}</div>`:''}</div>`).join('')}</div></section>`}).join('');
+
+</script></body></html>

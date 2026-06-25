@@ -1,0 +1,29 @@
+{
+  "releases": {
+    "wortschatz": {
+      "lessons": {
+        "A1-Lektion-4": {
+          "enabled": true,
+          "themes": {
+            "Thema-4": {
+              "enabled": true,
+              "tasks": {
+                "karteikarten": true,
+                "hoeren": true,
+                "schreibe-mit-artikel": true,
+                "artikel": true,
+                "plural": true,
+                "paare-finden": true,
+                "woerter-verstehen": true,
+                "anzeige-lesen": true,
+                "welche-anzeige-passt": true,
+                "reihenfolge": true,
+                "pruefung": false
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

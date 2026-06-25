@@ -1,0 +1,10 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Reihenfolge</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=thema4v1"></script><script>header("Reihenfolge",{back:"index.html"});
+
+const FILE="reihenfolge.html";let steps=[];
+function initSteps(){steps=shuffle(ORDER_STEPS);render()}
+function render(){if(pct(FILE,1)>=100)return complete(area,FILE,"pruefung.html");area.innerHTML=`${progressHtml(FILE,1)}<div class="question">Was kommt zuerst?</div><div class="step-list">${steps.map((s,i)=>`<div class="step"><b>${i+1}. ${esc(s)}</b><span><button class="mini-btn" onclick="move(${i},-1)">↑</button> <button class="mini-btn" onclick="move(${i},1)">↓</button></span></div>`).join('')}</div><button class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`}
+function move(i,d){const j=i+d;if(j<0||j>=steps.length)return;[steps[i],steps[j]]=[steps[j],steps[i]];render()}
+function check(){const ok=steps.every((s,i)=>s===ORDER_STEPS[i]);if(ok){forceComplete(FILE,1);fb.className='feedback good';fb.textContent='Richtig!';setTimeout(()=>complete(area,FILE,'pruefung.html'),650)}else{const tr=markWrong(FILE,1);fb.className='feedback bad';fb.innerHTML=feedbackForTry(tr,ORDER_STEPS.join(' → '),'Prüfe den Ablauf beim Wohnungssuchen.')}}
+initSteps();
+
+</script></body></html>
