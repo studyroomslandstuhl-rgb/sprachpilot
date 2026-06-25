@@ -3,26 +3,29 @@
 .click-opt{cursor:pointer;pointer-events:auto}
 .click-opt.wrong{background:#ffe1e1!important;border-color:#e74c3c!important;color:#9b1c1c!important}
 .click-opt.correct{background:#d9f7e8!important;border-color:#2e9e4f!important;color:#145a32!important}
-</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=220"></script><script>
+</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=224"></script><script>
 header("Kategorien");
 const FILE="kategorien.html";
+const CATEGORY_ALLOWED=["Möbel", "Elektrogeräte", "Bad"];
+const CATEGORY_EXCLUDE_IDS=["spuele", "dach", "tuer", "wand", "boden", "fenster", "bild"];
+const CATEGORY_WORDS=WORDS.filter(w=>CATEGORY_ALLOWED.includes(w.category)&&!CATEGORY_EXCLUDE_IDS.includes(w.id));
 let i=0;
 let locked=false;
 
 function categories(){
-  return [...new Set(WORDS.map(w=>w.category))].filter(Boolean);
+  return CATEGORY_ALLOWED;
 }
 
 function show(){
   locked=false;
-  if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){
+  if(loadTask(FILE,CATEGORY_WORDS.length).done.length>=CATEGORY_WORDS.length){
     complete(area,FILE,"dialoge.html");
     return;
   }
-  i=nextIndex(FILE,WORDS.length);
-  let w=WORDS[i];
+  i=nextIndex(FILE,CATEGORY_WORDS.length);
+  let w=CATEGORY_WORDS[i];
   let cats=categories();
-  area.innerHTML=`${progressHtml(FILE,WORDS.length)}
+  area.innerHTML=`${progressHtml(FILE,CATEGORY_WORDS.length)}
     <div class="question">Welche Kategorie passt?</div>
     <img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">
     <div class="big">${w.full}</div>
@@ -32,16 +35,16 @@ function show(){
 
 function choose(cat,el){
   if(locked)return;
-  let w=WORDS[i];
+  let w=CATEGORY_WORDS[i];
   if(cat===w.category){
     locked=true;
     el.classList.add("correct");
     fb.textContent="Richtig!";
-    markRight(FILE,WORDS.length);
+    markRight(FILE,CATEGORY_WORDS.length);
     setTimeout(show,700);
   }else{
     el.classList.add("wrong");
-    const tries=markWrong(FILE,WORDS.length);
+    const tries=markWrong(FILE,CATEGORY_WORDS.length);
     fb.innerHTML=feedbackForTry(tries,w.category,"Kategorie");
   }
 }
