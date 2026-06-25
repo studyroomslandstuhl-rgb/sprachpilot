@@ -24,25 +24,16 @@
 <section class="word-overview-grid" id="list"></section>
 <footer>© SprachPilot</footer>
 </div>
-<script src="app.js?v=231"></script>
+<script src="app.js?v=232"></script>
 <script>
 header("Übersicht");
 examSummary.innerHTML=bestExamSummaryHtml();
-
-const best=bestExamResult();
-if(best){
-  const stars=starsForPercent(best.percent);
-  examSummary.innerHTML=`<div class="exam-done-box"><b>Thema abgeschlossen!</b><br>Prüfung: <b>${best.percent}%</b> · ${starsHtml(stars)}<br>Punkte: ${best.score}/${best.maxScore} · Versuche: ${examHistory().length}</div>`;
-}else{
-  examSummary.innerHTML=`<div class="hint">Prüfung noch nicht abgeschlossen.</div>`;
-}
 list.innerHTML=WORDS.map(w=>`
  <div class="word-card">
   <img src="${w.image}" onerror="fixImg(this)" alt="">
   <div class="word-de">${w.full}</div>
   <div class="word-tr">${translateWord(w)}</div>
   <div class="word-meta">
-    ${w.article ? "Artikel: <b>"+w.article+"</b><br>" : ""}
     ${w.plural ? "Plural: <b>"+w.plural+"</b>" : ""}
   </div>
  </div>

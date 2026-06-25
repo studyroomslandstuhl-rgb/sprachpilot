@@ -1,51 +1,27 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 4 – Thema 1</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="accountStrip" class="account-strip"></div>
-<script type="module" src="/js/guard.js"></script><div class="container"><header class="topbar"></header><section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Wohnung, Zimmer, hier/da/dort verstehen und Fragen sprechen.</p></div></section><section class="grid"><a class="module" href="karteikarten.html"><div class="num">1. Karteikarten</div><div class="icon">🃏</div><p>Bild + Muttersprache sehen, Deutsch mit Artikel sprechen/schreiben.</p><div class="progress"><div class="bar" id="bar_1"></div></div><div class="small" id="txt_1">0%</div><div class="start">Starten</div></a><a class="module" href="hoeren.html"><div class="num">2. Hören</div><div class="icon">🎧</div><p>Wort hören und das richtige Bild wählen.</p><div class="progress"><div class="bar" id="bar_2"></div></div><div class="small" id="txt_2">0%</div><div class="start">Starten</div></a><a class="module" href="artikel-klick.html"><div class="num">3. Artikel klicken</div><div class="icon">der die das</div><p>Zum Bild den richtigen Artikel anklicken.</p><div class="progress"><div class="bar" id="bar_3"></div></div><div class="small" id="txt_3">0%</div><div class="start">Starten</div></a><a class="module" href="artikel.html"><div class="num">4. Artikel zuordnen</div><div class="icon">📋</div><p>Wörter dem richtigen Artikel zuordnen.</p><div class="progress"><div class="bar" id="bar_4"></div></div><div class="small" id="txt_4">0%</div><div class="start">Starten</div></a><a class="module" href="plural.html"><div class="num">5. Plural</div><div class="icon">1→2+</div><p>Pluralformen schreiben.</p><div class="progress"><div class="bar" id="bar_5"></div></div><div class="small" id="txt_5">0%</div><div class="start">Starten</div></a><a class="module" href="bild-wort.html"><div class="num">6. Bild → Wort</div><div class="icon">🖼️</div><p>Bild sehen und Wort mit Artikel schreiben.</p><div class="progress"><div class="bar" id="bar_6"></div></div><div class="small" id="txt_6">0%</div><div class="start">Starten</div></a><a class="module" href="wort-bild.html"><div class="num">7. Wort → Bild</div><div class="icon">🏠</div><p>Wort lesen und Bild wählen.</p><div class="progress"><div class="bar" id="bar_7"></div></div><div class="small" id="txt_7">0%</div><div class="start">Starten</div></a><a class="module" href="wo-ist.html"><div class="num">8. Wo ist …?</div><div class="icon">❓</div><p>Frage und Antwort mit hier, da, dort.</p><div class="progress"><div class="bar" id="bar_8"></div></div><div class="small" id="txt_8">0%</div><div class="start">Starten</div></a><a class="module" href="ist-hier.html"><div class="num">9. Ist …?</div><div class="icon">✅❌</div><p>Positive und negative Antworten mit ein/kein.</p><div class="progress"><div class="bar" id="bar_9"></div></div><div class="small" id="txt_9">0%</div><div class="start">Starten</div></a><a class="module" href="pruefung.html" id="examLink"><div class="num">10. Prüfung</div><div class="icon">🏅</div><p>Gemischte Aufgaben zum Thema.</p><div class="progress"><div class="bar" id="bar_10"></div></div><div class="small" id="txt_10">0%</div><div class="start">Starten</div></a></section><footer>© SprachPilot</footer></div><script src="app.js?v=71"></script><script>
+<script type="module" src="/js/guard.js"></script>
+<div class="container"><header class="topbar"></header>
+<section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Wohnung, Zimmer, hier/da/dort verstehen und Fragen sprechen.</p><div id="topicExamSummary"></div></div></section>
+<section class="grid">
+<a class="module" href="karteikarten.html"><div class="num">1. Karteikarten</div><div class="icon">🃏</div><p>Lerne die Wörter.</p><div class="progress"><div class="bar" id="bar_1"></div></div><div class="small" id="txt_1">0%</div><div class="start">Starten</div></a>
+<a class="module" href="hoeren.html"><div class="num">2. Hören</div><div class="icon">🎧</div><p>Höre und wähle das Bild.</p><div class="progress"><div class="bar" id="bar_2"></div></div><div class="small" id="txt_2">0%</div><div class="start">Starten</div></a>
+<a class="module" href="artikel-klick.html"><div class="num">3. Artikel klicken</div><div class="icon article-icon">der die das</div><p>Wähle den richtigen Artikel.</p><div class="progress"><div class="bar" id="bar_3"></div></div><div class="small" id="txt_3">0%</div><div class="start">Starten</div></a>
+<a class="module" href="artikel.html"><div class="num">4. Artikel zuordnen</div><div class="icon">📋</div><p>Ordne den Artikel zu.</p><div class="progress"><div class="bar" id="bar_4"></div></div><div class="small" id="txt_4">0%</div><div class="start">Starten</div></a>
+<a class="module" href="plural.html"><div class="num">5. Plural</div><div class="icon">1→2+</div><p>Schreibe den Plural.</p><div class="progress"><div class="bar" id="bar_5"></div></div><div class="small" id="txt_5">0%</div><div class="start">Starten</div></a>
+<a class="module" href="bild-wort.html"><div class="num">6. Bild → Wort</div><div class="icon">🖼️</div><p>Schreibe das Wort mit Artikel.</p><div class="progress"><div class="bar" id="bar_6"></div></div><div class="small" id="txt_6">0%</div><div class="start">Starten</div></a>
+<a class="module" href="wort-bild.html"><div class="num">7. Wort → Bild</div><div class="icon">🏠</div><p>Wähle das richtige Bild.</p><div class="progress"><div class="bar" id="bar_7"></div></div><div class="small" id="txt_7">0%</div><div class="start">Starten</div></a>
+<a class="module" href="wo-ist.html"><div class="num">8. Wo ist …?</div><div class="icon">❓</div><p>Frage und antworte.</p><div class="progress"><div class="bar" id="bar_8"></div></div><div class="small" id="txt_8">0%</div><div class="start">Starten</div></a>
+<a class="module" href="ist-hier.html"><div class="num">9. Ist hier …?</div><div class="icon">✅❌</div><p>Antworte mit Ja oder Nein.</p><div class="progress"><div class="bar" id="bar_9"></div></div><div class="small" id="txt_9">0%</div><div class="start">Starten</div></a>
+<a class="module" href="pruefung.html" id="examLink"><div class="num">10. Prüfung</div><div class="icon">🏅</div><p>Teste dein Wissen.</p><div class="progress"><div class="bar" id="bar_10"></div></div><div class="small" id="txt_10">0%</div><div class="start">Starten</div></a>
+</section><footer>© SprachPilot</footer></div><script src="app.js?v=232"></script><script>
 header("Wohnung & Zimmer", true);
-if(document.getElementById("topicExamSummary")) topicExamSummary.innerHTML=bestExamSummaryHtml();
-const tasks=[
- ["karteikarten.html", WORDS.length],
- ["hoeren.html", WORDS.length],
- ["artikel-klick.html", WORDS.filter(w=>w.article).length],
- ["artikel.html", WORDS.filter(w=>w.article).length],
- ["plural.html", WORDS.filter(w=>w.plural).length],
- ["bild-wort.html", WORDS.length],
- ["wort-bild.html", WORDS.length],
- ["wo-ist.html", WO_TASKS.length],
- ["ist-hier.html", IST_TASKS.length],
- ["pruefung.html", 100]
-];
-
+const tasks=prerequisiteTasks().concat([["pruefung.html",100]]);
 let sum=0;
-tasks.forEach((t,idx)=>{
- const p=pct(t[0],t[1]);
- if(idx<9) sum+=p;
- document.getElementById("bar_"+(idx+1)).style.width=p+"%";
- document.getElementById("txt_"+(idx+1)).textContent=p+"%";
-});
-let all=Math.round(sum/9)||0;
-totalCircle.textContent=all+"%";
-totalBar.style.width=all+"%";
-totalText.textContent=tasks.slice(0,9).filter(t=>pct(t[0],t[1])>=100).length+" / 9 Aufgaben abgeschlossen";
-
-const best=bestExamResult();
-if(best && !document.getElementById("examDoneBox")){
- const stars=starsForPercent(best.percent);
- document.querySelector(".progress-card").insertAdjacentHTML("beforeend",`
-   <div class="exam-done-box" id="examDoneBox">
-    <b>Thema abgeschlossen!</b><br>
-    Prüfung: <b>${best.percent}%</b> · ${starsHtml(stars)}<br>
-    Punkte: ${best.score}/${best.maxScore} · Versuche: ${examHistory().length}
-   </div>`);
-}
-
-if(!allPrereqComplete()){
- const ex=document.getElementById("examLink");
- if(ex){
-   ex.removeAttribute("href");
-   ex.classList.add("locked");
-   ex.querySelector(".start").textContent="Gesperrt";
-   ex.querySelector("p").innerHTML="Prüfung wird erst freigeschaltet, wenn alle anderen Aufgaben 100% erreicht haben.";
- }
-}
+tasks.forEach((t,idx)=>{const p=pct(t[0],t[1]);if(idx<9)sum+=p;const b=document.getElementById("bar_"+(idx+1));const x=document.getElementById("txt_"+(idx+1));if(b)b.style.width=p+"%";if(x)x.textContent=p+"%";});
+let all=Math.round(sum/9)||0;totalCircle.textContent=all+"%";totalBar.style.width=all+"%";totalText.textContent=tasks.slice(0,9).filter(t=>pct(t[0],t[1])>=100).length+" / 9 Aufgaben abgeschlossen";
+const summary=bestExamSummaryHtml();if(summary)topicExamSummary.innerHTML=summary;
+const ex=document.getElementById("examLink");
+if(!isExamUnlocked()&&ex){ex.removeAttribute("href");ex.classList.add("locked","exam-locked");ex.querySelector(".start").textContent="Prüfung gesperrt";ex.querySelector("p").textContent="Erst alle Aufgaben auf 100%."}
+if(isExamUnlocked()&&ex){ex.classList.remove("locked","exam-locked");ex.querySelector(".start").textContent="Starten"}
+syncDashboardProgress();
 </script></body></html>

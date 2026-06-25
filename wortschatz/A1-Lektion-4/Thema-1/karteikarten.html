@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=231"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=232"></script><script>
 header("Karteikarten");
 const FILE="karteikarten.html";let i=0;
 function show(){
@@ -8,13 +8,19 @@ function show(){
  <div class="question">Sage das deutsche Wort mit Artikel.</div>
  <div class="hint">Muttersprache: <b>${translateWord(w)}</b></div>
  <img class="task-img" src="${w.image}" onerror="fixImg(this)">
- <div class="actions"><button id="mic" class="btn mic-btn" onclick="say()">🎤 Sprechen</button><button class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button></div>
+ <div class="actions"><button id="mic" class="btn mic-btn" onclick="say()">🎤 Sprechen</button><button class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button><button class="btn secondary" onclick="revealCard()">Karte umdrehen</button></div>
  <div id="micStatus" class="mic-status"></div>
  <div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="check(ans.value)">Kontrollieren</button></div>
  <div id="fb" class="feedback"></div>`;
 }
 function writeBox(){box.classList.remove("hidden")}
 function say(){startMic(mic,txt=>{writeBox();ans.value=txt;check(txt)})}
+function revealCard(){
+ let w=WORDS[i];
+ let tr=markWrong(FILE,WORDS.length);
+ writeBox();
+ fb.innerHTML=`<div class="solution-box"><b>Lösung:</b> ${w.full}</div><div class="no">Mit Hilfe – dieses Wort wird später wiederholt.</div>`;
+}
 function check(txt){
  let w=WORDS[i];
  if(simple(txt)===simple(w.full)){fb.textContent="Richtig!";markRight(FILE,WORDS.length);setTimeout(show,700)}

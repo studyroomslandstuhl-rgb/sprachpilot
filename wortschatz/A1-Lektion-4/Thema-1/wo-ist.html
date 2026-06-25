@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wo ist …?</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=231"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wo ist …?</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=232"></script><script>
 header("Wo ist …?");
 const FILE="wo-ist.html";
 let i=0,phase="example";
@@ -32,7 +32,7 @@ function show(){
   <div class="imgrow">${roomImg(t.room,false)}</div>
   <div class="actions"><button id="mic" class="btn mic-btn" onclick="sayQ()">🎤 Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div>
   <div id="micStatus" class="mic-status"></div>
-  <div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkQ()">Kontrollieren</button></div>
+  <div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Frage hier"><button class="btn" onclick="checkQ()">Kontrollieren</button></div>
   <div id="fb" class="feedback"></div>`;
  }else{
   area.innerHTML=`${progressHtml(FILE,WO_TASKS.length)}

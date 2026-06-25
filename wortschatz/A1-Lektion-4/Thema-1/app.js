@@ -367,3 +367,72 @@ function bestExamSummaryHtml(){
    Punkte: ${best.score}/${best.maxScore} · Versuche: ${examHistory().length}
  </div>`;
 }
+
+
+/* ===== SprachPilot Standard-Fix Thema 1: Header, Abschluss, Wiederholen, Dashboard, Progress ===== */
+var SP_T1_THEME_ID="wortschatz-a1-lektion-4-thema-1";
+var SP_T1_MODULE="wortschatz";
+var SP_T1_LEVEL="A1";
+var SP_T1_LESSON="4";
+var SP_T1_THEME="1";
+var SP_T1_TITLE="Wohnung & Zimmer";
+var EXAM_UNLOCK_KEY="SP_L4_T1_EXAM_UNLOCKED";
+var DASHBOARD_URL="/student-dashboard/index.html";
+var PROFILE_URL="/profile/index.html";
+var HOME_URL="/index.html";
+var DASHBOARD_ALL_KEY="SP_DASHBOARD_PROGRESS_ALL";
+var DASHBOARD_TOPIC_KEY="SP_DASHBOARD_PROGRESS_L4_T1";
+var DASHBOARD_LEGACY_KEY="SP_L4_T1_DASHBOARD_PROGRESS";
+
+function esc(s){return String(s||"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]))}
+function currentDirPath(){return String(location.pathname||"").replace(/[^/]*$/,"")}
+function currentProfile(){try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||localStorage.getItem("sprachpilotUser")||"null")||{}}catch(e){return {}}}
+function currentUserLabel(){const p=currentProfile();const name=[p.firstName||p.vorname||p.name,p.lastName||p.nachname].filter(Boolean).join(" ")||p.displayName||p.email||"Schüler/in";const course=p.courseCode||p.kurs||p.course||p.kursCode||localStorage.getItem("SP_COURSE_CODE")||"Kurs";return `${name} · ${course}`}
+function currentCourseCode(){const p=currentProfile();return String(p.courseCode||p.kurs||p.course||p.kursCode||localStorage.getItem("SP_COURSE_CODE")||"")}
+function currentStudentName(){const p=currentProfile();return [p.firstName||p.vorname||p.name,p.lastName||p.nachname].filter(Boolean).join(" ")||p.displayName||p.email||"Schüler/in"}
+function currentStudentId(){const p=currentProfile();return String(p.studentId||p.uid||p.docId||p.email||p.id||currentStudentName())}
+function goHome(e){if(e)e.preventDefault();location.href=HOME_URL}
+function goDashboard(e){if(e)e.preventDefault();syncDashboardProgress();location.href=DASHBOARD_URL}
+function goProfile(e){if(e)e.preventDefault();location.href=PROFILE_URL}
+function logoutUser(){if(!confirm("Möchten Sie sich abmelden?"))return;["SP_USER_PROFILE","SP_KEEP_LOGGED_IN","SP_STUDENT_ID","motherLanguage","muttersprache","SP_MOTHER_LANGUAGE_CODE","sprachpilotUser","SP_CURRENT_USER","SP_LOGIN"].forEach(k=>localStorage.removeItem(k));location.href=HOME_URL}
+function header(title,isThemeOverview=false){
+ const h=document.querySelector(".topbar"); if(!h)return;
+ const backHref=isThemeOverview?"../index.html":"index.html";
+ h.innerHTML=`<div class="topbar-main"><a class="brand" href="${HOME_URL}" onclick="goHome(event)"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 4 · Thema 1</div></div></a><div class="account-tools"><span class="account-pill">${esc(currentUserLabel())}</span><a class="account-link" href="${DASHBOARD_URL}" onclick="goDashboard(event)">📊 Dashboard</a><a class="account-link" href="${PROFILE_URL}" onclick="goProfile(event)">👤 Profil</a><button class="account-link account-btn" type="button" onclick="logoutUser()">🚪 Abmelden</button></div></div><nav class="nav"><a class="btn secondary" href="${backHref}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button></nav>`;
+}
+function queueProgress(method,payload){try{payload={module:SP_T1_MODULE,level:SP_T1_LEVEL,lesson:SP_T1_LESSON,theme:SP_T1_THEME,topicId:SP_T1_THEME_ID,title:"A1 Lektion 4 · Thema 1",moduleTitle:"Wortschatz",...(payload||{})};if(window.SPProgress&&typeof window.SPProgress[method]==="function"){window.SPProgress[method](payload);return}window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method,payload});import("/js/progress.js").catch(()=>{});}catch(e){}}
+function practiceFlag(file){return "SP_L4_T1_PRACTICE_"+file}
+function isPracticeMode(file){return sessionStorage.getItem(practiceFlag(file))==="1"}
+function taskKey(file){return KEY+"_"+file+(isPracticeMode(file)?"_PRACTICE":"")}
+function resetPractice(file){localStorage.removeItem(KEY+"_"+file+"_PRACTICE")}
+function startPractice(file){sessionStorage.setItem(practiceFlag(file),"1");resetPractice(file);location.reload()}
+function stopPractice(file){sessionStorage.removeItem(practiceFlag(file))}
+function resetThemeProgress(){if(!confirm("Möchten Sie wirklich alle Fortschritte in diesem Thema löschen?"))return;queueProgress("recordThemeReset",{});Object.keys(localStorage).forEach(k=>{if(k.startsWith(KEY)||k.startsWith("SP_L4_T1_EXAM_")||k===EXAM_UNLOCK_KEY||k===DASHBOARD_TOPIC_KEY||k===DASHBOARD_LEGACY_KEY)localStorage.removeItem(k)});Object.keys(sessionStorage).forEach(k=>{if(k.startsWith("SP_L4_T1_PRACTICE_"))sessionStorage.removeItem(k)});try{const all=JSON.parse(localStorage.getItem(DASHBOARD_ALL_KEY)||"{}");delete all[SP_T1_THEME_ID];localStorage.setItem(DASHBOARD_ALL_KEY,JSON.stringify(all))}catch(e){}setTimeout(()=>{location.href="index.html"},250)}
+function loadTask(file,total){try{let st=JSON.parse(localStorage.getItem(taskKey(file))||"null");if(st&&Array.isArray(st.queue)&&Array.isArray(st.done)){if(st.total!==total){st.total=total;st.done=[...new Set(st.done.filter(i=>Number.isInteger(i)&&i>=0&&i<total))];st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=null;st.tries=0;st.hadWrong=false;st.repeatQueued=false;saveTask(file,st)}return st}}catch(e){}let queue=[...Array(total).keys()].sort(()=>Math.random()-.5);return{total,queue,done:[],current:null,tries:0,hadWrong:false,repeatQueued:false,wrongItems:[]}}
+function realLoadTask(file,total){const saved=sessionStorage.getItem(practiceFlag(file));sessionStorage.removeItem(practiceFlag(file));let st=loadTask(file,total);if(saved!==null)sessionStorage.setItem(practiceFlag(file),saved);return st}
+function itemNameFor(file,index){try{let list=wordsForFile(file);if(file==="wo-ist.html")return WO_TASKS[index]?.question||String(index);if(file==="ist-hier.html")return IST_TASKS[index]?.question||String(index);const w=list[index]||WORDS[index];return w?.full||w?.word||w?.id||String(index)}catch(e){return String(index)}}
+function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(st));try{window.dispatchEvent(new CustomEvent("sprachpilot-progress",{detail:{file,st}}))}catch(e){}syncDashboardProgress();try{queueProgress("recordTaskProgress",{file,taskKey:file,taskTitle:file.replace(".html",""),total:st.total||0,done:(st.done||[]).length,percent:pct(file,st.total||1),completed:(st.done||[]).length>=(st.total||1),tries:st.tries||0,wrongItems:st.wrongItems||[],lastWrongItem:st.lastWrongItem||""})}catch(e){}}
+function nextIndex(file,total){let st=loadTask(file,total);if(st.current===null||st.current===undefined){if(!st.queue.length&&st.done.length<total)st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=st.queue.shift();st.tries=0;st.hadWrong=false;st.repeatQueued=false;saveTask(file,st)}return st.current}
+function markRight(file,total){let st=loadTask(file,total);const current=st.current;if(current!==null&&current!==undefined){if(st.hadWrong||(st.tries||0)>0){if(!st.done.includes(current)&&!st.queue.includes(current))st.queue.push(current)}else{if(!st.done.includes(current))st.done.push(current)}}st.current=null;st.tries=0;st.hadWrong=false;st.repeatQueued=false;saveTask(file,st);return st.done.length>=total}
+function markWrong(file,total){let st=loadTask(file,total);st.tries=(st.tries||0)+1;st.hadWrong=true;const wrongName=itemNameFor(file,st.current);st.wrongItems=[...new Set([...(st.wrongItems||[]),wrongName].filter(Boolean))];st.lastWrongItem=wrongName;if(st.current!==null&&st.current!==undefined&&!st.repeatQueued){st.queue.push(st.current);st.repeatQueued=true}saveTask(file,st);return st.tries}
+function progressHtml(file,total){let st=loadTask(file,total),d=Math.min(st.done.length,total),left=Math.max(0,total-d),p=Math.min(100,Math.round(d/(total||1)*100)||0);const practice=isPracticeMode(file)?" · Wiederholung":"";return `<div class="small">${d} richtig · ${left} übrig · ${p}%${practice}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
+function pct(file,total){let st=realLoadTask(file,total);const doneCount=Math.min((st.done||[]).length,total||0);return Math.min(100,Math.round(doneCount/(total||1)*100)||0)}
+function feedbackForTry(tries,solution,type){if(tries===1)return `<div class="no">Da ist noch ein Fehler.</div>`;if(tries===2)return `<div class="no">Tipp: Prüfe ${esc(type||"die Antwort")}.</div>`;return `<div class="no">Lösung: ${esc(solution)}</div>`}
+function complete(target,file,nextHref="index.html"){if(isPracticeMode(file))stopPractice(file);target.innerHTML=`<div class="small">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="finish-box"><div class="finish-icon">✓</div><div class="question">Aufgabe geschafft!</div><div class="big">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="actions"><button class="btn" onclick="startPractice('${file}')">Nochmal üben</button><a class="btn green" href="${nextHref}" onclick="stopPractice('${file}')">Weiter</a><a class="btn secondary" href="index.html" onclick="stopPractice('${file}')">Zurück zum Thema</a></div></div>`}
+function prerequisiteTasks(){return [["karteikarten.html",WORDS.length],["hoeren.html",WORDS.length],["artikel-klick.html",WORDS.filter(w=>w.article).length],["artikel.html",WORDS.filter(w=>w.article).length],["plural.html",WORDS.filter(w=>w.plural).length],["bild-wort.html",WORDS.length],["wort-bild.html",WORDS.length],["wo-ist.html",WO_TASKS.length],["ist-hier.html",IST_TASKS.length]]}
+function prereqPercent(){const t=prerequisiteTasks();return Math.round(t.reduce((s,x)=>s+pct(x[0],x[1]),0)/(t.length||1))||0}
+function allPrereqComplete(){return prerequisiteTasks().every(t=>pct(t[0],t[1])>=100)}
+function setExamUnlocked(){localStorage.setItem(EXAM_UNLOCK_KEY,"1");syncDashboardProgress()}
+function isExamUnlocked(){if(localStorage.getItem(EXAM_UNLOCK_KEY)==="1"){syncDashboardProgress();return true}if(allPrereqComplete()){setExamUnlocked();return true}syncDashboardProgress();return false}
+function saveExamResult(result){setExamUnlocked();let h=[];try{h=JSON.parse(localStorage.getItem("SP_L4_T1_EXAM_HISTORY_V1")||"[]")}catch(e){}h.push({...result,date:new Date().toISOString()});localStorage.setItem("SP_L4_T1_EXAM_HISTORY_V1",JSON.stringify(h));queueProgress("recordExamResult",{score:Number(result?.score||0)||0,maxScore:Number(result?.maxScore||200)||200,percent:result?.percent||0,stars:result?.stars||0});syncDashboardProgress();return h}
+function bestExamResultFrom(h){if(!h||!h.length)return null;return h.reduce((best,x)=>(!best||Number(x.percent||0)>Number(best.percent||0)?x:best),null)}
+function examHistory(){try{return JSON.parse(localStorage.getItem("SP_L4_T1_EXAM_HISTORY_V1")||"[]")}catch(e){return[]}}
+function bestExamResult(){return bestExamResultFrom(examHistory())}
+function starsForPercent(p){p=Number(p||0);if(p>=100)return 3;if(p>=70)return 2;if(p>=50)return 1;return 0}
+function starsHtml(n){n=Number(n||0);return `<span class="stars">${"★".repeat(n)}${"☆".repeat(3-n)}</span>`}
+function bestExamSummaryHtml(){const best=bestExamResult();if(!best)return "";const stars=starsForPercent(best.percent);return `<div class="exam-done-box exam-summary-wide"><div class="exam-summary-title"><span class="exam-check">✓</span><span>Thema abgeschlossen!</span></div><div class="exam-summary-grid"><div class="exam-summary-item"><span>Prüfung</span><strong>${best.percent}% ${starsHtml(stars)}</strong></div><div class="exam-summary-item"><span>Punkte</span><strong>${best.score}/${best.maxScore}</strong></div><div class="exam-summary-item"><span>Versuche</span><strong>${examHistory().length}</strong></div></div></div>`}
+function safeTaskPercent(file,total){try{const st=JSON.parse(localStorage.getItem(KEY+"_"+file)||"null");if(!st||!Array.isArray(st.done))return 0;return Math.min(100,Math.round(st.done.length/(total||1)*100)||0)}catch(e){return 0}}
+function dashboardProgressData(){const tasks=prerequisiteTasks().map(([file,total])=>({file,total,percent:safeTaskPercent(file,total),done:safeTaskPercent(file,total)>=100,updatedAt:new Date().toISOString()}));const best=bestExamResult();const unlocked=isExamUnlocked();const examPercent=best?Math.min(100,Number(best.percent||0)):0;const examStars=best?starsForPercent(examPercent):0;const taskAverage=tasks.length?Math.round(tasks.reduce((s,t)=>s+t.percent,0)/tasks.length):0;return{id:SP_T1_THEME_ID,module:"wortschatz",level:"A1",lesson:4,theme:1,topic:1,title:"Wohnung & Zimmer",subtitle:"A1 Lektion 4 · Thema 1",url:currentDirPath()+"index.html",user:currentUserLabel(),percent:Math.min(100,Math.round((taskAverage+examPercent)/2)||0),taskPercent:taskAverage,tasks,completedTasks:tasks.filter(t=>t.percent>=100).length,totalTasks:tasks.length,exam:{unlocked,attempted:!!best,percent:examPercent,stars:examStars,attempts:examHistory().length,best},words:WORDS.map(w=>({id:w.id,full:w.full,percent:wordProgress(w.id),status:wordStatus(wordProgress(w.id))})),updatedAt:new Date().toISOString()}}
+var __spDashboardSyncing=false;
+function syncDashboardProgress(){if(__spDashboardSyncing)return;__spDashboardSyncing=true;try{const data=dashboardProgressData();localStorage.setItem(DASHBOARD_TOPIC_KEY,JSON.stringify(data));localStorage.setItem(DASHBOARD_LEGACY_KEY,JSON.stringify(data));let all={};try{all=JSON.parse(localStorage.getItem(DASHBOARD_ALL_KEY)||"{}")}catch(e){all={}}all[data.id]=data;localStorage.setItem(DASHBOARD_ALL_KEY,JSON.stringify(all));try{window.dispatchEvent(new CustomEvent("sprachpilot-dashboard-progress",{detail:data}))}catch(e){}}catch(e){}__spDashboardSyncing=false}
+try{window.addEventListener("load",()=>{syncDashboardProgress();queueProgress("touch",{action:"page-open"})})}catch(e){}

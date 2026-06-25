@@ -13,7 +13,7 @@
   <footer>© SprachPilot</footer>
 </div>
 
-<script src="app.js?v=231"></script>
+<script src="app.js?v=232"></script>
 <script>
 header("Prüfung");
 
@@ -39,15 +39,25 @@ function history(){try{return JSON.parse(localStorage.getItem(EXAM_HISTORY_KEY)|
 function saveHistory(h){localStorage.setItem(EXAM_HISTORY_KEY,JSON.stringify(h))}
 
 function buildItems(){
- const items=[];
- WORDS.forEach((w,idx)=>{
-  if(w.article)items.push({type:"article",wordIndex:idx});
-  if(w.full)items.push({type:"image-word",wordIndex:idx});
-  if(w.plural)items.push({type:"plural",wordIndex:idx});
+ const pool=[];
+ const shuffledWords=WORDS.map((w,idx)=>({w,idx})).sort(()=>Math.random()-.5);
+ shuffledWords.forEach(({w,idx})=>{
+   const types=[];
+   if(w.article) types.push({type:"article",wordIndex:idx});
+   if(w.full) types.push({type:"image-word",wordIndex:idx});
+   if(w.plural) types.push({type:"plural",wordIndex:idx});
+   if(types.length) pool.push(types[Math.floor(Math.random()*types.length)]);
  });
- WO_TASKS.forEach((t,idx)=>items.push({type:"wo",taskIndex:idx}));
- IST_TASKS.forEach((t,idx)=>items.push({type:"ist",taskIndex:idx}));
- return items.sort(()=>Math.random()-.5).slice(0,Math.min(EXAM_TOTAL,items.length));
+ WO_TASKS.forEach((t,idx)=>pool.push({type:"wo",taskIndex:idx}));
+ IST_TASKS.forEach((t,idx)=>pool.push({type:"ist",taskIndex:idx}));
+ const shuffled=pool.sort(()=>Math.random()-.5);
+ const result=[];
+ while(shuffled.length && result.length<EXAM_TOTAL){
+   let pos=shuffled.findIndex(x=>!result.length || x.type!==result[result.length-1].type);
+   if(pos<0) pos=0;
+   result.push(shuffled.splice(pos,1)[0]);
+ }
+ return result;
 }
 
 function state(){
@@ -125,9 +135,7 @@ function nextAfterWrong(){
 
 function finish(s){
  const percent=s.maxScore?Math.round(s.score/s.maxScore*100):0;
- const h=history();
- h.push({date:new Date().toISOString(),score:s.score,maxScore:s.maxScore,percent,stars:starsForPercent(percent),details:s.details});
- saveHistory(h);
+ const h=saveExamResult({score:s.score,maxScore:s.maxScore,percent,stars:starsForPercent(percent),details:s.details});
  localStorage.removeItem(EXAM_KEY);
  const doneCount=Math.max(0,Math.min(100,percent));
  const task={total:100,queue:[],done:[...Array(doneCount).keys()],current:null,tries:0,examPercent:percent,attempts:h.length};
@@ -140,7 +148,7 @@ function finish(s){
 }
 
 function show(){
- if(!allPrereqComplete()){
+ if(!isExamUnlocked()){
    area.innerHTML=`<div class="question">Prüfung noch gesperrt</div>
    <div class="hint">Du musst zuerst alle anderen Aufgaben in Thema 1 mit 100% abschließen.</div>
    <div class="exam-score">${prereqPercent()}%</div>
@@ -193,7 +201,7 @@ function checkPlural(){
 
 function showWo(item,s){
  const t=WO_TASKS[item.taskIndex], p=t.place;
- area.innerHTML=`${progress(s)}<div class="question">Schreiben Sie eine Wo-Frage und eine Antwort.</div><div class="hint">Frage: Wo ist der/die/das …? Antwort: Der/Die/Das … ist hier/da/dort.</div><div class="imgrow">${roomImg(t.room,false)}${placeImg(p,p)}</div><label>Frage</label><input id="q" placeholder="Schreiben Sie die Frage hier"><label>Antwort</label><input id="a" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkWo()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+ area.innerHTML=`${progress(s)}<div class="question">Schreiben Sie eine Wo-Frage.</div><div class="hint">Frage: Wo ist der/die/das …? Antwort: Der/Die/Das … ist hier/da/dort.</div><div class="imgrow">${roomImg(t.room,false)}${placeImg(p,p)}</div><label>Frage</label><input id="q" placeholder="Schreiben Sie die Frage hier"><label>Antwort</label><input id="a" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkWo()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
 }
 function checkWo(){
  const item=state().items[state().current], t=WO_TASKS[item.taskIndex];
