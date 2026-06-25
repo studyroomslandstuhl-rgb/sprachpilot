@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wo ist …?</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=70"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Wo ist …?</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=231"></script><script>
 header("Wo ist …?");
 const FILE="wo-ist.html";
 let i=0,phase="example";
@@ -27,8 +27,8 @@ function show(){
 
  if(phase==="q"){
   area.innerHTML=`${progressHtml(FILE,WO_TASKS.length)}
-  <div class="question">Aufgabe ${number}: Frage nach dem Ort.</div>
-  <div class="step-note">Schreibe oder sprich eine ganze Frage.</div>
+  <div class="question">Aufgabe ${number}: Frage mit Wo.</div>
+  <div class="step-note">Sprich oder schreibe: Wo ist der/die/das …?</div>
   <div class="imgrow">${roomImg(t.room,false)}</div>
   <div class="actions"><button id="mic" class="btn mic-btn" onclick="sayQ()">🎤 Frage sprechen</button><button class="btn secondary" onclick="writeQ()">Ich kann nicht sprechen</button></div>
   <div id="micStatus" class="mic-status"></div>
@@ -37,7 +37,7 @@ function show(){
  }else{
   area.innerHTML=`${progressHtml(FILE,WO_TASKS.length)}
   <div class="question">Aufgabe ${number}: Antworte mit hier, da oder dort.</div>
-  <div class="step-note">Schreibe oder sprich einen ganzen Antwortsatz.</div>
+  <div class="step-note">Sprich oder schreibe: Der/Die/Das … ist hier/da/dort.</div>
   ${comboPlaceRoom(t.place,t.room)}
   <div class="actions"><button id="mic" class="btn mic-btn" onclick="sayA()">🎤 Antwort sprechen</button><button class="btn secondary" onclick="writeA()">Ich kann nicht sprechen</button></div>
   <div id="micStatus" class="mic-status"></div>

@@ -13,7 +13,7 @@
   <footer>© SprachPilot</footer>
 </div>
 
-<script src="app.js?v=70"></script>
+<script src="app.js?v=231"></script>
 <script>
 header("Prüfung");
 
@@ -193,7 +193,7 @@ function checkPlural(){
 
 function showWo(item,s){
  const t=WO_TASKS[item.taskIndex], p=t.place;
- area.innerHTML=`${progress(s)}<div class="question">Frage und antworte.</div><div class="hint">Schreibe Frage und Antwort.</div><div class="imgrow">${roomImg(t.room,false)}${placeImg(p,p)}</div><label>Frage</label><input id="q" placeholder="Schreiben Sie die Antwort hier"><label>Antwort</label><input id="a" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkWo()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+ area.innerHTML=`${progress(s)}<div class="question">Schreiben Sie eine Wo-Frage und eine Antwort.</div><div class="hint">Frage: Wo ist der/die/das …? Antwort: Der/Die/Das … ist hier/da/dort.</div><div class="imgrow">${roomImg(t.room,false)}${placeImg(p,p)}</div><label>Frage</label><input id="q" placeholder="Schreiben Sie die Frage hier"><label>Antwort</label><input id="a" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkWo()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
 }
 function checkWo(){
  const item=state().items[state().current], t=WO_TASKS[item.taskIndex];
@@ -204,8 +204,9 @@ function checkWo(){
 }
 
 function showIst(item,s){
- const t=IST_TASKS[item.taskIndex], shown=t.positive?t.room:t.actual, p=t.place;
- area.innerHTML=`${progress(s)}<div class="question">Frage und antworte.</div><div class="hint">Übe ein/kein.</div>${comboPlaceRoom(p,shown)}<label>Frage</label><input id="q" placeholder="Schreiben Sie die Antwort hier"><label>Antwort</label><input id="a" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkIst()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+ const t=IST_TASKS[item.taskIndex], p=t.place;
+ const visual=t.positive ? comboPlaceRoom(p,t.room) : negComboPlaceRoom(p,t.room,t.actual);
+ area.innerHTML=`${progress(s)}<div class="question">Schreiben Sie eine Ja/Nein-Frage.</div><div class="hint">Frage: Ist hier/da/dort ein/eine …? Antwort: Ja/Nein + ganzer Satz. Bei ✕: Nein, hier/da/dort ist kein/keine … Hier/Da/Dort ist der/die/das …</div>${visual}<label>Frage</label><input id="q" placeholder="Schreiben Sie die Frage hier"><label>Antwort</label><input id="a" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkIst()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
 }
 function checkIst(){
  const item=state().items[state().current], t=IST_TASKS[item.taskIndex];
