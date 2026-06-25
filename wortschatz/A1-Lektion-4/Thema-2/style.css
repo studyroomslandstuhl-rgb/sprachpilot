@@ -415,3 +415,74 @@ footer{text-align:center;color:white;margin-top:20px}
 @media(max-width:700px){
   .module .icon.article-icon,.module:nth-child(3) .icon{font-size:27px!important;min-height:62px!important}
 }
+
+/* ===== SprachPilot Lektion 4 Abschlussbox-Standard v235 =====
+   Buttons in der Abschlussbox stehen sauber auseinander.
+   Der grüne Weiter-Button nutzt denselben Erfolgston wie der Haken. */
+.finish-box{
+  text-align:center!important;
+  background:linear-gradient(135deg,#fffdf2,#fff7d6)!important;
+  border:2px solid var(--sp-line,#f4dd75)!important;
+  border-radius:24px!important;
+  padding:28px 24px!important;
+  margin-top:18px!important;
+  box-shadow:0 10px 22px rgba(107,78,0,.08)!important;
+}
+.finish-icon{
+  width:70px!important;
+  height:70px!important;
+  border-radius:50%!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  margin:0 auto 14px!important;
+  background:#d9f7e8!important;
+  border:3px solid var(--sp-green,#2e9e4f)!important;
+  color:#145a32!important;
+  font-size:42px!important;
+  font-weight:900!important;
+  line-height:1!important;
+}
+.finish-box .question{
+  color:var(--sp-yellow-dark,#c08a00)!important;
+  font-weight:900!important;
+  margin-bottom:10px!important;
+}
+.finish-box .big{
+  color:#6b4700!important;
+  font-weight:900!important;
+  margin:8px 0 18px!important;
+}
+.finish-box .actions{
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+  flex-wrap:wrap!important;
+  gap:18px!important;
+  margin-top:22px!important;
+}
+.finish-box .actions .btn{
+  min-width:150px!important;
+  min-height:48px!important;
+  padding:12px 20px!important;
+  border-radius:14px!important;
+  font-weight:900!important;
+  display:inline-flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.finish-box .actions .btn.green,.btn.green{
+  background:var(--sp-green,#2e9e4f)!important;
+  border:2px solid var(--sp-green,#2e9e4f)!important;
+  color:#fff!important;
+  box-shadow:none!important;
+}
+.finish-box .actions .btn.green:hover,.btn.green:hover{
+  background:#257f40!important;
+  border-color:#257f40!important;
+}
+@media(max-width:700px){
+  .finish-box{padding:24px 16px!important;}
+  .finish-box .actions{gap:12px!important;}
+  .finish-box .actions .btn{width:100%!important;max-width:320px!important;}
+}
