@@ -136,3 +136,16 @@ footer{text-align:center;color:white;margin-top:20px}
   background:rgba(255,255,255,.45);
   pointer-events:none;
 }
+.exam-locked .icon{
+  filter: grayscale(100%);
+  opacity: 0.35;
+}
+
+.exam-locked .start{
+  border-color:#cbd5e1!important;
+  color:#64748b!important;
+}
+
+.exam-locked{
+  cursor:not-allowed;
+}
