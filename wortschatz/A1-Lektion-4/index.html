@@ -323,7 +323,7 @@ body{
 </div>
 
 <script type="module">
-import { getActiveProfile, logout, safeText } from "/js/auth.js?v=l4overview234";
+import { getActiveProfile, logout, safeText } from "/js/auth.js?v=l4overview235";
 import { db, doc, getDoc } from "/js/firebase.js";
 window.logout=logout;
 
@@ -396,39 +396,52 @@ function explicitValue(obj,keys){
 }
 
 function themeRelease(courseData,themeId){
-  const moduleKey="wortschatz";
-  const lessonKey="A1-Lektion-4";
+  const moduleKeys=["wortschatz","Wortschatz"];
+  const lessonKeys=["A1-Lektion-4","A1 Lektion 4","A1/Lektion-4"];
+  const themeNames={"Thema-1":"Thema 1","Thema-2":"Thema 2","Thema-3":"Thema 3","Thema-4":"Thema 4","Thema-5":"Thema 5"};
+  const themeName=themeNames[themeId] || themeId;
 
-  const lessonKeys=[
-    `${moduleKey}/${lessonKey}`,
-    lessonKey,
-    `A1/Lektion-4`,
-    `A1-Lektion-4`
+  const lessonFlatKeys=[
+    "wortschatz/A1-Lektion-4",
+    "Wortschatz/A1 Lektion 4",
+    "A1-Lektion-4",
+    "A1 Lektion 4"
   ];
-  const themeKeys=[
-    `${moduleKey}/${lessonKey}/${themeId}`,
-    `${lessonKey}/${themeId}`,
+  const themeFlatKeys=[
+    `wortschatz/A1-Lektion-4/${themeId}`,
+    `Wortschatz/A1 Lektion 4/${themeName}`,
+    `A1-Lektion-4/${themeId}`,
+    `A1 Lektion 4/${themeName}`,
     `A1/Lektion-4/${themeId}`,
-    themeId
+    themeId,
+    themeName
   ];
 
-  const lessonLegacy=explicitValue(courseData.enabledLessons,lessonKeys);
+  const moduleLegacy=explicitValue(courseData.enabledModules,["Wortschatz","wortschatz"]);
+  if(moduleLegacy===false) return false;
+
+  const lessonLegacy=explicitValue(courseData.enabledLessons,lessonFlatKeys);
   if(lessonLegacy===false) return false;
 
-  const themeLegacy=explicitValue(courseData.enabledThemes,themeKeys);
+  const themeLegacy=explicitValue(courseData.enabledThemes,themeFlatKeys);
   if(themeLegacy===false) return false;
   if(themeLegacy===true) return true;
 
   const releases=courseData.releases || courseData.release || {};
-  const mod=releases[moduleKey] || releases.Wortschatz || {};
-  const lesson=(mod.lessons || mod.lektionen || {})[lessonKey] || {};
-  if(lesson.enabled===false) return false;
+  for(const mk of moduleKeys){
+    const mod=releases[mk] || {};
+    const lessons=mod.lessons || mod.lektionen || {};
+    for(const lk of lessonKeys){
+      const lesson=lessons[lk] || {};
+      if(lesson.enabled===false) return false;
+      const themes=lesson.themes || lesson.themen || {};
+      const theme=themes[themeId] || themes[themeName] || {};
+      if(theme.enabled===false) return false;
+      if(theme.enabled===true) return true;
+    }
+  }
 
-  const theme=(lesson.themes || lesson.themen || {})[themeId] || {};
-  if(theme.enabled===false) return false;
-  if(theme.enabled===true) return true;
-
-  const direct=(courseData.themes || courseData.themen || {})[themeId];
+  const direct=(courseData.themes || courseData.themen || {})[themeId] || (courseData.themes || courseData.themen || {})[themeName];
   if(direct===false || direct?.enabled===false) return false;
   if(direct===true || direct?.enabled===true) return true;
 
