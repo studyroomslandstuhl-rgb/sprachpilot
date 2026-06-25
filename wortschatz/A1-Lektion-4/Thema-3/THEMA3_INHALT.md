@@ -1,55 +1,21 @@
-# SprachPilot – Wortschatz A1 Lektion 4 Thema 3
+# SprachPilot Wortschatz A1 – Lektion 4 – Thema 3
 
-Neu gebaut / repariert nach Lektion-4-Standard.
+Thema: Farben, Adjektive, Reaktionen, gefallen/gefällt, nicht/kein/keine.
 
-## Aktive Wörter
+## Standard-Fixes v3
 
-Farben:
-rot, dunkelrot, hellrot, blau, dunkelblau, hellblau, grün, dunkelgrün, hellgrün, gelb, orange, weiß, schwarz, grau, braun
-
-Adjektive:
-schön, hässlich, hell, dunkel, groß, klein, breit, schmal, teuer, billig, neu, alt, modern, sauber, schmutzig, bequem, unbequem
-
-## Aufgaben
-
-1. Karteikarten  
-Mikro + Schreiben im gleichen Eingabefeld. Karte umdrehen schreibt die Lösung in die Schreibleiste und zählt als Hilfe/falsch.
-
-2. Hören  
-Zuerst Farbe wählen, dann Möbel wählen. Nur Bilder/Swatches, keine Wortlabels. Dunkel-/Hell-Farben sind aktiv.
-
-3. Farben  
-Farbwort lesen und passende Farbe wählen.
-
-4. Gegenteile-Memory  
-Nur Wörter, keine Bilder. Gegenteile werden gepaart.
-
-5. Gegenteile beschreiben  
-3 Bilder: falsches Adjektiv + richtiges Adjektiv + Möbel. Beispiel und Aufgabenstellung sind sichtbar.
-
-6. nicht / kein / keine  
-Gemischte Aufgaben mit nicht, kein, keine.
-
-7. Reaktionen  
-Smiley-Aufgabe.
-
-8. Gefallen  
-15 Aufgaben. Nur Bilder + Smileys in der Aufgabe. Frage und Antwort schreiben; Antwort kann auch gesprochen werden.
-
-9. Sätze bauen  
-20 Aufgaben. Singular und Plural gemischt, ist/sind werden angeboten.
-
-10. Schreiben  
-15 Sätze. Nur Bilder + Beispiel/Aufgabenstellung.
-
-11. Prüfung  
-20 Aufgaben gemischt aus Schreiben, Gefallen und Gegenteilen.
-
-## Standards
-
-- nach falscher Antwort kein automatisches Weitergehen
-- falsches Item wird gespeichert und später wiederholt
-- gelernt zählt nur beim ersten richtigen Versuch
-- sichtbares Feedback bleibt
-- Abschlussbox nach Lektion-4-Standard
-- Dashboard-Link: /student-dashboard/index.html
+- Hören und langsam hören haben deutlich unterschiedliche Geschwindigkeit.
+- Hören: zuerst Farbe wählen, dann Möbelstück wählen.
+- Hören: 4 Möbelstücke zur Auswahl, nur Bilder/Swatches, keine Wörter.
+- Hören nutzt hell/dunkel-Varianten der Farben, damit Unterschiede geübt werden.
+- Memory: Gegenteile-Memory nur mit Wörtern.
+- Memory-Regel: genau 2 Karten bleiben sichtbar; bei Klick auf eine 3. Karte drehen sich falsche 2 zurück; passende Paare bleiben offen.
+- Memory braucht keine normale Feedbackbox.
+- Wortschatzliste ist vollständig: Farben, Möbel/Dinge, Adjektive, Reaktionen.
+- Reaktionen nutzen passende Smileys.
+- Ergänzt: modern und altmodisch.
+- Farben enthalten hell-/dunkel-Formen, soweit sinnvoll/mit Swatch darstellbar.
+- Gefallen ist zweischrittig: zuerst Frage, dann Antwort.
+- Gefallen kann gesprochen oder geschrieben werden.
+- Sätze bauen: 20 Aufgaben, Singular/Plural gemischt, Bilder zeigen trotzdem einzelne Möbelstücke.
+- Schreiben: 15 Sätze, nur Bilder + Beispiel/Aufgabenstellung.

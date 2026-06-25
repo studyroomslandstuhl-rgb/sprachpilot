@@ -13,11 +13,19 @@ const COLORS=[
 {id:"dunkelgruen",word:"dunkelgrün",img:"dunkelgruen.png",hex:"#166534",tr:{en:"dark green",ru:"тёмно-зелёный",uk:"темно-зелений",ar:"أخضر داكن",tr:"koyu yeşil",ro:"verde închis",ja:"暗い緑",pl:"ciemnozielony",ku:"keska tarî"}},
 {id:"hellgruen",word:"hellgrün",img:"hellgruen.png",hex:"#86efac",tr:{en:"light green",ru:"светло-зелёный",uk:"світло-зелений",ar:"أخضر فاتح",tr:"açık yeşil",ro:"verde deschis",ja:"明るい緑",pl:"jasnozielony",ku:"keska ronahî"}},
 {id:"gelb",word:"gelb",img:"gelb.png",hex:"#facc15",tr:{en:"yellow",ru:"жёлтый",uk:"жовтий",ar:"أصفر",tr:"sarı",ro:"galben",ja:"黄色",pl:"żółty",ku:"zer"}},
+{id:"dunkelgelb",word:"dunkelgelb",img:"dunkelgelb.png",hex:"#ca8a04",tr:{en:"dark yellow",ru:"тёмно-жёлтый",uk:"темно-жовтий",ar:"أصفر داكن",tr:"koyu sarı",ro:"galben închis",ja:"暗い黄色",pl:"ciemnożółty",ku:"zera tarî"}},
+{id:"hellgelb",word:"hellgelb",img:"hellgelb.png",hex:"#fde68a",tr:{en:"light yellow",ru:"светло-жёлтый",uk:"світло-жовтий",ar:"أصفر فاتح",tr:"açık sarı",ro:"galben deschis",ja:"明るい黄色",pl:"jasnożółty",ku:"zera ronahî"}},
 {id:"orange",word:"orange",img:"orange.png",hex:"#fb923c",tr:{en:"orange",ru:"оранжевый",uk:"помаранчевий",ar:"برتقالي",tr:"turuncu",ro:"portocaliu",ja:"オレンジ",pl:"pomarańczowy",ku:"porteqalî"}},
+{id:"dunkelorange",word:"dunkelorange",img:"dunkelorange.png",hex:"#c2410c",tr:{en:"dark orange",ru:"тёмно-оранжевый",uk:"темно-помаранчевий",ar:"برتقالي داكن",tr:"koyu turuncu",ro:"portocaliu închis",ja:"暗いオレンジ",pl:"ciemnopomarańczowy",ku:"porteqaliya tarî"}},
+{id:"hellorange",word:"hellorange",img:"hellorange.png",hex:"#fdba74",tr:{en:"light orange",ru:"светло-оранжевый",uk:"світло-помаранчевий",ar:"برتقالي فاتح",tr:"açık turuncu",ro:"portocaliu deschis",ja:"明るいオレンジ",pl:"jasnopomarańczowy",ku:"porteqaliya ronahî"}},
 {id:"weiss",word:"weiß",img:"weiss.png",hex:"#ffffff",tr:{en:"white",ru:"белый",uk:"білий",ar:"أبيض",tr:"beyaz",ro:"alb",ja:"白",pl:"biały",ku:"spî"}},
 {id:"schwarz",word:"schwarz",img:"schwarz.png",hex:"#111827",tr:{en:"black",ru:"чёрный",uk:"чорний",ar:"أسود",tr:"siyah",ro:"negru",ja:"黒",pl:"czarny",ku:"reş"}},
 {id:"grau",word:"grau",img:"grau.png",hex:"#9ca3af",tr:{en:"gray",ru:"серый",uk:"сірий",ar:"رمادي",tr:"gri",ro:"gri",ja:"灰色",pl:"szary",ku:"gewir"}},
-{id:"braun",word:"braun",img:"braun.png",hex:"#92400e",tr:{en:"brown",ru:"коричневый",uk:"коричневий",ar:"بني",tr:"kahverengi",ro:"maro",ja:"茶色",pl:"brązowy",ku:"qehweyî"}}
+{id:"dunkelgrau",word:"dunkelgrau",img:"dunkelgrau.png",hex:"#4b5563",tr:{en:"dark gray",ru:"тёмно-серый",uk:"темно-сірий",ar:"رمادي داكن",tr:"koyu gri",ro:"gri închis",ja:"暗い灰色",pl:"ciemnoszary",ku:"gewira tarî"}},
+{id:"hellgrau",word:"hellgrau",img:"hellgrau.png",hex:"#d1d5db",tr:{en:"light gray",ru:"светло-серый",uk:"світло-сірий",ar:"رمادي فاتح",tr:"açık gri",ro:"gri deschis",ja:"明るい灰色",pl:"jasnoszary",ku:"gewira ronahî"}},
+{id:"braun",word:"braun",img:"braun.png",hex:"#92400e",tr:{en:"brown",ru:"коричневый",uk:"коричневий",ar:"بني",tr:"kahverengi",ro:"maro",ja:"茶色",pl:"brązowy",ku:"qehweyî"}},
+{id:"dunkelbraun",word:"dunkelbraun",img:"dunkelbraun.png",hex:"#451a03",tr:{en:"dark brown",ru:"тёмно-коричневый",uk:"темно-коричневий",ar:"بني داكن",tr:"koyu kahverengi",ro:"maro închis",ja:"暗い茶色",pl:"ciemny brąz",ku:"qehweya tarî"}},
+{id:"hellbraun",word:"hellbraun",img:"hellbraun.png",hex:"#b45309",tr:{en:"light brown",ru:"светло-коричневый",uk:"світло-коричневий",ar:"بني فاتح",tr:"açık kahverengi",ro:"maro deschis",ja:"明るい茶色",pl:"jasny brąz",ku:"qehweya ronahî"}}
 ];
 
 const ADJECTIVES=[
@@ -34,6 +42,7 @@ const ADJECTIVES=[
 {id:"neu",word:"neu",img:"neu.png",tr:{en:"new",ru:"новый",uk:"новий",ar:"جديد",tr:"yeni",ro:"nou",ja:"新しい",pl:"nowy",ku:"nû"}},
 {id:"alt",word:"alt",img:"alt.png",tr:{en:"old",ru:"старый",uk:"старий",ar:"قديم",tr:"eski",ro:"vechi",ja:"古い",pl:"stary",ku:"kevn"}},
 {id:"modern",word:"modern",img:"modern.png",tr:{en:"modern",ru:"современный",uk:"сучасний",ar:"حديث",tr:"modern",ro:"modern",ja:"モダン",pl:"nowoczesny",ku:"modern"}},
+{id:"altmodisch",word:"altmodisch",img:"alt.png",tr:{en:"old-fashioned",ru:"старомодный",uk:"старомодний",ar:"قديم الطراز",tr:"modası geçmiş",ro:"demodat",ja:"古風",pl:"staromodny",ku:"kevnşop"}},
 {id:"sauber",word:"sauber",img:"sauber.png",tr:{en:"clean",ru:"чистый",uk:"чистий",ar:"نظيف",tr:"temiz",ro:"curat",ja:"清潔",pl:"czysty",ku:"paqij"}},
 {id:"schmutzig",word:"schmutzig",img:"schmutzig.png",tr:{en:"dirty",ru:"грязный",uk:"брудний",ar:"متسخ",tr:"kirli",ro:"murdar",ja:"汚い",pl:"brudny",ku:"qirêj"}},
 {id:"bequem",word:"bequem",img:"bequem.png",tr:{en:"comfortable",ru:"удобный",uk:"зручний",ar:"مريح",tr:"rahat",ro:"comod",ja:"快適",pl:"wygodny",ku:"rihet"}},
@@ -54,30 +63,39 @@ const FURNITURE=[
 
 const REACTIONS=[
 {id:"sehr-gut",word:"Sehr gut.",emoji:"😍",score:4},
-{id:"gut",word:"Gut.",emoji:"🙂",score:3},
+{id:"gut",word:"Gut.",emoji:"😊",score:3},
 {id:"es-geht",word:"Es geht.",emoji:"😐",score:2},
-{id:"nicht-so-gut",word:"Nicht so gut.",emoji:"🙁",score:1}
+{id:"nicht-so-gut",word:"Nicht so gut.",emoji:"😟",score:1}
 ];
 
 const PAIRS=[
 ["schoen","haesslich"],["hell","dunkel"],["gross","klein"],["breit","schmal"],
-["teuer","billig"],["neu","alt"],["sauber","schmutzig"],["bequem","unbequem"]
+["teuer","billig"],["neu","alt"],["modern","altmodisch"],["sauber","schmutzig"],["bequem","unbequem"]
 ];
 const CARDS=[...COLORS.map(x=>({...x,type:"color"})),...ADJECTIVES.map(x=>({...x,type:"adj"}))];
 
 const HEARING_TASKS=[
 {color:"rot",options:["rot","dunkelrot","hellrot","orange"],item:"stuhl"},
-{color:"dunkelrot",options:["dunkelrot","rot","hellrot","braun"],item:"sessel"},
-{color:"hellrot",options:["hellrot","rot","dunkelrot","gelb"],item:"sofa"},
+{color:"dunkelrot",options:["dunkelrot","rot","hellrot","dunkelbraun"],item:"sessel"},
+{color:"hellrot",options:["hellrot","rot","dunkelrot","hellorange"],item:"sofa"},
 {color:"blau",options:["blau","dunkelblau","hellblau","grau"],item:"tisch"},
 {color:"dunkelblau",options:["dunkelblau","blau","hellblau","schwarz"],item:"schrank"},
 {color:"hellblau",options:["hellblau","blau","dunkelblau","weiss"],item:"bett"},
 {color:"gruen",options:["gruen","dunkelgruen","hellgruen","gelb"],item:"lampe"},
-{color:"dunkelgruen",options:["dunkelgruen","gruen","hellgruen","braun"],item:"sofa"},
-{color:"hellgruen",options:["hellgruen","gruen","dunkelgruen","weiss"],item:"sessel"},
-{color:"gelb",options:["gelb","orange","weiss","braun"],item:"stuhl"},
-{color:"orange",options:["orange","gelb","rot","braun"],item:"tisch"},
-{color:"grau",options:["grau","schwarz","weiss","blau"],item:"bett"}
+{color:"dunkelgruen",options:["dunkelgruen","gruen","hellgruen","dunkelgrau"],item:"sofa"},
+{color:"hellgruen",options:["hellgruen","gruen","dunkelgruen","hellgelb"],item:"sessel"},
+{color:"gelb",options:["gelb","dunkelgelb","hellgelb","orange"],item:"stuhl"},
+{color:"dunkelgelb",options:["dunkelgelb","gelb","hellgelb","dunkelorange"],item:"tisch"},
+{color:"hellgelb",options:["hellgelb","gelb","dunkelgelb","weiss"],item:"bett"},
+{color:"orange",options:["orange","dunkelorange","hellorange","gelb"],item:"schrank"},
+{color:"dunkelorange",options:["dunkelorange","orange","hellorange","braun"],item:"lampe"},
+{color:"hellorange",options:["hellorange","orange","dunkelorange","hellgelb"],item:"sessel"},
+{color:"grau",options:["grau","dunkelgrau","hellgrau","schwarz"],item:"sofa"},
+{color:"dunkelgrau",options:["dunkelgrau","grau","hellgrau","dunkelblau"],item:"stuhl"},
+{color:"hellgrau",options:["hellgrau","grau","dunkelgrau","weiss"],item:"tisch"},
+{color:"braun",options:["braun","dunkelbraun","hellbraun","orange"],item:"bett"},
+{color:"dunkelbraun",options:["dunkelbraun","braun","hellbraun","schwarz"],item:"schrank"},
+{color:"hellbraun",options:["hellbraun","braun","dunkelbraun","hellorange"],item:"sessel"}
 ];
 
 const CONTRAST_TASKS=[
@@ -87,7 +105,7 @@ const CONTRAST_TASKS=[
 {item:"stuhl",wrong:"bequem",right:"unbequem",sentence:"Der Stuhl ist nicht bequem. Er ist sehr unbequem."},
 {item:"waschbecken",wrong:"schmutzig",right:"sauber",sentence:"Das Waschbecken ist nicht schmutzig. Es ist sehr sauber."},
 {item:"waschbecken",wrong:"sauber",right:"schmutzig",sentence:"Das Waschbecken ist nicht sauber. Es ist sehr schmutzig."},
-{item:"sofa",wrong:"alt",right:"modern",sentence:"Das Sofa ist nicht alt. Es ist sehr modern."},
+{item:"sofa",wrong:"altmodisch",right:"modern",sentence:"Das Sofa ist nicht altmodisch. Es ist sehr modern."},
 {item:"tisch",wrong:"klein",right:"groß",sentence:"Der Tisch ist nicht klein. Er ist sehr groß."},
 {item:"schrank",wrong:"schmal",right:"breit",sentence:"Der Schrank ist nicht schmal. Er ist sehr breit."},
 {item:"stuhl",wrong:"teuer",right:"billig",sentence:"Der Stuhl ist nicht teuer. Er ist sehr billig."},
@@ -104,6 +122,7 @@ const GEFAELLEN_TASKS=[
 {item:"waschbecken",reaction:"nicht-so-gut",adj:"schmutzig",question:"Wie gefällt dir das Waschbecken?",answer:"Nicht so gut. Es ist schmutzig."},
 {item:"waschbecken",reaction:"sehr-gut",adj:"sauber",question:"Wie gefällt dir das Waschbecken?",answer:"Sehr gut. Es ist sauber."},
 {item:"sofa",reaction:"gut",adj:"modern",question:"Wie gefällt dir das Sofa?",answer:"Gut. Es ist modern."},
+{item:"schrank",reaction:"nicht-so-gut",adj:"altmodisch",question:"Wie gefällt dir der Schrank?",answer:"Nicht so gut. Er ist altmodisch."},
 {item:"lampe",reaction:"sehr-gut",adj:"hell",question:"Wie gefällt dir die Lampe?",answer:"Sehr gut. Sie ist hell."},
 {item:"tisch",reaction:"es-geht",adj:"klein",question:"Wie gefällt dir der Tisch?",answer:"Es geht. Er ist klein."},
 {item:"bett",reaction:"gut",adj:"neu",question:"Wie gefällt dir das Bett?",answer:"Gut. Es ist neu."},
@@ -122,17 +141,17 @@ const SENTENCES=[
 {img:"waschbecken.png",text:"Das Waschbecken ist sauber.",words:["Das","Waschbecken","ist","sauber."]},
 {img:"waschbecken.png",text:"Das Waschbecken ist schmutzig.",words:["Das","Waschbecken","ist","schmutzig."]},
 {img:"sofa.png",text:"Das Sofa ist modern.",words:["Das","Sofa","ist","modern."]},
-{img:"moebel.png",text:"Die Möbel sind modern.",words:["Die","Möbel","sind","modern."]},
+{img:"schrank.png",text:"Der Schrank ist altmodisch.",words:["Der","Schrank","ist","altmodisch."]},
 {img:"lampe.png",text:"Die Lampe ist hell.",words:["Die","Lampe","ist","hell."]},
-{img:"zimmer.png",text:"Die Zimmer sind groß.",words:["Die","Zimmer","sind","groß."]},
 {img:"tisch.png",text:"Der Tisch ist klein.",words:["Der","Tisch","ist","klein."]},
 {img:"bett.png",text:"Das Bett ist neu.",words:["Das","Bett","ist","neu."]},
 {img:"schrank.png",text:"Der Schrank ist breit.",words:["Der","Schrank","ist","breit."]},
-{img:"stuehle.png",text:"Die Stühle sind bequem.",words:["Die","Stühle","sind","bequem."]},
-{img:"sofas.png",text:"Die Sofas sind schön.",words:["Die","Sofas","sind","schön."]},
-{img:"lampen.png",text:"Die Lampen sind hell.",words:["Die","Lampen","sind","hell."]},
-{img:"betten.png",text:"Die Betten sind teuer.",words:["Die","Betten","sind","teuer."]},
+{img:"stuhl.png",text:"Die Stühle sind bequem.",words:["Die","Stühle","sind","bequem."]},
+{img:"sofa.png",text:"Die Sofas sind schön.",words:["Die","Sofas","sind","schön."]},
+{img:"lampe.png",text:"Die Lampen sind hell.",words:["Die","Lampen","sind","hell."]},
+{img:"bett.png",text:"Die Betten sind teuer.",words:["Die","Betten","sind","teuer."]},
 {img:"waschbecken.png",text:"Die Waschbecken sind sauber.",words:["Die","Waschbecken","sind","sauber."]},
+{img:"sessel.png",text:"Die Sessel sind altmodisch.",words:["Die","Sessel","sind","altmodisch."]},
 {img:"sessel.png",text:"Der Sessel ist alt.",words:["Der","Sessel","ist","alt."]},
 {img:"stuhl.png",text:"Der Stuhl ist billig.",words:["Der","Stuhl","ist","billig."]},
 {img:"sofa.png",text:"Das Sofa ist dunkel.",words:["Das","Sofa","ist","dunkel."]},
@@ -163,6 +182,7 @@ const WRITING=[
 {imgs:["waschbecken.png","sauber.png"],text:"Das Waschbecken ist sauber."},
 {imgs:["waschbecken.png","schmutzig.png"],text:"Das Waschbecken ist schmutzig."},
 {imgs:["sofa.png","modern.png"],text:"Das Sofa ist modern."},
+{imgs:["schrank.png","alt.png"],text:"Der Schrank ist altmodisch."},
 {imgs:["lampe.png","hell.png"],text:"Die Lampe ist hell."},
 {imgs:["tisch.png","klein.png"],text:"Der Tisch ist klein."},
 {imgs:["bett.png","neu.png"],text:"Das Bett ist neu."},
@@ -203,7 +223,7 @@ function progressHtml(file,total){let st=loadTask(file,total),p=pct(file,total);
 function feedbackForTry(tries,solution,type){if(tries===1)return"Da ist noch ein Fehler.";if(tries===2)return"Tipp: Prüfe "+(type||"Form und Schreibweise")+".";return"Lösung: "+solution}
 function complete(area,file,next="index.html"){syncTask(file,loadTask(file,getTotal(file)));area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Aufgabe geschafft!</div><div class="big">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="actions finish-actions"><button class="btn" onclick="resetOneTask('${file}')">Nochmal üben</button><a class="btn green" href="${next}">Weiter</a><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>`}
 function resetOneTask(file){localStorage.removeItem(taskKey(file));location.reload()}
-function getTotal(file){return {"karteikarten.html":CARDS.length,"hoeren.html":HEARING_TASKS.length,"farben.html":COLORS.length,"memory.html":16,"gegenteile.html":CONTRAST_TASKS.length,"kein.html":KEIN_TASKS.length,"reaktionen.html":REACTIONS.length,"gefallen.html":GEFAELLEN_TASKS.length,"saetze-bauen.html":SENTENCES.length,"schreiben.html":WRITING.length}[file]||1}
+function getTotal(file){return {"karteikarten.html":CARDS.length,"hoeren.html":HEARING_TASKS.length,"farben.html":COLORS.length,"memory.html":PAIRS.length*2,"gegenteile.html":CONTRAST_TASKS.length,"kein.html":KEIN_TASKS.length,"reaktionen.html":REACTIONS.length,"gefallen.html":GEFAELLEN_TASKS.length,"saetze-bauen.html":SENTENCES.length,"schreiben.html":WRITING.length}[file]||1}
 function taskDoneCount(){return TASK_FILES.filter(f=>pct(f,getTotal(f))>=100).length}
 function allPrereqComplete(){return TASK_FILES.every(f=>pct(f,getTotal(f))>=100)}
 function examUnlockKey(){return THEME.key+"_EXAM_UNLOCKED"}
@@ -216,7 +236,7 @@ function resetThemeProgress(){if(!confirm("Möchten Sie wirklich alle Fortschrit
 function syncTask(file,st){try{const total=Number(st.total||getTotal(file));const done=Array.isArray(st.done)?st.done.length:0;const percent=Math.round(done/total*100)||0;const payload={...THEME,file,taskKey:file,taskTitle:TASK_TITLES[file]||file,total,done,percent,completed:percent>=100,wrongItems:st.wrongItems||[]};if(window.SPProgress?.recordTaskProgress)window.SPProgress.recordTaskProgress(payload);else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:"recordTaskProgress",payload});import('/js/progress.js').catch(()=>{})}}catch(e){}}
 function syncExam(result){try{const payload={...THEME,score:result.score,maxScore:result.maxScore,percent:result.percent,stars:result.stars};if(window.SPProgress?.recordExamResult)window.SPProgress.recordExamResult(payload);else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:"recordExamResult",payload});import('/js/progress.js').catch(()=>{})}}catch(e){}}
 function syncReset(){try{const payload={...THEME};if(window.SPProgress?.recordThemeReset)window.SPProgress.recordThemeReset(payload);else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:"recordThemeReset",payload});import('/js/progress.js').catch(()=>{})}}catch(e){}}
-function speak(text,slow=false){if(!('speechSynthesis'in window))return;const run=()=>{speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(String(text||''));u.lang='de-DE';u.rate=slow?.72:.88;let voices=speechSynthesis.getVoices();let v=voices.find(v=>v.lang==='de-DE'&&/google|microsoft|anna|katja|deutsch|german/i.test(v.name||''))||voices.find(v=>v.lang==='de-DE')||voices.find(v=>String(v.lang).startsWith('de'));if(v)u.voice=v;speechSynthesis.speak(u)};if(!speechSynthesis.getVoices().length){speechSynthesis.onvoiceschanged=run;setTimeout(run,250)}else run()}
+function speak(text,slow=false){if(!('speechSynthesis'in window))return;const run=()=>{speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(String(text||''));u.lang='de-DE';u.rate=slow ? 0.52 : 0.92;u.pitch=1;u.volume=1;let voices=speechSynthesis.getVoices();let v=voices.find(v=>v.lang==='de-DE'&&/google|microsoft|anna|katja|deutsch|german/i.test(v.name||''))||voices.find(v=>v.lang==='de-DE')||voices.find(v=>String(v.lang||'').startsWith('de'));if(v)u.voice=v;speechSynthesis.speak(u)};if(!speechSynthesis.getVoices().length){speechSynthesis.onvoiceschanged=run;setTimeout(run,250)}else run()}
 function startMic(btn,callback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const status=$('micStatus');if(!SR){if(status)status.textContent='Mikrofon geht hier nicht. Bitte schreibe.';return}let rec=new SR();rec.lang='de-DE';rec.interimResults=false;rec.continuous=false;if(btn)btn.classList.add('active');if(status)status.textContent='Ich höre zu …';rec.onresult=e=>{let txt=e.results[0][0].transcript;if(status)status.textContent='Gehört: '+txt;callback(txt,true)};rec.onerror=()=>{if(status)status.textContent='Mikrofon hat nicht funktioniert. Bitte schreibe.'};rec.onend=()=>{if(btn)btn.classList.remove('active')};rec.start()}
 function normalizeSentence(s){return simple(s).replace(/\s+/g,' ').trim()}
 function isLooseSentence(ans,sol){return normalizeSentence(ans)===normalizeSentence(sol)}

@@ -1,34 +1,56 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gefallen Thema 3</title><link rel="stylesheet" href="style.css?v=301"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=301"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gefallen Thema 3</title><link rel="stylesheet" href="style.css?v=303"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=303"></script><script>
 header('Farben & Adjektive');
 const file='gefallen.html',total=GEFAELLEN_TASKS.length;
-function taskItemImg(t){
-  if(t.itemImg)return img(t.itemImg,'task-img');
-  let f=furnitureById(t.item);return img(f.img,'task-img');
-}
+let phase='question';
+function taskItemImg(t){return img(t.itemImg||furnitureById(t.item).img,'task-img')}
 function render(){
   let i=nextIndex(file,total);
   if(i===null)return complete(area,file,'saetze-bauen.html');
   let t=GEFAELLEN_TASKS[i],r=reactionById(t.reaction),a=adjById(t.adj);
-  area.innerHTML=progressHtml(file,total)+
-  instruction('Schreibe eine Frage mit „gefallen/gefällt“. Antworte mit Smiley und Bild.')+
-  exampleBox('Wie gefällt dir der Sessel?<br>Sehr gut. Er ist bequem.')+
-  `<div class="imgrow three-img">${taskItemImg(t)}<div class="smile-card">${r.emoji}</div>${img(a.img,'task-img')}</div>
-   <label>Frage</label><input id="q" placeholder="Schreiben Sie die Frage hier">
-   <label>Antwort</label><input id="a" placeholder="Schreiben Sie die Antwort hier">
-   <div class="actions">
-    <button class="btn mic-btn" onclick="startMic(this,v=>{a.value=v;check(true)})">🎤 Antwort sprechen</button>
-    <button class="btn" onclick="check(false)">Kontrollieren</button>
-   </div>
-   <div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
+  if(phase==='question'){
+    area.innerHTML=progressHtml(file,total)+
+    instruction('Bilde zuerst die Frage mit „gefällt“ oder „gefallen“.')+
+    exampleBox('Bild: Sessel<br>Frage: Wie gefällt dir der Sessel?')+
+    `<div class="imgrow">${taskItemImg(t)}</div>
+     <input id="q" placeholder="Schreiben Sie die Frage hier">
+     <div class="actions">
+       <button class="btn mic-btn" onclick="startMic(this,v=>{q.value=v;checkQuestion(true)})">🎤 Frage sprechen</button>
+       <button class="btn" onclick="checkQuestion(false)">Kontrollieren</button>
+     </div>
+     <div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
+  }else{
+    area.innerHTML=progressHtml(file,total)+
+    instruction('Antworte mit der Reaktion und einem ganzen Satz.')+
+    exampleBox('Sehr gut. Er ist bequem.')+
+    `<div class="imgrow three-img">${taskItemImg(t)}<div class="smile-card">${r.emoji}</div>${img(a.img,'task-img')}</div>
+     <input id="a" placeholder="Schreiben Sie die Antwort hier">
+     <div class="actions">
+       <button class="btn mic-btn" onclick="startMic(this,v=>{a.value=v;checkAnswer(true)})">🎤 Antwort sprechen</button>
+       <button class="btn" onclick="checkAnswer(false)">Kontrollieren</button>
+     </div>
+     <div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
+  }
 }
-function check(fromSpeech=false){
+function checkQuestion(fromSpeech=false){
   let st=loadTask(file,total),t=GEFAELLEN_TASKS[st.current];
-  if(isExactSentence(q.value,t.question,false)&&isExactSentence(a.value,t.answer,fromSpeech)){
+  if(isExactSentence(q.value,t.question,fromSpeech)){
+    fb.innerHTML='<div class="ok">Richtig. Jetzt die Antwort.</div>';
+    phase='answer';
+    setTimeout(render,400);
+  }else{
+    let tr=markWrong(file,total,t.question);
+    fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.question,'gefällt/gefallen und Artikel')+'</div>';
+  }
+}
+function checkAnswer(fromSpeech=false){
+  let st=loadTask(file,total),t=GEFAELLEN_TASKS[st.current];
+  if(isExactSentence(a.value,t.answer,fromSpeech)){
     fb.innerHTML='<div class="ok">Richtig!</div>';
+    phase='question';
     setTimeout(()=>{markRight(file,total)?complete(area,file,'saetze-bauen.html'):render()},500)
   }else{
-    let tr=markWrong(file,total,t.question+' '+t.answer);
-    fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.question+' / '+t.answer,'gefallen/gefällt und Antwort')+'</div>';
+    let tr=markWrong(file,total,t.answer);
+    fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.answer,'Reaktion, Pronomen und ist/sind')+'</div>';
   }
 }
 render();
