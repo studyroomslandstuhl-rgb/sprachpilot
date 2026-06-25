@@ -7,9 +7,9 @@ export const VOCABULARY = [
     "plural": "die Schränke",
     "pluralGroup": "-e/Umlaut",
     "group": "book",
-    "image": "schrank.png",
     "category": "Möbel",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "schrank.png"
   },
   {
     "id": "kuehlschrank",
@@ -19,33 +19,9 @@ export const VOCABULARY = [
     "plural": "die Kühlschränke",
     "pluralGroup": "-e/Umlaut",
     "group": "book",
-    "image": "kuehlschrank.png",
     "category": "Elektrogeräte",
-    "pronoun": "er"
-  },
-  {
-    "id": "gefrierschrank",
-    "article": "der",
-    "word": "Gefrierschrank",
-    "full": "der Gefrierschrank",
-    "plural": "die Gefrierschränke",
-    "pluralGroup": "-e/Umlaut",
-    "group": "book",
-    "image": "gefrierschrank.png",
-    "category": "Elektrogeräte",
-    "pronoun": "er"
-  },
-  {
-    "id": "kaffeemaschine",
-    "article": "die",
-    "word": "Kaffeemaschine",
-    "full": "die Kaffeemaschine",
-    "plural": "die Kaffeemaschinen",
-    "pluralGroup": "-n",
-    "group": "book",
-    "image": "kaffeemaschine.png",
-    "category": "Elektrogeräte",
-    "pronoun": "sie"
+    "pronoun": "er",
+    "image": "kuehlschrank.png"
   },
   {
     "id": "sofa",
@@ -55,21 +31,9 @@ export const VOCABULARY = [
     "plural": "die Sofas",
     "pluralGroup": "-s",
     "group": "book",
-    "image": "sofa.png",
     "category": "Möbel",
-    "pronoun": "es"
-  },
-  {
-    "id": "kaffeetisch",
-    "article": "der",
-    "word": "Kaffeetisch",
-    "full": "der Kaffeetisch",
-    "plural": "die Kaffeetische",
-    "pluralGroup": "-e",
-    "group": "book",
-    "image": "kaffeetisch.png",
-    "category": "Möbel",
-    "pronoun": "er"
+    "pronoun": "es",
+    "image": "sofa.png"
   },
   {
     "id": "tisch",
@@ -79,9 +43,9 @@ export const VOCABULARY = [
     "plural": "die Tische",
     "pluralGroup": "-e",
     "group": "book",
-    "image": "tisch.png",
     "category": "Möbel",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "tisch.png"
   },
   {
     "id": "stuhl",
@@ -91,9 +55,9 @@ export const VOCABULARY = [
     "plural": "die Stühle",
     "pluralGroup": "-e/Umlaut",
     "group": "book",
-    "image": "stuhl.png",
     "category": "Möbel",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "stuhl.png"
   },
   {
     "id": "bett",
@@ -103,9 +67,9 @@ export const VOCABULARY = [
     "plural": "die Betten",
     "pluralGroup": "-en",
     "group": "book",
-    "image": "bett.png",
     "category": "Möbel",
-    "pronoun": "es"
+    "pronoun": "es",
+    "image": "bett.png"
   },
   {
     "id": "fernseher",
@@ -115,9 +79,9 @@ export const VOCABULARY = [
     "plural": "die Fernseher",
     "pluralGroup": "-",
     "group": "book",
-    "image": "fernseher.png",
     "category": "Elektrogeräte",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "fernseher.png"
   },
   {
     "id": "teppich",
@@ -127,9 +91,9 @@ export const VOCABULARY = [
     "plural": "die Teppiche",
     "pluralGroup": "-e",
     "group": "book",
-    "image": "teppich.png",
     "category": "Möbel",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "teppich.png"
   },
   {
     "id": "sessel",
@@ -139,9 +103,9 @@ export const VOCABULARY = [
     "plural": "die Sessel",
     "pluralGroup": "-",
     "group": "book",
-    "image": "sessel.png",
     "category": "Möbel",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "sessel.png"
   },
   {
     "id": "lampe",
@@ -151,9 +115,9 @@ export const VOCABULARY = [
     "plural": "die Lampen",
     "pluralGroup": "-n",
     "group": "book",
-    "image": "lampe.png",
     "category": "Elektrogeräte",
-    "pronoun": "sie"
+    "pronoun": "sie",
+    "image": "lampe.png"
   },
   {
     "id": "herd",
@@ -163,9 +127,9 @@ export const VOCABULARY = [
     "plural": "die Herde",
     "pluralGroup": "-e",
     "group": "book",
-    "image": "herd.png",
     "category": "Elektrogeräte",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "herd.png"
   },
   {
     "id": "elektrogeraet",
@@ -175,9 +139,9 @@ export const VOCABULARY = [
     "plural": "die Elektrogeräte",
     "pluralGroup": "-er",
     "group": "book",
-    "image": "elektrogeraet.png",
     "category": "Elektrogeräte",
-    "pronoun": "es"
+    "pronoun": "es",
+    "image": "elektrogeraet.png"
   },
   {
     "id": "dusche",
@@ -187,9 +151,9 @@ export const VOCABULARY = [
     "plural": "die Duschen",
     "pluralGroup": "-n",
     "group": "book",
-    "image": "dusche.png",
     "category": "Bad",
-    "pronoun": "sie"
+    "pronoun": "sie",
+    "image": "dusche.png"
   },
   {
     "id": "badewanne",
@@ -199,9 +163,9 @@ export const VOCABULARY = [
     "plural": "die Badewannen",
     "pluralGroup": "-n",
     "group": "book",
-    "image": "badewanne.png",
     "category": "Bad",
-    "pronoun": "sie"
+    "pronoun": "sie",
+    "image": "badewanne.png"
   },
   {
     "id": "toilette",
@@ -211,9 +175,9 @@ export const VOCABULARY = [
     "plural": "die Toiletten",
     "pluralGroup": "-n",
     "group": "book",
-    "image": "toilette.png",
     "category": "Bad",
-    "pronoun": "sie"
+    "pronoun": "sie",
+    "image": "toilette.png"
   },
   {
     "id": "waschbecken",
@@ -223,9 +187,45 @@ export const VOCABULARY = [
     "plural": "die Waschbecken",
     "pluralGroup": "-",
     "group": "book",
-    "image": "waschbecken.png",
     "category": "Bad",
-    "pronoun": "es"
+    "pronoun": "es",
+    "image": "waschbecken.png"
+  },
+  {
+    "id": "kommode",
+    "article": "die",
+    "word": "Kommode",
+    "full": "die Kommode",
+    "plural": "die Kommoden",
+    "pluralGroup": "-n",
+    "group": "extra",
+    "category": "Möbel",
+    "pronoun": "sie",
+    "image": "kommode.png"
+  },
+  {
+    "id": "nachttisch",
+    "article": "der",
+    "word": "Nachttisch",
+    "full": "der Nachttisch",
+    "plural": "die Nachttische",
+    "pluralGroup": "-e",
+    "group": "extra",
+    "category": "Möbel",
+    "pronoun": "er",
+    "image": "nachttisch.png"
+  },
+  {
+    "id": "bild",
+    "article": "das",
+    "word": "Bild",
+    "full": "das Bild",
+    "plural": "die Bilder",
+    "pluralGroup": "-er",
+    "group": "extra",
+    "category": "Wohnung",
+    "pronoun": "es",
+    "image": "bild.png"
   },
   {
     "id": "tuer",
@@ -235,9 +235,9 @@ export const VOCABULARY = [
     "plural": "die Türen",
     "pluralGroup": "-en",
     "group": "extra",
-    "image": "tuer.png",
     "category": "Möbel",
-    "pronoun": "sie"
+    "pronoun": "sie",
+    "image": "tuer.png"
   },
   {
     "id": "fenster",
@@ -247,9 +247,9 @@ export const VOCABULARY = [
     "plural": "die Fenster",
     "pluralGroup": "-",
     "group": "extra",
-    "image": "fenster.png",
     "category": "Möbel",
-    "pronoun": "es"
+    "pronoun": "es",
+    "image": "fenster.png"
   },
   {
     "id": "dach",
@@ -259,9 +259,9 @@ export const VOCABULARY = [
     "plural": "die Dächer",
     "pluralGroup": "-er/Umlaut",
     "group": "extra",
-    "image": "dach.png",
     "category": "Möbel",
-    "pronoun": "es"
+    "pronoun": "es",
+    "image": "dach.png"
   },
   {
     "id": "boden",
@@ -271,9 +271,9 @@ export const VOCABULARY = [
     "plural": "die Böden",
     "pluralGroup": "-/Umlaut",
     "group": "extra",
-    "image": "boden.png",
     "category": "Möbel",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "boden.png"
   },
   {
     "id": "wand",
@@ -283,9 +283,9 @@ export const VOCABULARY = [
     "plural": "die Wände",
     "pluralGroup": "-e/Umlaut",
     "group": "extra",
-    "image": "wand.png",
     "category": "Möbel",
-    "pronoun": "sie"
+    "pronoun": "sie",
+    "image": "wand.png"
   },
   {
     "id": "spuele",
@@ -295,9 +295,9 @@ export const VOCABULARY = [
     "plural": "die Spülen",
     "pluralGroup": "-n",
     "group": "extra",
-    "image": "spuele.png",
     "category": "Küche",
-    "pronoun": "sie"
+    "pronoun": "sie",
+    "image": "spuele.png"
   },
   {
     "id": "spuelmaschine",
@@ -307,9 +307,9 @@ export const VOCABULARY = [
     "plural": "die Spülmaschinen",
     "pluralGroup": "-n",
     "group": "extra",
-    "image": "spuelmaschine.png",
     "category": "Küche",
-    "pronoun": "sie"
+    "pronoun": "sie",
+    "image": "spuelmaschine.png"
   },
   {
     "id": "backofen",
@@ -319,9 +319,9 @@ export const VOCABULARY = [
     "plural": "die Backöfen",
     "pluralGroup": "-/Umlaut",
     "group": "extra",
-    "image": "backofen.png",
     "category": "Küche",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "backofen.png"
   },
   {
     "id": "mikrowelle",
@@ -331,9 +331,9 @@ export const VOCABULARY = [
     "plural": "die Mikrowellen",
     "pluralGroup": "-n",
     "group": "extra",
-    "image": "mikrowelle.png",
     "category": "Küche",
-    "pronoun": "sie"
+    "pronoun": "sie",
+    "image": "mikrowelle.png"
   },
   {
     "id": "toaster",
@@ -343,9 +343,9 @@ export const VOCABULARY = [
     "plural": "die Toaster",
     "pluralGroup": "-",
     "group": "extra",
-    "image": "toaster.png",
     "category": "Küche",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "toaster.png"
   },
   {
     "id": "wasserkocher",
@@ -355,9 +355,9 @@ export const VOCABULARY = [
     "plural": "die Wasserkocher",
     "pluralGroup": "-",
     "group": "extra",
-    "image": "wasserkocher.png",
     "category": "Küche",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "wasserkocher.png"
   },
   {
     "id": "abzug",
@@ -367,9 +367,9 @@ export const VOCABULARY = [
     "plural": "die Abzüge",
     "pluralGroup": "-e/Umlaut",
     "group": "extra",
-    "image": "abzug.png",
     "category": "Küche",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "abzug.png"
   },
   {
     "id": "kuechenschrank",
@@ -379,32 +379,44 @@ export const VOCABULARY = [
     "plural": "die Küchenschränke",
     "pluralGroup": "-e/Umlaut",
     "group": "extra",
-    "image": "kuechenschrank.png",
     "category": "Küche",
-    "pronoun": "er"
+    "pronoun": "er",
+    "image": "kuechenschrank.png"
   },
   {
-    "id": "regal",
-    "article": "das",
-    "word": "Regal",
-    "full": "das Regal",
-    "plural": "die Regale",
+    "id": "kaffeetisch",
+    "article": "der",
+    "word": "Kaffeetisch",
+    "full": "der Kaffeetisch",
+    "plural": "die Kaffeetische",
     "pluralGroup": "-e",
-    "group": "book",
-    "image": "regal.png",
+    "group": "extra",
     "category": "Möbel",
-    "pronoun": "es"
+    "pronoun": "er",
+    "image": "kaffeetisch.png"
   },
   {
-    "id": "waschmaschine",
-    "article": "die",
-    "word": "Waschmaschine",
-    "full": "die Waschmaschine",
-    "plural": "die Waschmaschinen",
-    "pluralGroup": "-n",
-    "group": "book",
-    "image": "waschmaschine.png",
+    "id": "gefrierschrank",
+    "article": "der",
+    "word": "Gefrierschrank",
+    "full": "der Gefrierschrank",
+    "plural": "die Gefrierschränke",
+    "pluralGroup": "-e/Umlaut",
+    "group": "extra",
     "category": "Elektrogeräte",
-    "pronoun": "sie"
+    "pronoun": "er",
+    "image": "gefrierschrank.png"
+  },
+  {
+    "id": "kaffeemaschine",
+    "article": "die",
+    "word": "Kaffeemaschine",
+    "full": "die Kaffeemaschine",
+    "plural": "die Kaffeemaschinen",
+    "pluralGroup": "-n",
+    "group": "extra",
+    "category": "Elektrogeräte",
+    "pronoun": "sie",
+    "image": "kaffeemaschine.png"
   }
 ];

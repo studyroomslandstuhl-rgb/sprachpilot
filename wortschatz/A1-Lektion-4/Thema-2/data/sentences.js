@@ -1,10 +1,7 @@
 export const SENTENCES = {
   "schrank": "Der Schrank ist groß.",
   "kuehlschrank": "Der Kühlschrank ist neu.",
-  "gefrierschrank": "Der Gefrierschrank ist weiß.",
-  "kaffeemaschine": "Die Kaffeemaschine ist modern.",
   "sofa": "Das Sofa ist bequem.",
-  "kaffeetisch": "Der Kaffeetisch ist klein.",
   "tisch": "Der Tisch ist braun.",
   "stuhl": "Der Stuhl ist modern.",
   "bett": "Das Bett ist bequem.",
@@ -18,6 +15,9 @@ export const SENTENCES = {
   "badewanne": "Die Badewanne ist groß.",
   "toilette": "Die Toilette ist sauber.",
   "waschbecken": "Das Waschbecken ist weiß.",
+  "kommode": "Die Kommode ist braun.",
+  "nachttisch": "Der Nachttisch ist klein.",
+  "bild": "Das Bild ist schön.",
   "tuer": "Die Tür ist weiß.",
   "fenster": "Das Fenster ist groß.",
   "dach": "Das Dach ist rot.",
@@ -31,6 +31,7 @@ export const SENTENCES = {
   "wasserkocher": "Der Wasserkocher ist neu.",
   "abzug": "Der Abzug ist modern.",
   "kuechenschrank": "Der Küchenschrank ist groß.",
-  "regal": "Das regal ist schön.",
-  "waschmaschine": "Die waschmaschine funktioniert gut."
+  "kaffeetisch": "Der Kaffeetisch ist klein.",
+  "gefrierschrank": "Der Gefrierschrank ist weiß.",
+  "kaffeemaschine": "Die Kaffeemaschine ist modern."
 };

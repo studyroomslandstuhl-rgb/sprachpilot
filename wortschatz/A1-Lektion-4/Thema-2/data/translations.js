@@ -17,24 +17,6 @@ export const TRANSLATIONS = {
     "ro": "frigider",
     "ja": "冷蔵庫"
   },
-  "gefrierschrank": {
-    "en": "freezer",
-    "ru": "морозильник",
-    "uk": "морозильна шафа",
-    "ar": "فريزر",
-    "tr": "derin dondurucu",
-    "ro": "congelator",
-    "ja": "冷凍庫"
-  },
-  "kaffeemaschine": {
-    "en": "coffee machine",
-    "ru": "кофемашина",
-    "uk": "кавомашина",
-    "ar": "آلة القهوة",
-    "tr": "kahve makinesi",
-    "ro": "aparat de cafea",
-    "ja": "コーヒーメーカー"
-  },
   "sofa": {
     "en": "sofa",
     "ru": "диван",
@@ -43,15 +25,6 @@ export const TRANSLATIONS = {
     "tr": "kanepe",
     "ro": "canapea",
     "ja": "ソファ"
-  },
-  "kaffeetisch": {
-    "en": "coffee table",
-    "ru": "журнальный столик",
-    "uk": "журнальний столик",
-    "ar": "طاولة قهوة",
-    "tr": "sehpa",
-    "ro": "măsuță de cafea",
-    "ja": "コーヒーテーブル"
   },
   "tisch": {
     "en": "table",
@@ -170,6 +143,39 @@ export const TRANSLATIONS = {
     "ro": "chiuvetă",
     "ja": "洗面台"
   },
+  "kommode": {
+    "en": "chest of drawers",
+    "ru": "комод",
+    "uk": "комод",
+    "ar": "خزانة أدراج",
+    "tr": "şifonyer",
+    "ro": "comodă",
+    "ja": "整理だんす",
+    "pl": "komoda",
+    "ku": "komod"
+  },
+  "nachttisch": {
+    "en": "bedside table",
+    "ru": "прикроватная тумбочка",
+    "uk": "тумбочка біля ліжка",
+    "ar": "طاولة سرير",
+    "tr": "komodin",
+    "ro": "noptieră",
+    "ja": "ナイトテーブル",
+    "pl": "stolik nocny",
+    "ku": "maseya li kêleka nivînê"
+  },
+  "bild": {
+    "en": "picture",
+    "ru": "картина",
+    "uk": "картина",
+    "ar": "صورة / لوحة",
+    "tr": "resim",
+    "ro": "tablou",
+    "ja": "絵 / 写真",
+    "pl": "obraz",
+    "ku": "wêne"
+  },
   "tuer": {
     "en": "door",
     "ru": "дверь",
@@ -287,22 +293,31 @@ export const TRANSLATIONS = {
     "ro": "dulap de bucătărie",
     "ja": "キッチン棚"
   },
-  "regal": {
-    "en": "shelf",
-    "ru": "полка / стеллаж",
-    "uk": "полиця / стелаж",
-    "ar": "رف",
-    "tr": "raf",
-    "ro": "raft",
-    "ja": "棚"
+  "kaffeetisch": {
+    "en": "coffee table",
+    "ru": "журнальный столик",
+    "uk": "журнальний столик",
+    "ar": "طاولة قهوة",
+    "tr": "sehpa",
+    "ro": "măsuță de cafea",
+    "ja": "コーヒーテーブル"
   },
-  "waschmaschine": {
-    "en": "washing machine",
-    "ru": "стиральная машина",
-    "uk": "пральна машина",
-    "ar": "غسالة",
-    "tr": "çamaşır makinesi",
-    "ro": "mașină de spălat",
-    "ja": "洗濯機"
+  "gefrierschrank": {
+    "en": "freezer",
+    "ru": "морозильник",
+    "uk": "морозильна шафа",
+    "ar": "فريزر",
+    "tr": "derin dondurucu",
+    "ro": "congelator",
+    "ja": "冷凍庫"
+  },
+  "kaffeemaschine": {
+    "en": "coffee machine",
+    "ru": "кофемашина",
+    "uk": "кавомашина",
+    "ar": "آلة القهوة",
+    "tr": "kahve makinesi",
+    "ro": "aparat de cafea",
+    "ja": "コーヒーメーカー"
   }
 };
