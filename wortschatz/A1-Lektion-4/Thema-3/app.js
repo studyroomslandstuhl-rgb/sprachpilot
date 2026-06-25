@@ -15,9 +15,9 @@ const COLORS=[
 {id:"gelb",word:"gelb",img:"gelb.png",hex:"#facc15",tr:{en:"yellow",ru:"жёлтый",uk:"жовтий",ar:"أصفر",tr:"sarı",ro:"galben",ja:"黄色",pl:"żółty",ku:"zer"}},
 {id:"dunkelgelb",word:"dunkelgelb",img:"dunkelgelb.png",hex:"#ca8a04",tr:{en:"dark yellow",ru:"тёмно-жёлтый",uk:"темно-жовтий",ar:"أصفر داكن",tr:"koyu sarı",ro:"galben închis",ja:"暗い黄色",pl:"ciemnożółty",ku:"zera tarî"}},
 {id:"hellgelb",word:"hellgelb",img:"hellgelb.png",hex:"#fde68a",tr:{en:"light yellow",ru:"светло-жёлтый",uk:"світло-жовтий",ar:"أصفر فاتح",tr:"açık sarı",ro:"galben deschis",ja:"明るい黄色",pl:"jasnożółty",ku:"zera ronahî"}},
-{id:"orange",word:"orange",speak:"oransche",img:"orange.png",hex:"#fb923c",tr:{en:"orange",ru:"оранжевый",uk:"помаранчевий",ar:"برتقالي",tr:"turuncu",ro:"portocaliu",ja:"オレンジ",pl:"pomarańczowy",ku:"porteqalî"}},
-{id:"dunkelorange",word:"dunkelorange",speak:"dunkel oransche",img:"dunkelorange.png",hex:"#c2410c",tr:{en:"dark orange",ru:"тёмно-оранжевый",uk:"темно-помаранчевий",ar:"برتقالي داكن",tr:"koyu turuncu",ro:"portocaliu închis",ja:"暗いオレンジ",pl:"ciemnopomarańczowy",ku:"porteqaliya tarî"}},
-{id:"hellorange",word:"hellorange",speak:"hell oransche",img:"hellorange.png",hex:"#fdba74",tr:{en:"light orange",ru:"светло-оранжевый",uk:"світло-помаранчевий",ar:"برتقالي فاتح",tr:"açık turuncu",ro:"portocaliu deschis",ja:"明るいオレンジ",pl:"jasnopomarańczowy",ku:"porteqaliya ronahî"}},
+{id:"orange",word:"orange",speak:"o rang sche",img:"orange.png",hex:"#fb923c",tr:{en:"orange",ru:"оранжевый",uk:"помаранчевий",ar:"برتقالي",tr:"turuncu",ro:"portocaliu",ja:"オレンジ",pl:"pomarańczowy",ku:"porteqalî"}},
+{id:"dunkelorange",word:"dunkelorange",speak:"dunkel o rang sche",img:"dunkelorange.png",hex:"#c2410c",tr:{en:"dark orange",ru:"тёмно-оранжевый",uk:"темно-помаранчевий",ar:"برتقالي داكن",tr:"koyu turuncu",ro:"portocaliu închis",ja:"暗いオレンジ",pl:"ciemnopomarańczowy",ku:"porteqaliya tarî"}},
+{id:"hellorange",word:"hellorange",speak:"hell o rang sche",img:"hellorange.png",hex:"#fdba74",tr:{en:"light orange",ru:"светло-оранжевый",uk:"світло-помаранчевий",ar:"برتقالي فاتح",tr:"açık turuncu",ro:"portocaliu deschis",ja:"明るいオレンジ",pl:"jasnopomarańczowy",ku:"porteqaliya ronahî"}},
 {id:"weiss",word:"weiß",img:"weiss.png",hex:"#ffffff",tr:{en:"white",ru:"белый",uk:"білий",ar:"أبيض",tr:"beyaz",ro:"alb",ja:"白",pl:"biały",ku:"spî"}},
 {id:"schwarz",word:"schwarz",img:"schwarz.png",hex:"#111827",tr:{en:"black",ru:"чёрный",uk:"чорний",ar:"أسود",tr:"siyah",ro:"negru",ja:"黒",pl:"czarny",ku:"reş"}},
 {id:"grau",word:"grau",img:"grau.png",hex:"#9ca3af",tr:{en:"gray",ru:"серый",uk:"сірий",ar:"رمادي",tr:"gri",ro:"gri",ja:"灰色",pl:"szary",ku:"gewir"}},
@@ -244,9 +244,9 @@ function mixWithCorrect(correct, pool, count=4){
 }
 function ttsGermanText(text){
   return String(text||'')
-    .replace(/dunkelorange/gi,'dunkel oransche')
-    .replace(/hellorange/gi,'hell oransche')
-    .replace(/orange/gi,'oransche');
+    .replace(/dunkelorange/gi,'dunkel o rang sche')
+    .replace(/hellorange/gi,'hell o rang sche')
+    .replace(/orange/gi,'o rang sche');
 }
 function currentMotherLang(){try{let p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");let raw=p?.motherLanguageCode||p?.muttersprache||p?.motherLanguage||localStorage.getItem("motherLanguage")||"en";let n=String(raw).trim().toLowerCase();let map={"russisch":"ru","englisch":"en","ukrainisch":"uk","arabisch":"ar","türkisch":"tr","tuerkisch":"tr","rumänisch":"ro","rumaenisch":"ro","japanisch":"ja","polnisch":"pl","kurdisch":"ku","deutsch":"de"};return map[n]||n||"en"}catch(e){return"en"}}
 function translate(x){let l=currentMotherLang();return x.tr?.[l]||x.tr?.en||x.word}
