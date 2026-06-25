@@ -22,8 +22,38 @@ function full(w){return w.full}
 function wordById(id){return WORDS.find(w=>w.id===id)||{}}
 function fixImg(img){img.classList.add("missing");img.alt="Bild fehlt"}
 function esc(s){return String(s||"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]))}
-function header(title,isThemeOverview=false){const h=document.querySelector(".topbar");if(!h)return;const backHref=isThemeOverview?"../index.html":"index.html";h.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 4 · Thema 2</div></div></a><div class="account-tools"><span class="account-pill">${esc(currentUserLabel())}</span><a class="account-link" href="/dashboard.html">Dashboard</a><a class="account-link" href="/profil.html">Profil</a><button class="account-link account-btn" onclick="logoutUser()">Abmelden</button></div></div><nav class="nav"><a class="btn secondary" href="${backHref}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button></nav>`}
-function logoutUser(){if(!confirm("Möchten Sie sich abmelden?"))return;["SP_USER_PROFILE","sprachpilotUser","SP_CURRENT_USER","SP_LOGIN","SP_COURSE_CODE"].forEach(k=>localStorage.removeItem(k));location.href="/index.html"}
+function globalRootPath(){
+ const p=String(location.pathname||"");
+ const markers=[
+  "/wortschatz-A1-Lektion-4/Thema-2/",
+  "/wortschatz-A1-Lektion-4_Thema-2/",
+  "/wortschatz-a1-lektion-4/thema-2/",
+  "/thema-2/",
+  "/Thema-2/"
+ ];
+ for(const m of markers){
+  const low=p.toLowerCase();
+  const ml=m.toLowerCase();
+  const i=low.indexOf(ml);
+  if(i>=0)return p.slice(0,i+1)||"/";
+ }
+ return "/";
+}
+function globalPage(page){return globalRootPath()+page}
+function goHome(e){if(e)e.preventDefault();location.href=globalPage("index.html")}
+function goDashboard(e){if(e)e.preventDefault();location.href=globalPage("dashboard.html")}
+function goProfile(e){if(e)e.preventDefault();location.href=globalPage("profil.html")}
+function header(title,isThemeOverview=false){
+ const h=document.querySelector(".topbar");
+ if(!h)return;
+ const backHref=isThemeOverview?"../index.html":"index.html";
+ h.innerHTML=`<div class="topbar-main"><a class="brand" href="${globalPage("index.html")}" onclick="goHome(event)"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 4 · Thema 2</div></div></a><div class="account-tools"><span class="account-pill">${esc(currentUserLabel())}</span><a class="account-link" href="${globalPage("dashboard.html")}" onclick="goDashboard(event)">📊 Dashboard</a><a class="account-link" href="${globalPage("profil.html")}" onclick="goProfile(event)">👤 Profil</a><button class="account-link account-btn" type="button" onclick="logoutUser()">🚪 Abmelden</button></div></div><nav class="nav"><a class="btn secondary" href="${backHref}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button></nav>`
+}
+function logoutUser(){
+ if(!confirm("Möchten Sie sich abmelden?"))return;
+ ["SP_USER_PROFILE","sprachpilotUser","SP_CURRENT_USER","SP_LOGIN","SP_COURSE_CODE"].forEach(k=>localStorage.removeItem(k));
+ location.href=globalPage("index.html");
+}
 function resetThemeProgress(){if(!confirm("Möchten Sie wirklich alle Fortschritte in diesem Thema löschen?"))return;Object.keys(localStorage).forEach(k=>{if(k.startsWith("SP_L4_T2_FINAL_")||k.startsWith("SP_L4_T2_EXAM_"))localStorage.removeItem(k)});Object.keys(sessionStorage).forEach(k=>{if(k.startsWith("SP_L4_T2_PRACTICE_"))sessionStorage.removeItem(k)});location.href="index.html"}
 function practiceFlag(file){return "SP_L4_T2_PRACTICE_"+file}
 function isPracticeMode(file){return sessionStorage.getItem(practiceFlag(file))==="1"}
