@@ -179,13 +179,51 @@ const TeacherApp = {
     </details>`;
   },
 
+  progressForStudent(s){
+    return this.state.progress[s.studentId] || this.state.progress[s.docId] || this.state.progress[s.id] || {};
+  },
+
+  progressTotals(p){
+    return p?.totals || {
+      points:0,
+      stars:0,
+      progressPercent:this.percent(p?.wortschatz?.progress || p?.verben?.progress || p?.fragen?.progress || p?.grammatik?.progress || 0),
+      completedTasks:0,
+      completedExams:0
+    };
+  },
+
+  formatTime(v){
+    if(!v) return "nie";
+    try{
+      const d = v.toDate ? v.toDate() : new Date(v.seconds ? v.seconds*1000 : v);
+      if(isNaN(d.getTime())) return "nie";
+      return d.toLocaleString("de-DE", {day:"2-digit",month:"2-digit",hour:"2-digit",minute:"2-digit"});
+    }catch(e){return "nie"}
+  },
+
   studentAccordion(s){
-    const p=this.state.progress[s.studentId] || this.state.progress[s.docId] || {};
+    const p=this.progressForStudent(s);
+    const totals=this.progressTotals(p);
+    const last=this.formatTime(p.lastActive || p.updatedAt || s.lastLogin);
     return `<details class="student-accordion">
       <summary>
-        <span><b>${this.safe((s.vorname||"")+" "+(s.nachname||""))}</b><small>${this.safe(s.email||"")} · ${this.safe(s.muttersprache||"")}</small></span>
+        <span><b>${this.safe((s.vorname||"")+" "+(s.nachname||""))}</b><small>${this.safe(s.email||"")} · ${this.safe(s.muttersprache||"")} · zuletzt aktiv: ${this.safe(last)}</small></span>
+        <span class="student-summary-metrics">
+          <span class="pill ok">${this.percent(totals.progressPercent)}%</span>
+          <span class="pill">⭐ ${Number(totals.stars||0)}</span>
+          <span class="pill">${Number(totals.points||0)} Punkte</span>
+        </span>
       </summary>
-      <div class="inside">
+      <div class="inside compact-progress">
+        <div class="progress-overview">
+          <div class="metric"><b>${this.percent(totals.progressPercent)}%</b><span>Gesamtfortschritt</span></div>
+          <div class="metric"><b>${Number(totals.points||0)}</b><span>Punkte</span></div>
+          <div class="metric"><b>${Number(totals.stars||0)}</b><span>Sterne</span></div>
+          <div class="metric"><b>${Number(totals.completedTasks||0)}</b><span>Aufgaben fertig</span></div>
+          <div class="metric"><b>${Number(totals.completedExams||0)}</b><span>Prüfungen</span></div>
+          <div class="metric"><b>${this.safe(last)}</b><span>letzte Aktivität</span></div>
+        </div>
         ${this.studentModule("Fragen", s, p)}
         ${this.studentModule("Wortschatz", s, p)}
         ${this.studentModule("Verben", s, p)}
@@ -195,20 +233,92 @@ const TeacherApp = {
   },
 
   studentModule(name,s,p){
-    if(name==="Wortschatz"){
-      return `<details class="tiny-accordion"><summary>${name} <span class="pill">${this.modulePercent(p,"wortschatz",s.wortschatzFortschritt)}%</span></summary><div class="inside">${this.wortschatzDetail(p)}</div></details>`;
-    }
     const key=name.toLowerCase();
-    const val=this.modulePercent(p,key,s[key+"Fortschritt"]);
-    return `<details class="tiny-accordion"><summary>${name} <span class="pill">${val}%</span></summary><div class="inside"><p class="small">Detailauswertung wird gespeichert, sobald die Aufgaben Fortschritte in Firebase schreiben.</p></div></details>`;
+    if(key==="wortschatz") return this.moduleAccordion(name,"wortschatz",p,s.wortschatzFortschritt);
+    if(key==="fragen") return this.moduleAccordion(name,"fragen",p,s.fragenFortschritt);
+    if(key==="verben") return this.moduleAccordion(name,"verben",p,s.verbenFortschritt);
+    return this.moduleAccordion(name,"grammatik",p,s.grammatikFortschritt);
+  },
+
+  moduleAccordion(label,key,p,fallback){
+    const mod=p?.[key] || {};
+    const topics=Object.entries(mod).filter(([k,v])=>v && typeof v==="object" && !["state","activeVerbs","known","unknown","unsure"].includes(k));
+    const percent=this.modulePercent(p,key,fallback);
+    const topicHtml=topics.length ? topics.map(([topicId,topic])=>this.topicDetail(topicId,topic)).join("") : this.legacyModuleDetail(key,p,mod);
+    return `<details class="tiny-accordion module-detail">
+      <summary><span>${this.safe(label)}</span><span class="pill ${percent>=100?'ok':percent>0?'warn':''}">${percent}%</span></summary>
+      <div class="inside">${topicHtml}</div>
+    </details>`;
+  },
+
+  legacyModuleDetail(key,p,mod){
+    if(key==="wortschatz") return this.wortschatzLegacyDetail(p);
+    if(key==="verben"){
+      const active=mod.activeVerbs || mod.state?.active || [];
+      const known=mod.known || [], unsure=mod.unsure || [], unknown=mod.unknown || [];
+      return `<div class="task-grid">
+        <div class="task-pill"><span>Aktive Verben</span><b>${active.length||0}</b></div>
+        <div class="task-pill done"><span>Kann</span><b>${known.length||0}</b></div>
+        <div class="task-pill"><span>Unsicher</span><b>${unsure.length||0}</b></div>
+        <div class="task-pill notdone"><span>Kann nicht</span><b>${unknown.length||0}</b></div>
+      </div>`;
+    }
+    return `<p class="small">Noch keine Detaildaten gespeichert.</p>`;
+  },
+
+  topicDetail(topicId,topic){
+    const pct=this.percent(topic.progressPercent || topic.current?.percent || 0);
+    const exam=topic.exam || {};
+    const lifetime=topic.lifetime || {};
+    const tasks=topic.tasks || {};
+    const taskRows=Object.entries(tasks).length ? Object.entries(tasks).map(([taskKey,task])=>this.taskDetail(taskKey,task)).join("") : `<p class="small">Noch keine Aufgaben gespeichert.</p>`;
+    return `<details class="tiny-accordion topic-detail" ${pct>0?'open':''}>
+      <summary>
+        <span>${this.safe(topic.title || topicId)}</span>
+        <span class="student-summary-metrics"><span class="pill ${pct>=100?'ok':pct>0?'warn':''}">${pct}%</span>${exam.attempted?`<span class="pill exam">Prüfung ${this.percent(exam.bestPercent||exam.lastPercent)}% · ⭐ ${Number(exam.stars||0)}</span>`:""}<span class="pill">${Number(lifetime.points||0)} Punkte</span></span>
+      </summary>
+      <div class="inside">
+        <div class="progress-line"><div class="progress-fill" style="width:${pct}%"></div></div>
+        <div class="topic-metrics">
+          <span class="pill">Aufgaben: ${Number(topic.completedTasks||0)}/${Number(topic.totalTasks||Object.keys(tasks).length||0)}</span>
+          <span class="pill">Punkte: ${Number(lifetime.points||0)}</span>
+          <span class="pill">Resets: ${Number(lifetime.resets||0)}</span>
+          ${exam.attempted?`<span class="pill exam">Versuche: ${Number(exam.attempts||0)}</span>`:""}
+        </div>
+        <details class="tiny-accordion">
+          <summary>Aufgaben genau anzeigen</summary>
+          <div class="task-grid compact-task-grid">${taskRows}</div>
+        </details>
+        ${exam.attempted?this.examDetail(exam):""}
+      </div>
+    </details>`;
+  },
+
+  taskDetail(taskKey,task){
+    const pct=this.percent(task.percent || 0);
+    const wrong=(task.wrongItems||[]).slice(-6);
+    return `<div class="task-pill ${pct>=100?'done':pct>0?'':'notdone'}">
+      <span>${this.safe(task.title || taskKey)}${wrong.length?`<small> Fehler: ${wrong.map(x=>this.safe(x)).join(', ')}</small>`:""}</span>
+      <b>${pct}%</b>
+    </div>`;
+  },
+
+  examDetail(exam){
+    const attempts=(exam.attemptsLog||[]).slice(-5).reverse().map((a,i)=>`<div class="task-pill done"><span>Versuch ${Number(exam.attempts||0)-i}</span><b>${this.percent(a.percent)}% · ${Number(a.score||0)}/${Number(a.maxScore||200)}</b></div>`).join("");
+    return `<details class="tiny-accordion"><summary>Prüfungsdetails</summary><div class="task-grid compact-task-grid">${attempts||'<p class="small">Keine Versuchsliste gespeichert.</p>'}</div></details>`;
   },
 
   modulePercent(p,key,fallback){
-    const val=fallback ?? p?.[key]?.progress ?? p?.[key]?.percent ?? 0;
+    const mod=p?.[key] || {};
+    const topics=Object.entries(mod).filter(([k,v])=>v && typeof v==="object" && !["state","activeVerbs","known","unknown","unsure"].includes(k));
+    if(topics.length){
+      return this.percent(topics.reduce((sum,[_,topic])=>sum+this.percent(topic.progressPercent || topic.current?.percent || 0),0)/topics.length);
+    }
+    const val=fallback ?? mod.progress ?? mod.percent ?? 0;
     return this.percent(val);
   },
 
-  wortschatzDetail(progress){
+  wortschatzLegacyDetail(progress){
     const state=progress?.wortschatz?.state || progress?.wortschatz || {};
     return Object.entries(this.wortschatzTasks).map(([lesson,themes])=>`
       <details class="tiny-accordion">
