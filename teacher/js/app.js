@@ -29,7 +29,9 @@ const TeacherApp = {
     "A1 Lektion 4":{
       "Thema 1":["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","wo-ist.html","ist-hier.html","pruefung.html"],
       "Thema 2":["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","kategorien.html","dialoge.html","pruefung.html"],
-      "Thema 3":["karteikarten.html","hoeren.html","farbe-nennen.html","moebel-farbe.html","gegenteil-memory.html","gegenteil-zuordnen.html","satz-ergaenzen.html","farbenbild.html","pruefung.html"]
+      "Thema 3":["karteikarten.html","hoeren.html","farbe-nennen.html","moebel-farbe.html","gegenteil-memory.html","gegenteil-zuordnen.html","satz-ergaenzen.html","farbenbild.html","pruefung.html"],
+      "Thema 4":["karteikarten.html","hoeren.html","schreibe-mit-artikel.html","paare-finden.html","anzeige-lesen.html","passt-die-wohnung.html","pruefung.html"],
+      "Thema 5":["karteikarten.html","hoeren.html","dialog-verstehen.html","satzbausteine.html","rollenkarte.html","telefon-dialog.html","pruefung.html"]
     }
   },
 
@@ -385,13 +387,15 @@ const TeacherApp = {
   releasePanel(c){
     const enabledModules=c.enabledModules||{};
     const enabledLessons=c.enabledLessons||{};
+    const enabledThemes=c.enabledThemes||{};
     const enabledTasks=c.enabledTasks||{};
     const enabledWords=c.enabledWords||{};
 
     return `<div class="release-panel">
       <h3>Freigaben: ${this.safe(c.courseName||c.name||c.id)}</h3>
+      <p class="small">Du kannst hier Module, Lektionen, einzelne Themen, Aufgaben und Prüfungen für diesen Kurs freigeben oder sperren.</p>
 
-      <details open class="tiny-accordion">
+      <details class="tiny-accordion">
         <summary>Module</summary>
         <div class="checks">
           ${this.modules.map(m=>this.check(`module-${m.key}`, enabledModules[m.key]!==false, `TeacherApp.toggleModule('${this.esc(c.id)}','${this.esc(m.key)}')`, m.title)).join("")}
@@ -399,23 +403,9 @@ const TeacherApp = {
       </details>
 
       <details class="tiny-accordion">
-        <summary>Wortschatz Lektionen / Aufgaben / Prüfungen</summary>
+        <summary>Wortschatz · Lektionen, Themen und Aufgaben</summary>
         <div class="inside">
-          ${Object.entries(this.wortschatzTasks).map(([lesson,themes])=>`
-            <details class="tiny-accordion">
-              <summary>${lesson}</summary>
-              ${Object.entries(themes).map(([theme,tasks])=>`
-                <details class="tiny-accordion">
-                  <summary>${theme}</summary>
-                  <div class="task-grid">
-                    ${tasks.map(task=>{
-                      const key=`Wortschatz/${lesson}/${theme}/${task}`;
-                      const on=enabledTasks[key]!==false;
-                      return this.check(key,on,`TeacherApp.toggleTask('${this.esc(c.id)}','${this.esc(key)}')`,task.replace(".html",""));
-                    }).join("")}
-                  </div>
-                </details>`).join("")}
-            </details>`).join("")}
+          ${Object.entries(this.wortschatzTasks).map(([lesson,themes])=>this.releaseLessonBlock(c,lesson,themes,enabledLessons,enabledThemes,enabledTasks)).join("")}
         </div>
       </details>
 
@@ -430,6 +420,61 @@ const TeacherApp = {
         </div>
       </details>
     </div>`;
+  },
+
+  releaseLessonBlock(c,lesson,themes,enabledLessons,enabledThemes,enabledTasks){
+    const lessonKey=this.lessonKey(lesson);
+    const legacyLessonKey=`Wortschatz/${lesson}`;
+    const lessonOn=enabledLessons[lessonKey]!==false && enabledLessons[legacyLessonKey]!==false;
+    return `<details class="tiny-accordion release-lesson">
+      <summary>
+        <span>${this.safe(lesson)}</span>
+        <span class="pill ${lessonOn?'ok':''}">${lessonOn?'freigegeben':'gesperrt'}</span>
+      </summary>
+      <div class="inside">
+        <div class="release-main-check">
+          ${this.check(lessonKey,lessonOn,`TeacherApp.toggleLesson('${this.esc(c.id)}','${this.esc(lesson)}')`,`ganze Lektion freigeben`)}
+        </div>
+        ${Object.entries(themes).map(([theme,tasks])=>this.releaseThemeBlock(c,lesson,theme,tasks,enabledThemes,enabledTasks)).join("")}
+      </div>
+    </details>`;
+  },
+
+  releaseThemeBlock(c,lesson,theme,tasks,enabledThemes,enabledTasks){
+    const themeKey=this.themeKey(lesson,theme);
+    const legacyThemeKey=`Wortschatz/${lesson}/${theme}`;
+    const themeOn=enabledThemes[themeKey]!==false && enabledThemes[legacyThemeKey]!==false;
+    return `<details class="tiny-accordion release-theme">
+      <summary>
+        <span>${this.safe(theme)}</span>
+        <span class="pill ${themeOn?'ok':''}">${themeOn?'freigegeben':'gesperrt'}</span>
+      </summary>
+      <div class="inside">
+        <div class="release-main-check">
+          ${this.check(themeKey,themeOn,`TeacherApp.toggleTheme('${this.esc(c.id)}','${this.esc(lesson)}','${this.esc(theme)}')`,`ganzes Thema freigeben`)}
+        </div>
+        <div class="task-grid">
+          ${tasks.map(task=>{
+            const key=`Wortschatz/${lesson}/${theme}/${task}`;
+            const on=enabledTasks[key]!==false;
+            return this.check(key,on,`TeacherApp.toggleTask('${this.esc(c.id)}','${this.esc(key)}')`,task.replace(".html",""));
+          }).join("")}
+        </div>
+      </div>
+    </details>`;
+  },
+
+  lessonKey(lesson){
+    if(String(lesson)==="A1 Lektion 4") return "wortschatz/A1-Lektion-4";
+    return `Wortschatz/${lesson}`;
+  },
+
+  themeKey(lesson,theme){
+    if(String(lesson)==="A1 Lektion 4"){
+      const themeId=String(theme||"").replace(/\s+/g,"-");
+      return `wortschatz/A1-Lektion-4/${themeId}`;
+    }
+    return `Wortschatz/${lesson}/${theme}`;
   },
 
   check(id,on,onclick,label){
@@ -458,6 +503,7 @@ const TeacherApp = {
         "Grammatik":false
       },
       enabledLessons:{},
+      enabledThemes:{},
       enabledTasks:{},
       enabledWords:{},
       createdAt:firebase.firestore.FieldValue.serverTimestamp(),
@@ -510,6 +556,44 @@ const TeacherApp = {
 
     await db.collection("courses").doc(courseId).set({
       enabledModules,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+
+    await this.loadData();
+    const fresh=this.state.courses.find(c=>c.id===courseId);
+    this.showReleasePanel(String(fresh.courseCode||fresh.id));
+  },
+
+  async toggleLesson(courseId,lesson){
+    const course=this.state.courses.find(c=>c.id===courseId);
+    const enabledLessons={...(course?.enabledLessons||{})};
+    const key=this.lessonKey(lesson);
+    const legacyKey=`Wortschatz/${lesson}`;
+    const current=enabledLessons[key]!==false && enabledLessons[legacyKey]!==false;
+    enabledLessons[key]=!current;
+    enabledLessons[legacyKey]=!current;
+
+    await db.collection("courses").doc(courseId).set({
+      enabledLessons,
+      updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+    },{merge:true});
+
+    await this.loadData();
+    const fresh=this.state.courses.find(c=>c.id===courseId);
+    this.showReleasePanel(String(fresh.courseCode||fresh.id));
+  },
+
+  async toggleTheme(courseId,lesson,theme){
+    const course=this.state.courses.find(c=>c.id===courseId);
+    const enabledThemes={...(course?.enabledThemes||{})};
+    const key=this.themeKey(lesson,theme);
+    const legacyKey=`Wortschatz/${lesson}/${theme}`;
+    const current=enabledThemes[key]!==false && enabledThemes[legacyKey]!==false;
+    enabledThemes[key]=!current;
+    enabledThemes[legacyKey]=!current;
+
+    await db.collection("courses").doc(courseId).set({
+      enabledThemes,
       updatedAt:firebase.firestore.FieldValue.serverTimestamp()
     },{merge:true});
 
