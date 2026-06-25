@@ -1,8 +1,10 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten Thema 3</title><link rel="stylesheet" href="style.css?v=308"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=308"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten Thema 3</title><link rel="stylesheet" href="style.css?v=309"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=309"></script><script>
 header('Farben & Adjektive');
 const file='karteikarten.html', total=CARDS.length;
 function showCardImage(w){
-  return w.type==='color' ? colorImg(w,'task-img') : img(w.img||w.id+'.png','task-img');
+  if(w.type==='color') return colorImg(w,'task-img');
+  if(w.type==='reaction') return `<div class="smile-card" style="margin:12px auto">${w.emoji}</div>`;
+  return img(w.img||w.id+'.png','task-img');
 }
 function render(){
   let i=nextIndex(file,total);

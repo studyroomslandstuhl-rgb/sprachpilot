@@ -39,3 +39,10 @@ Thema: Farben, Adjektive, Reaktionen, gefallen/gefällt, nicht/kein/keine.
 - Gut/Ganz gut: gleicher Smiley und gleiche Akzeptanz.
 - Gefallen: lange Erklärung gekürzt.
 - Abschluss-Weiter: nächste Aufgabe startet nicht automatisch; es erscheint zuerst ein Startbildschirm.
+
+
+## Fix v309
+- Karteikarten enthalten nur Thema-3-Wortschatz: Farben, Adjektive, Reaktionen. Keine Nomen aus Thema 2.
+- Nomen aus Thema 2 Im Buch dürfen als Kontext in Hören, Sätzen, Schreiben, Gefallen, nicht/kein und Gegenteilen verwendet werden.
+- TTS ist immer Deutsch: SpeechSynthesisUtterance.lang = 'de-DE' und deutsche Stimme wird bevorzugt.
+- orange/hellorange/dunkelorange werden für TTS als oransche/hell oransche/dunkel oransche vorgelesen, Anzeige und Lösung bleiben normal.

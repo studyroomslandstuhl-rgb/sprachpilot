@@ -15,9 +15,9 @@ const COLORS=[
 {id:"gelb",word:"gelb",img:"gelb.png",hex:"#facc15",tr:{en:"yellow",ru:"жёлтый",uk:"жовтий",ar:"أصفر",tr:"sarı",ro:"galben",ja:"黄色",pl:"żółty",ku:"zer"}},
 {id:"dunkelgelb",word:"dunkelgelb",img:"dunkelgelb.png",hex:"#ca8a04",tr:{en:"dark yellow",ru:"тёмно-жёлтый",uk:"темно-жовтий",ar:"أصفر داكن",tr:"koyu sarı",ro:"galben închis",ja:"暗い黄色",pl:"ciemnożółty",ku:"zera tarî"}},
 {id:"hellgelb",word:"hellgelb",img:"hellgelb.png",hex:"#fde68a",tr:{en:"light yellow",ru:"светло-жёлтый",uk:"світло-жовтий",ar:"أصفر فاتح",tr:"açık sarı",ro:"galben deschis",ja:"明るい黄色",pl:"jasnożółty",ku:"zera ronahî"}},
-{id:"orange",word:"orange",img:"orange.png",hex:"#fb923c",tr:{en:"orange",ru:"оранжевый",uk:"помаранчевий",ar:"برتقالي",tr:"turuncu",ro:"portocaliu",ja:"オレンジ",pl:"pomarańczowy",ku:"porteqalî"}},
-{id:"dunkelorange",word:"dunkelorange",img:"dunkelorange.png",hex:"#c2410c",tr:{en:"dark orange",ru:"тёмно-оранжевый",uk:"темно-помаранчевий",ar:"برتقالي داكن",tr:"koyu turuncu",ro:"portocaliu închis",ja:"暗いオレンジ",pl:"ciemnopomarańczowy",ku:"porteqaliya tarî"}},
-{id:"hellorange",word:"hellorange",img:"hellorange.png",hex:"#fdba74",tr:{en:"light orange",ru:"светло-оранжевый",uk:"світло-помаранчевий",ar:"برتقالي فاتح",tr:"açık turuncu",ro:"portocaliu deschis",ja:"明るいオレンジ",pl:"jasnopomarańczowy",ku:"porteqaliya ronahî"}},
+{id:"orange",word:"orange",speak:"oransche",img:"orange.png",hex:"#fb923c",tr:{en:"orange",ru:"оранжевый",uk:"помаранчевий",ar:"برتقالي",tr:"turuncu",ro:"portocaliu",ja:"オレンジ",pl:"pomarańczowy",ku:"porteqalî"}},
+{id:"dunkelorange",word:"dunkelorange",speak:"dunkel oransche",img:"dunkelorange.png",hex:"#c2410c",tr:{en:"dark orange",ru:"тёмно-оранжевый",uk:"темно-помаранчевий",ar:"برتقالي داكن",tr:"koyu turuncu",ro:"portocaliu închis",ja:"暗いオレンジ",pl:"ciemnopomarańczowy",ku:"porteqaliya tarî"}},
+{id:"hellorange",word:"hellorange",speak:"hell oransche",img:"hellorange.png",hex:"#fdba74",tr:{en:"light orange",ru:"светло-оранжевый",uk:"світло-помаранчевий",ar:"برتقالي فاتح",tr:"açık turuncu",ro:"portocaliu deschis",ja:"明るいオレンジ",pl:"jasnopomarańczowy",ku:"porteqaliya ronahî"}},
 {id:"weiss",word:"weiß",img:"weiss.png",hex:"#ffffff",tr:{en:"white",ru:"белый",uk:"білий",ar:"أبيض",tr:"beyaz",ro:"alb",ja:"白",pl:"biały",ku:"spî"}},
 {id:"schwarz",word:"schwarz",img:"schwarz.png",hex:"#111827",tr:{en:"black",ru:"чёрный",uk:"чорний",ar:"أسود",tr:"siyah",ro:"negru",ja:"黒",pl:"czarny",ku:"reş"}},
 {id:"grau",word:"grau",img:"grau.png",hex:"#9ca3af",tr:{en:"gray",ru:"серый",uk:"сірий",ar:"رمادي",tr:"gri",ro:"gri",ja:"灰色",pl:"szary",ku:"gewir"}},
@@ -89,7 +89,7 @@ const PAIRS=[
 ["schoen","haesslich"],["hell","dunkel"],["gross","klein"],["breit","schmal"],
 ["teuer","billig"],["neu","alt"],["modern","altmodisch"],["sauber","schmutzig"],["bequem","unbequem"]
 ];
-const CARDS=[...COLORS.map(x=>({...x,type:"color"})),...ADJECTIVES.map(x=>({...x,type:"adj"}))];
+const CARDS=[...COLORS.map(x=>({...x,type:"color"})),...ADJECTIVES.map(x=>({...x,type:"adj"})),...REACTIONS.map(x=>({...x,type:"reaction",tr:{en:x.word}}))];
 
 const HEARING_TASKS=[
 {color:"rot",options:["rot","dunkelrot","hellrot","orange"],item:"stuhl"},
@@ -130,99 +130,124 @@ const CONTRAST_TASKS=[
 {item:"sessel",wrong:"unbequem",right:"bequem",sentence:"Der Sessel ist nicht unbequem. Er ist sehr bequem."},
 {item:"stuhl",wrong:"bequem",right:"unbequem",sentence:"Der Stuhl ist nicht bequem. Er ist sehr unbequem."},
 {item:"waschbecken",wrong:"schmutzig",right:"sauber",sentence:"Das Waschbecken ist nicht schmutzig. Es ist sehr sauber."},
-{item:"waschbecken",wrong:"sauber",right:"schmutzig",sentence:"Das Waschbecken ist nicht sauber. Es ist sehr schmutzig."},
-{item:"sofa",wrong:"altmodisch",right:"modern",sentence:"Das Sofa ist nicht altmodisch. Es ist sehr modern."},
-{item:"tisch",wrong:"klein",right:"groß",sentence:"Der Tisch ist nicht klein. Er ist sehr groß."},
+{item:"dusche",wrong:"schmutzig",right:"sauber",sentence:"Die Dusche ist nicht schmutzig. Sie ist sehr sauber."},
+{item:"kuehlschrank",wrong:"altmodisch",right:"modern",sentence:"Der Kühlschrank ist nicht altmodisch. Er ist sehr modern."},
+{item:"fernseher",wrong:"klein",right:"groß",sentence:"Der Fernseher ist nicht klein. Er ist sehr groß."},
 {item:"schrank",wrong:"schmal",right:"breit",sentence:"Der Schrank ist nicht schmal. Er ist sehr breit."},
-{item:"stuhl",wrong:"teuer",right:"billig",sentence:"Der Stuhl ist nicht teuer. Er ist sehr billig."},
+{item:"teppich",wrong:"teuer",right:"billig",sentence:"Der Teppich ist nicht teuer. Er ist sehr billig."},
 {item:"bett",wrong:"alt",right:"neu",sentence:"Das Bett ist nicht alt. Es ist sehr neu."},
-{item:"sessel",wrong:"hässlich",right:"schön",sentence:"Der Sessel ist nicht hässlich. Er ist sehr schön."},
+{item:"badewanne",wrong:"hässlich",right:"schön",sentence:"Die Badewanne ist nicht hässlich. Sie ist sehr schön."},
 {item:"tisch",wrong:"breit",right:"schmal",sentence:"Der Tisch ist nicht breit. Er ist sehr schmal."},
-{item:"bett",wrong:"billig",right:"teuer",sentence:"Das Bett ist nicht billig. Es ist sehr teuer."},
-{item:"lampe",wrong:"schön",right:"hässlich",sentence:"Die Lampe ist nicht schön. Sie ist sehr hässlich."}
+{item:"herd",wrong:"billig",right:"teuer",sentence:"Der Herd ist nicht billig. Er ist sehr teuer."},
+{item:"toilette",wrong:"schön",right:"hässlich",sentence:"Die Toilette ist nicht schön. Sie ist sehr hässlich."},
+{item:"elektrogeraet",wrong:"alt",right:"modern",sentence:"Das Elektrogerät ist nicht alt. Es ist sehr modern."}
 ];
 
 const GEFAELLEN_TASKS=[
-{item:"stuhl",reaction:"gut",adj:"rot",question:"Wie gefällt dir der Stuhl?",answer:"Gut. Er ist rot."},
-{item:"sessel",reaction:"sehr-gut",adj:"bequem",question:"Wie gefällt dir der Sessel?",answer:"Sehr gut. Er ist bequem."},
-{item:"sofa",reaction:"gut",adj:"modern",question:"Wie gefällt dir das Sofa?",answer:"Gut. Es ist modern."},
+{item:"schrank",reaction:"gut",adj:"modern",question:"Wie gefällt dir der Schrank?",answer:"Gut. Er ist modern."},
+{item:"kuehlschrank",reaction:"sehr-gut",adj:"sauber",question:"Wie gefällt dir der Kühlschrank?",answer:"Sehr gut. Er ist sauber."},
+{item:"sofa",reaction:"gut",adj:"dunkelrot",question:"Wie gefällt dir das Sofa?",answer:"Gut. Es ist dunkelrot."},
 {item:"tisch",reaction:"ganz-gut",adj:"hellblau",question:"Wie gefällt dir der Tisch?",answer:"Ganz gut. Er ist hellblau."},
-{item:"bett",reaction:"nicht-so-gut",adj:"teuer",question:"Wie gefällt dir das Bett?",answer:"Nicht so gut. Es ist teuer."},
-{item:"schrank",reaction:"nicht-so-gut",adj:"altmodisch",question:"Wie gefällt dir der Schrank?",answer:"Nicht so gut. Er ist altmodisch."},
-{item:"lampe",reaction:"sehr-gut",adj:"hell",question:"Wie gefällt dir die Lampe?",answer:"Sehr gut. Sie ist hell."},
-{item:"waschbecken",reaction:"nicht-so-gut",adj:"schmutzig",question:"Wie gefällt dir das Waschbecken?",answer:"Nicht so gut. Es ist schmutzig."},
 {item:"stuhl",reaction:"nicht-so-gut",adj:"unbequem",question:"Wie gefällt dir der Stuhl?",answer:"Nicht so gut. Er ist unbequem."},
+{item:"bett",reaction:"gut",adj:"bequem",question:"Wie gefällt dir das Bett?",answer:"Gut. Es ist bequem."},
+{item:"fernseher",reaction:"nicht-so-gut",adj:"teuer",question:"Wie gefällt dir der Fernseher?",answer:"Nicht so gut. Er ist teuer."},
+{item:"teppich",reaction:"sehr-gut",adj:"schoen",question:"Wie gefällt dir der Teppich?",answer:"Sehr gut. Er ist schön."},
 {item:"sessel",reaction:"ganz-gut",adj:"dunkelgruen",question:"Wie gefällt dir der Sessel?",answer:"Ganz gut. Er ist dunkelgrün."},
+{item:"lampe",reaction:"sehr-gut",adj:"hell",question:"Wie gefällt dir die Lampe?",answer:"Sehr gut. Sie ist hell."},
+{item:"herd",reaction:"nicht-so-gut",adj:"altmodisch",question:"Wie gefällt dir der Herd?",answer:"Nicht so gut. Er ist altmodisch."},
+{item:"elektrogeraet",reaction:"gut",adj:"tuerkis",question:"Wie gefällt dir das Elektrogerät?",answer:"Gut. Es ist türkis."},
+{item:"dusche",reaction:"sehr-gut",adj:"sauber",question:"Wie gefällt dir die Dusche?",answer:"Sehr gut. Sie ist sauber."},
+{item:"badewanne",reaction:"ganz-gut",adj:"hellrosa",question:"Wie gefällt dir die Badewanne?",answer:"Ganz gut. Sie ist hellrosa."},
+{item:"toilette",reaction:"nicht-so-gut",adj:"schmutzig",question:"Wie gefällt dir die Toilette?",answer:"Nicht so gut. Sie ist schmutzig."},
+{item:"waschbecken",reaction:"gut",adj:"weiss",question:"Wie gefällt dir das Waschbecken?",answer:"Gut. Es ist weiß."},
 {item:"stuehle",plural:true,itemImg:"stuhl.png",full:"die Stühle",question:"Wie gefallen dir die Stühle?",reaction:"gut",adj:"modern",answer:"Gut. Sie sind modern."},
 {item:"sofas",plural:true,itemImg:"sofa.png",full:"die Sofas",question:"Wie gefallen dir die Sofas?",reaction:"sehr-gut",adj:"bequem",answer:"Sehr gut. Sie sind bequem."},
 {item:"lampen",plural:true,itemImg:"lampe.png",full:"die Lampen",question:"Wie gefallen dir die Lampen?",reaction:"nicht-so-gut",adj:"dunkel",answer:"Nicht so gut. Sie sind dunkel."},
-{item:"betten",plural:true,itemImg:"bett.png",full:"die Betten",question:"Wie gefallen dir die Betten?",reaction:"gut",adj:"sauber",answer:"Gut. Sie sind sauber."},
-{item:"schraenke",plural:true,itemImg:"schrank.png",full:"die Schränke",question:"Wie gefallen dir die Schränke?",reaction:"ganz-gut",adj:"altmodisch",answer:"Ganz gut. Sie sind altmodisch."}
+{item:"betten",plural:true,itemImg:"bett.png",full:"die Betten",question:"Wie gefallen dir die Betten?",reaction:"gut",adj:"sauber",answer:"Gut. Sie sind sauber."}
 ];
 
 const SENTENCES=[
-{img:"sessel.png",text:"Der Sessel ist bequem.",words:["Der","Sessel","ist","bequem."]},
-{img:"stuhl.png",text:"Der Stuhl ist unbequem.",words:["Der","Stuhl","ist","unbequem."]},
-{img:"waschbecken.png",text:"Das Waschbecken ist sauber.",words:["Das","Waschbecken","ist","sauber."]},
-{img:"waschbecken.png",text:"Das Waschbecken ist schmutzig.",words:["Das","Waschbecken","ist","schmutzig."]},
-{img:"sofa.png",text:"Das Sofa ist modern.",words:["Das","Sofa","ist","modern."]},
-{img:"schrank.png",text:"Der Schrank ist altmodisch.",words:["Der","Schrank","ist","altmodisch."]},
-{img:"lampe.png",text:"Die Lampe ist hell.",words:["Die","Lampe","ist","hell."]},
-{img:"tisch.png",text:"Der Tisch ist hellblau.",words:["Der","Tisch","ist","hellblau."]},
-{img:"bett.png",text:"Das Bett ist neu.",words:["Das","Bett","ist","neu."]},
-{img:"schrank.png",text:"Der Schrank ist breit.",words:["Der","Schrank","ist","breit."]},
-{img:"stuhl.png",text:"Die Stühle sind bequem.",words:["Die","Stühle","sind","bequem."]},
-{img:"sofa.png",text:"Die Sofas sind modern.",words:["Die","Sofas","sind","modern."]},
-{img:"lampe.png",text:"Die Lampen sind hell.",words:["Die","Lampen","sind","hell."]},
-{img:"bett.png",text:"Die Betten sind teuer.",words:["Die","Betten","sind","teuer."]},
-{img:"waschbecken.png",text:"Die Waschbecken sind sauber.",words:["Die","Waschbecken","sind","sauber."]},
-{img:"sessel.png",text:"Die Sessel sind altmodisch.",words:["Die","Sessel","sind","altmodisch."]},
-{img:"sessel.png",text:"Der Sessel ist dunkelgrün.",words:["Der","Sessel","ist","dunkelgrün."]},
-{img:"stuhl.png",text:"Der Stuhl ist billig.",words:["Der","Stuhl","ist","billig."]},
+{img:"schrank.png",text:"Der Schrank ist modern.",words:["Der","Schrank","ist","modern."]},
+{img:"kuehlschrank.png",text:"Der Kühlschrank ist sauber.",words:["Der","Kühlschrank","ist","sauber."]},
 {img:"sofa.png",text:"Das Sofa ist dunkelrot.",words:["Das","Sofa","ist","dunkelrot."]},
-{img:"tisch.png",text:"Die Tische sind schmal.",words:["Die","Tische","sind","schmal."]}
+{img:"tisch.png",text:"Der Tisch ist hellblau.",words:["Der","Tisch","ist","hellblau."]},
+{img:"stuhl.png",text:"Der Stuhl ist unbequem.",words:["Der","Stuhl","ist","unbequem."]},
+{img:"bett.png",text:"Das Bett ist bequem.",words:["Das","Bett","ist","bequem."]},
+{img:"fernseher.png",text:"Der Fernseher ist teuer.",words:["Der","Fernseher","ist","teuer."]},
+{img:"teppich.png",text:"Der Teppich ist schön.",words:["Der","Teppich","ist","schön."]},
+{img:"sessel.png",text:"Der Sessel ist dunkelgrün.",words:["Der","Sessel","ist","dunkelgrün."]},
+{img:"lampe.png",text:"Die Lampe ist hell.",words:["Die","Lampe","ist","hell."]},
+{img:"herd.png",text:"Der Herd ist altmodisch.",words:["Der","Herd","ist","altmodisch."]},
+{img:"elektrogeraet.png",text:"Das Elektrogerät ist türkis.",words:["Das","Elektrogerät","ist","türkis."]},
+{img:"dusche.png",text:"Die Dusche ist sauber.",words:["Die","Dusche","ist","sauber."]},
+{img:"badewanne.png",text:"Die Badewanne ist hellrosa.",words:["Die","Badewanne","ist","hellrosa."]},
+{img:"toilette.png",text:"Die Toilette ist schmutzig.",words:["Die","Toilette","ist","schmutzig."]},
+{img:"waschbecken.png",text:"Das Waschbecken ist weiß.",words:["Das","Waschbecken","ist","weiß."]},
+{img:"stuhl.png",text:"Die Stühle sind modern.",words:["Die","Stühle","sind","modern."]},
+{img:"sofa.png",text:"Die Sofas sind bequem.",words:["Die","Sofas","sind","bequem."]},
+{img:"lampe.png",text:"Die Lampen sind hell.",words:["Die","Lampen","sind","hell."]},
+{img:"bett.png",text:"Die Betten sind teuer.",words:["Die","Betten","sind","teuer."]}
 ];
 
 const KEIN_TASKS=[
-{gap:"nicht",sentence:"Der Sessel ist ___ unbequem. Er ist bequem."},
+{gap:"nicht",sentence:"Der Schrank ist ___ altmodisch. Er ist modern."},
+{gap:"kein",sentence:"Das ist ___ Kühlschrank. Das ist ein Schrank."},
+{gap:"kein",sentence:"Das ist ___ Sofa. Das ist ein Bett."},
+{gap:"kein",sentence:"Hier ist ___ Tisch. Hier ist ein Stuhl."},
 {gap:"kein",sentence:"Das ist ___ Stuhl. Das ist ein Sessel."},
-{gap:"keine",sentence:"Das ist ___ Lampe. Das ist ein Tisch."},
-{gap:"nicht",sentence:"Das Waschbecken ist ___ schmutzig. Es ist sauber."},
 {gap:"kein",sentence:"Hier ist ___ Bett. Hier ist ein Sofa."},
-{gap:"keine",sentence:"Hier ist ___ Dusche. Hier ist ein Waschbecken."},
-{gap:"nicht",sentence:"Der Stuhl ist ___ bequem. Er ist unbequem."},
-{gap:"kein",sentence:"Das ist ___ Schrank. Das ist ein Kühlschrank."},
-{gap:"keine",sentence:"Das ist ___ Küche. Das ist ein Bad."},
-{gap:"nicht",sentence:"Das Sofa ist ___ alt. Es ist modern."},
 {gap:"kein",sentence:"Hier ist ___ Fernseher. Hier ist ein Teppich."},
-{gap:"keine",sentence:"Hier ist ___ Toilette. Hier ist eine Dusche."},
-{gap:"nicht",sentence:"Die Lampe ist ___ dunkel. Sie ist hell."},
-{gap:"kein",sentence:"Das ist ___ Tisch. Das ist ein Stuhl."},
-{gap:"keine",sentence:"Das ist ___ Badewanne. Das ist eine Dusche."}
+{gap:"kein",sentence:"Das ist ___ Teppich. Das ist ein Tisch."},
+{gap:"nicht",sentence:"Der Sessel ist ___ unbequem. Er ist bequem."},
+{gap:"keine",sentence:"Das ist ___ Lampe. Das ist ein Herd."},
+{gap:"kein",sentence:"Das ist ___ Herd. Das ist ein Elektrogerät."},
+{gap:"kein",sentence:"Das ist ___ Elektrogerät. Das ist ein Fernseher."},
+{gap:"keine",sentence:"Hier ist ___ Dusche. Hier ist eine Badewanne."},
+{gap:"keine",sentence:"Hier ist ___ Badewanne. Hier ist eine Dusche."},
+{gap:"keine",sentence:"Hier ist ___ Toilette. Hier ist ein Waschbecken."},
+{gap:"nicht",sentence:"Das Waschbecken ist ___ schmutzig. Es ist sauber."}
 ];
 
 const WRITING=[
-{imgs:["sessel.png","bequem.png"],text:"Der Sessel ist bequem."},
-{imgs:["stuhl.png","unbequem.png"],text:"Der Stuhl ist unbequem."},
-{imgs:["waschbecken.png","sauber.png"],text:"Das Waschbecken ist sauber."},
-{imgs:["waschbecken.png","schmutzig.png"],text:"Das Waschbecken ist schmutzig."},
-{imgs:["sofa.png","modern.png"],text:"Das Sofa ist modern."},
-{imgs:["schrank.png","altmodisch.png"],text:"Der Schrank ist altmodisch."},
-{imgs:["lampe.png","hell.png"],text:"Die Lampe ist hell."},
-{imgs:["tisch.png","hellblau.png"],text:"Der Tisch ist hellblau."},
-{imgs:["bett.png","neu.png"],text:"Das Bett ist neu."},
-{imgs:["schrank.png","breit.png"],text:"Der Schrank ist breit."},
-{imgs:["sessel.png","schoen.png"],text:"Der Sessel ist schön."},
-{imgs:["stuhl.png","billig.png"],text:"Der Stuhl ist billig."},
+{imgs:["schrank.png","modern.png"],text:"Der Schrank ist modern."},
+{imgs:["kuehlschrank.png","sauber.png"],text:"Der Kühlschrank ist sauber."},
 {imgs:["sofa.png","dunkelrot.png"],text:"Das Sofa ist dunkelrot."},
-{imgs:["bett.png","teuer.png"],text:"Das Bett ist teuer."},
-{imgs:["lampe.png","modern.png"],text:"Die Lampe ist modern."}
+{imgs:["tisch.png","hellblau.png"],text:"Der Tisch ist hellblau."},
+{imgs:["stuhl.png","unbequem.png"],text:"Der Stuhl ist unbequem."},
+{imgs:["bett.png","bequem.png"],text:"Das Bett ist bequem."},
+{imgs:["fernseher.png","teuer.png"],text:"Der Fernseher ist teuer."},
+{imgs:["teppich.png","schoen.png"],text:"Der Teppich ist schön."},
+{imgs:["sessel.png","dunkelgruen.png"],text:"Der Sessel ist dunkelgrün."},
+{imgs:["lampe.png","hell.png"],text:"Die Lampe ist hell."},
+{imgs:["herd.png","altmodisch.png"],text:"Der Herd ist altmodisch."},
+{imgs:["elektrogeraet.png","tuerkis.png"],text:"Das Elektrogerät ist türkis."},
+{imgs:["dusche.png","sauber.png"],text:"Die Dusche ist sauber."},
+{imgs:["badewanne.png","hellrosa.png"],text:"Die Badewanne ist hellrosa."},
+{imgs:["toilette.png","schmutzig.png"],text:"Die Toilette ist schmutzig."},
+{imgs:["waschbecken.png","weiss.png"],text:"Das Waschbecken ist weiß."}
 ];
 
 function $(id){return document.getElementById(id)}
 function simple(s){return String(s||"").toLowerCase().trim().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/ß/g,"ss").replace(/[.,!?]/g,"").replace(/\s+/g," ")}
 function safe(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
-function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function shuffle(a){
+  const arr=[...a];
+  for(let i=arr.length-1;i>0;i--){
+    const j=Math.floor(Math.random()*(i+1));
+    [arr[i],arr[j]]=[arr[j],arr[i]];
+  }
+  return arr;
+}
+function mixWithCorrect(correct, pool, count=4){
+  const others=shuffle(pool.filter(x=>x&&correct&&x.id!==correct.id)).slice(0,count-1);
+  return shuffle([correct,...others]);
+}
+function ttsGermanText(text){
+  return String(text||'')
+    .replace(/dunkelorange/gi,'dunkel oransche')
+    .replace(/hellorange/gi,'hell oransche')
+    .replace(/orange/gi,'oransche');
+}
 function currentMotherLang(){try{let p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");let raw=p?.motherLanguageCode||p?.muttersprache||p?.motherLanguage||localStorage.getItem("motherLanguage")||"en";let n=String(raw).trim().toLowerCase();let map={"russisch":"ru","englisch":"en","ukrainisch":"uk","arabisch":"ar","türkisch":"tr","tuerkisch":"tr","rumänisch":"ro","rumaenisch":"ro","japanisch":"ja","polnisch":"pl","kurdisch":"ku","deutsch":"de"};return map[n]||n||"en"}catch(e){return"en"}}
 function translate(x){let l=currentMotherLang();return x.tr?.[l]||x.tr?.en||x.word}
 function img(name,cls="task-img"){return `<img class="${cls}" src="../bilder/${name}" onerror="fixImg(this)" alt="">`}
@@ -281,7 +306,23 @@ function resetThemeProgress(){if(!confirm("Möchten Sie wirklich alle Fortschrit
 function syncTask(file,st){try{const total=Number(st.total||getTotal(file));const done=Array.isArray(st.done)?st.done.length:0;const percent=Math.round(done/total*100)||0;const payload={...THEME,file,taskKey:file,taskTitle:TASK_TITLES[file]||file,total,done,percent,completed:percent>=100,wrongItems:st.wrongItems||[]};if(window.SPProgress?.recordTaskProgress)window.SPProgress.recordTaskProgress(payload);else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:"recordTaskProgress",payload});import('/js/progress.js').catch(()=>{})}}catch(e){}}
 function syncExam(result){try{const payload={...THEME,score:result.score,maxScore:result.maxScore,percent:result.percent,stars:result.stars};if(window.SPProgress?.recordExamResult)window.SPProgress.recordExamResult(payload);else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:"recordExamResult",payload});import('/js/progress.js').catch(()=>{})}}catch(e){}}
 function syncReset(){try{const payload={...THEME};if(window.SPProgress?.recordThemeReset)window.SPProgress.recordThemeReset(payload);else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:"recordThemeReset",payload});import('/js/progress.js').catch(()=>{})}}catch(e){}}
-function speak(text,slow=false){if(!('speechSynthesis'in window))return;const run=()=>{speechSynthesis.cancel();let u=new SpeechSynthesisUtterance(String(text||''));u.lang='de-DE';u.rate=slow ? 0.38 : 0.98;u.pitch=1;u.volume=1;let voices=speechSynthesis.getVoices();let v=voices.find(v=>v.lang==='de-DE'&&/google|microsoft|anna|katja|deutsch|german/i.test(v.name||''))||voices.find(v=>v.lang==='de-DE')||voices.find(v=>String(v.lang||'').startsWith('de'));if(v)u.voice=v;speechSynthesis.speak(u)};if(!speechSynthesis.getVoices().length){speechSynthesis.onvoiceschanged=run;setTimeout(run,250)}else run()}
+function speak(text,slow=false){
+  if(!('speechSynthesis'in window))return;
+  const run=()=>{
+    speechSynthesis.cancel();
+    let u=new SpeechSynthesisUtterance(ttsGermanText(text));
+    u.lang='de-DE';
+    u.rate=slow ? 0.38 : 0.98;
+    u.pitch=1;
+    u.volume=1;
+    let voices=speechSynthesis.getVoices();
+    let german=voices.filter(v=>String(v.lang||'').toLowerCase().startsWith('de'));
+    let v=german.find(v=>/google|microsoft|anna|katja|deutsch|german/i.test(v.name||''))||german[0];
+    if(v)u.voice=v;
+    speechSynthesis.speak(u);
+  };
+  if(!speechSynthesis.getVoices().length){speechSynthesis.onvoiceschanged=run;setTimeout(run,250)}else run();
+}
 function startMic(btn,callback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const status=$('micStatus');if(!SR){if(status)status.textContent='Mikrofon geht hier nicht. Bitte schreibe.';return}let rec=new SR();rec.lang='de-DE';rec.interimResults=false;rec.continuous=false;if(btn)btn.classList.add('active');if(status)status.textContent='Ich höre zu …';rec.onresult=e=>{let txt=e.results[0][0].transcript;if(status)status.textContent='Gehört: '+txt;callback(txt,true)};rec.onerror=()=>{if(status)status.textContent='Mikrofon hat nicht funktioniert. Bitte schreibe.'};rec.onend=()=>{if(btn)btn.classList.remove('active')};rec.start()}
 function normalizeSentence(s){return simple(s).replace(/\s+/g,' ').trim()}
 function isLooseSentence(ans,sol){return normalizeSentence(ans)===normalizeSentence(sol)}

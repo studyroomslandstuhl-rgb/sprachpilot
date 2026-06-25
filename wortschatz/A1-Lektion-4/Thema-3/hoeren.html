@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören Thema 3</title><link rel="stylesheet" href="style.css?v=308"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=308"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören Thema 3</title><link rel="stylesheet" href="style.css?v=309"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=309"></script><script>
 header('Farben & Adjektive');
 const file='hoeren.html', total=HEARING_TASKS.length;
 let selectedColor=null;
@@ -13,8 +13,8 @@ function render(){
   if(i===null)return complete(area,file,'farben.html');
   selectedColor=null;
   let t=HEARING_TASKS[i], color=colorById(t.color), item=furnitureById(t.item);
-  let colorOpts=shuffle(t.options.map(colorById).filter(Boolean)).slice(0,4);
-  let itemOpts=shuffle([item,...shuffle(FURNITURE.filter(f=>f.id!==item.id)).slice(0,3)]);
+  let colorOpts=mixWithCorrect(color,t.options.map(colorById).filter(Boolean),4);
+  let itemOpts=mixWithCorrect(item,FURNITURE,4);
   area.innerHTML=progressHtml(file,total)+
   `<div class="question">Höre. Wähle zuerst die Farbe, dann das Möbel.</div>
    <div class="actions"><button class="btn" onclick="speak('${item.full} ist ${color.word}.')">▶️ Hören</button><button class="btn secondary" onclick="speak('${item.full} ist ${color.word}.',true)">🐢 Langsam</button></div>
