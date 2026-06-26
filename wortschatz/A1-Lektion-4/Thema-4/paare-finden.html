@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Paare finden</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=thema4v1"></script><script>header("Paare finden",{back:"index.html"});
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Paare finden</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="app.js?v=thema4v2"></script><script>header("Paare finden",{back:"index.html"});
 
 const FILE="paare-finden.html";let left=null;let done=[];
 function state(){try{return JSON.parse(localStorage.getItem(taskKey(FILE))||"null")||{done:[]}}catch(e){return{done:[]}}}
