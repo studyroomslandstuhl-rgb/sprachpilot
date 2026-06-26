@@ -1,5 +1,5 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Thema 4 – Wohnungsanzeigen</title><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><section class="hero"><h2>Wohnungsanzeigen lesen und verstehen</h2><p class="small">Kosten, Größe, Zimmer, Abkürzungen und passende Anzeigen.</p></section><div id="themeProgress"></div><section class="task-grid" id="tasks"></section><footer>© SprachPilot</footer></div><script src="app.js?v=thema4v2"></script><script>
-header("Wohnungsanzeigen",{back:"../index.html"});
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Thema 4 – Wohnungsanzeigen</title><link rel="stylesheet" href="../shared/lektion4-standard.css"><link rel="stylesheet" href="style.css"></head><body><div class="container"><header class="topbar"></header><section class="card"><div class="task-title">Wohnungsanzeigen lesen und verstehen</div><p class="small" style="text-align:center">Kosten, Größe, Zimmer, Abkürzungen und passende Anzeigen.</p></section><div id="themeProgress"></div><section class="grid" id="tasks"></section><footer>© SprachPilot</footer></div><script src="../shared/lektion4-standard.js"></script><script src="app.js?v=thema4v3shared"></script><script>
+renderSprachPilotHeader({title:"Wohnungsanzeigen",subtitle:"A1 Lektion 4 · Thema 4",backHref:"../index.html",overviewHref:"uebersicht.html",statsHref:"statistik.html"});
 const TASKS=[
  ["karteikarten.html","Karteikarten","Neue Wörter üben","🃏",WORDS.length],
  ["hoeren.html","Hören","Höre und wähle Wort und Bild","🔊",HOREN_IDS.length],
@@ -14,6 +14,6 @@ const TASKS=[
 ];
 themeProgress.innerHTML=renderThemeProgress();
 const examLocked=!isExamUnlocked();
-tasks.innerHTML=TASKS.map(t=>{const p=pct(t[0],t[4]);return `<a class="task-card" href="${t[0]}"><div><div class="task-icon">${t[3]}</div><h3>${t[1]}</h3><p>${t[2]}</p></div><div><div class="progress"><div class="bar" style="width:${p}%"></div></div><span class="badge ${p>=100?'done':''}">${p>=100?'Fertig':'Starten'} · ${p}%</span></div></a>`}).join("")+`<a class="task-card ${examLocked?'locked':''}" href="${examLocked?'#':'pruefung.html'}"><div><div class="task-icon">⭐</div><h3>Prüfung</h3><p>Teste dein Wissen</p></div><span class="badge ${examLocked?'locked':''}">${examLocked?'Prüfung gesperrt':'Starten'}</span></a>`;
+tasks.innerHTML=TASKS.map((t,idx)=>{const p=pct(t[0],t[4]);return `<a class="module" href="${t[0]}"><div class="num">${idx+1}.</div><div class="icon">${t[3]}</div><h3>${t[1]}</h3><p>${t[2]}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}).join("")+`<a class="module ${examLocked?'exam-locked':''}" href="${examLocked?'#':'pruefung.html'}"><div class="num">${TASKS.length+1}.</div><div class="icon">⭐</div><h3>Prüfung</h3><p>Teste dein Wissen</p><div class="start">${examLocked?'Prüfung gesperrt':'Starten'}</div></a>`;
 syncDashboardProgress();
 </script></body></html>
