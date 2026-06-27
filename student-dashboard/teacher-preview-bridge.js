@@ -13,7 +13,7 @@
   }
   function isStudentProfile(profile){
     const role=roleOf(profile);
-    return profile.isStudent===true || profile.student===true || profile.schueler===true || role==="student" || role==="schueler" || role==="schüler";
+    return profile.isStudent===true || profile.student===true || profile.schueler===true || role==="student" || role==="schueler" || role==="schüler" || ((profile.kurs||profile.kursnummer||profile.courseCode)&&(profile.muttersprache||profile.nativeLanguage||profile.language));
   }
   function clearPreview(){
     sessionStorage.removeItem("SP_TEACHER_PREVIEW");
@@ -25,7 +25,7 @@
   const course=params.get("course")||params.get("kurs")||"";
   const wantsPreview=params.get("teacherPreview")==="1" && !!course;
   const profile=readProfile();
-  const activeRole=String(localStorage.getItem("SP_ACTIVE_ROLE")||"").toLowerCase();
+  const activeRole=String(localStorage.getItem("SP_LOGIN_ROLE")||localStorage.getItem("SP_ACTIVE_ROLE")||localStorage.getItem("SP_AUTH_ROLE")||localStorage.getItem("SP_LOGIN_CONTEXT")||"").toLowerCase();
   const teacherAllowed=activeRole==="teacher" || isTeacherProfile(profile);
 
   if(wantsPreview && teacherAllowed){
