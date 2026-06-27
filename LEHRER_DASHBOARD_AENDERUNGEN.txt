@@ -15,3 +15,11 @@ Fixes:
 - Neue Kurse bekommen mehrere kompatible Zuordnungsfelder, damit sie später sicher gefunden werden.
 - Wenn keine Kurse angezeigt werden, erscheint eine Debug-Box mit UID/E-Mail/Name und den geprüften Abfragen.
 - Kurskarten zeigen Teilnehmerzahl, SprachPilot, Freigabe und Kurs löschen klar in einer Zeile.
+
+
+Schritt 5:
+- Freigabe-System repariert: Lektion 4 Thema 2 speichert Sets mit book/extra und Alias buch/plus.
+- Freigaben werden erst mit Speichern übernommen.
+- Thema 2 filtert Wörter/Aufgaben nach freigegebenem Set.
+- Kursfilter im Lehrer-Dashboard erweitert: alte Kurse ohne Lehrer-Zuordnung werden sichtbar und können mit „Mir zuweisen“ repariert werden.
+- Kursaktionen nutzen jetzt die echte Kurs-Dokument-ID, damit Freigabe/Löschen beim richtigen Kurs speichern.
