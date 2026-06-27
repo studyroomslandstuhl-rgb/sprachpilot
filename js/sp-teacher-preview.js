@@ -50,9 +50,7 @@ export function canSaveStudentProgress(profile={}){
 export function enterTeacherCoursePreview(course){
   const data=typeof course==="string"?{courseCode:course,kurs:course}:course||{};
   const courseCode=data.courseCode||data.kurs||data.name||data.id||"";
-
-  localStorage.setItem("SP_ACTIVE_ROLE","teacher");
-  sessionStorage.setItem("SP_TEACHER_PREVIEW",JSON.stringify({
+  const preview={
     teacherPreview:true,
     courseCode,
     kurs:courseCode,
@@ -60,11 +58,44 @@ export function enterTeacherCoursePreview(course){
     releases:data.releases||data.release||{},
     assignments:data.assignments||{},
     startedAt:new Date().toISOString()
+  };
+
+  localStorage.setItem("SP_ACTIVE_ROLE","teacher");
+  localStorage.setItem("SP_LOGIN_ROLE","teacher");
+  localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
+  localStorage.removeItem("SP_STUDENT_PROFILE");
+  localStorage.removeItem("SP_STUDENT_ID");
+  sessionStorage.setItem("SP_TEACHER_PREVIEW",JSON.stringify(preview));
+
+  let teacher={};
+  try{teacher=JSON.parse(localStorage.getItem("SP_TEACHER_PROFILE")||"{}")||{}}catch(e){}
+  localStorage.setItem("SP_USER_PROFILE",JSON.stringify({
+    vorname:teacher.firstName||teacher.vorname||teacher.name||"Lehrer",
+    nachname:teacher.lastName||teacher.nachname||"",
+    firstName:teacher.firstName||teacher.vorname||teacher.name||"Lehrer",
+    lastName:teacher.lastName||teacher.nachname||"",
+    email:teacher.email||"",
+    kurs:courseCode,
+    kursnummer:courseCode,
+    courseCode,
+    muttersprache:"Deutsch",
+    assignments:preview.assignments||{},
+    releases:preview.releases||{},
+    role:"teacher",
+    loginRole:"teacher",
+    isTeacher:true,
+    isStudent:false,
+    teacherPreview:true,
+    previewOnly:true
   }));
 }
 
 export function exitTeacherCoursePreview(){
   clearTeacherPreviewState();
+  try{
+    const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null");
+    if(p && p.teacherPreview) localStorage.removeItem("SP_USER_PROFILE");
+  }catch(e){}
 }
 
 export function previewProfile(base={}){

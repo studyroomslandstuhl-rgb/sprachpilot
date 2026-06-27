@@ -47,6 +47,48 @@ export function dashboardHref(){
 }
 export function makeStudentId(email,course){return normId(course)+"_"+normId(email)}
 export function getActiveProfile(){try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}}
+
+export function getStoredTeacherProfile(){
+  try{return JSON.parse(localStorage.getItem("SP_TEACHER_PROFILE")||"null")}catch(e){return null}
+}
+export function getStoredTeacherPreview(){
+  try{return JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW")||"null")}catch(e){return null}
+}
+export function isTeacherPreviewActive(){
+  const role=String(localStorage.getItem("SP_LOGIN_ROLE")||localStorage.getItem("SP_ACTIVE_ROLE")||localStorage.getItem("SP_LOGIN_CONTEXT")||"").toLowerCase();
+  const preview=getStoredTeacherPreview();
+  return !!(role==="teacher" && preview && preview.teacherPreview===true);
+}
+export function makeTeacherPreviewProfile(){
+  if(!isTeacherPreviewActive()) return null;
+  const teacher=getStoredTeacherProfile() || {};
+  const preview=getStoredTeacherPreview() || {};
+  const firstName=teacher.firstName || teacher.vorname || teacher.name || "Lehrer";
+  const lastName=teacher.lastName || teacher.nachname || "";
+  const course=preview.courseCode || preview.kurs || (preview.allAccess ? "ALLE" : "Lehrer-Vorschau");
+  return {
+    vorname:firstName,
+    nachname:lastName,
+    firstName,
+    lastName,
+    email:teacher.email || "",
+    kurs:course,
+    kursnummer:course,
+    courseCode:course,
+    muttersprache:preview.muttersprache || teacher.muttersprache || "Deutsch",
+    assignments:preview.assignments || {enabledModules:{"Fragen A1":true,"Wortschatz":true,"Verben A1":true}},
+    releases:preview.releases || {},
+    role:"teacher",
+    loginRole:"teacher",
+    isTeacher:true,
+    teacherPreview:true,
+    allAccess:!!preview.allAccess,
+    previewOnly:true
+  };
+}
+export function getEffectiveProfile(){
+  return getActiveProfile() || makeTeacherPreviewProfile();
+}
 export async function loadCourse(courseCode){
  const raw=String(courseCode||"").trim();
  if(!raw) return null;
@@ -324,7 +366,7 @@ export async function updateStudentProfile({vorname,nachname,email,muttersprache
 
 
 export function requireLogin(){
-  const p=getActiveProfile();
+  const p=getEffectiveProfile();
   if(!p){
     const target=location.pathname + location.search + location.hash;
     location.href="/login/?redirect="+encodeURIComponent(target);
@@ -350,10 +392,12 @@ export function renderAccountStrip(rootId="accountStrip"){
   const p=role==="student" ? getActiveProfile() : null;
 
   if(role==="teacher"){
-    const tp=(()=>{try{return JSON.parse(localStorage.getItem("SP_TEACHER_PROFILE")||"{}")}catch(e){return {}}})();
+    const tp=(()=>{try{return JSON.parse(localStorage.getItem("SP_TEACHER_PROFILE")||"{}") }catch(e){return {}}})();
+    const preview=makeTeacherPreviewProfile();
     const name=[tp.firstName,tp.lastName].filter(Boolean).join(" ") || tp.email || "Lehrkraft";
+    const suffix=preview ? " · Lehrer-Vorschau" : " · Lehrerzugang";
     el.innerHTML=`
-      <div class="who">${safeText(name)} · Lehrerzugang</div>
+      <div class="who">${safeText(name)}${suffix}</div>
       <div class="account-links">
         <a href="/teacher/index.html">Lehrer-Dashboard</a>
         <button onclick="logout()">Abmelden</button>
