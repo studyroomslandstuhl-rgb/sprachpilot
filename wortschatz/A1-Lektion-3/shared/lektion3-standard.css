@@ -49,3 +49,41 @@ body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-g
 @media(max-width:520px){
   .grid{grid-template-columns:1fr!important;}
 }
+
+/* ===== Schritt 11: L3 exakt näher an L4/T2 Masterlayout ===== */
+.module{
+  text-align:center!important;
+  min-height:245px!important;
+  display:flex!important;
+  flex-direction:column!important;
+  justify-content:space-between!important;
+}
+.module .num{
+  color:#1f2933!important;
+  font-size:22px!important;
+  margin-bottom:8px!important;
+}
+.module .icon:empty{
+  min-height:18px!important;
+  margin:0!important;
+}
+.module p{
+  min-height:44px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+.start{
+  width:100%!important;
+  justify-content:center!important;
+  background:#fff!important;
+}
+.progress-card{
+  min-height:170px!important;
+}
+.btn.danger-btn{
+  background:#ffe1e1!important;
+  color:#9b1c12!important;
+  border:2px solid #ffc1b8!important;
+  box-shadow:none!important;
+}
