@@ -36,12 +36,18 @@ function loadProfile(){
     profile=currentStudentProfile();
   }
   if(!profile){
-    $("profileBox").innerHTML="<div class='no'>Bitte zuerst auf der Startseite registrieren oder einloggen.</div>";
-    $("app").innerHTML="<button onclick=\"location.href='/index.html'\">Zur Startseite</button>";
+    const pbox=$("profileBox");
+    if(pbox)pbox.innerHTML="<div class='no'>Bitte zuerst auf der Startseite registrieren oder einloggen.</div>";
+    const app=$("app");
+    if(app){
+      app.className="app-area card";
+      app.innerHTML="<h2>Anmeldung fehlt</h2><p>Bitte zuerst auf der Startseite registrieren oder einloggen.</p><a class='btn secondary' href='/index.html'>Zur Startseite</a>";
+    }
     return false;
   }
   const name=`${safeText(profile.vorname)} ${safeText(profile.nachname)}`.trim()||"Schüler/in";
-  $("profileBox").innerHTML=`<div class="ok"><strong>${name}</strong><br><span class="small">Kurs: ${safeText(profile.kurs||profile.kursnummer||"")} · Sprache: ${safeText(nativeLang())}</span></div>`;
+  const pbox=$("profileBox");
+  if(pbox)pbox.innerHTML=`<div class="ok"><strong>${name}</strong><br><span class="small">Kurs: ${safeText(profile.kurs||profile.kursnummer||"")} · Sprache: ${safeText(nativeLang())}</span></div>`;
   return true;
 }
 async function loadState(){try{const saved=JSON.parse(localStorage.getItem(storageKey())||"null");if(saved)state={...state,...saved}}catch(e){}migrateState();const sid=firebaseStudentId();if(sid&&db){try{const snap=await db.collection("progress").doc(sid).get();if(snap.exists){const data=snap.data()||{};if(data.verben&&data.verben.state){state={...state,...data.verben.state};migrateState();localStorage.setItem(storageKey(),JSON.stringify(state))}}}catch(e){console.warn("Firebase Laden fehlgeschlagen",e)}}}
