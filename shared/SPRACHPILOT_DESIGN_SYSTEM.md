@@ -50,3 +50,17 @@ Oben links wird immer `/assets/logo/sprachpilot-logo.png` genutzt. Das Logo ist 
 ## Wichtig
 
 Diese Stufe bereitet das globale Designsystem vor. Noch nicht alle alten Seiten sind vollständig umgestellt. Die nächsten Schritte migrieren die alten Bereiche Ordner für Ordner.
+
+
+## Schritt 16 – Bilder-System
+
+Bilder werden langfristig zentral unter `/assets/img/` gesammelt. Alte Bildpfade werden noch nicht gelöscht oder verschoben.
+
+Neue/umgebaute Aufgaben können `/shared/sprachpilot-assets.js` nutzen:
+
+```js
+spImagePath("kaufen.png")
+spImagePath("wohnung.png", { lesson: 4 })
+```
+
+Das erlaubt zentrale Bilder und sichere Rückfälle auf alte Pfade.
