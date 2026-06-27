@@ -21,26 +21,57 @@ function spReadSessionJson(key, fallback = null) {
   }
 }
 
-function spRawProfile() {
-  const storedRole = String(
+function spStoredRole() {
+  return String(
     localStorage.getItem("SP_LOGIN_ROLE") ||
     localStorage.getItem("SP_ACTIVE_ROLE") ||
     localStorage.getItem("SP_AUTH_ROLE") ||
     localStorage.getItem("SP_LOGIN_CONTEXT") ||
     ""
   ).toLowerCase();
+}
+
+function spHasExplicitTeacherPreviewSource() {
+  const source = String(sessionStorage.getItem("SP_TEACHER_PREVIEW_SOURCE") || "").toLowerCase();
+  const preview = spReadSessionJson("SP_TEACHER_PREVIEW", null);
+  return !!(preview && preview.teacherPreview === true && (source === "teacher-dashboard" || preview.source === "teacher-dashboard" || preview.startedFrom === "teacher-dashboard"));
+}
+
+function spRawProfile() {
+  const storedRole = spStoredRole();
+  const userProfile = spReadJson("SP_USER_PROFILE", {});
+  const studentProfile = spReadJson("SP_STUDENT_PROFILE", null);
+  const teacherProfile = spReadJson("SP_TEACHER_PROFILE", null);
+
+  // Echte Schüler-Session hat Vorrang. Gleiche E-Mail darf Lehrer+Schüler sein;
+  // die aktive Login-Art entscheidet, nicht die E-Mail.
+  if (storedRole === "student" || storedRole === "schueler" || storedRole === "schüler") {
+    if (studentProfile && Object.keys(studentProfile).length) return studentProfile;
+    return userProfile;
+  }
+
+  // Nur eine ausdrücklich aus dem Lehrer-Dashboard gestartete Vorschau darf als Lehrer gelten.
+  if ((storedRole === "teacher" || storedRole === "lehrer" || storedRole === "admin") && spHasExplicitTeacherPreviewSource()) {
+    if (teacherProfile && Object.keys(teacherProfile).length) return teacherProfile;
+    return userProfile;
+  }
+
+  // Thema 4 darf alte Lehrer-/Preview-Werte nicht auf echte Schülerprofile anwenden.
+  const looksStudent = (profile) => profile && (
+    profile.isStudent === true || profile.student === true || profile.schueler === true || profile.schüler === true ||
+    ["student", "schueler", "schüler"].includes(String(profile.loginRole || profile.role || profile.typ || profile.type || profile.accountType || profile.userRole || "").toLowerCase()) ||
+    ((profile.kurs || profile.kursnummer || profile.courseCode) && (profile.muttersprache || profile.nativeLanguage || profile.language))
+  );
+
+  if (looksStudent(studentProfile)) return studentProfile;
+  if (looksStudent(userProfile) && !spHasExplicitTeacherPreviewSource()) return userProfile;
 
   if (storedRole === "teacher" || storedRole === "lehrer" || storedRole === "admin") {
-    const teacherProfile = spReadJson("SP_TEACHER_PROFILE", null);
     if (teacherProfile && Object.keys(teacherProfile).length) return teacherProfile;
+    return userProfile;
   }
 
-  if (storedRole === "student" || storedRole === "schueler" || storedRole === "schüler") {
-    const studentProfile = spReadJson("SP_STUDENT_PROFILE", null);
-    if (studentProfile && Object.keys(studentProfile).length) return studentProfile;
-  }
-
-  return spReadJson("SP_USER_PROFILE", {});
+  return userProfile;
 }
 
 function spProfileRole(profile = {}) {
@@ -75,16 +106,10 @@ function spActiveRole(profile = spRawProfile()) {
   // Wichtig: Schülerprofil schlägt alte Lehrer-/Preview-Speicherwerte.
   if (spLooksLikeStudent(profile)) return "student";
 
-  const storedRole = String(
-    localStorage.getItem("SP_LOGIN_ROLE") ||
-    localStorage.getItem("SP_ACTIVE_ROLE") ||
-    localStorage.getItem("SP_AUTH_ROLE") ||
-    localStorage.getItem("SP_LOGIN_CONTEXT") ||
-    ""
-  ).toLowerCase();
+  const storedRole = spStoredRole();
 
   if (storedRole === "student" || storedRole === "schueler" || storedRole === "schüler") return "student";
-  if (storedRole === "teacher" || storedRole === "lehrer" || storedRole === "admin") return "teacher";
+  if ((storedRole === "teacher" || storedRole === "lehrer" || storedRole === "admin") && spHasExplicitTeacherPreviewSource()) return "teacher";
 
   if (spLooksLikeTeacher(profile)) return "teacher";
 
@@ -96,6 +121,7 @@ function spClearTeacherPreviewState() {
     sessionStorage.removeItem("SP_TEACHER_PREVIEW");
     sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
     sessionStorage.removeItem("SP_PREVIEW_COURSE");
+    sessionStorage.removeItem("SP_TEACHER_PREVIEW_SOURCE");
   } catch (e) {}
 }
 
@@ -107,7 +133,8 @@ function spTeacherPreview() {
   if (!preview || preview.teacherPreview !== true) return null;
 
   // Thema-Seiten dürfen alte Vorschau nie in einer echten Schüler-Session anzeigen.
-  if (role !== "teacher") {
+  // Zusätzlich muss die Vorschau ausdrücklich aus dem Lehrer-Dashboard gestartet sein.
+  if (role !== "teacher" || !spHasExplicitTeacherPreviewSource()) {
     spClearTeacherPreviewState();
     return null;
   }
@@ -164,8 +191,11 @@ function spEnterCoursePreview(course) {
     releases: data.releases || data.release || {},
     assignments: data.assignments || {},
     teacherPreview: true,
+    source: "teacher-dashboard",
+    startedFrom: "teacher-dashboard",
     startedAt: new Date().toISOString()
   }));
+  sessionStorage.setItem("SP_TEACHER_PREVIEW_SOURCE", "teacher-dashboard");
 }
 
 function spExitCoursePreview() {
@@ -348,3 +378,23 @@ function exampleBox(html) {
 function instruction(text) {
   return `<div class="task-instruction">${text}</div>`;
 }
+
+
+// Thema-4-Hardfix: Wenn eine echte Schüler-Session aktiv ist, alte Lehrer-Vorschau sofort entfernen.
+(function spTheme4ClearStalePreviewForStudents(){
+  try {
+    const role = spStoredRole();
+    const user = spReadJson("SP_USER_PROFILE", {});
+    const student = spReadJson("SP_STUDENT_PROFILE", null);
+    const hasStudentData = !!((student && Object.keys(student).length) || ((user.kurs || user.kursnummer || user.courseCode) && (user.muttersprache || user.nativeLanguage || user.language)));
+    const explicitPreview = spHasExplicitTeacherPreviewSource();
+    if ((role === "student" || role === "schueler" || role === "schüler" || hasStudentData) && !explicitPreview) {
+      spClearTeacherPreviewState();
+      if (!role || role === "teacher" || role === "lehrer" || role === "admin") {
+        localStorage.setItem("SP_ACTIVE_ROLE", "student");
+        localStorage.setItem("SP_LOGIN_ROLE", "student");
+        localStorage.setItem("SP_LOGIN_CONTEXT", "student");
+      }
+    }
+  } catch(e) {}
+})();
