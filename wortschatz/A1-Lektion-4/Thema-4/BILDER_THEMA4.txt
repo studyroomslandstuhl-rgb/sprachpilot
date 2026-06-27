@@ -15,3 +15,5 @@ besichtigungstermin.png
 unterlagen.png
 schufa.png
 Zusätzlich optional: internet.png, zeitung.png, schwarzes-brett.png, makler.png, telefonnummer.png, mietvertrag.png, umzug.png, anmeldung.png, rathaus.png
+
+Neuer Bildname: schwarzes_brett.png
