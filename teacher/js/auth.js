@@ -44,17 +44,25 @@
   }
 
   function setTeacherMode(user, teacher){
+    try{
+      sessionStorage.removeItem("SP_TEACHER_PREVIEW");
+      localStorage.removeItem("SP_USER_PROFILE");
+      localStorage.removeItem("SP_STUDENT_PROFILE");
+      localStorage.removeItem("SP_STUDENT_ID");
+    }catch(e){}
     localStorage.setItem("SP_TEACHER_MODE","1");
+    localStorage.setItem("SP_LOGIN_ROLE","teacher");
+    localStorage.setItem("SP_ACTIVE_ROLE","teacher");
+    localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
     localStorage.setItem("SP_USER_ROLE", teacher.role || "teacher");
     localStorage.setItem("SP_TEACHER_EMAIL", user.email || teacher.email || "");
     localStorage.setItem("SP_TEACHER_ID", user.uid);
+    localStorage.setItem("SP_TEACHER_PROFILE",JSON.stringify({uid:user.uid,email:user.email||teacher.email||"",role:teacher.role||"teacher",firstName:teacher.firstName||"",lastName:teacher.lastName||""}));
   }
 
   function clearTeacherMode(){
-    localStorage.removeItem("SP_TEACHER_MODE");
-    localStorage.removeItem("SP_USER_ROLE");
-    localStorage.removeItem("SP_TEACHER_EMAIL");
-    localStorage.removeItem("SP_TEACHER_ID");
+    ["SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_PROFILE","SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_LOGIN_CONTEXT"].forEach(k=>localStorage.removeItem(k));
+    try{sessionStorage.removeItem("SP_TEACHER_PREVIEW");}catch(e){}
   }
 
   window.TeacherAuth = {
