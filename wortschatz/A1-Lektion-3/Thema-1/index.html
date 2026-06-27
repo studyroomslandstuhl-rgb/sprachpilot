@@ -1,9 +1,46 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Thema 1</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="accountStrip" class="account-strip"></div>
-<script type="module" src="/js/guard.js"></script><div class="container"><section class="hero"></section><section class="card"><div class="dashboard"><div class="dashbox"><div class="dashnum" id="vocabPct">0%</div><div>🍎 Wortschatz</div></div><div class="dashbox"><div class="dashnum" id="gramPct">0%</div><div>📚 Grammatik</div></div><div class="dashbox"><div class="dashnum" id="allPct">0%</div><div>🎯 Gesamt</div></div></div></section>
-<section class="card"><h2 class="module-title">Wortgruppe</h2><div id="batch"></div></section>
-<section class="card section-card"><h2 class="module-title">🍎 Wortschatztraining</h2><p class="small">Diese Aufgaben wiederholen sich für jede 20er-Wortgruppe.</p><div id="vocab" class="grid"></div></section>
-<section class="card section-card"><h2 class="module-title">📚 Grammatik</h2><p class="small">Diese Aufgaben bleiben dauerhaft gespeichert.</p><div id="grammar" class="grid"></div></section><footer>© SprachPilot</footer></div><script src="translations.js?v=40"></script><script src="app.js?v=40"></script><script>header("Thema 1");vocabPct.textContent=typePercent('vocab')+'%';gramPct.textContent=typePercent('grammar')+'%';allPct.textContent=totalPercent()+'%';
-let b=batchInfo();batch.innerHTML=`<p>Gruppe ${b.batch+1}: Wörter ${b.start+1}–${b.end} von ${b.total}</p><p class="small">Die nächste Gruppe wird automatisch freigeschaltet, wenn alle Wortschatzaufgaben fertig sind.</p>`;
-function taskCard(t,i){let p=taskPercent(t.file);return `<a class="module" href="${t.file}"><div class="module-title">${i+1}. ${t.name}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div><span class="badge">${p}%</span></a>`}
-vocab.innerHTML=TASKS.filter(t=>t.type==='vocab').map(taskCard).join('');grammar.innerHTML=TASKS.filter(t=>t.type==='grammar').map(taskCard).join('');</script></body></html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Lektion 3 · Thema 1</title>
+<link rel="stylesheet" href="../shared/lektion3-standard.css?v=step6">
+</head>
+<body>
+<div class="container">
+  <header class="topbar"></header>
+  <div id="progressArea"></div>
+  <section class="card">
+    <h2 class="section-title">Wortgruppe</h2>
+    <div id="batch"></div>
+  </section>
+  <section class="card">
+    <h2 class="section-title">Wortschatztraining</h2>
+    <p class="small">Diese Aufgaben wiederholen sich für jede 20er-Wortgruppe.</p>
+    <div id="vocab" class="grid"></div>
+  </section>
+  <section class="card">
+    <h2 class="section-title">Grammatik</h2>
+    <p class="small">Diese Aufgaben bleiben dauerhaft gespeichert.</p>
+    <div id="grammar" class="grid"></div>
+  </section>
+  <footer>© SprachPilot</footer>
+</div>
+<script type="module" src="/js/guard.js"></script>
+<script src="../shared/lektion3-standard.js?v=step6"></script>
+<script src="translations.js?v=40"></script>
+<script src="app.js?v=40"></script>
+<script>
+renderL3Header({title:"Lebensmittel & Getränke",subtitle:"A1 Lektion 3 · Thema 1",backHref:"../index.html",overviewHref:"uebersicht.html",statsHref:"statistik.html"});
+const vocabP=typePercent('vocab');
+const gramP=typePercent('grammar');
+const allP=totalPercent();
+progressArea.innerHTML=progressCard({percent:allP,doneText:`Wortschatz ${vocabP}% · Grammatik ${gramP}%`,goal:"Lebensmittel, Getränke, Artikel, Plural und einfache Fragen üben."});
+let b=batchInfo();
+batch.innerHTML=`<p>Gruppe ${b.batch+1}: Wörter ${b.start+1}–${b.end} von ${b.total}</p><p class="small">Die nächste Gruppe wird automatisch freigeschaltet, wenn alle Wortschatzaufgaben fertig sind.</p>`;
+function taskCard(t,i){let p=taskPercent(t.file);return moduleCard({href:t.file,num:i+1,title:t.name,desc:t.type==='vocab'?"Wortschatz üben":"Grammatik üben",progress:p,status:p>=100?"Fertig":"Starten"})}
+vocab.innerHTML=TASKS.filter(t=>t.type==='vocab').map(taskCard).join('');
+grammar.innerHTML=TASKS.filter(t=>t.type==='grammar').map(taskCard).join('');
+</script>
+</body>
+</html>
