@@ -15,14 +15,24 @@
       sessionStorage.removeItem("SP_PREVIEW_COURSE");
     }catch(e){}
   }
+  function activeRole(profile){
+    const profileRole=String(profile.role||profile.type||profile.typ||profile.accountType||profile.loginRole||"").toLowerCase();
+    if(["student","schueler","schüler"].includes(profileRole))return "student";
+    if(["teacher","lehrer","admin"].includes(profileRole))return "teacher";
+    if(isStudentProfile(profile) || ((profile.kurs||profile.kursnummer||profile.courseCode)&&(profile.muttersprache||profile.nativeLanguage||profile.language)))return "student";
+    const stored=String(localStorage.getItem("SP_LOGIN_ROLE")||localStorage.getItem("SP_ACTIVE_ROLE")||localStorage.getItem("SP_AUTH_ROLE")||localStorage.getItem("SP_LOGIN_CONTEXT")||"").toLowerCase();
+    if(["student","schueler","schüler"].includes(stored))return "student";
+    if(["teacher","lehrer","admin"].includes(stored))return "teacher";
+    if(isTeacherProfile(profile))return "teacher";
+    return "student";
+  }
   function isPreview(){
     let preview=null;
     try{preview=JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW")||"null")}catch(e){}
     if(!preview || preview.teacherPreview!==true) return false;
 
-    const activeRole=String(localStorage.getItem("SP_ACTIVE_ROLE")||"").toLowerCase();
     const profile=readProfile();
-    if(activeRole==="student" || isStudentProfile(profile)){
+    if(activeRole(profile)!=="teacher"){
       clearTeacherPreviewState();
       return false;
     }
@@ -82,4 +92,25 @@
   }
   patchFirestore();
   setInterval(patchFirestore,500);
+
+  function dashboardHref(){
+    const profile=readProfile();
+    return activeRole(profile)==="teacher" ? "/teacher/index.html" : "/student-dashboard/index.html";
+  }
+  function patchDashboardButtons(){
+    const href=dashboardHref();
+    document.querySelectorAll('a,button').forEach(el=>{
+      const text=String(el.textContent||"").trim().toLowerCase();
+      if(!text.includes('dashboard'))return;
+      if(el.tagName.toLowerCase()==='a'){
+        el.setAttribute('href',href);
+      }else{
+        el.onclick=function(){ location.href=href; };
+      }
+    });
+  }
+  window.spDashboardHref=dashboardHref;
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',patchDashboardButtons);else patchDashboardButtons();
+  setTimeout(patchDashboardButtons,300);
+
 })();
