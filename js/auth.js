@@ -46,7 +46,13 @@ export function dashboardHref(){
   return getActiveRole()==="teacher" ? "/teacher/index.html" : "/student-dashboard/index.html";
 }
 export function makeStudentId(email,course){return normId(course)+"_"+normId(email)}
-export function getActiveProfile(){try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}}
+export function getActiveProfile(){
+  try{
+    return JSON.parse(localStorage.getItem("SP_USER_PROFILE") || localStorage.getItem("SP_STUDENT_PROFILE") || "null");
+  }catch(e){
+    return null;
+  }
+}
 
 export function getStoredTeacherProfile(){
   try{return JSON.parse(localStorage.getItem("SP_TEACHER_PROFILE")||"null")}catch(e){return null}
@@ -339,8 +345,15 @@ export async function updateStudentProfile({vorname,nachname,email,muttersprache
   const p=getActiveProfile();
   if(!p) throw new Error("NOT_LOGGED_IN");
 
-  const docId=p.docId || p.studentId;
+  // Profilbearbeitung ist nur für echte Schüler-Sessions gedacht.
+  // Lehrer-Vorschau darf hier keine Schülerdaten überschreiben.
+  const activeRole=getActiveRole();
+  if(activeRole!=="student") throw new Error("NOT_STUDENT_SESSION");
+
   const emailNorm=normText(email);
+  const oldEmail=normText(p.email);
+  const courseCode=String(p.kurs || p.courseCode || p.kursnummer || "").trim();
+  const courseDocId=String(p.courseDocId || "").trim();
 
   const updateData={
     vorname:String(vorname||"").trim(),
@@ -354,10 +367,59 @@ export async function updateStudentProfile({vorname,nachname,email,muttersprache
     throw new Error("MISSING_FIELDS");
   }
 
-  await updateDoc(doc(db,"students",docId),updateData);
+  let docId=p.docId || p.studentId || p.userId || "";
 
-  const newProfile={...p,...updateData,email:emailNorm};
+  // Alte Profile hatten manchmal keine docId oder eine andere Dokument-ID.
+  // Dann suchen wir den Schüler robust über E-Mail + Kurs.
+  if(!docId){
+    const found=await findStudentByEmailAndCourse(oldEmail || emailNorm, courseCode, courseDocId);
+    if(found) docId=found.id;
+  }
+
+  // Letzter Fallback: stabile ID aus alter E-Mail + Kurs, damit kein leerer Pfad entsteht.
+  if(!docId){
+    docId=makeStudentId(oldEmail || emailNorm, courseDocId || courseCode || "kurs");
+  }
+
+  const studentId=p.studentId || p.userId || docId;
+
+  // setDoc mit merge statt updateDoc: So scheitert Speichern nicht, wenn ein altes
+  // Schülerprofil zwar lokal vorhanden ist, aber das Dokument in Firebase anders/noch nicht existiert.
+  await setDoc(doc(db,"students",docId),{
+    ...updateData,
+    docId,
+    studentId,
+    userId:studentId,
+    kurs:courseCode || p.kurs || "",
+    kursnummer:courseCode || p.kursnummer || "",
+    courseCode:courseCode || p.courseCode || "",
+    courseDocId:courseDocId || p.courseDocId || "",
+    role:"student",
+    loginRole:"student",
+    isStudent:true,
+    isTeacher:false,
+    active:true
+  },{merge:true});
+
+  const newProfile={
+    ...p,
+    ...updateData,
+    email:emailNorm,
+    docId,
+    studentId,
+    userId:studentId,
+    role:"student",
+    loginRole:"student",
+    isStudent:true,
+    isTeacher:false
+  };
+
+  startStudentSession();
   localStorage.setItem("SP_USER_PROFILE",JSON.stringify(newProfile));
+  localStorage.setItem("SP_STUDENT_PROFILE",JSON.stringify(newProfile));
+  localStorage.setItem("SP_KEEP_LOGGED_IN","1");
+  localStorage.setItem("SP_STUDENT_ID",studentId);
+  localStorage.setItem("SP_USER_ROLE","student");
   localStorage.setItem("motherLanguage",updateData.muttersprache);
   localStorage.setItem("muttersprache",updateData.muttersprache);
 
