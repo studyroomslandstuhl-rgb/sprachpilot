@@ -1,41 +1,29 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>SprachPilot · Teacher Dashboard</title>
-  <link rel="stylesheet" href="css/styles.css">
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SprachPilot · Lehrer-Dashboard</title>
+<link rel="stylesheet" href="style.css">
 </head>
 <body>
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">SP</div>
-      <div>
-        <h1>Teacher Dashboard</h1>
-        <p>Alle Kurse, Schüler und Fortschritte auf einen Blick</p>
-      </div>
-    </div>
-    <div class="toolbar">
-      <button onclick="TeacherApp.render()">Aktualisieren</button>
-      <button class="danger" onclick="TeacherAuth.logout()">Logout</button>
-    </div>
-  </header>
-
-  <main id="app" class="teacher-shell">
-    <div class="card">Dashboard wird geladen …</div>
-  </main>
-
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-
-  <script src="js/firebase.js?v=dashboard3"></script>
-  <script src="js/data.js?v=teacherapp2"></script>
-  <script src="js/courses.js?v=teacherapp2"></script>
-  <script src="js/releases.js?v=teacherapp2"></script>
-  <script src="js/students.js?v=teacherapp3"></script>
-  <script src="js/analytics.js?v=teacherapp3"></script>
-  <script src="js/auth.js?v=dashboard3"></script>
-  <script src="js/app.js?v=progress2"></script>
+<div class="container">
+  <section class="hero">
+    <a href="/index.html" style="text-decoration:none;color:inherit"><h1>SprachPilot</h1></a>
+    <p class="subtitle">Lehrer-Dashboard</p>
+  </section>
+  <main id="app"><div class="card">Dashboard wird geladen …</div></main>
+  <footer>© SprachPilot</footer>
+</div>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
+<script src="../js/firebase-config.js"></script>
+<script src="courses.js"></script>
+<script src="students.js"></script>
+<script src="analytics.js"></script>
+<script src="teacher-preview.js"></script>
+<script src="releases.js"></script>
+<script src="app.js"></script>
 </body>
 </html>
