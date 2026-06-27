@@ -772,3 +772,28 @@ footer {
 @media(max-width:520px){
   .grid{grid-template-columns:1fr!important;}
 }
+
+/* ===== Schritt 12: Lektion 4 finales Standard-Logo + einheitliche Icons ===== */
+.logo{
+  background:transparent!important;
+  color:transparent!important;
+  box-shadow:none!important;
+  overflow:hidden!important;
+  padding:0!important;
+}
+.logo .sp-logo-img,
+.logo img{
+  width:100%!important;
+  height:100%!important;
+  display:block!important;
+  object-fit:contain!important;
+}
+.account-link,
+.account-btn{
+  gap:0!important;
+}
+.module .icon.exam-icon{
+  font-size:48px!important;
+  color:var(--gold)!important;
+  font-weight:900!important;
+}
