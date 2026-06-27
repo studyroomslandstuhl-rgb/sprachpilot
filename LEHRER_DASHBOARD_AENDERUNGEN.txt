@@ -1,8 +1,17 @@
-SprachPilot – Lehrer-Dashboard Änderungen
+Schritt 3 – Lehrer-Dashboard / Kursfilter
 
-- Lehrkräfte sehen nur eigene Kurse.
-- Jeder Kurs hat einen SprachPilot-Button für Kurs-Vorschau.
-- Lehrer-Vorschau speichert keine Schülerpunkte/Fortschritte/Ranglisten.
-- Freigaben werden als Entwurf bearbeitet und erst mit Speichern übernommen.
-- Schüler können bearbeitet/gelöscht werden; Kurse können gelöscht werden.
-- Für globale Schülerseiten zusätzlich js/sp-progress-guard.js früh laden, damit Lehrer-Vorschau dort keine Fortschritte speichert.
+Geändert:
+- teacher/app.js
+- teacher/courses.js
+- teacher/analytics.js
+- teacher/style.css
+
+Fixes:
+- Eigene Kurse verschwinden nicht mehr so leicht durch zu strengen Filter.
+- Kursfilter prüft jetzt mehrere mögliche Lehrer-Zuordnungen:
+  teacherUid, teacherId, teacherIds, teacherUids, teacherEmail, teacherEmails,
+  ownerUid, createdByUid, assignedTeachers, lehrer/lehrerin-Felder, teachers/owners/members usw.
+- Lehrerprofil wird im Dashboard getrennt gespeichert als SP_TEACHER_PROFILE.
+- Neue Kurse bekommen mehrere kompatible Zuordnungsfelder, damit sie später sicher gefunden werden.
+- Wenn keine Kurse angezeigt werden, erscheint eine Debug-Box mit UID/E-Mail/Name und den geprüften Abfragen.
+- Kurskarten zeigen Teilnehmerzahl, SprachPilot, Freigabe und Kurs löschen klar in einer Zeile.
