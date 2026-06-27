@@ -85,7 +85,7 @@
 </div>
 
 <script type="module">
-import { requireLogin, updateStudentProfile, $, safeText, renderAccountStrip, logout } from "../js/auth.js?v=step13"; window.logout=logout;
+import { requireLogin, updateStudentProfile, $, safeText, renderAccountStrip, logout } from "../js/auth.js?v=step21"; window.logout=logout;
 
 const p=requireLogin();
 if(p) renderAccountStrip();
@@ -110,7 +110,7 @@ window.saveProfile=async function(){
     result.innerHTML='<div class="ok">Gespeichert. Die Muttersprache wird ab jetzt in den Übungen verwendet.</div>';
   }catch(err){
     console.error(err);
-    result.innerHTML='<div class="no">Profil konnte nicht gespeichert werden.</div>';
+    result.innerHTML='<div class="no">Profil konnte nicht gespeichert werden: '+safeText(err.message||err)+'</div>';
   }
 }
 </script>
