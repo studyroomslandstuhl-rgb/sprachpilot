@@ -32,7 +32,7 @@
 </div>
 
 <script type="module">
-import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "./js/auth.js?v=step1";
+import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "./js/auth.js?v=step13";
 window.logout=logout;
 
 function isTeacherAllAccess(){
@@ -60,14 +60,15 @@ function renderModules(p){
     </a>`;
 }
 
-const p=getActiveProfile();
+const role=getActiveRole();
+const p=role==="student" ? getActiveProfile() : null;
 const box=document.querySelector("#loggedBox");
 const guest=document.querySelector("#guestBox");
 if(p){
   box.innerHTML=`<div class="ok"><strong>Eingeloggt:</strong> ${safeText(p.vorname)} ${safeText(p.nachname)} | Kurs: ${safeText(p.kurs)} | Muttersprache: ${safeText(p.muttersprache)}<br><a class="btn secondary" href="profile/">Profil bearbeiten</a> <button class="secondary" onclick="logout()">Abmelden</button></div>`;
   guest.classList.add("hidden");
   renderModules(p);
-}else if(getActiveRole()==="teacher"){
+}else if(role==="teacher"){
   box.innerHTML=`<div class="ok"><strong>Lehrerzugang:</strong> Du siehst SprachPilot im Testmodus. Es werden keine Schülerpunkte gespeichert.<br><a class="btn secondary" href="${dashboardHref()}">Lehrer-Dashboard</a> <button class="secondary" onclick="logout()">Abmelden</button></div>`;
   guest.classList.add("hidden");
   renderModules({assignments:{enabledModules:{"Fragen A1":true,"Wortschatz":true,"Verben A1":true}}});
