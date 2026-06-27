@@ -1,19 +1,54 @@
 const TeacherPreview = {
-  openAll(){
+  teacherProfile(){
+    try{return JSON.parse(localStorage.getItem("SP_TEACHER_PROFILE")||"{}") || {}}catch(e){return {}}
+  },
+  previewUser(preview){
+    const t=this.teacherProfile();
+    const firstName=t.firstName || t.vorname || t.name || "Lehrer";
+    const lastName=t.lastName || t.nachname || "";
+    const course=preview.courseCode || preview.kurs || (preview.allAccess ? "ALLE" : "Lehrer-Vorschau");
+    return {
+      vorname:firstName,
+      nachname:lastName,
+      firstName,
+      lastName,
+      email:t.email || "",
+      kurs:course,
+      kursnummer:course,
+      courseCode:course,
+      muttersprache:"Deutsch",
+      assignments:preview.assignments || {enabledModules:{"Fragen A1":true,"Wortschatz":true,"Verben A1":true}},
+      releases:preview.releases || {},
+      role:"teacher",
+      loginRole:"teacher",
+      isTeacher:true,
+      isStudent:false,
+      teacherPreview:true,
+      allAccess:!!preview.allAccess,
+      previewOnly:true
+    };
+  },
+  activate(preview){
     localStorage.setItem("SP_ACTIVE_ROLE","teacher");
     localStorage.setItem("SP_LOGIN_ROLE","teacher");
     localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
     localStorage.removeItem("SP_STUDENT_PROFILE");
     localStorage.removeItem("SP_STUDENT_ID");
-    sessionStorage.setItem("SP_TEACHER_PREVIEW",JSON.stringify({
+    localStorage.removeItem("SP_KEEP_LOGGED_IN");
+    sessionStorage.setItem("SP_TEACHER_PREVIEW",JSON.stringify(preview));
+    localStorage.setItem("SP_USER_PROFILE",JSON.stringify(this.previewUser(preview)));
+  },
+  openAll(){
+    this.activate({
       teacherPreview:true,
       allAccess:true,
       courseCode:"ALLE",
       kurs:"ALLE",
       name:"Alle Inhalte",
       assignments:{enabledModules:{"Fragen A1":true,"Wortschatz":true,"Verben A1":true}},
+      releases:{},
       startedAt:new Date().toISOString()
-    }));
+    });
     location.href="/index.html?teacherPreview=all";
   },
   open(courseName){
@@ -23,21 +58,16 @@ const TeacherPreview = {
     ].map(v=>String(v||"").trim()).includes(needle)) || {id:needle,name:needle,courseCode:needle};
     const code=String(course.courseCode||course.code||course.kurs||course.kursnummer||course.id||course.name||needle).trim();
 
-    // Lehrer-Vorschau ist ein expliziter Session-Zustand und darf Schüler-Logins nicht verunreinigen.
-    localStorage.setItem("SP_ACTIVE_ROLE","teacher");
-    localStorage.setItem("SP_LOGIN_ROLE","teacher");
-    localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
-    localStorage.removeItem("SP_STUDENT_PROFILE");
-    localStorage.removeItem("SP_STUDENT_ID");
-    sessionStorage.setItem("SP_TEACHER_PREVIEW",JSON.stringify({
+    this.activate({
       teacherPreview:true,
+      allAccess:false,
       courseCode:code,
       kurs:code,
       name:course.courseName||course.name||code,
       releases:course.releases||course.release||{},
       assignments:course.assignments||{},
       startedAt:new Date().toISOString()
-    }));
+    });
 
     location.href="/student-dashboard/index.html?teacherPreview=1&course="+encodeURIComponent(code);
   },
@@ -45,6 +75,8 @@ const TeacherPreview = {
     sessionStorage.removeItem("SP_TEACHER_PREVIEW");
     sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
     sessionStorage.removeItem("SP_PREVIEW_COURSE");
+    const p=(()=>{try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}})();
+    if(p && p.teacherPreview) localStorage.removeItem("SP_USER_PROFILE");
     localStorage.setItem("SP_ACTIVE_ROLE","teacher");
     localStorage.setItem("SP_LOGIN_ROLE","teacher");
     location.href="/teacher/index.html";
