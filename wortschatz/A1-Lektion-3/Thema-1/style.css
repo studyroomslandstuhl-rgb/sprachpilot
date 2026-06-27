@@ -56,3 +56,37 @@ footer{text-align:center;color:white;margin-top:22px}@media(max-width:700px){bod
 .topbar{display:flex;flex-direction:column;gap:14px;background:#fff;border-radius:24px;padding:16px 18px;margin-bottom:18px;box-shadow:0 12px 28px rgba(122,61,0,.16);border:1px solid #ffd39b}
 .topbar-main,.top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:14px;text-decoration:none;color:#1f2933}.logo{width:58px!important;height:58px!important;border-radius:16px!important;background:#fff!important;display:flex;align-items:center;justify-content:center;box-shadow:0 8px 18px rgba(122,61,0,.18);border:2px solid #ffd39b!important;overflow:hidden;color:transparent!important}.logo img{width:52px;height:52px;object-fit:contain}.brand h1{font-size:30px;color:#111;margin:0 0 2px}.sub{color:#666;font-size:15px}.account-tools{display:flex;align-items:center;gap:8px;flex-wrap:wrap;justify-content:flex-end}.account-pill{background:#fff4e6;border:2px solid #ffd39b;border-radius:999px;padding:8px 12px;font-weight:900;color:#7a3d00}.account-link,.account-btn{border:2px solid #ffd39b;background:#fffaf4;color:#7a3d00;border-radius:12px;padding:8px 12px;font-weight:900;text-decoration:none;cursor:pointer;font-family:inherit;font-size:14px}.nav{display:flex;gap:10px;flex-wrap:wrap}.btn.danger-btn{background:#ffe1e1!important;color:#9b1c12!important;border:2px solid #ffc1b8!important;box-shadow:none!important}.card{border:1px solid #ffd39b;box-shadow:0 12px 28px rgba(122,61,0,.16)}.question{color:#111!important}.big{color:#1f2933!important}.finish-box{text-align:center;background:#fffaf3;border:2px solid #ffd39b;border-radius:22px;padding:22px}.finish-icon{width:58px;height:58px;border-radius:50%;margin:0 auto 10px;background:#d9f7e8;color:#166534;display:flex;align-items:center;justify-content:center;font-size:32px;font-weight:900}.finish-actions .btn{min-width:160px}footer{color:#7a3d00!important;font-weight:800}.feedback .hint,.hint{font-weight:800}.mic-icon{display:none}
 @media(max-width:700px){.brand h1{font-size:24px}.account-tools{justify-content:flex-start}.finish-actions .btn{width:100%}}
+
+/* ===== SprachPilot 5 Aufgaben pro Reihe Standard v10 ===== */
+.container{
+  max-width:1440px!important;
+}
+.grid{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:16px!important;
+}
+.module{
+  min-width:0!important;
+}
+.module .num{
+  line-height:1.15!important;
+}
+.module .icon{
+  min-height:70px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+@media(max-width:1250px){
+  .grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+}
+@media(max-width:980px){
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+}
+@media(max-width:760px){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
+@media(max-width:520px){
+  .grid{grid-template-columns:1fr!important;}
+}
