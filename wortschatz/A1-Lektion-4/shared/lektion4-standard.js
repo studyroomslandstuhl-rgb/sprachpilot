@@ -7,10 +7,93 @@ function spSafe(value) {
 
 function spGetProfile() {
   try {
-    return JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "{}");
+    const p = JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "{}");
+    let preview = null;
+    try { preview = JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW") || "null"); } catch (e) {}
+    if (preview && (preview.courseCode || preview.kurs)) {
+      return {
+        ...p,
+        kurs: preview.kurs || preview.courseCode,
+        kursnummer: preview.kurs || preview.courseCode,
+        courseCode: preview.courseCode || preview.kurs,
+        teacherPreview: true,
+        role: p.role || "teacher"
+      };
+    }
+    return p;
   } catch (e) {
     return {};
   }
+}
+
+
+
+/* ---------- Lehrer-Vorschau / Testmodus ---------- */
+function spIsTeacherProfile(profile) {
+  const p = profile || spGetProfile();
+  const role = String(p.role || p.typ || p.type || p.accountType || "").toLowerCase();
+  return Boolean(
+    p.isTeacher === true ||
+    p.teacher === true ||
+    p.lehrer === true ||
+    role === "teacher" ||
+    role === "lehrer" ||
+    localStorage.getItem("SP_TEACHER_MODE") === "1"
+  );
+}
+
+function spTeacherPreview() {
+  try {
+    return JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW") || "null");
+  } catch (e) {
+    return null;
+  }
+}
+
+function spIsTeacherPreview() {
+  return spIsTeacherProfile() || !!spTeacherPreview();
+}
+
+function spPreviewCourseCode() {
+  const preview = spTeacherPreview() || {};
+  const p = spGetProfile();
+  return preview.courseCode || preview.kurs || p.previewCourseCode || p.kurs || p.kursnummer || p.courseCode || "";
+}
+
+function spEnterCoursePreview(course) {
+  const data = typeof course === "string" ? { courseCode: course, kurs: course } : (course || {});
+  sessionStorage.setItem("SP_TEACHER_PREVIEW", JSON.stringify({
+    courseCode: data.courseCode || data.kurs || data.name || data.id || "",
+    kurs: data.kurs || data.courseCode || data.name || data.id || "",
+    name: data.name || data.title || data.kurs || data.id || "",
+    teacherPreview: true,
+    startedAt: new Date().toISOString()
+  }));
+}
+
+function spExitCoursePreview() {
+  sessionStorage.removeItem("SP_TEACHER_PREVIEW");
+  location.href = "/teacher/index.html";
+}
+
+function spCanSaveStudentProgress() {
+  return !spIsTeacherPreview();
+}
+
+function spProgressStorage() {
+  return spCanSaveStudentProgress() ? localStorage : sessionStorage;
+}
+
+function spProgressKey(key) {
+  if (spCanSaveStudentProgress()) return key;
+  const course = spPreviewCourseCode() || "kurs";
+  return "SP_TEACHER_PREVIEW_PROGRESS_" + course + "_" + key;
+}
+
+function spTeacherPreviewNotice() {
+  if (!spIsTeacherPreview()) return "";
+  const course = spPreviewCourseCode();
+  return `<div class="hint"><b>Lehrer-Vorschau${course ? " · " + spSafe(course) : ""}</b><br>Du siehst und testest die Schüleransicht. Es werden keine Punkte, keine Rangliste und kein Schülerfortschritt gespeichert.</div>`;
 }
 
 function renderSprachPilotHeader(config = {}) {
@@ -23,7 +106,10 @@ function renderSprachPilotHeader(config = {}) {
   const lastName = profile.nachname || profile.lastName || "";
   const course = profile.kurs || profile.kursnummer || profile.courseCode || "";
 
-  const who = `${firstName} ${lastName}`.trim() || "Schüler/in";
+  const isTeacher = spIsTeacherProfile(profile);
+  const preview = spTeacherPreview();
+  const previewCourse = spPreviewCourseCode();
+  const who = `${firstName} ${lastName}`.trim() || (isTeacher ? "Lehrer/in" : "Schüler/in");
 
   const title = config.title || "SprachPilot";
   const subtitle = config.subtitle || "A1 Lektion 4";
@@ -42,9 +128,10 @@ function renderSprachPilotHeader(config = {}) {
       </a>
 
       <div class="account-tools">
-        <span class="account-pill">${spSafe(who)}${course ? " · " + spSafe(course) : ""}</span>
-        <a class="account-link" href="/student-dashboard/index.html">📊 Dashboard</a>
+        <span class="account-pill">${spSafe(who)}${previewCourse ? " · Vorschau: " + spSafe(previewCourse) : (course ? " · " + spSafe(course) : "")}</span>
+        <a class="account-link" href="${isTeacher ? "/teacher/index.html" : "/student-dashboard/index.html"}">📊 ${isTeacher ? "Lehrer-Dashboard" : "Dashboard"}</a>
         <a class="account-link" href="/profile/index.html">👤 Profil</a>
+        ${preview ? '<button class="account-link account-btn" onclick="spExitCoursePreview()">Vorschau beenden</button>' : ''}
         <button class="account-link account-btn" onclick="spLogout()">🚪 Abmelden</button>
       </div>
     </div>
