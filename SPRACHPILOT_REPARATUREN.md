@@ -88,3 +88,15 @@ Geändert:
 - Logo-Pfad zentral festgelegt: `/assets/logo/sprachpilot-logo.png`.
 - Bestehende Haupt-CSS-Dateien importieren das zentrale Designsystem jetzt, ohne alte Seiten sofort komplett umzubauen.
 - Nächste Migration kann Ordner für Ordner erfolgen, ohne jedes Mal neue Strukturen zu erfinden.
+
+
+## Schritt 16 – zentraler Bilderordner vorbereitet
+
+- Neuer Ordner `/assets/img/` angelegt.
+- Bilder wurden bewusst noch nicht verschoben, damit alte Aufgaben nicht kaputtgehen.
+- Neue Registry `/assets/img/sprachpilot-image-registry.json` erstellt.
+- Neuer Helfer `/shared/sprachpilot-assets.js` erstellt.
+- Neue Dokumentation `/shared/SPRACHPILOT_BILDER_SYSTEM.md` erstellt.
+- Gefundene Bilddateien im Projekt: 412.
+- Doppelte/ähnliche Bildnamen erkannt: 41.
+- Neue Aufgaben können ab jetzt `spImagePath(...)` nutzen und später zentral auf `/assets/img/...` umgestellt werden.
