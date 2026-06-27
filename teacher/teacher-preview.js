@@ -1,6 +1,10 @@
 const TeacherPreview = {
   open(courseName){
     const course=(window.__SP_COURSES||[]).find(c=>(c.id||c.name)===courseName)||{id:courseName,name:courseName};
+
+    // Lehrer-Vorschau ist ein expliziter Session-Zustand und darf Schüler-Logins nicht verunreinigen.
+    localStorage.setItem("SP_ACTIVE_ROLE","teacher");
+    localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
     sessionStorage.setItem("SP_TEACHER_PREVIEW",JSON.stringify({
       teacherPreview:true,
       courseCode:courseName,
@@ -10,18 +14,14 @@ const TeacherPreview = {
       assignments:course.assignments||{},
       startedAt:new Date().toISOString()
     }));
-    if(localStorage.getItem("SP_TEACHER_MODE")==="1"){
-      sessionStorage.setItem("SP_TEACHER_MODE_WAS_ACTIVE","1");
-      localStorage.removeItem("SP_TEACHER_MODE");
-    }
+
     location.href="/student-dashboard/index.html?teacherPreview=1&course="+encodeURIComponent(courseName);
   },
   exit(){
     sessionStorage.removeItem("SP_TEACHER_PREVIEW");
-    if(sessionStorage.getItem("SP_TEACHER_MODE_WAS_ACTIVE")==="1"){
-      localStorage.setItem("SP_TEACHER_MODE","1");
-      sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
-    }
-    location.href="/teacher/index.html"
+    sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
+    sessionStorage.removeItem("SP_PREVIEW_COURSE");
+    localStorage.setItem("SP_ACTIVE_ROLE","teacher");
+    location.href="/teacher/index.html";
   }
 };

@@ -26,6 +26,20 @@ const TeacherEnv = {
   currentUser(){
     try{return this.auth()?.currentUser || null}catch(e){return null}
   },
+  profile(){
+    try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "{}")}catch(e){return {}}
+  },
+  profileRole(){
+    const p=this.profile();
+    return String(p.role || p.typ || p.type || p.accountType || p.loginRole || "").toLowerCase();
+  },
+  clearStudentPreviewState(){
+    try{
+      sessionStorage.removeItem("SP_TEACHER_PREVIEW");
+      sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
+      sessionStorage.removeItem("SP_PREVIEW_COURSE");
+    }catch(e){}
+  },
   safe(value){
     return String(value || "")
       .replace(/&/g,"&amp;")
@@ -177,26 +191,84 @@ function startTeacherDashboard(){
       }
 
       const database=TeacherEnv.db();
+      let teacherAllowed=false;
+      let teacherPending=false;
+
       if(database){
         try{
           const snap=await database.collection("teachers").doc(user.uid).get();
-          const data=snap.exists?snap.data():{};
-          const roleOk=["teacher","lehrer","admin",undefined,null,""].includes(data.role);
-          if(snap.exists && data.active===false){
+          if(!snap.exists){
+            TeacherEnv.clearStudentPreviewState();
+            localStorage.setItem("SP_ACTIVE_ROLE","student");
+            finish(()=>{
+              if(app) app.innerHTML=`
+                <div class="card warning-card">
+                  <h2>Kein Lehrerzugang</h2>
+                  <p>Dieses Konto ist nicht als Lehrer freigeschaltet.</p>
+                  <p class="small">Schülerkonten dürfen das Lehrer-Dashboard nicht öffnen.</p>
+                  <div class="toolbar"><a class="btn" href="/student-dashboard/index.html">Zum Schüler-Dashboard</a><a class="btn secondary" href="/index.html">Zur Startseite</a></div>
+                </div>`;
+            });
+            return;
+          }
+
+          const data=snap.data()||{};
+          const role=String(data.role || data.typ || data.type || data.accountType || "teacher").toLowerCase();
+          const roleOk=["teacher","lehrer","admin",""].includes(role);
+
+          if(data.active===false || data.approved===false || data.status==="pending"){
+            teacherPending=true;
+          }
+
+          if(teacherPending){
+            TeacherEnv.clearStudentPreviewState();
             finish(()=>{
               if(app) app.innerHTML=`<div class="card warning-card"><h2>Zugang noch nicht freigeschaltet</h2><p>Dein Lehrerzugang ist noch nicht aktiv.</p></div>`;
             });
             return;
           }
-          if(snap.exists && !roleOk){
+
+          if(!roleOk){
+            TeacherEnv.clearStudentPreviewState();
+            localStorage.setItem("SP_ACTIVE_ROLE","student");
             finish(()=>{
               if(app) app.innerHTML=`<div class="card warning-card"><h2>Kein Lehrerzugang</h2><p>Dieses Konto ist nicht als Lehrerzugang markiert.</p></div>`;
             });
             return;
           }
+
+          teacherAllowed=true;
+          localStorage.setItem("SP_ACTIVE_ROLE","teacher");
+          localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
         }catch(e){
-          TeacherEnv.note("Lehrerstatus konnte nicht geprüft werden. Dashboard wird trotzdem geöffnet.", e);
+          TeacherEnv.note("Lehrerstatus konnte nicht geprüft werden. Dashboard wird nicht geöffnet, bis die Rolle klar ist.", e);
+          TeacherEnv.clearStudentPreviewState();
+          finish(()=>{
+            if(app) app.innerHTML=`
+              <div class="card warning-card">
+                <h2>Lehrerstatus konnte nicht geprüft werden</h2>
+                <p>Das Dashboard wird aus Sicherheitsgründen nicht geöffnet.</p>
+                <div class="small">${TeacherEnv.safe(e.message||e)}</div>
+                <div class="toolbar"><button onclick="location.reload()">Neu laden</button><a class="btn secondary" href="/index.html">Zur Startseite</a></div>
+              </div>`;
+          });
+          return;
         }
+      } else {
+        TeacherEnv.note("Firestore ist nicht verbunden. Lehrerrolle kann nicht geprüft werden.");
+        TeacherEnv.clearStudentPreviewState();
+        finish(()=>{
+          if(app) app.innerHTML=`<div class="card warning-card"><h2>Lehrerrolle nicht geprüft</h2><p>Ohne Firebase/Firestore wird das Lehrer-Dashboard nicht geöffnet.</p></div>`;
+        });
+        return;
+      }
+
+      if(!teacherAllowed){
+        TeacherEnv.clearStudentPreviewState();
+        finish(()=>{
+          if(app) app.innerHTML=`<div class="card warning-card"><h2>Kein Lehrerzugang</h2><p>Bitte mit einem freigeschalteten Lehrerkonto anmelden.</p></div>`;
+        });
+        return;
       }
 
       finish(()=>TeacherApp.render());
