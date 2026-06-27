@@ -9,7 +9,7 @@
   }
   function isTeacherProfile(profile){
     const role=roleOf(profile);
-    return profile.isTeacher===true || profile.teacher===true || profile.lehrer===true || role==="teacher" || role==="lehrer" || role==="admin";
+    return profile.isTeacher===true || profile.teacher===true || profile.lehrer===true || role==="teacher" || role==="lehrer" || role==="admin" || role==="owner";
   }
   function isStudentProfile(profile){
     const role=roleOf(profile);
@@ -26,20 +26,26 @@
   const wantsPreview=params.get("teacherPreview")==="1" && !!course;
   const profile=readProfile();
   const activeRole=String(localStorage.getItem("SP_LOGIN_ROLE")||localStorage.getItem("SP_ACTIVE_ROLE")||localStorage.getItem("SP_AUTH_ROLE")||localStorage.getItem("SP_LOGIN_CONTEXT")||"").toLowerCase();
+
+  // Aktive Schüler-Session gewinnt immer. Alte Lehrerwerte dürfen nie durchschlagen.
+  if(activeRole==="student" || isStudentProfile(profile)){
+    clearPreview();
+    localStorage.setItem("SP_ACTIVE_ROLE","student");
+    localStorage.setItem("SP_LOGIN_ROLE","student");
+    localStorage.removeItem("SP_TEACHER_MODE");
+    return;
+  }
+
   const teacherAllowed=activeRole==="teacher" || isTeacherProfile(profile);
 
   if(wantsPreview && teacherAllowed){
     localStorage.setItem("SP_ACTIVE_ROLE","teacher");
+    localStorage.setItem("SP_LOGIN_ROLE","teacher");
     sessionStorage.setItem("SP_TEACHER_PREVIEW",JSON.stringify({teacherPreview:true,courseCode:course,kurs:course,startedAt:new Date().toISOString()}));
     return;
   }
 
-  // Normaler Schülerlogin: alte Lehrer-Vorschau darf nie sichtbar bleiben.
-  if(!wantsPreview || activeRole==="student" || isStudentProfile(profile) || !teacherAllowed){
+  if(!wantsPreview || !teacherAllowed){
     clearPreview();
-    if(isStudentProfile(profile) || activeRole==="student"){
-      localStorage.setItem("SP_ACTIVE_ROLE","student");
-      localStorage.removeItem("SP_TEACHER_MODE");
-    }
   }
 })();

@@ -49,7 +49,8 @@
   <div class="sectionTitle"><h2>Rangliste im Kurs</h2><span class="count" id="courseName">Kurs</span></div>
   <section class="card leader" id="leaderboard"></section>
 </div>
-<script src="teacher-preview-bridge.js?v=step1"></script>
+<script src="/js/sp-progress-guard.js?v=step14"></script>
+<script src="teacher-preview-bridge.js?v=step14"></script>
 <script>
 function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(f))}catch(e){return f}}
 function esc(s){return String(s||"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]))}
@@ -95,6 +96,9 @@ function sumStars(items){return items.reduce((s,x)=>s+Number(x.exam?.stars||0),0
 function sumDone(items){return items.filter(x=>Number(x.percent||0)>=100||Number(x.exam?.percent||0)>=100).length}
 function currentTotals(data){return{points:Number(localStorage.getItem("SP_POINTS_TOTAL")||0)||0,stars:sumStars(data),progress:avg(data),done:sumDone(data)}}
 function ensureLeaderboard(data){
+  if(typeof window.spIsTeacherPreview === "function" && window.spIsTeacherPreview()){
+    return readJSON("SP_COURSE_LEADERBOARD",{});
+  }
   const course=courseCode(), id=studentId(), name=userName(), totals=currentTotals(data);
   let board=readJSON("SP_COURSE_LEADERBOARD",{});
   if(!board[course]) board[course]={};
@@ -152,7 +156,7 @@ function renderLeaderboard(data){
   const leader=document.getElementById("leaderboard");
   leader.innerHTML=list.length?list.map((x,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div><b>${esc(x.name||"Schüler/in")}</b><div class="small">${esc(course)}</div></div><div class="rankVal">${Number(x.points||0)}<span>Punkte</span></div><div class="rankVal">${Number(x.stars||0)}<span>Sterne</span></div><div class="rankVal">${clamp(x.progress)}%<span>Fortschritt</span></div></div>`).join(""):'<div class="empty">Noch keine Punkte in diesem Kurs.</div>';
 }
-function logout(){if(!confirm("Möchten Sie sich abmelden?"))return;["SP_USER_PROFILE","sprachpilotUser","SP_CURRENT_USER","SP_LOGIN"].forEach(k=>localStorage.removeItem(k));location.href="/index.html"}
+function logout(){if(!confirm("Möchten Sie sich abmelden?"))return;["SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_KEEP_LOGGED_IN","SP_STUDENT_ID","sprachpilotUser","SP_CURRENT_USER","SP_LOGIN","SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_AUTH_ROLE","SP_LOGIN_CONTEXT","SP_TEACHER_MODE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_UID","SP_TEACHER_PROFILE"].forEach(k=>localStorage.removeItem(k));try{sessionStorage.removeItem("SP_TEACHER_PREVIEW");sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");sessionStorage.removeItem("SP_PREVIEW_COURSE");}catch(e){}location.href="/index.html"}
 render();
 </script>
 
