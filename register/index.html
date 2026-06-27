@@ -41,7 +41,7 @@
         <option>Usbekisch</option>
         <option>Vietnamesisch</option>
       </select><label>Kurscode *</label><input id="course" required placeholder="z. B. GLK-68"><button class="success" type="button" id="registerBtn" onclick="doRegister()">Registrieren</button><a class="btn secondary" href="../login/">Ich habe schon ein Profil</a><div id="registerResult"></div></form></section><footer>© SprachPilot</footer></div><script type="module">
-import { registerStudent, $, safeText } from "../js/auth.js?v=step1";
+import { registerStudent, $, safeText } from "../js/auth.js?v=step133";
 
 function showMsg(html){
   const result=$("registerResult");
@@ -67,7 +67,8 @@ window.doRegister = async function(){
 
     await registerStudent({vorname,nachname,email,muttersprache,kurs});
 
-    showMsg('<div class="ok">Registrierung erfolgreich. Du wirst weitergeleitet...</div>');
+    showMsg('<div class="ok">Registrierung erfolgreich. Du kommst jetzt zur Startseite.</div>');
+    // Schülerregistrierung endet bewusst auf der Startseite, niemals beim Lehrerlogin.
     setTimeout(()=>{ location.href="/index.html"; }, 500);
 
   }catch(err){
