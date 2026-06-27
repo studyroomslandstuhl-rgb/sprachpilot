@@ -1,0 +1,8 @@
+SprachPilot – Lehrer-Dashboard Änderungen
+
+- Lehrkräfte sehen nur eigene Kurse.
+- Jeder Kurs hat einen SprachPilot-Button für Kurs-Vorschau.
+- Lehrer-Vorschau speichert keine Schülerpunkte/Fortschritte/Ranglisten.
+- Freigaben werden als Entwurf bearbeitet und erst mit Speichern übernommen.
+- Schüler können bearbeitet/gelöscht werden; Kurse können gelöscht werden.
+- Für globale Schülerseiten zusätzlich js/sp-progress-guard.js früh laden, damit Lehrer-Vorschau dort keine Fortschritte speichert.
