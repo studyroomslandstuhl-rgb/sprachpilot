@@ -232,7 +232,7 @@ function resetThemeProgress(){
   location.reload();
 }
 function complete(area,file,nextFile){
-  area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Aufgabe geschafft!</div><div class="big">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="actions finish-actions"><button class="btn secondary" onclick="spResetTask('${file}');location.reload()">Nochmal üben</button><a class="btn" href="${nextFile}">Weiter</a><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>`;
+  area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Aufgabe geschafft!</div><div class="big">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="actions finish-actions"><button class="btn" onclick="spResetTask('${file}');location.reload()">Nochmal üben</button><a class="btn green" href="${nextFile}">Weiter</a><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>`;
 }
 function startMic(btn,callback){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;

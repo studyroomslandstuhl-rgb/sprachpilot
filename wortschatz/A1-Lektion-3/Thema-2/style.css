@@ -122,3 +122,43 @@
 @media(max-width:520px){
   .grid{grid-template-columns:1fr!important;}
 }
+
+/* ===== Schritt 11: Aufgaben-Seiten Standardlayout wie L4/T2 ===== */
+body{padding:18px!important;}
+.container{max-width:1440px!important;}
+.account-strip{display:none!important;}
+.hero{
+  background:transparent!important;
+  border:0!important;
+  box-shadow:none!important;
+  padding:0!important;
+  margin-bottom:18px!important;
+  text-align:left!important;
+}
+.hero>.topbar{margin-bottom:0!important;}
+.card{
+  border-radius:24px!important;
+  padding:22px!important;
+}
+.options,.drop-grid{
+  gap:14px!important;
+}
+.opt,.chip,.tile,input{
+  border-radius:14px!important;
+}
+.btn.green{
+  background:#2e9e4f!important;
+  color:white!important;
+  border:0!important;
+}
+.finish-box{
+  max-width:760px!important;
+  margin:0 auto!important;
+}
+.finish-actions .btn{
+  min-width:170px!important;
+}
+@media(max-width:700px){
+  body{padding:12px!important;}
+  .finish-actions .btn{width:100%!important;}
+}
