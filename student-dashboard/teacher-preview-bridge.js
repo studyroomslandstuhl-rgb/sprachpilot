@@ -13,6 +13,7 @@
   }
   function isStudentProfile(profile){
     const role=roleOf(profile);
+    if(profile.teacherPreview===true || profile.isTeacher===true || role==="teacher" || role==="lehrer" || role==="admin" || role==="owner") return false;
     return profile.isStudent===true || profile.student===true || profile.schueler===true || role==="student" || role==="schueler" || role==="schüler" || ((profile.kurs||profile.kursnummer||profile.courseCode)&&(profile.muttersprache||profile.nativeLanguage||profile.language));
   }
   function clearPreview(){
