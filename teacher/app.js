@@ -156,9 +156,31 @@ const TeacherApp = {
   }
 };
 
+async function teacherLogout(){
+  try{
+    localStorage.removeItem("SP_TEACHER_MODE");
+    localStorage.removeItem("SP_USER_ROLE");
+    localStorage.removeItem("SP_TEACHER_EMAIL");
+    localStorage.removeItem("SP_TEACHER_ID");
+    localStorage.removeItem("SP_LOGIN_ROLE");
+    localStorage.removeItem("SP_ACTIVE_ROLE");
+    sessionStorage.removeItem("SP_TEACHER_PREVIEW");
+    const auth=TeacherEnv.auth();
+    if(auth) await auth.signOut();
+  }catch(e){console.warn(e)}
+  location.href="/index.html";
+}
+window.teacherLogout=teacherLogout;
+
 function startTeacherDashboard(){
   const app=document.getElementById("app");
   let finished=false;
+  const activeRole=String(localStorage.getItem("SP_LOGIN_ROLE")||localStorage.getItem("SP_ACTIVE_ROLE")||"").toLowerCase();
+  if(activeRole==="student"){
+    TeacherEnv.clearStudentPreviewState();
+    if(app) app.innerHTML=`<div class="card warning-card"><h2>Schüler-Login aktiv</h2><p>Du bist gerade als Schüler/in angemeldet. Schülerkonten dürfen das Lehrer-Dashboard nicht öffnen.</p><div class="toolbar"><a class="btn" href="/student-dashboard/index.html">Zum Schüler-Dashboard</a><a class="btn secondary" href="/index.html">Zur Startseite</a></div></div>`;
+    return;
+  }
 
   function finish(fn){
     if(finished) return;
@@ -239,6 +261,7 @@ function startTeacherDashboard(){
 
           teacherAllowed=true;
           localStorage.setItem("SP_ACTIVE_ROLE","teacher");
+          localStorage.setItem("SP_LOGIN_ROLE","teacher");
           localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
         }catch(e){
           TeacherEnv.note("Lehrerstatus konnte nicht geprüft werden. Dashboard wird nicht geöffnet, bis die Rolle klar ist.", e);

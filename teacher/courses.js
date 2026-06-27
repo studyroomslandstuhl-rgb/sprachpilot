@@ -4,21 +4,23 @@ const TeacherIdentity = {
   },
   uid(){return this.user()?.uid || ""},
   email(){return String(this.user()?.email || "").toLowerCase()},
+  name(){return String(this.user()?.displayName || "").toLowerCase().trim()},
   matches(value){
+    if(value && typeof value==="object") value=value.uid||value.email||value.id||value.name||value.displayName||value.teacherEmail||value.teacherUid||"";
     value=String(value||"").toLowerCase().trim();
-    return !!value && (value===this.uid().toLowerCase() || value===this.email());
+    return !!value && (value===this.uid().toLowerCase() || value===this.email() || (!!this.name() && value===this.name()));
   },
   courseBelongsToTeacher(course){
     if(!course)return false;
     const fields=[
-      course.teacherUid,course.teacherId,course.ownerUid,course.createdByUid,course.assignedTeacherId,
-      course.teacherEmail,course.ownerEmail,course.createdByEmail,course.assignedTeacherEmail,
-      course.teacher,course.lehrer,course.lehrerin,course.teacherOwner
+      course.teacherUid,course.teacherId,course.ownerUid,course.createdByUid,course.assignedTeacherId,course.uid,course.owner,course.createdBy,
+      course.teacherEmail,course.ownerEmail,course.createdByEmail,course.assignedTeacherEmail,course.email,
+      course.teacher,course.lehrer,course.lehrerin,course.teacherOwner,course.teacherName,course.lehrerName,course.createdByName
     ];
     if(fields.some(v=>this.matches(v)))return true;
-    const arr=[course.teachers,course.teacherUids,course.teacherEmails,course.assignedTeachers,course.lehrerInnen,course.lehrkraefte]
+    const arr=[course.teachers,course.teacherUids,course.teacherEmails,course.assignedTeachers,course.lehrerInnen,course.lehrkraefte,course.owners]
       .flatMap(x=>Array.isArray(x)?x:[]);
-    return arr.some(v=>this.matches(typeof v==="object"?(v.uid||v.email||v.id):v));
+    return arr.some(v=>this.matches(v));
   }
 };
 
@@ -65,8 +67,14 @@ const Courses = {
     await database.collection("courses").doc(name).set({
       name,
       teacherUid:user?.uid||"",
+      teacherId:user?.uid||"",
+      ownerUid:user?.uid||"",
+      createdByUid:user?.uid||"",
       teacherEmail:user?.email||"",
+      ownerEmail:user?.email||"",
+      createdByEmail:user?.email||"",
       teachers:[user?.uid,user?.email].filter(Boolean),
+      assignedTeachers:[{uid:user?.uid||"",email:user?.email||""}],
       enabledModules:{"Verben A1":true,"Wortschatz":true,"Fragen A1":true},
       enabledLessons:{},enabledTasks:{},enabledWords:{},enabledSets:{},enabledThemes:{},releases:{},
       createdAt:firebase.firestore.FieldValue.serverTimestamp(),
