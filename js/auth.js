@@ -3,6 +3,46 @@ export function $(id){return document.getElementById(id)}
 export function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
 export function normText(s){return String(s||"").trim().toLowerCase()}
 export function normId(s){return String(s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
+
+export function clearTeacherPreviewState(){
+  try{
+    sessionStorage.removeItem("SP_TEACHER_PREVIEW");
+    sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
+    sessionStorage.removeItem("SP_PREVIEW_COURSE");
+  }catch(e){}
+}
+export function clearTeacherSessionFlags(){
+  clearTeacherPreviewState();
+  ["SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_AUTH_ROLE","SP_LOGIN_CONTEXT"].forEach(k=>localStorage.removeItem(k));
+}
+export function setLoginRole(role){
+  role=String(role||"").toLowerCase();
+  if(!role) return;
+  localStorage.setItem("SP_LOGIN_ROLE",role);
+  localStorage.setItem("SP_ACTIVE_ROLE",role);
+}
+export function startStudentSession(){
+  clearTeacherSessionFlags();
+  setLoginRole("student");
+}
+export function startTeacherSession(){
+  localStorage.removeItem("SP_USER_PROFILE");
+  localStorage.removeItem("SP_STUDENT_PROFILE");
+  localStorage.removeItem("SP_STUDENT_ID");
+  setLoginRole("teacher");
+}
+export function getActiveRole(){
+  const p=getActiveProfile();
+  const profileRole=String(p?.role||p?.loginRole||p?.type||p?.accountType||"").toLowerCase();
+  if(["student","schueler","schüler"].includes(profileRole)) return "student";
+  if(["teacher","lehrer","admin","owner"].includes(profileRole)) return "teacher";
+  const stored=String(localStorage.getItem("SP_LOGIN_ROLE")||localStorage.getItem("SP_ACTIVE_ROLE")||"").toLowerCase();
+  if(["teacher","lehrer","admin","owner"].includes(stored)) return "teacher";
+  return "student";
+}
+export function dashboardHref(){
+  return getActiveRole()==="teacher" ? "/teacher/index.html" : "/student-dashboard/index.html";
+}
 export function makeStudentId(email,course){return normId(course)+"_"+normId(email)}
 export function getActiveProfile(){try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}}
 export async function loadCourse(courseCode){
@@ -26,13 +66,18 @@ export function makeProfile(st,courseData,docId=null){
     muttersprache:st.muttersprache||"Englisch",
     profilVollstaendig:st.profilVollstaendig||false,
     assignments:courseData||{},
+    role:"student",
+    loginRole:"student",
+    isStudent:true,
     firebase:true,
     keepLoggedIn:true
   }
 }
 export function saveActiveProfile(st,courseData,docId=null){
+  startStudentSession();
   const p=makeProfile(st,courseData,docId);
   localStorage.setItem("SP_USER_PROFILE",JSON.stringify(p));
+  localStorage.setItem("SP_STUDENT_PROFILE",JSON.stringify(p));
   localStorage.setItem("SP_KEEP_LOGGED_IN","1");
   localStorage.setItem("SP_STUDENT_ID",p.studentId);
   localStorage.setItem("motherLanguage",p.muttersprache);
@@ -40,12 +85,8 @@ export function saveActiveProfile(st,courseData,docId=null){
   return p
 }
 export function logout(){
-  localStorage.removeItem("SP_USER_PROFILE");
-  localStorage.removeItem("SP_KEEP_LOGGED_IN");
-  localStorage.removeItem("SP_STUDENT_ID");
-  localStorage.removeItem("motherLanguage");
-  localStorage.removeItem("muttersprache");
-  localStorage.removeItem("SP_MOTHER_LANGUAGE_CODE");
+  clearTeacherPreviewState();
+  ["SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_KEEP_LOGGED_IN","SP_STUDENT_ID","motherLanguage","muttersprache","SP_MOTHER_LANGUAGE_CODE","SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_AUTH_ROLE","SP_LOGIN_CONTEXT","SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID"].forEach(k=>localStorage.removeItem(k));
   location.href="/index.html";
 }
 
@@ -137,9 +178,13 @@ export async function registerStudent({vorname,nachname,email,muttersprache,kurs
  const existing=await findStudentByEmailAndCourse(emailNorm,courseLoaded.id);
  if(existing) throw new Error("STUDENT_EXISTS");
  const studentId=makeStudentId(emailNorm,courseLoaded.id);
- const st={studentId,userId:studentId,vorname,nachname,email:emailNorm,muttersprache,kurs:courseLoaded.id,profilVollstaendig:false,active:true,fragenFortschritt:0,verbenFortschritt:0,wortschatzFortschritt:0,createdAt:serverTimestamp(),lastLogin:serverTimestamp()};
- await setDoc(doc(db,"students",studentId),st);
- await setDoc(doc(db,"progress",studentId),{studentId,kurs:courseLoaded.id,fragen:{progress:0,state:{}},verben:{progress:0,stars:0,state:{}},wortschatz:{progress:0,state:{}},grammatik:{progress:0,state:{}},updatedAt:serverTimestamp()});
+ const st={studentId,userId:studentId,vorname,nachname,email:emailNorm,muttersprache,kurs:courseLoaded.id,kursnummer:courseLoaded.id,role:"student",loginRole:"student",isStudent:true,profilVollstaendig:false,active:true,fragenFortschritt:0,verbenFortschritt:0,wortschatzFortschritt:0,createdAt:serverTimestamp(),lastLogin:serverTimestamp()};
+ await setDoc(doc(db,"students",studentId),st,{merge:true});
+ try{
+   await setDoc(doc(db,"progress",studentId),{studentId,kurs:courseLoaded.id,fragen:{progress:0,state:{}},verben:{progress:0,stars:0,state:{}},wortschatz:{progress:0,state:{}},grammatik:{progress:0,state:{}},updatedAt:serverTimestamp()},{merge:true});
+ }catch(e){
+   console.warn("progress init skipped", e);
+ }
  return saveActiveProfile(st,courseLoaded.data,studentId);
 }
 
@@ -240,8 +285,8 @@ export function renderAccountStrip(rootId="accountStrip"){
     el.innerHTML=`
       <div class="who">Nicht eingeloggt</div>
       <div class="account-links">
-        <a href="${loginUrlForCurrent()}">🔑 Login</a>
-        <a href="/register/?redirect=${encodeURIComponent(location.pathname+location.search+location.hash)}">📝 Registrieren</a>
+        <a href="${loginUrlForCurrent()}">Login</a>
+        <a href="/register/">Registrieren</a>
       </div>
     `;
     return;
@@ -252,9 +297,9 @@ export function renderAccountStrip(rootId="accountStrip"){
       ${safeText(p.vorname||"")} ${safeText(p.nachname||"")} · ${safeText(p.kurs||"")}
     </div>
     <div class="account-links">
-      <a href="/student-dashboard/index.html">📊 Dashboard</a>
-      <a href="/profile/">👤 Profil</a>
-      <button onclick="logout()">🚪 Abmelden</button>
+      <a href="${dashboardHref()}">Dashboard</a>
+      <a href="/profile/">Profil</a>
+      <button onclick="logout()">Abmelden</button>
     </div>
   `;
 }
