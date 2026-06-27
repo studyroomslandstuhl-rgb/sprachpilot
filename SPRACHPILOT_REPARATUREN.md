@@ -63,3 +63,28 @@ Geändert:
 - Startseite rendert rolle-zuerst: Lehrerzugang wird nicht durch altes Schülerprofil überlagert und umgekehrt.
 - Account-Leiste zeigt bei Lehrerrolle korrekt Lehrer-Dashboard, bei Schülerrolle Schüler-Dashboard.
 - Cache-Busting auf Start/Login/Register/Dashboard/Profile aktualisiert.
+
+
+## Schritt 14 – Dashboard-/Vorschau-Schutz finalisiert
+
+- `js/firebase-config.js` initialisiert Firebase-Compat jetzt direkt mit der Projektkonfiguration.
+- Lehrer-Dashboard bekommt dadurch zuverlässig `window.auth` und `window.db`.
+- `js/sp-progress-guard.js` repariert fehlende Lehrerprofil-Prüfung und entscheidet Rolle strikt nach aktiver Login-Art.
+- Schüler-Dashboard lädt den Progress-Guard jetzt wirklich.
+- Schüler-Dashboard löscht alte Lehrer-Vorschau, sobald aktive Rolle `student` ist.
+- Lehrer-Vorschau kann nicht mehr aus einer Schüler-Session aktiviert werden.
+- Modulare Firebase-Fortschrittsfunktionen in `js/progress.js` schreiben in Lehrer-Vorschau nicht mehr in Firestore.
+- Lehrer-Logout löscht alte Rollen-/Preview-/Studentenreste vollständig.
+
+
+## Schritt 15 – globales Designsystem vorbereitet
+
+- Neue zentrale Datei `/shared/sprachpilot-design-system.css` erstellt.
+- Neue zentrale Datei `/shared/sprachpilot-design-system.js` erstellt.
+- Dokumentation `/shared/SPRACHPILOT_DESIGN_SYSTEM.md` erstellt.
+- Nicht-Lektionsfarben als feste SprachPilot-Palette definiert: Babyblau, Blau, Weiß und brauner Akzent.
+- Lektionsfarben als getrennte Variablen vorbereitet: Lektionen behalten eigene Farbe, Struktur bleibt gleich.
+- Standardklassen für Header, Account-Leiste, Navigation, Karten, 5er-Grid, Fortschrittskarte und Buttons vorbereitet.
+- Logo-Pfad zentral festgelegt: `/assets/logo/sprachpilot-logo.png`.
+- Bestehende Haupt-CSS-Dateien importieren das zentrale Designsystem jetzt, ohne alte Seiten sofort komplett umzubauen.
+- Nächste Migration kann Ordner für Ordner erfolgen, ohne jedes Mal neue Strukturen zu erfinden.
