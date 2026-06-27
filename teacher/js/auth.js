@@ -1,5 +1,5 @@
 (function(){
-  const OWNER_EMAILS = ["studyroomslandstuhl@gmail.com"];
+  const OWNER_EMAILS = ["studyroomslandstuhl@gmail.com","alicekrekoten@gmail.com","alisa.krekoten@gmail.com"];
 
   function el(id){return document.getElementById(id)}
   function show(text,type="no"){
@@ -65,6 +65,62 @@
     try{sessionStorage.removeItem("SP_TEACHER_PREVIEW");}catch(e){}
   }
 
+
+  function norm(value){ return String(value || "").trim().toLowerCase(); }
+  function roleOk(data={}){
+    const role=norm(data.role || data.typ || data.type || data.accountType || data.userRole || "teacher");
+    return !role || ["owner","admin","teacher","lehrer","lehrerin","superadmin","kursleitung","dozent","dozentin"].includes(role);
+  }
+  function isPending(data={}){
+    const status=norm(data.status || data.state || data.accessStatus || "");
+    return data.pending===true || data.approved===false || status==="pending" || status==="wartet" || status==="beantragt" || status==="requested" || status==="waiting" || status==="submitted";
+  }
+  function isBlocked(data={}){
+    const status=norm(data.status || data.state || data.accessStatus || "");
+    return data.active===false || data.disabled===true || data.blocked===true || status==="inactive" || status==="disabled" || status==="blocked" || status==="gesperrt" || status==="deaktiviert";
+  }
+  async function getDocById(collection,id){
+    if(!id) return null;
+    try{
+      const snap=await db.collection(collection).doc(id).get();
+      if(snap.exists) return {collection,id:snap.id,docId:snap.id,...(snap.data()||{})};
+    }catch(e){}
+    return null;
+  }
+  async function firstByField(collection,field,value){
+    if(!field || !value) return null;
+    try{
+      const snap=await db.collection(collection).where(field,"==",value).limit(1).get();
+      if(!snap.empty){
+        const doc=snap.docs[0];
+        return {collection,id:doc.id,docId:doc.id,...(doc.data()||{})};
+      }
+    }catch(e){}
+    return null;
+  }
+  async function findTeacherIn(collection,user){
+    const email=norm(user.email);
+    const uid=user.uid;
+    const candidates=[];
+    const byId=await getDocById(collection,uid);
+    if(byId) candidates.push(byId);
+    for(const field of ["uid","userUid","authUid","teacherUid","ownerUid","createdByUid"]){
+      const found=await firstByField(collection,field,uid);
+      if(found) candidates.push(found);
+    }
+    for(const field of ["email","emailLower","teacherEmail","teacherEmailLower","mail","loginEmail"]){
+      const found=await firstByField(collection,field,email);
+      if(found) candidates.push(found);
+    }
+    const seen=new Set();
+    return candidates.find(c=>{
+      const key=`${c.collection}:${c.docId||c.id}`;
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }) || null;
+  }
+
   window.TeacherAuth = {
     OWNER_EMAILS,
 
@@ -74,7 +130,9 @@
 
       const ref=db.collection("teachers").doc(user.uid);
       await ref.set({
+        uid:user.uid,
         email,
+        emailLower:email,
         firstName:"Alisa",
         lastName:"",
         school:"SprachPilot",
@@ -82,6 +140,7 @@
         role:"owner",
         active:true,
         approved:true,
+        status:"approved",
         owner:true,
         updatedAt:firebase.firestore.FieldValue.serverTimestamp()
       }, {merge:true});
@@ -93,15 +152,13 @@
       const owner = await this.ensureOwnerDoc(user);
       if(owner) return owner;
 
-      const pending=await db.collection("teachers_pending").doc(user.uid).get();
-      if(pending.exists){
-        return {pending:true,...pending.data()};
-      }
+      const approved=await findTeacherIn("teachers",user);
+      if(approved) return approved;
 
-      const approved=await db.collection("teachers").doc(user.uid).get();
-      if(!approved.exists) return null;
+      const pending=await findTeacherIn("teachers_pending",user);
+      if(pending) return {pending:true,...pending};
 
-      return approved.data();
+      return null;
     },
 
     async login(){
@@ -130,21 +187,21 @@
           return;
         }
 
-        if(teacher.pending || teacher.approved===false){
+        if(isPending(teacher)){
           await auth.signOut();
           clearTeacherMode();
           show("Dein Lehrerkonto wartet noch auf Freigabe durch die Administratorin.");
           return;
         }
 
-        if(teacher.active===false){
+        if(isBlocked(teacher)){
           await auth.signOut();
           clearTeacherMode();
           show("Dieser Lehrerzugang ist deaktiviert.");
           return;
         }
 
-        if(!["owner","admin","teacher"].includes(teacher.role)){
+        if(!roleOk(teacher)){
           await auth.signOut();
           clearTeacherMode();
           show("Dieser Account hat keine gültige Lehrerrolle.");
