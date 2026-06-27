@@ -13,7 +13,7 @@ export function clearTeacherPreviewState(){
 }
 export function clearTeacherSessionFlags(){
   clearTeacherPreviewState();
-  ["SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_AUTH_ROLE","SP_LOGIN_CONTEXT"].forEach(k=>localStorage.removeItem(k));
+  ["SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_UID","SP_TEACHER_PROFILE","SP_TEACHER_UID","SP_TEACHER_PROFILE","SP_AUTH_ROLE","SP_LOGIN_CONTEXT"].forEach(k=>localStorage.removeItem(k));
 }
 export function setLoginRole(role){
   role=String(role||"").toLowerCase();
@@ -32,12 +32,14 @@ export function startTeacherSession(){
   setLoginRole("teacher");
 }
 export function getActiveRole(){
-  const p=getActiveProfile();
-  const profileRole=String(p?.role||p?.loginRole||p?.type||p?.accountType||"").toLowerCase();
-  if(["student","schueler","schüler"].includes(profileRole)) return "student";
-  if(["teacher","lehrer","admin","owner"].includes(profileRole)) return "teacher";
+  // Die aktive Login-Art entscheidet. Gleiche E-Mail darf Schüler UND Lehrer sein.
   const stored=String(localStorage.getItem("SP_LOGIN_ROLE")||localStorage.getItem("SP_ACTIVE_ROLE")||"").toLowerCase();
   if(["teacher","lehrer","admin","owner"].includes(stored)) return "teacher";
+  if(["student","schueler","schüler"].includes(stored)) return "student";
+
+  const p=getActiveProfile();
+  const profileRole=String(p?.role||p?.loginRole||p?.type||p?.accountType||"").toLowerCase();
+  if(["teacher","lehrer","admin","owner"].includes(profileRole)) return "teacher";
   return "student";
 }
 export function dashboardHref(){
@@ -47,10 +49,54 @@ export function makeStudentId(email,course){return normId(course)+"_"+normId(ema
 export function getActiveProfile(){try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}}
 export async function loadCourse(courseCode){
  const raw=String(courseCode||"").trim();
- for(const c of [...new Set([raw,raw.toLowerCase(),raw.toUpperCase()].filter(Boolean))]){
-   const snap=await getDoc(doc(db,"courses",c));
-   if(snap.exists()) return {id:c,data:snap.data()};
+ if(!raw) return null;
+ const variants=[...new Set([
+   raw,
+   raw.toLowerCase(),
+   raw.toUpperCase(),
+   raw.replace(/\s+/g,""),
+   raw.toLowerCase().replace(/\s+/g,"")
+ ].filter(Boolean))];
+
+ // 1) Direkte Dokument-ID-Varianten prüfen
+ for(const c of variants){
+   try{
+     const snap=await getDoc(doc(db,"courses",c));
+     if(snap.exists()) return {id:snap.id,data:{...snap.data(), id:snap.id, courseCode:snap.data().courseCode||snap.data().code||snap.data().kurs||snap.id}};
+   }catch(e){console.warn("course direct lookup failed", e);}
  }
+
+ // 2) Kurscode kann auch nur als Feld gespeichert sein, nicht als Dokument-ID
+ const fields=["courseCode","code","kurs","kursnummer","name","courseName"];
+ for(const field of fields){
+   for(const value of variants){
+     try{
+       const qs=await getDocs(query(collection(db,"courses"),where(field,"==",value),limit(5)));
+       if(!qs.empty){
+         const d=qs.docs[0];
+         const data=d.data()||{};
+         return {id:d.id,data:{...data,id:d.id,courseCode:data.courseCode||data.code||data.kurs||data.kursnummer||value}};
+       }
+     }catch(e){console.warn("course field query failed", field, e);}
+   }
+ }
+
+ // 3) Letzter Fallback für alte Kursdokumente: kleine Liste normalisiert vergleichen
+ try{
+   const snap=await getDocs(query(collection(db,"courses"),limit(500)));
+   const wanted=raw.toLowerCase().replace(/\s+/g,"");
+   const match=snap.docs.find(d=>{
+     const data=d.data()||{};
+     const values=[d.id,data.courseCode,data.code,data.kurs,data.kursnummer,data.name,data.courseName]
+       .map(v=>String(v||"").trim().toLowerCase().replace(/\s+/g,""));
+     return values.includes(wanted);
+   });
+   if(match){
+     const data=match.data()||{};
+     return {id:match.id,data:{...data,id:match.id,courseCode:data.courseCode||data.code||data.kurs||data.kursnummer||raw}};
+   }
+ }catch(e){console.warn("course fallback scan failed", e);}
+
  return null;
 }
 export function makeProfile(st,courseData,docId=null){
@@ -80,13 +126,14 @@ export function saveActiveProfile(st,courseData,docId=null){
   localStorage.setItem("SP_STUDENT_PROFILE",JSON.stringify(p));
   localStorage.setItem("SP_KEEP_LOGGED_IN","1");
   localStorage.setItem("SP_STUDENT_ID",p.studentId);
+  localStorage.setItem("SP_USER_ROLE","student");
   localStorage.setItem("motherLanguage",p.muttersprache);
   localStorage.setItem("muttersprache",p.muttersprache);
   return p
 }
 export function logout(){
   clearTeacherPreviewState();
-  ["SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_KEEP_LOGGED_IN","SP_STUDENT_ID","motherLanguage","muttersprache","SP_MOTHER_LANGUAGE_CODE","SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_AUTH_ROLE","SP_LOGIN_CONTEXT","SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID"].forEach(k=>localStorage.removeItem(k));
+  ["SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_KEEP_LOGGED_IN","SP_STUDENT_ID","motherLanguage","muttersprache","SP_MOTHER_LANGUAGE_CODE","SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_AUTH_ROLE","SP_LOGIN_CONTEXT","SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_UID","SP_TEACHER_PROFILE"].forEach(k=>localStorage.removeItem(k));
   location.href="/index.html";
 }
 
@@ -178,10 +225,19 @@ export async function registerStudent({vorname,nachname,email,muttersprache,kurs
  const existing=await findStudentByEmailAndCourse(emailNorm,courseLoaded.id);
  if(existing) throw new Error("STUDENT_EXISTS");
  const studentId=makeStudentId(emailNorm,courseLoaded.id);
- const st={studentId,userId:studentId,vorname,nachname,email:emailNorm,muttersprache,kurs:courseLoaded.id,kursnummer:courseLoaded.id,role:"student",loginRole:"student",isStudent:true,profilVollstaendig:false,active:true,fragenFortschritt:0,verbenFortschritt:0,wortschatzFortschritt:0,createdAt:serverTimestamp(),lastLogin:serverTimestamp()};
+ const courseCode=courseLoaded.data?.courseCode || courseLoaded.data?.code || courseLoaded.data?.kurs || courseLoaded.data?.kursnummer || courseLoaded.id;
+ const st={
+   studentId,userId:studentId,docId:studentId,
+   vorname,nachname,email:emailNorm,muttersprache,
+   kurs:courseCode,kursnummer:courseCode,courseCode:courseCode,courseDocId:courseLoaded.id,
+   role:"student",loginRole:"student",isStudent:true,isTeacher:false,
+   profilVollstaendig:false,active:true,
+   fragenFortschritt:0,verbenFortschritt:0,wortschatzFortschritt:0,
+   createdAt:serverTimestamp(),lastLogin:serverTimestamp()
+ };
  await setDoc(doc(db,"students",studentId),st,{merge:true});
  try{
-   await setDoc(doc(db,"progress",studentId),{studentId,kurs:courseLoaded.id,fragen:{progress:0,state:{}},verben:{progress:0,stars:0,state:{}},wortschatz:{progress:0,state:{}},grammatik:{progress:0,state:{}},updatedAt:serverTimestamp()},{merge:true});
+   await setDoc(doc(db,"progress",studentId),{studentId,kurs:courseCode,kursnummer:courseCode,courseCode:courseCode,courseDocId:courseLoaded.id,fragen:{progress:0,state:{}},verben:{progress:0,stars:0,state:{}},wortschatz:{progress:0,state:{}},grammatik:{progress:0,state:{}},updatedAt:serverTimestamp()},{merge:true});
  }catch(e){
    console.warn("progress init skipped", e);
  }
@@ -279,7 +335,21 @@ export function getRedirectTarget(defaultTarget="/index.html"){
 export function renderAccountStrip(rootId="accountStrip"){
   const el=document.getElementById(rootId);
   if(!el) return;
-  const p=getActiveProfile();
+  const role=getActiveRole();
+  const p=role==="student" ? getActiveProfile() : null;
+
+  if(role==="teacher"){
+    const tp=(()=>{try{return JSON.parse(localStorage.getItem("SP_TEACHER_PROFILE")||"{}")}catch(e){return {}}})();
+    const name=[tp.firstName,tp.lastName].filter(Boolean).join(" ") || tp.email || "Lehrkraft";
+    el.innerHTML=`
+      <div class="who">${safeText(name)} · Lehrerzugang</div>
+      <div class="account-links">
+        <a href="/teacher/index.html">Lehrer-Dashboard</a>
+        <button onclick="logout()">Abmelden</button>
+      </div>
+    `;
+    return;
+  }
 
   if(!p){
     el.innerHTML=`
