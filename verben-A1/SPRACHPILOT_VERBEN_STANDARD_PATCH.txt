@@ -1,0 +1,16 @@
+SprachPilot Verben A1 – Standarddesign-Patch
+
+Umgesetzt:
+- Verben-Bereich auf SprachPilot-Standarddesign umgestellt.
+- Farbthema: dunkleres Blau als Startseite.
+- Echtes SprachPilot-Logo oben links als Startseitenlink.
+- Account-Leiste: Dashboard, Profil, Abmelden.
+- Menüs ohne überladene Emojis.
+- Aufgabenübersicht mit 5 Karten pro Reihe auf Desktop.
+- Fortschrittskarte wie SprachPilot-Standard.
+- Lehrer-Vorschau kann Verben öffnen, ohne Schülerpunkte/Firebase-Fortschritt zu speichern.
+- Schülerprofil wird bevorzugt aus SP_STUDENT_PROFILE gelesen.
+
+Hinweis:
+- Die Bilder bleiben im bestehenden Verben-Ordner. Zentraler /assets/img/-Umbau kommt später.
+- Der Logo-Pfad nutzt /assets/logo/sprachpilot-logo.png.
