@@ -1,11 +1,11 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Thema 4 – Wohnungsanzeigen</title><link rel="stylesheet" href="../shared/lektion4-standard.css?v=thema4-step7"><link rel="stylesheet" href="style.css?v=thema4-step7"></head><body><div class="container"><header class="topbar"></header><div id="themeProgress"></div><section class="grid" id="tasks"></section><footer>© SprachPilot</footer></div><script src="../shared/lektion4-standard.js?v=thema4-step7"></script><script src="app.js?v=thema4-step7"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Thema 4 – Wohnungsanzeigen</title><link rel="stylesheet" href="../shared/lektion4-standard.css?v=thema4-step7"><link rel="stylesheet" href="style.css?v=thema4-step7"></head><body><div class="container"><header class="topbar"></header><div id="themeProgress"></div><section class="grid" id="tasks"></section><footer>© SprachPilot</footer></div><script src="../shared/lektion4-standard.js?v=thema4-step7"></script><script src="app.js?v=thema4-content-v2"></script><script>
 renderSprachPilotHeader({title:"Wohnungsanzeigen",subtitle:"A1 Lektion 4 · Thema 4",backHref:"../index.html",overviewHref:"uebersicht.html",statsHref:"statistik.html"});
 const TASKS=[
- ["karteikarten.html","Karteikarten","Neue Wörter üben","🃏",WORDS.length],
- ["hoeren.html","Hören","Höre und wähle Wort und Bild","🎧",HOREN_IDS.length],
+ ["karteikarten.html","Karteikarten","Neue Wörter üben","🃏",FLASHCARD_WORDS.length],
+ ["hoeren.html","Hören","Höre und wähle Wort und Bild","🔊",HOREN_IDS.length],
  ["schreibe-mit-artikel.html","Schreibe mit Artikel","Schreib die Wörter richtig","✍️",ARTICLE_WRITE_IDS.length],
  ["artikel.html","Artikel","der, die oder das?","🔤",NOUNS.length],
- ["plural.html","Plural","Pluralformen üben","🔢",NOUNS.length],
+ ["plural.html","Plural","Pluralformen üben","🔢",PLURAL_NOUNS.length],
  ["paare-finden.html","Paare finden","Verbinde, was zusammengehört","🔗",PAIRS.length],
  ["woerter-verstehen.html","Wörter verstehen","Wähle die Erklärung","💡",MEANING_TASKS.length],
  ["anzeige-lesen.html","Anzeige lesen","Antworte in ganzen Sätzen","📄",ADS.reduce((s,a)=>s+a.qs.length,0)],
@@ -14,6 +14,6 @@ const TASKS=[
 ];
 themeProgress.innerHTML=renderThemeProgress();
 const examLocked=!isExamUnlocked();
-tasks.innerHTML=TASKS.map((t,idx)=>{const p=pct(t[0],t[4]);return `<a class="module" href="${t[0]}"><div class="num">${idx+1}. ${t[1]}</div><div class="icon">${t[3]}</div><p>${t[2]}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}).join("")+`<a class="module ${examLocked?'exam-locked':''}" href="${examLocked?'#':'pruefung.html'}"><div class="num">${TASKS.length+1}. Prüfung</div><div class="icon exam-icon">★</div><p>Teste dein Wissen.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">${examLocked?'gesperrt':'offen'}</div><div class="start">${examLocked?'Prüfung gesperrt':'Starten'}</div></a>`;
+tasks.innerHTML=TASKS.map((t,idx)=>{const p=pct(t[0],t[4]);return `<a class="module" href="${t[0]}"><div class="num">${idx+1}. ${t[1]}</div><div class="icon">${t[3]}</div><p>${t[2]}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}).join("")+`<a class="module ${examLocked?'exam-locked':''}" href="${examLocked?'#':'pruefung.html'}"><div class="num">${TASKS.length+1}. Prüfung</div><div class="icon">🏅</div><p>Teste dein Wissen.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">${examLocked?'gesperrt':'offen'}</div><div class="start">${examLocked?'Prüfung gesperrt':'Starten'}</div></a>`;
 syncDashboardProgress();
 </script></body></html>
