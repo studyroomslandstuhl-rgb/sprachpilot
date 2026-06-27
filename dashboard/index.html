@@ -15,7 +15,7 @@
   <section class="card"><div id="msg">Bitte warten.</div></section>
 </div>
 <script type="module">
-import { dashboardHref, getActiveProfile, getActiveRole } from "../js/auth.js?v=step1";
+import { dashboardHref, getActiveProfile, getActiveRole } from "../js/auth.js?v=step133";
 const href=dashboardHref();
 document.getElementById("msg").innerHTML=`Du wirst weitergeleitet zu <strong>${getActiveRole()==="teacher"?"Lehrer-Dashboard":"Schüler-Dashboard"}</strong>.`;
 setTimeout(()=>{ location.href=href; }, 150);
