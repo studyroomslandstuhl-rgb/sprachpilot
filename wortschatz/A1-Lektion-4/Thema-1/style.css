@@ -353,3 +353,6 @@ footer{text-align:center;color:white;margin-top:20px}
   .finish-box .actions{gap:12px!important;}
   .finish-box .actions .btn{width:100%!important;max-width:320px!important;}
 }
+
+/* L4/T2 overview standard patch */
+.progress-card{display:grid;grid-template-columns:120px 1fr;gap:22px;align-items:start;background:linear-gradient(135deg,#fffdf2,#fff7d6)}.progress-main{width:100%;min-width:0}.circle{width:96px;height:96px;border-radius:50%;border:10px solid #f7d450;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;background:white}.module{display:flex;flex-direction:column;min-height:260px}.module .progress{margin-top:auto}@media(max-width:700px){.progress-card{grid-template-columns:1fr;text-align:center}.circle{margin:auto}}
