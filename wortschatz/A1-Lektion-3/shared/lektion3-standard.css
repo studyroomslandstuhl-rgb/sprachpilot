@@ -1,3 +1,4 @@
+@import url("/shared/sprachpilot-design-system.css");
 *{box-sizing:border-box;margin:0;padding:0}
 :root{
   --lesson-main:#f28c28;
