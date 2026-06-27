@@ -1,21 +1,28 @@
 const Students = {
+  database(){return TeacherEnv?.db?.() || null},
   async list(){
-    if(!db) return [];
-    const snap=await db.collection("students").get();
-    return snap.docs.map(d=>({id:d.id,...d.data()}));
+    const database=this.database();
+    if(!database){TeacherEnv?.note?.("Schüler nicht geladen: Firestore ist nicht verbunden.");return []}
+    try{
+      const snap=await database.collection("students").get();
+      return snap.docs.map(d=>({id:d.id,...d.data()}));
+    }catch(e){TeacherEnv?.note?.("Schüler konnten nicht geladen werden", e);return []}
   },
   async progressList(){
-    if(!db) return [];
-    const snap=await db.collection("progress").get();
-    return snap.docs.map(d=>({id:d.id,...d.data()}));
+    const database=this.database();
+    if(!database){TeacherEnv?.note?.("Fortschritt nicht geladen: Firestore ist nicht verbunden.");return []}
+    try{
+      const snap=await database.collection("progress").get();
+      return snap.docs.map(d=>({id:d.id,...d.data()}));
+    }catch(e){TeacherEnv?.note?.("Fortschritt konnte nicht geladen werden", e);return []}
   },
   mergeStudentProgress(students,progressRows){
-    const progressById=new Map(progressRows.map(p=>[p.studentId||p.id,p]));
-    return students.map(s=>({...s,progressDoc:progressById.get(s.studentId||s.id)||null}));
+    const progressById=new Map((progressRows||[]).map(p=>[p.studentId||p.id,p]));
+    return (students||[]).map(s=>({...s,progressDoc:progressById.get(s.studentId||s.id)||null}));
   },
   byCourse(students){
     const groups={};
-    for(const s of students){
+    for(const s of students||[]){
       const k=s.kurs||s.kursnummer||s.courseCode||"Ohne Kurs";
       groups[k]=groups[k]||[];
       groups[k].push(s);
@@ -23,25 +30,27 @@ const Students = {
     return groups;
   },
   filterByCourses(students,courseNames){
-    const allowed=new Set(courseNames.map(x=>String(x).trim().toLowerCase()));
-    return students.filter(s=>allowed.has(String(s.kurs||s.kursnummer||s.courseCode||"").trim().toLowerCase()));
+    const allowed=new Set((courseNames||[]).map(x=>String(x).trim().toLowerCase()));
+    return (students||[]).filter(s=>allowed.has(String(s.kurs||s.kursnummer||s.courseCode||"").trim().toLowerCase()));
   },
   async updateStudent(studentId,data){
-    if(!db)return;
-    await db.collection("students").doc(studentId).set({...data,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    const database=this.database();
+    if(!database)return alert("Firebase ist nicht verbunden. Schülerdaten wurden nicht gespeichert.");
+    await database.collection("students").doc(studentId).set({...data,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
     TeacherApp.render();
   },
   async remove(studentId,name=""){
-    if(!db)return;
+    const database=this.database();
+    if(!database)return alert("Firebase ist nicht verbunden. Schüler kann nicht gelöscht werden.");
     if(confirm(`Schüler ${name||studentId} wirklich löschen? Fortschritt wird ebenfalls entfernt.`)){
-      await db.collection("students").doc(studentId).delete();
-      try{await db.collection("progress").doc(studentId).delete()}catch(e){}
+      await database.collection("students").doc(studentId).delete();
+      try{await database.collection("progress").doc(studentId).delete()}catch(e){TeacherEnv?.note?.("Fortschritt zum Schüler konnte nicht gelöscht werden", e)}
       TeacherApp.render();
     }
   },
   editForm(student){
     const id=student.studentId||student.id;
-    const safe=v=>String(v||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
+    const safe=v=>TeacherEnv?.safe?.(v) || String(v||"");
     return `<div class="edit-box" id="edit-${safe(id)}">
       <h4>Schüler bearbeiten</h4>
       <div class="toolbar wrap">
@@ -56,7 +65,7 @@ const Students = {
     </div>`;
   },
   openEdit(studentId){
-    const row=document.querySelector(`[data-student-row="${studentId}"]`);
+    const row=document.querySelector(`[data-student-row="${CSS.escape(studentId)}"]`);
     const data=window.__SP_STUDENTS_BY_ID?.[studentId];
     if(row&&data)row.insertAdjacentHTML("afterend",`<tr><td colspan="6">${Students.editForm(data)}</td></tr>`);
   },

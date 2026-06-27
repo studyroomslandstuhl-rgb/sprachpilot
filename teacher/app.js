@@ -1,12 +1,73 @@
+const TeacherEnv = {
+  errors: [],
+  note(message, error){
+    const text = message + (error && error.message ? " · " + error.message : "");
+    console.warn("[SprachPilot Lehrer-Dashboard]", text, error || "");
+    this.errors.push(text);
+  },
+  db(){
+    try{
+      if(window.db) return window.db;
+      if(typeof firebase !== "undefined" && firebase.apps && firebase.apps.length && firebase.firestore){
+        window.db = firebase.firestore();
+        return window.db;
+      }
+    }catch(e){ this.note("Firebase/Firestore konnte nicht geöffnet werden", e); }
+    return null;
+  },
+  auth(){
+    try{
+      if(typeof firebase !== "undefined" && firebase.apps && firebase.apps.length && firebase.auth){
+        return firebase.auth();
+      }
+    }catch(e){ this.note("Firebase/Auth konnte nicht geöffnet werden", e); }
+    return null;
+  },
+  currentUser(){
+    try{return this.auth()?.currentUser || null}catch(e){return null}
+  },
+  safe(value){
+    return String(value || "")
+      .replace(/&/g,"&amp;")
+      .replace(/</g,"&lt;")
+      .replace(/>/g,"&gt;")
+      .replace(/"/g,"&quot;");
+  }
+};
+
 const TeacherApp = {
-  async render(){
+  lastCourses: [],
+  renderNotice(extra=""){
+    const messages = [...new Set([...(TeacherEnv.errors || []), extra].filter(Boolean))];
+    if(!messages.length) return "";
+    return `<section class="card warning-card">
+      <h2>Hinweis</h2>
+      <p>Das Dashboard wurde geladen, aber es gibt ein technisches Problem.</p>
+      <div class="small">${messages.map(m=>`• ${TeacherEnv.safe(m)}`).join("<br>")}</div>
+    </section>`;
+  },
+  async render(options={}){
     const app=document.getElementById("app");
+    if(!app) return;
     app.innerHTML=`<div class="card">Dashboard wird geladen …</div>`;
 
-    const [courses,studentsRaw,progressRows]=await Promise.all([
-      Courses.list(),Students.list(),Students.progressList()
+    let courses=[], studentsRaw=[], progressRows=[];
+    const results = await Promise.allSettled([
+      Courses.list(),
+      Students.list(),
+      Students.progressList()
     ]);
-    const courseNames=courses.map(c=>c.id||c.name).filter(Boolean).sort();
+
+    if(results[0].status === "fulfilled") courses = results[0].value || [];
+    else TeacherEnv.note("Kurse konnten nicht geladen werden", results[0].reason);
+
+    if(results[1].status === "fulfilled") studentsRaw = results[1].value || [];
+    else TeacherEnv.note("Schüler konnten nicht geladen werden", results[1].reason);
+
+    if(results[2].status === "fulfilled") progressRows = results[2].value || [];
+    else TeacherEnv.note("Fortschritt konnte nicht geladen werden", results[2].reason);
+
+    const courseNames=courses.map(c=>c.id||c.name).filter(Boolean).sort((a,b)=>String(a).localeCompare(String(b)));
     const studentsAll=Students.mergeStudentProgress(studentsRaw,progressRows);
     const students=Students.filterByCourses(studentsAll,courseNames);
     window.__SP_COURSES=courses;
@@ -23,9 +84,14 @@ const TeacherApp = {
       return Analytics.percent(verben.progress??s.verbenFortschritt??0)>=100;
     }).length;
 
+    const user=TeacherEnv.currentUser();
+    const teacherLine=user ? `${TeacherEnv.safe(user.email || user.uid || "Lehrer/in")}` : "Keine aktive Firebase-Anmeldung erkannt.";
+
     app.innerHTML=`
+      ${this.renderNotice(options.notice)}
       <section class="card">
         <h2>Gesamtübersicht</h2>
+        <div class="small">Angemeldet: ${teacherLine}</div>
         <div class="overview-stats">
           <div class="stat"><div class="num">${courseNames.length}</div><div>meine Kurse</div></div>
           <div class="stat"><div class="num">${totalStudents}</div><div>Schüler</div></div>
@@ -50,7 +116,7 @@ const TeacherApp = {
         <div class="toolbar">
           <select id="releaseCourse">
             <option value="">Kurs auswählen</option>
-            ${courseNames.map(c=>`<option value="${c}">${c}</option>`).join("")}
+            ${courseNames.map(c=>`<option value="${TeacherEnv.safe(c)}">${TeacherEnv.safe(c)}</option>`).join("")}
           </select>
         </div>
         <div id="releaseEditor" class="release-editor"><div class="empty">Bitte Kurs auswählen.</div></div>
@@ -77,24 +143,71 @@ const TeacherApp = {
 };
 
 function startTeacherDashboard(){
-  if(typeof firebase!=="undefined" && firebase.auth){
-    firebase.auth().onAuthStateChanged(async user=>{
-      if(!user){location.href="login.html";return;}
-      try{
-        const snap=await db.collection("teachers").doc(user.uid).get();
-        const data=snap.exists?snap.data():{};
-        if(!snap.exists || data.active===false || !["teacher","lehrer",undefined].includes(data.role)){
-          alert("Kein aktiver Lehrerzugang.");
-          await firebase.auth().signOut();
-          location.href="login.html";
-          return;
+  const app=document.getElementById("app");
+  let finished=false;
+
+  function finish(fn){
+    if(finished) return;
+    finished=true;
+    try{fn()}catch(e){
+      TeacherEnv.note("Dashboard konnte nicht gerendert werden", e);
+      if(app) app.innerHTML=`<div class="card warning-card"><h2>Fehler</h2><p>Dashboard konnte nicht geladen werden.</p><div class="small">${TeacherEnv.safe(e.message||e)}</div><button onclick="location.reload()">Neu laden</button></div>`;
+    }
+  }
+
+  setTimeout(()=>{
+    if(!finished){
+      TeacherEnv.note("Firebase/Auth antwortet nicht. Fallback-Dashboard wird angezeigt.");
+      finish(()=>TeacherApp.render({notice:"Firebase/Auth antwortet nicht. Bitte Firebase-Konfiguration und Login prüfen."}));
+    }
+  }, 5000);
+
+  const auth=TeacherEnv.auth();
+  if(!auth){
+    TeacherEnv.note("Firebase/Auth ist nicht verbunden. Prüfe js/firebase-config.js bzw. deine Firebase-Konfiguration.");
+    finish(()=>TeacherApp.render({notice:"Firebase/Auth ist nicht verbunden. Prüfe Firebase-Konfiguration."}));
+    return;
+  }
+
+  try{
+    auth.onAuthStateChanged(async user=>{
+      if(!user){
+        finish(()=>{ location.href="login.html"; });
+        return;
+      }
+
+      const database=TeacherEnv.db();
+      if(database){
+        try{
+          const snap=await database.collection("teachers").doc(user.uid).get();
+          const data=snap.exists?snap.data():{};
+          const roleOk=["teacher","lehrer","admin",undefined,null,""].includes(data.role);
+          if(snap.exists && data.active===false){
+            finish(()=>{
+              if(app) app.innerHTML=`<div class="card warning-card"><h2>Zugang noch nicht freigeschaltet</h2><p>Dein Lehrerzugang ist noch nicht aktiv.</p></div>`;
+            });
+            return;
+          }
+          if(snap.exists && !roleOk){
+            finish(()=>{
+              if(app) app.innerHTML=`<div class="card warning-card"><h2>Kein Lehrerzugang</h2><p>Dieses Konto ist nicht als Lehrerzugang markiert.</p></div>`;
+            });
+            return;
+          }
+        }catch(e){
+          TeacherEnv.note("Lehrerstatus konnte nicht geprüft werden. Dashboard wird trotzdem geöffnet.", e);
         }
-      }catch(e){console.warn(e)}
-      TeacherApp.render();
+      }
+
+      finish(()=>TeacherApp.render());
     });
-  }else{
-    TeacherApp.render();
+  }catch(e){
+    TeacherEnv.note("Auth-Status konnte nicht gelesen werden", e);
+    finish(()=>TeacherApp.render({notice:"Auth-Status konnte nicht gelesen werden."}));
   }
 }
 
 document.addEventListener("DOMContentLoaded",startTeacherDashboard);
+window.addEventListener("error",e=>{
+  TeacherEnv.note("JavaScript-Fehler", e.error || e.message);
+});

@@ -1,6 +1,6 @@
 const TeacherIdentity = {
   user(){
-    try{return firebase.auth().currentUser || null}catch(e){return null}
+    try{return TeacherEnv?.currentUser?.() || firebase.auth().currentUser || null}catch(e){return null}
   },
   uid(){return this.user()?.uid || ""},
   email(){return String(this.user()?.email || "").toLowerCase()},
@@ -23,50 +23,67 @@ const TeacherIdentity = {
 };
 
 const Courses = {
+  database(){return TeacherEnv?.db?.() || null},
   async list(){
-    if(!db) return [];
+    const database=this.database();
+    if(!database){
+      TeacherEnv?.note?.("Kurse nicht geladen: Firestore ist nicht verbunden.");
+      return [];
+    }
     const uid=TeacherIdentity.uid();
     const email=TeacherIdentity.email();
     const map=new Map();
-    const add=snap=>snap.docs.forEach(d=>{const c={id:d.id,...d.data()};if(TeacherIdentity.courseBelongsToTeacher(c))map.set(d.id,c)});
+    const add=snap=>{
+      if(!snap || !snap.docs) return;
+      snap.docs.forEach(d=>{
+        const c={id:d.id,...d.data()};
+        if(TeacherIdentity.courseBelongsToTeacher(c)) map.set(d.id,c);
+      });
+    };
     const queries=[
       ["teacherUid",uid],["teacherId",uid],["ownerUid",uid],["createdByUid",uid],["assignedTeacherId",uid],
       ["teacherEmail",email],["ownerEmail",email],["createdByEmail",email],["assignedTeacherEmail",email]
     ].filter(([,v])=>v);
+
     for(const [field,value] of queries){
-      try{add(await db.collection("courses").where(field,"==",value).get())}catch(e){}
+      try{add(await database.collection("courses").where(field,"==",value).get())}
+      catch(e){TeacherEnv?.note?.(`Kurs-Abfrage fehlgeschlagen: ${field}`, e)}
     }
-    try{
-      const snap=await db.collection("courses").get();
-      add(snap);
-    }catch(e){}
+
+    // Fallback für ältere Kursdokumente mit Array-Feldern / anderer Struktur.
+    try{add(await database.collection("courses").get())}
+    catch(e){TeacherEnv?.note?.("Kurse konnten nicht vollständig geladen werden", e)}
+
     return [...map.values()].sort((a,b)=>String(a.id||a.name).localeCompare(String(b.id||b.name)));
   },
   async create(name){
     name=String(name||"").trim();
     if(!name)return alert("Bitte Kursnamen eingeben, z. B. GLK-68.");
-    if(!db)return alert("Firebase ist nicht verbunden.");
+    const database=this.database();
+    if(!database)return alert("Firebase ist nicht verbunden. Kurs kann nicht gespeichert werden.");
     const user=TeacherIdentity.user();
-    await db.collection("courses").doc(name).set({
+    await database.collection("courses").doc(name).set({
       name,
       teacherUid:user?.uid||"",
       teacherEmail:user?.email||"",
       teachers:[user?.uid,user?.email].filter(Boolean),
       enabledModules:{"Verben A1":true,"Wortschatz":true,"Fragen A1":true},
-      enabledLessons:{},enabledTasks:{},enabledWords:{},releases:{},
+      enabledLessons:{},enabledTasks:{},enabledWords:{},enabledSets:{},enabledThemes:{},releases:{},
       createdAt:firebase.firestore.FieldValue.serverTimestamp(),
       updatedAt:firebase.firestore.FieldValue.serverTimestamp()
     },{merge:true});
     TeacherApp.render();
   },
   async update(name,data){
-    if(!db)return;
-    await db.collection("courses").doc(name).set({...data,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+    const database=this.database();
+    if(!database)return alert("Firebase ist nicht verbunden. Änderungen wurden nicht gespeichert.");
+    await database.collection("courses").doc(name).set({...data,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
   },
   async remove(name){
-    if(!db)return;
+    const database=this.database();
+    if(!database)return alert("Firebase ist nicht verbunden. Kurs kann nicht gelöscht werden.");
     if(confirm(`Kurs ${name} wirklich löschen? Freigaben und Kursdaten werden gelöscht. Schüler-Profile bleiben erhalten.`)){
-      await db.collection("courses").doc(name).delete();
+      await database.collection("courses").doc(name).delete();
       TeacherApp.render();
     }
   }
