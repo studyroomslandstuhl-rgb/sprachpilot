@@ -356,3 +356,37 @@ footer{text-align:center;color:white;margin-top:20px}
 
 /* L4/T2 overview standard patch */
 .progress-card{display:grid;grid-template-columns:120px 1fr;gap:22px;align-items:start;background:linear-gradient(135deg,#fffdf2,#fff7d6)}.progress-main{width:100%;min-width:0}.circle{width:96px;height:96px;border-radius:50%;border:10px solid #f7d450;display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;background:white}.module{display:flex;flex-direction:column;min-height:260px}.module .progress{margin-top:auto}@media(max-width:700px){.progress-card{grid-template-columns:1fr;text-align:center}.circle{margin:auto}}
+
+/* ===== SprachPilot 5 Aufgaben pro Reihe Standard v10 ===== */
+.container{
+  max-width:1440px!important;
+}
+.grid{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:16px!important;
+}
+.module{
+  min-width:0!important;
+}
+.module .num{
+  line-height:1.15!important;
+}
+.module .icon{
+  min-height:70px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+@media(max-width:1250px){
+  .grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+}
+@media(max-width:980px){
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+}
+@media(max-width:760px){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
+@media(max-width:520px){
+  .grid{grid-template-columns:1fr!important;}
+}
