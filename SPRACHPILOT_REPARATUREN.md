@@ -90,13 +90,8 @@ Geändert:
 - Nächste Migration kann Ordner für Ordner erfolgen, ohne jedes Mal neue Strukturen zu erfinden.
 
 
-## Schritt 16 – zentraler Bilderordner vorbereitet
+## Schritt 17 – Endkontrolle und kritische Restfehler
 
-- Neuer Ordner `/assets/img/` angelegt.
-- Bilder wurden bewusst noch nicht verschoben, damit alte Aufgaben nicht kaputtgehen.
-- Neue Registry `/assets/img/sprachpilot-image-registry.json` erstellt.
-- Neuer Helfer `/shared/sprachpilot-assets.js` erstellt.
-- Neue Dokumentation `/shared/SPRACHPILOT_BILDER_SYSTEM.md` erstellt.
-- Gefundene Bilddateien im Projekt: 412.
-- Doppelte/ähnliche Bildnamen erkannt: 41.
-- Neue Aufgaben können ab jetzt `spImagePath(...)` nutzen und später zentral auf `/assets/img/...` umgestellt werden.
+- `teacher/js/releases.js` repariert: Datei ist wieder gültiges JavaScript.
+- Schüler-Registrierung gegen doppelte Profile robuster gemacht, auch wenn Kurs-Dokument-ID und Kurscode unterschiedlich sind.
+- Endkontrollbericht ergänzt: `shared/SPRACHPILOT_ENDKONTROLLE.md`.
