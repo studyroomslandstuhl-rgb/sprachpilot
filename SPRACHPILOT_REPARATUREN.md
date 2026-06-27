@@ -95,3 +95,13 @@ Geändert:
 - `teacher/js/releases.js` repariert: Datei ist wieder gültiges JavaScript.
 - Schüler-Registrierung gegen doppelte Profile robuster gemacht, auch wenn Kurs-Dokument-ID und Kurscode unterschiedlich sind.
 - Endkontrollbericht ergänzt: `shared/SPRACHPILOT_ENDKONTROLLE.md`.
+
+
+## Schritt 18 – Lehrerzugang repariert
+
+- Lehrerlogin prüft Lehrerzugang nicht mehr nur starr über `teachers/{uid}`.
+- Zugriff wird jetzt auch über E-Mail und alternative Felder gefunden.
+- Unterstützt werden `teachers` und `teachers_pending`.
+- Rollen wie `teacher`, `lehrer`, `lehrerin`, `admin`, `owner`, `dozent/in` werden akzeptiert.
+- Alte Lehrer-Dokumente ohne `approved:true` werden nicht mehr automatisch blockiert, solange sie nicht ausdrücklich `approved:false`, `active:false` oder `status: pending` haben.
+- Fehlermeldungen zeigen jetzt klarer, ob der Zugang fehlt, pending oder deaktiviert ist.
