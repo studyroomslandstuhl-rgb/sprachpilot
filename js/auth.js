@@ -137,17 +137,21 @@ export function logout(){
   location.href="/index.html";
 }
 
-export async function findStudentByEmailAndCourse(email,courseInput){
+export async function findStudentByEmailAndCourse(email,courseInput,courseDocId=""){
   const emailNorm=normText(email);
   const courseRaw=String(courseInput||"").trim();
+  const courseDocRaw=String(courseDocId||"").trim();
   const courseNorm=courseRaw.toLowerCase();
+  const courseDocNorm=courseDocRaw.toLowerCase();
 
   // 1) Direkte Dokument-ID-Varianten prüfen
   const possibleIds=[
     makeStudentId(emailNorm,courseRaw),
     makeStudentId(emailNorm,courseNorm),
-    makeStudentId(emailNorm,courseRaw.toUpperCase())
-  ];
+    makeStudentId(emailNorm,courseRaw.toUpperCase()),
+    courseDocRaw ? makeStudentId(emailNorm,courseDocRaw) : "",
+    courseDocNorm ? makeStudentId(emailNorm,courseDocNorm) : ""
+  ].filter(Boolean);
 
   for(const id of [...new Set(possibleIds)]){
     try{
@@ -162,10 +166,13 @@ export async function findStudentByEmailAndCourse(email,courseInput){
   const courseVariants=[...new Set([
     courseRaw,
     courseNorm,
-    courseRaw.toUpperCase()
+    courseRaw.toUpperCase(),
+    courseDocRaw,
+    courseDocNorm,
+    courseDocRaw.toUpperCase()
   ].filter(Boolean))];
 
-  const courseFields=["kurs","courseCode","kursnummer"];
+  const courseFields=["kurs","courseCode","kursnummer","courseDocId"];
 
   for(const field of courseFields){
     for(const course of courseVariants){
@@ -193,8 +200,10 @@ export async function findStudentByEmailAndCourse(email,courseInput){
     const snap=await getDocs(q2);
     const match=snap.docs.find(d=>{
       const data=d.data();
-      const k=String(data.kurs||data.courseCode||data.kursnummer||"").trim().toLowerCase();
-      return k===courseNorm;
+      const values=[data.kurs,data.courseCode,data.kursnummer,data.courseDocId]
+        .map(v=>String(v||"").trim().toLowerCase())
+        .filter(Boolean);
+      return values.includes(courseNorm) || (!!courseDocNorm && values.includes(courseDocNorm));
     });
     if(match) return {id:match.id,data:match.data()};
   }catch(e){
@@ -207,8 +216,10 @@ export async function findStudentByEmailAndCourse(email,courseInput){
     const match=snap.docs.find(d=>{
       const data=d.data();
       const e=normText(data.email);
-      const k=String(data.kurs||data.courseCode||data.kursnummer||"").trim().toLowerCase();
-      return e===emailNorm && k===courseNorm;
+      const values=[data.kurs,data.courseCode,data.kursnummer,data.courseDocId]
+        .map(v=>String(v||"").trim().toLowerCase())
+        .filter(Boolean);
+      return e===emailNorm && (values.includes(courseNorm) || (!!courseDocNorm && values.includes(courseDocNorm)));
     });
     if(match) return {id:match.id,data:match.data()};
   }catch(e){
@@ -222,10 +233,10 @@ export async function registerStudent({vorname,nachname,email,muttersprache,kurs
  const emailNorm=normText(email);
  const courseLoaded=await loadCourse(kurs);
  if(!courseLoaded) throw new Error("COURSE_NOT_FOUND");
- const existing=await findStudentByEmailAndCourse(emailNorm,courseLoaded.id);
+ const courseCode=courseLoaded.data?.courseCode || courseLoaded.data?.code || courseLoaded.data?.kurs || courseLoaded.data?.kursnummer || courseLoaded.id;
+ const existing=await findStudentByEmailAndCourse(emailNorm,courseCode,courseLoaded.id);
  if(existing) throw new Error("STUDENT_EXISTS");
  const studentId=makeStudentId(emailNorm,courseLoaded.id);
- const courseCode=courseLoaded.data?.courseCode || courseLoaded.data?.code || courseLoaded.data?.kurs || courseLoaded.data?.kursnummer || courseLoaded.id;
  const st={
    studentId,userId:studentId,docId:studentId,
    vorname,nachname,email:emailNorm,muttersprache,
