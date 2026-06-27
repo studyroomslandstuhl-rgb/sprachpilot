@@ -1,16 +1,14 @@
-# SprachPilot Reparaturen
+# Schritt 8 – Firebase-Verbindung Lehrer-Dashboard
 
+Repariert:
 
-## Schritt 6
-- Lektion 3 bekommt einen eigenen Standard-Style auf Basis von Lektion 4/Thema 2.
-- Lektion 3 Hauptseite wurde auf die einheitliche Karten-/Header-Struktur umgebaut.
-- Lektion 3 Thema 1 und Thema 2 Übersichten wurden auf Fortschrittskarte + Modul-Karten umgebaut.
-- Emojis auf diesen Übersichtsseiten wurden entfernt/reduziert.
-- Lektion 3 bleibt orange als Lektionsfarbe.
+- `js/firebase-config.js` war nur ein Platzhalter.
+- `teacher/index.html` lädt genau diese Datei.
+- Dadurch waren `firebase.auth()` und `firebase.firestore()` im Lehrer-Dashboard nicht verbunden.
+- Jetzt enthält `js/firebase-config.js` die echte Firebase-Konfiguration und initialisiert compat Firebase.
+- Das Lehrer-Dashboard kann wieder Kurse, Schüler und Fortschritt laden.
 
-## Schritt 7 – Lektion 4 Thema 3/4 Feinreparatur
+Hinweis:
 
-- Thema 3: Zurück-Button auf der Themenübersicht führt jetzt zur Lektion-4-Übersicht statt auf dieselbe Seite.
-- Thema 3: Schriftgrößen, Abstände, Icon-Höhen, Modul-Karten und Fortschrittskarte wurden an Thema 2 angeglichen.
-- Thema 3: Prüfungskarte nutzt dieselbe Sperrlogik und denselben Prüfungs-Icon-Stil wie die anderen Lektion-4-Themen.
-- Thema 4: Prüfungskarte nutzt jetzt ebenfalls den gleichen Prüfungs-Icon-Stil.
+- `js/firebase.js` bleibt für Modul-Seiten bestehen.
+- `js/firebase-config.js` ist für Seiten mit Firebase-Compat-Skripten.
