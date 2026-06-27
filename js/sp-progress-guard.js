@@ -1,16 +1,32 @@
 // Globaler Schutz: Lehrer-Vorschau darf keine Schülerpunkte/Ranglisten/Fortschritte speichern.
+// Wichtig: Der Schutz ist NUR aktiv, wenn SP_TEACHER_PREVIEW explizit in sessionStorage gesetzt ist.
 (function(){
+  function readProfile(){
+    try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"{}")}catch(e){return {}}
+  }
+  function isStudentProfile(profile){
+    const role=String(profile.role||profile.type||profile.typ||profile.accountType||profile.loginRole||"").toLowerCase();
+    return profile.isStudent===true || profile.student===true || profile.schueler===true || role==="student" || role==="schueler" || role==="schüler";
+  }
+  function clearTeacherPreviewState(){
+    try{
+      sessionStorage.removeItem("SP_TEACHER_PREVIEW");
+      sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
+      sessionStorage.removeItem("SP_PREVIEW_COURSE");
+    }catch(e){}
+  }
   function isPreview(){
-    try{
-      const p=JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW")||"null");
-      if(p&&p.teacherPreview)return true;
-    }catch(e){}
-    try{
-      const p=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"{}");
-      const role=String(p.role||p.type||p.typ||"").toLowerCase();
-      if(p.isTeacher||p.teacher||p.lehrer||role==="teacher"||role==="lehrer")return true;
-    }catch(e){}
-    return false;
+    let preview=null;
+    try{preview=JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW")||"null")}catch(e){}
+    if(!preview || preview.teacherPreview!==true) return false;
+
+    const activeRole=String(localStorage.getItem("SP_ACTIVE_ROLE")||"").toLowerCase();
+    const profile=readProfile();
+    if(activeRole==="student" || isStudentProfile(profile)){
+      clearTeacherPreviewState();
+      return false;
+    }
+    return true;
   }
   function shouldRedirectKey(key){
     key=String(key||"");
@@ -40,6 +56,8 @@
     return realRemove.call(this,key);
   };
   window.spCanSaveStudentProgress=function(){return !isPreview()};
+  window.spClearTeacherPreviewState=clearTeacherPreviewState;
+  window.spIsTeacherPreview=isPreview;
 
   function patchFirestore(){
     if(!isPreview()||!window.db||window.__spProgressGuardDbPatched)return;

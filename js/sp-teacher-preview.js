@@ -1,21 +1,57 @@
-// SprachPilot: Lehrer-Vorschau für alle Schülerbereiche.
-// Laden vor Modul-/Aufgabencode, damit Lehrer testen können, ohne Schülerpunkte zu erzeugen.
+// SprachPilot: Lehrer-Vorschau für Schülerbereiche.
+// Wichtig: Lehrer-Vorschau ist NUR aktiv, wenn sie explizit aus dem Lehrer-Dashboard gestartet wurde.
+// Ein Schülerprofil oder alte lokale Speicherwerte dürfen nie automatisch Lehrer-Vorschau aktivieren.
 export function getStoredTeacherPreview(){
-  try{return JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW")||"null")}catch(e){return null}
+  try{
+    const preview = JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW") || "null");
+    if(!preview || preview.teacherPreview !== true) return null;
+    return preview;
+  }catch(e){
+    return null;
+  }
 }
+
+export function clearTeacherPreviewState(){
+  try{
+    sessionStorage.removeItem("SP_TEACHER_PREVIEW");
+    sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
+    sessionStorage.removeItem("SP_PREVIEW_COURSE");
+  }catch(e){}
+}
+
 export function isTeacherProfile(profile={}){
-  const role=String(profile.role||profile.typ||profile.type||profile.accountType||"").toLowerCase();
-  return profile.isTeacher===true || profile.teacher===true || profile.lehrer===true || role==="teacher" || role==="lehrer" || localStorage.getItem("SP_TEACHER_MODE")==="1";
+  const role=String(profile.role||profile.typ||profile.type||profile.accountType||profile.loginRole||"").toLowerCase();
+  return profile.isTeacher===true || profile.teacher===true || profile.lehrer===true || role==="teacher" || role==="lehrer" || role==="admin";
 }
+
+export function isStudentProfile(profile={}){
+  const role=String(profile.role||profile.typ||profile.type||profile.accountType||profile.loginRole||"").toLowerCase();
+  return profile.isStudent===true || profile.student===true || profile.schueler===true || role==="student" || role==="schueler" || role==="schüler";
+}
+
 export function isTeacherPreview(profile={}){
-  return isTeacherProfile(profile) || !!getStoredTeacherPreview();
+  const preview=getStoredTeacherPreview();
+  if(!preview) return false;
+
+  // Wenn ausdrücklich ein Schülerkontext aktiv ist, alte Vorschau sofort entfernen.
+  const activeRole=String(localStorage.getItem("SP_ACTIVE_ROLE") || "").toLowerCase();
+  if(activeRole==="student" || isStudentProfile(profile)){
+    clearTeacherPreviewState();
+    return false;
+  }
+
+  return true;
 }
+
 export function canSaveStudentProgress(profile={}){
   return !isTeacherPreview(profile);
 }
+
 export function enterTeacherCoursePreview(course){
   const data=typeof course==="string"?{courseCode:course,kurs:course}:course||{};
   const courseCode=data.courseCode||data.kurs||data.name||data.id||"";
+
+  localStorage.setItem("SP_ACTIVE_ROLE","teacher");
   sessionStorage.setItem("SP_TEACHER_PREVIEW",JSON.stringify({
     teacherPreview:true,
     courseCode,
@@ -26,17 +62,21 @@ export function enterTeacherCoursePreview(course){
     startedAt:new Date().toISOString()
   }));
 }
+
 export function exitTeacherCoursePreview(){
-  sessionStorage.removeItem("SP_TEACHER_PREVIEW");
+  clearTeacherPreviewState();
 }
+
 export function previewProfile(base={}){
   const preview=getStoredTeacherPreview();
   if(!preview)return base||{};
   return {...(base||{}),kurs:preview.kurs||preview.courseCode,kursnummer:preview.kurs||preview.courseCode,courseCode:preview.courseCode||preview.kurs,teacherPreview:true,role:(base&&base.role)||"teacher"};
 }
+
 export function progressStorage(profile={}){
   return canSaveStudentProgress(profile)?localStorage:sessionStorage;
 }
+
 export function progressKey(key,profile={}){
   if(canSaveStudentProgress(profile))return key;
   const p=previewProfile(profile);
