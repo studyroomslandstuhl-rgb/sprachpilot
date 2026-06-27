@@ -72,6 +72,106 @@ const TeacherEnv = {
   }
 };
 
+
+const TeacherAccess = {
+  ownerEmails: ["studyroomslandstuhl@gmail.com","alicekrekoten@gmail.com","alisa.krekoten@gmail.com"],
+  norm(value){ return String(value || "").trim().toLowerCase(); },
+  role(value){ return this.norm(value || "teacher"); },
+  roleOk(data={}){
+    const role=this.role(data.role || data.typ || data.type || data.accountType || data.userRole || data.lehrerrolle || "teacher");
+    return !role || ["teacher","lehrer","lehrerin","admin","owner","superadmin","kursleitung","dozent","dozentin"].includes(role);
+  },
+  isPending(data={}){
+    const status=this.norm(data.status || data.state || data.accessStatus || "");
+    return data.pending===true || data.approved===false || status==="pending" || status==="wartet" || status==="beantragt" || status==="requested" || status==="waiting" || status==="submitted";
+  },
+  isBlocked(data={}){
+    const status=this.norm(data.status || data.state || data.accessStatus || "");
+    return data.active===false || data.disabled===true || data.blocked===true || status==="inactive" || status==="disabled" || status==="blocked" || status==="gesperrt" || status==="deaktiviert";
+  },
+  async getDocById(db, collection, id){
+    if(!db || !id) return null;
+    try{
+      const snap=await db.collection(collection).doc(id).get();
+      if(snap.exists) return {collection,id:snap.id,docId:snap.id,...(snap.data()||{})};
+    }catch(e){ TeacherEnv.note(`${collection}/${id} konnte nicht gelesen werden`, e); }
+    return null;
+  },
+  async firstByField(db, collection, field, value){
+    if(!db || !field || !value) return null;
+    try{
+      const snap=await db.collection(collection).where(field,"==",value).limit(1).get();
+      if(!snap.empty){
+        const doc=snap.docs[0];
+        return {collection,id:doc.id,docId:doc.id,...(doc.data()||{})};
+      }
+    }catch(e){ /* manche Felder/Regeln können scheitern; andere Suche läuft weiter */ }
+    return null;
+  },
+  async findInCollection(db, collection, user){
+    const email=this.norm(user?.email);
+    const uid=user?.uid || "";
+    const candidates=[];
+
+    const byId=await this.getDocById(db, collection, uid);
+    if(byId) candidates.push(byId);
+
+    for(const field of ["uid","userUid","authUid","teacherUid","ownerUid","createdByUid"]){
+      const found=await this.firstByField(db, collection, field, uid);
+      if(found) candidates.push(found);
+    }
+    for(const field of ["email","emailLower","teacherEmail","teacherEmailLower","mail","loginEmail"]){
+      const found=await this.firstByField(db, collection, field, email);
+      if(found) candidates.push(found);
+    }
+
+    const seen=new Set();
+    return candidates.find(c=>{
+      const key=`${c.collection}:${c.docId||c.id}`;
+      if(seen.has(key)) return false;
+      seen.add(key);
+      return true;
+    }) || null;
+  },
+  async ensureOwner(db,user){
+    const email=this.norm(user?.email);
+    if(!this.ownerEmails.includes(email)) return null;
+    const ref=db.collection("teachers").doc(user.uid);
+    const data={
+      uid:user.uid,
+      email,
+      emailLower:email,
+      role:"owner",
+      owner:true,
+      active:true,
+      approved:true,
+      status:"approved",
+      updatedAt: firebase.firestore.FieldValue.serverTimestamp()
+    };
+    await ref.set(data,{merge:true});
+    const snap=await ref.get();
+    return {collection:"teachers",id:snap.id,docId:snap.id,...(snap.data()||data)};
+  },
+  async resolve(db,user){
+    if(!db || !user) return {ok:false,reason:"no-db-or-user"};
+    const owner=await this.ensureOwner(db,user);
+    if(owner) return {ok:true,data:owner,source:"owner"};
+
+    const approved=await this.findInCollection(db,"teachers",user);
+    if(approved){
+      if(this.isBlocked(approved)) return {ok:false,blocked:true,data:approved,reason:"blocked"};
+      if(this.isPending(approved)) return {ok:false,pending:true,data:approved,reason:"pending"};
+      if(!this.roleOk(approved)) return {ok:false,roleInvalid:true,data:approved,reason:"role-invalid"};
+      return {ok:true,data:approved,source:"teachers"};
+    }
+
+    const pending=await this.findInCollection(db,"teachers_pending",user);
+    if(pending) return {ok:false,pending:true,data:pending,source:"teachers_pending",reason:"pending"};
+
+    return {ok:false,missing:true,reason:"missing"};
+  }
+};
+
 const TeacherApp = {
   lastCourses: [],
   renderNotice(extra=""){
@@ -238,72 +338,8 @@ function startTeacherDashboard(){
       }
 
       const database=TeacherEnv.db();
-      let teacherAllowed=false;
-      let teacherPending=false;
 
-      if(database){
-        try{
-          const snap=await database.collection("teachers").doc(user.uid).get();
-          if(!snap.exists){
-            TeacherEnv.clearStudentPreviewState();
-            localStorage.setItem("SP_ACTIVE_ROLE","student");
-            finish(()=>{
-              if(app) app.innerHTML=`
-                <div class="card warning-card">
-                  <h2>Kein Lehrerzugang</h2>
-                  <p>Dieses Konto ist nicht als Lehrer freigeschaltet.</p>
-                  <p class="small">Schülerkonten dürfen das Lehrer-Dashboard nicht öffnen.</p>
-                  <div class="toolbar"><a class="btn" href="/student-dashboard/index.html">Zum Schüler-Dashboard</a><a class="btn secondary" href="/index.html">Zur Startseite</a></div>
-                </div>`;
-            });
-            return;
-          }
-
-          const data=snap.data()||{};
-          TeacherEnv.setTeacher(user,data);
-          const role=String(data.role || data.typ || data.type || data.accountType || "teacher").toLowerCase();
-          const roleOk=["teacher","lehrer","admin",""].includes(role);
-
-          if(data.active===false || data.approved===false || data.status==="pending"){
-            teacherPending=true;
-          }
-
-          if(teacherPending){
-            TeacherEnv.clearStudentPreviewState();
-            finish(()=>{
-              if(app) app.innerHTML=`<div class="card warning-card"><h2>Zugang noch nicht freigeschaltet</h2><p>Dein Lehrerzugang ist noch nicht aktiv.</p></div>`;
-            });
-            return;
-          }
-
-          if(!roleOk){
-            TeacherEnv.clearStudentPreviewState();
-            localStorage.setItem("SP_ACTIVE_ROLE","student");
-            finish(()=>{
-              if(app) app.innerHTML=`<div class="card warning-card"><h2>Kein Lehrerzugang</h2><p>Dieses Konto ist nicht als Lehrerzugang markiert.</p></div>`;
-            });
-            return;
-          }
-
-          teacherAllowed=true;
-          localStorage.setItem("SP_ACTIVE_ROLE","teacher");
-          localStorage.setItem("SP_LOGIN_ROLE","teacher");
-          localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
-        }catch(e){
-          TeacherEnv.note("Lehrerstatus konnte nicht geprüft werden. Dashboard wird nicht geöffnet, bis die Rolle klar ist.", e);
-          TeacherEnv.clearStudentPreviewState();
-          finish(()=>{
-            if(app) app.innerHTML=`
-              <div class="card warning-card">
-                <h2>Lehrerstatus konnte nicht geprüft werden</h2>
-                <p>Das Dashboard wird aus Sicherheitsgründen nicht geöffnet.</p>
-                <div class="small">${TeacherEnv.safe(e.message||e)}</div>
-                <div class="toolbar"><button onclick="location.reload()">Neu laden</button><a class="btn secondary" href="/index.html">Zur Startseite</a></div>
-              </div>`;
-          });
-          return;
-        }
-      } else {
+      if(!database){
         TeacherEnv.note("Firestore ist nicht verbunden. Lehrerrolle kann nicht geprüft werden.");
         TeacherEnv.clearStudentPreviewState();
         finish(()=>{
@@ -312,13 +348,63 @@ function startTeacherDashboard(){
         return;
       }
 
-      if(!teacherAllowed){
+      let access;
+      try{
+        access=await TeacherAccess.resolve(database,user);
+      }catch(e){
+        TeacherEnv.note("Lehrerstatus konnte nicht geprüft werden", e);
         TeacherEnv.clearStudentPreviewState();
         finish(()=>{
-          if(app) app.innerHTML=`<div class="card warning-card"><h2>Kein Lehrerzugang</h2><p>Bitte mit einem freigeschalteten Lehrerkonto anmelden.</p></div>`;
+          if(app) app.innerHTML=`
+            <div class="card warning-card">
+              <h2>Lehrerstatus konnte nicht geprüft werden</h2>
+              <p>Das Dashboard wird aus Sicherheitsgründen nicht geöffnet.</p>
+              <div class="small">${TeacherEnv.safe(e.message||e)}</div>
+              <div class="toolbar"><button onclick="location.reload()">Neu laden</button><a class="btn secondary" href="/index.html">Zur Startseite</a></div>
+            </div>`;
         });
         return;
       }
+
+      if(!access.ok){
+        TeacherEnv.clearStudentPreviewState();
+        const email=TeacherEnv.safe(user.email||"");
+        const uid=TeacherEnv.safe(user.uid||"");
+        if(access.pending){
+          finish(()=>{
+            if(app) app.innerHTML=`<div class="card warning-card"><h2>Zugang noch nicht freigeschaltet</h2><p>Dein Lehrerzugang ist registriert, aber noch nicht freigeschaltet.</p><p class="small">E-Mail: ${email}<br>UID: ${uid}</p></div>`;
+          });
+          return;
+        }
+        if(access.blocked){
+          finish(()=>{
+            if(app) app.innerHTML=`<div class="card warning-card"><h2>Lehrerzugang deaktiviert</h2><p>Dieser Lehrerzugang ist deaktiviert.</p><p class="small">E-Mail: ${email}</p></div>`;
+          });
+          return;
+        }
+        if(access.roleInvalid){
+          finish(()=>{
+            if(app) app.innerHTML=`<div class="card warning-card"><h2>Kein Lehrerzugang</h2><p>Dieser Account ist gefunden, aber nicht als Lehrerrolle markiert.</p><p class="small">E-Mail: ${email}</p></div>`;
+          });
+          return;
+        }
+        finish(()=>{
+          if(app) app.innerHTML=`
+            <div class="card warning-card">
+              <h2>Kein Lehrerzugang</h2>
+              <p>Für diese Anmeldung wurde kein freigeschalteter Lehrer-Datensatz gefunden.</p>
+              <p class="small">Gesucht wurde nach UID und E-Mail in <b>teachers</b> und <b>teachers_pending</b>.<br>E-Mail: ${email}<br>UID: ${uid}</p>
+              <div class="toolbar"><a class="btn secondary" href="login.html">Zum Lehrerlogin</a><a class="btn secondary" href="/index.html">Zur Startseite</a></div>
+            </div>`;
+        });
+        return;
+      }
+
+      TeacherEnv.setTeacher(user,access.data||{});
+      localStorage.setItem("SP_ACTIVE_ROLE","teacher");
+      localStorage.setItem("SP_LOGIN_ROLE","teacher");
+      localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
+      localStorage.setItem("SP_TEACHER_MODE","1");
 
       finish(()=>TeacherApp.render());
     });
