@@ -1,52 +1,15 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-
-  <title>SprachPilot · Teacher Dashboard</title>
-
-  <link rel="stylesheet" href="css/styles.css" />
-</head>
-
-<body>
-
-  <header class="topbar">
-    <div class="brand">
-      <div class="logo">SP</div>
-
-      <div>
-        <h1>Teacher Dashboard</h1>
-        <p>Alle Kurse, Schüler und Fortschritte auf einen Blick</p>
-      </div>
-    </div>
-
-    <button onclick="TeacherApp.render()">
-      Aktualisieren
-    </button>
-  </header>
-
-  <main id="app" class="teacher-shell">
-    <div class="card">
-      Dashboard wird geladen …
-    </div>
-  </main>
-
-  <!-- Firebase -->
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-  <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-
-  <!-- SprachPilot Daten -->
-  <script src="../verben-a1/data/verbs.js"></script>
-
-  <!-- Teacher Dateien -->
-  <script src="js/firebase.js"></script>
-  <script src="js/data.js"></script>
-  <script src="js/courses.js"></script>
-  <script src="js/releases.js"></script>
-  <script src="js/students.js"></script>
-  <script src="js/analytics.js"></script>
-  <script src="js/app.js"></script>
-
-</body>
-</html>
+// Deprecated compatibility bridge.
+// The active release logic is now in /teacher/releases.js.
+// This file used to contain HTML by mistake, which caused a JavaScript syntax error
+// if it was ever loaded as a script.
+(function(){
+  try {
+    if (typeof window.renderReleaseEditor === "function") return;
+    var script = document.createElement("script");
+    script.src = "../releases.js?v=step17";
+    script.defer = true;
+    document.head.appendChild(script);
+  } catch (e) {
+    console.warn("SprachPilot release bridge konnte nicht geladen werden", e);
+  }
+})();
