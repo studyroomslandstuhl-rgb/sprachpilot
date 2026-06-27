@@ -32,16 +32,19 @@ const Analytics = {
   courseCard(courseName,students,courseData){
     const count=students.length;
     const avg=count?Math.round(students.reduce((sum,s)=>sum+this.percent((this.verbenData(s).progress??s.verbenFortschritt??0)),0)/count):0;
+    const title=Courses.displayName(courseData||{id:courseName,name:courseName});
+    const code=Courses.code(courseData||{id:courseName,name:courseName}) || courseName;
+    const safeCode=String(code).replace(/'/g,"\'");
     return `<section class="course-card">
       <div class="course-head">
         <div>
-          <div class="course-title">${courseName}</div>
-          <div class="small">${count} Teilnehmer · Durchschnitt Verben: ${avg}%</div>
+          <div class="course-title">${title}</div>
+          <div class="small"><b>${count} Teilnehmer</b> · Durchschnitt Verben: ${avg}% · Kurscode: ${code}</div>
         </div>
         <div class="course-actions">
-          <button onclick="TeacherPreview.open('${courseName}')">SprachPilot</button>
-          <button class="secondary" onclick="TeacherApp.openReleaseEditor('${courseName}',window.__SP_COURSES||[])">Freigabe</button>
-          <button class="danger" onclick="Courses.remove('${courseName}')">Kurs löschen</button>
+          <button onclick="TeacherPreview.open('${safeCode}')">SprachPilot</button>
+          <button class="secondary" onclick="TeacherApp.openReleaseEditor('${safeCode}',window.__SP_COURSES||[])">Freigabe</button>
+          <button class="danger" onclick="Courses.remove('${safeCode}')">Kurs löschen</button>
         </div>
       </div>
       ${this.progressBar(avg)}

@@ -2,3 +2,24 @@
 .warning-card{background:#fff9dd;border-color:#e74c3c}.warning-card h2{color:#9b1c1c}.warning-card p{margin:8px 0}.warning-card .small{line-height:1.6}
 
 .teacher-top{display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap;text-align:left}.teacher-brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}.teacher-brand img{width:64px;height:64px;object-fit:contain;border-radius:18px}.teacher-actions{display:flex;gap:10px;flex-wrap:wrap}.teacher-actions button{margin:0}
+
+.debug-box{
+  margin-top:14px;
+  padding:14px 16px;
+  border:1px dashed #9fb7c7;
+  border-radius:16px;
+  background:#f7fbff;
+  color:#263846;
+  line-height:1.5;
+}
+.debug-box code{
+  padding:2px 6px;
+  border-radius:8px;
+  background:#edf4f8;
+  color:#7E2D00;
+}
+.debug-box summary{
+  cursor:pointer;
+  font-weight:700;
+  margin-top:8px;
+}

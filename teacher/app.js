@@ -1,5 +1,6 @@
 const TeacherEnv = {
   errors: [],
+  teacherData: null,
   note(message, error){
     const text = message + (error && error.message ? " · " + error.message : "");
     console.warn("[SprachPilot Lehrer-Dashboard]", text, error || "");
@@ -28,6 +29,26 @@ const TeacherEnv = {
   },
   profile(){
     try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "{}")}catch(e){return {}}
+  },
+  teacherProfile(){
+    if(this.teacherData) return this.teacherData;
+    try{return JSON.parse(localStorage.getItem("SP_TEACHER_PROFILE") || "{}")}catch(e){return {}}
+  },
+  setTeacher(user,data={}){
+    const profile={
+      ...(data||{}),
+      uid:user?.uid || data.uid || data.id || "",
+      id:user?.uid || data.id || "",
+      email:user?.email || data.email || "",
+      name:data.name || data.fullName || user?.displayName || `${data.vorname||data.firstName||""} ${data.nachname||data.lastName||""}`.trim() || user?.email || ""
+    };
+    this.teacherData=profile;
+    try{
+      localStorage.setItem("SP_TEACHER_PROFILE",JSON.stringify(profile));
+      localStorage.setItem("SP_TEACHER_ID",profile.uid||profile.id||"");
+      localStorage.setItem("SP_TEACHER_UID",profile.uid||profile.id||"");
+      localStorage.setItem("SP_TEACHER_EMAIL",String(profile.email||"").toLowerCase());
+    }catch(e){}
   },
   profileRole(){
     const p=this.profile();
@@ -81,7 +102,7 @@ const TeacherApp = {
     if(results[2].status === "fulfilled") progressRows = results[2].value || [];
     else TeacherEnv.note("Fortschritt konnte nicht geladen werden", results[2].reason);
 
-    const courseNames=courses.map(c=>c.id||c.name).filter(Boolean).sort((a,b)=>String(a).localeCompare(String(b)));
+    const courseNames=courses.map(c=>Courses.code(c)).filter(Boolean).sort((a,b)=>String(a).localeCompare(String(b),"de"));
     const studentsAll=Students.mergeStudentProgress(studentsRaw,progressRows);
     const students=Students.filterByCourses(studentsAll,courseNames);
     window.__SP_COURSES=courses;
@@ -138,7 +159,10 @@ const TeacherApp = {
 
       <section class="card">
         <h2>Meine Kurse und Fortschritte</h2>
-        ${courseNames.length?courseNames.map(name=>Analytics.courseCard(name,byCourse[name]||[],courses.find(c=>(c.id||c.name)===name))).join(""):`<div class="empty">Noch keine Kurse zugewiesen.</div>`}
+        ${courseNames.length?courseNames.map(name=>{
+          const course=courses.find(c=>Courses.code(c)===name || c.id===name || c.name===name);
+          return Analytics.courseCard(name,byCourse[name]||[],course);
+        }).join(""):`<div class="empty">Noch keine Kurse zugewiesen.</div>${Courses.debugBox()}`}
       </section>
     `;
 
@@ -149,7 +173,7 @@ const TeacherApp = {
     const box=document.getElementById("releaseEditor");
     if(!box)return;
     if(!courseName){box.innerHTML=`<div class="empty">Bitte Kurs auswählen.</div>`;return;}
-    const course=(courses||window.__SP_COURSES||[]).find(c=>(c.id||c.name)===courseName)||{};
+    const course=(courses||window.__SP_COURSES||[]).find(c=>Courses.code(c)===courseName || c.id===courseName || c.name===courseName)||{};
     box.innerHTML=renderReleaseEditor(course);
     const select=document.getElementById("releaseCourse");
     if(select)select.value=courseName;
@@ -235,6 +259,7 @@ function startTeacherDashboard(){
           }
 
           const data=snap.data()||{};
+          TeacherEnv.setTeacher(user,data);
           const role=String(data.role || data.typ || data.type || data.accountType || "teacher").toLowerCase();
           const roleOk=["teacher","lehrer","admin",""].includes(role);
 
