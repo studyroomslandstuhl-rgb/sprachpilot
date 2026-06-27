@@ -38,6 +38,19 @@ function getCourse(profile=getProfile()){
 function getName(profile=getProfile()){
   return [profile.vorname||profile.firstName||profile.name, profile.nachname||profile.lastName].filter(Boolean).join(" ") || profile.displayName || profile.email || "Schüler/in";
 }
+function isTeacherPreviewSession(){
+  try{
+    if(typeof window !== "undefined" && typeof window.spIsTeacherPreview === "function") return window.spIsTeacherPreview();
+    const preview=JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW")||"null");
+    const role=String(localStorage.getItem("SP_LOGIN_ROLE")||localStorage.getItem("SP_ACTIVE_ROLE")||"").toLowerCase();
+    return !!(preview && preview.teacherPreview===true && role==="teacher");
+  }catch(e){return false;}
+}
+function canWriteFirebaseProgress(){
+  if(isTeacherPreviewSession()) return false;
+  if(typeof window !== "undefined" && typeof window.spCanWriteFirebaseProgress === "function") return window.spCanWriteFirebaseProgress();
+  return true;
+}
 function topicId(p){
   return p.topicId || p.themeId || cleanId([p.module||"wortschatz", p.level||"A1", "lektion", p.lesson||p.lektion||"", "thema", p.theme||p.thema||""].filter(Boolean).join("_"));
 }
@@ -79,6 +92,7 @@ function recalcTotals(progress){
   };
 }
 async function writeProgress(next){
+  if(!canWriteFirebaseProgress()) return null;
   const profile=getProfile();
   const studentId=getStudentId(profile);
   const kurs=getCourse(profile);
@@ -103,6 +117,7 @@ function taskTitleFromFile(file){
   return map[file] || String(file||"Aufgabe").replace(".html","");
 }
 async function recordTaskProgress(payload={}){
+  if(!canWriteFirebaseProgress()) return null;
   try{
     const moduleKey=payload.module || "wortschatz";
     const id=topicId(payload);
@@ -156,6 +171,7 @@ async function recordTaskProgress(payload={}){
   }catch(err){ console.warn("SPProgress task sync failed", err); }
 }
 async function recordExamResult(payload={}){
+  if(!canWriteFirebaseProgress()) return null;
   try{
     const moduleKey=payload.module || "wortschatz";
     const id=topicId(payload);
@@ -200,6 +216,7 @@ async function recordExamResult(payload={}){
   }catch(err){ console.warn("SPProgress exam sync failed", err); }
 }
 async function recordThemeReset(payload={}){
+  if(!canWriteFirebaseProgress()) return null;
   try{
     const moduleKey=payload.module || "wortschatz";
     const id=topicId(payload);
@@ -222,6 +239,7 @@ async function recordThemeReset(payload={}){
   }catch(err){ console.warn("SPProgress reset sync failed", err); }
 }
 async function touch(payload={}){
+  if(!canWriteFirebaseProgress()) return null;
   try{
     const current=await readProgress();
     current.lastPage=location.pathname;
@@ -229,8 +247,9 @@ async function touch(payload={}){
     await writeProgress(current);
   }catch(err){ console.warn("SPProgress touch failed", err); }
 }
-async function loadCurrentStudentProgress(){ return await readProgress(); }
+async function loadCurrentStudentProgress(){ if(isTeacherPreviewSession()) return {}; return await readProgress(); }
 async function loadCourseRanking(courseCode=getCourse()){
+  if(isTeacherPreviewSession()) return [];
   if(!courseCode) return [];
   const q=query(collection(db,"progress"), where("kurs","==",courseCode), limit(100));
   const snap=await getDocs(q);
@@ -238,6 +257,7 @@ async function loadCourseRanking(courseCode=getCourse()){
 }
 
 async function migrateLegacyLocalProgress(){
+  if(!canWriteFirebaseProgress()) return;
   try{
     const flag="SP_PROGRESS_LEGACY_MIGRATED_V3";
     if(localStorage.getItem(flag)==="1") return;
