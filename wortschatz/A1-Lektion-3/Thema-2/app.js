@@ -122,7 +122,21 @@ function acceptableAnswer(ans,c){
 }
 
 
-function header(title){document.querySelector('.hero').innerHTML=`<div class="top"><a class="brand" href="/index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><div class="small">${title} · A1 Lektion 3 · Thema 2</div></div></a><div class="nav"><a class="btn secondary" href="../index.html">← Lektionsübersicht</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><a class="btn secondary" href="index.html">Thema 2</a></div></div>`}
+function spSafeL3(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function spCurrentProfile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'{}')}catch(e){return {}}}
+function spDashboardHref(){return localStorage.getItem('SP_LOGIN_ROLE')==='teacher'?'/teacher/index.html':'/student-dashboard/index.html'}
+function spHeaderLogout(){
+  ['SP_KEEP_LOGGED_IN','SP_TEACHER_PREVIEW','SP_PREVIEW_COURSE','SP_TEACHER_PREVIEW_COURSE'].forEach(k=>localStorage.removeItem(k));
+  location.href='/index.html';
+}
+function header(title){
+  const p=spCurrentProfile();
+  const who=((p.vorname||p.firstName||'')+' '+(p.nachname||p.lastName||'')).trim()||'Schüler/in';
+  const course=p.kurs||p.kursnummer||p.courseCode||'';
+  const hero=document.querySelector('.hero');
+  if(!hero) return;
+  hero.innerHTML=`<div class="topbar"><div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="sub">${spSafeL3(title)} · A1 Lektion 3 · Thema 2</div></div></a><div class="account-tools"><span class="account-pill">${spSafeL3(who)}${course?' · '+spSafeL3(course):''}</span><a class="account-link" href="${spDashboardHref()}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><button class="account-link account-btn" onclick="spHeaderLogout()">Abmelden</button></div></div><div class="nav"><a class="btn secondary" href="../index.html">Zurück</a><a class="btn secondary" href="index.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button></div></div>`;
+}
 
 function pctFor(file,total=WORDS.length){
   let modern=spTaskPercent(file,total);
@@ -211,8 +225,14 @@ function wrong(Q){
 function fail(Q,d){
   return spFeedbackForTry(Q.tries || 1, d.sol || d.solution || "", d.tip || d.msg || "Form");
 }
+function resetThemeProgress(){
+  if(!confirm('Fortschritte für dieses Thema wirklich löschen?')) return;
+  localStorage.removeItem(KEY);
+  Object.keys(localStorage).forEach(k=>{if(k.startsWith('SP_TASK_STATE_')) localStorage.removeItem(k)});
+  location.reload();
+}
 function complete(area,file,nextFile){
-  area.innerHTML=`<div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${nextFile}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div>`;
+  area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Aufgabe geschafft!</div><div class="big">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="actions finish-actions"><button class="btn secondary" onclick="spResetTask('${file}');location.reload()">Nochmal üben</button><a class="btn" href="${nextFile}">Weiter</a><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>`;
 }
 function startMic(btn,callback){
   const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
