@@ -5,53 +5,142 @@ function spSafe(value) {
     .replace(/>/g, "&gt;");
 }
 
-function spGetProfile() {
+function spReadJson(key, fallback = {}) {
   try {
-    const p = JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "{}");
-    let preview = null;
-    try { preview = JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW") || "null"); } catch (e) {}
-    if (preview && (preview.courseCode || preview.kurs)) {
-      return {
-        ...p,
-        kurs: preview.kurs || preview.courseCode,
-        kursnummer: preview.kurs || preview.courseCode,
-        courseCode: preview.courseCode || preview.kurs,
-        teacherPreview: true,
-        role: p.role || "teacher"
-      };
-    }
-    return p;
+    return JSON.parse(localStorage.getItem(key) || JSON.stringify(fallback));
   } catch (e) {
-    return {};
+    return fallback;
   }
 }
 
+function spReadSessionJson(key, fallback = null) {
+  try {
+    return JSON.parse(sessionStorage.getItem(key) || JSON.stringify(fallback));
+  } catch (e) {
+    return fallback;
+  }
+}
 
+function spRawProfile() {
+  const storedRole = String(
+    localStorage.getItem("SP_LOGIN_ROLE") ||
+    localStorage.getItem("SP_ACTIVE_ROLE") ||
+    localStorage.getItem("SP_AUTH_ROLE") ||
+    localStorage.getItem("SP_LOGIN_CONTEXT") ||
+    ""
+  ).toLowerCase();
 
-/* ---------- Lehrer-Vorschau / Testmodus ---------- */
-function spIsTeacherProfile(profile) {
-  const p = profile || spGetProfile();
-  const role = String(p.role || p.typ || p.type || p.accountType || "").toLowerCase();
+  if (storedRole === "teacher" || storedRole === "lehrer" || storedRole === "admin") {
+    const teacherProfile = spReadJson("SP_TEACHER_PROFILE", null);
+    if (teacherProfile && Object.keys(teacherProfile).length) return teacherProfile;
+  }
+
+  if (storedRole === "student" || storedRole === "schueler" || storedRole === "schüler") {
+    const studentProfile = spReadJson("SP_STUDENT_PROFILE", null);
+    if (studentProfile && Object.keys(studentProfile).length) return studentProfile;
+  }
+
+  return spReadJson("SP_USER_PROFILE", {});
+}
+
+function spProfileRole(profile = {}) {
+  return String(
+    profile.loginRole || profile.role || profile.typ || profile.type || profile.accountType || profile.userRole || ""
+  ).toLowerCase();
+}
+
+function spLooksLikeStudent(profile = {}) {
+  const role = spProfileRole(profile);
   return Boolean(
-    p.isTeacher === true ||
-    p.teacher === true ||
-    p.lehrer === true ||
-    role === "teacher" ||
-    role === "lehrer" ||
-    localStorage.getItem("SP_TEACHER_MODE") === "1"
+    role === "student" || role === "schueler" || role === "schüler" ||
+    profile.isStudent === true || profile.student === true || profile.schueler === true || profile.schüler === true ||
+    ((profile.kurs || profile.kursnummer || profile.courseCode) && (profile.muttersprache || profile.nativeLanguage || profile.language))
   );
 }
 
-function spTeacherPreview() {
+function spLooksLikeTeacher(profile = {}) {
+  const role = spProfileRole(profile);
+  return Boolean(
+    role === "teacher" || role === "lehrer" || role === "admin" ||
+    profile.isTeacher === true || profile.teacher === true || profile.lehrer === true || profile.admin === true
+  );
+}
+
+function spActiveRole(profile = spRawProfile()) {
+  const profileRole = spProfileRole(profile);
+
+  if (profileRole === "student" || profileRole === "schueler" || profileRole === "schüler") return "student";
+  if (profileRole === "teacher" || profileRole === "lehrer" || profileRole === "admin") return "teacher";
+
+  // Wichtig: Schülerprofil schlägt alte Lehrer-/Preview-Speicherwerte.
+  if (spLooksLikeStudent(profile)) return "student";
+
+  const storedRole = String(
+    localStorage.getItem("SP_LOGIN_ROLE") ||
+    localStorage.getItem("SP_ACTIVE_ROLE") ||
+    localStorage.getItem("SP_AUTH_ROLE") ||
+    localStorage.getItem("SP_LOGIN_CONTEXT") ||
+    ""
+  ).toLowerCase();
+
+  if (storedRole === "student" || storedRole === "schueler" || storedRole === "schüler") return "student";
+  if (storedRole === "teacher" || storedRole === "lehrer" || storedRole === "admin") return "teacher";
+
+  if (spLooksLikeTeacher(profile)) return "teacher";
+
+  return "student";
+}
+
+function spClearTeacherPreviewState() {
   try {
-    return JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW") || "null");
-  } catch (e) {
+    sessionStorage.removeItem("SP_TEACHER_PREVIEW");
+    sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
+    sessionStorage.removeItem("SP_PREVIEW_COURSE");
+  } catch (e) {}
+}
+
+function spTeacherPreview() {
+  const profile = spRawProfile();
+  const role = spActiveRole(profile);
+  const preview = spReadSessionJson("SP_TEACHER_PREVIEW", null);
+
+  if (!preview || preview.teacherPreview !== true) return null;
+
+  // Thema-Seiten dürfen alte Vorschau nie in einer echten Schüler-Session anzeigen.
+  if (role !== "teacher") {
+    spClearTeacherPreviewState();
     return null;
   }
+
+  return preview;
 }
 
 function spIsTeacherPreview() {
-  return spIsTeacherProfile() || !!spTeacherPreview();
+  return !!spTeacherPreview();
+}
+
+function spGetProfile() {
+  const profile = spRawProfile();
+  const preview = spTeacherPreview();
+
+  if (preview) {
+    const courseCode = preview.courseCode || preview.kurs || "";
+    return {
+      ...profile,
+      kurs: courseCode || profile.kurs || profile.kursnummer || profile.courseCode || "",
+      kursnummer: courseCode || profile.kursnummer || profile.kurs || profile.courseCode || "",
+      courseCode: courseCode || profile.courseCode || profile.kurs || profile.kursnummer || "",
+      teacherPreview: true,
+      role: "teacher"
+    };
+  }
+
+  return profile;
+}
+
+/* ---------- Lehrer-Vorschau / Testmodus ---------- */
+function spIsTeacherProfile(profile) {
+  return spActiveRole(profile || spRawProfile()) === "teacher";
 }
 
 function spPreviewCourseCode() {
@@ -62,17 +151,27 @@ function spPreviewCourseCode() {
 
 function spEnterCoursePreview(course) {
   const data = typeof course === "string" ? { courseCode: course, kurs: course } : (course || {});
+  const courseCode = data.courseCode || data.kurs || data.name || data.id || "";
+
+  localStorage.setItem("SP_ACTIVE_ROLE", "teacher");
+  localStorage.setItem("SP_LOGIN_CONTEXT", "teacher");
+  localStorage.setItem("SP_LOGIN_ROLE", "teacher");
+
   sessionStorage.setItem("SP_TEACHER_PREVIEW", JSON.stringify({
-    courseCode: data.courseCode || data.kurs || data.name || data.id || "",
-    kurs: data.kurs || data.courseCode || data.name || data.id || "",
-    name: data.name || data.title || data.kurs || data.id || "",
+    courseCode,
+    kurs: courseCode,
+    name: data.name || data.title || courseCode,
+    releases: data.releases || data.release || {},
+    assignments: data.assignments || {},
     teacherPreview: true,
     startedAt: new Date().toISOString()
   }));
 }
 
 function spExitCoursePreview() {
-  sessionStorage.removeItem("SP_TEACHER_PREVIEW");
+  spClearTeacherPreviewState();
+  localStorage.setItem("SP_ACTIVE_ROLE", "teacher");
+  localStorage.setItem("SP_LOGIN_CONTEXT", "teacher");
   location.href = "/teacher/index.html";
 }
 
@@ -106,9 +205,10 @@ function renderSprachPilotHeader(config = {}) {
   const lastName = profile.nachname || profile.lastName || "";
   const course = profile.kurs || profile.kursnummer || profile.courseCode || "";
 
-  const isTeacher = spIsTeacherProfile(profile);
+  const role = spActiveRole(profile);
+  const isTeacher = role === "teacher";
   const preview = spTeacherPreview();
-  const previewCourse = spPreviewCourseCode();
+  const previewCourse = preview ? spPreviewCourseCode() : "";
   const who = `${firstName} ${lastName}`.trim() || (isTeacher ? "Lehrer/in" : "Schüler/in");
 
   const title = config.title || "SprachPilot";
@@ -116,6 +216,7 @@ function renderSprachPilotHeader(config = {}) {
   const backHref = config.backHref || "index.html";
   const overviewHref = config.overviewHref || "uebersicht.html";
   const statsHref = config.statsHref || "statistik.html";
+  const dashboardHref = isTeacher ? "/teacher/index.html" : "/student-dashboard/index.html";
 
   header.innerHTML = `
     <div class="topbar-main">
@@ -129,7 +230,7 @@ function renderSprachPilotHeader(config = {}) {
 
       <div class="account-tools">
         <span class="account-pill">${spSafe(who)}${previewCourse ? " · Vorschau: " + spSafe(previewCourse) : (course ? " · " + spSafe(course) : "")}</span>
-        <a class="account-link" href="${isTeacher ? "/teacher/index.html" : "/student-dashboard/index.html"}">📊 ${isTeacher ? "Lehrer-Dashboard" : "Dashboard"}</a>
+        <a class="account-link" href="${dashboardHref}">📊 ${isTeacher ? "Lehrer-Dashboard" : "Dashboard"}</a>
         <a class="account-link" href="/profile/index.html">👤 Profil</a>
         ${preview ? '<button class="account-link account-btn" onclick="spExitCoursePreview()">Vorschau beenden</button>' : ''}
         <button class="account-link account-btn" onclick="spLogout()">🚪 Abmelden</button>
@@ -146,8 +247,16 @@ function renderSprachPilotHeader(config = {}) {
 }
 
 function spLogout() {
+  spClearTeacherPreviewState();
   localStorage.removeItem("SP_USER_PROFILE");
+  localStorage.removeItem("SP_STUDENT_PROFILE");
+  localStorage.removeItem("SP_TEACHER_PROFILE");
   localStorage.removeItem("SP_KEEP_LOGGED_IN");
+  localStorage.removeItem("SP_ACTIVE_ROLE");
+  localStorage.removeItem("SP_LOGIN_ROLE");
+  localStorage.removeItem("SP_AUTH_ROLE");
+  localStorage.removeItem("SP_LOGIN_CONTEXT");
+  localStorage.removeItem("SP_TEACHER_MODE");
   location.href = "/index.html";
 }
 
