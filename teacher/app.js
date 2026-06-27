@@ -18,8 +18,10 @@ const TeacherEnv = {
   },
   auth(){
     try{
+      if(window.auth) return window.auth;
       if(typeof firebase !== "undefined" && firebase.apps && firebase.apps.length && firebase.auth){
-        return firebase.auth();
+        window.auth = firebase.auth();
+        return window.auth;
       }
     }catch(e){ this.note("Firebase/Auth konnte nicht geöffnet werden", e); }
     return null;
@@ -184,13 +186,10 @@ const TeacherApp = {
 
 async function teacherLogout(){
   try{
-    localStorage.removeItem("SP_TEACHER_MODE");
-    localStorage.removeItem("SP_USER_ROLE");
-    localStorage.removeItem("SP_TEACHER_EMAIL");
-    localStorage.removeItem("SP_TEACHER_ID");
-    localStorage.removeItem("SP_LOGIN_ROLE");
-    localStorage.removeItem("SP_ACTIVE_ROLE");
+    ["SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_UID","SP_TEACHER_PROFILE","SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_AUTH_ROLE","SP_LOGIN_CONTEXT","SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_STUDENT_ID"].forEach(k=>localStorage.removeItem(k));
     sessionStorage.removeItem("SP_TEACHER_PREVIEW");
+    sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
+    sessionStorage.removeItem("SP_PREVIEW_COURSE");
     const auth=TeacherEnv.auth();
     if(auth) await auth.signOut();
   }catch(e){console.warn(e)}
