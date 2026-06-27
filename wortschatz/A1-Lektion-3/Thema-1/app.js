@@ -33,7 +33,22 @@ function right(Q,w){if(Q.had){Q.bad.push(w)}else if(!Q.done.includes(w.id)){Q.do
 function fail(Q,d){if(Q.tries===1)return d.msg;if(Q.tries===2)return d.msg+`<div class="hint">Tipp: ${d.tip}</div>`;return d.msg+`<div class="hint">Lösung: ${d.sol}</div>`}
 function prog(Q){let left=Q.q.length+Q.bad.length+(Q.cur?1:0),done=Q.done.length,p=Math.round(done/(done+left)*100)||0;return`<div class="small">${done} richtig · ${left} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
 function finishTask(file){let s=load();s.doneTasks=s.doneTasks||{};s.doneTasks[file]=true;save(s);autoNextBatchIfReady()}
-function complete(area,file,next){finishTask(file);area.innerHTML=`<div class="big">Gut gemacht! Aufgabe erledigt.</div><p class="feedback">Fortschritt gespeichert.</p><div class="actions"><a class="btn" href="${next}">Nächste Aufgabe →</a><a class="btn secondary" href="index.html">Übersicht</a></div>`}
+function resetOneTask(file){
+  let s=load();
+  if(s.tasks) delete s.tasks[file];
+  if(s.doneTasks) delete s.doneTasks[file];
+  save(s);
+  location.reload();
+}
+function resetThemeProgress(){
+  if(!confirm('Fortschritte für dieses Thema wirklich löschen?')) return;
+  localStorage.removeItem(KEY);
+  location.reload();
+}
+function complete(area,file,next){
+  finishTask(file);
+  area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Aufgabe geschafft!</div><div class="big">100% erreicht.</div><div class="progress"><div class="bar" style="width:100%"></div></div><div class="actions finish-actions"><button class="btn secondary" onclick="resetOneTask('${file}')">Nochmal üben</button><a class="btn" href="${next}">Weiter</a><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>`;
+}
 function updateWordProgress(id){let s=load();s.wordProgress=s.wordProgress||{};s.wordProgress[id]=Math.min(100,(s.wordProgress[id]||0)+20);save(s)}
 function wordPct(id){let s=load();return (s.wordProgress&&s.wordProgress[id])||0}
 function taskPercent(file){let s=load();let ts=s.tasks&&s.tasks[file];if(s.doneTasks&&s.doneTasks[file])return 100;if(!ts)return 0;let total=activeWords().length;return total?Math.round((ts.done||[]).length/total*100):0}
@@ -42,4 +57,18 @@ function totalPercent(){return Math.round((typePercent('vocab')+typePercent('gra
 function autoNextBatchIfReady(){let s=load();let visible=TASKS.filter(t=>t.type==='vocab').map(t=>t.file);let allDone=visible.every(f=>s.doneTasks&&s.doneTasks[f]);let b=batchInfo();if(allDone&&b.end<b.total){s.batchIndex=(s.batchIndex||0)+1;visible.forEach(f=>{if(s.tasks)delete s.tasks[f];if(s.doneTasks)delete s.doneTasks[f];});save(s)}}
 function checkPlural(ans,w){return norm(ans)===w.plural}
 function fixImg(img){img.classList.add('missing');img.title='Bild fehlt oder Dateiname stimmt nicht';}
-function header(title){document.querySelector('.hero').innerHTML=`<div class="topbar"><a class="brand" href="/index.html"><div class="logo">SP</div><div><h1>SprachPilot</h1><p class="sub">${title} · A1 Lektion 3 · Thema 1</p></div></a><div class="nav"><a class="btn secondary" href="../../index.html">Startseite</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><a class="btn secondary" href="index.html">Thema 1</a></div></div>`}
+function spSafeL3(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
+function spCurrentProfile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'{}')}catch(e){return {}}}
+function spDashboardHref(){return localStorage.getItem('SP_LOGIN_ROLE')==='teacher'?'/teacher/index.html':'/student-dashboard/index.html'}
+function spHeaderLogout(){
+  ['SP_KEEP_LOGGED_IN','SP_TEACHER_PREVIEW','SP_PREVIEW_COURSE','SP_TEACHER_PREVIEW_COURSE'].forEach(k=>localStorage.removeItem(k));
+  location.href='/index.html';
+}
+function header(title){
+  const p=spCurrentProfile();
+  const who=((p.vorname||p.firstName||'')+' '+(p.nachname||p.lastName||'')).trim()||'Schüler/in';
+  const course=p.kurs||p.kursnummer||p.courseCode||'';
+  const hero=document.querySelector('.hero');
+  if(!hero) return;
+  hero.innerHTML=`<div class="topbar"><div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="sub">${spSafeL3(title)} · A1 Lektion 3 · Thema 1</div></div></a><div class="account-tools"><span class="account-pill">${spSafeL3(who)}${course?' · '+spSafeL3(course):''}</span><a class="account-link" href="${spDashboardHref()}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><button class="account-link account-btn" onclick="spHeaderLogout()">Abmelden</button></div></div><div class="nav"><a class="btn secondary" href="../index.html">Zurück</a><a class="btn secondary" href="index.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button></div></div>`;
+}
