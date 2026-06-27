@@ -54,10 +54,10 @@
     localStorage.setItem("SP_LOGIN_ROLE","teacher");
     localStorage.setItem("SP_ACTIVE_ROLE","teacher");
     localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
-    localStorage.setItem("SP_USER_ROLE", teacher.role || "teacher");
+    localStorage.setItem("SP_USER_ROLE", teacher.role || teacher.rolle || "teacher");
     localStorage.setItem("SP_TEACHER_EMAIL", user.email || teacher.email || "");
     localStorage.setItem("SP_TEACHER_ID", user.uid);
-    localStorage.setItem("SP_TEACHER_PROFILE",JSON.stringify({uid:user.uid,email:user.email||teacher.email||"",role:teacher.role||"teacher",firstName:teacher.firstName||"",lastName:teacher.lastName||""}));
+    localStorage.setItem("SP_TEACHER_PROFILE",JSON.stringify({uid:user.uid,email:user.email||teacher.email||"",role:teacher.role||teacher.rolle||"teacher",firstName:teacher.firstName||"",lastName:teacher.lastName||""}));
   }
 
   function clearTeacherMode(){
@@ -67,9 +67,22 @@
 
 
   function norm(value){ return String(value || "").trim().toLowerCase(); }
+  function roleValue(data={}){
+    return norm(data.role || data.rolle || data.typ || data.type || data.accountType || data.accountRole || data.userRole || data.lehrerrolle || data.zugang || data.accessRole || data.position || data.job || "");
+  }
+  function explicitStudentRole(data={}){
+    const role=roleValue(data);
+    return /^(student|schueler|schüler|learner|teilnehmer|teilnehmerin|tn|pupil)$/.test(role);
+  }
   function roleOk(data={}){
-    const role=norm(data.role || data.typ || data.type || data.accountType || data.userRole || "teacher");
-    return !role || ["owner","admin","teacher","lehrer","lehrerin","superadmin","kursleitung","dozent","dozentin"].includes(role);
+    if(data.owner===true || data.admin===true || data.isAdmin===true) return true;
+    if(data.isTeacher===true || data.teacher===true || data.lehrer===true || data.lehrerin===true || data.lehrkraft===true || data.kursleitung===true) return true;
+    const role=roleValue(data);
+    if(!role) return true;
+    if(explicitStudentRole(data)) return false;
+    const allowed=["owner","admin","teacher","lehrer","lehrerin","lehrkraft","lehrer/in","superadmin","kursleitung","kursleiter","kursleiterin","dozent","dozentin","trainer","trainerin"];
+    if(allowed.includes(role)) return true;
+    return /lehr|teacher|dozent|kursleit|admin|owner|trainer/.test(role);
   }
   function isPending(data={}){
     const status=norm(data.status || data.state || data.accessStatus || "");
@@ -113,12 +126,15 @@
       if(found) candidates.push(found);
     }
     const seen=new Set();
-    return candidates.find(c=>{
+    const unique=candidates.filter(c=>{
       const key=`${c.collection}:${c.docId||c.id}`;
       if(seen.has(key)) return false;
       seen.add(key);
       return true;
-    }) || null;
+    });
+    return unique.find(c=>!isBlocked(c) && !isPending(c) && roleOk(c)) ||
+      unique.find(c=>!explicitStudentRole(c)) ||
+      unique[0] || null;
   }
 
   window.TeacherAuth = {
@@ -156,7 +172,10 @@
       if(approved) return approved;
 
       const pending=await findTeacherIn("teachers_pending",user);
-      if(pending) return {pending:true,...pending};
+      if(pending){
+        if(!isBlocked(pending) && !isPending(pending) && roleOk(pending)) return pending;
+        return {pending:true,...pending};
+      }
 
       return null;
     },

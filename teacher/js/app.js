@@ -106,7 +106,10 @@ const TeacherApp = {
     }
 
     const teacher=doc.data();
-    if(teacher.approved===false || teacher.active===false || !["owner","admin","teacher"].includes(teacher.role)){
+    const role=String(teacher.role || teacher.rolle || teacher.typ || teacher.type || "teacher").trim().toLowerCase();
+    const roleOk = !role || ["owner","admin","teacher","lehrer","lehrerin","lehrkraft","dozent","dozentin","kursleitung"].includes(role) || /lehr|teacher|dozent|kursleit|admin|owner/.test(role) || teacher.owner===true || teacher.isTeacher===true || teacher.lehrer===true || teacher.lehrkraft===true;
+    const explicitStudent = /^(student|schueler|schüler|learner|teilnehmer|teilnehmerin|tn)$/.test(role);
+    if(teacher.approved===false || teacher.active===false || explicitStudent || !roleOk){
       await auth.signOut();
       location.href="login.html";
       throw new Error("Lehrerzugang nicht freigegeben.");
