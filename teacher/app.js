@@ -106,6 +106,8 @@ const TeacherApp = {
     const studentsAll=Students.mergeStudentProgress(studentsRaw,progressRows);
     const students=Students.filterByCourses(studentsAll,courseNames);
     window.__SP_COURSES=courses;
+    window.__SP_COURSES_BY_CODE=Object.fromEntries(courses.map(c=>[Courses.code(c),c]).filter(([k])=>k));
+    window.__SP_COURSES_BY_DOC=Object.fromEntries(courses.map(c=>[Courses.docId(c),c]).filter(([k])=>k));
     window.__SP_STUDENTS_BY_ID=Object.fromEntries(students.map(s=>[s.studentId||s.id,s]));
     const byCourse=Students.byCourse(students);
 
@@ -173,7 +175,7 @@ const TeacherApp = {
     const box=document.getElementById("releaseEditor");
     if(!box)return;
     if(!courseName){box.innerHTML=`<div class="empty">Bitte Kurs auswählen.</div>`;return;}
-    const course=(courses||window.__SP_COURSES||[]).find(c=>Courses.code(c)===courseName || c.id===courseName || c.name===courseName)||{};
+    const course=(courses||window.__SP_COURSES||[]).find(c=>Courses.code(c)===courseName || Courses.docId(c)===courseName || c.id===courseName || c.name===courseName)||{};
     box.innerHTML=renderReleaseEditor(course);
     const select=document.getElementById("releaseCourse");
     if(select)select.value=courseName;

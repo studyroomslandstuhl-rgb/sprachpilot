@@ -32,21 +32,27 @@ const Analytics = {
   courseCard(courseName,students,courseData){
     const count=students.length;
     const avg=count?Math.round(students.reduce((sum,s)=>sum+this.percent((this.verbenData(s).progress??s.verbenFortschritt??0)),0)/count):0;
-    const title=Courses.displayName(courseData||{id:courseName,name:courseName});
-    const code=Courses.code(courseData||{id:courseName,name:courseName}) || courseName;
+    const course=courseData||{id:courseName,name:courseName};
+    const title=Courses.displayName(course);
+    const code=Courses.code(course) || courseName;
+    const docId=Courses.docId(course) || code;
     const safeCode=String(code).replace(/'/g,"\'");
-    return `<section class="course-card">
+    const safeDocId=String(docId).replace(/'/g,"\'");
+    const unassigned=course.__unassigned;
+    return `<section class="course-card ${unassigned ? "course-unassigned" : ""}">
       <div class="course-head">
         <div>
           <div class="course-title">${title}</div>
-          <div class="small"><b>${count} Teilnehmer</b> · Durchschnitt Verben: ${avg}% · Kurscode: ${code}</div>
+          <div class="small"><b>${count} Teilnehmer</b> · Durchschnitt Verben: ${avg}% · Kurscode: ${code}${unassigned ? " · Lehrer-Zuordnung fehlt" : ""}</div>
         </div>
         <div class="course-actions">
+          ${unassigned ? `<button onclick="Courses.assignToMe('${safeDocId}')">Mir zuweisen</button>` : ""}
           <button onclick="TeacherPreview.open('${safeCode}')">SprachPilot</button>
           <button class="secondary" onclick="TeacherApp.openReleaseEditor('${safeCode}',window.__SP_COURSES||[])">Freigabe</button>
-          <button class="danger" onclick="Courses.remove('${safeCode}')">Kurs löschen</button>
+          <button class="danger" onclick="Courses.remove('${safeDocId}')">Kurs löschen</button>
         </div>
       </div>
+      ${unassigned ? `<div class="debug-box small">Dieser Kurs hat keine Lehrer-Zuordnung. Wenn das dein Kurs ist, klicke einmal auf <b>Mir zuweisen</b>. Danach bleibt er korrekt in deinem Dashboard.</div>` : ""}
       ${this.progressBar(avg)}
       <div class="student-table-wrap"><table class="student-table">
         <thead><tr><th>Schüler</th><th>Gesamt</th><th>Sterne / Status</th><th>Verbgruppen</th><th>Aufgabenfortschritt</th><th>Aktionen</th></tr></thead>
