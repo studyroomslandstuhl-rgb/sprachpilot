@@ -486,3 +486,37 @@ footer{text-align:center;color:white;margin-top:20px}
   .finish-box .actions{gap:12px!important;}
   .finish-box .actions .btn{width:100%!important;max-width:320px!important;}
 }
+
+/* ===== SprachPilot 5 Aufgaben pro Reihe Standard v10 ===== */
+.container{
+  max-width:1440px!important;
+}
+.grid{
+  display:grid!important;
+  grid-template-columns:repeat(5,minmax(0,1fr))!important;
+  gap:16px!important;
+}
+.module{
+  min-width:0!important;
+}
+.module .num{
+  line-height:1.15!important;
+}
+.module .icon{
+  min-height:70px!important;
+  display:flex!important;
+  align-items:center!important;
+  justify-content:center!important;
+}
+@media(max-width:1250px){
+  .grid{grid-template-columns:repeat(4,minmax(0,1fr))!important;}
+}
+@media(max-width:980px){
+  .grid{grid-template-columns:repeat(3,minmax(0,1fr))!important;}
+}
+@media(max-width:760px){
+  .grid{grid-template-columns:repeat(2,minmax(0,1fr))!important;}
+}
+@media(max-width:520px){
+  .grid{grid-template-columns:1fr!important;}
+}
