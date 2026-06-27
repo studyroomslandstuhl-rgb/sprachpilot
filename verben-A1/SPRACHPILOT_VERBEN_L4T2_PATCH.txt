@@ -1,0 +1,11 @@
+Verben A1 – Design-Patch
+
+Ziel:
+- Menü, Aufgabenübersicht und Kartenstruktur wie Lektion 4 Thema 2.
+- Andere Farbe: dunkleres Blau als Startseite.
+- Keine linke Seitenleiste mehr.
+- 5 Aufgaben pro Reihe auf Desktop.
+- SprachPilot-Logo oben links.
+- Dashboard/Profil/Abmelden in der Account-Leiste.
+- Weniger Emojis, klarere Buttons.
+- Lehrer-Vorschau bleibt möglich und speichert keine Schülerpunkte.
