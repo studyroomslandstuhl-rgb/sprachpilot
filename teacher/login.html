@@ -6,22 +6,8 @@
 <title>SprachPilot · Lehrer Login</title>
 <link rel="stylesheet" href="css/styles.css">
 <style>
-.login-wrapper{max-width:520px;margin:70px auto}
-.login-card{background:white;border-radius:24px;padding:30px;box-shadow:0 10px 30px rgba(0,0,0,.18)}
-.login-card h1{color:#667eea;text-align:center;margin-bottom:8px}
-.login-card p{text-align:center;color:#666;margin-bottom:22px}
-.login-card label{display:block;margin-top:12px;font-weight:bold;color:#667eea}
-.login-card input{width:100%;padding:13px;border:2px solid #ddd;border-radius:12px;margin-top:6px;font-size:16px}
-.login-buttons{display:flex;flex-direction:column;gap:10px;margin-top:20px}
-.mode-box{margin-top:18px;padding-top:14px;border-top:2px solid #eef2ff}
-.hidden{display:none!important}
-.msg{margin-top:14px}
-.ok{background:#d9f7e8;border-left:5px solid #27ae60;padding:12px;border-radius:12px;margin:10px 0;color:#145a32}
-.no{background:#ffe1e1;border-left:5px solid #e74c3c;padding:12px;border-radius:12px;margin:10px 0;color:#7b1d1d}
-button{border:0;border-radius:14px;padding:13px 16px;font-size:16px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,#667eea,#764ba2);color:white}
-button.secondary{background:#eef2ff;color:#333}
-button:disabled{opacity:.55;cursor:not-allowed}
-.small{font-size:13px;color:#666}
+:root{--sp-blue:#47ABC6;--sp-blue-dark:#2F7F96;--sp-baby:#84E3FF;--sp-light:#EAFBFF;--sp-soft:#F6FDFF;--sp-accent:#7E2D00;--sp-dark:#123047;--sp-muted:#5F7180;--sp-line:#D9EEF7;--sp-green:#2E9E4F;--sp-red:#E74C3C;--sp-shadow:0 14px 34px rgba(18,48,71,.12)}
+body{background:linear-gradient(180deg,#E8FBFF 0,#F6FDFF 46%,#FFFFFF 100%);color:var(--sp-dark)}.login-wrapper{max-width:520px;margin:70px auto}.login-card{background:white;border-radius:24px;padding:30px;box-shadow:var(--sp-shadow);border:1px solid var(--sp-line)}.login-card h1{color:var(--sp-dark);text-align:center;margin-bottom:8px}.login-card p{text-align:center;color:var(--sp-muted);margin-bottom:22px}.login-card label{display:block;margin-top:12px;font-weight:bold;color:var(--sp-dark)}.login-card input{width:100%;padding:13px;border:2px solid var(--sp-line);border-radius:12px;margin-top:6px;font-size:16px}.login-card input:focus{outline:none;border-color:var(--sp-blue);box-shadow:0 0 0 4px rgba(71,171,198,.16)}.login-logo{display:flex;justify-content:center;margin-bottom:14px}.login-logo img{width:76px;height:76px;object-fit:contain;border-radius:18px}.login-buttons{display:flex;flex-direction:column;gap:10px;margin-top:20px}.mode-box{margin-top:18px;padding-top:14px;border-top:2px solid var(--sp-line)}.hidden{display:none!important}.msg{margin-top:14px}.ok{background:#E8F9F0;border-left:5px solid var(--sp-green);padding:12px;border-radius:12px;margin:10px 0;color:#145A32}.no{background:#FFE1E1;border-left:5px solid var(--sp-red);padding:12px;border-radius:12px;margin:10px 0;color:#7B1D1D}button{border:0;border-radius:14px;padding:13px 16px;font-size:16px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,var(--sp-blue),var(--sp-blue-dark));color:white}button.secondary{background:#EFFAFF;color:var(--sp-dark);border:1px solid var(--sp-line)}button:disabled{opacity:.55;cursor:not-allowed}.small{font-size:13px;color:var(--sp-muted)}
 </style>
 </head>
 <body>
@@ -29,6 +15,7 @@ button:disabled{opacity:.55;cursor:not-allowed}
 <div class="login-wrapper">
   <div class="login-card">
 
+    <div class="login-logo"><a href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></a></div>
     <h1>Lehrerbereich</h1>
     <p>Einloggen, registrieren oder Passwort zurücksetzen</p>
 
