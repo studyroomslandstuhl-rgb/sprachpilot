@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gefallen Thema 3</title><link rel="stylesheet" href="style.css?v=310"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=310"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Gefallen Thema 3</title><link rel="stylesheet" href="style.css?v=311"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=311"></script><script>
 header('Farben & Adjektive');
 const file='gefallen.html',total=GEFAELLEN_TASKS.length;
 let phase='question';
@@ -16,12 +16,18 @@ function visualWord(id){
   return img((a&&a.img)||id+'.png','task-img');
 }
 function normalizeGefallenAnswer(txt){
-  let low=simple(txt).replace(/^ganz gut\b/,'gut').replace(/^sehr gut\b/,'gut');
+  let low=simple(txt).replace(/^ganz gut\b/,'gut');
   low=low.replace(/\ber ist sehr\b/g,'er ist');
   low=low.replace(/\bsie ist sehr\b/g,'sie ist');
   low=low.replace(/\bes ist sehr\b/g,'es ist');
   low=low.replace(/\bsie sind sehr\b/g,'sie sind');
   return low.trim();
+}
+function gefallenSolutionText(t){
+  const ans=String(t.answer||'');
+  const m=ans.match(/^(Gut|Ganz gut)\.\s*(.+)$/);
+  if(!m)return ans;
+  return 'Gut. '+m[2]+'<br>oder: Ganz gut. '+m[2];
 }
 function render(){
   let i=nextIndex(file,total);
@@ -41,7 +47,7 @@ function render(){
   }else{
     area.innerHTML=progressHtml(file,total)+
       instruction('Antworte mit der Reaktion und einem ganzen Satz.')+
-      exampleBox('Frage: Wie gefällt dir der Sessel?<br>Antwort: Sehr gut. Er ist bequem.')+
+      exampleBox('Frage: Wie gefällt dir der Sessel?<br>Antwort: Gut. Er ist bequem.<br>oder: Ganz gut. Er ist bequem.')+
       `<div class="imgrow three-img">${taskItemImg(t)}<div class="smile-card">${r.emoji}</div>${visualWord(t.adj)}</div>
        <input id="a" placeholder="Schreiben Sie die Antwort hier">
        <div class="actions">
@@ -71,8 +77,9 @@ function checkAnswer(fromSpeech=false){
     phase='question';
     setTimeout(()=>{markRight(file,total)?complete(area,file,'saetze-bauen.html'):render()},420)
   }else{
-    let tr=markWrong(file,total,t.answer);
-    fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.answer,'Reaktion, Pronomen und ist/sind')+'</div>';
+    let sol=gefallenSolutionText(t);
+    let tr=markWrong(file,total,sol);
+    fb.innerHTML='<div class="no">'+feedbackForTry(tr,sol,'Reaktion, Pronomen und ist/sind')+'</div>';
   }
 }
 maybeStart(render,'gefallen.html');
