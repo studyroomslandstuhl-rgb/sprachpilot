@@ -76,10 +76,26 @@ const TeacherEnv = {
 const TeacherAccess = {
   ownerEmails: ["studyroomslandstuhl@gmail.com","alicekrekoten@gmail.com","alisa.krekoten@gmail.com"],
   norm(value){ return String(value || "").trim().toLowerCase(); },
-  role(value){ return this.norm(value || "teacher"); },
+  role(value){ return this.norm(value || ""); },
+  roleValue(data={}){
+    return this.role(data.role || data.rolle || data.typ || data.type || data.accountType || data.accountRole || data.userRole || data.lehrerrolle || data.zugang || data.accessRole || data.position || data.job || "");
+  },
+  explicitStudentRole(data={}){
+    const role=this.roleValue(data);
+    return /^(student|schueler|schüler|learner|teilnehmer|teilnehmerin|tn|pupil)$/.test(role);
+  },
   roleOk(data={}){
-    const role=this.role(data.role || data.typ || data.type || data.accountType || data.userRole || data.lehrerrolle || "teacher");
-    return !role || ["teacher","lehrer","lehrerin","admin","owner","superadmin","kursleitung","dozent","dozentin"].includes(role);
+    if(data.owner===true || data.admin===true || data.isAdmin===true) return true;
+    if(data.isTeacher===true || data.teacher===true || data.lehrer===true || data.lehrerin===true || data.lehrkraft===true || data.kursleitung===true) return true;
+
+    const role=this.roleValue(data);
+    if(!role) return true;
+    if(this.explicitStudentRole(data)) return false;
+
+    const allowed=["teacher","lehrer","lehrerin","lehrkraft","lehrer/in","admin","owner","superadmin","kursleitung","kursleiter","kursleiterin","dozent","dozentin","trainer","trainerin"];
+    if(allowed.includes(role)) return true;
+
+    return /lehr|teacher|dozent|kursleit|admin|owner|trainer/.test(role);
   },
   isPending(data={}){
     const status=this.norm(data.status || data.state || data.accessStatus || "");
@@ -126,12 +142,18 @@ const TeacherAccess = {
     }
 
     const seen=new Set();
-    return candidates.find(c=>{
+    const unique=candidates.filter(c=>{
       const key=`${c.collection}:${c.docId||c.id}`;
       if(seen.has(key)) return false;
       seen.add(key);
       return true;
-    }) || null;
+    });
+
+    // Wichtig: Bei gleicher E-Mail kann es mehrere Treffer geben. Nimm zuerst einen
+    // wirklich nutzbaren Lehrer-Datensatz und nicht zufällig den ersten alten Treffer.
+    return unique.find(c=>!this.isBlocked(c) && !this.isPending(c) && this.roleOk(c)) ||
+      unique.find(c=>!this.explicitStudentRole(c)) ||
+      unique[0] || null;
   },
   async ensureOwner(db,user){
     const email=this.norm(user?.email);
@@ -166,7 +188,12 @@ const TeacherAccess = {
     }
 
     const pending=await this.findInCollection(db,"teachers_pending",user);
-    if(pending) return {ok:false,pending:true,data:pending,source:"teachers_pending",reason:"pending"};
+    if(pending){
+      if(!this.isBlocked(pending) && !this.isPending(pending) && this.roleOk(pending)){
+        return {ok:true,data:pending,source:"teachers_pending-approved"};
+      }
+      return {ok:false,pending:true,data:pending,source:"teachers_pending",reason:"pending"};
+    }
 
     return {ok:false,missing:true,reason:"missing"};
   }
