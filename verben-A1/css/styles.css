@@ -21,13 +21,15 @@ body {
   margin: 0;
   font-family: Arial, Helvetica, sans-serif;
   color: var(--text);
-  background: radial-gradient(circle at top left, var(--yellow-light), var(--yellow) 45%, #256f8e 100%);
+  background: radial-gradient(circle at top left, #e8f9ff, var(--yellow-light) 28%, #d5f3fb 62%, #c7ecf7 100%);
   padding: 18px;
 }
 
 .container { width: min(1440px, 100%); margin: 0 auto; }
 .hidden { display: none !important; }
 a { color: inherit; }
+#accountStrip { display:none !important; }
+body > .account-strip { display:none !important; }
 
 .topbar {
   background: var(--white);
@@ -191,7 +193,7 @@ input:focus { outline:4px solid rgba(143,212,234,.3); border-color:var(--yellow)
 .finish-icon { width:70px; height:70px; border-radius:999px; background:var(--green); color:white; display:grid; place-items:center; font-size:38px; font-weight:900; margin:0 auto 14px; }
 .finish-actions { justify-content:center; }
 .exam-locked { opacity:.45; }
-footer { text-align:center; color:rgba(255,255,255,.9); margin:24px 0; }
+footer { text-align:center; color:var(--gold-dark); margin:24px 0; }
 
 @media (max-width:1200px) { .grid, .task-grid { grid-template-columns:repeat(4, minmax(0,1fr)); } }
 @media (max-width:950px) {
@@ -222,6 +224,22 @@ footer { text-align:center; color:rgba(255,255,255,.9); margin:24px 0; }
   .quiz-options.image-options .mem-img-holder img { max-width:110px; max-height:110px; }
 }
 
-#accountStrip, .account-strip { display:none !important; }
-.topbar { background:#ffffff !important; }
-.brand .subtitle { text-decoration:none !important; }
+.flash-card-standard { text-align:center; }
+.flash-card-standard .img-holder img { max-width:220px; max-height:220px; }
+.task-progress-title { display:flex; justify-content:space-between; gap:12px; flex-wrap:wrap; font-weight:900; color:var(--gold-dark); }
+.task-progress-line { height:14px; background:#edf1f7; border-radius:999px; overflow:hidden; margin:10px 0 18px; }
+
+.verb-overview-section { margin:24px 0; }
+.verb-overview-section h3 { margin:0 0 12px; }
+.verb-overview-grid { display:grid; grid-template-columns:repeat(5,minmax(0,1fr)); gap:14px; }
+.verb-overview-card { border:2px solid var(--line); border-radius:18px; padding:14px; background:white; text-align:center; min-height:180px; display:flex; flex-direction:column; align-items:center; justify-content:space-between; }
+.verb-overview-card .mem-img-holder img { max-width:88px; max-height:88px; }
+.verb-name { font-size:20px; font-weight:900; color:var(--gold-dark); margin-top:6px; }
+.verb-status { border-radius:999px; padding:6px 10px; font-weight:900; font-size:13px; margin-top:8px; background:var(--soft); color:var(--gold-dark); }
+.status-known .verb-status { background:var(--green-soft); color:#145a32; }
+.status-unknown .verb-status { background:var(--red-soft); color:#8a1f18; }
+.status-active .verb-status { background:var(--yellow-light); color:var(--gold-dark); }
+.conj-hint { text-align:center; font-weight:900; color:var(--gold-dark); }
+@media (max-width:1200px){ .verb-overview-grid { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+@media (max-width:950px){ .verb-overview-grid { grid-template-columns:repeat(3,minmax(0,1fr)); } }
+@media (max-width:700px){ .verb-overview-grid { grid-template-columns:repeat(2,minmax(0,1fr)); gap:10px; } .verb-overview-card { min-height:160px; padding:10px; } }
