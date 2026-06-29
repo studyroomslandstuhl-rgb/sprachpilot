@@ -5,11 +5,12 @@ function unusedVerbs(){
 function currentAssessmentVerb(){const list=unusedVerbs();return list.length?list[0]:null}
 function startAssessment(){
   if(state.active.length>=20 && !packageExamPassed()){renderHome();return}
+  const appNode=$("app"); if(appNode) appNode.classList.add("card");
   state.phase="assessment";state.revealed=false;state.assessmentStart=Date.now();saveState();renderAssessment();
 }
 function renderAssessment(){
   const v=currentAssessmentVerb();
-  if(!v || state.active.length>=20){buildPracticePool();state.phase="home";saveState();renderHome();return}
+  if(!v || state.active.length>=20){buildPracticePool();state.phase="home";const appNode=$("app"); if(appNode) appNode.classList.remove("card");saveState();renderHome();return}
   state.currentVerb=v;state.assessmentStart=Date.now();state.revealed=false;saveState();
   $("app").innerHTML=`<h2>Neue Verben einschätzen</h2><p class="small">Schreibe das deutsche Verb. Schnell + richtig = kann ich. Langsam oder mit Fehler = unsicher. Lösung zeigen oder „Ich weiß es nicht“ = kann ich nicht.</p><div class="assessment-box"><div class="assessment-card"><div class="small">Muttersprache: ${safeText(nativeLang())}</div><div class="native-word">${safeText(nativeWord(v))}</div><div class="assessment-timer">⏱ Ziel: unter ${ASSESSMENT_FAST_SECONDS} Sekunden</div></div><input id="assessmentInput" autocomplete="off" placeholder="Deutsches Verb schreiben …" onkeydown="if(event.key==='Enter')checkAssessmentAnswer()"><div id="assessmentFeedback"></div><button class="success" onclick="checkAssessmentAnswer()">Prüfen</button><button class="warning" onclick="revealAssessmentVerb()">Karte umdrehen / Lösung zeigen</button><button class="danger" onclick="markAssessment('unknown')">Ich weiß es nicht</button></div><p class="small">Aktiver Block: ${state.active.length}/20 · Schon eingeschätzt: ${state.known.length+state.unsure.length+state.unknown.length}</p>`;
   setTimeout(()=>$('assessmentInput')?.focus(),50);
