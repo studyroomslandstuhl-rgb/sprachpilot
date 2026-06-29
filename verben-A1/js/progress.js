@@ -2,15 +2,15 @@ let firebaseSaveTimer=null;
 function skillKey(skill){return skill==="zuordnung"?"bild_verb":skill}
 function verbSkillCount(v){ensureSkillState(v);return VERB_SKILLS.filter(s=>state.skillDone[v]&&state.skillDone[v][s]).length}
 function verbPercent(v){return Math.round((verbSkillCount(v)*100)/VERB_SKILLS.length)}
-function overall(){if(!state.active.length)return 0;return Math.round(state.active.reduce((s,v)=>s+verbPercent(v),0)/state.active.length)}
-function totalStars(){return (state.active||[]).filter(v=>verbPercent(v)===100).length}
+function overall(){const verbs=currentPracticeVerbs();if(!verbs.length)return 0;return Math.round(verbs.reduce((s,v)=>s+verbPercent(v),0)/verbs.length)}
+function totalStars(){return currentPracticeVerbs().filter(v=>verbPercent(v)===100).length}
 function addEncounter(v,skill,good=true){const sk=skillKey(skill);ensureSkillState(v);state.skillAttempts[v][sk]=(state.skillAttempts[v][sk]||0)+1;if(good){state.skillSuccess[v][sk]=(state.skillSuccess[v][sk]||0)+1;state.skillDone[v][sk]=true}else{state.weak[v]=(state.weak[v]||0)+1}saveState()}
 function sendProgress(){if(!profile||!db)return;const sid=firebaseStudentId();if(!sid)return;clearTimeout(firebaseSaveTimer);firebaseSaveTimer=setTimeout(async()=>{try{const progressValue=overall();await db.collection("progress").doc(sid).set({studentId:sid,kurs:profile.kurs||profile.kursnummer||"",verben:{progress:progressValue,stars:totalStars(),activeVerbs:state.active||[],learnedVerbs:state.learned||[],known:state.known||[],unsure:state.unsure||[],unknown:state.unknown||[],exam:state.exam||{},state:state,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});await db.collection("students").doc(sid).set({studentId:sid,vorname:profile.vorname||"",nachname:profile.nachname||"",kurs:profile.kurs||profile.kursnummer||"",muttersprache:profile.muttersprache||"",verbenFortschritt:progressValue,lastActivity:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})}catch(e){console.warn("Firebase Speichern fehlgeschlagen",e)}},600)}
 function taskQueueKey(skill){return "queue_"+skillKey(skill)}
 function taskDoneSetKey(skill){return "done_"+skillKey(skill)}
 function weightForVerb(v){if((state.unknown||[]).includes(v))return 2;return 1}
 function buildPracticePool(){
-  let source=(state.active&&state.active.length)?state.active:[];
+  let source=currentPracticeVerbs();
   const pool=[]; source.forEach(v=>{for(let i=0;i<weightForVerb(v);i++)pool.push(v)});
   state.practicePool=shuffle(pool.length?pool:source);
   saveState();return state.practicePool;
@@ -52,6 +52,6 @@ function finishQueuedVerb(skill,v,good=true){
   if(state.currentTask&&state.currentTask.skill===sk)state.currentTask=null;
   saveState();
 }
-function queuedProgress(skill){const dKey=taskDoneSetKey(skill);const done=(state.taskDoneSets[dKey]||[]).length;const total=((state.practicePool&&state.practicePool.length)?state.practicePool:state.active).length;return {done,total,pct:total?Math.min(100,Math.round(done*100/total)):0}}
+function queuedProgress(skill){const dKey=taskDoneSetKey(skill);const done=(state.taskDoneSets[dKey]||[]).length;const total=((state.practicePool&&state.practicePool.length)?state.practicePool:currentPracticeVerbs()).length;return {done,total,pct:total?Math.min(100,Math.round(done*100/total)):0}}
 function taskDone(skill){const p=queuedProgress(skill);return p.total>0&&p.done>=p.total}
 function taskProgressHtml(skill,label){const p=queuedProgress(skill);return `<div class="task-progress"><div class="task-progress-title"><span>${safeText(label)} · ${p.done}/${p.total} · ${p.pct}%</span></div><div class="task-progress-line"><div class="task-progress-fill" style="width:${p.pct}%"></div></div></div>`}

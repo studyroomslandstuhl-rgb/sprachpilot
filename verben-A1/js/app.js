@@ -96,12 +96,13 @@ function renderVerbOverview(){
 
 function statusBox(){
   const pct=overall();
+  const practiceCount=currentPracticeVerbs().length;
   const examTxt=state.exam&&state.exam.passed?"Prüfung 100%":(allPracticeTasksDone()?"Prüfung offen":"Prüfung gesperrt");
   return `<section class="card progress-card">
     <div class="circle">${pct}%</div>
     <div class="progress-main">
       <h2>Dein Fortschritt</h2>
-      <div class="small">${state.active.length} aktive Verben · ${(state.learned||[]).length} vollständig gelernt · ${examTxt}</div>
+      <div class="small">${practiceCount} Verben zu üben · ${(state.learned||[]).length} vollständig gelernt · ${examTxt}</div>
       <div class="progress"><div class="bar" style="width:${pct}%"></div></div>
       <p class="small">Ziel: alle aktiven Verben in allen Aufgaben üben und die Prüfung mit 100% abschließen.</p>
     </div>
@@ -160,7 +161,7 @@ function renderHome(){
   state.currentTask=null;
   migrateState();
   preloadActiveImages();
-  if(!state.active.length){
+  if(!currentPracticeVerbs().length){
     $("app").innerHTML=`${statusBox()}<section class="card"><h2>Verben einschätzen</h2><p class="small">Schätze zuerst bis zu 20 neue Verben ein. Danach übst du diese Verben in allen Aufgaben.</p><div class="actions"><button class="btn green" onclick="handleAssessmentClick()">Verben einschätzen</button></div></section>`;
     saveState();
     return;
