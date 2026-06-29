@@ -1,6 +1,6 @@
-// SprachPilot: Lehrer-Vorschau für Schülerbereiche.
+// SprachPilot: Lehrer-Vorschau fÃ¼r SchÃ¼lerbereiche.
 // Wichtig: Lehrer-Vorschau ist NUR aktiv, wenn sie explizit aus dem Lehrer-Dashboard gestartet wurde.
-// Ein Schülerprofil oder alte lokale Speicherwerte dürfen nie automatisch Lehrer-Vorschau aktivieren.
+// Ein SchÃ¼lerprofil oder alte lokale Speicherwerte dÃ¼rfen nie automatisch Lehrer-Vorschau aktivieren.
 export function getStoredTeacherPreview(){
   try{
     const preview = JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW") || "null");
@@ -13,6 +13,8 @@ export function getStoredTeacherPreview(){
 
 export function clearTeacherPreviewState(){
   try{
+    localStorage.removeItem("SP_TEACHER_PREVIEW");
+    localStorage.removeItem("SP_PREVIEW_COURSE");
     sessionStorage.removeItem("SP_TEACHER_PREVIEW");
     sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
     sessionStorage.removeItem("SP_PREVIEW_COURSE");
@@ -26,14 +28,14 @@ export function isTeacherProfile(profile={}){
 
 export function isStudentProfile(profile={}){
   const role=String(profile.role||profile.typ||profile.type||profile.accountType||profile.loginRole||"").toLowerCase();
-  return profile.isStudent===true || profile.student===true || profile.schueler===true || role==="student" || role==="schueler" || role==="schüler";
+  return profile.isStudent===true || profile.student===true || profile.schueler===true || role==="student" || role==="schueler" || role==="schÃ¼ler";
 }
 
 export function isTeacherPreview(profile={}){
   const preview=getStoredTeacherPreview();
   if(!preview) return false;
 
-  // Wenn ausdrücklich ein Schülerkontext aktiv ist, alte Vorschau sofort entfernen.
+  // Wenn ausdrÃ¼cklich ein SchÃ¼lerkontext aktiv ist, alte Vorschau sofort entfernen.
   const activeRole=String(localStorage.getItem("SP_ACTIVE_ROLE") || "").toLowerCase();
   if(activeRole==="student" || isStudentProfile(profile)){
     clearTeacherPreviewState();
@@ -65,6 +67,8 @@ export function enterTeacherCoursePreview(course){
   localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
   localStorage.removeItem("SP_STUDENT_PROFILE");
   localStorage.removeItem("SP_STUDENT_ID");
+  localStorage.setItem("SP_TEACHER_PREVIEW","1");
+  localStorage.setItem("SP_PREVIEW_COURSE",preview.courseCode||preview.kurs||"");
   sessionStorage.setItem("SP_TEACHER_PREVIEW",JSON.stringify(preview));
 
   let teacher={};
