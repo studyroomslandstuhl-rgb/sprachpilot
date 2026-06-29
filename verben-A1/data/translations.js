@@ -940,12 +940,103 @@ const VERB_TRANSLATIONS = {
   }
 };
 
+
+Object.assign(VERB_TRANSLATIONS["Englisch"], {
+  "essen": "to eat",
+  "sprechen": "to speak",
+  "fahren": "to drive / to go by vehicle",
+  "schlafen": "to sleep",
+  "sehen": "to see",
+  "lesen": "to read",
+  "rufen": "to call",
+  "schreien": "to scream",
+  "träumen": "to dream",
+  "kleben": "to glue / to stick",
+  "kosten": "to cost",
+  "schieben": "to push",
+  "ziehen": "to pull",
+  "schenken": "to give as a gift",
+  "füttern": "to feed",
+  "kontrollieren": "to check",
+  "funktionieren": "to work / function",
+  "stehen": "to stand",
+  "bekommen": "to receive / get",
+  "schmecken": "to taste",
+  "bezahlen": "to pay",
+  "empfehlen": "to recommend",
+  "geben": "to give",
+  "backen": "to bake"
+});
+
+Object.assign(VERB_TRANSLATIONS["Türkisch"], {
+  "zeigen": "göstermek",
+  "reden": "konuşmak",
+  "sagen": "söylemek",
+  "markieren": "işaretlemek",
+  "versuchen": "denemek",
+  "probieren": "denemek",
+  "tun": "yapmak",
+  "besuchen": "ziyaret etmek",
+  "reiten": "ata binmek",
+  "drehen": "çevirmek / dönmek",
+  "greifen": "tutmak / kavramak",
+  "antworten": "cevap vermek",
+  "kennen": "tanımak",
+  "erklären": "açıklamak",
+  "bedeuten": "anlamına gelmek",
+  "notieren": "not etmek",
+  "hoffen": "umut etmek",
+  "glauben": "inanmak",
+  "befehlen": "emretmek",
+  "helfen": "yardım etmek",
+  "braten": "kızartmak",
+  "waschen": "yıkamak",
+  "nehmen": "almak",
+  "stehlen": "çalmak",
+  "tragen": "taşımak / giymek",
+  "brechen": "kırmak",
+  "laufen": "koşmak / yürümek",
+  "vergessen": "unutmak",
+  "messen": "ölçmek",
+  "fressen": "yemek (hayvan için)",
+  "graben": "kazmak",
+  "schlagen": "vurmak",
+  "sterben": "ölmek",
+  "treffen": "buluşmak / karşılaşmak",
+  "werfen": "atmak",
+  "fangen": "yakalamak",
+  "blasen": "üflemek",
+  "fallen": "düşmek",
+  "saufen": "içmek (hayvan için)",
+  "halten": "tutmak / durmak",
+  "laden": "yüklemek / şarj etmek",
+  "lassen": "bırakmak / izin vermek",
+  "wachsen": "büyümek",
+  "werben": "reklam yapmak",
+  "raten": "tahmin etmek / tavsiye etmek",
+  "wissen": "bilmek",
+  "stechen": "sokmak / batırmak",
+  "werden": "olmak"
+});
+
 function nativeLang(){
   return (typeof profile !== "undefined" && profile && profile.muttersprache) ? profile.muttersprache : "Englisch";
 }
-
+function normalizedNativeLang(){
+  const raw=String(nativeLang()||"").trim().toLowerCase();
+  const aliases={
+    "english":"Englisch","englisch":"Englisch","en":"Englisch",
+    "russian":"Russisch","russisch":"Russisch","русский":"Russisch","ru":"Russisch",
+    "ukrainian":"Ukrainisch","ukrainisch":"Ukrainisch","українська":"Ukrainisch","uk":"Ukrainisch",
+    "arabic":"Arabisch","arabisch":"Arabisch","العربية":"Arabisch","ar":"Arabisch",
+    "turkish":"Türkisch","türkisch":"Türkisch","turkisch":"Türkisch","türkçe":"Türkisch","tr":"Türkisch",
+    "romanian":"Rumänisch","rumänisch":"Rumänisch","rumanisch":"Rumänisch","română":"Rumänisch","ro":"Rumänisch",
+    "japanese":"Japanisch","japanisch":"Japanisch","日本語":"Japanisch","ja":"Japanisch"
+  };
+  return aliases[raw] || nativeLang();
+}
 function nativeWord(v){
-  const lang = nativeLang();
+  const lang = normalizedNativeLang();
   return (VERB_TRANSLATIONS[lang] && VERB_TRANSLATIONS[lang][v])
     || (VERB_TRANSLATIONS["Englisch"] && VERB_TRANSLATIONS["Englisch"][v])
     || v;
@@ -954,14 +1045,6 @@ function nativeWord(v){
 if (typeof window !== "undefined") {
   window.VERB_TRANSLATIONS = VERB_TRANSLATIONS;
   window.nativeLang = nativeLang;
+  window.normalizedNativeLang = normalizedNativeLang;
   window.nativeWord = nativeWord;
 }
-
-
-// Ergänzungen: fehlende Basis-Übersetzungen für Karteikarten
-Object.assign(VERB_TRANSLATIONS["Englisch"], {
-  "essen":"to eat", "sprechen":"to speak", "fahren":"to drive / to go by vehicle", "schlafen":"to sleep", "sehen":"to see", "lesen":"to read", "rufen":"to call", "schreien":"to scream", "träumen":"to dream", "kleben":"to glue", "kosten":"to cost", "schieben":"to push", "ziehen":"to pull", "schenken":"to give as a gift", "füttern":"to feed", "kontrollieren":"to check", "funktionieren":"to work / function", "stehen":"to stand", "bekommen":"to get", "schmecken":"to taste", "bezahlen":"to pay", "empfehlen":"to recommend", "geben":"to give", "backen":"to bake"
-});
-Object.assign(VERB_TRANSLATIONS["Türkisch"], {
-  "zeigen":"göstermek", "reden":"konuşmak", "sagen":"söylemek", "markieren":"işaretlemek", "versuchen":"denemek", "probieren":"tatmak / denemek", "tun":"yapmak", "besuchen":"ziyaret etmek", "reiten":"ata binmek", "drehen":"çevirmek", "greifen":"tutmak", "antworten":"cevap vermek", "kennen":"birini tanımak", "erklären":"açıklamak", "bedeuten":"anlamına gelmek", "notieren":"not almak", "hoffen":"umut etmek", "glauben":"inanmak", "befehlen":"emretmek", "helfen":"yardım etmek", "braten":"kızartmak", "waschen":"yıkamak", "nehmen":"almak", "stehlen":"çalmak", "tragen":"taşımak", "brechen":"kırmak", "laufen":"koşmak", "vergessen":"unutmak", "messen":"ölçmek", "fressen":"yemek (hayvan)", "graben":"kazmak", "schlagen":"vurmak", "sterben":"ölmek", "treffen":"buluşmak / karşılaşmak", "werfen":"atmak", "fangen":"yakalamak", "blasen":"üflemek", "fallen":"düşmek", "saufen":"içmek (hayvan)", "halten":"tutmak", "laden":"şarj etmek / yüklemek", "lassen":"bırakmak", "wachsen":"büyümek", "werben":"reklam yapmak", "raten":"tahmin etmek / tavsiye etmek", "wissen":"bilmek", "stechen":"sokmak", "werden":"olmak", "gratulieren":"tebrik etmek", "gefallen":"hoşuna gitmek", "fehlen":"eksik olmak / özlemek", "mieten":"kiralamak", "vermieten":"kiraya vermek"
-});
