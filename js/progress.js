@@ -36,7 +36,7 @@ function getCourse(profile=getProfile()){
   return profile.kurs || profile.kursnummer || profile.courseCode || localStorage.getItem("SP_COURSE_CODE") || "";
 }
 function getName(profile=getProfile()){
-  return [profile.vorname||profile.firstName||profile.name, profile.nachname||profile.lastName].filter(Boolean).join(" ") || profile.displayName || profile.email || "SchÃ¼ler/in";
+  return [profile.vorname||profile.firstName||profile.name, profile.nachname||profile.lastName].filter(Boolean).join(" ") || profile.displayName || profile.email || "Schüler/in";
 }
 function isTeacherPreviewSession(){
   try{
@@ -84,6 +84,18 @@ function strongestPointValue(...records){
   });
   return best;
 }
+function takePointDelta(progress){
+  const delta=Math.max(0, pointNumber(progress && progress.__pointsDelta));
+  if(progress && Object.prototype.hasOwnProperty.call(progress,"__pointsDelta")){
+    try{ delete progress.__pointsDelta; }catch(e){ progress.__pointsDelta=0; }
+  }
+  return delta;
+}
+function addPointDelta(progress,delta){
+  const add=Math.max(0, pointNumber(delta));
+  if(!add) return;
+  progress.__pointsDelta=pointNumber(progress.__pointsDelta)+add;
+}
 function recalcTotals(progress){
   let points=0, stars=0, progressSum=0, progressCount=0, completedTasks=0, completedExams=0;
   MODULE_KEYS.forEach(moduleKey=>{
@@ -124,6 +136,7 @@ async function writeProgress(next){
   if(!studentId) return null;
   let previous={};
   try{ previous=await readProgress(studentId); }catch(e){ previous={}; }
+  const earnedNow=takePointDelta(next);
   next.studentId=studentId;
   next.userId=studentId;
   next.kurs=kurs || next.kurs || "";
@@ -133,18 +146,23 @@ async function writeProgress(next){
   next.lastActive=serverTimestamp();
   next.updatedAt=serverTimestamp();
   next.totals=recalcTotals(next);
-  const preservedPoints=strongestPointValue(previous,next);
+  const previousPoints=strongestPointValue(previous);
+  const recalculatedPoints=strongestPointValue(next);
+  const preservedPoints=Math.max(previousPoints+earnedNow, previousPoints, recalculatedPoints);
   next.lifetimePoints=preservedPoints;
   next.pointsTotal=preservedPoints;
   next.punkteGesamt=preservedPoints;
   next.totals.points=Math.max(pointNumber(next.totals.points), preservedPoints);
   await setDoc(doc(db,"progress",studentId), next, {merge:true});
-  try{ localStorage.setItem("SP_PROGRESS_LAST_SYNC", nowIso()); }catch(e){}
+  try{
+    localStorage.setItem("SP_PROGRESS_LAST_SYNC", nowIso());
+    localStorage.setItem("SP_POINTS_TOTAL", String(preservedPoints));
+  }catch(e){}
   return next;
 }
 function taskTitleFromFile(file){
   const map={
-    "karteikarten.html":"Karteikarten","hoeren.html":"HÃ¶ren","artikel-klick.html":"Artikel klicken","artikel.html":"Artikel zuordnen","plural.html":"Plural","bild-wort.html":"Bild â†’ Wort","wort-bild.html":"Wort â†’ Bild","kategorien.html":"Kategorien","dialoge.html":"Dialoge","wo-ist.html":"Wo ist?","ist-hier.html":"Ist hier?","pruefung.html":"PrÃ¼fung"
+    "karteikarten.html":"Karteikarten","hoeren.html":"Hören","artikel-klick.html":"Artikel klicken","artikel.html":"Artikel zuordnen","plural.html":"Plural","bild-wort.html":"Bild → Wort","wort-bild.html":"Wort → Bild","kategorien.html":"Kategorien","dialoge.html":"Dialoge","wo-ist.html":"Wo ist?","ist-hier.html":"Ist hier?","pruefung.html":"Prüfung"
   };
   return map[file] || String(file||"Aufgabe").replace(".html","");
 }
@@ -186,7 +204,7 @@ async function recordTaskProgress(payload={}){
     const lifetime={...(topic.lifetime||{})};
     lifetime.points=Number(lifetime.points||0)+pointsDelta;
     lifetime.completedTasks=Math.max(Number(lifetime.completedTasks||0),completedTasks);
-    topic.title=payload.title || topic.title || "A1 Lektion 4 Â· Thema 2";
+    topic.title=payload.title || topic.title || "A1 Lektion 4 · Thema 2";
     topic.moduleTitle=payload.moduleTitle || topic.moduleTitle || "Wortschatz";
     topic.level=payload.level || topic.level || "A1";
     topic.lesson=payload.lesson || topic.lesson || "4";
@@ -199,6 +217,7 @@ async function recordTaskProgress(payload={}){
     topic.lifetime=lifetime;
     mod[id]=topic;
     current[moduleKey]=mod;
+    addPointDelta(current,pointsDelta);
     await writeProgress(current);
   }catch(err){ console.warn("SPProgress task sync failed", err); }
 }
@@ -244,6 +263,7 @@ async function recordExamResult(payload={}){
     topic.progressPercent=Math.max(clampPercent(topic.progressPercent||0), percent>=50 ? 100 : clampPercent(topic.progressPercent||0));
     mod[id]=topic;
     current[moduleKey]=mod;
+    addPointDelta(current,pointsDelta);
     await writeProgress(current);
   }catch(err){ console.warn("SPProgress exam sync failed", err); }
 }
@@ -294,8 +314,8 @@ async function migrateLegacyLocalProgress(){
     const flag="SP_PROGRESS_LEGACY_MIGRATED_V3";
     if(localStorage.getItem(flag)==="1") return;
     const taskSets=[
-      {key:"SP_L4_T1_V2", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"1", title:"A1 Lektion 4 Â· Thema 1", files:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","wo-ist.html","ist-hier.html"]},
-      {key:"SP_L4_T2_FINAL_V3", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"2", title:"A1 Lektion 4 Â· Thema 2", files:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","kategorien.html","dialoge.html"]}
+      {key:"SP_L4_T1_V2", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"1", title:"A1 Lektion 4 · Thema 1", files:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","wo-ist.html","ist-hier.html"]},
+      {key:"SP_L4_T2_FINAL_V3", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"2", title:"A1 Lektion 4 · Thema 2", files:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","kategorien.html","dialoge.html"]}
     ];
     for(const set of taskSets){
       for(const file of set.files){
@@ -309,8 +329,8 @@ async function migrateLegacyLocalProgress(){
       }
     }
     const exams=[
-      {key:"SP_L4_T1_EXAM_HISTORY_V1", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"1", title:"A1 Lektion 4 Â· Thema 1"},
-      {key:"SP_L4_T2_EXAM_HISTORY_V1", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"2", title:"A1 Lektion 4 Â· Thema 2"}
+      {key:"SP_L4_T1_EXAM_HISTORY_V1", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"1", title:"A1 Lektion 4 · Thema 1"},
+      {key:"SP_L4_T2_EXAM_HISTORY_V1", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"2", title:"A1 Lektion 4 · Thema 2"}
     ];
     for(const ex of exams){
       let hist=[];
