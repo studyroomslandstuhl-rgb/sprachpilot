@@ -12,15 +12,18 @@ function speakTextVerb(t,slow=false){
 function hearWrite(){
   rememberPhase("hoeren_schreiben");
   const v=nextFromTaskQueue("hoeren_schreiben");if(!v){renderHome();return}
-  $("app").innerHTML=`<h2>Hören → Schreiben</h2>${taskProgressHtml("hoeren_schreiben","Hören → Schreiben")}<div class="actions"><button onclick="speakTextVerb('${safeText(v)}')">🔊 Hören</button><button class="secondary" onclick="speakTextVerb('${safeText(v)}',true)">🐢 Langsam</button></div><input id="hearInput" placeholder="Verb schreiben" onkeydown="if(event.key==='Enter')checkHearWrite('${safeText(v)}')"><button class="success" onclick="checkHearWrite('${safeText(v)}')">Kontrollieren</button><div id="fb"></div>`;
+  ensureAttempt("hoeren_schreiben",v);
+  $("app").innerHTML=`<h2>Hören → Schreiben</h2>${taskProgressHtml("hoeren_schreiben","Hören → Schreiben")}<div class="actions"><button onclick="speakTextVerb('${safeText(v)}')">🔊 Hören</button><button class="secondary" onclick="speakTextVerb('${safeText(v)}',true)">🐢 Langsam</button></div><input id="hearInput" placeholder="Verb schreiben"><button class="success" onclick="checkHearWrite('${safeText(v)}')">Kontrollieren</button><div id="fb"></div>`;
 }
 function checkHearWrite(v){
-  if(clean($("hearInput").value)===clean(v)){finishAfterCorrect("hoeren_schreiben",v,hearWrite)}
-  else{taskWrong("hoeren_schreiben",v,"Hören und Schreibweise")}
+  const good=clean($("hearInput").value)===clean(v);
+  if(good){handleCorrectAnswer("hoeren_schreiben",v,hearWrite,800,"fb")}
+  else{handleWrongAnswer("hoeren_schreiben",v,v,"gehörtes Verb und Schreibweise","fb")}
 }
 function hearSpeak(){
   rememberPhase("hoeren_sprechen");
   const v=nextFromTaskQueue("hoeren_sprechen");if(!v){renderHome();return}
+  ensureAttempt("hoeren_sprechen",v);
   $("app").innerHTML=`<h2>Hören → Sprechen</h2>${taskProgressHtml("hoeren_sprechen","Hören → Sprechen")}<div class="actions"><button onclick="speakTextVerb('${safeText(v)}')">🔊 Hören</button><button class="secondary" onclick="speakTextVerb('${safeText(v)}',true)">🐢 Langsam</button></div><p class="small">Sprich das Verb. Wenn das Mikro nicht geht, schreibe es.</p><div class="actions"><button class="success mic-btn" onclick="startVerbMic('speakFallback',()=>checkHearSpeak('${safeText(v)}'))">🎤 Sprechen</button><button class="secondary" onclick="showFallbackInput('speakFallback')">Ich kann nicht sprechen</button></div><input id="speakFallback" class="hidden" placeholder="Falls Mikro nicht geht: Verb schreiben"><button class="success hidden" id="speakCheck" onclick="checkHearSpeak('${safeText(v)}')">Kontrollieren</button><div id="micStatus" class="small"></div><div id="fb"></div>`;
 }
 function showFallbackInput(id){const input=$(id);if(input)input.classList.remove("hidden");const btn=$("speakCheck")||$("flashCheck");if(btn)btn.classList.remove("hidden");setTimeout(()=>input?.focus(),50)}
@@ -34,6 +37,7 @@ function startVerbMic(inputId,onDone){
   rec.onend=()=>{};rec.start();
 }
 function checkHearSpeak(v){
-  if(clean($("speakFallback").value)===clean(v)){finishAfterCorrect("hoeren_sprechen",v,hearSpeak)}
-  else{taskWrong("hoeren_sprechen",v,"Aussprache oder Schreibweise")}
+  const good=clean($("speakFallback").value)===clean(v);
+  if(good){handleCorrectAnswer("hoeren_sprechen",v,hearSpeak,800,"fb")}
+  else{handleWrongAnswer("hoeren_sprechen",v,v,"Aussprache oder Schreibweise des Verbs","fb")}
 }

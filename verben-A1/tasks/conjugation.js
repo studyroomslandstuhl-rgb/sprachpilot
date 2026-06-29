@@ -1,6 +1,6 @@
 const CONJ_SUBJECTS=[
-  {s:"ich",key:"ich"},{s:"du",key:"du"},{s:"er",key:"er/sie/es"},{s:"sie",key:"er/sie/es"},{s:"es",key:"er/sie/es"},
-  {s:"wir",key:"wir"},{s:"ihr",key:"ihr"},{s:"sie",key:"sie/Sie"},{s:"Sie",key:"sie/Sie"},
+  {s:"ich",key:"ich"},{s:"du",key:"du"},{s:"er",key:"er/sie/es"},{s:"sie",key:"er/sie/es",note:"sie = eine Frau"},{s:"es",key:"er/sie/es"},
+  {s:"wir",key:"wir"},{s:"ihr",key:"ihr"},{s:"sie",key:"sie/Sie",note:"sie = viele Personen"},{s:"Sie",key:"sie/Sie",note:"Sie = formell"},
   {s:"Ali",key:"er/sie/es"},{s:"Maria",key:"er/sie/es"},{s:"der Mann",key:"er/sie/es"},{s:"die Frau",key:"er/sie/es"},{s:"das Kind",key:"er/sie/es"},{s:"die Kinder",key:"sie/Sie"}
 ];
 const CONJ_EXAMPLES={
@@ -43,17 +43,14 @@ function regularForm(v,key){
 }
 function conjugatedForm(v,key){return (FULL_FORMS[v]&&FULL_FORMS[v][key])||(IRREGULAR_VERB_FORMS[v]&&IRREGULAR_VERB_FORMS[v][key])||regularForm(v,key)}
 function conjugationSentence(v,subj){const rest=CONJ_EXAMPLES[v]||sentenceForVerb(v).replace(/^[^ ]+ [^ ]+ /,"").replace(/[.!?]$/," ");return `${subj.s} _____ (${v}) ${rest}.`.replace(/\s+/g," ")}
+function conjugationSubjectHint(subj){return subj&&subj.note?`<div class="example-box conj-hint">${safeText(subj.note)}</div>`:""}
 function conjugationSolution(v,subj){return conjugatedForm(v,subj.key)}
 function conjugationTask(){
   rememberPhase("konjugieren");
   const v=nextFromTaskQueue("konjugieren");if(!v){renderHome();return}
-  const subj=shuffle(CONJ_SUBJECTS)[0];state.currentConj={v,subj};saveState();
-  $("app").innerHTML=`<h2>Konjugieren</h2>${taskProgressHtml("konjugieren","Konjugieren")}${imageBox(v)}<p class="small">Schreibe die richtige Verbform.</p><div class="assessment-card"><div class="german-word sentence-gap">${safeText(conjugationSentence(v,subj))}</div></div><input id="conjInput" placeholder="Verbform schreiben"><button class="success" onclick="checkConjugation('${safeText(v)}')">Prüfen</button><div id="fb"></div>`;
+  ensureAttempt("konjugieren",v);
+  const subj=(state.currentConj&&state.currentConj.v===v&&state.currentConj.subj)?state.currentConj.subj:shuffle(CONJ_SUBJECTS)[0];state.currentConj={v,subj};saveState();
+  $("app").innerHTML=`<h2>Konjugieren</h2>${taskProgressHtml("konjugieren","Konjugieren")}${imageBox(v)}<p class="small">Schreibe die richtige Verbform.</p>${conjugationSubjectHint(subj)}<div class="assessment-card"><div class="german-word sentence-gap">${safeText(conjugationSentence(v,subj))}</div></div><input id="conjInput" placeholder="Verbform schreiben"><button class="success" onclick="checkConjugation('${safeText(v)}')">Kontrollieren</button><div id="fb"></div>`;
   renderAndHydrate();setTimeout(()=>$("conjInput")?.focus(),50);
 }
-function checkConjugation(v){
-  const subj=state.currentConj&&state.currentConj.v===v?state.currentConj.subj:CONJ_SUBJECTS[0];
-  const sol=conjugationSolution(v,subj);
-  if(clean($("conjInput").value)===clean(sol)){finishAfterCorrect("konjugieren",v,conjugationTask)}
-  else{taskWrong("konjugieren",sol,"Subjekt und Verbform")}
-}
+function checkConjugation(v){const subj=state.currentConj&&state.currentConj.v===v?state.currentConj.subj:CONJ_SUBJECTS[0];const sol=conjugationSolution(v,subj);const good=clean($("conjInput").value)===clean(sol);if(good){state.currentConj=null;handleCorrectAnswer("konjugieren",v,conjugationTask,900,"fb")}else{handleWrongAnswer("konjugieren",v,sol,"Verbform und Subjekt","fb")}}

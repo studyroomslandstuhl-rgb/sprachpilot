@@ -6,14 +6,14 @@ function currentAssessmentVerb(){const list=unusedVerbs();return list.length?lis
 function startAssessment(){
   if(state.active.length>=20 && !packageExamPassed()){renderHome();return}
   const appNode=$("app"); if(appNode) appNode.classList.add("card");
-  state.phase="assessment";state.revealed=false;state.assessmentStart=Date.now();state.assessmentTries=0;state.assessmentCurrent="";saveState();renderAssessment();
+  state.phase="assessment";state.revealed=false;state.assessmentStart=Date.now();state.assessmentTries=0;saveState();setVerbHashForPhase("assessment");renderAssessment();
 }
 function renderAssessment(){
   const v=currentAssessmentVerb();
   if(!v || state.active.length>=20){buildPracticePool();state.phase="home";const appNode=$("app"); if(appNode) appNode.classList.remove("card");saveState();renderHome();return}
-  if(state.assessmentCurrent!==v){state.assessmentCurrent=v;state.assessmentStart=Date.now();state.revealed=false;state.assessmentTries=0;}
+  if(state.currentVerb!==v){state.assessmentStart=Date.now();state.assessmentTries=0;state.revealed=false;}
   state.currentVerb=v;saveState();
-  $("app").innerHTML=`<h2>Neue Verben einschätzen</h2><p class="small">Schreibe das deutsche Verb. Schnell + richtig = kann ich. Langsam oder nach Fehler = unsicher. Lösung zeigen oder „Ich weiß es nicht“ = kann ich nicht.</p><div class="assessment-box"><div class="assessment-card"><div class="small">Muttersprache: ${safeText(nativeLang())}</div><div class="native-word">${safeText(nativeWord(v))}</div><div class="assessment-timer">Ziel: unter ${ASSESSMENT_FAST_SECONDS} Sekunden</div></div><input id="assessmentInput" autocomplete="off" placeholder="Deutsches Verb schreiben …" onkeydown="if(event.key==='Enter')checkAssessmentAnswer()"><div id="assessmentFeedback"></div><div class="actions"><button class="success" onclick="checkAssessmentAnswer()">Kontrollieren</button><button class="secondary" onclick="revealAssessmentVerb()">Karte umdrehen / Lösung zeigen</button><button class="danger" onclick="markAssessment('unknown')">Ich weiß es nicht</button></div></div><p class="small">Aktiver Block: ${state.active.length}/20 · Schon eingeschätzt: ${state.known.length+state.unsure.length+state.unknown.length}</p>`;
+  $("app").innerHTML=`<h2>Neue Verben einschätzen</h2><p class="small">Schreibe das deutsche Verb. Schnell + richtig = kann ich. Langsam oder nach Fehler = unsicher. Lösung zeigen oder „Ich weiß es nicht“ = kann ich nicht.</p><div class="assessment-box"><div class="assessment-card"><div class="small">Muttersprache: ${safeText(nativeLang())}</div><div class="native-word">${safeText(nativeWord(v))}</div><div class="assessment-timer">⏱ Ziel: unter ${ASSESSMENT_FAST_SECONDS} Sekunden</div></div><input id="assessmentInput" autocomplete="off" placeholder="Deutsches Verb schreiben …" onkeydown="if(event.key==='Enter')checkAssessmentAnswer()"><div id="assessmentFeedback"></div><div class="actions"><button class="success" onclick="checkAssessmentAnswer()">Kontrollieren</button><button class="warning" onclick="revealAssessmentVerb()">Karte umdrehen / Lösung zeigen</button><button class="danger" onclick="markAssessment('unknown')">Ich weiß es nicht</button></div></div><p class="small">Aktiver Block: ${state.active.length}/20 · Schon eingeschätzt: ${state.known.length+state.unsure.length+state.unknown.length}</p>`;
   setTimeout(()=>$('assessmentInput')?.focus(),50);
 }
 function addUnique(arr,v){if(!arr.includes(v))arr.push(v)}
@@ -26,20 +26,23 @@ function markAssessment(level){
   if(level==="unknown")addUnique(state.unknown,v);
   addUnique(state.active,v);
   ensureSkillState(v);
-  state.assessmentCurrent="";state.assessmentTries=0;state.revealed=false;
+  state.assessmentTries=0;state.revealed=false;
   if(state.active.length>=20||unusedVerbs().length===0){buildPracticePool();state.phase="home";saveState();renderHome();return}
   saveState();renderAssessment();
 }
 function checkAssessmentAnswer(){
   const v=state.currentVerb;const input=$("assessmentInput");const answer=input?input.value:"";const seconds=(Date.now()-(state.assessmentStart||Date.now()))/1000;const correct=clean(answer)===clean(v);
-  if(correct&&!state.revealed&&(state.assessmentTries||0)===0&&seconds<=ASSESSMENT_FAST_SECONDS){$("assessmentFeedback").innerHTML=`<div class="ok">Richtig und schnell (${seconds.toFixed(1)} s). Das Verb kommt in den aktiven 20er-Block.</div>`;setTimeout(()=>markAssessment("known"),450);return}
-  if(correct){$("assessmentFeedback").innerHTML=`<div class="helped">Richtig, aber langsam oder nach Hilfe (${seconds.toFixed(1)} s). Das Verb kommt als unsicher in den aktiven 20er-Block.</div>`;setTimeout(()=>markAssessment("unsure"),650);return}
-  state.assessmentTries=(state.assessmentTries||0)+1;
-  const msg=feedbackForTry(state.assessmentTries,v,"das deutsche Verb");
+  if(correct){
+    const fast=seconds<=ASSESSMENT_FAST_SECONDS && !state.revealed && !state.assessmentTries;
+    $("assessmentFeedback").innerHTML=fast?`<div class="ok">Richtig und schnell (${seconds.toFixed(1)} s). Das Verb wird als „ich kann“ gespeichert.</div>`:`<div class="helped">Richtig (${seconds.toFixed(1)} s). Das Verb wird als „unsicher“ gespeichert.</div>`;
+    setTimeout(()=>markAssessment(fast?"known":"unsure"),450);
+    return;
+  }
+  state.assessmentTries=(state.assessmentTries||0)+1;saveState();
+  const msg=standardFeedback(state.assessmentTries,v,"Schreibweise des Verbs");
   $("assessmentFeedback").innerHTML=`<div class="no">${safeText(msg)}</div>`;
-  saveState();
 }
 function revealAssessmentVerb(){
-  state.revealed=true;state.assessmentTries=Math.max(state.assessmentTries||0,3);saveState();
+  state.revealed=true;saveState();
   $("assessmentFeedback").innerHTML=`<div class="reveal-card"><div class="small">Deutsch</div><div class="german-word">${safeText(state.currentVerb)}</div><p>Dieses Verb wird als <strong>kann ich nicht</strong> markiert.</p><button class="danger" onclick="markAssessment('unknown')">Weiter</button></div>`
 }
