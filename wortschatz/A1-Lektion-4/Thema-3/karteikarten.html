@@ -12,23 +12,30 @@ function render(){
   let w=CARDS[i];
   area.innerHTML=progressHtml(file,total)+
   `<div class="question">Sage das deutsche Wort.</div>
-   <div class="hint">Hinweis: ${safe(translate(w))}</div>
+   <div class="hint">Muttersprache: <b>${safe(translate(w))}</b></div>
    ${showCardImage(w)}
-   <input id="answer" class="answer-line" placeholder="Schreiben Sie die Antwort hier">
    <div class="actions">
-     <button class="btn mic-btn" onclick="startMic(this,(v)=>{answer.value=v;check(v,true)})">🎤 Sprechen</button>
-     <button class="btn secondary" onclick="answer.focus()">Ich kann nicht sprechen</button>
+     <button id="micBtn" class="btn mic-btn" onclick="startMic(this,(v)=>{writeBox();answer.value=v;check(v,true)})">🎤 Deutsch sprechen</button>
+     <button class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button>
      <button class="btn secondary" onclick="turn()">Karte umdrehen</button>
-     <button class="btn" onclick="check(answer.value,false)">Kontrollieren</button>
    </div>
    <div id="micStatus" class="mic-status"></div>
+   <div id="box" class="hidden">
+     <input id="answer" class="answer-line" placeholder="Schreiben Sie die Antwort hier">
+     <button class="btn" onclick="check(answer.value,false)">Kontrollieren</button>
+   </div>
    <div id="fb" class="feedback"></div>`;
+}
+function writeBox(){
+  box.classList.remove('hidden');
+  answer.focus();
 }
 function turn(){
   let st=loadTask(file,total),w=CARDS[st.current];
+  writeBox();
   answer.value=w.word;
   let t=markWrong(file,total,w.word);
-  fb.innerHTML=`<div class="no">Lösung: ${w.word}</div>`;
+  fb.innerHTML=`<div class="no">Lösung: ${safe(w.word)}</div>`;
 }
 function check(val,fromSpeech=false){
   let st=loadTask(file,total),w=CARDS[st.current];
@@ -37,7 +44,7 @@ function check(val,fromSpeech=false){
     setTimeout(()=>{markRight(file,total)?complete(area,file,'hoeren.html'):render()},500)
   }else{
     let t=markWrong(file,total,w.word);
-    fb.innerHTML='<div class="no">'+feedbackForTry(t,w.word,'das Wort')+'</div>';
+    fb.innerHTML='<div class="no">'+feedbackForTry(t,w.word,'das deutsche Wort')+'</div>';
   }
 }
 maybeStart(render,'karteikarten.html');
