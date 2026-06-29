@@ -63,71 +63,35 @@
     ];
 
     function safeExamTasks() {
-      const writing = WRITING
-        .filter(x => EXAM_WRITING_TEXTS.includes(x.text))
-        .map(x => ({ type: 'write', solution: x.text, ...x }));
-
-      const gefallen = GEFAELLEN_TASKS
-        .filter(x => EXAM_GEFAELLEN_QUESTIONS.includes(x.question))
-        .map(x => ({ type: 'gefallen', solution: x.answer, ...x }));
-
-      const contrast = CONTRAST_TASKS
-        .filter(x => EXAM_CONTRAST_SENTENCES.includes(x.sentence))
-        .map(x => ({ type: 'contrast', solution: x.sentence, ...x }));
-
-      return shuffle([
-        ...shuffle(writing).slice(0, 7),
-        ...shuffle(gefallen).slice(0, 7),
-        ...shuffle(contrast).slice(0, 6)
-      ]).slice(0, 20);
+      const writing = WRITING.filter(x => EXAM_WRITING_TEXTS.includes(x.text)).map(x => ({ type: 'write', solution: x.text, ...x }));
+      const gefallen = GEFAELLEN_TASKS.filter(x => EXAM_GEFAELLEN_QUESTIONS.includes(x.question)).map(x => ({ type: 'gefallen', solution: x.answer, ...x }));
+      const contrast = CONTRAST_TASKS.filter(x => EXAM_CONTRAST_SENTENCES.includes(x.sentence)).map(x => ({ type: 'contrast', solution: x.sentence, ...x }));
+      return shuffle([...shuffle(writing).slice(0, 7), ...shuffle(gefallen).slice(0, 7), ...shuffle(contrast).slice(0, 6)]).slice(0, 20);
     }
 
     function pluralItemImage(fileName) {
-      return `
-        <div class="plural-pair" aria-label="Pluralbild">
-          ${img(fileName, 'task-img')}
-          ${img(fileName, 'task-img')}
-        </div>
-      `;
+      return `<div class="plural-pair" aria-label="Pluralbild">${img(fileName, 'task-img')}${img(fileName, 'task-img')}</div>`;
     }
 
     function contrastBody(t) {
       const f = furnitureById(t.item);
       const wrong = ADJECTIVES.find(x => simple(x.word) === simple(t.wrong));
       const right = ADJECTIVES.find(x => simple(x.word) === simple(t.right));
-
       return instruction('Schreibe zwei Sätze mit „nicht“ und „sehr“.') +
-        `<div class="task-instruction small">Bild 1: nicht so. Bild 2: sehr so. Bild 3: Sache.</div>
-         <div class="imgrow three-img">
-           ${wrong ? img(wrong.img, 'task-img') : ''}
-           ${right ? img(right.img, 'task-img') : ''}
-           ${img(f.img, 'task-img')}
-         </div>
-         <input id="answer" autocomplete="off" placeholder="Schreiben Sie die Antwort hier">`;
+        `<div class="task-instruction small">Bild 1: nicht so. Bild 2: sehr so. Bild 3: Sache.</div><div class="imgrow three-img">${wrong ? img(wrong.img, 'task-img') : ''}${right ? img(right.img, 'task-img') : ''}${img(f.img, 'task-img')}</div><input id="answer" autocomplete="off" placeholder="Schreiben Sie die Antwort hier">`;
     }
 
     function gefallenBody(t) {
       const r = reactionById(t.reaction);
       const a = adjById(t.adj);
-      const itemHtml = t.plural
-        ? pluralItemImage(t.itemImg)
-        : (t.itemImg ? img(t.itemImg, 'task-img') : img(furnitureById(t.item).img, 'task-img'));
-
+      const itemHtml = t.plural ? pluralItemImage(t.itemImg) : (t.itemImg ? img(t.itemImg, 'task-img') : img(furnitureById(t.item).img, 'task-img'));
       return instruction('Beantworte die Frage passend zum Smiley und Bild.') +
-        `<div class="question exam-subquestion">${safe(t.question)}</div>
-         <div class="imgrow three-img">
-           ${itemHtml}
-           <div class="smile-card">${r.emoji}</div>
-           ${img(a.img, 'task-img')}
-         </div>
-         <input id="answer" autocomplete="off" placeholder="Schreiben Sie die Antwort hier">`;
+        `<div class="question exam-subquestion">${safe(t.question)}</div><div class="imgrow three-img">${itemHtml}<div class="smile-card">${r.emoji}</div>${img(a.img, 'task-img')}</div><input id="answer" autocomplete="off" placeholder="Schreiben Sie die Antwort hier">`;
     }
 
     function writingBody(t) {
       return instruction('Schreibe einen ganzen Satz zu den Bildern.') +
-        `<div class="task-instruction small">Bild 1: Sache. Bild 2: Farbe oder Adjektiv.</div>
-         <div class="imgrow">${t.imgs.map(x => img(x, 'task-img')).join('')}</div>
-         <input id="answer" autocomplete="off" placeholder="Schreiben Sie die Antwort hier">`;
+        `<div class="task-instruction small">Bild 1: Sache. Bild 2: Farbe oder Adjektiv.</div><div class="imgrow">${t.imgs.map(x => img(x, 'task-img')).join('')}</div><input id="answer" autocomplete="off" placeholder="Schreiben Sie die Antwort hier">`;
     }
 
     function startExam() {
@@ -139,41 +103,23 @@
 
       function render() {
         if (pos >= tasks.length) return finish();
-
         answered = false;
         const t = tasks[pos];
-        const body = t.type === 'gefallen'
-          ? gefallenBody(t)
-          : (t.type === 'contrast' ? contrastBody(t) : writingBody(t));
-
-        area.innerHTML = `
-          <div class="small">${pos + 1} / ${tasks.length}</div>
-          <div class="progress"><div class="bar" style="width:${Math.round(pos / tasks.length * 100)}%"></div></div>
-          <div class="question">Schreibe die Antwort.</div>
-          ${body}
-          <div class="actions"><button id="checkBtn" class="btn" onclick="window.checkExam()">Kontrollieren</button></div>
-          <div id="fb" class="feedback"></div>
-        `;
-
-        setTimeout(() => {
-          const input = $('answer');
-          if (input) input.focus();
-        }, 50);
+        const body = t.type === 'gefallen' ? gefallenBody(t) : (t.type === 'contrast' ? contrastBody(t) : writingBody(t));
+        area.innerHTML = `<div class="small">${pos + 1} / ${tasks.length}</div><div class="progress"><div class="bar" style="width:${Math.round(pos / tasks.length * 100)}%"></div></div><div class="question">Schreibe die Antwort.</div>${body}<div class="actions"><button id="checkBtn" class="btn" onclick="window.checkExam()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+        setTimeout(() => { const input = $('answer'); if (input) input.focus(); }, 50);
       }
 
       window.checkExam = function() {
         if (answered) return;
-
         const t = tasks[pos];
         const sol = t.solution;
         const input = $('answer');
         const userAnswer = input ? input.value : '';
         const ok = isExactSentence(userAnswer, sol, false);
-
         answered = true;
         const button = $('checkBtn');
         if (button) button.disabled = true;
-
         if (ok) {
           score += 10;
           fb.innerHTML = '<div class="ok">Richtig!</div><div class="actions"><button class="btn green" onclick="window.nextExam()">Weiter</button></div>';
@@ -182,10 +128,7 @@
         }
       };
 
-      window.nextExam = function() {
-        pos++;
-        render();
-      };
+      window.nextExam = function() { pos++; render(); };
 
       function finish() {
         const percent = Math.min(100, Math.round(score / max * 100));
@@ -193,27 +136,10 @@
         const result = { score, maxScore: max, percent, stars, date: new Date().toISOString() };
         const hist = examHistory();
         hist.push(result);
-        spT3Store().setItem(spT3ProgressKey('SP_L4_T3_EXAM_HISTORY_V1'), JSON.stringify(hist));
+        localStorage.setItem('SP_L4_T3_EXAM_HISTORY_V1', JSON.stringify(hist));
         syncExam(result);
-
-        area.innerHTML = `
-          <div class="finish-box">
-            <div class="finish-icon">✓</div>
-            <div class="question">Prüfung fertig!</div>
-            <div class="big">${percent}% erreicht.</div>
-            <div>${starsHtml(stars)}</div>
-            <div class="summary-row">
-              <div class="summary-tile">Punkte<br>${score}/${max}</div>
-              <div class="summary-tile">Versuch<br>${hist.length}</div>
-            </div>
-            <div class="actions finish-actions">
-              <button class="btn" onclick="location.reload()">Nochmal</button>
-              <a class="btn green" href="index.html">Zurück zum Thema</a>
-            </div>
-          </div>
-        `;
+        area.innerHTML = `<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig!</div><div class="big">${percent}% erreicht.</div><div>${starsHtml(stars)}</div><div class="summary-row"><div class="summary-tile">Punkte<br>${score}/${max}</div><div class="summary-tile">Versuch<br>${hist.length}</div></div><div class="actions finish-actions"><button class="btn" onclick="location.reload()">Nochmal</button><a class="btn green" href="index.html">Zurück zum Thema</a></div></div>`;
       }
-
       render();
     }
   </script>
