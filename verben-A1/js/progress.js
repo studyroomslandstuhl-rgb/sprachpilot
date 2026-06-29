@@ -10,7 +10,7 @@ function taskQueueKey(skill){return "queue_"+skillKey(skill)}
 function taskDoneSetKey(skill){return "done_"+skillKey(skill)}
 function weightForVerb(v){if((state.unknown||[]).includes(v))return 2;return 1}
 function buildPracticePool(){
-  let source=(state.active&&state.active.length)?state.active:[...(state.unsure||[]),...(state.unknown||[])];
+  let source=(state.active&&state.active.length)?state.active:[];
   const pool=[]; source.forEach(v=>{for(let i=0;i<weightForVerb(v);i++)pool.push(v)});
   state.practicePool=shuffle(pool.length?pool:source);
   saveState();return state.practicePool;
@@ -20,10 +20,6 @@ function initTaskQueue(skill){
   state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
   const source=(state.practicePool&&state.practicePool.length)?state.practicePool:buildPracticePool();
   const done=new Set(state.taskDoneSets[dKey]);
-  if(Array.isArray(state.taskQueues[qKey])){
-    const allowed=new Set(source);
-    state.taskQueues[qKey]=state.taskQueues[qKey].filter(x=>x&&allowed.has(x.v)&&!done.has(x.v+":"+x.slot));
-  }
   if(!Array.isArray(state.taskQueues[qKey])||!state.taskQueues[qKey].length){
     state.taskQueues[qKey]=shuffle(source.map((v,i)=>({v,slot:i})).filter(x=>!done.has(x.v+":"+x.slot)));
   }
@@ -37,7 +33,7 @@ function currentTaskItem(skill){
   const item=q.shift();
   state.taskQueues[taskQueueKey(sk)]=q;
   if(!item){state.currentTask=null;saveState();return null}
-  state.currentTask={skill:sk,v:item.v,slot:item.slot};
+  state.currentTask={skill:sk,v:item.v,slot:item.slot,tries:0,hadWrong:false,helped:false};
   saveState();
   return state.currentTask;
 }
@@ -58,4 +54,4 @@ function finishQueuedVerb(skill,v,good=true){
 }
 function queuedProgress(skill){const dKey=taskDoneSetKey(skill);const done=(state.taskDoneSets[dKey]||[]).length;const total=((state.practicePool&&state.practicePool.length)?state.practicePool:state.active).length;return {done,total,pct:total?Math.min(100,Math.round(done*100/total)):0}}
 function taskDone(skill){const p=queuedProgress(skill);return p.total>0&&p.done>=p.total}
-function taskProgressHtml(skill,label){const p=queuedProgress(skill);return `<div class="task-progress"><div class="task-progress-title"><span>${label}</span><span>${p.done}/${p.total} · ${p.pct}%</span></div><div class="task-progress-line"><div class="task-progress-fill" style="width:${p.pct}%"></div></div></div>`}
+function taskProgressHtml(skill,label){const p=queuedProgress(skill);return `<div class="task-progress"><div class="task-progress-title"><span>${safeText(label)} · ${p.done}/${p.total} · ${p.pct}%</span></div><div class="task-progress-line"><div class="task-progress-fill" style="width:${p.pct}%"></div></div></div>`}

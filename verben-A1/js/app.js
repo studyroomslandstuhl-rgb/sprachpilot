@@ -25,7 +25,7 @@ function renderHeader(){
     </div>
     <nav class="nav">
       <button class="btn secondary" onclick="renderHome()">← Zurück</button>
-      <button class="btn secondary" onclick="renderHome()">Übersicht</button>
+      <button class="btn secondary" onclick="renderVerbOverview()">Übersicht</button>
       <button class="btn secondary" onclick="renderStudentDashboard()">Statistik</button>
       <button class="btn secondary" onclick="handleAssessmentClick()">Weitere Verben einschätzen</button>
       <button class="btn danger-btn" onclick="resetCurrentPackage()">Fortschritte löschen</button>
@@ -41,6 +41,58 @@ function spVerbLogout(){
 }
 
 function renderSideMenu(){const m=$("spMenu");if(m)m.innerHTML=""}
+
+
+function verbStatus(v){
+  if((state.active||[]).includes(v)) return {label:"aktiv", cls:"status-active"};
+  if((state.learned||[]).includes(v) || (state.known||[]).includes(v)) return {label:"ich kann", cls:"status-known"};
+  if((state.unsure||[]).includes(v)) return {label:"unsicher", cls:"status-unsure"};
+  if((state.unknown||[]).includes(v)) return {label:"ich kann nicht", cls:"status-unknown"};
+  return {label:"noch nicht eingeschätzt", cls:"status-new"};
+}
+function verbsByStatus(){
+  const groups={active:[],known:[],unsure:[],unknown:[],new:[]};
+  (ALL_VERBS||[]).forEach(item=>{
+    const v=item.v;
+    if((state.active||[]).includes(v)) groups.active.push(v);
+    else if((state.learned||[]).includes(v) || (state.known||[]).includes(v)) groups.known.push(v);
+    else if((state.unsure||[]).includes(v)) groups.unsure.push(v);
+    else if((state.unknown||[]).includes(v)) groups.unknown.push(v);
+    else groups.new.push(v);
+  });
+  return groups;
+}
+function verbOverviewCard(v){
+  const st=verbStatus(v);
+  return `<div class="verb-overview-card ${st.cls}">
+    ${imageBox(v,true)}
+    <div class="verb-name">${safeText(v)}</div>
+    <div class="small">${safeText(nativeWord(v))}</div>
+    <div class="verb-status">${safeText(st.label)}</div>
+  </div>`;
+}
+function verbOverviewSection(title,verbs){
+  return `<section class="verb-overview-section"><h3>${safeText(title)} <span class="small">${verbs.length}</span></h3><div class="verb-overview-grid">${verbs.map(verbOverviewCard).join("")||"<p class='small'>Keine Verben.</p>"}</div></section>`;
+}
+function renderVerbOverview(){
+  clearVerbHash(true);
+  const appNode=$("app"); if(appNode) appNode.classList.remove("card");
+  state.phase="home";
+  migrateState();
+  const g=verbsByStatus();
+  $("app").innerHTML=`<section class="card">
+    <h2>Verben-Übersicht</h2>
+    <p class="small">Hier siehst du alle Verben und den aktuellen Lernstand.</p>
+    ${verbOverviewSection("Aktive Verben",g.active)}
+    ${verbOverviewSection("Ich kann",g.known)}
+    ${verbOverviewSection("Unsicher",g.unsure)}
+    ${verbOverviewSection("Ich kann nicht",g.unknown)}
+    ${verbOverviewSection("Noch nicht eingeschätzt",g.new)}
+    <div class="actions"><button class="btn secondary" onclick="renderHome()">Zur Aufgabenübersicht</button></div>
+  </section>`;
+  saveState();
+  renderAndHydrate();
+}
 
 function statusBox(){
   const pct=overall();
@@ -102,11 +154,12 @@ function examCard(){
 }
 
 function renderHome(){
-  try{if(location.hash)history.replaceState({spVerbPhase:"home"},"",location.pathname+location.search)}catch(e){}
+  clearVerbHash(true);
   const appNode=$("app"); if(appNode) appNode.classList.remove("card");
   state.phase="home";
   state.currentTask=null;
   migrateState();
+  preloadActiveImages();
   if(!state.active.length){
     $("app").innerHTML=`${statusBox()}<section class="card"><h2>Verben einschätzen</h2><p class="small">Schätze zuerst bis zu 20 neue Verben ein. Danach übst du diese Verben in allen Aufgaben.</p><div class="actions"><button class="btn green" onclick="handleAssessmentClick()">Verben einschätzen</button></div></section>`;
     saveState();
@@ -149,14 +202,18 @@ async function boot(){
   await loadState();
   renderHeader();
   renderSideMenu();
-  const canResume=!!location.hash && location.hash!=="#";
-  if(canResume){ if(!resumePhase())renderHome(); }
-  else { state.phase="home"; state.currentTask=null; saveState(); renderHome(); }
+  const hashPhase=phaseFromHash();
+  if(hashPhase!=="home"){state.phase=hashPhase;if(!resumePhase())renderHome();}
+  else renderHome();
   renderAndHydrate();
 }
 
-window.addEventListener("popstate",()=>{
-  if(!location.hash||location.hash==="#")renderHome();
-  else resumePhase();
+window.addEventListener("hashchange",()=>{
+  if(!profile)return;
+  const hp=phaseFromHash();
+  if(hp==="home"){renderHome();return;}
+  state.phase=hp;
+  if(!resumePhase())renderHome();
 });
+
 document.addEventListener("DOMContentLoaded",boot);
