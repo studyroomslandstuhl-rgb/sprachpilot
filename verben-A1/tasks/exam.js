@@ -21,7 +21,7 @@ function renderVerbExam(){
   let body="";
   if(item.type==="image_write")body=`${imageBox(item.v)}<p class="small">Schreibe das Verb.</p><input id="examInput" placeholder="Verb schreiben">`;
   if(item.type==="listen_write")body=`<p class="small">Höre und schreibe das Verb.</p><button class="secondary" onclick="speakTextVerb('${safeText(item.v)}')">🔊 Hören</button><button class="secondary" onclick="speakTextVerb('${safeText(item.v)}',true)">🐢 Langsam</button><input id="examInput" placeholder="Verb schreiben">`;
-  if(item.type==="conjugate")body=`${imageBox(item.v)}<p class="small">Schreibe die richtige Form.</p>${conjugationSubjectHint(item.subj)}<div class="assessment-card"><div class="german-word sentence-gap">${safeText(conjugationSentence(item.v,item.subj))}</div></div><input id="examInput" placeholder="Verbform schreiben">`;
+  if(item.type==="conjugate")body=`${imageBox(item.v)}<p class="small">Schreibe die richtige Form.${isSeparableVerb(item.v)?" Das trennbare Verb hat zwei Lücken.":""}</p>${conjugationSubjectHint(item.subj)}<div class="assessment-card"><div class="german-word sentence-gap">${safeText(conjugationSentence(item.v,item.subj))}</div></div>${isSeparableVerb(item.v)?'<div class="answer-line conjugation-two-inputs"><input id="examInput" placeholder="Verbform"><input id="examPrefixInput" placeholder="Prefix"></div>':'<input id="examInput" placeholder="Verbform schreiben">'}`;
   if(item.type==="sentence_write")body=`${imageBox(item.v)}<p class="small">Höre den Satz und schreibe ihn.</p><button class="secondary" onclick="speakTextVerb('${safeText(item.sentence)}')">🔊 Satz hören</button><input id="examInput" placeholder="Satz schreiben">`;
   $("app").innerHTML=`<h2>Prüfung</h2><div class="task-progress"><div class="task-progress-title"><span>Aufgabe ${ex.current+1}/${ex.items.length}</span><span>${Math.round(ex.current*100/ex.items.length)}%</span></div><div class="task-progress-line"><div class="task-progress-fill" style="width:${Math.round(ex.current*100/ex.items.length)}%"></div></div></div>${body}<button class="success" onclick="checkVerbExamAnswer()">Kontrollieren</button><div id="fb"></div>`;
   renderAndHydrate();setTimeout(()=>$('examInput')?.focus(),50);
@@ -34,7 +34,7 @@ function examSolution(item){
 }
 function checkVerbExamAnswer(){
   const ex=state.exam;const item=ex.items[ex.current];const sol=examSolution(item);const answer=$("examInput").value;
-  const good=clean(answer)===clean(sol);
+  const good=item.type==="conjugate"?isConjugationAnswerCorrect(item.v,item.subj,answer,$("examPrefixInput")?.value||""):clean(answer)===clean(sol);
   ex.currentTry=Number(ex.currentTry||0);
   if(good){
     const firstTry=!ex.hadWrong;
