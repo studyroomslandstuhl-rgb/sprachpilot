@@ -40,7 +40,7 @@ function render(){
       `<div class="imgrow">${taskItemImg(t)}</div>
        <input id="q" placeholder="Schreiben Sie die Frage hier">
        <div class="actions">
-         <button class="btn mic-btn" onclick="startMic(this,v=>{q.value=v;checkQuestion(true)})">🎤 Frage sprechen</button>
+         <button class="btn mic-btn" onclick="startMic(this,v=>{q.value=v;checkQuestion(true)})">🎤 Deutsch sprechen</button>
          <button class="btn" onclick="checkQuestion(false)">Kontrollieren</button>
        </div>
        <div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
@@ -51,7 +51,7 @@ function render(){
       `<div class="imgrow three-img">${taskItemImg(t)}<div class="smile-card">${r.emoji}</div>${visualWord(t.adj)}</div>
        <input id="a" placeholder="Schreiben Sie die Antwort hier">
        <div class="actions">
-         <button class="btn mic-btn" onclick="startMic(this,v=>{a.value=v;checkAnswer(true)})">🎤 Antwort sprechen</button>
+         <button class="btn mic-btn" onclick="startMic(this,v=>{a.value=v;checkAnswer(true)})">🎤 Deutsch sprechen</button>
          <button class="btn" onclick="checkAnswer(false)">Kontrollieren</button>
        </div>
        <div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
