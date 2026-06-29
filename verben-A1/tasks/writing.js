@@ -1,2 +1,7 @@
-function writeVerb(){const v=nextFromTaskQueue("schreiben");if(!v){renderHome();return}$("app").innerHTML=`<h2>Schreiben</h2>${taskProgressHtml("schreiben","Schreiben")}<div class="native-word">${safeText(nativeWord(v))}</div><input id="writeInput" placeholder="deutsches Verb"><button class="success" onclick="checkWriteVerb('${safeText(v)}')">Prüfen</button><div id="fb"></div>`;setTimeout(()=>$("writeInput")?.focus(),50)}
+function writeVerb(){
+  rememberPhase("schreiben");
+  const v=nextFromTaskQueue("schreiben");if(!v){renderHome();return}
+  $("app").innerHTML=`<h2>Schreiben</h2>${taskProgressHtml("schreiben","Schreiben")}${imageBox(v)}<div class="native-word">${safeText(nativeWord(v))}</div><input id="writeInput" placeholder="deutsches Verb"><button class="success" onclick="checkWriteVerb('${safeText(v)}')">Prüfen</button><div id="fb"></div>`;
+  renderAndHydrate();setTimeout(()=>$("writeInput")?.focus(),50)
+}
 function checkWriteVerb(v){const good=clean($("writeInput").value)===clean(v);$("fb").innerHTML=good?"<div class='ok'>Richtig.</div>":`<div class='no'>Falsch. Richtig ist: <strong>${safeText(v)}</strong></div>`;addEncounter(v,"schreiben",good);finishQueuedVerb("schreiben",v,good);setTimeout(writeVerb,800)}
