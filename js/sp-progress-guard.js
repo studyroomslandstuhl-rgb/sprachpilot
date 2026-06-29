@@ -144,6 +144,17 @@
   patchFirestore();
   setInterval(patchFirestore,500);
 
+  function loadFreshProgressModule(){
+    if(isPreview())return;
+    if(window.__spFreshProgressModuleRequested)return;
+    window.__spFreshProgressModuleRequested=true;
+    try{import("/js/progress.js?v=points-fix-20260629c").catch(function(){window.__spFreshProgressModuleRequested=false;});}
+    catch(e){window.__spFreshProgressModuleRequested=false;}
+  }
+  loadFreshProgressModule();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadFreshProgressModule);else setTimeout(loadFreshProgressModule,0);
+  setTimeout(loadFreshProgressModule,500);
+
   function dashboardHref(){
     return activeRole(readProfile())==="teacher" ? "/teacher/index.html" : "/student-dashboard/index.html";
   }
