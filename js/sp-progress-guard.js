@@ -1,4 +1,4 @@
-// Globaler Schutz: Lehrer-Vorschau darf keine Schülerpunkte/Ranglisten/Fortschritte speichern.
+// Globaler Schutz: Lehrer-Vorschau darf keine SchÃ¼lerpunkte/Ranglisten/Fortschritte speichern.
 // Lehrer-Vorschau ist nur aktiv, wenn sie explizit im Lehrer-Dashboard gestartet wurde.
 (function(){
   function readProfile(){
@@ -9,7 +9,7 @@
   }
   function isStudentProfile(profile){
     const role=roleOf(profile);
-    return profile?.isStudent===true || profile?.student===true || profile?.schueler===true || role==="student" || role==="schueler" || role==="schüler";
+    return profile?.isStudent===true || profile?.student===true || profile?.schueler===true || role==="student" || role==="schueler" || role==="schÃ¼ler";
   }
   function isTeacherProfile(profile){
     const role=roleOf(profile);
@@ -17,8 +17,10 @@
   }
   function clearTeacherPreviewState(){
     try{
+      localStorage.removeItem("SP_TEACHER_PREVIEW");
       sessionStorage.removeItem("SP_TEACHER_PREVIEW");
       sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
+      localStorage.removeItem("SP_PREVIEW_COURSE");
       sessionStorage.removeItem("SP_PREVIEW_COURSE");
     }catch(e){}
   }
@@ -27,19 +29,31 @@
   }
   function activeRole(profile){
     const stored=storedRole();
-    // Die aktive Login-Art entscheidet zuerst. Gleiche E-Mail darf Schüler und Lehrer sein.
-    if(["student","schueler","schüler"].includes(stored))return "student";
+    // Die aktive Login-Art entscheidet zuerst. Gleiche E-Mail darf SchÃ¼ler und Lehrer sein.
+    if(["student","schueler","schÃ¼ler"].includes(stored))return "student";
     if(["teacher","lehrer","admin","owner"].includes(stored))return "teacher";
 
     const profileRole=roleOf(profile);
-    if(["student","schueler","schüler"].includes(profileRole))return "student";
+    if(["student","schueler","schÃ¼ler"].includes(profileRole))return "student";
     if(["teacher","lehrer","admin","owner"].includes(profileRole))return "teacher";
     if(isStudentProfile(profile) || ((profile?.kurs||profile?.kursnummer||profile?.courseCode)&&(profile?.muttersprache||profile?.nativeLanguage||profile?.language)))return "student";
     if(isTeacherProfile(profile))return "teacher";
     return "student";
   }
   function readPreview(){
-    try{return JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW")||"null")}catch(e){return null}
+    try{
+      const local=localStorage.getItem("SP_TEACHER_PREVIEW");
+      if(local==="1") return {teacherPreview:true,courseCode:localStorage.getItem("SP_PREVIEW_COURSE")||""};
+      if(local && local!=="0"){
+        const parsed=JSON.parse(local);
+        if(parsed && parsed.teacherPreview===true) return parsed;
+      }
+    }catch(e){}
+    try{
+      const session=sessionStorage.getItem("SP_TEACHER_PREVIEW");
+      if(session==="1") return {teacherPreview:true,courseCode:sessionStorage.getItem("SP_PREVIEW_COURSE")||""};
+      return JSON.parse(session||"null");
+    }catch(e){return null}
   }
   function isPreview(){
     const preview=readPreview();
@@ -56,6 +70,14 @@
     key=String(key||"");
     return /^(SP_L\d|SP_PROGRESS_|SP_DASHBOARD_PROGRESS|SP_POINTS_|SP_COURSE_LEADERBOARD|A1_ACTIVE_SESSION)/.test(key) || /EXAM_HISTORY|EXAM_UNLOCK|LEADERBOARD|RANKING/i.test(key);
   }
+  function isProtectedPointKey(key){
+    key=String(key||"");
+    return /POINT|PUNKT|LIFETIME|BEST|EXAM_HISTORY|EXAM_BEST|RANKING|LEADERBOARD/i.test(key) || /^SP_COURSE_LEADERBOARD/.test(key);
+  }
+  function numeric(value){
+    const n=Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
   function previewKey(key){
     let course="kurs";
     try{const p=readPreview()||{};course=p.courseCode||p.kurs||course}catch(e){}
@@ -70,6 +92,12 @@
     window.__spProgressGuardStoragePatched=true;
     Storage.prototype.setItem=function(key,value){
       if(this===localStorage&&isPreview()&&shouldRedirectKey(key))return realSet.call(sessionStorage,previewKey(key),value);
+      if(this===localStorage&&isProtectedPointKey(key)){
+        const oldValue=realGet.call(localStorage,key);
+        const oldNumber=numeric(oldValue);
+        const newNumber=numeric(value);
+        if(oldNumber!==null&&newNumber!==null&&newNumber<oldNumber)return realSet.call(localStorage,key,String(oldNumber));
+      }
       return realSet.call(this,key,value);
     };
     Storage.prototype.getItem=function(key){
@@ -81,6 +109,7 @@
     };
     Storage.prototype.removeItem=function(key){
       if(this===localStorage&&isPreview()&&shouldRedirectKey(key))return realRemove.call(sessionStorage,previewKey(key));
+      if(this===localStorage&&isProtectedPointKey(key))return undefined;
       return realRemove.call(this,key);
     };
   }
