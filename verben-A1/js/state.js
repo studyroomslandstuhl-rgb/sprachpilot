@@ -6,7 +6,7 @@ function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&l
 let profile = null;
 let state = {
   phase:"home", index:0,
-  known:[], unsure:[], unknown:[], active:[], learned:[], practicePool:[], archivedPackages:[], assessmentBatch:[],
+  known:[], unsure:[], unknown:[], active:[], learned:[], practicePool:[], archivedPackages:[], assessmentBatch:[], assessed:[], currentPackageVerbs:[],
   weak:{}, currentGame:"", currentVerb:"", currentTask:null, memoryCards:[], memoryDone:[], first:null, openCards:[], lock:false,
   skillDone:{}, skillAttempts:{}, skillSuccess:{}, taskQueues:{}, taskDoneSets:{},
   alertsShown:{}, taskRewardsShown:{}, packageNo:1, assessmentStart:0, assessmentTries:0, revealed:false,
@@ -38,13 +38,16 @@ function storageKey(){return "SP_VERBS_"+(profile?profile.userId||profile.studen
 function firebaseStudentId(){return profile && (profile.studentId||profile.userId)}
 function ensureSkillState(v){state.skillDone[v]=state.skillDone[v]||{};state.skillAttempts[v]=state.skillAttempts[v]||{};state.skillSuccess[v]=state.skillSuccess[v]||{}}
 function migrateState(){
-  ["known","unsure","unknown","active","learned","practicePool","archivedPackages","memoryDone","openCards","assessmentBatch"].forEach(k=>state[k]=state[k]||[]);
+  ["known","unsure","unknown","active","learned","practicePool","archivedPackages","memoryDone","openCards","assessmentBatch","assessed","currentPackageVerbs"].forEach(k=>state[k]=state[k]||[]);
   ["weak","skillDone","skillAttempts","skillSuccess","taskQueues","taskDoneSets","alertsShown","taskRewardsShown"].forEach(k=>state[k]=state[k]||{});
   state.packageNo=state.packageNo||1;
   state.exam=state.exam||{passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0};
   state.currentTask=state.currentTask||null;
   state.assessmentTries=state.assessmentTries||0;
   state.assessmentBatch=Array.isArray(state.assessmentBatch)?state.assessmentBatch:[];
+  state.assessed=Array.isArray(state.assessed)?state.assessed:[];
+  state.currentPackageVerbs=Array.isArray(state.currentPackageVerbs)?state.currentPackageVerbs:[];
+  if(!state.currentPackageVerbs.length && state.assessmentBatch.length) state.currentPackageVerbs=[...state.assessmentBatch];
   normalizeVerbStatusLists();
   (state.active||[]).forEach(ensureSkillState);
 }
@@ -57,10 +60,28 @@ function normalizeVerbStatusLists(){
   state.learned=uniqueList(state.learned);
   state.active=uniqueList(state.active).filter(v=>!state.known.includes(v)&&!state.learned.includes(v)&&((state.unsure||[]).includes(v)||(state.unknown||[]).includes(v)));
   state.assessmentBatch=uniqueList(state.assessmentBatch);
+  state.assessed=uniqueList(state.assessed);
+  state.currentPackageVerbs=uniqueList(state.currentPackageVerbs);
+
+  // Migration/repair for older states: if a package was started before
+  // currentPackageVerbs existed, rebuild the 20-item assessment package from
+  // the saved assessment batch + active verbs + the most recently known verbs.
+  const packageSeed=uniqueList([...(state.currentPackageVerbs||[]),...(state.assessmentBatch||[]),...(state.active||[])]);
+  if((state.active||[]).length && packageSeed.length<20 && (state.known||[]).length){
+    const need=20-packageSeed.length;
+    packageSeed.push(...(state.known||[]).slice(-need));
+  }
+  if(packageSeed.length>state.currentPackageVerbs.length){
+    state.currentPackageVerbs=uniqueList(packageSeed).slice(0,20);
+  }
 }
 function currentPracticeVerbs(){
   normalizeVerbStatusLists();
   return (state.active||[]).filter(v=>(state.unsure||[]).includes(v)||(state.unknown||[]).includes(v));
+}
+function currentPackageAllVerbs(){
+  normalizeVerbStatusLists();
+  return uniqueList([...(state.currentPackageVerbs||[]), ...(state.assessmentBatch||[])]);
 }
 function currentAssessmentCount(){
   normalizeVerbStatusLists();
@@ -160,12 +181,12 @@ function completeCurrentPackage(){
     state.unsure=state.unsure.filter(x=>x!==v);
     state.unknown=state.unknown.filter(x=>x!==v);
   });
-  state.archivedPackages.push({packageNo:state.packageNo||1,verbs:[...state.assessmentBatch],practiced,completedAt:new Date().toISOString(),exam:state.exam});
-  state.active=[]; state.assessmentBatch=[]; resetPackageTasks(); state.packageNo=(state.packageNo||1)+1; saveState();
+  state.archivedPackages.push({packageNo:state.packageNo||1,verbs:currentPackageAllVerbs(),practiced,completedAt:new Date().toISOString(),exam:state.exam});
+  state.active=[]; state.assessmentBatch=[]; state.currentPackageVerbs=[]; resetPackageTasks(); state.packageNo=(state.packageNo||1)+1; saveState();
 }
 function handleAssessmentClick(){
   normalizeVerbStatusLists();
-  if(!currentPracticeVerbs().length && currentAssessmentCount()>=20){state.assessmentBatch=[]; resetPackageTasks(); saveState();}
+  if(!currentPracticeVerbs().length && currentAssessmentCount()>=20){state.assessmentBatch=[]; state.currentPackageVerbs=[]; resetPackageTasks(); saveState();}
   if(currentPracticeVerbs().length && !packageExamPassed()){
     $("app").innerHTML=`<h2>Neue Verben noch gesperrt</h2><div class="no">Du kannst neue Verben erst einschätzen, wenn die aktuelle Prüfung 100% hat.</div><button class="secondary" onclick="renderHome()">Zur Übersicht</button>`;
     state.phase="home"; saveState(); return;

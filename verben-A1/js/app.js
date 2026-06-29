@@ -44,18 +44,19 @@ function renderSideMenu(){const m=$("spMenu");if(m)m.innerHTML=""}
 
 
 function verbStatus(v){
-  if((state.active||[]).includes(v)) return {label:"aktiv", cls:"status-active"};
   if((state.learned||[]).includes(v) || (state.known||[]).includes(v)) return {label:"ich kann", cls:"status-known"};
   if((state.unsure||[]).includes(v)) return {label:"unsicher", cls:"status-unsure"};
   if((state.unknown||[]).includes(v)) return {label:"ich kann nicht", cls:"status-unknown"};
+  if((state.active||[]).includes(v)) return {label:"aktiv", cls:"status-active"};
   return {label:"noch nicht eingeschätzt", cls:"status-new"};
 }
 function verbsByStatus(){
-  const groups={active:[],known:[],unsure:[],unknown:[],new:[]};
+  const groups={package:[],practice:[],known:[],unsure:[],unknown:[],new:[]};
+  groups.package=currentPackageAllVerbs();
+  groups.practice=currentPracticeVerbs();
   (ALL_VERBS||[]).forEach(item=>{
     const v=item.v;
-    if((state.active||[]).includes(v)) groups.active.push(v);
-    else if((state.learned||[]).includes(v) || (state.known||[]).includes(v)) groups.known.push(v);
+    if((state.learned||[]).includes(v) || (state.known||[]).includes(v)) groups.known.push(v);
     else if((state.unsure||[]).includes(v)) groups.unsure.push(v);
     else if((state.unknown||[]).includes(v)) groups.unknown.push(v);
     else groups.new.push(v);
@@ -83,7 +84,8 @@ function renderVerbOverview(){
   $("app").innerHTML=`<section class="card">
     <h2>Verben-Übersicht</h2>
     <p class="small">Hier siehst du alle Verben und den aktuellen Lernstand.</p>
-    ${verbOverviewSection("Aktive Verben",g.active)}
+    ${verbOverviewSection("Aktueller Einschätzungsblock",g.package)}
+    ${verbOverviewSection("Aktive Übungsverben",g.practice)}
     ${verbOverviewSection("Ich kann",g.known)}
     ${verbOverviewSection("Unsicher",g.unsure)}
     ${verbOverviewSection("Ich kann nicht",g.unknown)}
@@ -97,12 +99,14 @@ function renderVerbOverview(){
 function statusBox(){
   const pct=overall();
   const practiceCount=currentPracticeVerbs().length;
+  const packageCount=currentPackageAllVerbs().length;
+  const knownInPackage=currentPackageAllVerbs().filter(v=>(state.known||[]).includes(v)||(state.learned||[]).includes(v)).length;
   const examTxt=state.exam&&state.exam.passed?"Prüfung 100%":(allPracticeTasksDone()?"Prüfung offen":"Prüfung gesperrt");
   return `<section class="card progress-card">
     <div class="circle">${pct}%</div>
     <div class="progress-main">
       <h2>Dein Fortschritt</h2>
-      <div class="small">${practiceCount} Verben zu üben · ${(state.learned||[]).length} vollständig gelernt · ${examTxt}</div>
+      <div class="small">${packageCount||currentAssessmentCount()} Verben eingeschätzt · ${knownInPackage} ich kann · ${practiceCount} Verben zu üben · ${examTxt}</div>
       <div class="progress"><div class="bar" style="width:${pct}%"></div></div>
       <p class="small">Ziel: alle aktiven Verben in allen Aufgaben üben und die Prüfung mit 100% abschließen.</p>
     </div>
