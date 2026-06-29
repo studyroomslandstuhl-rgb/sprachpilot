@@ -1,5 +1,5 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SprachPilot – Registrierung</title><link rel="stylesheet" href="../style.css"></head><body><div class="container"><section class="hero"><a href="/index.html" style="text-decoration:none;color:inherit"><div class="logo-wrap"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></div><h1>SprachPilot</h1></a><p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p></section><section class="card"><h2>Schüler registrieren</h2><p class="small">Du brauchst nur deinen Namen, deine E-Mail, deine Muttersprache und den Kurscode deiner Lehrkraft.</p><form id="registerForm"><div class="two"><div><label>Vorname *</label><input id="fname" required></div><div><label>Nachname *</label><input id="lname" required></div></div><label>E-Mail *</label><input id="email" type="email" required placeholder="name@email.com"><label>Muttersprache *</label><select id="motherLanguage" required>
-        <option value="">Bitte auswählen</option>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SprachPilot â€“ Registrierung</title><link rel="stylesheet" href="../style.css"></head><body><div class="container"><section class="hero"><a href="/index.html" style="text-decoration:none;color:inherit"><div class="logo-wrap"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></div><h1>SprachPilot</h1></a><p class="subtitle">Deutsch lernen mit klaren Ãœbungen, Bildern, Fragen und Wiederholung.</p></section><section class="card"><h2>SchÃ¼ler registrieren</h2><p class="small">Du brauchst nur deinen Namen, deine E-Mail, deine Muttersprache und den Kurscode deiner Lehrkraft.</p><form id="registerForm"><div class="two"><div><label>Vorname *</label><input id="fname" required></div><div><label>Nachname *</label><input id="lname" required></div></div><label>E-Mail *</label><input id="email" type="email" required placeholder="name@email.com"><label>Muttersprache *</label><select id="motherLanguage" required>
+        <option value="">Bitte auswÃ¤hlen</option>
         <option>Albanisch</option>
         <option>Amharisch</option>
         <option>Arabisch</option>
@@ -13,7 +13,7 @@
         <option>Deutsch</option>
         <option>Englisch</option>
         <option>Farsi/Persisch</option>
-        <option>Französisch</option>
+        <option>FranzÃ¶sisch</option>
         <option>Georgisch</option>
         <option>Griechisch</option>
         <option>Hindi</option>
@@ -25,7 +25,7 @@
         <option>Paschtu</option>
         <option>Polnisch</option>
         <option>Portugiesisch</option>
-        <option>Rumänisch</option>
+        <option>RumÃ¤nisch</option>
         <option>Russisch</option>
         <option>Serbisch</option>
         <option>Somali</option>
@@ -34,13 +34,13 @@
         <option>Thai</option>
         <option>Tigrinya</option>
         <option>Tschechisch</option>
-        <option>Türkisch</option>
+        <option>TÃ¼rkisch</option>
         <option>Ukrainisch</option>
         <option>Ungarisch</option>
         <option>Urdu</option>
         <option>Usbekisch</option>
         <option>Vietnamesisch</option>
-      </select><label>Kurscode *</label><input id="course" required placeholder="z. B. GLK-68"><button class="success" type="button" id="registerBtn" onclick="doRegister()">Registrieren</button><a class="btn secondary" href="../login/">Ich habe schon ein Profil</a><div id="registerResult"></div></form></section><footer>© SprachPilot</footer></div><script type="module">
+      </select><label>Kurscode *</label><input id="course" required placeholder="z. B. GLK-68"><button class="success" type="button" id="registerBtn" onclick="doRegister()">Registrieren</button><a class="btn secondary" href="../login/">Ich habe schon ein Profil</a><div id="registerResult"></div></form></section><footer>Â© SprachPilot</footer></div><script type="module">
 import { registerStudent, $, safeText } from "../js/auth.js?v=step133";
 
 function showMsg(html){
@@ -57,18 +57,18 @@ window.doRegister = async function(){
   const kurs=$("course")?.value.trim() || "";
 
   if(!vorname || !nachname || !email || !muttersprache || !kurs){
-    showMsg('<div class="no">Bitte alle Felder ausfüllen.</div>');
+    showMsg('<div class="no">Bitte alle Felder ausfÃ¼llen.</div>');
     return;
   }
 
   try{
-    if(btn){btn.disabled=true;btn.textContent="Registrierung läuft...";}
-    showMsg('<div class="ok">Kurscode wird geprüft...</div>');
+    if(btn){btn.disabled=true;btn.textContent="Registrierung lÃ¤uft...";}
+    showMsg('<div class="ok">Kurscode wird geprÃ¼ft...</div>');
 
     await registerStudent({vorname,nachname,email,muttersprache,kurs});
 
     showMsg('<div class="ok">Registrierung erfolgreich. Du kommst jetzt zur Startseite.</div>');
-    // Schülerregistrierung endet bewusst auf der Startseite, niemals beim Lehrerlogin.
+    // SchÃ¼lerregistrierung endet bewusst auf der Startseite, niemals beim Lehrerlogin.
     setTimeout(()=>{ location.href="/index.html"; }, 500);
 
   }catch(err){
@@ -77,17 +77,19 @@ window.doRegister = async function(){
       showMsg(`<div class="no">Dieser Kurscode existiert nicht: ${safeText(kurs)}</div>`);
     }else if(err.message==="STUDENT_EXISTS"){
       showMsg('<div class="no">Dieses Profil existiert schon. Bitte einloggen.</div>');
+    }else if(err.message==="RESERVED_COURSE_CODE"){
+      showMsg('<div class="no">Dieser Kurscode ist fÃ¼r LehrkrÃ¤fte reserviert. SchÃ¼ler kÃ¶nnen sich damit nicht registrieren.</div>');
     }else if(String(err.message||"").includes("Missing or insufficient permissions")){
       showMsg('<div class="no">Firebase-Regeln blockieren die Registrierung.</div>');
     }else{
-      showMsg(`<div class="no">Registrierung nicht möglich: ${safeText(err.message||"Unbekannter Fehler")}</div>`);
+      showMsg(`<div class="no">Registrierung nicht mÃ¶glich: ${safeText(err.message||"Unbekannter Fehler")}</div>`);
     }
   }finally{
     if(btn){btn.disabled=false;btn.textContent="Registrieren";}
   }
 };
 
-// Extra Schutz: Falls jemand Enter drückt, kein normales Neuladen.
+// Extra Schutz: Falls jemand Enter drÃ¼ckt, kein normales Neuladen.
 const form=$("registerForm");
 if(form){
   form.addEventListener("submit", e=>{
