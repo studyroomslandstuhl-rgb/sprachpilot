@@ -51,4 +51,9 @@ function conjugationTask(){
   $("app").innerHTML=`<h2>Konjugieren</h2>${taskProgressHtml("konjugieren","Konjugieren")}${imageBox(v)}<p class="small">Schreibe die richtige Verbform.</p><div class="assessment-card"><div class="german-word sentence-gap">${safeText(conjugationSentence(v,subj))}</div></div><input id="conjInput" placeholder="Verbform schreiben"><button class="success" onclick="checkConjugation('${safeText(v)}')">Prüfen</button><div id="fb"></div>`;
   renderAndHydrate();setTimeout(()=>$("conjInput")?.focus(),50);
 }
-function checkConjugation(v){const subj=state.currentConj&&state.currentConj.v===v?state.currentConj.subj:CONJ_SUBJECTS[0];const sol=conjugationSolution(v,subj);const good=clean($("conjInput").value)===clean(sol);$("fb").innerHTML=good?"<div class='ok'>Richtig.</div>":`<div class='no'>Noch nicht. Lösung: <strong>${safeText(sol)}</strong></div>`;addEncounter(v,"konjugieren",good);finishQueuedVerb("konjugieren",v,good);setTimeout(conjugationTask,900)}
+function checkConjugation(v){
+  const subj=state.currentConj&&state.currentConj.v===v?state.currentConj.subj:CONJ_SUBJECTS[0];
+  const sol=conjugationSolution(v,subj);
+  if(clean($("conjInput").value)===clean(sol)){finishAfterCorrect("konjugieren",v,conjugationTask)}
+  else{taskWrong("konjugieren",sol,"Subjekt und Verbform")}
+}
