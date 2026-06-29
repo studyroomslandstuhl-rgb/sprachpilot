@@ -17,7 +17,7 @@ function render(){
   let itemOpts=mixWithCorrect(item,FURNITURE,4);
   area.innerHTML=progressHtml(file,total)+
   `<div class="question">Höre. Wähle zuerst die Farbe, dann das Möbel.</div>
-   <div class="actions"><button class="btn" onclick="speak('${item.full} ist ${color.word}.')">▶️ Hören</button><button class="btn secondary" onclick="speak('${item.full} ist ${color.word}.',true)">🐢 Langsam</button></div>
+   <div class="actions"><button class="btn" onclick="speak('${item.full} ist ${color.word}.')">▶️ Deutsch hören</button><button class="btn secondary" onclick="speak('${item.full} ist ${color.word}.',true)">🐢 Deutsch langsam</button></div>
    <h3>1. Farbe</h3><div class="options image-grid-4">${colorOpts.map(c=>colorButton(c)).join('')}</div>
    <h3>2. Möbel</h3><div class="options image-grid-4 locked-options" id="itemOptions">${itemOpts.map(it=>itemButton(it)).join('')}</div>
    <div id="fb" class="feedback"></div>`;
