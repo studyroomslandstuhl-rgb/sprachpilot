@@ -42,7 +42,11 @@ function regularForm(v,key){
   return v;
 }
 function conjugatedForm(v,key){return (FULL_FORMS[v]&&FULL_FORMS[v][key])||(IRREGULAR_VERB_FORMS[v]&&IRREGULAR_VERB_FORMS[v][key])||regularForm(v,key)}
-function conjugationSentence(v,subj){const rest=CONJ_EXAMPLES[v]||sentenceForVerb(v).replace(/^[^ ]+ [^ ]+ /,"").replace(/[.!?]$/," ");return `${subj.s} _____ (${v}) ${rest}.`.replace(/\s+/g," ")}
+function capFirst(text){return String(text||"").charAt(0).toUpperCase()+String(text||"").slice(1)}
+function conjugationSentence(v,subj){
+  const rest=(CONJ_EXAMPLES[v]||sentenceForVerb(v).replace(/^[^ ]+ [^ ]+ /,"")).replace(/[.!?]+$/g,"").trim();
+  return `${capFirst(subj.s)} _____ (${v}) ${rest}.`.replace(/\s+/g," ").trim();
+}
 function conjugationSubjectHint(subj){return subj&&subj.note?`<div class="example-box conj-hint">${safeText(subj.note)}</div>`:""}
 function conjugationSolution(v,subj){return conjugatedForm(v,subj.key)}
 function conjugationTask(){

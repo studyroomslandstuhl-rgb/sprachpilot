@@ -4,30 +4,32 @@ function unusedVerbs(){
 }
 function currentAssessmentVerb(){const list=unusedVerbs();return list.length?list[0]:null}
 function startAssessment(){
-  if(state.active.length>=20 && !packageExamPassed()){renderHome();return}
+  normalizeVerbStatusLists();
+  if(currentPracticeVerbs().length && !packageExamPassed()){renderHome();return}
   const appNode=$("app"); if(appNode) appNode.classList.add("card");
   state.phase="assessment";state.revealed=false;state.assessmentStart=Date.now();state.assessmentTries=0;saveState();setVerbHashForPhase("assessment");renderAssessment();
 }
 function renderAssessment(){
   const v=currentAssessmentVerb();
-  if(!v || state.active.length>=20){buildPracticePool();state.phase="home";const appNode=$("app"); if(appNode) appNode.classList.remove("card");saveState();renderHome();return}
+  if(!v || currentAssessmentCount()>=20){buildPracticePool();if(!currentPracticeVerbs().length){state.assessmentBatch=[];resetPackageTasks();}state.phase="home";const appNode=$("app"); if(appNode) appNode.classList.remove("card");saveState();renderHome();return}
   if(state.currentVerb!==v){state.assessmentStart=Date.now();state.assessmentTries=0;state.revealed=false;}
   state.currentVerb=v;saveState();
-  $("app").innerHTML=`<h2>Neue Verben einschätzen</h2><p class="small">Schreibe das deutsche Verb. Schnell + richtig = kann ich. Langsam oder nach Fehler = unsicher. Lösung zeigen oder „Ich weiß es nicht“ = kann ich nicht.</p><div class="assessment-box"><div class="assessment-card"><div class="small">Muttersprache: ${safeText(nativeLang())}</div><div class="native-word">${safeText(nativeWord(v))}</div><div class="assessment-timer">⏱ Ziel: unter ${ASSESSMENT_FAST_SECONDS} Sekunden</div></div><input id="assessmentInput" autocomplete="off" placeholder="Deutsches Verb schreiben …" onkeydown="if(event.key==='Enter')checkAssessmentAnswer()"><div id="assessmentFeedback"></div><div class="actions"><button class="success" onclick="checkAssessmentAnswer()">Kontrollieren</button><button class="warning" onclick="revealAssessmentVerb()">Karte umdrehen / Lösung zeigen</button><button class="danger" onclick="markAssessment('unknown')">Ich weiß es nicht</button></div></div><p class="small">Aktiver Block: ${state.active.length}/20 · Schon eingeschätzt: ${state.known.length+state.unsure.length+state.unknown.length}</p>`;
+  $("app").innerHTML=`<h2>Neue Verben einschätzen</h2><p class="small">Schreibe das deutsche Verb. Schnell + richtig = kann ich. Langsam oder nach Fehler = unsicher. Lösung zeigen oder „Ich weiß es nicht“ = kann ich nicht.</p><div class="assessment-box"><div class="assessment-card"><div class="small">Muttersprache: ${safeText(nativeLang())}</div><div class="native-word">${safeText(nativeWord(v))}</div><div class="assessment-timer">⏱ Ziel: unter ${ASSESSMENT_FAST_SECONDS} Sekunden</div></div><input id="assessmentInput" autocomplete="off" placeholder="Deutsches Verb schreiben …" onkeydown="if(event.key==='Enter')checkAssessmentAnswer()"><div id="assessmentFeedback"></div><div class="actions"><button class="success" onclick="checkAssessmentAnswer()">Kontrollieren</button><button class="warning" onclick="revealAssessmentVerb()">Karte umdrehen / Lösung zeigen</button><button class="danger" onclick="markAssessment('unknown')">Ich weiß es nicht</button></div></div><p class="small">Eingeschätzt in diesem Block: ${currentAssessmentCount()}/20 · Zu üben: ${currentPracticeVerbs().length}</p>`;
   setTimeout(()=>$('assessmentInput')?.focus(),50);
 }
 function addUnique(arr,v){if(!arr.includes(v))arr.push(v)}
-function removeFromAll(v){[state.known,state.unsure,state.unknown,state.active].forEach(a=>{const i=a.indexOf(v);if(i>=0)a.splice(i,1)})}
+function removeFromAll(v){[state.known,state.unsure,state.unknown,state.active,state.learned].forEach(a=>{let i=a.indexOf(v);while(i>=0){a.splice(i,1);i=a.indexOf(v)}})}
 function markAssessment(level){
   const v=state.currentVerb||currentAssessmentVerb();if(!v)return;
   removeFromAll(v);
+  addUnique(state.assessmentBatch,v);
   if(level==="known")addUnique(state.known,v);
-  if(level==="unsure")addUnique(state.unsure,v);
-  if(level==="unknown")addUnique(state.unknown,v);
-  addUnique(state.active,v);
+  if(level==="unsure"){addUnique(state.unsure,v);addUnique(state.active,v)}
+  if(level==="unknown"){addUnique(state.unknown,v);addUnique(state.active,v)}
+  normalizeVerbStatusLists();
   ensureSkillState(v);
   state.assessmentTries=0;state.revealed=false;
-  if(state.active.length>=20||unusedVerbs().length===0){buildPracticePool();state.phase="home";saveState();renderHome();return}
+  if(currentAssessmentCount()>=20||unusedVerbs().length===0){buildPracticePool();if(!currentPracticeVerbs().length){state.assessmentBatch=[];resetPackageTasks();}state.phase="home";saveState();renderHome();return}
   saveState();renderAssessment();
 }
 function checkAssessmentAnswer(){

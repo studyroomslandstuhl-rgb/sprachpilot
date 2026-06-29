@@ -1,5 +1,5 @@
 function buildVerbExamItems(){
-  const verbs=shuffle(state.active||[]);
+  const verbs=shuffle(currentPracticeVerbs());
   const items=[];
   verbs.slice(0,4).forEach(v=>items.push({type:"image_write",v}));
   verbs.slice(4,7).forEach(v=>items.push({type:"listen_write",v}));
