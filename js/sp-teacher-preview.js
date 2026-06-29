@@ -1,6 +1,6 @@
-// SprachPilot: Lehrer-Vorschau fÃ¼r SchÃ¼lerbereiche.
+// SprachPilot: Lehrer-Vorschau für Schülerbereiche.
 // Wichtig: Lehrer-Vorschau ist NUR aktiv, wenn sie explizit aus dem Lehrer-Dashboard gestartet wurde.
-// Ein SchÃ¼lerprofil oder alte lokale Speicherwerte dÃ¼rfen nie automatisch Lehrer-Vorschau aktivieren.
+// Ein Schülerprofil oder alte lokale Speicherwerte dürfen nie automatisch Lehrer-Vorschau aktivieren.
 export function getStoredTeacherPreview(){
   try{
     const preview = JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW") || "null");
@@ -28,14 +28,14 @@ export function isTeacherProfile(profile={}){
 
 export function isStudentProfile(profile={}){
   const role=String(profile.role||profile.typ||profile.type||profile.accountType||profile.loginRole||"").toLowerCase();
-  return profile.isStudent===true || profile.student===true || profile.schueler===true || role==="student" || role==="schueler" || role==="schÃ¼ler";
+  return profile.isStudent===true || profile.student===true || profile.schueler===true || role==="student" || role==="schueler" || role==="schüler";
 }
 
 export function isTeacherPreview(profile={}){
   const preview=getStoredTeacherPreview();
   if(!preview) return false;
 
-  // Wenn ausdrÃ¼cklich ein SchÃ¼lerkontext aktiv ist, alte Vorschau sofort entfernen.
+  // Wenn ausdrücklich ein Schülerkontext aktiv ist, alte Vorschau sofort entfernen.
   const activeRole=String(localStorage.getItem("SP_ACTIVE_ROLE") || "").toLowerCase();
   if(activeRole==="student" || isStudentProfile(profile)){
     clearTeacherPreviewState();
