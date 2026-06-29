@@ -956,3 +956,12 @@ if (typeof window !== "undefined") {
   window.nativeLang = nativeLang;
   window.nativeWord = nativeWord;
 }
+
+
+// Ergänzungen: fehlende Basis-Übersetzungen für Karteikarten
+Object.assign(VERB_TRANSLATIONS["Englisch"], {
+  "essen":"to eat", "sprechen":"to speak", "fahren":"to drive / to go by vehicle", "schlafen":"to sleep", "sehen":"to see", "lesen":"to read", "rufen":"to call", "schreien":"to scream", "träumen":"to dream", "kleben":"to glue", "kosten":"to cost", "schieben":"to push", "ziehen":"to pull", "schenken":"to give as a gift", "füttern":"to feed", "kontrollieren":"to check", "funktionieren":"to work / function", "stehen":"to stand", "bekommen":"to get", "schmecken":"to taste", "bezahlen":"to pay", "empfehlen":"to recommend", "geben":"to give", "backen":"to bake"
+});
+Object.assign(VERB_TRANSLATIONS["Türkisch"], {
+  "zeigen":"göstermek", "reden":"konuşmak", "sagen":"söylemek", "markieren":"işaretlemek", "versuchen":"denemek", "probieren":"tatmak / denemek", "tun":"yapmak", "besuchen":"ziyaret etmek", "reiten":"ata binmek", "drehen":"çevirmek", "greifen":"tutmak", "antworten":"cevap vermek", "kennen":"birini tanımak", "erklären":"açıklamak", "bedeuten":"anlamına gelmek", "notieren":"not almak", "hoffen":"umut etmek", "glauben":"inanmak", "befehlen":"emretmek", "helfen":"yardım etmek", "braten":"kızartmak", "waschen":"yıkamak", "nehmen":"almak", "stehlen":"çalmak", "tragen":"taşımak", "brechen":"kırmak", "laufen":"koşmak", "vergessen":"unutmak", "messen":"ölçmek", "fressen":"yemek (hayvan)", "graben":"kazmak", "schlagen":"vurmak", "sterben":"ölmek", "treffen":"buluşmak / karşılaşmak", "werfen":"atmak", "fangen":"yakalamak", "blasen":"üflemek", "fallen":"düşmek", "saufen":"içmek (hayvan)", "halten":"tutmak", "laden":"şarj etmek / yüklemek", "lassen":"bırakmak", "wachsen":"büyümek", "werben":"reklam yapmak", "raten":"tahmin etmek / tavsiye etmek", "wissen":"bilmek", "stechen":"sokmak", "werden":"olmak", "gratulieren":"tebrik etmek", "gefallen":"hoşuna gitmek", "fehlen":"eksik olmak / özlemek", "mieten":"kiralamak", "vermieten":"kiraya vermek"
+});
