@@ -1,6 +1,6 @@
 // data/verbs.js
 // Zentrale Verbenliste für alle Aufgaben.
-// img entspricht dem Dateinamen in /bilder ohne .png.
+// img entspricht dem Dateinamen in assets/img ohne .png.
 
 const ALL_VERBS = [
   { v: "lieben", img: "lieben" },
