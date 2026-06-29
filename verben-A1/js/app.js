@@ -106,7 +106,7 @@ function statusBox(){
     <div class="circle">${pct}%</div>
     <div class="progress-main">
       <h2>Dein Fortschritt</h2>
-      <div class="small">${packageCount||currentAssessmentCount()} Verben eingeschätzt · ${knownInPackage} ich kann · ${practiceCount} Verben zu üben · ${examTxt}</div>
+      <div class="small">${packageCount||currentAssessmentCount()} Verben eingeschätzt · ${knownInPackage} ich kann · ${practiceCount}/${PRACTICE_TARGET_COUNT} Verben zu üben · ${examTxt}</div>
       <div class="progress"><div class="bar" style="width:${pct}%"></div></div>
       <p class="small">Ziel: alle aktiven Verben in allen Aufgaben üben und die Prüfung mit 100% abschließen.</p>
     </div>
@@ -166,7 +166,7 @@ function renderHome(){
   migrateState();
   preloadActiveImages();
   if(!currentPracticeVerbs().length){
-    $("app").innerHTML=`${statusBox()}<section class="card"><h2>Verben einschätzen</h2><p class="small">Schätze zuerst bis zu 20 neue Verben ein. Danach übst du diese Verben in allen Aufgaben.</p><div class="actions"><button class="btn green" onclick="handleAssessmentClick()">Verben einschätzen</button></div></section>`;
+    $("app").innerHTML=`${statusBox()}<section class="card"><h2>Verben einschätzen</h2><p class="small">Schätze so lange Verben ein, bis 20 Übungsverben vorhanden sind. „Ich kann“-Verben werden gespeichert, aber nicht geübt.</p><div class="actions"><button class="btn green" onclick="handleAssessmentClick()">Verben einschätzen</button></div></section>`;
     saveState();
     return;
   }

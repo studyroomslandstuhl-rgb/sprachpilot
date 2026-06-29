@@ -16,6 +16,7 @@ let state = {
 const VERB_SKILLS=["karteikarte","memory","bild_verb","verb_bild","schreiben","hoeren_schreiben","hoeren_sprechen","bild_sprechen","satz_puzzle","konjugieren"];
 const VERB_SKILL_LABELS={karteikarte:"Karteikarten",memory:"Memory",bild_verb:"Bild → Verb",verb_bild:"Verb → Bild",schreiben:"Schreiben",hoeren_schreiben:"Hören → Schreiben",hoeren_sprechen:"Hören → Sprechen",bild_sprechen:"Bild → Sprechen",satz_puzzle:"Satz-Puzzle",konjugieren:"Konjugieren",pruefung:"Prüfung"};
 const ASSESSMENT_FAST_SECONDS=7;
+const PRACTICE_TARGET_COUNT=20;
 function nativeLang(){return (profile&&profile.muttersprache)||"Englisch"}
 function normalizedNativeLang(){
   const raw=String(nativeLang()||"").trim().toLowerCase();
@@ -36,9 +37,6 @@ function nativeWord(v){
 }
 function storageKey(){return "SP_VERBS_"+(profile?profile.userId||profile.studentId:"guest")}
 function firebaseStudentId(){return profile && (profile.studentId||profile.userId)}
-function canSaveVerbProgress(){return typeof spCanSaveStudentProgress!=="function" || spCanSaveStudentProgress()}
-function verbProgressStore(){return canSaveVerbProgress()?localStorage:sessionStorage}
-function verbProgressKey(key){if(canSaveVerbProgress())return key;const course=(profile&&(profile.courseCode||profile.kurs||profile.kursnummer))||"kurs";return "SP_TEACHER_PREVIEW_PROGRESS_"+course+"_"+key}
 function ensureSkillState(v){state.skillDone[v]=state.skillDone[v]||{};state.skillAttempts[v]=state.skillAttempts[v]||{};state.skillSuccess[v]=state.skillSuccess[v]||{}}
 function migrateState(){
   ["known","unsure","unknown","active","learned","practicePool","archivedPackages","memoryDone","openCards","assessmentBatch","assessed","currentPackageVerbs"].forEach(k=>state[k]=state[k]||[]);
@@ -66,13 +64,16 @@ function normalizeVerbStatusLists(){
   state.assessed=uniqueList(state.assessed);
   state.currentPackageVerbs=uniqueList(state.currentPackageVerbs);
 
+  // Migration/repair for older states: if a package was started before
+  // currentPackageVerbs existed, rebuild the 20-item assessment package from
+  // the saved assessment batch + active verbs + the most recently known verbs.
   const packageSeed=uniqueList([...(state.currentPackageVerbs||[]),...(state.assessmentBatch||[]),...(state.active||[])]);
   if((state.active||[]).length && packageSeed.length<20 && (state.known||[]).length){
     const need=20-packageSeed.length;
     packageSeed.push(...(state.known||[]).slice(-need));
   }
   if(packageSeed.length>state.currentPackageVerbs.length){
-    state.currentPackageVerbs=uniqueList(packageSeed).slice(0,20);
+    state.currentPackageVerbs=uniqueList(packageSeed);
   }
 }
 function currentPracticeVerbs(){
@@ -151,8 +152,8 @@ function loadProfile(){
   if(profileBox){profileBox.innerHTML=`<div class="ok"><strong>${safeText(profile.vorname)} ${safeText(profile.nachname)}</strong><br><span class="small">Kurs: ${safeText(profile.kurs||profile.kursnummer||"")} · Sprache: ${safeText(nativeLang())}</span></div>`}
   return true
 }
-async function loadState(){try{const saved=JSON.parse(verbProgressStore().getItem(verbProgressKey(storageKey()))||"null");if(saved)state={...state,...saved}}catch(e){}migrateState();const sid=firebaseStudentId();if(canSaveVerbProgress()&&sid&&db){try{const snap=await db.collection("progress").doc(sid).get();if(snap.exists){const data=snap.data()||{};if(data.verben&&data.verben.state){state={...state,...data.verben.state};migrateState();verbProgressStore().setItem(verbProgressKey(storageKey()),JSON.stringify(state))}}}catch(e){console.warn("Firebase Laden fehlgeschlagen",e)}}}
-function saveState(){migrateState();verbProgressStore().setItem(verbProgressKey(storageKey()),JSON.stringify(state));if(canSaveVerbProgress())sendProgress()}
+async function loadState(){try{const saved=JSON.parse(localStorage.getItem(storageKey())||"null");if(saved)state={...state,...saved}}catch(e){}migrateState();const sid=firebaseStudentId();if(sid&&db){try{const snap=await db.collection("progress").doc(sid).get();if(snap.exists){const data=snap.data()||{};if(data.verben&&data.verben.state){state={...state,...data.verben.state};migrateState();localStorage.setItem(storageKey(),JSON.stringify(state))}}}catch(e){console.warn("Firebase Laden fehlgeschlagen",e)}}}
+function saveState(){migrateState();localStorage.setItem(storageKey(),JSON.stringify(state));sendProgress()}
 
 const PHASE_HASHES={assessment:"assessment",karteikarte:"karteikarte",memory:"memory",bild_verb:"bild-verb",verb_bild:"verb-bild",schreiben:"schreiben",hoeren_schreiben:"hoeren-schreiben",hoeren_sprechen:"hoeren-sprechen",bild_sprechen:"bild-sprechen",satz_puzzle:"satz-puzzle",konjugieren:"konjugieren",pruefung:"pruefung"};
 const HASH_PHASES=Object.fromEntries(Object.entries(PHASE_HASHES).map(([k,v])=>[v,k]));
@@ -171,7 +172,7 @@ function clearCurrentTask(skill){if(!state.currentTask || !skill || state.curren
 function resetPackageTasks(){state.practicePool=[];state.taskQueues={};state.taskDoneSets={};state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0}}
 function packageExamPassed(){return !!(state.exam&&state.exam.passed&&Number(state.exam.score)===100)}
 function allPracticeTasksDone(){return VERB_SKILLS.every(s=>taskDone(s))}
-function canStartNewAssessment(){return !currentPracticeVerbs().length || packageExamPassed()}
+function canStartNewAssessment(){return currentPracticeVerbs().length<PRACTICE_TARGET_COUNT || packageExamPassed()}
 function completeCurrentPackage(){
   normalizeVerbStatusLists();
   const practiced=currentPracticeVerbs();
@@ -186,8 +187,7 @@ function completeCurrentPackage(){
 }
 function handleAssessmentClick(){
   normalizeVerbStatusLists();
-  if(!currentPracticeVerbs().length && currentAssessmentCount()>=20){state.assessmentBatch=[]; state.currentPackageVerbs=[]; resetPackageTasks(); saveState();}
-  if(currentPracticeVerbs().length && !packageExamPassed()){
+  if(currentPracticeVerbs().length>=PRACTICE_TARGET_COUNT && !packageExamPassed()){
     $("app").innerHTML=`<h2>Neue Verben noch gesperrt</h2><div class="no">Du kannst neue Verben erst einschätzen, wenn die aktuelle Prüfung 100% hat.</div><button class="secondary" onclick="renderHome()">Zur Übersicht</button>`;
     state.phase="home"; saveState(); return;
   }
