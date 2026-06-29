@@ -1,5 +1,5 @@
 function $(id){return document.getElementById(id)}
-function clean(s){return String(s||"").trim().toLowerCase().replace(/[.,!?]/g,"").replace(/ÃŸ/g,"ss").replace(/Ã¤/g,"a").replace(/Ã¶/g,"o").replace(/Ã¼/g,"u").replace(/\s+/g," ")}
+function clean(s){return String(s||"").trim().toLowerCase().replace(/[.,!?]/g,"").replace(/ß/g,"ss").replace(/ä/g,"a").replace(/ö/g,"o").replace(/ü/g,"u").replace(/\s+/g," ")}
 function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/\"/g,"&quot;").replace(/'/g,"&#039;")}
 
@@ -14,19 +14,19 @@ let state = {
 };
 
 const VERB_SKILLS=["karteikarte","memory","bild_verb","verb_bild","schreiben","hoeren_schreiben","hoeren_sprechen","bild_sprechen","satz_puzzle","konjugieren"];
-const VERB_SKILL_LABELS={karteikarte:"Karteikarten",memory:"Memory",bild_verb:"Bild â†’ Verb",verb_bild:"Verb â†’ Bild",schreiben:"Schreiben",hoeren_schreiben:"HÃ¶ren â†’ Schreiben",hoeren_sprechen:"HÃ¶ren â†’ Sprechen",bild_sprechen:"Bild â†’ Sprechen",satz_puzzle:"Satz-Puzzle",konjugieren:"Konjugieren",pruefung:"PrÃ¼fung"};
+const VERB_SKILL_LABELS={karteikarte:"Karteikarten",memory:"Memory",bild_verb:"Bild → Verb",verb_bild:"Verb → Bild",schreiben:"Schreiben",hoeren_schreiben:"Hören → Schreiben",hoeren_sprechen:"Hören → Sprechen",bild_sprechen:"Bild → Sprechen",satz_puzzle:"Satz-Puzzle",konjugieren:"Konjugieren",pruefung:"Prüfung"};
 const ASSESSMENT_FAST_SECONDS=7;
 function nativeLang(){return (profile&&profile.muttersprache)||"Englisch"}
 function normalizedNativeLang(){
   const raw=String(nativeLang()||"").trim().toLowerCase();
   const aliases={
     "english":"Englisch","englisch":"Englisch","en":"Englisch",
-    "russian":"Russisch","russisch":"Russisch","Ñ€ÑƒÑÑÐºÐ¸Ð¹":"Russisch","ru":"Russisch",
-    "ukrainian":"Ukrainisch","ukrainisch":"Ukrainisch","ÑƒÐºÑ€Ð°Ñ—Ð½ÑÑŒÐºÐ°":"Ukrainisch","uk":"Ukrainisch",
-    "arabic":"Arabisch","arabisch":"Arabisch","Ø§Ù„Ø¹Ø±Ø¨ÙŠØ©":"Arabisch","ar":"Arabisch",
-    "turkish":"TÃ¼rkisch","tÃ¼rkisch":"TÃ¼rkisch","turkisch":"TÃ¼rkisch","tÃ¼rkÃ§e":"TÃ¼rkisch","tr":"TÃ¼rkisch",
-    "romanian":"RumÃ¤nisch","rumÃ¤nisch":"RumÃ¤nisch","rumanisch":"RumÃ¤nisch","romÃ¢nÄƒ":"RumÃ¤nisch","ro":"RumÃ¤nisch",
-    "japanese":"Japanisch","japanisch":"Japanisch","æ—¥æœ¬èªž":"Japanisch","ja":"Japanisch"
+    "russian":"Russisch","russisch":"Russisch","русский":"Russisch","ru":"Russisch",
+    "ukrainian":"Ukrainisch","ukrainisch":"Ukrainisch","українська":"Ukrainisch","uk":"Ukrainisch",
+    "arabic":"Arabisch","arabisch":"Arabisch","العربية":"Arabisch","ar":"Arabisch",
+    "turkish":"Türkisch","türkisch":"Türkisch","turkisch":"Türkisch","türkçe":"Türkisch","tr":"Türkisch",
+    "romanian":"Rumänisch","rumänisch":"Rumänisch","rumanisch":"Rumänisch","română":"Rumänisch","ro":"Rumänisch",
+    "japanese":"Japanisch","japanisch":"Japanisch","日本語":"Japanisch","ja":"Japanisch"
   };
   return aliases[raw] || nativeLang();
 }
@@ -68,7 +68,7 @@ const VERB_IMAGE_BASES=[
 ];
 function imageBaseName(v){
   const entry=(typeof ALL_VERBS!=="undefined"?ALL_VERBS:[]).find(x=>x.v===v);
-  return (entry&&entry.img)?String(entry.img):String(v||"").toLowerCase().replaceAll("Ã¤","ae").replaceAll("Ã¶","oe").replaceAll("Ã¼","ue").replaceAll("ÃŸ","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+  return (entry&&entry.img)?String(entry.img):String(v||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
 }
 function imageFileCandidates(v){
   const base=imageBaseName(v);
@@ -110,7 +110,7 @@ function loadProfile(){
     return false
   }
   const profileBox=$("profileBox");
-  if(profileBox){profileBox.innerHTML=`<div class="ok"><strong>${safeText(profile.vorname)} ${safeText(profile.nachname)}</strong><br><span class="small">Kurs: ${safeText(profile.kurs||profile.kursnummer||"")} Â· Sprache: ${safeText(nativeLang())}</span></div>`}
+  if(profileBox){profileBox.innerHTML=`<div class="ok"><strong>${safeText(profile.vorname)} ${safeText(profile.nachname)}</strong><br><span class="small">Kurs: ${safeText(profile.kurs||profile.kursnummer||"")} · Sprache: ${safeText(nativeLang())}</span></div>`}
   return true
 }
 async function loadState(){try{const saved=JSON.parse(verbProgressStore().getItem(verbProgressKey(storageKey()))||"null");if(saved)state={...state,...saved}}catch(e){}migrateState();const sid=firebaseStudentId();if(canSaveVerbProgress()&&sid&&db){try{const snap=await db.collection("progress").doc(sid).get();if(snap.exists){const data=snap.data()||{};if(data.verben&&data.verben.state){state={...state,...data.verben.state};migrateState();verbProgressStore().setItem(verbProgressKey(storageKey()),JSON.stringify(state))}}}catch(e){console.warn("Firebase Laden fehlgeschlagen",e)}}}
@@ -142,7 +142,7 @@ function completeCurrentPackage(){
 }
 function handleAssessmentClick(){
   if(state.active.length && !packageExamPassed()){
-    $("app").innerHTML=`<h2>Neue Verben noch gesperrt</h2><div class="no">Du kannst neue Verben erst einschÃ¤tzen, wenn die aktuelle PrÃ¼fung 100% hat.</div><button class="secondary" onclick="renderHome()">Zur Ãœbersicht</button>`;
+    $("app").innerHTML=`<h2>Neue Verben noch gesperrt</h2><div class="no">Du kannst neue Verben erst einschätzen, wenn die aktuelle Prüfung 100% hat.</div><button class="secondary" onclick="renderHome()">Zur Übersicht</button>`;
     state.phase="home"; saveState(); return;
   }
   if(packageExamPassed()) completeCurrentPackage();
@@ -167,8 +167,8 @@ function ensureAttempt(skill,v){
 function markHelped(skill,v){const t=ensureAttempt(skill,v);t.helped=true;t.hadWrong=true;saveState()}
 function standardFeedback(tries,solution,tip="Form und Schreibweise"){
   if(tries===1)return "Da ist noch ein Fehler.";
-  if(tries===2)return "Tipp: PrÃ¼fe "+tip+".";
-  return "LÃ¶sung: "+solution;
+  if(tries===2)return "Tipp: Prüfe "+tip+".";
+  return "Lösung: "+solution;
 }
 function handleWrongAnswer(skill,v,solution,tip="Form und Schreibweise",fbId="fb"){
   const t=ensureAttempt(skill,v);t.tries+=1;t.hadWrong=true;
@@ -179,7 +179,7 @@ function handleWrongAnswer(skill,v,solution,tip="Form und Schreibweise",fbId="fb
 function handleCorrectAnswer(skill,v,nextFn,delay=600,fbId="fb"){
   const t=ensureAttempt(skill,v);
   const firstTry=!t.hadWrong&&!t.helped;
-  const fb=$(fbId);if(fb)fb.innerHTML=`<div class="ok">Richtig.</div>`;
+  const fb=$("fb");if(fb)fb.innerHTML=`<div class="ok">Richtig.</div>`;
   addEncounter(v,skill,firstTry);
   finishQueuedVerb(skill,v,firstTry);
   setTimeout(nextFn,delay);
