@@ -1,4 +1,4 @@
-// Globaler Schutz: Lehrer-Vorschau darf keine SchÃ¼lerpunkte/Ranglisten/Fortschritte speichern.
+// Globaler Schutz: Lehrer-Vorschau darf keine Schülerpunkte/Ranglisten/Fortschritte speichern.
 // Lehrer-Vorschau ist nur aktiv, wenn sie explizit im Lehrer-Dashboard gestartet wurde.
 (function(){
   function readProfile(){
@@ -9,7 +9,7 @@
   }
   function isStudentProfile(profile){
     const role=roleOf(profile);
-    return profile?.isStudent===true || profile?.student===true || profile?.schueler===true || role==="student" || role==="schueler" || role==="schÃ¼ler";
+    return profile?.isStudent===true || profile?.student===true || profile?.schueler===true || role==="student" || role==="schueler" || role==="schüler";
   }
   function isTeacherProfile(profile){
     const role=roleOf(profile);
@@ -29,12 +29,12 @@
   }
   function activeRole(profile){
     const stored=storedRole();
-    // Die aktive Login-Art entscheidet zuerst. Gleiche E-Mail darf SchÃ¼ler und Lehrer sein.
-    if(["student","schueler","schÃ¼ler"].includes(stored))return "student";
+    // Die aktive Login-Art entscheidet zuerst. Gleiche E-Mail darf Schüler und Lehrer sein.
+    if(["student","schueler","schüler"].includes(stored))return "student";
     if(["teacher","lehrer","admin","owner"].includes(stored))return "teacher";
 
     const profileRole=roleOf(profile);
-    if(["student","schueler","schÃ¼ler"].includes(profileRole))return "student";
+    if(["student","schueler","schüler"].includes(profileRole))return "student";
     if(["teacher","lehrer","admin","owner"].includes(profileRole))return "teacher";
     if(isStudentProfile(profile) || ((profile?.kurs||profile?.kursnummer||profile?.courseCode)&&(profile?.muttersprache||profile?.nativeLanguage||profile?.language)))return "student";
     if(isTeacherProfile(profile))return "teacher";
