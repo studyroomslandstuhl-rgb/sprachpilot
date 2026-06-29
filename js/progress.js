@@ -36,7 +36,7 @@ function getCourse(profile=getProfile()){
   return profile.kurs || profile.kursnummer || profile.courseCode || localStorage.getItem("SP_COURSE_CODE") || "";
 }
 function getName(profile=getProfile()){
-  return [profile.vorname||profile.firstName||profile.name, profile.nachname||profile.lastName].filter(Boolean).join(" ") || profile.displayName || profile.email || "Schüler/in";
+  return [profile.vorname||profile.firstName||profile.name, profile.nachname||profile.lastName].filter(Boolean).join(" ") || profile.displayName || profile.email || "SchÃ¼ler/in";
 }
 function isTeacherPreviewSession(){
   try{
@@ -58,6 +58,31 @@ async function readProgress(studentId=getStudentId()){
   if(!studentId) return {};
   const snap = await getDoc(doc(db,"progress",studentId));
   return snap.exists() ? snap.data() : {};
+}
+function pointNumber(value){
+  const n=Number(value);
+  return Number.isFinite(n) ? n : 0;
+}
+function strongestPointValue(...records){
+  let best=0;
+  records.filter(Boolean).forEach(record=>{
+    best=Math.max(
+      best,
+      pointNumber(record.lifetimePoints),
+      pointNumber(record.pointsTotal),
+      pointNumber(record.punkteGesamt),
+      pointNumber(record.totals?.points)
+    );
+    MODULE_KEYS.forEach(moduleKey=>{
+      const mod=record[moduleKey]||{};
+      Object.values(mod).forEach(topic=>{
+        if(topic && typeof topic==="object" && !Array.isArray(topic)){
+          best=Math.max(best, pointNumber(topic.lifetime?.points), pointNumber(topic.lifetimePoints), pointNumber(topic.pointsTotal));
+        }
+      });
+    });
+  });
+  return best;
 }
 function recalcTotals(progress){
   let points=0, stars=0, progressSum=0, progressCount=0, completedTasks=0, completedExams=0;
@@ -97,6 +122,8 @@ async function writeProgress(next){
   const studentId=getStudentId(profile);
   const kurs=getCourse(profile);
   if(!studentId) return null;
+  let previous={};
+  try{ previous=await readProgress(studentId); }catch(e){ previous={}; }
   next.studentId=studentId;
   next.userId=studentId;
   next.kurs=kurs || next.kurs || "";
@@ -106,13 +133,18 @@ async function writeProgress(next){
   next.lastActive=serverTimestamp();
   next.updatedAt=serverTimestamp();
   next.totals=recalcTotals(next);
+  const preservedPoints=strongestPointValue(previous,next);
+  next.lifetimePoints=preservedPoints;
+  next.pointsTotal=preservedPoints;
+  next.punkteGesamt=preservedPoints;
+  next.totals.points=Math.max(pointNumber(next.totals.points), preservedPoints);
   await setDoc(doc(db,"progress",studentId), next, {merge:true});
   try{ localStorage.setItem("SP_PROGRESS_LAST_SYNC", nowIso()); }catch(e){}
   return next;
 }
 function taskTitleFromFile(file){
   const map={
-    "karteikarten.html":"Karteikarten","hoeren.html":"Hören","artikel-klick.html":"Artikel klicken","artikel.html":"Artikel zuordnen","plural.html":"Plural","bild-wort.html":"Bild → Wort","wort-bild.html":"Wort → Bild","kategorien.html":"Kategorien","dialoge.html":"Dialoge","wo-ist.html":"Wo ist?","ist-hier.html":"Ist hier?","pruefung.html":"Prüfung"
+    "karteikarten.html":"Karteikarten","hoeren.html":"HÃ¶ren","artikel-klick.html":"Artikel klicken","artikel.html":"Artikel zuordnen","plural.html":"Plural","bild-wort.html":"Bild â†’ Wort","wort-bild.html":"Wort â†’ Bild","kategorien.html":"Kategorien","dialoge.html":"Dialoge","wo-ist.html":"Wo ist?","ist-hier.html":"Ist hier?","pruefung.html":"PrÃ¼fung"
   };
   return map[file] || String(file||"Aufgabe").replace(".html","");
 }
@@ -154,7 +186,7 @@ async function recordTaskProgress(payload={}){
     const lifetime={...(topic.lifetime||{})};
     lifetime.points=Number(lifetime.points||0)+pointsDelta;
     lifetime.completedTasks=Math.max(Number(lifetime.completedTasks||0),completedTasks);
-    topic.title=payload.title || topic.title || "A1 Lektion 4 · Thema 2";
+    topic.title=payload.title || topic.title || "A1 Lektion 4 Â· Thema 2";
     topic.moduleTitle=payload.moduleTitle || topic.moduleTitle || "Wortschatz";
     topic.level=payload.level || topic.level || "A1";
     topic.lesson=payload.lesson || topic.lesson || "4";
@@ -262,8 +294,8 @@ async function migrateLegacyLocalProgress(){
     const flag="SP_PROGRESS_LEGACY_MIGRATED_V3";
     if(localStorage.getItem(flag)==="1") return;
     const taskSets=[
-      {key:"SP_L4_T1_V2", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"1", title:"A1 Lektion 4 · Thema 1", files:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","wo-ist.html","ist-hier.html"]},
-      {key:"SP_L4_T2_FINAL_V3", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"2", title:"A1 Lektion 4 · Thema 2", files:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","kategorien.html","dialoge.html"]}
+      {key:"SP_L4_T1_V2", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"1", title:"A1 Lektion 4 Â· Thema 1", files:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","wo-ist.html","ist-hier.html"]},
+      {key:"SP_L4_T2_FINAL_V3", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"2", title:"A1 Lektion 4 Â· Thema 2", files:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","kategorien.html","dialoge.html"]}
     ];
     for(const set of taskSets){
       for(const file of set.files){
@@ -277,8 +309,8 @@ async function migrateLegacyLocalProgress(){
       }
     }
     const exams=[
-      {key:"SP_L4_T1_EXAM_HISTORY_V1", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"1", title:"A1 Lektion 4 · Thema 1"},
-      {key:"SP_L4_T2_EXAM_HISTORY_V1", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"2", title:"A1 Lektion 4 · Thema 2"}
+      {key:"SP_L4_T1_EXAM_HISTORY_V1", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"1", title:"A1 Lektion 4 Â· Thema 1"},
+      {key:"SP_L4_T2_EXAM_HISTORY_V1", module:"wortschatz", moduleTitle:"Wortschatz", level:"A1", lesson:"4", theme:"2", title:"A1 Lektion 4 Â· Thema 2"}
     ];
     for(const ex of exams){
       let hist=[];
