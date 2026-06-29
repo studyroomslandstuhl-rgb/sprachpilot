@@ -5,7 +5,7 @@ function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&l
 
 let profile = null;
 let state = {
-  phase:"assessment", index:0,
+  phase:"home", index:0,
   known:[], unsure:[], unknown:[], active:[], learned:[], practicePool:[], archivedPackages:[],
   weak:{}, currentGame:"", currentVerb:"", currentTask:null, memoryCards:[], memoryDone:[], first:null, lock:false,
   skillDone:{}, skillAttempts:{}, skillSuccess:{}, taskQueues:{}, taskDoneSets:{},
@@ -29,20 +29,73 @@ function migrateState(){
   state.currentTask=state.currentTask||null;
   (state.active||[]).forEach(ensureSkillState);
 }
-const VERB_IMAGE_BASE="assets/img/";
-function imageFileName(v){
+const VERB_IMAGE_BASES=[
+  "assets/img/",
+  "assets/",
+  "../assets/img/",
+  "../assets/",
+  "../../assets/img/",
+  "../../assets/",
+  "/assets/img/",
+  "/assets/",
+  "/sprachpilot/assets/img/",
+  "/sprachpilot/assets/",
+  "https://studyroomslandstuhl-rgb.github.io/sprachpilot/assets/img/",
+  "https://studyroomslandstuhl-rgb.github.io/sprachpilot/assets/",
+  "https://raw.githubusercontent.com/studyroomslandstuhl-rgb/sprachpilot/4f1ebc6391558b144fbad1cfcb18a758d5634160/assets/img/",
+  "https://raw.githubusercontent.com/studyroomslandstuhl-rgb/sprachpilot/4f1ebc6391558b144fbad1cfcb18a758d5634160/assets/",
+  "https://raw.githubusercontent.com/studyroomslandstuhl-rgb/sprachpilot/main/assets/img/",
+  "https://raw.githubusercontent.com/studyroomslandstuhl-rgb/sprachpilot/main/assets/"
+];
+function imageBaseName(v){
   const entry=(typeof ALL_VERBS!=="undefined"?ALL_VERBS:[]).find(x=>x.v===v);
-  const base=(entry&&entry.img)?entry.img:String(v||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
-  return String(base).endsWith(".png")?String(base):String(base)+".png";
+  return (entry&&entry.img)?String(entry.img):String(v||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"");
+}
+function imageFileCandidates(v){
+  const base=imageBaseName(v);
+  if(/\.(png|jpg|jpeg|webp)$/i.test(base)) return [base];
+  return [base+".png",base+".jpg",base+".jpeg",base+".webp"];
 }
 function imageBox(v,small=false){const cls=small?"mem-img-holder":"img-holder";return `<span class="${cls}" data-verb="${safeText(v)}"><span class="image-fallback">Bild</span></span>`}
-function hydrateImages(root=document){root.querySelectorAll("[data-verb]").forEach(box=>{if(box.dataset.loaded==="1")return;box.dataset.loaded="1";const v=box.getAttribute("data-verb");const img=document.createElement("img");img.alt="";img.loading="eager";img.decoding="async";img.src=VERB_IMAGE_BASE+imageFileName(v);img.onerror=()=>{box.innerHTML="<span class='image-fallback'>Bild</span>"};box.textContent="";box.appendChild(img)})}
+function hydrateImages(root=document){
+  root.querySelectorAll("[data-verb]").forEach(box=>{
+    if(box.dataset.loaded==="1")return;
+    box.dataset.loaded="1";
+    const v=box.getAttribute("data-verb");
+    const files=imageFileCandidates(v);
+    const img=document.createElement("img");
+    img.alt=safeText(v);
+    img.loading="eager";
+    img.decoding="async";
+    let basePos=0,filePos=0;
+    const tryNext=()=>{
+      if(filePos>=files.length){filePos=0;basePos++;}
+      if(basePos>=VERB_IMAGE_BASES.length){box.innerHTML="<span class='image-fallback'>Bild fehlt</span>";return;}
+      img.src=VERB_IMAGE_BASES[basePos]+files[filePos++];
+    };
+    img.onerror=tryNext;
+    img.onload=()=>{box.classList.add("image-loaded")};
+    box.textContent="";
+    box.appendChild(img);
+    tryNext();
+  });
+}
 function renderAndHydrate(){setTimeout(()=>hydrateImages(document),20)}
-function loadProfile(){try{profile=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){profile=null}if(!profile){$("profileBox").innerHTML="<div class='no'>Bitte zuerst auf der Startseite registrieren oder einloggen.</div>";$("app").innerHTML="<button onclick=\"location.href='../'\">Zur Startseite</button>";return false}$("profileBox").innerHTML=`<div class="ok"><strong>${safeText(profile.vorname)} ${safeText(profile.nachname)}</strong><br><span class="small">Kurs: ${safeText(profile.kurs||profile.kursnummer||"")} · Sprache: ${safeText(nativeLang())}</span></div>`;return true}
+function loadProfile(){
+  try{profile=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){profile=null}
+  if(!profile){
+    const app=$("app");
+    if(app) app.innerHTML=`<section class="card"><div class="no">Bitte zuerst auf der Startseite registrieren oder einloggen.</div><button onclick="location.href='/index.html'">Zur Startseite</button></section>`;
+    return false
+  }
+  const profileBox=$("profileBox");
+  if(profileBox){profileBox.innerHTML=`<div class="ok"><strong>${safeText(profile.vorname)} ${safeText(profile.nachname)}</strong><br><span class="small">Kurs: ${safeText(profile.kurs||profile.kursnummer||"")} · Sprache: ${safeText(nativeLang())}</span></div>`}
+  return true
+}
 async function loadState(){try{const saved=JSON.parse(localStorage.getItem(storageKey())||"null");if(saved)state={...state,...saved}}catch(e){}migrateState();const sid=firebaseStudentId();if(sid&&db){try{const snap=await db.collection("progress").doc(sid).get();if(snap.exists){const data=snap.data()||{};if(data.verben&&data.verben.state){state={...state,...data.verben.state};migrateState();localStorage.setItem(storageKey(),JSON.stringify(state))}}}catch(e){console.warn("Firebase Laden fehlgeschlagen",e)}}}
 function saveState(){migrateState();localStorage.setItem(storageKey(),JSON.stringify(state));sendProgress()}
 
-function rememberPhase(phase){state.phase=phase;saveState()}
+function rememberPhase(phase){state.phase=phase;const app=$("app");if(app){if(phase==="home")app.classList.remove("card");else app.classList.add("card")}saveState()}
 function clearCurrentTask(skill){if(!state.currentTask || !skill || state.currentTask.skill===skillKey(skill)) state.currentTask=null}
 function resetPackageTasks(){state.practicePool=[];state.taskQueues={};state.taskDoneSets={};state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.first=null;state.lock=false;state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[]}}
 function packageExamPassed(){return !!(state.exam&&state.exam.passed&&Number(state.exam.score)===100)}
