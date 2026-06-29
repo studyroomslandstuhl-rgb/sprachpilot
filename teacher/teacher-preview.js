@@ -36,6 +36,8 @@ const TeacherPreview = {
     localStorage.removeItem("SP_STUDENT_ID");
     localStorage.removeItem("SP_KEEP_LOGGED_IN");
     sessionStorage.setItem("SP_TEACHER_PREVIEW",JSON.stringify(preview));
+    localStorage.setItem("SP_TEACHER_PREVIEW","1");
+    localStorage.setItem("SP_PREVIEW_COURSE",preview.courseCode||preview.kurs||"");
     localStorage.setItem("SP_USER_PROFILE",JSON.stringify(this.previewUser(preview)));
   },
   openAll(){
@@ -72,6 +74,8 @@ const TeacherPreview = {
     location.href="/student-dashboard/index.html?teacherPreview=1&course="+encodeURIComponent(code);
   },
   exit(){
+    localStorage.removeItem("SP_TEACHER_PREVIEW");
+    localStorage.removeItem("SP_PREVIEW_COURSE");
     sessionStorage.removeItem("SP_TEACHER_PREVIEW");
     sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
     sessionStorage.removeItem("SP_PREVIEW_COURSE");
