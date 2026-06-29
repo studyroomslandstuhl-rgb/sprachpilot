@@ -165,8 +165,10 @@ function renderHome(){
   state.currentTask=null;
   migrateState();
   preloadActiveImages();
-  if(!currentPracticeVerbs().length){
-    $("app").innerHTML=`${statusBox()}<section class="card"><h2>Verben einschätzen</h2><p class="small">Schätze so lange Verben ein, bis 20 Übungsverben vorhanden sind. „Ich kann“-Verben werden gespeichert, aber nicht geübt.</p><div class="actions"><button class="btn green" onclick="handleAssessmentClick()">Verben einschätzen</button></div></section>`;
+  const practiceCount=currentPracticeVerbs().length;
+  if(practiceCount<PRACTICE_TARGET_COUNT && !packageExamPassed()){
+    const missing=PRACTICE_TARGET_COUNT-practiceCount;
+    $("app").innerHTML=`${statusBox()}<section class="card"><h2>Verben einschätzen</h2><p class="small">Du brauchst 20 Übungsverben. Aktuell hast du ${practiceCount}/${PRACTICE_TARGET_COUNT}. Schätze weiter ein, bis noch ${missing} Übungsverben dazukommen.</p><div class="actions"><button class="btn green" onclick="handleAssessmentClick()">Verben einschätzen fortsetzen</button></div></section>`;
     saveState();
     return;
   }
