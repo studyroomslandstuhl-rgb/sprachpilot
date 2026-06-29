@@ -20,6 +20,10 @@ function initTaskQueue(skill){
   state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
   const source=(state.practicePool&&state.practicePool.length)?state.practicePool:buildPracticePool();
   const done=new Set(state.taskDoneSets[dKey]);
+  if(Array.isArray(state.taskQueues[qKey])){
+    const allowed=new Set(source);
+    state.taskQueues[qKey]=state.taskQueues[qKey].filter(x=>x&&allowed.has(x.v)&&!done.has(x.v+":"+x.slot));
+  }
   if(!Array.isArray(state.taskQueues[qKey])||!state.taskQueues[qKey].length){
     state.taskQueues[qKey]=shuffle(source.map((v,i)=>({v,slot:i})).filter(x=>!done.has(x.v+":"+x.slot)));
   }

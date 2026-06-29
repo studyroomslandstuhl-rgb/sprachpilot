@@ -91,7 +91,7 @@ function examCard(){
   const passed=state.exam&&state.exam.passed;
   return `<button class="module task-card ${passed?"done-card":""}" ${ready?"onclick=\"startVerbExam()\"":"disabled"}>
     <div><div class="num">11. Prüfung</div></div>
-    <div class="icon big-icon">✅</div>
+    <div class="icon big-icon">⭐</div>
     <p>Prüfe die aktiven Verben.</p>
     <div>
       <div class="progress"><div class="bar" style="width:${passed?100:0}%"></div></div>
@@ -102,6 +102,7 @@ function examCard(){
 }
 
 function renderHome(){
+  try{if(location.hash)history.replaceState({spVerbPhase:"home"},"",location.pathname+location.search)}catch(e){}
   const appNode=$("app"); if(appNode) appNode.classList.remove("card");
   state.phase="home";
   state.currentTask=null;
@@ -148,8 +149,14 @@ async function boot(){
   await loadState();
   renderHeader();
   renderSideMenu();
-  if(!resumePhase())renderHome();
+  const canResume=!!location.hash && location.hash!=="#";
+  if(canResume){ if(!resumePhase())renderHome(); }
+  else { state.phase="home"; state.currentTask=null; saveState(); renderHome(); }
   renderAndHydrate();
 }
 
+window.addEventListener("popstate",()=>{
+  if(!location.hash||location.hash==="#")renderHome();
+  else resumePhase();
+});
 document.addEventListener("DOMContentLoaded",boot);
