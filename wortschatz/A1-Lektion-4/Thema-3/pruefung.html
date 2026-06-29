@@ -1,68 +1,221 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung Thema 3</title><link rel="stylesheet" href="style.css?v=310"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=310"></script><script>
-header('Farben & Adjektive');
-if(!examUnlocked()){
-  area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p>Schließe zuerst alle Aufgaben mit 100% ab.</p><div class="actions"><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>';
-}else startExam();
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Prüfung Thema 3</title>
+  <link rel="stylesheet" href="style.css?v=311">
+</head>
+<body>
+  <div class="container">
+    <header class="topbar"></header>
+    <section class="card"><div id="area"></div></section>
+    <footer>© SprachPilot</footer>
+  </div>
 
-function contrastBody(t){
-  let f=furnitureById(t.item);
-  let wrong=ADJECTIVES.find(x=>simple(x.word)===simple(t.wrong));
-  let right=ADJECTIVES.find(x=>simple(x.word)===simple(t.right));
-  return instruction('Schreibe zwei Sätze mit „nicht“ und „sehr“.')+
-    `<div class="imgrow three-img">${wrong?img(wrong.img,'task-img'):''}${right?img(right.img,'task-img'):''}${img(f.img,'task-img')}</div>
-     <input id="answer" placeholder="Schreiben Sie die Antwort hier">`;
-}
-function gefallenBody(t){
-  let r=reactionById(t.reaction),a=adjById(t.adj);
-  let itemHtml=t.itemImg?img(t.itemImg,'task-img'):img(furnitureById(t.item).img,'task-img');
-  return instruction('Antworten Sie passend zum Smiley und Bild.')+
-    `<div class="imgrow three-img">${itemHtml}<div class="smile-card">${r.emoji}</div>${img(a.img,'task-img')}</div>
-     <input id="answer" placeholder="Schreiben Sie die Antwort hier">`;
-}
-function writingBody(t){
-  return instruction('Schreiben Sie einen Satz zu den Bildern.')+
-    `<div class="imgrow">${t.imgs.map(x=>img(x,'task-img')).join('')}</div>
-     <input id="answer" placeholder="Schreiben Sie die Antwort hier">`;
-}
-function startExam(){
-  let tasks=shuffle([
-    ...WRITING.map(x=>({type:'write',solution:x.text,...x})),
-    ...GEFAELLEN_TASKS.map(x=>({type:'gefallen',solution:x.answer,...x})),
-    ...CONTRAST_TASKS.map(x=>({type:'contrast',solution:x.sentence,...x}))
-  ]).slice(0,20);
-  let pos=0,score=0,max=tasks.length*10;
-  function render(){
-    if(pos>=tasks.length)return finish();
-    let t=tasks[pos], body=t.type==='gefallen'?gefallenBody(t):(t.type==='contrast'?contrastBody(t):writingBody(t));
-    area.innerHTML=`<div class="small">${pos+1} / ${tasks.length}</div>
-      <div class="progress"><div class="bar" style="width:${Math.round(pos/tasks.length*100)}%"></div></div>
-      <div class="question">Schreibe die Antwort.</div>${body}
-      <div class="actions"><button class="btn" onclick="window.checkExam()">Kontrollieren</button></div>
-      <div id="fb" class="feedback"></div>`;
-  }
-  window.checkExam=function(){
-    let t=tasks[pos], sol=t.solution;
-    let ok=isExactSentence(answer.value,sol,false);
-    if(ok){
-      score+=10;
-      fb.innerHTML='<div class="ok">Richtig!</div><div class="actions"><button class="btn green" onclick="window.nextExam()">Weiter</button></div>';
-    }else{
-      fb.innerHTML='<div class="no">Lösung: '+safe(sol)+'</div><div class="actions"><button class="btn green" onclick="window.nextExam()">Weiter</button></div>';
+  <script src="app.js?v=311"></script>
+  <script>
+    header('Farben & Adjektive');
+
+    if (!examUnlocked()) {
+      area.innerHTML = '<div class="finish-box"><div class="question">Prüfung gesperrt</div><p>Schließe zuerst alle Aufgaben mit 100% ab.</p><div class="actions"><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>';
+    } else {
+      startExam();
     }
-  };
-  window.nextExam=function(){pos++;render()};
-  function finish(){
-    let percent=Math.min(100,Math.round(score/max*100));
-    let stars=starsForPercent(percent);
-    let result={score,maxScore:max,percent,stars,date:new Date().toISOString()};
-    let hist=examHistory();hist.push(result);
-    localStorage.setItem('SP_L4_T3_EXAM_HISTORY_V1',JSON.stringify(hist));
-    syncExam(result);
-    area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig!</div>
-      <div class="big">${percent}% erreicht.</div><div>${starsHtml(stars)}</div>
-      <div class="summary-row"><div class="summary-tile">Punkte<br>${score}/${max}</div><div class="summary-tile">Versuch<br>${hist.length}</div></div>
-      <div class="actions finish-actions"><button class="btn" onclick="location.reload()">Nochmal</button><a class="btn green" href="index.html">Zurück zum Thema</a></div></div>`;
-  }
-  render();
-}
-</script></body></html>
+
+    const EXAM_WRITING_TEXTS = [
+      'Der Schrank ist modern.',
+      'Das Sofa ist dunkelrot.',
+      'Der Tisch ist hellblau.',
+      'Der Stuhl ist unbequem.',
+      'Das Bett ist bequem.',
+      'Der Fernseher ist teuer.',
+      'Der Sessel ist dunkelgrün.',
+      'Die Lampe ist hell.',
+      'Die Badewanne ist hellrosa.',
+      'Das Waschbecken ist weiß.'
+    ];
+
+    const EXAM_GEFAELLEN_QUESTIONS = [
+      'Wie gefällt dir der Schrank?',
+      'Wie gefällt dir das Sofa?',
+      'Wie gefällt dir der Stuhl?',
+      'Wie gefällt dir das Bett?',
+      'Wie gefällt dir der Fernseher?',
+      'Wie gefällt dir die Lampe?',
+      'Wie gefallen dir die Stühle?',
+      'Wie gefallen dir die Sofas?',
+      'Wie gefallen dir die Lampen?',
+      'Wie gefallen dir die Betten?'
+    ];
+
+    const EXAM_CONTRAST_SENTENCES = [
+      'Das Sofa ist nicht hell. Es ist sehr dunkel.',
+      'Die Lampe ist nicht dunkel. Sie ist sehr hell.',
+      'Der Sessel ist nicht unbequem. Er ist sehr bequem.',
+      'Der Stuhl ist nicht bequem. Er ist sehr unbequem.',
+      'Das Waschbecken ist nicht schmutzig. Es ist sehr sauber.',
+      'Die Dusche ist nicht schmutzig. Sie ist sehr sauber.',
+      'Der Fernseher ist nicht klein. Er ist sehr groß.',
+      'Der Schrank ist nicht schmal. Er ist sehr breit.',
+      'Das Bett ist nicht alt. Es ist sehr neu.',
+      'Der Tisch ist nicht breit. Er ist sehr schmal.'
+    ];
+
+    function safeExamTasks() {
+      const writing = WRITING
+        .filter(x => EXAM_WRITING_TEXTS.includes(x.text))
+        .map(x => ({ type: 'write', solution: x.text, ...x }));
+
+      const gefallen = GEFAELLEN_TASKS
+        .filter(x => EXAM_GEFAELLEN_QUESTIONS.includes(x.question))
+        .map(x => ({ type: 'gefallen', solution: x.answer, ...x }));
+
+      const contrast = CONTRAST_TASKS
+        .filter(x => EXAM_CONTRAST_SENTENCES.includes(x.sentence))
+        .map(x => ({ type: 'contrast', solution: x.sentence, ...x }));
+
+      return shuffle([
+        ...shuffle(writing).slice(0, 7),
+        ...shuffle(gefallen).slice(0, 7),
+        ...shuffle(contrast).slice(0, 6)
+      ]).slice(0, 20);
+    }
+
+    function pluralItemImage(fileName) {
+      return `
+        <div class="plural-pair" aria-label="Pluralbild">
+          ${img(fileName, 'task-img')}
+          ${img(fileName, 'task-img')}
+        </div>
+      `;
+    }
+
+    function contrastBody(t) {
+      const f = furnitureById(t.item);
+      const wrong = ADJECTIVES.find(x => simple(x.word) === simple(t.wrong));
+      const right = ADJECTIVES.find(x => simple(x.word) === simple(t.right));
+
+      return instruction('Schreibe zwei Sätze mit „nicht“ und „sehr“.') +
+        `<div class="task-instruction small">Bild 1: nicht so. Bild 2: sehr so. Bild 3: Sache.</div>
+         <div class="imgrow three-img">
+           ${wrong ? img(wrong.img, 'task-img') : ''}
+           ${right ? img(right.img, 'task-img') : ''}
+           ${img(f.img, 'task-img')}
+         </div>
+         <input id="answer" autocomplete="off" placeholder="Schreiben Sie die Antwort hier">`;
+    }
+
+    function gefallenBody(t) {
+      const r = reactionById(t.reaction);
+      const a = adjById(t.adj);
+      const itemHtml = t.plural
+        ? pluralItemImage(t.itemImg)
+        : (t.itemImg ? img(t.itemImg, 'task-img') : img(furnitureById(t.item).img, 'task-img'));
+
+      return instruction('Beantworte die Frage passend zum Smiley und Bild.') +
+        `<div class="question exam-subquestion">${safe(t.question)}</div>
+         <div class="imgrow three-img">
+           ${itemHtml}
+           <div class="smile-card">${r.emoji}</div>
+           ${img(a.img, 'task-img')}
+         </div>
+         <input id="answer" autocomplete="off" placeholder="Schreiben Sie die Antwort hier">`;
+    }
+
+    function writingBody(t) {
+      return instruction('Schreibe einen ganzen Satz zu den Bildern.') +
+        `<div class="task-instruction small">Bild 1: Sache. Bild 2: Farbe oder Adjektiv.</div>
+         <div class="imgrow">${t.imgs.map(x => img(x, 'task-img')).join('')}</div>
+         <input id="answer" autocomplete="off" placeholder="Schreiben Sie die Antwort hier">`;
+    }
+
+    function startExam() {
+      const tasks = safeExamTasks();
+      let pos = 0;
+      let score = 0;
+      const max = tasks.length * 10;
+      let answered = false;
+
+      function render() {
+        if (pos >= tasks.length) return finish();
+
+        answered = false;
+        const t = tasks[pos];
+        const body = t.type === 'gefallen'
+          ? gefallenBody(t)
+          : (t.type === 'contrast' ? contrastBody(t) : writingBody(t));
+
+        area.innerHTML = `
+          <div class="small">${pos + 1} / ${tasks.length}</div>
+          <div class="progress"><div class="bar" style="width:${Math.round(pos / tasks.length * 100)}%"></div></div>
+          <div class="question">Schreibe die Antwort.</div>
+          ${body}
+          <div class="actions"><button id="checkBtn" class="btn" onclick="window.checkExam()">Kontrollieren</button></div>
+          <div id="fb" class="feedback"></div>
+        `;
+
+        setTimeout(() => {
+          const input = $('answer');
+          if (input) input.focus();
+        }, 50);
+      }
+
+      window.checkExam = function() {
+        if (answered) return;
+
+        const t = tasks[pos];
+        const sol = t.solution;
+        const input = $('answer');
+        const userAnswer = input ? input.value : '';
+        const ok = isExactSentence(userAnswer, sol, false);
+
+        answered = true;
+        const button = $('checkBtn');
+        if (button) button.disabled = true;
+
+        if (ok) {
+          score += 10;
+          fb.innerHTML = '<div class="ok">Richtig!</div><div class="actions"><button class="btn green" onclick="window.nextExam()">Weiter</button></div>';
+        } else {
+          fb.innerHTML = '<div class="no">Lösung: ' + safe(sol) + '</div><div class="actions"><button class="btn green" onclick="window.nextExam()">Weiter</button></div>';
+        }
+      };
+
+      window.nextExam = function() {
+        pos++;
+        render();
+      };
+
+      function finish() {
+        const percent = Math.min(100, Math.round(score / max * 100));
+        const stars = starsForPercent(percent);
+        const result = { score, maxScore: max, percent, stars, date: new Date().toISOString() };
+        const hist = examHistory();
+        hist.push(result);
+        localStorage.setItem('SP_L4_T3_EXAM_HISTORY_V1', JSON.stringify(hist));
+        syncExam(result);
+
+        area.innerHTML = `
+          <div class="finish-box">
+            <div class="finish-icon">✓</div>
+            <div class="question">Prüfung fertig!</div>
+            <div class="big">${percent}% erreicht.</div>
+            <div>${starsHtml(stars)}</div>
+            <div class="summary-row">
+              <div class="summary-tile">Punkte<br>${score}/${max}</div>
+              <div class="summary-tile">Versuch<br>${hist.length}</div>
+            </div>
+            <div class="actions finish-actions">
+              <button class="btn" onclick="location.reload()">Nochmal</button>
+              <a class="btn green" href="index.html">Zurück zum Thema</a>
+            </div>
+          </div>
+        `;
+      }
+
+      render();
+    }
+  </script>
+</body>
+</html>
