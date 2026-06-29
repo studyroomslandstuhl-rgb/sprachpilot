@@ -11,7 +11,7 @@ function render(){
   `<div class="imgrow">${t.imgs.map(x=>img(x,'task-img')).join('')}</div>
    <input id="answer" placeholder="Schreiben Sie die Antwort hier">
    <div class="actions">
-     <button class="btn mic-btn" onclick="startMic(this,(v)=>{answer.value=v;check(v,true)})">🎤 Sprechen</button>
+     <button class="btn mic-btn" onclick="startMic(this,(v)=>{answer.value=v;check(v,true)})">🎤 Deutsch sprechen</button>
      <button class="btn" onclick="check(answer.value,false)">Kontrollieren</button>
    </div>
    <div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
