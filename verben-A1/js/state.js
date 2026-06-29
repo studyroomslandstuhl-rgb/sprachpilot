@@ -6,7 +6,7 @@ function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&l
 let profile = null;
 let state = {
   phase:"home", index:0,
-  known:[], unsure:[], unknown:[], active:[], learned:[], practicePool:[], archivedPackages:[],
+  known:[], unsure:[], unknown:[], active:[], learned:[], practicePool:[], archivedPackages:[], assessmentBatch:[], assessed:[], currentPackageVerbs:[],
   weak:{}, currentGame:"", currentVerb:"", currentTask:null, memoryCards:[], memoryDone:[], first:null, openCards:[], lock:false,
   skillDone:{}, skillAttempts:{}, skillSuccess:{}, taskQueues:{}, taskDoneSets:{},
   alertsShown:{}, taskRewardsShown:{}, packageNo:1, assessmentStart:0, assessmentTries:0, revealed:false,
@@ -41,13 +41,51 @@ function verbProgressStore(){return canSaveVerbProgress()?localStorage:sessionSt
 function verbProgressKey(key){if(canSaveVerbProgress())return key;const course=(profile&&(profile.courseCode||profile.kurs||profile.kursnummer))||"kurs";return "SP_TEACHER_PREVIEW_PROGRESS_"+course+"_"+key}
 function ensureSkillState(v){state.skillDone[v]=state.skillDone[v]||{};state.skillAttempts[v]=state.skillAttempts[v]||{};state.skillSuccess[v]=state.skillSuccess[v]||{}}
 function migrateState(){
-  ["known","unsure","unknown","active","learned","practicePool","archivedPackages","memoryDone","openCards"].forEach(k=>state[k]=state[k]||[]);
+  ["known","unsure","unknown","active","learned","practicePool","archivedPackages","memoryDone","openCards","assessmentBatch","assessed","currentPackageVerbs"].forEach(k=>state[k]=state[k]||[]);
   ["weak","skillDone","skillAttempts","skillSuccess","taskQueues","taskDoneSets","alertsShown","taskRewardsShown"].forEach(k=>state[k]=state[k]||{});
   state.packageNo=state.packageNo||1;
   state.exam=state.exam||{passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0};
   state.currentTask=state.currentTask||null;
   state.assessmentTries=state.assessmentTries||0;
+  state.assessmentBatch=Array.isArray(state.assessmentBatch)?state.assessmentBatch:[];
+  state.assessed=Array.isArray(state.assessed)?state.assessed:[];
+  state.currentPackageVerbs=Array.isArray(state.currentPackageVerbs)?state.currentPackageVerbs:[];
+  if(!state.currentPackageVerbs.length && state.assessmentBatch.length) state.currentPackageVerbs=[...state.assessmentBatch];
+  normalizeVerbStatusLists();
   (state.active||[]).forEach(ensureSkillState);
+}
+
+function uniqueList(arr){return [...new Set((arr||[]).filter(Boolean))]}
+function normalizeVerbStatusLists(){
+  state.known=uniqueList(state.known);
+  state.unsure=uniqueList(state.unsure).filter(v=>!state.known.includes(v));
+  state.unknown=uniqueList(state.unknown).filter(v=>!state.known.includes(v)&&!state.unsure.includes(v));
+  state.learned=uniqueList(state.learned);
+  state.active=uniqueList(state.active).filter(v=>!state.known.includes(v)&&!state.learned.includes(v)&&((state.unsure||[]).includes(v)||(state.unknown||[]).includes(v)));
+  state.assessmentBatch=uniqueList(state.assessmentBatch);
+  state.assessed=uniqueList(state.assessed);
+  state.currentPackageVerbs=uniqueList(state.currentPackageVerbs);
+
+  const packageSeed=uniqueList([...(state.currentPackageVerbs||[]),...(state.assessmentBatch||[]),...(state.active||[])]);
+  if((state.active||[]).length && packageSeed.length<20 && (state.known||[]).length){
+    const need=20-packageSeed.length;
+    packageSeed.push(...(state.known||[]).slice(-need));
+  }
+  if(packageSeed.length>state.currentPackageVerbs.length){
+    state.currentPackageVerbs=uniqueList(packageSeed).slice(0,20);
+  }
+}
+function currentPracticeVerbs(){
+  normalizeVerbStatusLists();
+  return (state.active||[]).filter(v=>(state.unsure||[]).includes(v)||(state.unknown||[]).includes(v));
+}
+function currentPackageAllVerbs(){
+  normalizeVerbStatusLists();
+  return uniqueList([...(state.currentPackageVerbs||[]), ...(state.assessmentBatch||[])]);
+}
+function currentAssessmentCount(){
+  normalizeVerbStatusLists();
+  return (state.assessmentBatch&&state.assessmentBatch.length)||0;
 }
 
 const VERB_IMAGE_BASES=[
@@ -133,15 +171,23 @@ function clearCurrentTask(skill){if(!state.currentTask || !skill || state.curren
 function resetPackageTasks(){state.practicePool=[];state.taskQueues={};state.taskDoneSets={};state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0}}
 function packageExamPassed(){return !!(state.exam&&state.exam.passed&&Number(state.exam.score)===100)}
 function allPracticeTasksDone(){return VERB_SKILLS.every(s=>taskDone(s))}
-function canStartNewAssessment(){return !state.active.length || packageExamPassed()}
+function canStartNewAssessment(){return !currentPracticeVerbs().length || packageExamPassed()}
 function completeCurrentPackage(){
-  if(!state.active.length)return;
-  state.active.forEach(v=>{if(!state.learned.includes(v))state.learned.push(v); if(!state.known.includes(v))state.known.push(v)});
-  state.archivedPackages.push({packageNo:state.packageNo||1,verbs:[...state.active],completedAt:new Date().toISOString(),exam:state.exam});
-  state.active=[]; resetPackageTasks(); state.packageNo=(state.packageNo||1)+1; saveState();
+  normalizeVerbStatusLists();
+  const practiced=currentPracticeVerbs();
+  practiced.forEach(v=>{
+    if(!state.learned.includes(v))state.learned.push(v);
+    if(!state.known.includes(v))state.known.push(v);
+    state.unsure=state.unsure.filter(x=>x!==v);
+    state.unknown=state.unknown.filter(x=>x!==v);
+  });
+  state.archivedPackages.push({packageNo:state.packageNo||1,verbs:currentPackageAllVerbs(),practiced,completedAt:new Date().toISOString(),exam:state.exam});
+  state.active=[]; state.assessmentBatch=[]; state.currentPackageVerbs=[]; resetPackageTasks(); state.packageNo=(state.packageNo||1)+1; saveState();
 }
 function handleAssessmentClick(){
-  if(state.active.length && !packageExamPassed()){
+  normalizeVerbStatusLists();
+  if(!currentPracticeVerbs().length && currentAssessmentCount()>=20){state.assessmentBatch=[]; state.currentPackageVerbs=[]; resetPackageTasks(); saveState();}
+  if(currentPracticeVerbs().length && !packageExamPassed()){
     $("app").innerHTML=`<h2>Neue Verben noch gesperrt</h2><div class="no">Du kannst neue Verben erst einschätzen, wenn die aktuelle Prüfung 100% hat.</div><button class="secondary" onclick="renderHome()">Zur Übersicht</button>`;
     state.phase="home"; saveState(); return;
   }
@@ -149,7 +195,7 @@ function handleAssessmentClick(){
   startAssessment();
 }
 
-function activeVerbPool(){return (state.active&&state.active.length)?[...state.active]:[]}
+function activeVerbPool(){return currentPracticeVerbs()}
 function optionVerbs(correct,count=4){
   const pool=activeVerbPool().filter(v=>v!==correct);
   return shuffle([correct,...shuffle(pool).slice(0,Math.max(0,count-1))]);
@@ -179,7 +225,7 @@ function handleWrongAnswer(skill,v,solution,tip="Form und Schreibweise",fbId="fb
 function handleCorrectAnswer(skill,v,nextFn,delay=600,fbId="fb"){
   const t=ensureAttempt(skill,v);
   const firstTry=!t.hadWrong&&!t.helped;
-  const fb=$("fb");if(fb)fb.innerHTML=`<div class="ok">Richtig.</div>`;
+  const fb=$(fbId);if(fb)fb.innerHTML=`<div class="ok">Richtig.</div>`;
   addEncounter(v,skill,firstTry);
   finishQueuedVerb(skill,v,firstTry);
   setTimeout(nextFn,delay);
