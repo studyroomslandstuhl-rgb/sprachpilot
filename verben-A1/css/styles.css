@@ -221,3 +221,7 @@ footer { text-align:center; color:rgba(255,255,255,.9); margin:24px 0; }
   .quiz-options.image-options .quiz-option { min-height:135px; padding:8px; }
   .quiz-options.image-options .mem-img-holder img { max-width:110px; max-height:110px; }
 }
+
+#accountStrip, .account-strip { display:none !important; }
+.topbar { background:#ffffff !important; }
+.brand .subtitle { text-decoration:none !important; }
