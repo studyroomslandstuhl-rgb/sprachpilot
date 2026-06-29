@@ -36,6 +36,9 @@ function nativeWord(v){
 }
 function storageKey(){return "SP_VERBS_"+(profile?profile.userId||profile.studentId:"guest")}
 function firebaseStudentId(){return profile && (profile.studentId||profile.userId)}
+function canSaveVerbProgress(){return typeof spCanSaveStudentProgress!=="function" || spCanSaveStudentProgress()}
+function verbProgressStore(){return canSaveVerbProgress()?localStorage:sessionStorage}
+function verbProgressKey(key){if(canSaveVerbProgress())return key;const course=(profile&&(profile.courseCode||profile.kurs||profile.kursnummer))||"kurs";return "SP_TEACHER_PREVIEW_PROGRESS_"+course+"_"+key}
 function ensureSkillState(v){state.skillDone[v]=state.skillDone[v]||{};state.skillAttempts[v]=state.skillAttempts[v]||{};state.skillSuccess[v]=state.skillSuccess[v]||{}}
 function migrateState(){
   ["known","unsure","unknown","active","learned","practicePool","archivedPackages","memoryDone","openCards","assessmentBatch","assessed","currentPackageVerbs"].forEach(k=>state[k]=state[k]||[]);
@@ -63,9 +66,6 @@ function normalizeVerbStatusLists(){
   state.assessed=uniqueList(state.assessed);
   state.currentPackageVerbs=uniqueList(state.currentPackageVerbs);
 
-  // Migration/repair for older states: if a package was started before
-  // currentPackageVerbs existed, rebuild the 20-item assessment package from
-  // the saved assessment batch + active verbs + the most recently known verbs.
   const packageSeed=uniqueList([...(state.currentPackageVerbs||[]),...(state.assessmentBatch||[]),...(state.active||[])]);
   if((state.active||[]).length && packageSeed.length<20 && (state.known||[]).length){
     const need=20-packageSeed.length;
@@ -151,8 +151,8 @@ function loadProfile(){
   if(profileBox){profileBox.innerHTML=`<div class="ok"><strong>${safeText(profile.vorname)} ${safeText(profile.nachname)}</strong><br><span class="small">Kurs: ${safeText(profile.kurs||profile.kursnummer||"")} · Sprache: ${safeText(nativeLang())}</span></div>`}
   return true
 }
-async function loadState(){try{const saved=JSON.parse(localStorage.getItem(storageKey())||"null");if(saved)state={...state,...saved}}catch(e){}migrateState();const sid=firebaseStudentId();if(sid&&db){try{const snap=await db.collection("progress").doc(sid).get();if(snap.exists){const data=snap.data()||{};if(data.verben&&data.verben.state){state={...state,...data.verben.state};migrateState();localStorage.setItem(storageKey(),JSON.stringify(state))}}}catch(e){console.warn("Firebase Laden fehlgeschlagen",e)}}}
-function saveState(){migrateState();localStorage.setItem(storageKey(),JSON.stringify(state));sendProgress()}
+async function loadState(){try{const saved=JSON.parse(verbProgressStore().getItem(verbProgressKey(storageKey()))||"null");if(saved)state={...state,...saved}}catch(e){}migrateState();const sid=firebaseStudentId();if(canSaveVerbProgress()&&sid&&db){try{const snap=await db.collection("progress").doc(sid).get();if(snap.exists){const data=snap.data()||{};if(data.verben&&data.verben.state){state={...state,...data.verben.state};migrateState();verbProgressStore().setItem(verbProgressKey(storageKey()),JSON.stringify(state))}}}catch(e){console.warn("Firebase Laden fehlgeschlagen",e)}}}
+function saveState(){migrateState();verbProgressStore().setItem(verbProgressKey(storageKey()),JSON.stringify(state));if(canSaveVerbProgress())sendProgress()}
 
 const PHASE_HASHES={assessment:"assessment",karteikarte:"karteikarte",memory:"memory",bild_verb:"bild-verb",verb_bild:"verb-bild",schreiben:"schreiben",hoeren_schreiben:"hoeren-schreiben",hoeren_sprechen:"hoeren-sprechen",bild_sprechen:"bild-sprechen",satz_puzzle:"satz-puzzle",konjugieren:"konjugieren",pruefung:"pruefung"};
 const HASH_PHASES=Object.fromEntries(Object.entries(PHASE_HASHES).map(([k,v])=>[v,k]));

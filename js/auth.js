@@ -3,6 +3,7 @@ export function $(id){return document.getElementById(id)}
 export function safeText(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;").replace(/'/g,"&#039;")}
 export function normText(s){return String(s||"").trim().toLowerCase()}
 export function normId(s){return String(s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
+const RESERVED_COURSE_CODES = ["ALLE","ALLEE","ALL_ACCESS","LEHRER","TEACHER"];
 
 export function clearTeacherPreviewState(){
   try{
@@ -32,10 +33,10 @@ export function startTeacherSession(){
   setLoginRole("teacher");
 }
 export function getActiveRole(){
-  // Die aktive Login-Art entscheidet. Gleiche E-Mail darf Schüler UND Lehrer sein.
+  // Die aktive Login-Art entscheidet. Gleiche E-Mail darf SchÃ¼ler UND Lehrer sein.
   const stored=String(localStorage.getItem("SP_LOGIN_ROLE")||localStorage.getItem("SP_ACTIVE_ROLE")||"").toLowerCase();
   if(["teacher","lehrer","admin","owner"].includes(stored)) return "teacher";
-  if(["student","schueler","schüler"].includes(stored)) return "student";
+  if(["student","schueler","schÃ¼ler"].includes(stored)) return "student";
 
   const p=getActiveProfile();
   const profileRole=String(p?.role||p?.loginRole||p?.type||p?.accountType||"").toLowerCase();
@@ -106,7 +107,7 @@ export async function loadCourse(courseCode){
    raw.toLowerCase().replace(/\s+/g,"")
  ].filter(Boolean))];
 
- // 1) Direkte Dokument-ID-Varianten prüfen
+ // 1) Direkte Dokument-ID-Varianten prÃ¼fen
  for(const c of variants){
    try{
      const snap=await getDoc(doc(db,"courses",c));
@@ -129,7 +130,7 @@ export async function loadCourse(courseCode){
    }
  }
 
- // 3) Letzter Fallback für alte Kursdokumente: kleine Liste normalisiert vergleichen
+ // 3) Letzter Fallback fÃ¼r alte Kursdokumente: kleine Liste normalisiert vergleichen
  try{
    const snap=await getDocs(query(collection(db,"courses"),limit(500)));
    const wanted=raw.toLowerCase().replace(/\s+/g,"");
@@ -192,7 +193,7 @@ export async function findStudentByEmailAndCourse(email,courseInput,courseDocId=
   const courseNorm=courseRaw.toLowerCase();
   const courseDocNorm=courseDocRaw.toLowerCase();
 
-  // 1) Direkte Dokument-ID-Varianten prüfen
+  // 1) Direkte Dokument-ID-Varianten prÃ¼fen
   const possibleIds=[
     makeStudentId(emailNorm,courseRaw),
     makeStudentId(emailNorm,courseNorm),
@@ -258,7 +259,7 @@ export async function findStudentByEmailAndCourse(email,courseInput,courseDocId=
     console.warn("student email fallback failed", e);
   }
 
-  // 4) Letzter Fallback für alte Daten: kleine Liste lesen und normalisiert vergleichen
+  // 4) Letzter Fallback fÃ¼r alte Daten: kleine Liste lesen und normalisiert vergleichen
   try{
     const snap=await getDocs(query(collection(db,"students"),limit(500)));
     const match=snap.docs.find(d=>{
@@ -279,9 +280,12 @@ export async function findStudentByEmailAndCourse(email,courseInput,courseDocId=
 
 export async function registerStudent({vorname,nachname,email,muttersprache,kurs}){
  const emailNorm=normText(email);
+ const requestedCourse=String(kurs||"").trim().toUpperCase();
+ if(RESERVED_COURSE_CODES.includes(requestedCourse)) throw new Error("RESERVED_COURSE_CODE");
  const courseLoaded=await loadCourse(kurs);
  if(!courseLoaded) throw new Error("COURSE_NOT_FOUND");
  const courseCode=courseLoaded.data?.courseCode || courseLoaded.data?.code || courseLoaded.data?.kurs || courseLoaded.data?.kursnummer || courseLoaded.id;
+ if(RESERVED_COURSE_CODES.includes(String(courseCode||"").trim().toUpperCase()) || RESERVED_COURSE_CODES.includes(String(courseLoaded.id||"").trim().toUpperCase())) throw new Error("RESERVED_COURSE_CODE");
  const existing=await findStudentByEmailAndCourse(emailNorm,courseCode,courseLoaded.id);
  if(existing) throw new Error("STUDENT_EXISTS");
  const studentId=makeStudentId(emailNorm,courseLoaded.id);
@@ -345,8 +349,8 @@ export async function updateStudentProfile({vorname,nachname,email,muttersprache
   const p=getActiveProfile();
   if(!p) throw new Error("NOT_LOGGED_IN");
 
-  // Profilbearbeitung ist nur für echte Schüler-Sessions gedacht.
-  // Lehrer-Vorschau darf hier keine Schülerdaten überschreiben.
+  // Profilbearbeitung ist nur fÃ¼r echte SchÃ¼ler-Sessions gedacht.
+  // Lehrer-Vorschau darf hier keine SchÃ¼lerdaten Ã¼berschreiben.
   const activeRole=getActiveRole();
   if(activeRole!=="student") throw new Error("NOT_STUDENT_SESSION");
 
@@ -370,7 +374,7 @@ export async function updateStudentProfile({vorname,nachname,email,muttersprache
   let docId=p.docId || p.studentId || p.userId || "";
 
   // Alte Profile hatten manchmal keine docId oder eine andere Dokument-ID.
-  // Dann suchen wir den Schüler robust über E-Mail + Kurs.
+  // Dann suchen wir den SchÃ¼ler robust Ã¼ber E-Mail + Kurs.
   if(!docId){
     const found=await findStudentByEmailAndCourse(oldEmail || emailNorm, courseCode, courseDocId);
     if(found) docId=found.id;
@@ -384,7 +388,7 @@ export async function updateStudentProfile({vorname,nachname,email,muttersprache
   const studentId=p.studentId || p.userId || docId;
 
   // setDoc mit merge statt updateDoc: So scheitert Speichern nicht, wenn ein altes
-  // Schülerprofil zwar lokal vorhanden ist, aber das Dokument in Firebase anders/noch nicht existiert.
+  // SchÃ¼lerprofil zwar lokal vorhanden ist, aber das Dokument in Firebase anders/noch nicht existiert.
   await setDoc(doc(db,"students",docId),{
     ...updateData,
     docId,
@@ -457,7 +461,7 @@ export function renderAccountStrip(rootId="accountStrip"){
     const tp=(()=>{try{return JSON.parse(localStorage.getItem("SP_TEACHER_PROFILE")||"{}") }catch(e){return {}}})();
     const preview=makeTeacherPreviewProfile();
     const name=[tp.firstName,tp.lastName].filter(Boolean).join(" ") || tp.email || "Lehrkraft";
-    const suffix=preview ? " · Lehrer-Vorschau" : " · Lehrerzugang";
+    const suffix=preview ? " Â· Lehrer-Vorschau" : " Â· Lehrerzugang";
     el.innerHTML=`
       <div class="who">${safeText(name)}${suffix}</div>
       <div class="account-links">
@@ -481,7 +485,7 @@ export function renderAccountStrip(rootId="accountStrip"){
 
   el.innerHTML=`
     <div class="who">
-      ${safeText(p.vorname||"")} ${safeText(p.nachname||"")} · ${safeText(p.kurs||"")}
+      ${safeText(p.vorname||"")} ${safeText(p.nachname||"")} Â· ${safeText(p.kurs||"")}
     </div>
     <div class="account-links">
       <a href="${dashboardHref()}">Dashboard</a>

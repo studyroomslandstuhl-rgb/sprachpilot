@@ -77,6 +77,8 @@ window.doRegister = async function(){
       showMsg(`<div class="no">Dieser Kurscode existiert nicht: ${safeText(kurs)}</div>`);
     }else if(err.message==="STUDENT_EXISTS"){
       showMsg('<div class="no">Dieses Profil existiert schon. Bitte einloggen.</div>');
+    }else if(err.message==="RESERVED_COURSE_CODE"){
+      showMsg('<div class="no">Dieser Kurscode ist für Lehrkräfte reserviert. Schüler können sich damit nicht registrieren.</div>');
     }else if(String(err.message||"").includes("Missing or insufficient permissions")){
       showMsg('<div class="no">Firebase-Regeln blockieren die Registrierung.</div>');
     }else{

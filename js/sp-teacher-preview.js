@@ -13,6 +13,8 @@ export function getStoredTeacherPreview(){
 
 export function clearTeacherPreviewState(){
   try{
+    localStorage.removeItem("SP_TEACHER_PREVIEW");
+    localStorage.removeItem("SP_PREVIEW_COURSE");
     sessionStorage.removeItem("SP_TEACHER_PREVIEW");
     sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
     sessionStorage.removeItem("SP_PREVIEW_COURSE");
@@ -65,6 +67,8 @@ export function enterTeacherCoursePreview(course){
   localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
   localStorage.removeItem("SP_STUDENT_PROFILE");
   localStorage.removeItem("SP_STUDENT_ID");
+  localStorage.setItem("SP_TEACHER_PREVIEW","1");
+  localStorage.setItem("SP_PREVIEW_COURSE",preview.courseCode||preview.kurs||"");
   sessionStorage.setItem("SP_TEACHER_PREVIEW",JSON.stringify(preview));
 
   let teacher={};

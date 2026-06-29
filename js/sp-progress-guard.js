@@ -17,8 +17,10 @@
   }
   function clearTeacherPreviewState(){
     try{
+      localStorage.removeItem("SP_TEACHER_PREVIEW");
       sessionStorage.removeItem("SP_TEACHER_PREVIEW");
       sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
+      localStorage.removeItem("SP_PREVIEW_COURSE");
       sessionStorage.removeItem("SP_PREVIEW_COURSE");
     }catch(e){}
   }
@@ -39,7 +41,19 @@
     return "student";
   }
   function readPreview(){
-    try{return JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW")||"null")}catch(e){return null}
+    try{
+      const local=localStorage.getItem("SP_TEACHER_PREVIEW");
+      if(local==="1") return {teacherPreview:true,courseCode:localStorage.getItem("SP_PREVIEW_COURSE")||""};
+      if(local && local!=="0"){
+        const parsed=JSON.parse(local);
+        if(parsed && parsed.teacherPreview===true) return parsed;
+      }
+    }catch(e){}
+    try{
+      const session=sessionStorage.getItem("SP_TEACHER_PREVIEW");
+      if(session==="1") return {teacherPreview:true,courseCode:sessionStorage.getItem("SP_PREVIEW_COURSE")||""};
+      return JSON.parse(session||"null");
+    }catch(e){return null}
   }
   function isPreview(){
     const preview=readPreview();
@@ -56,6 +70,14 @@
     key=String(key||"");
     return /^(SP_L\d|SP_PROGRESS_|SP_DASHBOARD_PROGRESS|SP_POINTS_|SP_COURSE_LEADERBOARD|A1_ACTIVE_SESSION)/.test(key) || /EXAM_HISTORY|EXAM_UNLOCK|LEADERBOARD|RANKING/i.test(key);
   }
+  function isProtectedPointKey(key){
+    key=String(key||"");
+    return /POINT|PUNKT|LIFETIME|BEST|EXAM_HISTORY|EXAM_BEST|RANKING|LEADERBOARD/i.test(key) || /^SP_COURSE_LEADERBOARD/.test(key);
+  }
+  function numeric(value){
+    const n=Number(value);
+    return Number.isFinite(n) ? n : null;
+  }
   function previewKey(key){
     let course="kurs";
     try{const p=readPreview()||{};course=p.courseCode||p.kurs||course}catch(e){}
@@ -70,6 +92,12 @@
     window.__spProgressGuardStoragePatched=true;
     Storage.prototype.setItem=function(key,value){
       if(this===localStorage&&isPreview()&&shouldRedirectKey(key))return realSet.call(sessionStorage,previewKey(key),value);
+      if(this===localStorage&&isProtectedPointKey(key)){
+        const oldValue=realGet.call(localStorage,key);
+        const oldNumber=numeric(oldValue);
+        const newNumber=numeric(value);
+        if(oldNumber!==null&&newNumber!==null&&newNumber<oldNumber)return realSet.call(localStorage,key,String(oldNumber));
+      }
       return realSet.call(this,key,value);
     };
     Storage.prototype.getItem=function(key){
@@ -81,6 +109,7 @@
     };
     Storage.prototype.removeItem=function(key){
       if(this===localStorage&&isPreview()&&shouldRedirectKey(key))return realRemove.call(sessionStorage,previewKey(key));
+      if(this===localStorage&&isProtectedPointKey(key))return undefined;
       return realRemove.call(this,key);
     };
   }
