@@ -13,7 +13,7 @@
     <footer>© SprachPilot</footer>
   </div>
 
-  <script src="app.js?v=311"></script>
+  <script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=311"></script>
   <script>
     header('Farben & Adjektive');
 
@@ -193,7 +193,7 @@
         const result = { score, maxScore: max, percent, stars, date: new Date().toISOString() };
         const hist = examHistory();
         hist.push(result);
-        localStorage.setItem('SP_L4_T3_EXAM_HISTORY_V1', JSON.stringify(hist));
+        spT3Store().setItem(spT3ProgressKey('SP_L4_T3_EXAM_HISTORY_V1'), JSON.stringify(hist));
         syncExam(result);
 
         area.innerHTML = `
