@@ -5,197 +5,53 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Schüler-Dashboard · SprachPilot</title>
 <style>
-:root{--blue:#47ABC6;--blue-dark:#2F7F96;--baby:#84E3FF;--accent:#7E2D00;--green:#16A34A;--red:#EF4444;--ink:#123047;--muted:#5F7180;--card:#FFFFFF;--line:#D9EEF7;--soft:#F6FDFF;--shadow:0 14px 34px rgba(18,48,71,.12)}
-*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#E8FBFF 0,#F6FDFF 46%,#FFFFFF 100%);color:var(--ink);min-height:100vh}.wrap{max-width:1180px;margin:0 auto;padding:18px}.top{background:#fff;border-radius:26px;padding:16px 18px;box-shadow:var(--shadow);border:1px solid var(--line);display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}.logo{width:54px;height:54px;border-radius:16px;background:linear-gradient(135deg,var(--baby),var(--blue));display:grid;place-items:center;font-weight:900}.logo-img{width:60px;height:60px;object-fit:contain;border-radius:16px}.brand h1{margin:0;font-size:26px}.sub{font-size:14px;color:var(--muted);margin-top:2px}.userbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.navbtn{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:#EFFAFF;color:var(--ink);font-weight:800;text-decoration:none;cursor:pointer}.logout{background:#FFE1E1;color:#8A1F11}.hero{display:grid;grid-template-columns:1.35fr .65fr;gap:14px;margin:16px 0}.card{background:#fff;border:1px solid var(--line);border-radius:24px;padding:18px;box-shadow:var(--shadow)}.progressHead{display:flex;align-items:center;gap:18px}.circle{width:104px;height:104px;border-radius:50%;background:conic-gradient(var(--green) calc(var(--p)*1%),#EFFAFF 0);display:grid;place-items:center;font-weight:900;font-size:26px;position:relative;flex:0 0 auto}.circle:after{content:"";position:absolute;inset:10px;background:#fff;border-radius:50%}.circle span{position:relative;z-index:2}.bar{height:12px;background:#EFFAFF;border-radius:999px;overflow:hidden;margin:10px 0}.fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--baby));border-radius:999px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#F0FBFF;border:1px solid var(--line);border-radius:18px;padding:14px;text-align:center}.stat b{display:block;font-size:25px;color:var(--blue-dark)}.sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:24px 0 12px}.sectionTitle h2{margin:0;font-size:22px;color:var(--blue-dark)}.count{background:#E8F9F0;color:#166534;border-radius:999px;padding:6px 10px;font-weight:800}.small{color:var(--muted);font-size:14px}.stars{font-size:20px;color:var(--accent);letter-spacing:1px;white-space:nowrap}.badge{font-size:12px;border-radius:999px;padding:5px 8px;font-weight:800}.ok{background:#E8F9F0;color:#166534}.wait{background:#F3F7FA;color:#4B5563}.empty{padding:18px;border-radius:18px;background:#F8FCFF;border:1px dashed #9FB7C7;color:#263846}.modules{display:grid;gap:12px}.acc{background:#fff;border:1px solid var(--line);border-radius:22px;box-shadow:0 10px 24px rgba(18,48,71,.09);overflow:hidden}.acc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px}.acc>summary::-webkit-details-marker{display:none}.sumLeft{display:flex;align-items:center;gap:12px;min-width:0}.arrow{width:32px;height:32px;border-radius:11px;background:#EFFAFF;display:grid;place-items:center;font-weight:900;flex:0 0 auto;transition:.15s transform;color:var(--blue-dark)}.acc[open] .arrow{transform:rotate(90deg)}.sumTitle{font-size:18px;font-weight:900;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.sumSub{font-size:13px;color:var(--muted);margin-top:2px}.sumRight{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.miniPct{font-size:20px;font-weight:900}.accBody{padding:0 16px 16px;border-top:1px solid var(--line);background:linear-gradient(180deg,#F8FCFF,#FFFFFF)}.lesson{margin-top:12px;background:#F8FCFF;border:1px solid var(--line);border-radius:18px;padding:12px}.lessonHead{display:flex;align-items:center;justify-content:space-between;gap:10px}.lesson h3{margin:0;font-size:16px;color:var(--blue-dark)}.themeGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:10px}.theme{background:#fff;border:1px solid var(--line);border-radius:16px;padding:12px}.themeTop{display:flex;align-items:flex-start;justify-content:space-between;gap:8px}.theme h4{margin:0 0 3px;font-size:15px}.themeMeta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.chip{font-size:12px;padding:5px 8px;border-radius:999px;background:#EFFAFF;border:1px solid var(--line);color:var(--blue-dark);font-weight:800}.taskList{display:grid;gap:6px;margin-top:10px}.task{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;background:#F8FCFF;border:1px solid var(--line);border-radius:12px;padding:7px 9px;font-size:13px}.taskName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.task b{font-size:13px}.leader{display:grid;gap:8px}.rank{display:grid;grid-template-columns:34px 1fr auto auto auto;align-items:center;gap:10px;background:#F8FCFF;border:1px solid var(--line);border-radius:16px;padding:10px}.rankNo{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--baby),var(--blue));display:grid;place-items:center;font-weight:900;color:var(--ink)}.rankVal{text-align:right;font-weight:900}.rankVal span{display:block;font-size:11px;color:var(--muted);font-weight:700}.footNote{font-size:12px;color:var(--muted);margin-top:10px}.mutedLink{color:inherit;text-decoration:none}.locked{opacity:.62;filter:grayscale(.25)}
-@media(max-width:800px){.hero{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr 1fr}.progressHead{align-items:flex-start}.circle{width:86px;height:86px;font-size:22px}.brand h1{font-size:22px}.rank{grid-template-columns:34px 1fr auto}.rankVal:nth-last-child(-n+2){display:none}.sumRight{justify-content:flex-start}.acc>summary{align-items:flex-start;flex-direction:column}.sumLeft{width:100%}}
+:root{--blue:#47ABC6;--blue-dark:#2F7F96;--baby:#84E3FF;--green:#16A34A;--ink:#123047;--muted:#5F7180;--line:#D9EEF7;--shadow:0 14px 34px rgba(18,48,71,.12)}*{box-sizing:border-box}body{margin:0;font-family:Inter,Arial,sans-serif;background:linear-gradient(180deg,#E8FBFF,#F6FDFF 46%,#fff);color:var(--ink);min-height:100vh}.wrap{max-width:1180px;margin:0 auto;padding:18px}.top,.card,.acc{background:#fff;border:1px solid var(--line);box-shadow:var(--shadow)}.top{border-radius:26px;padding:16px 18px;display:flex;align-items:center;justify-content:space-between;gap:14px;flex-wrap:wrap}.brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}.logo-img{width:60px;height:60px;object-fit:contain;border-radius:16px}.brand h1{margin:0;font-size:26px}.sub,.small{font-size:14px;color:var(--muted)}.userbar{display:flex;align-items:center;gap:8px;flex-wrap:wrap}.navbtn{border:1px solid var(--line);border-radius:14px;padding:10px 12px;background:#EFFAFF;color:var(--ink);font-weight:800;text-decoration:none;cursor:pointer}.logout{background:#FFE1E1;color:#8A1F11}.hero{display:grid;grid-template-columns:1.35fr .65fr;gap:14px;margin:16px 0}.card{border-radius:24px;padding:18px}.progressHead{display:flex;align-items:center;gap:18px}.circle{width:104px;height:104px;border-radius:50%;background:conic-gradient(var(--green) calc(var(--p)*1%),#EFFAFF 0);display:grid;place-items:center;font-weight:900;font-size:26px;position:relative;flex:0 0 auto}.circle:after{content:"";position:absolute;inset:10px;background:#fff;border-radius:50%}.circle span{position:relative;z-index:2}.bar{height:12px;background:#EFFAFF;border-radius:999px;overflow:hidden;margin:10px 0}.fill{height:100%;background:linear-gradient(90deg,var(--blue),var(--baby));border-radius:999px}.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}.stat{background:#F0FBFF;border:1px solid var(--line);border-radius:18px;padding:14px;text-align:center}.stat b{display:block;font-size:25px;color:var(--blue-dark)}.sectionTitle{display:flex;align-items:center;justify-content:space-between;gap:10px;margin:24px 0 12px}.sectionTitle h2{margin:0;font-size:22px;color:var(--blue-dark)}.count{background:#E8F9F0;color:#166534;border-radius:999px;padding:6px 10px;font-weight:800}.modules{display:grid;gap:12px}.acc{border-radius:22px;overflow:hidden}.acc>summary{list-style:none;cursor:pointer;display:flex;align-items:center;justify-content:space-between;gap:12px;padding:15px 16px}.acc>summary::-webkit-details-marker{display:none}.sumLeft{display:flex;align-items:center;gap:12px;min-width:0}.arrow{width:32px;height:32px;border-radius:11px;background:#EFFAFF;display:grid;place-items:center;font-weight:900;color:var(--blue-dark)}.sumTitle{font-size:18px;font-weight:900}.sumSub{font-size:13px;color:var(--muted);margin-top:2px}.sumRight{display:flex;align-items:center;gap:10px;flex-wrap:wrap;justify-content:flex-end}.miniPct{font-size:20px;font-weight:900}.accBody{padding:0 16px 16px;border-top:1px solid var(--line);background:linear-gradient(180deg,#F8FCFF,#fff)}.lesson,.theme,.rank{background:#F8FCFF;border:1px solid var(--line);border-radius:18px;padding:12px;margin-top:12px}.lessonHead,.themeTop{display:flex;align-items:flex-start;justify-content:space-between;gap:10px}.lesson h3,.theme h4{margin:0;color:var(--blue-dark)}.themeGrid{display:grid;grid-template-columns:repeat(auto-fit,minmax(250px,1fr));gap:10px;margin-top:10px}.badge,.chip{font-size:12px;border-radius:999px;padding:5px 8px;font-weight:800}.badge.ok{background:#E8F9F0;color:#166534}.badge.wait{background:#F3F7FA;color:#4B5563}.chip{background:#EFFAFF;border:1px solid var(--line);color:var(--blue-dark)}.themeMeta{display:flex;gap:8px;flex-wrap:wrap;align-items:center;margin-top:8px}.taskList{display:grid;gap:6px;margin-top:10px}.task{display:grid;grid-template-columns:1fr auto;align-items:center;gap:8px;background:#F8FCFF;border:1px solid var(--line);border-radius:12px;padding:7px 9px;font-size:13px}.taskName{white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.leader{display:grid;gap:8px}.rank{display:grid;grid-template-columns:34px 1fr auto auto auto;align-items:center;gap:10px;margin-top:0}.rankNo{width:34px;height:34px;border-radius:12px;background:linear-gradient(135deg,var(--baby),var(--blue));display:grid;place-items:center;font-weight:900}.rankVal{text-align:right;font-weight:900}.rankVal span{display:block;font-size:11px;color:var(--muted);font-weight:700}.empty{padding:18px;border-radius:18px;background:#F8FCFF;border:1px dashed #9FB7C7;color:#263846}.stars{font-size:20px;color:#7E2D00;letter-spacing:1px;white-space:nowrap}@media(max-width:800px){.hero{grid-template-columns:1fr}.stats{grid-template-columns:1fr 1fr 1fr}.circle{width:86px;height:86px;font-size:22px}.rank{grid-template-columns:34px 1fr auto}.rankVal:nth-last-child(-n+2){display:none}.acc>summary{align-items:flex-start;flex-direction:column}.sumRight{justify-content:flex-start}}
 </style>
 </head>
 <body>
 <div class="wrap">
-  <header class="top">
-    <a class="brand" href="/index.html"><img class="logo-img" src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"><div><h1>SprachPilot</h1><div class="sub">Schüler-Dashboard</div></div></a>
-    <div class="userbar">
-      <span class="pill" id="userPill">Schüler/in · Kurs</span>
-      <a class="navbtn" href="/profile/index.html">Profil</a>
-      <a class="navbtn" href="/index.html">Start</a>
-      <button class="navbtn logout" onclick="logout()">Abmelden</button>
-    </div>
-  </header>
-
-  <section class="hero">
-    <div class="card">
-      <div class="progressHead">
-        <div class="circle" id="totalCircle" style="--p:0"><span>0%</span></div>
-        <div style="flex:1">
-          <h2 style="margin:0">Dein Lernstand</h2>
-          <div class="small" id="summaryText">Noch keine Fortschritte gespeichert.</div>
-          <div class="bar"><div class="fill" id="totalFill" style="width:0%"></div></div>
-          <div class="small">Alle freigeschalteten Module, Lektionen und Themen an einem Ort.</div>
-        </div>
-      </div>
-    </div>
-    <div class="card">
-      <div class="stats">
-        <div class="stat"><b id="pointsTotal">0</b><span>Punkte</span></div>
-        <div class="stat"><b id="starsTotal">0</b><span>Sterne</span></div>
-        <div class="stat"><b id="doneTotal">0</b><span>fertig</span></div>
-      </div>
-    </div>
-  </section>
-
-  <div class="sectionTitle"><h2>Freigeschaltete Inhalte</h2><span class="count" id="contentCount">0 Inhalte</span></div>
-  <section class="modules" id="contentGrid"></section>
-
-  <div class="sectionTitle"><h2>Rangliste im Kurs</h2><span class="count" id="courseName">Kurs</span></div>
-  <section class="card leader" id="leaderboard"></section>
+  <header class="top"><a class="brand" href="/index.html"><img class="logo-img" src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"><div><h1>SprachPilot</h1><div class="sub">Schüler-Dashboard</div></div></a><div class="userbar"><span id="userPill">Schüler/in · Kurs</span><a class="navbtn" href="/profile/index.html">Profil</a><a class="navbtn" href="/index.html">Start</a><button class="navbtn logout" onclick="logout()">Abmelden</button></div></header>
+  <section class="hero"><div class="card"><div class="progressHead"><div class="circle" id="totalCircle" style="--p:0"><span>0%</span></div><div style="flex:1"><h2 style="margin:0">Dein Lernstand</h2><div class="small" id="summaryText">Lokale Daten werden angezeigt. Online-Daten laden im Hintergrund.</div><div class="bar"><div class="fill" id="totalFill" style="width:0%"></div></div><div class="small">Das Dashboard öffnet sofort; Firestore wird danach aktualisiert.</div></div></div></div><div class="card"><div class="stats"><div class="stat"><b id="pointsTotal">0</b><span>Punkte</span></div><div class="stat"><b id="starsTotal">0</b><span>Sterne</span></div><div class="stat"><b id="doneTotal">0</b><span>fertig</span></div></div></div></section>
+  <div class="sectionTitle"><h2>Freigeschaltete Inhalte</h2><span class="count" id="contentCount">0 Inhalte</span></div><section class="modules" id="contentGrid"></section>
+  <div class="sectionTitle"><h2>Rangliste im Kurs</h2><span class="count" id="courseName">Kurs</span></div><section class="card leader" id="leaderboard"><div class="empty">Rangliste lädt später.</div></section>
 </div>
-<script src="/js/sp-progress-guard.js?v=step14"></script>
+<script src="/js/sp-progress-guard.js?v=fast1"></script>
 <script src="teacher-preview-bridge.js?v=step14"></script>
 <script>
 function readJSON(k,f){try{return JSON.parse(localStorage.getItem(k)||JSON.stringify(f))}catch(e){return f}}
-function esc(s){return String(s||"").replace(/[&<>'"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","'":"&#39;","\"":"&quot;"}[m]))}
-function profile(){return readJSON("SP_USER_PROFILE", readJSON("sprachpilotUser", null)) || {}}
-function userName(){const p=profile();return [p.firstName||p.vorname||p.name,p.lastName||p.nachname].filter(Boolean).join(" ")||p.displayName||p.email||"Schüler/in"}
-function courseCode(){const p=profile();return p.courseCode||p.kurs||p.course||p.kursCode||localStorage.getItem("SP_COURSE_CODE")||"Kurs"}
+function esc(s){return String(s||'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[m]))}
+function profile(){return readJSON('SP_USER_PROFILE', readJSON('sprachpilotUser', null)) || {}}
+function userName(){const p=profile();return [p.firstName||p.vorname||p.name,p.lastName||p.nachname].filter(Boolean).join(' ')||p.displayName||p.email||'Schüler/in'}
+function courseCode(){const p=profile();return p.courseCode||p.kurs||p.course||p.kursCode||localStorage.getItem('SP_COURSE_CODE')||'Kurs'}
 function studentId(){const p=profile();return p.studentId||p.uid||p.email||p.id||userName()}
-function stars(n){n=Math.max(0,Math.min(3,Number(n||0)));return "★".repeat(n)+"☆".repeat(3-n)}
-const TECH_KEYS=new Set(["state","progress","stars","activeVerbs","learnedVerbs","known","unknown","unsure","updatedAt","lastActive","lastLogin","totals","current"]);
-function listLen(x){return Array.isArray(x)?x.length:(x&&typeof x==="object"?Object.keys(x).length:0)}
+function stars(n){n=Math.max(0,Math.min(3,Number(n||0)));return '★'.repeat(n)+'☆'.repeat(3-n)}
+const TECH_KEYS=new Set(['state','progress','stars','activeVerbs','learnedVerbs','known','unknown','unsure','updatedAt','lastActive','lastLogin','totals','current']);
+function listLen(x){return Array.isArray(x)?x.length:(x&&typeof x==='object'?Object.keys(x).length:0)}
 function verbStats(mod={}){const learned=listLen(mod.learnedVerbs||mod.known||mod.state?.learnedVerbs||mod.state?.known||[]);const active=listLen(mod.activeVerbs||mod.state?.activeVerbs||mod.state?.active||[]);const known=listLen(mod.known||mod.state?.known||[]);const unsure=listLen(mod.unsure||mod.state?.unsure||[]);const unknown=listLen(mod.unknown||mod.state?.unknown||[]);return{learned,active,known,unsure,unknown,contentsDone:Math.floor(learned/20),packagePercent:Math.min(100,Math.round(((learned%20)||(learned?20:0))/20*100))}}
-function isTopicRecord(k,v){return !TECH_KEYS.has(k)&&v&&typeof v==="object"&&!Array.isArray(v)&&(v.tasks||v.exam||v.current||v.lifetime||v.progressPercent||v.title)}
+function isTopicRecord(k,v){return !TECH_KEYS.has(k)&&v&&typeof v==='object'&&!Array.isArray(v)&&(v.tasks||v.exam||v.current||v.lifetime||v.progressPercent||v.title)}
 function clamp(n){return Math.max(0,Math.min(100,Math.round(Number(n)||0)))}
-function labelFile(file){return String(file||"").replace(".html","").replaceAll("-"," → ").replace("artikel → klick","Artikel klicken").replace("bild → wort","Bild → Wort").replace("wort → bild","Wort → Bild").replace("ist → hier","Ist hier?").replace("wo → ist","Wo ist?").replace(/^./,c=>c.toUpperCase())}
-function allProgress(){
-  const all=readJSON("SP_DASHBOARD_PROGRESS",{});
-  const one=readJSON("SP_PROGRESS_WORTSCHATZ_A1_L4_T2",null);
-  if(one) all[one.id||"wortschatz-a1-lektion-4-thema-2"]=one;
-  return Object.values(all).filter(Boolean).filter(x=>!(String(x.module||x.moduleId||"").toLowerCase()==="verben" && !x.isVerbSummary)).map(normalizeItem).sort((a,b)=>String(a.moduleTitle+a.lessonLabel+a.themeLabel).localeCompare(String(b.moduleTitle+b.lessonLabel+b.themeLabel),'de'));
-}
-function normalizeItem(x){
-  const moduleKey=x.module||x.moduleId||"wortschatz";
-  const moduleTitle=moduleKey==="wortschatz"?"Wortschatz":moduleKey==="verben"?"Verben":moduleKey==="fragen"?"Fragen":moduleKey==="grammatik"?"Grammatik":String(moduleKey||"Modul");
-  const level=x.level||"A1";
-  const lesson=x.lesson||x.lektion||"";
-  const theme=x.theme||x.topic||x.thema||"";
-  return {...x,moduleKey,moduleTitle,level,lesson,theme,lessonLabel:`${level}${lesson?" · Lektion "+lesson:""}`,themeLabel:x.isVerbSummary?"Verben A1":(theme?`Thema ${theme}`:"Thema"),percent:clamp(x.percent),taskPercent:clamp(x.taskPercent||x.percent)};
-}
-function groupData(data){
-  const modules={};
-  data.forEach(item=>{
-    const mKey=item.moduleKey||"module";
-    if(!modules[mKey]) modules[mKey]={key:mKey,title:item.moduleTitle||mKey,items:[],lessons:{}};
-    modules[mKey].items.push(item);
-    const lKey=item.lessonLabel||"Lektion";
-    if(!modules[mKey].lessons[lKey]) modules[mKey].lessons[lKey]={title:lKey,items:[]};
-    modules[mKey].lessons[lKey].items.push(item);
-  });
-  return Object.values(modules);
-}
-function avg(items,key="percent"){return items.length?clamp(items.reduce((s,x)=>s+Number(x[key]||0),0)/items.length):0}
-function sumStars(items){return items.reduce((s,x)=>s+Number(x.exam?.stars||0),0)}
+function labelFile(file){return String(file||'').replace('.html','').replaceAll('-',' → ').replace('artikel → klick','Artikel klicken').replace('bild → wort','Bild → Wort').replace('wort → bild','Wort → Bild').replace('ist → hier','Ist hier?').replace('wo → ist','Wo ist?').replace(/^./,c=>c.toUpperCase())}
+function allProgress(){const all=readJSON('SP_DASHBOARD_PROGRESS',{});const one=readJSON('SP_PROGRESS_WORTSCHATZ_A1_L4_T2',null);if(one)all[one.id||'wortschatz-a1-lektion-4-thema-2']=one;return Object.values(all).filter(Boolean).filter(x=>!(String(x.module||x.moduleId||'').toLowerCase()==='verben'&&!x.isVerbSummary)).map(normalizeItem).sort((a,b)=>String(a.moduleTitle+a.lessonLabel+a.themeLabel).localeCompare(String(b.moduleTitle+b.lessonLabel+b.themeLabel),'de'))}
+function normalizeItem(x){const moduleKey=x.module||x.moduleId||'wortschatz';const moduleTitle=moduleKey==='wortschatz'?'Wortschatz':moduleKey==='verben'?'Verben':moduleKey==='fragen'?'Fragen':moduleKey==='grammatik'?'Grammatik':String(moduleKey||'Modul');const level=x.level||'A1';const lesson=x.lesson||x.lektion||'';const theme=x.theme||x.topic||x.thema||'';return {...x,moduleKey,moduleTitle,level,lesson,theme,lessonLabel:`${level}${lesson?' · Lektion '+lesson:''}`,themeLabel:x.isVerbSummary?'Verben A1':(theme?`Thema ${theme}`:'Thema'),percent:clamp(x.percent),taskPercent:clamp(x.taskPercent||x.percent)}}
+function groupData(data){const modules={};data.forEach(item=>{const mKey=item.moduleKey||'module';if(!modules[mKey])modules[mKey]={key:mKey,title:item.moduleTitle||mKey,items:[],lessons:{}};modules[mKey].items.push(item);const lKey=item.lessonLabel||'Lektion';if(!modules[mKey].lessons[lKey])modules[mKey].lessons[lKey]={title:lKey,items:[]};modules[mKey].lessons[lKey].items.push(item)});return Object.values(modules)}
+function avg(items,key='percent'){return items.length?clamp(items.reduce((s,x)=>s+Number(x[key]||0),0)/items.length):0}
+function sumStars(items){return items.reduce((s,x)=>s+Number(x.exam?.stars||x.stars||0),0)}
 function sumDone(items){return items.filter(x=>Number(x.percent||0)>=100||Number(x.exam?.percent||0)>=100).length}
-function currentTotals(data){return{points:Number(localStorage.getItem("SP_POINTS_TOTAL")||0)||0,stars:sumStars(data),progress:avg(data),done:sumDone(data)}}
-function ensureLeaderboard(data){
-  if(typeof window.spIsTeacherPreview === "function" && window.spIsTeacherPreview()){
-    return readJSON("SP_COURSE_LEADERBOARD",{});
-  }
-  const course=courseCode(), id=studentId(), name=userName(), totals=currentTotals(data);
-  let board=readJSON("SP_COURSE_LEADERBOARD",{});
-  if(!board[course]) board[course]={};
-  const old=board[course][id]||{};
-  board[course][id]={studentId:id,name,points:Math.max(Number(old.points||0),totals.points),stars:Math.max(Number(old.stars||0),totals.stars),progress:Math.max(Number(old.progress||0),totals.progress),done:Math.max(Number(old.done||0),totals.done),updatedAt:new Date().toISOString()};
-  localStorage.setItem("SP_COURSE_LEADERBOARD",JSON.stringify(board));
-  return board;
-}
-function renderModules(data){
-  const grid=document.getElementById("contentGrid");
-  if(!data.length){grid.innerHTML='<div class="empty">Noch keine freigeschalteten Inhalte gefunden. Öffne zuerst eine Aufgabe oder ein Thema.</div>';return}
-  const modules=groupData(data);
-  grid.innerHTML=modules.map((m)=>{
-    const isVerben=m.key==="verben";
-    const mp=avg(m.items), ms=sumStars(m.items), done=sumDone(m.items);
-    const verbItem=isVerben?m.items.find(x=>x.isVerbSummary)||{}:null;
-    const verbLine=isVerben?`${Number(verbItem.learned||0)} Verben gelernt · ${Number(verbItem.contentsDone||0)} Inhalt${Number(verbItem.contentsDone||0)===1?"":"e"} fertig`:null;
-    const lessons=Object.values(m.lessons).map(l=>{
-      const lp=avg(l.items), ls=sumStars(l.items);
-      const themes=l.items.map(x=>themeHtml(x)).join("");
-      return `<div class="lesson"><div class="lessonHead"><div><h3>${esc(isVerben?"Verben A1":l.title)}</h3><div class="small">${isVerben?esc(verbLine):(l.items.length+" Thema"+(l.items.length===1?"":"en"))}</div></div><div class="sumRight">${isVerben?`<b>${Number(verbItem.learned||0)} Verben</b>`:`<span class="stars">${stars(Math.min(3,ls))}</span><b>${lp}%</b>`}</div></div><div class="bar"><div class="fill" style="width:${isVerben?Number(verbItem.packagePercent||0):lp}%"></div></div><div class="themeGrid">${themes}</div></div>`;
-    }).join("");
-    return `<details class="acc"><summary><div class="sumLeft"><span class="arrow">›</span><div><div class="sumTitle">${esc(m.title)}</div><div class="sumSub">${isVerben?esc(verbLine):(done+"/"+m.items.length+" Inhalte fertig")}</div></div></div><div class="sumRight">${isVerben?`<span class="miniPct">${Number(verbItem.learned||0)} Verben</span>`:`<span class="stars">${stars(Math.min(3,ms))}</span><span class="miniPct">${mp}%</span>`}</div></summary><div class="accBody">${lessons}</div></details>`;
-  }).join("");
-}
-function themeHtml(x){
-  if(x.isVerbSummary){
-    return `<article class="theme"><div class="themeTop"><div><h4>Verben A1</h4><div class="small">${Number(x.learned||0)} Verben gelernt</div></div><span class="badge ok">${Number(x.contentsDone||0)} Inhalt${Number(x.contentsDone||0)===1?"":"e"}</span></div><div class="bar"><div class="fill" style="width:${Number(x.packagePercent||0)}%"></div></div><div class="themeMeta"><span class="chip">Aktiv: ${Number(x.active||0)}</span><span class="chip">Sicher: ${Number(x.known||0)}</span><span class="chip">Unsicher: ${Number(x.unsure||0)}</span><span class="chip">Unbekannt: ${Number(x.unknown||0)}</span></div></article>`;
-  }
-  const exam=x.exam||{};
-  const percent=clamp(x.percent);
-  const tasks=(x.tasks||[]).map(t=>`<div class="task"><span class="taskName">${esc(labelFile(t.file||t.title||"Aufgabe"))}</span><b>${clamp(t.percent)}%</b></div>`).join("");
-  return `<article class="theme"><div class="themeTop"><div><h4>${esc(x.themeLabel)} · ${esc(x.title||"Inhalt")}</h4><div class="small">${esc(x.subtitle||"")}</div></div><span class="badge ${exam.unlocked?'ok':'wait'}">${exam.unlocked?'Prüfung offen':'in Arbeit'}</span></div><div class="bar"><div class="fill" style="width:${percent}%"></div></div><div class="themeMeta"><span class="chip">${percent}%</span><span class="chip">${Number(x.completedTasks||0)}/${Number(x.totalTasks||0)} Aufgaben</span>${exam.attempted?`<span class="chip">${stars(exam.stars)} ${clamp(exam.percent||exam.bestPercent)}%</span>`:""}</div><details class="taskDetails"><summary class="small" style="cursor:pointer;margin-top:8px;font-weight:800">Aufgaben anzeigen</summary><div class="taskList">${tasks||'<div class="small">Noch keine Aufgaben gespeichert.</div>'}</div></details></article>`;
-}
-function render(){
-  const data=allProgress();
-  const totals=currentTotals(data), course=courseCode();
-  document.getElementById("userPill").textContent=userName()+" · "+course;
-  document.getElementById("courseName").textContent=course;
-  document.getElementById("totalCircle").style.setProperty("--p",totals.progress);
-  document.getElementById("totalCircle").innerHTML="<span>"+totals.progress+"%</span>";
-  document.getElementById("totalFill").style.width=totals.progress+"%";
-  document.getElementById("summaryText").textContent=data.length?totals.done+" von "+data.length+" Inhalten abgeschlossen":"Noch keine Inhalte abgeschlossen.";
-  document.getElementById("pointsTotal").textContent=totals.points;
-  document.getElementById("starsTotal").textContent=totals.stars;
-  document.getElementById("doneTotal").textContent=totals.done;
-  document.getElementById("contentCount").textContent=data.length+" Inhalte";
-  renderModules(data);
-  renderLeaderboard(data);
-}
-function renderLeaderboard(data){
-  const course=courseCode();
-  const board=ensureLeaderboard(data);
-  const list=Object.values(board[course]||{}).filter(x=>String(x.name||"").trim() && String(x.name||"").trim()!=="Schüler/in").sort((a,b)=>(Number(b.points||0)-Number(a.points||0))||(Number(b.stars||0)-Number(a.stars||0))||(Number(b.progress||0)-Number(a.progress||0)));
-  const leader=document.getElementById("leaderboard");
-  leader.innerHTML=list.length?list.map((x,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div><b>${esc(x.name||"Schüler/in")}</b><div class="small">${esc(course)}</div></div><div class="rankVal">${Number(x.points||0)}<span>Punkte</span></div><div class="rankVal">${Number(x.stars||0)}<span>Sterne</span></div><div class="rankVal">${clamp(x.progress)}%<span>Fortschritt</span></div></div>`).join(""):'<div class="empty">Noch keine Punkte in diesem Kurs.</div>';
-}
-function logout(){if(!confirm("Möchten Sie sich abmelden?"))return;["SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_KEEP_LOGGED_IN","SP_STUDENT_ID","sprachpilotUser","SP_CURRENT_USER","SP_LOGIN","SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_AUTH_ROLE","SP_LOGIN_CONTEXT","SP_TEACHER_MODE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_UID","SP_TEACHER_PROFILE"].forEach(k=>localStorage.removeItem(k));try{sessionStorage.removeItem("SP_TEACHER_PREVIEW");sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");sessionStorage.removeItem("SP_PREVIEW_COURSE");}catch(e){}location.href="/index.html"}
-render();
-</script>
-
-<script type="module">
-import { loadCurrentStudentProgress, loadCourseRanking, migrateLegacyLocalProgress } from "/js/progress.js?v=232";
+function currentTotals(data){return{points:Number(localStorage.getItem('SP_POINTS_TOTAL')||0)||0,stars:sumStars(data),progress:avg(data),done:sumDone(data)}}
+function renderModules(data){const grid=document.getElementById('contentGrid');if(!data.length){grid.innerHTML='<div class="empty">Noch keine gespeicherten Inhalte gefunden. Öffne zuerst eine Aufgabe oder ein Thema.</div>';return}const modules=groupData(data);grid.innerHTML=modules.map(m=>{const isVerben=m.key==='verben';const mp=avg(m.items),ms=sumStars(m.items),done=sumDone(m.items);const verbItem=isVerben?m.items.find(x=>x.isVerbSummary)||{}:null;const verbLine=isVerben?`${Number(verbItem.learned||0)} Verben gelernt · ${Number(verbItem.contentsDone||0)} Inhalte fertig`:null;const lessons=Object.values(m.lessons).map(l=>{const lp=avg(l.items),ls=sumStars(l.items);const themes=l.items.map(themeHtml).join('');return `<div class="lesson"><div class="lessonHead"><div><h3>${esc(isVerben?'Verben A1':l.title)}</h3><div class="small">${isVerben?esc(verbLine):(l.items.length+' Thema'+(l.items.length===1?'':'en'))}</div></div><div class="sumRight">${isVerben?`<b>${Number(verbItem.learned||0)} Verben</b>`:`<span class="stars">${stars(Math.min(3,ls))}</span><b>${lp}%</b>`}</div></div><div class="bar"><div class="fill" style="width:${isVerben?Number(verbItem.packagePercent||0):lp}%"></div></div><div class="themeGrid">${themes}</div></div>`}).join('');return `<details class="acc"><summary><div class="sumLeft"><span class="arrow">›</span><div><div class="sumTitle">${esc(m.title)}</div><div class="sumSub">${isVerben?esc(verbLine):(done+'/'+m.items.length+' Inhalte fertig')}</div></div></div><div class="sumRight">${isVerben?`<span class="miniPct">${Number(verbItem.learned||0)} Verben</span>`:`<span class="stars">${stars(Math.min(3,ms))}</span><span class="miniPct">${mp}%</span>`}</div></summary><div class="accBody">${lessons}</div></details>`}).join('')}
+function themeHtml(x){if(x.isVerbSummary)return `<article class="theme"><div class="themeTop"><div><h4>Verben A1</h4><div class="small">${Number(x.learned||0)} Verben gelernt</div></div><span class="badge ok">${Number(x.contentsDone||0)} Inhalte</span></div><div class="bar"><div class="fill" style="width:${Number(x.packagePercent||0)}%"></div></div><div class="themeMeta"><span class="chip">Aktiv: ${Number(x.active||0)}</span><span class="chip">Sicher: ${Number(x.known||0)}</span><span class="chip">Unsicher: ${Number(x.unsure||0)}</span><span class="chip">Unbekannt: ${Number(x.unknown||0)}</span></div></article>`;const exam=x.exam||{};const percent=clamp(x.percent);const tasks=(x.tasks||[]).map(t=>`<div class="task"><span class="taskName">${esc(labelFile(t.file||t.title||'Aufgabe'))}</span><b>${clamp(t.percent)}%</b></div>`).join('');return `<article class="theme"><div class="themeTop"><div><h4>${esc(x.themeLabel)} · ${esc(x.title||'Inhalt')}</h4><div class="small">${esc(x.subtitle||'')}</div></div><span class="badge ${exam.unlocked?'ok':'wait'}">${exam.unlocked?'Prüfung offen':'in Arbeit'}</span></div><div class="bar"><div class="fill" style="width:${percent}%"></div></div><div class="themeMeta"><span class="chip">${percent}%</span><span class="chip">${Number(x.completedTasks||0)}/${Number(x.totalTasks||0)} Aufgaben</span>${exam.attempted?`<span class="chip">${stars(exam.stars)} ${clamp(exam.percent||exam.bestPercent)}%</span>`:''}</div><details><summary class="small" style="cursor:pointer;margin-top:8px;font-weight:800">Aufgaben anzeigen</summary><div class="taskList">${tasks||'<div class="small">Noch keine Aufgaben gespeichert.</div>'}</div></details></article>`}
+function render(){const data=allProgress();const totals=currentTotals(data),course=courseCode();document.getElementById('userPill').textContent=userName()+' · '+course;document.getElementById('courseName').textContent=course;document.getElementById('totalCircle').style.setProperty('--p',totals.progress);document.getElementById('totalCircle').innerHTML='<span>'+totals.progress+'%</span>';document.getElementById('totalFill').style.width=totals.progress+'%';document.getElementById('summaryText').textContent=data.length?totals.done+' von '+data.length+' Inhalten abgeschlossen':'Noch keine Inhalte abgeschlossen.';document.getElementById('pointsTotal').textContent=totals.points;document.getElementById('starsTotal').textContent=totals.stars;document.getElementById('doneTotal').textContent=totals.done;document.getElementById('contentCount').textContent=data.length+' Inhalte';renderModules(data);renderLocalLeaderboard(data)}
+function renderLocalLeaderboard(data){const course=courseCode();const board=readJSON('SP_COURSE_LEADERBOARD',{});const list=Object.values(board[course]||{}).filter(x=>String(x.name||'').trim()&&String(x.name||'').trim()!=='Schüler/in').sort((a,b)=>(Number(b.points||0)-Number(a.points||0))||(Number(b.stars||0)-Number(a.stars||0))||(Number(b.progress||0)-Number(a.progress||0)));paintLeaderboard(list, list.length?'':'Rangliste lädt im Hintergrund.')}
+function paintLeaderboard(list,msg){const course=courseCode();const leader=document.getElementById('leaderboard');leader.innerHTML=list.length?list.map((x,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div><b>${esc(x.name||'Schüler/in')}</b><div class="small">${esc(course)}</div></div><div class="rankVal">${Number(x.points||0)}<span>Punkte</span></div><div class="rankVal">${Number(x.stars||0)}<span>Sterne</span></div><div class="rankVal">${clamp(x.progress)}%<span>Fortschritt</span></div></div>`).join(''):`<div class="empty">${esc(msg||'Noch keine Punkte in diesem Kurs.')}</div>`}
+function logout(){if(!confirm('Möchten Sie sich abmelden?'))return;['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_KEEP_LOGGED_IN','SP_STUDENT_ID','sprachpilotUser','SP_CURRENT_USER','SP_LOGIN','SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_AUTH_ROLE','SP_LOGIN_CONTEXT','SP_TEACHER_MODE','SP_TEACHER_EMAIL','SP_TEACHER_ID','SP_TEACHER_UID','SP_TEACHER_PROFILE'].forEach(k=>localStorage.removeItem(k));try{sessionStorage.removeItem('SP_TEACHER_PREVIEW');sessionStorage.removeItem('SP_TEACHER_MODE_WAS_ACTIVE');sessionStorage.removeItem('SP_PREVIEW_COURSE')}catch(e){}location.href='/index.html'}
+function timeout(ms,label){return new Promise((_,rej)=>setTimeout(()=>rej(new Error(label||'timeout')),ms))}
 function safeLocal(k,v){try{localStorage.setItem(k,JSON.stringify(v))}catch(e){}}
-function normalizeTopic(id,t,moduleKey="wortschatz"){
-  return {id,module:moduleKey,moduleTitle:t.moduleTitle||"Wortschatz",level:t.level||"A1",lesson:t.lesson||"",theme:t.theme||"",title:t.title||id,percent:t.progressPercent||t.current?.percent||0,completedTasks:t.completedTasks||0,totalTasks:t.totalTasks||0,tasks:Object.values(t.tasks||{}).map(x=>({file:x.file,title:x.title,percent:x.percent})),exam:t.exam||{},points:t.lifetime?.points||0};
-}
-async function loadFirebaseDashboard(){
-  try{
-    await migrateLegacyLocalProgress();
-    const p=await loadCurrentStudentProgress();
-    if(p && p.studentId){
-      const all={};
-      ["wortschatz","fragen","grammatik"].forEach(moduleKey=>{
-        Object.entries(p[moduleKey]||{}).forEach(([id,t])=>{
-          if(isTopicRecord(id,t)) all[id]=normalizeTopic(id,t,moduleKey);
-        });
-      });
-      const vs=verbStats(p.verben||{});
-      if(vs.learned || vs.active || vs.known || vs.unsure || vs.unknown){
-        all["verben-a1"]={id:"verben-a1",module:"verben",moduleTitle:"Verben",level:"A1",lesson:"",theme:"",title:"Verben A1",isVerbSummary:true,learned:vs.learned,active:vs.active,known:vs.known,unsure:vs.unsure,unknown:vs.unknown,contentsDone:vs.contentsDone,packagePercent:vs.packagePercent,percent:vs.packagePercent,tasks:[],exam:{}};
-      }
-      safeLocal("SP_DASHBOARD_PROGRESS",all);
-      if(p.totals){localStorage.setItem("SP_POINTS_TOTAL",Number(p.totals.points||0));}
-      const ranking=await loadCourseRanking(p.kurs);
-      if(Array.isArray(ranking)){
-        const board={}; board[p.kurs||"Kurs"]={};
-        ranking.forEach(r=>{board[p.kurs||"Kurs"][r.studentId||r.id]={studentId:r.studentId||r.id,name:r.studentName||r.name||r.email||"",points:r.totals?.points||0,stars:r.totals?.stars||0,progress:r.totals?.progressPercent||0,done:r.totals?.completedTasks||0,updatedAt:r.totals?.updatedAt||""}});
-        safeLocal("SP_COURSE_LEADERBOARD",board);
-      }
-      if(typeof render==="function") render();
-    }
-  }catch(e){console.warn("Dashboard Firebase-Daten nicht geladen",e)}
-}
-loadFirebaseDashboard();
+function normalizeTopic(id,t,moduleKey='wortschatz'){return{id,module:moduleKey,moduleTitle:t.moduleTitle||'Wortschatz',level:t.level||'A1',lesson:t.lesson||'',theme:t.theme||'',title:t.title||id,percent:t.progressPercent||t.current?.percent||0,completedTasks:t.completedTasks||0,totalTasks:t.totalTasks||0,tasks:Object.values(t.tasks||{}).map(x=>({file:x.file,title:x.title,percent:x.percent})),exam:t.exam||{},points:t.lifetime?.points||0}}
+render();
+async function loadOnlineProgress(){try{const mod=await Promise.race([import('/js/progress.js?v=fast-dashboard-1'),timeout(1800,'progress import timeout')]);if(!localStorage.getItem('SP_PROGRESS_LEGACY_MIGRATED_V4')){mod.migrateLegacyLocalProgress().catch(()=>{})}const p=await Promise.race([mod.loadCurrentStudentProgress(),timeout(2500,'progress load timeout')]);if(p&&p.studentId){const all={};['wortschatz','fragen','grammatik'].forEach(moduleKey=>{Object.entries(p[moduleKey]||{}).forEach(([id,t])=>{if(isTopicRecord(id,t))all[id]=normalizeTopic(id,t,moduleKey)})});const vs=verbStats(p.verben||{});if(vs.learned||vs.active||vs.known||vs.unsure||vs.unknown){all['verben-a1']={id:'verben-a1',module:'verben',moduleTitle:'Verben',level:'A1',lesson:'',theme:'',title:'Verben A1',isVerbSummary:true,learned:vs.learned,active:vs.active,known:vs.known,unsure:vs.unsure,unknown:vs.unknown,contentsDone:vs.contentsDone,packagePercent:vs.packagePercent,percent:vs.packagePercent,tasks:[],exam:{}}}safeLocal('SP_DASHBOARD_PROGRESS',all);if(p.totals)localStorage.setItem('SP_POINTS_TOTAL',Number(p.totals.points||0));render();setTimeout(()=>loadOnlineRanking(mod,p.kurs),300)}}catch(e){console.warn('Dashboard Fortschritt lädt langsam oder ist offline',e);document.getElementById('summaryText').textContent='Lokale Daten angezeigt. Online-Daten laden später oder sind offline.'}}
+async function loadOnlineRanking(mod,kurs){try{if(!kurs)return;const ranking=await Promise.race([mod.loadCourseRanking(kurs),timeout(3000,'ranking timeout')]);if(Array.isArray(ranking)){const board={};board[kurs||'Kurs']={};ranking.forEach(r=>{board[kurs||'Kurs'][r.studentId||r.id]={studentId:r.studentId||r.id,name:r.studentName||r.name||r.email||'',points:r.totals?.points||r.pointsTotal||r.lifetimePoints||0,stars:r.totals?.stars||0,progress:r.totals?.progressPercent||0,done:r.totals?.completedTasks||0,updatedAt:r.totals?.updatedAt||''}});safeLocal('SP_COURSE_LEADERBOARD',board);renderLocalLeaderboard(allProgress())}}catch(e){console.warn('Rangliste lädt später',e);renderLocalLeaderboard(allProgress())}}
+setTimeout(loadOnlineProgress,50);
 </script>
-
 <script src="/shared/sprachpilot-design-system.js"></script>
 </body>
 </html>
