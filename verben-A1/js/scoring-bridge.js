@@ -1,6 +1,7 @@
 (function(){
   const INFO={moduleKey:'verben',scope:'verben-a1',title:'Verben A1',lesson:'',theme:''};
   const SKILLS=['karteikarte','memory','bild_verb','verb_bild','schreiben','hoeren_schreiben','hoeren_sprechen','bild_sprechen','satz_puzzle','konjugieren'];
+  function teacher(){const r=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase();const p=profile();return r==='teacher'||r==='lehrer'||p.teacherPreview===true||p.isTeacher===true||p.role==='teacher'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}
   function run(){try{return window.SprachPilotScoring&&SprachPilotScoring.currentRun?SprachPilotScoring.currentRun(INFO.scope):Number(localStorage.getItem('SP_SCORE_RUN_'+INFO.scope)||1)||1}catch(e){return 1}}
   function pointsForRun(){const r=run();if(r===1)return 5;if(r===2)return 10;if(r===3)return 15;return 1}
   function skillName(skill){try{return typeof skillKey==='function'?skillKey(skill):skill}catch(e){return skill}}
@@ -8,7 +9,7 @@
   function pendingKey(){return 'SP_VERBEN_A1_PENDING_REWARDS'}
   function pending(){try{return JSON.parse(localStorage.getItem(pendingKey())||'[]')||[]}catch(e){return []}}
   function savePending(list){try{localStorage.setItem(pendingKey(),JSON.stringify([...new Set((list||[]).filter(Boolean))]))}catch(e){}}
-  function queue(skill){const sk=skillName(skill);if(!sk)return;const list=pending();if(!list.includes(sk))list.push(sk);savePending(list)}
+  function queue(skill){if(teacher())return;const sk=skillName(skill);if(!sk)return;const list=pending();if(!list.includes(sk))list.push(sk);savePending(list)}
   function ready(){return !!(window.SprachPilotScoring&&SprachPilotScoring.awardTask)}
   function taskIsDone(skill){try{return typeof taskDone==='function'&&taskDone(skillName(skill))}catch(e){return false}}
   function safeJson(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'')||fallback}catch(e){return fallback}}
@@ -19,6 +20,7 @@
   function number(x){const n=Number(x);return Number.isFinite(n)?n:0}
   function bestTotal(d){return Math.max(number(d&&d.lifetimePoints),number(d&&d.pointsTotal),number(d&&d.punkteGesamt),number(d&&d.totals&&d.totals.points),number(localStorage.getItem('SP_POINTS_TOTAL')))}
   async function directAward(skill){
+    if(teacher())return 0;
     const sk=skillName(skill);if(!sk||localStorage.getItem(rewardKey(sk))==='1')return 0;
     const delta=pointsForRun();
     const localNow=number(localStorage.getItem('SP_POINTS_TOTAL'));
@@ -48,6 +50,7 @@
     }catch(e){console.warn('Direkte Verben-Punkte-Sicherung fehlgeschlagen',e);queue(sk);return 0;}
   }
   function markTask(skill){
+    if(teacher())return;
     const sk=skillName(skill);
     if(!sk)return;
     if(!taskIsDone(sk))return;
@@ -63,11 +66,11 @@
     }
     directAward(sk);
   }
-  function scanDoneTasks(){SKILLS.forEach(markTask);pending().forEach(markTask)}
+  function scanDoneTasks(){if(teacher())return;SKILLS.forEach(markTask);pending().forEach(markTask)}
   function ensureScoringLoaded(){if(ready())return;try{import('/js/scoring.js?v=4').then(()=>setTimeout(scanDoneTasks,100)).catch(()=>{})}catch(e){}}
   function patchFinish(){if(typeof window.finishQueuedVerb==='function'&&!window.finishQueuedVerb.__spScoring){const old=window.finishQueuedVerb;window.finishQueuedVerb=function(skill,v,good){const out=old.apply(this,arguments);if(good!==false){const sk=skillName(skill);setTimeout(()=>markTask(sk),0);setTimeout(()=>markTask(sk),300);setTimeout(()=>markTask(sk),1200)}return out};window.finishQueuedVerb.__spScoring=true}}
   function patchSaveState(){if(typeof window.saveState==='function'&&!window.saveState.__spScoringScan){const old=window.saveState;window.saveState=function(){const out=old.apply(this,arguments);setTimeout(scanDoneTasks,50);return out};window.saveState.__spScoringScan=true}}
-  function patchExam(){if(typeof window.renderVerbExamResult==='function'&&!window.renderVerbExamResult.__spScoring){const old=window.renderVerbExamResult;window.renderVerbExamResult=function(){const out=old.apply(this,arguments);try{const ex=window.state&&state.exam?state.exam:{};const percent=Number(ex.score||0);if(window.SprachPilotScoring&&SprachPilotScoring.awardExam)SprachPilotScoring.awardExam({percent,score:percent},{info:INFO})}catch(e){console.warn('Verben Prüfung Punkte Fehler',e)}return out};window.renderVerbExamResult.__spScoring=true}}
+  function patchExam(){if(typeof window.renderVerbExamResult==='function'&&!window.renderVerbExamResult.__spScoring){const old=window.renderVerbExamResult;window.renderVerbExamResult=function(){const out=old.apply(this,arguments);try{if(!teacher()){const ex=window.state&&state.exam?state.exam:{};const percent=Number(ex.score||0);if(window.SprachPilotScoring&&SprachPilotScoring.awardExam)SprachPilotScoring.awardExam({percent,score:percent},{info:INFO})}}catch(e){console.warn('Verben Prüfung Punkte Fehler',e)}return out};window.renderVerbExamResult.__spScoring=true}}
   function patchReset(){if(typeof window.resetCurrentPackage==='function'&&!window.resetCurrentPackage.__spScoring){window.resetCurrentPackage=function(){if(!confirm('Alle Verben wieder auf „nicht eingeschätzt“ setzen? Punkte bleiben erhalten.'))return;const finishLocalReset=()=>{try{if(typeof migrateState==='function')migrateState();if(typeof resetAllVerbProgressKeepPoints==='function')resetAllVerbProgressKeepPoints();if(typeof saveState==='function')saveState();if(typeof renderHome==='function')renderHome()}catch(e){console.warn('Verben Reset Fehler',e)}};if(window.SprachPilotScoring&&SprachPilotScoring.resetScope){SprachPilotScoring.resetScope(INFO).finally(finishLocalReset)}else{finishLocalReset()}};window.resetCurrentPackage.__spScoring=true}}
   function patchAll(){ensureScoringLoaded();patchFinish();patchSaveState();patchExam();patchReset();scanDoneTasks()}
   patchAll();document.addEventListener('DOMContentLoaded',patchAll);setTimeout(patchAll,100);setTimeout(patchAll,500);setTimeout(patchAll,1500);setInterval(()=>{ensureScoringLoaded();scanDoneTasks()},3000);
