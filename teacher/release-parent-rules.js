@@ -120,7 +120,6 @@
     ReleaseDraft.save=async function(){
       if(oldSave)await oldSave();
       await syncLegacyAssignments();
-      alert('Wortschatz-Freigabe wurde zusätzlich für die Schülerübersicht synchronisiert.');
     };
   }
   install();
