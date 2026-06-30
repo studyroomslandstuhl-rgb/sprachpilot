@@ -2,9 +2,11 @@ const CFG=window.SP_L5_THEME||{id:'Thema-1',title:'Alltag und trennbare Verben',
 const DATA=window.SP_A1_LEKTION5_WORTSCHATZ||{parts:[]};
 const THEME=(DATA.parts||[]).find(p=>p.id===CFG.id)||{words:[],title:CFG.title};
 const WORDS=THEME.words||[];
-const BAD_IMAGE_IDS=new Set(['einkaufen','spazieren_gehen']);
+const EXTRA_IMAGES={einkaufen:'/assets/img/einkaufen.png',aufstehen:'/assets/img/aufstehen.png',aufraeumen:'/assets/img/aufraumen.png',anrufen:'/assets/img/anrufen.png',fernsehen:'/assets/img/fernsehen.png'};
+const BAD_IMAGE_IDS=new Set(['spazieren_gehen']);
 const STD_LANGS=[['en','EN'],['ru','RU'],['tr','TR'],['uk','UK'],['ar','AR'],['ja','JA'],['ro','RO']];
-function hasGoodImage(w){return !!(w&&w.image&&!BAD_IMAGE_IDS.has(w.id))}
+function displayImage(w){return EXTRA_IMAGES[w?.id]||w?.image||''}
+function hasGoodImage(w){return !!(w&&!BAD_IMAGE_IDS.has(w.id)&&displayImage(w))}
 function simple(x){return String(x||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:]/g,'').replace(/\s+/g,' ')}
 function full(w){return w.full||((w.article?`${w.article} `:'')+(w.word||''))}
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'null')}catch(e){return null}}
@@ -13,8 +15,8 @@ function tr(w){const t=w.tr||{};return t[langKey()]||t.en||t.ru||t.tr||''}
 function stdTr(w){const t=w.tr||{};return `<div class="std-trans">${STD_LANGS.map(([k,l])=>`<div><b>${l}:</b> ${t[k]||'—'}</div>`).join('')}</div>`}
 function typeLabel(t){return({noun:'Nomen',verb:'Verben',adjective:'Adjektive',adverb:'Adverbien',preposition:'Präpositionen',phrase:'Ausdrücke',question:'Fragewörter',conjunction:'Verbindungen',determiner:'Begleiter',time:'Zeitwörter'})[t]||'Andere Wörter'}
 function byType(){const order=['noun','verb','adjective','adverb','preposition','phrase','question','conjunction','determiner','time'],g={};WORDS.forEach(w=>{(g[w.type||'other']||(g[w.type||'other']=[])).push(w)});return order.filter(k=>g[k]).map(k=>[typeLabel(k),g[k]]).concat(Object.keys(g).filter(k=>!order.includes(k)).map(k=>[typeLabel(k),g[k]]))}
-function imgHtml(w){return hasGoodImage(w)?`<img src="${w.image}" onerror="fixImg(this)" alt="">`:`<div class="word-placeholder">kein Bild</div>`}
-function bigImgHtml(w){return hasGoodImage(w)?`<img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">`:`<div class="placeholder-img">Bild fehlt<br>${full(w)}</div>`}
+function imgHtml(w){return hasGoodImage(w)?`<img src="${displayImage(w)}" onerror="fixImg(this)" alt="">`:`<div class="word-placeholder">kein Bild</div>`}
+function bigImgHtml(w){return hasGoodImage(w)?`<img class="task-img" src="${displayImage(w)}" onerror="fixImg(this)" alt="">`:`<div class="placeholder-img">Bild fehlt<br>${full(w)}</div>`}
 function fixImg(img){const ph=document.createElement('div');ph.className='word-placeholder';ph.textContent='kein Bild';img.replaceWith(ph)}
 function isThemePage(){return /\/Thema-1\/?(index\.html)?$/.test(location.pathname)}
 function header(title,showReset=false){const h=document.querySelector('.topbar');if(!h)return;const p=profile();const first=p?.vorname||p?.firstName||'';const last=p?.nachname||p?.lastName||'';const name=`${first} ${last}`.trim()||'Schüler/in';const course=p?.kurs||p?.kursnummer||p?.courseCode||'';const dashboard=localStorage.getItem('SP_LOGIN_ROLE')==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';const backHref=isThemePage()?'../index.html':'index.html';h.innerHTML=`<div class="topbar-main sp-account-row"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${title} · ${CFG.sub}</div></div></a><div class="account-tools"><span class="account-pill">${name}${course?' · '+course:''}</span><a class="account-link" href="${dashboard}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><button class="account-link account-btn" onclick="spLogout()">Abmelden</button></div></div><nav class="nav sp-page-nav"><a class="btn secondary" href="${backHref}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a>${showReset?'<button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>':''}</nav>`}
