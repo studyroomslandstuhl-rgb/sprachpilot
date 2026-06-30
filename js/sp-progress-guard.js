@@ -3,7 +3,7 @@
 (function(){
   try{import('/js/topbar-standard.js?v=7').catch(function(){});}catch(e){}
   function readProfile(){
-    try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"{}")}catch(e){return {}}
+    try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"{}") }catch(e){return {}}
   }
   function roleOf(profile){
     return String(profile?.role||profile?.type||profile?.typ||profile?.accountType||profile?.loginRole||"").toLowerCase();
@@ -141,7 +141,7 @@
     if(isPreview())return;
     if(window.__spFreshProgressModuleRequested)return;
     window.__spFreshProgressModuleRequested=true;
-    try{import("/js/progress.js?v=points-fix-20260629c").catch(function(){window.__spFreshProgressModuleRequested=false;});}
+    try{import("/js/progress.js?v=standard-20260630").catch(function(){window.__spFreshProgressModuleRequested=false;});}
     catch(e){window.__spFreshProgressModuleRequested=false;}
   }
   loadFreshProgressModule();
