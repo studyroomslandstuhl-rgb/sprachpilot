@@ -28,9 +28,13 @@ const progressTasks=[
 const done=progressTasks.filter(t=>pctFor(t[0],t[1])>=100).length;
 const all=Math.round(progressTasks.reduce((s,t)=>s+pctFor(t[0],t[1]),0)/progressTasks.length)||0;
 progressArea.innerHTML=progressCard({percent:all,doneText:`${done} / ${progressTasks.length} Aufgaben abgeschlossen`,goal:"Mengen, Verpackungen, Preise und Einkaufsdialoge üben."});
+const taskIcons={
+  'karteikarten.html':'🃏','bild-wort.html':'🖼️','wort-bild.html':'🔁','hoeren.html':'👂','artikel.html':'🔤','drag-drop-artikel.html':'🧲','plural.html':'🔢','plural-drag-drop.html':'📦','memory.html':'🧠','verpackungen.html':'🧺','preis-hoeren.html':'👂','preis-schreiben.html':'✍️','preis-sprechen.html':'🎤','frage-und-antwort.html':'💬','statistik.html':'📊','uebersicht.html':'📋'
+};
+function iconFor(file){return taskIcons[file]||'🛒'}
 function card(file,label,total=WORDS.length,idx=1,desc="Aufgabe üben"){
   let p=pctFor(file,total);
-  return moduleCard({href:file,num:idx,title:label,desc,progress:p,status:p>=100?'Fertig':'Starten'});
+  return moduleCard({href:file,num:idx,title:label,desc,progress:p,status:p>=100?'Fertig':'Starten',icon:iconFor(file)});
 }
 let n=1;
 wortschatz.innerHTML=[
@@ -52,8 +56,8 @@ preise.innerHTML=[
 ].join('');
 supermarkt.innerHTML=[card('frage-und-antwort.html','Frage & Antwort',COMBOS.length,n++,'Übe kurze Einkaufsdialoge.')].join('');
 fortschritt.innerHTML=[
-  moduleCard({href:'statistik.html',num:n++,title:'Statistik',desc:'Sieh deinen Lernstand.',status:'Öffnen'}),
-  moduleCard({href:'uebersicht.html',num:n++,title:'Übersicht',desc:'Sieh alle Wörter.',status:'Öffnen'})
+  moduleCard({href:'statistik.html',num:n++,title:'Statistik',desc:'Sieh deinen Lernstand.',status:'Öffnen',icon:iconFor('statistik.html')}),
+  moduleCard({href:'uebersicht.html',num:n++,title:'Übersicht',desc:'Sieh alle Wörter.',status:'Öffnen',icon:iconFor('uebersicht.html')})
 ].join('');
 </script>
 </body>
