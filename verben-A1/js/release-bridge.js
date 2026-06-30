@@ -19,6 +19,7 @@
   }
   function releaseData(){return courseReleaseData||loadLocalReleaseData()||{}}
   function valueAt(obj,path){let cur=obj;for(const p of path){if(!cur||typeof cur!=="object"||!(p in cur))return undefined;cur=cur[p]}return cur}
+  function defaultLockedSet(){return new Set(window.SP_DEFAULT_LOCKED_VERBS||[])}
   function explicitEnabled(data,verb){
     const paths=[["enabledWords",verb],["enabledWords",`verben-A1/${verb}`],["enabledWords",`Verben A1/${verb}`],["releases","verben-A1","words",verb],["releases","Verben A1","words",verb]];
     for(const p of paths){const v=valueAt(data,p);if(v!==undefined)return v===true;}
@@ -51,8 +52,9 @@
   function releasedVerbList(){
     const all=(typeof ALL_VERBS!=="undefined"?ALL_VERBS:[]).map(x=>x.v);
     const data=releaseData();
+    const locked=defaultLockedSet();
     if(!moduleOpen(data))return [];
-    if(!hasVerbControls(data))return all;
+    if(!hasVerbControls(data))return all.filter(v=>!locked.has(v));
     return all.filter(v=>explicitEnabled(data,v)===true);
   }
   function allowedSet(){return new Set(releasedVerbList())}
