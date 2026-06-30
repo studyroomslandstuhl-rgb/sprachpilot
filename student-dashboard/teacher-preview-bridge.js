@@ -1,6 +1,19 @@
 // Muss im Schüler-Dashboard vor dem Dashboard-Code geladen werden.
 // Trennt Schüler-Login strikt von Lehrer-Vorschau.
 (function(){
+  function cleanDashboardCopy(){
+    try{
+      document.querySelectorAll('.small').forEach(el=>{
+        const txt=String(el.textContent||'').trim();
+        if(txt==='Das Dashboard öffnet sofort; Firestore wird danach aktualisiert.')el.remove();
+        if(txt==='Lokale Daten werden angezeigt. Online-Daten laden im Hintergrund.')el.textContent='Dein Fortschritt wird angezeigt.';
+      });
+    }catch(e){}
+  }
+  cleanDashboardCopy();
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',cleanDashboardCopy);else setTimeout(cleanDashboardCopy,0);
+  setTimeout(cleanDashboardCopy,100);
+  setTimeout(cleanDashboardCopy,500);
   function readProfile(){
     try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"{}") }catch(e){return {}}
   }
