@@ -1,29 +1,30 @@
 // wortschatz/index-release-lock.js
 // Strenge Lektionsfreigabe für die Wortschatz-Startseite: courses/releases statt alter assignments.
 (function(){
-  function safeJson(s,f){try{return JSON.parse(s||'')||f}catch(e){return f}}
   function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'null')||{}}catch(e){return {}}}
   function code(){const p=profile();return String(p.kurs||p.kursnummer||p.courseCode||localStorage.getItem('SP_COURSE_CODE')||'').trim()}
+  function store(){try{return window.db||(window.firebase&&firebase.firestore?firebase.firestore():null)}catch(e){return null}}
   function val(obj,path){let cur=obj;for(const p of path){if(!cur||typeof cur!=='object'||!(p in cur))return undefined;cur=cur[p]}return cur}
-  function locked(data){return !data||data.defaultLocked!==false&&data.releaseMode!=='open'&&data.releaseMode!=='all'}
   function setStatus(text,bad){let box=document.getElementById('assignmentStatus');if(!box){box=document.createElement('div');box.id='assignmentStatus';const first=document.querySelector('.card');if(first)first.prepend(box)}box.className='assignment-status'+(bad?' no':'');box.innerHTML=text}
   async function getCourseData(courseCode){
-    if(!courseCode||!window.db)return null;
+    const dbx=store();
+    if(!courseCode||!dbx)return null;
     const variants=[courseCode,courseCode.toUpperCase(),courseCode.toLowerCase()].filter((v,i,a)=>v&&a.indexOf(v)===i);
-    for(const c of variants){try{const snap=await db.collection('courses').doc(String(c)).get();if(snap.exists)return snap.data()||{}}catch(e){}}
-    for(const field of ['courseCode','kurs','kursnummer','name','courseName','code']){try{const s=await db.collection('courses').where(field,'==',String(courseCode)).limit(1).get();if(s&&!s.empty)return s.docs[0].data()||{}}catch(e){}}
+    for(const c of variants){try{const snap=await dbx.collection('courses').doc(String(c)).get();if(snap.exists)return snap.data()||{}}catch(e){}}
+    for(const field of ['courseCode','kurs','kursnummer','name','courseName','code']){try{const s=await dbx.collection('courses').where(field,'==',String(courseCode)).limit(1).get();if(s&&!s.empty)return s.docs[0].data()||{}}catch(e){}}
     return null;
   }
   function moduleOpen(data){
+    if(!data)return false;
     const paths=[['enabledModules','Wortschatz'],['enabledModules','wortschatz'],['releases','Wortschatz','enabled'],['releases','wortschatz','enabled']];
     for(const p of paths){const v=val(data,p);if(v!==undefined)return v===true}
-    return !locked(data);
+    return false;
   }
   function lessonOpen(data,lesson){
     if(!moduleOpen(data))return false;
     const paths=[['enabledLessons',lesson],['enabledLessons','wortschatz/'+lesson],['releases','wortschatz','lessons',lesson,'enabled'],['releases','Wortschatz','lessons',lesson,'enabled']];
     for(const p of paths){const v=val(data,p);if(v!==undefined)return v===true}
-    return !locked(data);
+    return false;
   }
   function clean(a){return (a.textContent||'').replace('Gesperrt','').replace('Offen','').replace('🔒','').replace('✅','').trim()}
   function apply(data){
@@ -36,6 +37,7 @@
       a.classList.toggle('open',open);
       a.classList.toggle('locked',!open);
       a.dataset.releaseOpen=open?'1':'0';
+      if(open){a.setAttribute('href','./'+lesson+'/')}else{a.removeAttribute('href')}
       a.onclick=function(e){if(!open){e.preventDefault();alert('Diese Lektion ist für deinen Kurs noch nicht freigeschaltet.')}};
       if(open)count++;
       old.replaceWith(a);
@@ -52,5 +54,5 @@
     setStatus('Eingeloggt: <strong>'+((profile().vorname||'')+' '+(profile().nachname||'')).trim()+'</strong> · Kurs: <strong>'+c+'</strong><br>Freigeschaltet: <strong>'+count+'</strong> Lektion(en)',count===0);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
-  setTimeout(run,500);setTimeout(run,1500);
+  setTimeout(run,500);setTimeout(run,1500);setTimeout(run,3000);
 })();
