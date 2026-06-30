@@ -1,8 +1,8 @@
 import { db, doc, getDoc, setDoc, serverTimestamp } from "/js/firebase.js";
 import { getActiveProfile } from "/js/auth.js";
 
-const TASK_POINTS={1:5,2:10,3:15};
-const EXAM_POINTS={1:100,2:200,3:300};
+function taskPointsForRun(run){run=Number(run)||1;if(run===1)return 5;if(run===2)return 10;if(run===3)return 15;return 1}
+function examPointsForRun(run){run=Number(run)||1;if(run===1)return 100;if(run===2)return 200;if(run===3)return 300;return 1}
 const TASK_TITLES={
   "karteikarten.html":"Karteikarten",
   "bild-wort.html":"Bild → Wort",
@@ -28,7 +28,8 @@ function isL3(){return /\/wortschatz\/A1-Lektion-3\//.test(location.pathname)}
 function isTeacherPreview(){
   try{
     const role=String(localStorage.getItem("SP_LOGIN_ROLE")||localStorage.getItem("SP_ACTIVE_ROLE")||"").toLowerCase();
-    return role==="teacher" || sessionStorage.getItem("SP_TEACHER_PREVIEW")==="1" || localStorage.getItem("SP_TEACHER_PREVIEW")==="1";
+    const preview=JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW")||"null");
+    return !!(role==="teacher" && preview && preview.teacherPreview===true);
   }catch(e){return false}
 }
 function cleanId(s){return String(s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"item"}
@@ -58,14 +59,8 @@ async function writeProgress(next,delta=0){
   try{localStorage.setItem("SP_POINTS_TOTAL",String(newTotal));}catch(e){}
   return next;
 }
-function currentRun(lifetime={}){return Math.min(3,Math.max(1,Number(lifetime.resets||0)+1))}
+function currentRun(lifetime={}){return Math.max(1,Number(lifetime.resets||0)+1)}
 function taskLocalState(file){try{return JSON.parse(localStorage.getItem("SP_TASK_STATE_"+file)||"null")}catch(e){return null}}
-function taskPercent(file){
-  try{if(typeof window.pctFor==="function")return clampPercent(window.pctFor(file,taskLocalState(file)?.total||1));}catch(e){}
-  try{if(typeof window.taskPercent==="function")return clampPercent(window.taskPercent(file));}catch(e){}
-  const st=taskLocalState(file);if(st&&st.total)return clampPercent(arr(st.done).length/st.total*100);
-  return 100;
-}
 function taskDoneTotal(file){
   const st=taskLocalState(file);
   if(st&&st.total)return {total:Number(st.total)||0,done:arr(st.done).length||Number(st.total)||0};
@@ -73,6 +68,7 @@ function taskDoneTotal(file){
 }
 async function recordTaskDone(file){
   if(!isL3()||isTeacherPreview()||!file||file==="index.html"||file==="statistik.html"||file==="uebersicht.html")return;
+  if(file==="pruefung.html")return recordExamResult({percent:100,stars:3});
   const theme=themeNo();if(!theme)return;
   const current=await readProgress();
   const mod={...(current.wortschatz||{})};
@@ -83,9 +79,9 @@ async function recordTaskDone(file){
   const taskKey=cleanId(file);
   const taskPointRuns={...(lifetime.taskPointRuns||{})};
   const taskRuns={...(taskPointRuns[taskKey]||{})};
-  const canEarn=run<=3 && !taskRuns[String(run)];
-  const delta=canEarn?(TASK_POINTS[run]||0):0;
-  if(delta) taskRuns[String(run)]=delta;
+  const runKey=String(run);
+  const delta=taskRuns[runKey]?0:taskPointsForRun(run);
+  if(delta) taskRuns[runKey]=delta;
   taskPointRuns[taskKey]=taskRuns;
   lifetime.taskPointRuns=taskPointRuns;
   lifetime.points=Number(lifetime.points||0)+delta;
@@ -112,8 +108,8 @@ async function recordExamResult(result={}){
   if(!isL3()||isTeacherPreview())return;
   const theme=themeNo();if(!theme)return;
   const current=await readProgress();const mod={...(current.wortschatz||{})};const key=topicKey(theme);const topic={...(mod[key]||{})};const lifetime={...(topic.lifetime||{})};
-  const run=currentRun(lifetime);const percent=clampPercent(result.percent??0);const maxForRun=EXAM_POINTS[run]||0;const earned=maxForRun?Math.round(percent/100*maxForRun):0;
-  const examPointRuns={...(lifetime.examPointRuns||{})};const oldRunBest=Number(examPointRuns[String(run)]||0);const delta=run<=3?Math.max(0,earned-oldRunBest):0;if(delta) examPointRuns[String(run)]=earned;
+  const run=currentRun(lifetime);const percent=clampPercent(result.percent??0);const maxForRun=examPointsForRun(run);const earned=Math.round(percent/100*maxForRun);
+  const examPointRuns={...(lifetime.examPointRuns||{})};const oldRunBest=Number(examPointRuns[String(run)]||0);const delta=Math.max(0,earned-oldRunBest);if(earned>oldRunBest) examPointRuns[String(run)]=earned;
   lifetime.examPointRuns=examPointRuns;lifetime.points=Number(lifetime.points||0)+delta;lifetime.bestExamPercent=Math.max(Number(lifetime.bestExamPercent||0),percent);lifetime.bestStars=Math.max(Number(lifetime.bestStars||0),Number(result.stars||0));
   const exam={...(topic.exam||{})};const attempts=Number(exam.attempts||0)+1;const score=Number(result.score||earned||0);const maxScore=Number(result.maxScore||maxForRun||100)||100;const attemptsLog=arr(exam.attemptsLog).concat([{score,maxScore,percent,stars:Number(result.stars||0),run,date:nowIso()}]).slice(-20);
   topic.exam={attempted:true,unlocked:true,attempts,attemptsLog,lastScore:score,lastPercent:percent,lastStars:Number(result.stars||0),lastAttemptAt:nowIso(),bestScore:Math.max(Number(exam.bestScore||0),score),bestPercent:Math.max(Number(exam.bestPercent||0),percent),stars:Math.max(Number(exam.stars||0),Number(result.stars||0)),maxScore};
@@ -144,7 +140,20 @@ function patchExam(){
     window.saveExamResult.__l3PointsPatched=true;
   }
 }
-function patchAll(){patchComplete();patchReset();patchExam()}
+function patchDone(){
+  if(typeof window.done==="function" && !window.done.__l3PointsPatched){
+    const original=window.done;
+    window.done=function(file,total){const out=original.apply(this,arguments);recordTaskDone(file).catch(e=>console.warn("L3 done points failed",e));return out};
+    window.done.__l3PointsPatched=true;
+  }
+}
+function drainQueues(){
+  const q=Array.isArray(window.SP_L3_TASK_DONE_QUEUE)?window.SP_L3_TASK_DONE_QUEUE.splice(0):[];
+  q.forEach(file=>recordTaskDone(file).catch(e=>console.warn("L3 queued task points failed",e)));
+  const eq=Array.isArray(window.SP_L3_EXAM_QUEUE)?window.SP_L3_EXAM_QUEUE.splice(0):[];
+  eq.forEach(r=>recordExamResult(r).catch(e=>console.warn("L3 queued exam points failed",e)));
+}
+function patchAll(){patchComplete();patchReset();patchExam();patchDone();drainQueues();window.spL3RecordTaskDone=recordTaskDone;window.spL3RecordExamResult=recordExamResult;}
 if(isL3()){
   patchAll();
   document.addEventListener("DOMContentLoaded",patchAll);
