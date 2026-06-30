@@ -38,7 +38,11 @@ const allP=totalPercent();
 progressArea.innerHTML=progressCard({percent:allP,doneText:`Wortschatz ${vocabP}% · Grammatik ${gramP}%`,goal:"Lebensmittel, Getränke, Artikel, Plural und einfache Fragen üben."});
 let b=batchInfo();
 batch.innerHTML=`<p>Gruppe ${b.batch+1}: Wörter ${b.start+1}–${b.end} von ${b.total}</p><p class="small">Die nächste Gruppe wird automatisch freigeschaltet, wenn alle Wortschatzaufgaben fertig sind.</p>`;
-function taskCard(t,i){let p=taskPercent(t.file);return moduleCard({href:t.file,num:i+1,title:t.name,desc:t.type==='vocab'?"Wortschatz üben":"Grammatik üben",progress:p,status:p>=100?"Fertig":"Starten"})}
+const taskIcons={
+  'karteikarten.html':'🃏','bild-wort.html':'🖼️','wort-bild.html':'🔁','hoeren.html':'👂','artikel.html':'🔤','plural.html':'🔢','memory.html':'🧠','fragen-bilden.html':'❓','ein-eine.html':'1️⃣','kein-keine.html':'🚫'
+};
+function taskIcon(t){return taskIcons[t.file] || (t.type==='vocab'?'🍎':'🔤')}
+function taskCard(t,i){let p=taskPercent(t.file);return moduleCard({href:t.file,num:i+1,title:t.name,desc:t.type==='vocab'?"Wortschatz üben":"Grammatik üben",progress:p,status:p>=100?"Fertig":"Starten",icon:taskIcon(t)})}
 vocab.innerHTML=TASKS.filter(t=>t.type==='vocab').map(taskCard).join('');
 grammar.innerHTML=TASKS.filter(t=>t.type==='grammar').map(taskCard).join('');
 </script>
