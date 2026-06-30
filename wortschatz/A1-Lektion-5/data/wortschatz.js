@@ -23,13 +23,11 @@ Thema-1|A|spazieren_gehen||spazieren gehen|||verb|gehen|Lara geht spazieren.|to 
 Thema-1|A|aufraeumen||aufräumen|||verb||Lara räumt die Küche auf.|to tidy up|убирать|toplamak / düzenlemek|
 Thema-1|A|aufstehen||aufstehen|||verb||Lara steht früh auf.|to get up|вставать|kalkmak|
 Thema-1|A|gehen||gehen|||verb|gehen|Lara geht zum Deutschkurs.|to go|идти|gitmek|
-Thema-1|A|oder||oder|||conjunction||Ich koche oder sehe fern.|or|или|veya|
 Thema-1|A|muede||müde|||adjective||Ich bin müde.|tired|усталый|yorgun|
 Thema-1|A|anrufen||anrufen|||verb||Lara ruft ihre Familie an.|to call|звонить|aramak|
 Thema-1|A|frueh||früh|||adverb||Lara steht früh auf.|early|рано|erken|
 Thema-1|A|supermarkt|der|Supermarkt|die Supermärkte|-e/Umlaut|noun|supermarkt|Sie kauft im Supermarkt ein.|supermarket|супермаркет|süpermarket|
 Thema-1|A|fernsehen||fernsehen|||verb||Sie sieht fern.|to watch TV|смотреть телевизор|televizyon izlemek|
-Thema-1|A|mit||mit|||preposition||Sie frühstückt mit Lara und Lili.|with|с|ile|
 Thema-1|A|arbeiten||arbeiten|||verb|arbeiten|Sie arbeitet lange.|to work|работать|çalışmak|
 Thema-1|A|lange||lange|||adverb||Sofia arbeitet lange.|long / for a long time|долго|uzun süre|
 Thema-1|A|spielen||spielen|||verb|spielen|Sie spielt mit Lili.|to play|играть|oynamak|
