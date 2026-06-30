@@ -28,7 +28,8 @@ function isTeacherPreview(){
     return !!(role==="teacher" || (preview&&preview.teacherPreview===true) || sessionStorage.getItem("SP_TEACHER_PREVIEW")==="1" || localStorage.getItem("SP_TEACHER_PREVIEW")==="1");
   }catch(e){return false}
 }
-function strongestPoints(record={}){return Math.max(Number(record.lifetimePoints||0),Number(record.pointsTotal||0),Number(record.punkteGesamt||0),Number(record.totals?.points||0),Number(record.manualPointsTotal||0))}
+function localLifetimePoints(){return Math.max(0,Number(localStorage.getItem("SP_POINTS_TOTAL")||0)||0)}
+function strongestPoints(record={}){return Math.max(Number(record.lifetimePoints||0),Number(record.pointsTotal||0),Number(record.punkteGesamt||0),Number(record.totals?.points||0),Number(record.manualPointsTotal||0),localLifetimePoints())}
 function scopeInfo(){
   const path=String(location.pathname||"");
   if(/\/verben-A1\//.test(path))return {moduleKey:"verben",scope:"verben-a1",title:"Verben A1",lesson:"",theme:""};
@@ -86,15 +87,16 @@ async function awardTask(file,options={}){
   if(/index\.html|statistik\.html|uebersicht\.html/i.test(fileName))return 0;
   const key=taskKey(fileName);const localKey=`SP_SCORE_TASK_${scope}_RUN_${run}_${key}`;
   if(localStorage.getItem(localKey)==="1")return 0;
-  localStorage.setItem(localKey,"1");
-  const delta=RULES.taskPoints(run);addLocalPoints(delta);
-  await writeProgress(data=>{const topic=ensureTopic(data,info);const runs={...((topic.lifetime.taskPointRuns||{})[key]||{})};runs[String(run)]=delta;topic.lifetime.taskPointRuns={...(topic.lifetime.taskPointRuns||{}),[key]:runs};topic.lifetime.points=Number(topic.lifetime.points||0)+delta;topic.lifetime.resets=Math.max(Number(topic.lifetime.resets||0),run-1);topic.tasks[key]={...(topic.tasks[key]||{}),key,file:fileName,title:options.title||taskTitle(fileName),percent:100,completed:true,completedAt:(topic.tasks[key]?.completedAt||nowIso()),lastActiveAt:nowIso(),points:Number(topic.tasks[key]?.points||0)+delta,pointsByRun:runs,run};return saveTopic(data,info,topic);},delta);
+  const delta=RULES.taskPoints(run);
+  await writeProgress(data=>{const topic=ensureTopic(data,info);const runs={...((topic.lifetime.taskPointRuns||{})[key]||{})};if(runs[String(run)])return saveTopic(data,info,topic);runs[String(run)]=delta;topic.lifetime.taskPointRuns={...(topic.lifetime.taskPointRuns||{}),[key]:runs};topic.lifetime.points=Number(topic.lifetime.points||0)+delta;topic.lifetime.resets=Math.max(Number(topic.lifetime.resets||0),run-1);topic.tasks[key]={...(topic.tasks[key]||{}),key,file:fileName,title:options.title||taskTitle(fileName),percent:100,completed:true,completedAt:(topic.tasks[key]?.completedAt||nowIso()),lastActiveAt:nowIso(),points:Number(topic.tasks[key]?.points||0)+delta,pointsByRun:runs,run};return saveTopic(data,info,topic);},delta);
+  localStorage.setItem(localKey,"1");addLocalPoints(delta);
   return delta;
 }
 async function awardExam(result={},options={}){
   if(isTeacherPreview())return 0;
-  const info=options.info||scopeInfo();const scope=info.scope;const run=currentRun(scope);const percent=clampPercent(result.percent??result.scorePercent??result.score??100);const earned=RULES.examEarned(run,percent);const localKey=`SP_SCORE_EXAM_${scope}_RUN_${run}`;const oldLocal=Number(localStorage.getItem(localKey)||0);const delta=Math.max(0,earned-oldLocal);if(earned>oldLocal)localStorage.setItem(localKey,String(earned));if(!delta)return 0;addLocalPoints(delta);
-  await writeProgress(data=>{const topic=ensureTopic(data,info);const oldBest=Number((topic.lifetime.examPointRuns||{})[String(run)]||0);const better=Math.max(oldBest,earned);topic.lifetime.examPointRuns={...(topic.lifetime.examPointRuns||{}),[String(run)]:better};topic.lifetime.points=Number(topic.lifetime.points||0)+delta;topic.lifetime.resets=Math.max(Number(topic.lifetime.resets||0),run-1);topic.lifetime.bestExamPercent=Math.max(Number(topic.lifetime.bestExamPercent||0),percent);const exam={...(topic.exam||{})};exam.attempted=true;exam.unlocked=true;exam.attempts=Number(exam.attempts||0)+1;exam.lastPercent=percent;exam.lastScore=earned;exam.maxScore=RULES.examMax(run);exam.lastAttemptAt=nowIso();exam.bestScore=Math.max(Number(exam.bestScore||0),earned);exam.bestPercent=Math.max(Number(exam.bestPercent||0),percent);exam.stars=percent>=100?3:percent>=70?2:percent>=50?1:0;exam.attemptsLog=arr(exam.attemptsLog).concat([{run,percent,score:earned,maxScore:exam.maxScore,date:nowIso()}]).slice(-30);topic.exam=exam;topic.examUnlocked=true;if(percent>=100)topic.progressPercent=100;return saveTopic(data,info,topic);},delta);
+  const info=options.info||scopeInfo();const scope=info.scope;const run=currentRun(scope);const percent=clampPercent(result.percent??result.scorePercent??result.score??100);const earned=RULES.examEarned(run,percent);const localKey=`SP_SCORE_EXAM_${scope}_RUN_${run}`;const oldLocal=Number(localStorage.getItem(localKey)||0);const delta=Math.max(0,earned-oldLocal);if(!delta)return 0;
+  await writeProgress(data=>{const topic=ensureTopic(data,info);const oldBest=Number((topic.lifetime.examPointRuns||{})[String(run)]||0);const better=Math.max(oldBest,earned);const firestoreDelta=Math.max(0,better-oldBest);topic.lifetime.examPointRuns={...(topic.lifetime.examPointRuns||{}),[String(run)]:better};topic.lifetime.points=Number(topic.lifetime.points||0)+firestoreDelta;topic.lifetime.resets=Math.max(Number(topic.lifetime.resets||0),run-1);topic.lifetime.bestExamPercent=Math.max(Number(topic.lifetime.bestExamPercent||0),percent);const exam={...(topic.exam||{})};exam.attempted=true;exam.unlocked=true;exam.attempts=Number(exam.attempts||0)+1;exam.lastPercent=percent;exam.lastScore=earned;exam.maxScore=RULES.examMax(run);exam.lastAttemptAt=nowIso();exam.bestScore=Math.max(Number(exam.bestScore||0),earned);exam.bestPercent=Math.max(Number(exam.bestPercent||0),percent);exam.stars=percent>=100?3:percent>=70?2:percent>=50?1:0;exam.attemptsLog=arr(exam.attemptsLog).concat([{run,percent,score:earned,maxScore:exam.maxScore,date:nowIso()}]).slice(-30);topic.exam=exam;topic.examUnlocked=true;if(percent>=100)topic.progressPercent=100;return saveTopic(data,info,topic);},delta);
+  if(earned>oldLocal)localStorage.setItem(localKey,String(earned));addLocalPoints(delta);
   return delta;
 }
 async function resetScope(info=scopeInfo()){
