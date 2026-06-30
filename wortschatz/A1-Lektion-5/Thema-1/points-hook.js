@@ -6,6 +6,10 @@
     const s=document.createElement('script');
     s.src='/js/sp-progress-guard.js?v=points-safe';
     document.head.appendChild(s);
+    const p=document.createElement('script');
+    p.type='module';
+    p.src='/js/progress.js?v=l5t1';
+    document.head.appendChild(p);
   }
   function queue(method,payload){
     ensureGuard();
