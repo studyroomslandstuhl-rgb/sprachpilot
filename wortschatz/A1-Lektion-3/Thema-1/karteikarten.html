@@ -1,3 +1,108 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten</title><link rel="stylesheet" href="style.css"></head><body>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Karteikarten</title>
+<link rel="stylesheet" href="style.css">
+</head>
+<body>
 <div id="accountStrip" class="account-strip"></div>
-<script type="module" src="/js/guard.js"></script><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=40"></script><script>header("Karteikarten");let Q=queueFor('karteikarten.html',singularWords());function render(){Q.cur=nextItem(Q);if(!Q.cur){complete(area,'karteikarten.html','bild-wort.html');return}Q.tries=0;Q.had=false;area.innerHTML=prog(Q)+`<div class="question">Sage auf Deutsch:</div><div class="big">${trans(Q.cur)}</div><div id="card" class="card" style="box-shadow:none;border:2px solid #ffd39b;text-align:center;min-height:120px"><div class="big">${trans(Q.cur)}</div></div><div class="actions"><button id="mic" class="btn" onclick="say()">Sprechen</button><button class="btn secondary" onclick="showWrite()">Ich kann nicht sprechen</button><button class="btn secondary" onclick="flip()">Karte umdrehen</button></div><div id="writeBox" class="hidden"><input id="ans" placeholder="Artikel + Nomen"><button class="btn" onclick="checkText()">Kontrollieren</button></div><div id="micStatus" class="hint hidden"></div><div id="fb" class="feedback"></div><div class="actions"><button id="go" class="btn hidden" onclick="render()">Weiter</button></div>`}function showWrite(){writeBox.classList.remove('hidden')}function flip(){wrong(Q);card.innerHTML=`<div class="big">${full(Q.cur)}</div>`;fb.innerHTML='Hilfe benutzt. Das Wort wird später wiederholt.';go.classList.remove('hidden')}function say(){mic.disabled=true;micStatus.classList.remove('hidden');micStatus.textContent='Mikrofon aktiv ...';speech((txt)=>{mic.disabled=false;micStatus.classList.add('hidden');if(!txt){fb.innerHTML='Ich konnte dich nicht hören. Nutze „Ich kann nicht sprechen“.';return}let d=diagnose(txt,Q.cur);if(d.ok){right(Q,Q.cur);fb.textContent='Richtig!';go.classList.remove('hidden')}else{wrong(Q);fb.innerHTML=fail(Q,d)}})}function checkText(){let d=diagnose(ans.value,Q.cur);if(d.ok){right(Q,Q.cur);fb.textContent='Richtig!';go.classList.remove('hidden')}else{wrong(Q);fb.innerHTML=fail(Q,d)}}render();</script></body></html>
+
+<div class="container">
+  <section class="hero"></section>
+  <div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div>
+  <section class="card" id="area">
+    <div class="question">Aufgabe wird geladen …</div>
+  </section>
+  <footer>© SprachPilot</footer>
+</div>
+
+<script src="app.js?v=41"></script>
+<script>
+header("Karteikarten");
+
+const FILE = "karteikarten.html";
+const CARD_WORDS = (typeof singularWords === "function" ? singularWords() : activeWords());
+let Q = queueFor(FILE, CARD_WORDS);
+
+function cardTranslation(w){
+  return trans(w) || w.word || full(w);
+}
+
+function show(){
+  Q.cur = nextItem(Q);
+
+  if(!Q.cur){
+    complete(area, FILE, "bild-wort.html");
+    return;
+  }
+
+  Q.tries = 0;
+  Q.had = false;
+  const w = Q.cur;
+
+  area.innerHTML = `${prog(Q)}
+    <div class="question">Sage das deutsche Wort mit Artikel.</div>
+    <div class="hint">Muttersprache: <b>${cardTranslation(w)}</b></div>
+    <img class="food-img" src="${w.image}" onerror="fixImg(this)" alt="">
+    <div class="actions">
+      <button id="micBtn" class="btn mic-btn" onclick="say()">🎤 Sprechen</button>
+      <button class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button>
+      <button class="btn secondary" onclick="flip()">Karte umdrehen</button>
+    </div>
+    <div id="micStatus" class="mic-status"></div>
+    <div id="box" class="hidden">
+      <input id="ans" placeholder="z. B. die Tomate">
+      <button class="btn" onclick="check(ans.value)">Kontrollieren</button>
+    </div>
+    <div id="fb" class="feedback"></div>`;
+}
+
+function writeBox(){
+  box.classList.remove("hidden");
+}
+
+function flip(){
+  const w = Q.cur;
+  wrong(Q);
+  persist(Q);
+  fb.innerHTML = feedbackForCard(Q.tries, full(w), "Artikel und Wort");
+  box.classList.remove("hidden");
+  ans.value = full(w);
+}
+
+function say(){
+  startMic(micBtn, txt => {
+    writeBox();
+    ans.value = txt;
+    check(txt);
+  });
+}
+
+function check(txt){
+  const w = Q.cur;
+  const d = diagnose(txt, w);
+
+  if(d.ok){
+    fb.textContent = "Richtig!";
+    right(Q, w);
+    setTimeout(show, 700);
+  }else{
+    wrong(Q);
+    fb.innerHTML = feedbackForCard(Q.tries, d.sol || full(w), d.tip || "Artikel und Wort");
+    // Wichtig: NICHT automatisch weitergehen.
+  }
+}
+
+function feedbackForCard(tries, solution, type){
+  if(tries === 1) return "Da ist noch ein Fehler.";
+  if(tries === 2) return "Tipp: Prüfe " + type + ".";
+  return "Lösung: " + solution;
+}
+
+show();
+</script>
+<script type="module" src="/js/guard.js"></script>
+</body>
+</html>
