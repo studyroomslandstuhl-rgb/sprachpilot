@@ -5,7 +5,7 @@
 <section class="card" id="area"><p>Wort antippen, dann Gruppe antippen. Danach kontrollieren.</p><div id="chips"></div>
 <div class="drop-grid"><div class="dropzone" data-a="der"><h2>der</h2></div><div class="dropzone" data-a="die"><h2>die</h2></div><div class="dropzone" data-a="das"><h2>das</h2></div></div>
 <button id="controlBtn" class="btn" onclick="control()">Kontrollieren</button><div id="fb" class="feedback"></div><a id="nextBtn" class="btn hidden" href="plural.html">Weiter</a></section>
-<footer>© SprachPilot</footer></div><script src="app.js?v=14"></script><script src="../shared/lektion3-fix.js?v=1"></script><script>
+<footer>© SprachPilot</footer></div><script src="app.js?v=14"></script><script src="../shared/lektion3-fix.js?v=2"></script><script>
 header("Artikel zuordnen");
 let selected=null;
 const TASK_FILE='drag-drop-artikel.html';
@@ -15,77 +15,19 @@ function markTaskDone(file,total){
   const done=[...Array(total).keys()];
   const st={total,queue:[],done,current:null,tries:0};
   try{localStorage.setItem(spTaskStateKey(file),JSON.stringify(st));}catch(e){}
-  if(typeof spL3AwardTask==='function')spL3AwardTask(file);
 }
 
 chips.innerHTML=WORDS.map(w=>`<span class="chip" data-id="${w.id}">${w.word}</span>`).join('');
-
-function clearCorrectionsForChip(c){
-  c.classList.remove('selected','no');
-  let n=c.nextElementSibling;
-  if(n && n.classList.contains('correction')) n.remove();
-}
-
-function makeSelectable(){
- document.querySelectorAll('.chip').forEach(c=>{
-   c.onclick=(ev)=>{
-     ev.stopPropagation();
-     if(c.classList.contains('ok')) return;
-
-     document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));
-     selected=c;
-     c.classList.add('selected');
-   };
- });
-}
-
-function setupZones(){
- document.querySelectorAll('.dropzone').forEach(z=>{
-   z.onclick=(ev)=>{
-     if(!selected) return;
-     clearCorrectionsForChip(selected);
-     z.appendChild(selected);
-     selected=null;
-     makeSelectable();
-   };
- });
-}
-
+function clearCorrectionsForChip(c){c.classList.remove('selected','no');let n=c.nextElementSibling;if(n&&n.classList.contains('correction'))n.remove();}
+function makeSelectable(){document.querySelectorAll('.chip').forEach(c=>{c.onclick=(ev)=>{ev.stopPropagation();if(c.classList.contains('ok'))return;document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));selected=c;c.classList.add('selected');};});}
+function setupZones(){document.querySelectorAll('.dropzone').forEach(z=>{z.onclick=()=>{if(!selected)return;clearCorrectionsForChip(selected);z.appendChild(selected);selected=null;makeSelectable();};});}
 function control(){
- document.querySelectorAll('.correction').forEach(x=>x.remove());
- let ok=0;
-
- document.querySelectorAll('.dropzone .chip').forEach(c=>{
-   let w=WORDS.find(x=>x.id===c.dataset.id);
-   let z=c.closest('.dropzone');
-
-   c.classList.remove('ok','no','selected');
-
-   if(z.dataset.a===w.article){
-     c.classList.add('ok');
-     ok++;
-   }else{
-     c.classList.add('no');
-     let note=document.createElement('span');
-     note.className='correction';
-     note.textContent='richtig: '+w.article;
-     c.after(note);
-   }
- });
-
- selected=null;
- makeSelectable();
- setupZones();
-
- if(ok===WORDS.length){
-   markTaskDone(TASK_FILE,TASK_TOTAL);
-   complete(area,TASK_FILE,'plural.html');
- }else{
-   fb.textContent='Korrigiere die roten Wörter. Tippe ein rotes Wort an und tippe dann die richtige Tabelle an.';
- }
+ document.querySelectorAll('.correction').forEach(x=>x.remove());let ok=0;
+ document.querySelectorAll('.dropzone .chip').forEach(c=>{let w=WORDS.find(x=>x.id===c.dataset.id);let z=c.closest('.dropzone');c.classList.remove('ok','no','selected');if(z.dataset.a===w.article){c.classList.add('ok');ok++;}else{c.classList.add('no');let note=document.createElement('span');note.className='correction';note.textContent='richtig: '+w.article;c.after(note);}});
+ selected=null;makeSelectable();setupZones();
+ if(ok===WORDS.length){markTaskDone(TASK_FILE,TASK_TOTAL);complete(area,TASK_FILE,'plural.html');}
+ else{fb.textContent='Korrigiere die roten Wörter. Tippe ein rotes Wort an und tippe dann die richtige Tabelle an.';}
 }
-
-makeSelectable();
-setupZones();
+makeSelectable();setupZones();
 </script>
 <script type="module" src="/js/guard.js"></script></body></html>
