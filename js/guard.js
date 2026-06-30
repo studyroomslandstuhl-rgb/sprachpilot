@@ -6,7 +6,10 @@ if(SP_USER){
 }
 import("/js/activity-tracker.js?v=1").catch(()=>{});
 import("/js/scoring.js?v=2").catch(()=>{});
-import("/js/release-helper.js?v=4").catch(()=>{});
+import("/js/release-helper.js?v=5").catch(()=>{});
+if(location.pathname.includes("/wortschatz/")){
+  import("/wortschatz/index-release-lock.js?v=1").catch(()=>{});
+}
 if(location.pathname.includes("/verben-A1/")){
   import("/verben-A1/js/scoring-bridge.js?v=2").catch(()=>{});
 }
