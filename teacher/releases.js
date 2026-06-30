@@ -94,6 +94,9 @@ const ReleaseDraft = {
     this.set(["releases","wortschatz","lessons",lessonKey,"themes",themeKey,"sets",setKey],value);
     this.set(["releases","Wortschatz","lessons",lessonKey,"themes",themeKey,"sets",setKey],value);
   },
+  setVerb(verb,value){
+    this.setMany(verbReleasePaths(verb),value);
+  },
   normalizeBeforeSave(){
     for(const lesson of RELEASE_CATALOG.lessons){
       for(const theme of lesson.themes){
@@ -105,6 +108,10 @@ const ReleaseDraft = {
         }
       }
     }
+    verbList().forEach(v=>{
+      const value=this.getAny(verbReleasePaths(v),false);
+      this.setVerb(v,value);
+    });
     return this.data;
   },
   async save(){
@@ -135,14 +142,29 @@ function themeReleasePaths(lessonKey,themeKey){
     ["enabledThemes",`wortschatz/${lessonKey}/${themeKey}`],
     ["releases","wortschatz","lessons",lessonKey,"themes",themeKey,"enabled"]
   ];
-  // Nur für alte Lektion-4-Daten bleibt der reine Thema-Schlüssel als Legacy-Pfad erhalten.
-  // Für Lektion 3 darf Thema-1/Thema-2 nicht mit Lektion 4 kollidieren.
   if(lessonKey==="A1-Lektion-4") paths.push(["enabledThemes",themeKey]);
   return paths;
 }
 
 function themeSetCommand(lessonKey,themeKey){
   return `ReleaseDraft.setMany(${JSON.stringify(themeReleasePaths(lessonKey,themeKey))},this.checked)`;
+}
+
+function verbList(){return (typeof ALL_VERBS!=="undefined"?ALL_VERBS:[]).map(x=>x.v).filter(Boolean)}
+function verbReleasePaths(verb){
+  return [
+    ["enabledWords",verb],
+    ["enabledWords",`verben-A1/${verb}`],
+    ["enabledWords",`Verben A1/${verb}`],
+    ["releases","verben-A1","words",verb],
+    ["releases","Verben A1","words",verb]
+  ];
+}
+function verbSetCommand(verb){return `ReleaseDraft.setVerb(${JSON.stringify(verb)},this.checked)`}
+function renderVerbReleaseSection(){
+  const verbs=verbList();
+  if(!verbs.length)return `<details class="release-section"><summary>Verben A1</summary><div class='empty'>Verbenliste konnte nicht geladen werden.</div></details>`;
+  return `<details class="release-section" open><summary>Verben A1 · einzelne Verben freigeben</summary><div class="debug-box small">Häkchen = dieses Verb ist für TN freigeschaltet. Ohne Häkchen bleibt das Verb beim Einschätzen gesperrt.</div><div class="release-grid">${verbs.map(v=>releaseCheck(v,verbReleasePaths(v),verbSetCommand(v))).join("")}</div></details>`;
 }
 
 function releaseCheck(label,paths,onchange){
@@ -186,7 +208,7 @@ function renderReleaseEditor(course){
   }
   html+=`</details>`;
 
+  html+=renderVerbReleaseSection();
   html+=`<details class="release-section" open><summary>Aufgaben</summary>${(typeof DEFAULT_TASKS!=="undefined"?DEFAULT_TASKS:[]).map(t=>releaseCheck(t,["enabledTasks",t])).join("")||"<div class='empty'>Keine Aufgabenliste gefunden.</div>"}</details>`;
-  html+=`<details class="release-section" open><summary>Wörter / Verben</summary>${(typeof VERB_WORDS!=="undefined"?VERB_WORDS:[]).map(w=>releaseCheck(w,["enabledWords",w])).join("")||"<div class='empty'>Keine VERB_WORDS gefunden.</div>"}</details>`;
   return html;
 }
