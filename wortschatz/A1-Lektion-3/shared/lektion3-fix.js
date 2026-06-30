@@ -71,4 +71,46 @@
       if(status)status.textContent="Mikrofon konnte nicht gestartet werden. Bitte schreibe oder nutze den Ersatz-Button.";
     }
   };
+
+  function currentTheme(){const m=location.pathname.match(/A1-Lektion-3\/Thema-(\d+)/);return m?m[1]:""}
+  function t1NonExamDone(){try{return Array.isArray(TASKS)&&TASKS.every(t=>typeof taskPercent==="function"&&taskPercent(t.file)>=100)}catch(e){return false}}
+  function t2NonExamDone(){
+    try{
+      if(typeof pctFor!=="function")return false;
+      const defs=[
+        ['karteikarten.html',WORDS.length],['bild-wort.html',WORDS.length],['wort-bild.html',WORDS.length],['hoeren.html',WORDS.length],['artikel.html',WORDS.length],['drag-drop-artikel.html',WORDS.length],['plural.html',WORDS.length],['plural-drag-drop.html',WORDS.length],['memory.html',WORDS.length],['verpackungen.html',COMBOS.length],['preis-hoeren.html',PRICE_TASKS.length],['preis-schreiben.html',PRICE_TASKS.length],['preis-sprechen.html',PRICE_TASKS.length],['frage-und-antwort.html',COMBOS.length]
+      ];
+      return defs.every(d=>pctFor(d[0],d[1])>=100);
+    }catch(e){return false}
+  }
+  window.spL3ExamUnlocked=function(){const t=currentTheme();if(t==="1")return t1NonExamDone();if(t==="2")return t2NonExamDone();return true};
+  function lockExamPageIfNeeded(){
+    if(!/pruefung\.html$/i.test(location.pathname))return;
+    if(window.spL3ExamUnlocked())return;
+    const target=document.getElementById("area")||document.querySelector(".card")||document.body;
+    target.innerHTML='<div class="finish-box"><div class="finish-icon">🔒</div><div class="question">Prüfung gesperrt</div><p class="small">Die Prüfung wird erst freigeschaltet, wenn alle Aufgaben in diesem Thema 100% erreicht haben.</p><div class="actions finish-actions"><a class="btn secondary" href="index.html">← Zurück zum Thema</a></div></div>';
+  }
+  function patchT1BatchProgression(){
+    if(currentTheme()!=="1")return;
+    if(typeof window.autoNextBatchIfReady!=="function"||window.autoNextBatchIfReady.__spL3ExamGate)return;
+    window.autoNextBatchIfReady=function(){
+      try{
+        let s=load();
+        const vocabFiles=TASKS.filter(t=>t.type==='vocab').map(t=>t.file);
+        const allTasksDone=TASKS.every(t=>s.doneTasks&&s.doneTasks[t.file]);
+        const examDone=!!(s.doneTasks&&s.doneTasks['pruefung.html']);
+        let b=batchInfo();
+        if(allTasksDone&&examDone&&b.end<b.total){
+          s.batchIndex=(s.batchIndex||0)+1;
+          [...vocabFiles,'pruefung.html'].forEach(f=>{if(s.tasks)delete s.tasks[f];if(s.doneTasks)delete s.doneTasks[f];});
+          save(s);
+        }
+      }catch(e){console.warn('T1 Wortgruppe konnte nicht geprüft werden',e)}
+    };
+    window.autoNextBatchIfReady.__spL3ExamGate=true;
+  }
+  patchT1BatchProgression();
+  lockExamPageIfNeeded();
+  document.addEventListener('DOMContentLoaded',()=>{patchT1BatchProgression();lockExamPageIfNeeded();});
+  setTimeout(()=>{patchT1BatchProgression();lockExamPageIfNeeded();},250);
 })();
