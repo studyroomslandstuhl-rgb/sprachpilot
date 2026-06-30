@@ -24,7 +24,7 @@ function renderHeader(){
       </div>
     </div>
     <nav class="nav">
-      <button class="btn secondary" onclick="renderHome()">← Zurück</button>
+      <button class="btn secondary" onclick="spGoBack()">← Zurück</button>
       <button class="btn secondary" onclick="renderVerbOverview()">Übersicht</button>
       <button class="btn secondary" onclick="renderStudentDashboard()">Statistik</button>
       <button class="btn secondary" onclick="handleAssessmentClick()">Weitere Verben einschätzen</button>
@@ -38,6 +38,20 @@ function spVerbLogout(){
   localStorage.removeItem("SP_KEEP_LOGGED_IN");
   localStorage.removeItem("SP_LOGIN_ROLE");
   location.href="/index.html";
+}
+
+function spGoBack(){
+  if(window.history.length>1){
+    window.history.back();
+    return;
+  }
+  const hp=phaseFromHash();
+  if(hp && hp!=="home"){
+    clearVerbHash(true);
+    renderHome();
+    return;
+  }
+  location.href="/student-dashboard/index.html";
 }
 
 function renderSideMenu(){const m=$("spMenu");if(m)m.innerHTML=""}
