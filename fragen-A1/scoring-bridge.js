@@ -8,9 +8,8 @@
       if(progress<100)return;
       const key='SP_FRAGEN_A1_REWARD_'+ex+'_RUN_'+run();
       if(localStorage.getItem(key)==='1')return;
-      localStorage.setItem(key,'1');
       if(window.SprachPilotScoring&&SprachPilotScoring.awardTask){
-        SprachPilotScoring.awardTask(ex+'.html',{info:INFO,title:(window.EXERCISE_NAMES&&EXERCISE_NAMES[ex])||ex});
+        SprachPilotScoring.awardTask(ex+'.html',{info:INFO,title:(window.EXERCISE_NAMES&&EXERCISE_NAMES[ex])||ex}).then(delta=>{if(delta>0)localStorage.setItem(key,'1')}).catch(()=>{});
       }
     }catch(e){console.warn('Fragen Aufgabe Punkte Fehler',e)}
   }
@@ -45,13 +44,18 @@
   }
   function patchReset(){
     if(typeof window.resetEverything==='function'&&!window.resetEverything.__spScoring){
-      const old=window.resetEverything;
       window.resetEverything=function(){
+        if(!confirm('Möchten Sie wirklich von 0 anfangen?'))return;
+        if(!confirm('Sind Sie ganz sicher? Alle lokalen Daten auf diesem Gerät werden gelöscht. Punkte bleiben im Account gespeichert.'))return;
+        const finishLocalReset=()=>{
+          try{Object.keys(localStorage).forEach(k=>{if(k.startsWith('A1_'))localStorage.removeItem(k)});}catch(e){}
+          location.reload();
+        };
         if(window.SprachPilotScoring&&SprachPilotScoring.resetScope){
-          SprachPilotScoring.resetScope(INFO).finally(()=>old.apply(this,arguments));
-          return;
+          SprachPilotScoring.resetScope(INFO).finally(finishLocalReset);
+        }else{
+          finishLocalReset();
         }
-        return old.apply(this,arguments);
       };
       window.resetEverything.__spScoring=true;
     }
