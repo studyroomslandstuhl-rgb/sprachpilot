@@ -19,7 +19,7 @@ function renderL3Header(config={}){
   const statsHref=config.statsHref||"statistik.html";
   const course=spCourse();
   header.innerHTML=`
-    <div class="topbar-main">
+    <div class="topbar-main sp-account-row">
       <a class="brand" href="/index.html">
         <div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div>
         <div><h1>SprachPilot</h1><div class="subtitle">${spSafe(title)} · ${spSafe(subtitle)}</div></div>
@@ -31,8 +31,8 @@ function renderL3Header(config={}){
         <button class="account-link account-btn" onclick="spLogout()">Abmelden</button>
       </div>
     </div>
-    <nav class="nav">
-      <a class="btn secondary" href="${backHref}">Zurück</a>
+    <nav class="nav sp-page-nav">
+      <a class="btn secondary" href="${backHref}">← Zurück</a>
       <a class="btn secondary" href="${overviewHref}">Übersicht</a>
       ${statsHref?`<a class="btn secondary" href="${statsHref}">Statistik</a>`:""}
       ${config.resetButton?`<button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>`:""}
