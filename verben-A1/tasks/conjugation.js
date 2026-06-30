@@ -41,6 +41,11 @@ const FULL_FORMS={
   "fehlen":{"ich":"fehle","du":"fehlst","er/sie/es":"fehlt","wir":"fehlen","ihr":"fehlt","sie/Sie":"fehlen"},
   "gratulieren":{"ich":"gratuliere","du":"gratuliertst".replace("tst","st"),"er/sie/es":"gratuliert","wir":"gratulieren","ihr":"gratuliert","sie/Sie":"gratulieren"}
 };
+if(typeof window!=="undefined"){
+  window.CONJ_EXAMPLES=CONJ_EXAMPLES;
+  window.SEPARABLE_VERBS=SEPARABLE_VERBS;
+  window.FULL_FORMS=FULL_FORMS;
+}
 function verbStem(v){if(v.endsWith("eln"))return v.slice(0,-3)+"el"; if(v.endsWith("ern"))return v.slice(0,-2); if(v.endsWith("en"))return v.slice(0,-2); if(v.endsWith("n"))return v.slice(0,-1); return v}
 function regularForm(v,key){
   const stem=verbStem(v);const needsE=/[td]$|chn$|ffn$|gn$|tm$/.test(stem);
