@@ -1,5 +1,44 @@
 import { getEffectiveProfile, dashboardHref, logout, safeText } from '/js/auth.js';
 
+function injectTopbarCss(){
+  if(document.getElementById('sp-topbar-standard-css'))return;
+  const style=document.createElement('style');
+  style.id='sp-topbar-standard-css';
+  style.textContent=`
+    header.topbar .sp-standard-logo,
+    header.topbar .brand .sp-standard-logo,
+    header.topbar .brand .logo{
+      width:58px!important;
+      height:58px!important;
+      min-width:58px!important;
+      max-width:58px!important;
+      flex:0 0 58px!important;
+      overflow:hidden!important;
+      display:flex!important;
+      align-items:center!important;
+      justify-content:center!important;
+      border-radius:16px!important;
+    }
+    header.topbar .sp-standard-logo img,
+    header.topbar .brand .sp-standard-logo img,
+    header.topbar .brand .logo img{
+      width:52px!important;
+      height:52px!important;
+      min-width:52px!important;
+      max-width:52px!important;
+      min-height:52px!important;
+      max-height:52px!important;
+      object-fit:contain!important;
+      display:block!important;
+    }
+    header.topbar .brand{
+      display:flex!important;
+      align-items:center!important;
+      gap:14px!important;
+    }
+  `;
+  document.head.appendChild(style);
+}
 function profileName(){
   const p=getEffectiveProfile()||{};
   const name=[p.vorname||p.firstName||'',p.nachname||p.lastName||''].join(' ').trim();
@@ -66,6 +105,7 @@ function ensureHeader(){
   return header;
 }
 function renderTopbar(){
+  injectTopbarCss();
   if(document.body.classList.contains('teacher-dashboard'))return;
   const header=ensureHeader();
   if(header.dataset.spStandardTopbar==='1')return;
@@ -75,7 +115,7 @@ function renderTopbar(){
   const labels=new Set(navItems.map(x=>x.text));
   fallback.forEach(x=>{if(!labels.has(x.text))navItems.push(x)});
   header.classList.add('topbar');
-  header.innerHTML='<div class="topbar-main sp-account-row"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>'+safeText(info.title)+'</h1><div class="subtitle">'+safeText(info.subtitle)+'</div></div></a><div class="account-tools"><span class="account-pill">'+safeText(profileName())+'</span><a class="account-link" href="'+safeText(dashboardHref())+'">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><button class="account-link account-btn" type="button" id="spGlobalLogout">Abmelden</button></div></div><nav class="nav sp-page-nav">'+navHtml(navItems)+'</nav>';
+  header.innerHTML='<div class="topbar-main sp-account-row"><a class="brand" href="/index.html"><div class="logo sp-standard-logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>'+safeText(info.title)+'</h1><div class="subtitle">'+safeText(info.subtitle)+'</div></div></a><div class="account-tools"><span class="account-pill">'+safeText(profileName())+'</span><a class="account-link" href="'+safeText(dashboardHref())+'">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><button class="account-link account-btn" type="button" id="spGlobalLogout">Abmelden</button></div></div><nav class="nav sp-page-nav">'+navHtml(navItems)+'</nav>';
   header.dataset.spStandardTopbar='1';
   const btn=header.querySelector('#spGlobalLogout');
   if(btn)btn.addEventListener('click',logout);
