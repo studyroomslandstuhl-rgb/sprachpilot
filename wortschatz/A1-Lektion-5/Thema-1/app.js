@@ -22,11 +22,13 @@ function spLogout(){['SP_USER_PROFILE','SP_KEEP_LOGGED_IN','SP_LOGIN_ROLE','SP_T
 function instruction(txt){return `<div class="task-instruction">${txt}</div>`}
 function exampleBox(txt){return `<div class="example-box">${txt}</div>`}
 function exactAnswer(value,solutions){const a=simple(value);return (Array.isArray(solutions)?solutions:[solutions]).some(s=>simple(s)===a)}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function taskKey(file){return CFG.key+'_'+file}
 function loadTask(file,total){try{const st=JSON.parse(localStorage.getItem(taskKey(file))||'null');if(st&&st.total===total&&Array.isArray(st.done)&&Array.isArray(st.queue))return st}catch(e){}return{total,done:[],queue:[...Array(total).keys()].sort(()=>Math.random()-.5),current:null,tries:0,hadWrong:false}}
 function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(st))}
 function markTaskDone(file,total){saveTask(file,{total,done:[...Array(total).keys()],queue:[],current:null,tries:0,hadWrong:false})}
 function spNextIndex(file,total){let st=loadTask(file,total);if(st.current===null||st.current===undefined){if(!st.queue.length&&st.done.length<total)st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=st.queue.shift();st.tries=0;st.hadWrong=false;saveTask(file,st)}return st.current}
+function spNextSequentialIndex(file,total){let st=loadTask(file,total);if(st.current===null||st.current===undefined){const next=[...Array(total).keys()].find(i=>!st.done.includes(i));st.current=next===undefined?0:next;st.tries=0;st.hadWrong=false;saveTask(file,st)}return st.current}
 function spMarkRight(file,total){let st=loadTask(file,total),c=st.current;if(c!==null&&c!==undefined){if(st.hadWrong||st.tries>0){if(!st.done.includes(c)&&!st.queue.includes(c))st.queue.push(c)}else if(!st.done.includes(c))st.done.push(c)}st.current=null;st.tries=0;st.hadWrong=false;saveTask(file,st)}
 function spMarkWrong(file,total){let st=loadTask(file,total);st.tries=(st.tries||0)+1;st.hadWrong=true;saveTask(file,st);return st.tries}
 function pctFor(file,total){if(!total)return 0;return Math.round((loadTask(file,total).done.length||0)/total*100)||0}
