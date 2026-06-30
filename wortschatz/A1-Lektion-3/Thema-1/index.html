@@ -46,18 +46,22 @@ batch.innerHTML=`<p>Gruppe ${b.batch+1}: Wörter ${b.start+1}–${b.end} von ${b
 const taskIcons={
   'karteikarten.html':'🃏',
   'bild-wort.html':'🖼️',
-  'wort-bild.html':'🍎',
+  'wort-bild.html':'🔁',
   'hoeren.html':'🎧',
   'artikel.html':'der die das',
+  'artikel-zuordnen.html':'🧲',
+  'drag-drop-artikel.html':'🧲',
   'plural.html':'1→2+',
+  'plural-drag-drop.html':'📦',
   'memory.html':'🧠',
   'fragen-bilden.html':'❓',
   'ein-eine.html':'①',
   'kein-keine.html':'🚫',
   'pruefung.html':'★'
 };
-function taskIcon(t){return taskIcons[t.file] || (t.type==='vocab'?'🍏':'🔤')}
-function taskCard(t,i){let p=taskPercent(t.file);return moduleCard({href:t.file,num:i+1,title:t.name,desc:t.type==='vocab'?"Wortschatz üben":"Grammatik üben",progress:p,status:p>=100?"Fertig":"Starten",icon:taskIcon(t)})}
+const fallbackIcons=['🔤','📌','✓','◇','→','ABC','?','+'];
+function taskIcon(t,i){return taskIcons[t.file] || fallbackIcons[i % fallbackIcons.length]}
+function taskCard(t,i){let p=taskPercent(t.file);return moduleCard({href:t.file,num:i+1,title:t.name,desc:t.type==='vocab'?"Wortschatz üben":"Grammatik üben",progress:p,status:p>=100?"Fertig":"Starten",icon:taskIcon(t,i)})}
 vocab.innerHTML=TASKS.filter(t=>t.type==='vocab').map(taskCard).join('');
 grammar.innerHTML=TASKS.filter(t=>t.type==='grammar').map(taskCard).join('');
 const ep=taskPercent('pruefung.html');
