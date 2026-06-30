@@ -37,6 +37,17 @@
     if(candidates.some(v=>v===true))return true;
     return true;
   }
+  function assessmentEnabled(data=releaseData()){
+    const paths=[
+      ["settings","verben-A1","assessmentEnabled"],
+      ["settings","Verben A1","assessmentEnabled"],
+      ["verbenA1AssessmentEnabled"],
+      ["releases","verben-A1","assessmentEnabled"],
+      ["releases","Verben A1","assessmentEnabled"]
+    ];
+    for(const p of paths){const v=valueAt(data,p);if(v!==undefined)return v!==false;}
+    return true;
+  }
   function releasedVerbList(){
     const all=(typeof ALL_VERBS!=="undefined"?ALL_VERBS:[]).map(x=>x.v);
     const data=releaseData();
@@ -47,6 +58,26 @@
   function allowedSet(){return new Set(releasedVerbList())}
   function isVerbReleased(v){return allowedSet().has(v)}
   function filterList(list){const allowed=allowedSet();return (list||[]).filter(v=>allowed.has(v))}
+  function uniqueListLocal(arr){return [...new Set((arr||[]).filter(Boolean))]}
+  function firstReleasedPracticeList(){const target=(typeof PRACTICE_TARGET_COUNT!=="undefined"?PRACTICE_TARGET_COUNT:20);return releasedVerbList().slice(0,target)}
+  function seedFirstReleasedPackageIfNeeded(){
+    if(assessmentEnabled(releaseData()))return false;
+    if(!window.state)return false;
+    const list=firstReleasedPracticeList();
+    if(!list.length)return false;
+    const before=JSON.stringify({currentPackageVerbs:state.currentPackageVerbs,assessmentBatch:state.assessmentBatch,assessed:state.assessed,active:state.active,unsure:state.unsure,known:state.known,phase:state.phase,currentVerb:state.currentVerb});
+    state.currentPackageVerbs=list.slice();
+    state.assessmentBatch=list.slice();
+    state.assessed=uniqueListLocal([...(state.assessed||[]),...list]);
+    state.known=(state.known||[]).filter(v=>!list.includes(v));
+    state.unsure=uniqueListLocal([...(state.unsure||[]),...list]).filter(v=>!(state.learned||[]).includes(v));
+    state.unknown=(state.unknown||[]).filter(v=>!state.unsure.includes(v));
+    state.active=uniqueListLocal([...(state.active||[]),...list]).filter(v=>state.unsure.includes(v)||state.unknown.includes(v));
+    if(state.phase==="assessment"){state.phase="home";state.currentVerb="";state.revealed=false;}
+    const changed=before!==JSON.stringify({currentPackageVerbs:state.currentPackageVerbs,assessmentBatch:state.assessmentBatch,assessed:state.assessed,active:state.active,unsure:state.unsure,known:state.known,phase:state.phase,currentVerb:state.currentVerb});
+    if(changed){try{if(typeof saveState==="function")saveState()}catch(e){}}
+    return changed;
+  }
   function cleanState(){
     if(!window.state)return;
     const controls=hasVerbControls(releaseData());
@@ -58,27 +89,39 @@
       if(state.currentVerb&&!allowed.has(state.currentVerb))state.currentVerb="";
       if(state.currentTask&&state.currentTask.v&&!allowed.has(state.currentTask.v))state.currentTask=null;
     }
+    seedFirstReleasedPackageIfNeeded();
     try{if(typeof saveState==="function")saveState()}catch(e){}
   }
   function patchUnusedVerbs(){
-    if(typeof window.unusedVerbs!=="function"||window.unusedVerbs.__releasePatched)return;
-    const old=window.unusedVerbs;
-    window.unusedVerbs=function(){return filterList(old.apply(this,arguments));};
-    window.unusedVerbs.__releasePatched=true;
+    if(typeof window.unusedVerbs==="function"&&!window.unusedVerbs.__releasePatched){
+      const old=window.unusedVerbs;
+      window.unusedVerbs=function(){if(!assessmentEnabled(releaseData()))return [];return filterList(old.apply(this,arguments));};
+      window.unusedVerbs.__releasePatched=true;
+    }
   }
   function patchPracticeVerbs(){
     if(typeof window.currentPracticeVerbs==="function"&&!window.currentPracticeVerbs.__releasePatched){
       const old=window.currentPracticeVerbs;
-      window.currentPracticeVerbs=function(){return filterList(old.apply(this,arguments));};
+      window.currentPracticeVerbs=function(){seedFirstReleasedPackageIfNeeded();return filterList(old.apply(this,arguments));};
       window.currentPracticeVerbs.__releasePatched=true;
     }
     if(typeof window.currentPackageAllVerbs==="function"&&!window.currentPackageAllVerbs.__releasePatched){
       const old=window.currentPackageAllVerbs;
-      window.currentPackageAllVerbs=function(){return filterList(old.apply(this,arguments));};
+      window.currentPackageAllVerbs=function(){seedFirstReleasedPackageIfNeeded();return filterList(old.apply(this,arguments));};
       window.currentPackageAllVerbs.__releasePatched=true;
     }
   }
   function patchAssessment(){
+    if(typeof window.startAssessment==="function"&&!window.startAssessment.__releasePatched){
+      const oldStart=window.startAssessment;
+      window.startAssessment=function(){if(!assessmentEnabled(releaseData())){seedFirstReleasedPackageIfNeeded();if(typeof renderHome==="function")renderHome();return;}return oldStart.apply(this,arguments);};
+      window.startAssessment.__releasePatched=true;
+    }
+    if(typeof window.handleAssessmentClick==="function"&&!window.handleAssessmentClick.__releasePatched){
+      const oldClick=window.handleAssessmentClick;
+      window.handleAssessmentClick=function(){if(!assessmentEnabled(releaseData())){seedFirstReleasedPackageIfNeeded();if(typeof renderHome==="function")renderHome();return;}return oldClick.apply(this,arguments);};
+      window.handleAssessmentClick.__releasePatched=true;
+    }
     if(typeof window.markAssessment==="function"&&!window.markAssessment.__releasePatched){
       const old=window.markAssessment;
       window.markAssessment=function(level){
@@ -90,12 +133,19 @@
     }
     if(typeof window.renderAssessment==="function"&&!window.renderAssessment.__releasePatched){
       const old=window.renderAssessment;
-      window.renderAssessment=function(){cleanState();return old.apply(this,arguments);};
+      window.renderAssessment=function(){if(!assessmentEnabled(releaseData())){seedFirstReleasedPackageIfNeeded();if(typeof renderHome==="function")renderHome();return;}cleanState();return old.apply(this,arguments);};
       window.renderAssessment.__releasePatched=true;
     }
   }
-  function rerender(){try{if(state&&state.phase==="assessment"&&typeof renderAssessment==="function")renderAssessment();else if(typeof renderHome==="function")renderHome()}catch(e){}}
-  function patchAll(){patchUnusedVerbs();patchPracticeVerbs();patchAssessment();cleanState();}
+  function patchRenderHome(){
+    if(typeof window.renderHome==="function"&&!window.renderHome.__releaseAssessmentPatched){
+      const old=window.renderHome;
+      window.renderHome=function(){seedFirstReleasedPackageIfNeeded();return old.apply(this,arguments);};
+      window.renderHome.__releaseAssessmentPatched=true;
+    }
+  }
+  function rerender(){try{if(!assessmentEnabled(releaseData()))seedFirstReleasedPackageIfNeeded();if(state&&state.phase==="assessment"&&typeof renderAssessment==="function")renderAssessment();else if(typeof renderHome==="function")renderHome()}catch(e){}}
+  function patchAll(){patchUnusedVerbs();patchPracticeVerbs();patchAssessment();patchRenderHome();cleanState();}
   courseReleaseData=loadLocalReleaseData();
   patchAll();
   document.addEventListener("DOMContentLoaded",patchAll);
@@ -103,4 +153,6 @@
   setTimeout(patchAll,250);setTimeout(patchAll,1000);setTimeout(patchAll,2000);
   window.spReleasedVerbList=releasedVerbList;
   window.spIsVerbReleased=isVerbReleased;
+  window.spVerbAssessmentEnabled=function(){return assessmentEnabled(releaseData())};
+  window.spSeedFirstReleasedVerbPackage=seedFirstReleasedPackageIfNeeded;
 })();
