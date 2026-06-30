@@ -5,7 +5,7 @@
 <section class="card" id="area"><p>Wort antippen, dann Gruppe antippen. Danach kontrollieren.</p><div id="chips"></div>
 <div class="drop-grid"><div class="dropzone" data-a="der"><h2>der</h2></div><div class="dropzone" data-a="die"><h2>die</h2></div><div class="dropzone" data-a="das"><h2>das</h2></div></div>
 <button id="controlBtn" class="btn" onclick="control()">Kontrollieren</button><div id="fb" class="feedback"></div><a id="nextBtn" class="btn hidden" href="plural.html">Weiter</a></section>
-<footer>© SprachPilot</footer></div><script src="app.js?v=12"></script><script>
+<footer>© SprachPilot</footer></div><script src="app.js?v=14"></script><script src="../shared/lektion3-fix.js?v=1"></script><script>
 header("Artikel zuordnen");
 let selected=null;
 const TASK_FILE='drag-drop-artikel.html';
@@ -15,6 +15,7 @@ function markTaskDone(file,total){
   const done=[...Array(total).keys()];
   const st={total,queue:[],done,current:null,tries:0};
   try{localStorage.setItem(spTaskStateKey(file),JSON.stringify(st));}catch(e){}
+  if(typeof spL3AwardTask==='function')spL3AwardTask(file);
 }
 
 chips.innerHTML=WORDS.map(w=>`<span class="chip" data-id="${w.id}">${w.word}</span>`).join('');
