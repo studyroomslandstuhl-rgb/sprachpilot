@@ -1,6 +1,6 @@
 (function(){
-  function ready(){return window.Analytics && window.Students && window.TeacherEnv}
-  function safe(v){return TeacherEnv.safe ? TeacherEnv.safe(v) : String(v||"").replace(/[&<>\"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]))}
+  function ready(){return typeof Analytics!=="undefined" && typeof Students!=="undefined" && typeof TeacherEnv!=="undefined"}
+  function safe(v){return TeacherEnv.safe ? TeacherEnv.safe(v) : String(v||"").replace(/[&<>"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]))}
   function num(v){return Number.isFinite(Number(v))?Number(v):0}
   function percent(v){return Math.max(0,Math.min(100,Math.round(num(v))))}
   function arr(x){return Array.isArray(x)?x:[]}
@@ -66,7 +66,7 @@
     Analytics.overallPercent=overallPercent;
     Analytics.lastActive=lastActive;
     Analytics.pointsTotal=pointsTotal;
-    Analytics.verbenData=function(s){return (s.progressDoc&&s.progressDoc.verben)||{progress:overallPercent(s)}};
+    Analytics.verbenData=function(s){const v=(s.progressDoc&&s.progressDoc.verben)||{};return {...v,progress:v.progress??overallPercent(s)}};
     Analytics.taskStatus=function(s){return taskBadges(s)};
     Analytics.studentRow=function(s){
       const id=s.studentId||s.id;
@@ -119,7 +119,7 @@
     };
   }
   function installTeacherAppPatch(){
-    if(!window.TeacherApp||TeacherApp.__dashboardEnhancements)return;
+    if(typeof TeacherApp==="undefined"||TeacherApp.__dashboardEnhancements)return;
     const oldRender=TeacherApp.render.bind(TeacherApp);
     TeacherApp.render=async function(options={}){const result=await oldRender(options);document.querySelectorAll(".stat div").forEach(el=>{if(el.textContent.trim()==="Ø Verben")el.textContent="Ø Fortschritt"});return result};
     TeacherApp.__dashboardEnhancements=true;
