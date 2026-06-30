@@ -18,7 +18,8 @@
   <footer>© SprachPilot</footer>
 </div>
 
-<script src="app.js?v=20"></script>
+<script src="app.js?v=14"></script>
+<script src="../shared/lektion3-fix.js?v=1"></script>
 <script>
 header("Karteikarten");
 
@@ -26,14 +27,16 @@ const FILE = "karteikarten.html";
 let i = null;
 
 function cardLang(){
+  if(typeof spL3PreferredLang==='function') return spL3PreferredLang();
   try{
     const p = JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "{}");
     const code = localStorage.getItem("SP_MOTHER_LANGUAGE_CODE") || localStorage.getItem("motherLanguage") || "";
     const visible = p.muttersprache || localStorage.getItem("muttersprache") || "Russisch";
     const codeToName = {
-      ar:"Arabisch", ru:"Russisch", en:"Englisch", uk:"Ukrainisch",
-      tr:"Türkisch", ro:"Rumänisch", ku:"Kurdisch", ja:"Japanisch",
-      pl:"Polnisch", de:"Deutsch"
+      sq:"Albanisch", am:"Amharisch", ar:"Arabisch", hy:"Armenisch", az:"Aserbaidschanisch", bn:"Bengalisch", bs:"Bosnisch", bg:"Bulgarisch", zh:"Chinesisch",
+      fa:"Farsi/Persisch", prs:"Dari", de:"Deutsch", en:"Englisch", fr:"Französisch", ka:"Georgisch", el:"Griechisch", hi:"Hindi", it:"Italienisch", ja:"Japanisch",
+      kk:"Kasachisch", hr:"Kroatisch", ku:"Kurdisch", ps:"Paschtu", pl:"Polnisch", pt:"Portugiesisch", ro:"Rumänisch", ru:"Russisch", sr:"Serbisch", so:"Somali",
+      es:"Spanisch", ta:"Tamil", th:"Thai", ti:"Tigrinya", cs:"Tschechisch", tr:"Türkisch", uk:"Ukrainisch", hu:"Ungarisch", ur:"Urdu", uz:"Usbekisch", vi:"Vietnamesisch"
     };
     return codeToName[String(code).toLowerCase()] || visible || "Russisch";
   }catch(e){
@@ -107,7 +110,6 @@ function check(txt){
   }else{
     const tries = spMarkWrong(FILE, WORDS.length);
     fb.innerHTML = feedbackForCard(tries, full(w), "Artikel und Wort");
-    // Wichtig: NICHT automatisch weitergehen.
   }
 }
 
