@@ -1,0 +1,6 @@
+(function(){
+  function read(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'{}')}catch(e){return {}}}
+  function preview(){const x=read();const r=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||x.role||x.loginRole||'').toLowerCase();return r==='teacher'||r==='lehrer'||x.teacherPreview===true||x.isTeacher===true}
+  function run(){if(!preview())return;document.querySelectorAll('.theme-card.locked').forEach(card=>{const num=(card.querySelector('.theme-number')||{}).textContent||'';card.classList.remove('locked');card.removeAttribute('aria-disabled');card.querySelectorAll('.theme-status,.start-btn').forEach(el=>{el.classList.remove('locked');if(/gesperrt/i.test(el.textContent||''))el.textContent='Starten'});if(num.trim()&&!card.href){const a=document.createElement('a');a.className=card.className;a.href='Thema-'+num.trim()+'/';a.innerHTML=card.innerHTML;card.replaceWith(a)}})}
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();setTimeout(run,300);setTimeout(run,1200);
+})();
