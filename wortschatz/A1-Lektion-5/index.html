@@ -39,16 +39,16 @@ body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-g
   <footer class="note">© SprachPilot</footer>
 </div>
 <script type="module">
-import { getActiveProfile, logout, safeText } from "/js/auth.js?v=l5overview1";
+import { getActiveProfile, logout, safeText } from "/js/auth.js?v=l5overview2";
 import { db, doc, getDoc } from "/js/firebase.js";
 window.logout=logout;
 const THEMES=[
-  {id:"Thema-1",number:"1",title:"Mein Tag: Foto-Hörgeschichte",href:"Thema-1/",desc:"Laras Tag verstehen: aufstehen, einkaufen, kochen, aufräumen und anrufen.",words:["aufstehen","einkaufen","kochen","anrufen"]},
-  {id:"Thema-2",number:"2",title:"Alltag und trennbare Verben",href:"Thema-2/",desc:"Tagesablauf beschreiben und Verben mit auf-, ein-, fern- und an- üben.",words:["früh","aufräumen","fernsehen","gern"]},
-  {id:"Thema-3",number:"3",title:"Uhrzeiten",href:"Thema-3/",desc:"Private Uhrzeiten verstehen und sagen: halb, Viertel, vor, nach, kurz und gleich.",words:["halb","Viertel","vor","nach"]},
-  {id:"Thema-4",number:"4",title:"Kurse, Tage und Termine",href:"Thema-4/",desc:"Wochentage, Kurszeiten und Termine fragen und beantworten.",words:["Montag","Freitag","wann","um"]},
-  {id:"Thema-5",number:"5",title:"Tageszeiten und Freizeit",href:"Thema-5/",desc:"Am Morgen, am Mittag, am Abend und in der Nacht über Aktivitäten sprechen.",words:["Morgen","Abend","Kino","Sport"]},
-  {id:"Thema-6",number:"6",title:"Familienalltag und Öffnungszeiten",href:"Thema-6/",desc:"Öffnungszeiten lesen und über Kita, Kinder, Familie und Zeit sprechen.",words:["geöffnet","Kita","bringen","abholen"]}
+  {id:"Thema-1",number:"1",title:"Alltag und trennbare Verben",href:"Thema-1/",desc:"Tagesablauf beschreiben: aufstehen, einkaufen, aufräumen, fernsehen und anrufen.",words:["aufstehen","einkaufen","aufräumen","fernsehen"]},
+  {id:"Thema-2",number:"2",title:"Uhrzeit",href:"Thema-2/",desc:"Wie spät ist es? Uhrzeiten mit halb, Viertel, vor, nach, kurz und gleich.",words:["halb","Viertel","vor","nach"]},
+  {id:"Thema-3",number:"3",title:"Tage",href:"Thema-3/",desc:"Wochentage, Wochenende, Kurszeiten und einfache Termine verstehen.",words:["Montag","Freitag","Samstag","Sonntag"]},
+  {id:"Thema-4",number:"4",title:"Tageszeiten",href:"Thema-4/",desc:"Am Morgen, am Mittag, am Abend und in der Nacht über Aktivitäten sprechen.",words:["Morgen","Mittag","Abend","Nacht"]},
+  {id:"Thema-5",number:"5",title:"Zeitpräpositionen",href:"Thema-5/",desc:"am, um, von ... bis ... und in der Nacht in einfachen Sätzen üben.",words:["am","um","von ... bis","in der Nacht"]},
+  {id:"Thema-6",number:"6",title:"Öffnungszeiten",href:"Thema-6/",desc:"Schilder und Zeiten verstehen: geöffnet, geschlossen, Praxis, Bibliothek und Kita.",words:["geöffnet","geschlossen","Praxis","Kita"]}
 ];
 function profile(){try{return getActiveProfile()||JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}}
 async function loadCourseData(p){const code=p?.kurs||p?.kursnummer||p?.courseCode;let data=p?.assignments||{};if(!code)return data||{};try{const snap=await getDoc(doc(db,"courses",String(code)));if(snap.exists())data={...data,...snap.data()}}catch(e){console.warn("Kursdaten konnten nicht geladen werden:",e)}return data||{}}
