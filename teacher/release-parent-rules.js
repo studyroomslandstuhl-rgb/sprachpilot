@@ -34,11 +34,36 @@
       setThemeChildren(lessonKey,themeKey,value);
     };
 
+    const oldOpen=ReleaseDraft.open?.bind(ReleaseDraft);
+    ReleaseDraft.open=function(course){
+      if(oldOpen)oldOpen(course);
+      this.data=this.data||{};
+      this.data.releaseMode='locked';
+      this.data.defaultLocked=true;
+    };
+
     const oldNormalize=ReleaseDraft.normalizeBeforeSave?.bind(ReleaseDraft);
     ReleaseDraft.normalizeBeforeSave=function(){
       const data=oldNormalize?oldNormalize():this.data;
       try{
+        this.data=this.data||data||{};
+        this.data.releaseMode='locked';
+        this.data.defaultLocked=true;
+        data.releaseMode='locked';
+        data.defaultLocked=true;
         (RELEASE_CATALOG.lessons||[]).forEach(lesson=>{
+          const lessonOn=this.getAny([
+            ['enabledLessons',lesson.key],
+            ['enabledLessons','wortschatz/'+lesson.key],
+            ['releases','wortschatz','lessons',lesson.key,'enabled'],
+            ['releases','Wortschatz','lessons',lesson.key,'enabled']
+          ],false);
+          this.setMany([
+            ['enabledLessons',lesson.key],
+            ['enabledLessons','wortschatz/'+lesson.key],
+            ['releases','wortschatz','lessons',lesson.key,'enabled'],
+            ['releases','Wortschatz','lessons',lesson.key,'enabled']
+          ],lessonOn===true);
           (lesson.themes||[]).forEach(th=>{
             const isThemeOn=this.getAny(themeReleasePaths(lesson.key,th.key),false);
             if(isThemeOn){
