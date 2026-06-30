@@ -58,5 +58,6 @@ function renderThemes(courseData){themeGrid.innerHTML=THEMES.map(t=>{const open=
 async function init(){removeOverviewAndStatsFromLessonOverview();const p=profile();const pill=document.getElementById("accountPill");if(p){pill.textContent=`${p.vorname||""} ${p.nachname||""} · ${p.kurs||p.kursnummer||""}`.trim()}else{pill.textContent="Nicht eingeloggt"}const data=await loadCourseData(p);try{if(p&&data){p.assignments=data;localStorage.setItem("SP_USER_PROFILE",JSON.stringify(p));localStorage.setItem("SP_COURSE_RELEASES",JSON.stringify(data))}}catch(e){}renderThemes(data);setTimeout(removeOverviewAndStatsFromLessonOverview,300);setTimeout(removeOverviewAndStatsFromLessonOverview,1200)}
 init();
 </script>
+<script src="preview-open.js?v=1"></script>
 </body>
 </html>
