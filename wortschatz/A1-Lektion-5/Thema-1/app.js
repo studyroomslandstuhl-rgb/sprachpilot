@@ -1,0 +1,31 @@
+const THEME_ID='Thema-1';
+const THEME_TITLE='Alltag und trennbare Verben';
+const THEME_SUBTITLE='A1 Lektion 5 · Thema 1';
+const KEY='SP_L5_T1_V1';
+const DATA=window.SP_A1_LEKTION5_WORTSCHATZ||{parts:[]};
+const THEME=(DATA.parts||[]).find(p=>p.id===THEME_ID)||{words:[],title:THEME_TITLE};
+const WORDS=THEME.words||[];
+function simple(x){return String(x||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:]/g,'').replace(/\s+/g,' ')}
+function full(w){return w.full||((w.article?`${w.article} `:'')+(w.word||''))}
+function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'null')}catch(e){return null}}
+function langKey(){const m=String(profile()?.muttersprache||'').toLowerCase();if(m.includes('russ'))return'ru';if(m.includes('türk')||m.includes('turk'))return'tr';return'en'}
+function tr(w){const t=w.tr||{};return t[langKey()]||t.en||t.ru||t.tr||''}
+function typeLabel(t){return({noun:'Nomen',verb:'Verben',adjective:'Adjektive',adverb:'Adverbien',preposition:'Präpositionen',phrase:'Ausdrücke',question:'Fragewörter',conjunction:'Verbindungen',determiner:'Begleiter',time:'Zeitwörter'})[t]||'Andere Wörter'}
+function byType(words=WORDS){const order=['noun','verb','adjective','adverb','preposition','phrase','question','conjunction','determiner','time'];const g={};words.forEach(w=>{const k=w.type||'other';(g[k]||(g[k]=[])).push(w)});return order.filter(k=>g[k]).map(k=>[typeLabel(k),g[k]]).concat(Object.keys(g).filter(k=>!order.includes(k)).map(k=>[typeLabel(k),g[k]]))}
+function imgHtml(w){return w.image?`<img src="${w.image}" onerror="fixImg(this)" alt="">`:`<div class="word-placeholder">kein Bild</div>`}
+function bigImgHtml(w){return w.image?`<img class="food-img" src="${w.image}" onerror="fixImg(this)" alt="">`:`<div class="placeholder-img">Bild fehlt<br>${full(w)}</div>`}
+function fixImg(img){const ph=document.createElement('div');ph.className='word-placeholder';ph.textContent='kein Bild';img.replaceWith(ph)}
+function header(title){const h=document.querySelector('.hero');if(h)h.innerHTML=`<h1>${title}</h1><div class="subtitle">${THEME_SUBTITLE}</div>`}
+function taskKey(file){return KEY+'_'+file}
+function loadTask(file,total){try{const st=JSON.parse(localStorage.getItem(taskKey(file))||'null');if(st&&st.total===total&&Array.isArray(st.done)&&Array.isArray(st.queue))return st}catch(e){}return{total,done:[],queue:[...Array(total).keys()].sort(()=>Math.random()-.5),current:null,tries:0,hadWrong:false}}
+function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(st))}
+function spNextIndex(file,total){let st=loadTask(file,total);if(st.current===null||st.current===undefined){if(!st.queue.length&&st.done.length<total)st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=st.queue.shift();st.tries=0;st.hadWrong=false;saveTask(file,st)}return st.current}
+function spMarkRight(file,total){let st=loadTask(file,total),c=st.current;if(c!==null&&c!==undefined){if(st.hadWrong||(st.tries||0)>0){if(!st.done.includes(c)&&!st.queue.includes(c))st.queue.push(c)}else if(!st.done.includes(c))st.done.push(c)}st.current=null;st.tries=0;st.hadWrong=false;saveTask(file,st)}
+function spMarkWrong(file,total){let st=loadTask(file,total);st.tries=(st.tries||0)+1;st.hadWrong=true;saveTask(file,st);return st.tries}
+function pctFor(file,total){if(!total)return 0;const st=loadTask(file,total);return Math.round((st.done.length||0)/total*100)||0}
+function spProgressHtml(file,total){const st=loadTask(file,total),d=st.done.length,p=pctFor(file,total);return`<div class="small">${d} richtig · ${total-d} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
+function complete(area,file,next='index.html'){area.innerHTML=`<div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${next}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div>`}
+function resetThemeProgress(){if(!confirm('Fortschritte in diesem Thema löschen?'))return;Object.keys(localStorage).filter(k=>k.startsWith(KEY)).forEach(k=>localStorage.removeItem(k));location.reload()}
+function startMic(btn,callback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;const status=document.getElementById('micStatus');if(!SR){if(status)status.textContent='Mikrofon wird hier nicht unterstützt. Bitte schreibe.';return}const rec=new SR();rec.lang='de-DE';rec.interimResults=false;rec.continuous=false;if(btn)btn.classList.add('active');if(status)status.textContent='Ich höre zu …';rec.onresult=e=>callback(e.results[0][0].transcript);rec.onerror=()=>{if(status)status.textContent='Mikrofon hat nicht funktioniert. Bitte schreibe.'};rec.onend=()=>{if(btn)btn.classList.remove('active')};rec.start()}
+function renderOverview(target){target.innerHTML=byType().map(([label,items])=>`<section class="type-block"><div class="type-title">${label}</div>${items.map(w=>`<div class="word-row">${imgHtml(w)}<div><b>${full(w)}</b><br><span class="small">${w.plural?`Plural: ${w.plural}`:'kein Plural'}</span><br><span class="small">${tr(w)}</span><br><span class="tag">${w.section||''}</span>${w.image?'':'<span class="tag">Bild fehlt</span>'}<div class="small">${w.sentence||''}</div></div></div>`).join('')}</section>`).join('')}
+function renderStats(target){const st=loadTask('karteikarten.html',WORDS.length);target.innerHTML=byType().map(([label,items])=>`<section class="type-block"><div class="type-title">${label}</div>${items.map(w=>{const idx=WORDS.indexOf(w),ok=st.done.includes(idx);return`<div class="word-row">${imgHtml(w)}<div><b>${full(w)}</b><br><span class="small ${ok?'ok':'todo'}">${ok?'gelernt':'noch offen'}</span><br><span class="small">Karteikarten-Fortschritt wird gespeichert.</span></div></div>`}).join('')}</section>`).join('')}
