@@ -2,8 +2,8 @@
 <body>
 <div id="accountStrip" class="account-strip"></div>
 <div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div>
-<section class="card"><p class="small">Öffne zwei Karten und finde die Paare.</p><div id="board" class="memory-grid"></div><div id="fb" class="feedback"></div><a id="nextBtn" class="btn hidden" href="verpackungen.html">Nächste Aufgabe →</a></section>
-<footer>© SprachPilot</footer></div><script src="app.js?v=8"></script><script>
+<section class="card" id="area"><p class="small">Öffne zwei Karten und finde die Paare.</p><div id="board" class="memory-grid"></div><div id="fb" class="feedback"></div><a id="nextBtn" class="btn hidden" href="verpackungen.html">Nächste Aufgabe →</a></section>
+<footer>© SprachPilot</footer></div><script src="app.js?v=14"></script><script src="../shared/lektion3-fix.js?v=2"></script><script>
 header("Memory");
 let pairs=shuffle(WORDS).slice(0,8);
 let cards=shuffle(pairs.flatMap(w=>[{id:w.id,html:`<img src="${w.image}" onerror="fixImg(this)">`},{id:w.id,html:full(w)}]));
@@ -15,7 +15,7 @@ function pick(b){
  if(open.length===2){
    if(open[0].dataset.id===open[1].dataset.id){
      open.forEach(x=>x.classList.add('ok'));open=[];found++;
-     if(found===pairs.length){done('memory.html');fb.textContent='Gut gemacht!';nextBtn.classList.remove('hidden')}
+     if(found===pairs.length){done('memory.html',WORDS.length);fb.innerHTML='<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Aufgabe geschafft!</div><div class="big">100% erreicht.</div></div>';nextBtn.classList.remove('hidden')}
    }else setTimeout(()=>{open.forEach(x=>x.innerHTML='?');open=[]},900)
  }
 }
