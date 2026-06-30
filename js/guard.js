@@ -8,10 +8,12 @@ import("/js/activity-tracker.js?v=1").catch(()=>{});
 import("/js/scoring.js?v=4").catch(()=>{});
 import("/js/release-helper.js?v=5").catch(()=>{});
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(location.pathname)){
-  import("/wortschatz/index-release-lock.js?v=1").catch(()=>{});
+  import("/wortschatz/index-release-lock.js?v=2").catch(()=>{});
+  setTimeout(()=>import("/wortschatz/index-release-lock.js?v=3").catch(()=>{}),1200);
+  setTimeout(()=>import("/wortschatz/index-release-lock.js?v=4").catch(()=>{}),3000);
 }
 if(location.pathname.includes("/verben-A1/")){
-  import("/verben-A1/js/scoring-bridge.js?v=3").catch(()=>{});
+  import("/verben-A1/js/scoring-bridge.js?v=4").catch(()=>{});
 }
 if(location.pathname.includes("/fragen-A1/")||location.pathname.includes("/fragen/")){
   import("/fragen-A1/scoring-bridge.js?v=2").catch(()=>{});
