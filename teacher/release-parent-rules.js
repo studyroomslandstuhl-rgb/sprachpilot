@@ -24,6 +24,34 @@
       });
     }
 
+    function enabledWortschatzLessons(){
+      const out=[];
+      try{
+        (RELEASE_CATALOG.lessons||[]).forEach(lesson=>{
+          const on=ReleaseDraft.getAny([
+            ['enabledLessons',lesson.key],
+            ['enabledLessons','wortschatz/'+lesson.key],
+            ['releases','wortschatz','lessons',lesson.key,'enabled'],
+            ['releases','Wortschatz','lessons',lesson.key,'enabled']
+          ],false);
+          if(on===true)out.push(lesson.key);
+        });
+      }catch(e){console.warn('Wortschatz assignment list failed',e)}
+      return out;
+    }
+
+    async function syncLegacyAssignments(){
+      try{
+        if(!window.db||!ReleaseDraft.courseCode)return;
+        const wortschatz=enabledWortschatzLessons();
+        const payload={wortschatz:wortschatz,updatedAt:new Date().toISOString(),source:'teacher-release-dashboard'};
+        await db.collection('assignments').doc(String(ReleaseDraft.courseCode)).set(payload,{merge:false});
+        if(ReleaseDraft.courseName&&String(ReleaseDraft.courseName)!==String(ReleaseDraft.courseCode)){
+          await db.collection('assignments').doc(String(ReleaseDraft.courseName)).set(payload,{merge:false});
+        }
+      }catch(e){console.warn('Legacy assignments sync failed',e)}
+    }
+
     const oldSetTheme=ReleaseDraft.setTheme?.bind(ReleaseDraft);
     ReleaseDraft.setTheme=function(lessonKey,themeKey,value){
       if(oldSetTheme)oldSetTheme(lessonKey,themeKey,value);
@@ -86,6 +114,13 @@
         });
       }catch(e){console.warn('Parent release normalization failed',e)}
       return data;
+    };
+
+    const oldSave=ReleaseDraft.save?.bind(ReleaseDraft);
+    ReleaseDraft.save=async function(){
+      if(oldSave)await oldSave();
+      await syncLegacyAssignments();
+      alert('Wortschatz-Freigabe wurde zusätzlich für die Schülerübersicht synchronisiert.');
     };
   }
   install();
