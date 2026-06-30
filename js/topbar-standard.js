@@ -5,10 +5,19 @@ function injectTopbarCss(){
   const style=document.createElement('style');
   style.id='sp-topbar-standard-css';
   style.textContent=`
-    header.topbar .sp-standard-logo,header.topbar .brand .sp-standard-logo,header.topbar .brand .logo{width:58px!important;height:58px!important;min-width:58px!important;max-width:58px!important;min-height:58px!important;max-height:58px!important;flex:0 0 58px!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;border-radius:16px!important;}
+    header.topbar{width:100%!important;background:rgba(255,255,255,.96)!important;border:1px solid var(--lesson-line,var(--sp-line,#D9EEF7))!important;border-radius:24px!important;padding:16px 18px!important;margin:0 0 18px 0!important;box-shadow:var(--lesson-shadow,var(--sp-shadow,0 14px 34px rgba(18,48,71,.12)))!important;display:flex!important;flex-direction:column!important;gap:14px!important;}
+    header.topbar .topbar-main,header.topbar .sp-account-row{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:14px!important;flex-wrap:wrap!important;}
+    header.topbar .brand{display:flex!important;align-items:center!important;gap:14px!important;text-decoration:none!important;color:var(--lesson-text,var(--sp-dark,#123047))!important;min-width:0!important;}
+    header.topbar .brand h1{font-size:30px!important;line-height:1.05!important;margin:0!important;color:var(--lesson-text,var(--sp-dark,#123047))!important;font-weight:900!important;}
+    header.topbar .brand .subtitle{font-size:15px!important;color:var(--lesson-muted,var(--sp-muted,#5F7180))!important;line-height:1.35!important;margin-top:3px!important;}
+    header.topbar .sp-standard-logo,header.topbar .brand .sp-standard-logo,header.topbar .brand .logo{width:58px!important;height:58px!important;min-width:58px!important;max-width:58px!important;min-height:58px!important;max-height:58px!important;flex:0 0 58px!important;overflow:hidden!important;display:flex!important;align-items:center!important;justify-content:center!important;border-radius:16px!important;background:white!important;border:2px solid var(--lesson-line,var(--sp-line,#D9EEF7))!important;box-shadow:0 8px 18px rgba(18,48,71,.10)!important;}
     header.topbar .sp-standard-logo img,header.topbar .brand .sp-standard-logo img,header.topbar .brand .logo img,header.topbar img[src*="sprachpilot-logo"]{width:52px!important;height:52px!important;min-width:52px!important;max-width:52px!important;min-height:52px!important;max-height:52px!important;object-fit:contain!important;display:block!important;}
-    header.topbar .brand{display:flex!important;align-items:center!important;gap:14px!important;}
-    header.topbar{width:100%!important;}
+    header.topbar .account-tools{display:flex!important;align-items:center!important;justify-content:flex-end!important;gap:8px!important;flex-wrap:wrap!important;}
+    header.topbar .account-pill{background:var(--lesson-soft,#EFFAFF)!important;border:2px solid var(--lesson-line,var(--sp-line,#D9EEF7))!important;border-radius:999px!important;padding:8px 12px!important;color:var(--lesson-main-dark,var(--sp-blue-dark,#2F7F96))!important;font-weight:900!important;line-height:1.2!important;}
+    header.topbar .account-link,header.topbar .account-btn,header.topbar .btn,header.topbar .sp-page-nav a,header.topbar .sp-page-nav button{border:2px solid var(--lesson-line,var(--sp-line,#D9EEF7))!important;background:#fff!important;color:var(--lesson-main-dark,var(--sp-blue-dark,#2F7F96))!important;border-radius:14px!important;padding:10px 14px!important;font-size:15px!important;font-weight:900!important;text-decoration:none!important;cursor:pointer!important;font-family:Arial,Helvetica,sans-serif!important;box-shadow:none!important;display:inline-flex!important;align-items:center!important;justify-content:center!important;gap:8px!important;min-height:42px!important;width:auto!important;}
+    header.topbar .account-link:hover,header.topbar .account-btn:hover,header.topbar .btn:hover,header.topbar .sp-page-nav a:hover,header.topbar .sp-page-nav button:hover{transform:translateY(-1px)!important;box-shadow:0 6px 14px rgba(18,48,71,.10)!important;}
+    header.topbar .nav,header.topbar .sp-page-nav{display:flex!important;align-items:center!important;gap:10px!important;flex-wrap:wrap!important;border-top:1px solid var(--lesson-line,var(--sp-line,#D9EEF7))!important;padding-top:12px!important;margin-top:0!important;}
+    @media(max-width:700px){header.topbar .topbar-main,header.topbar .sp-account-row{align-items:flex-start!important;}header.topbar .account-tools{justify-content:flex-start!important;}header.topbar .brand h1{font-size:24px!important;}header.topbar .sp-page-nav a,header.topbar .sp-page-nav button,header.topbar .account-link,header.topbar .account-btn{width:auto!important;}}
   `;
   document.head.appendChild(style);
 }
@@ -44,17 +53,7 @@ function pageNavFallback(){
   }
   return list;
 }
-function mergeNavItems(existing,fallback){
-  const out=[];
-  const seen=new Set();
-  [{type:'a',text:'← Zurück',href:backHref()},...existing,...fallback].forEach(item=>{
-    const key=normLabel(item.text);
-    if(!key||seen.has(key))return;
-    seen.add(key);
-    out.push(item);
-  });
-  return out;
-}
+function mergeNavItems(existing,fallback){const out=[];const seen=new Set();[{type:'a',text:'← Zurück',href:backHref()},...existing,...fallback].forEach(item=>{const key=normLabel(item.text);if(!key||seen.has(key))return;seen.add(key);out.push(item)});return out}
 function navHtml(items){return items.map(item=>item.type==='button'?'<button class="btn secondary" type="button" onclick="'+safeText(item.onclick||'')+'">'+safeText(item.text)+'</button>':'<a class="btn secondary" href="'+safeText(item.href||'#')+'">'+safeText(item.text)+'</a>').join('')}
 function findLegacyHeader(){return document.querySelector('header.sp-shell, header:has(.sp-head), header:has(.sp-brand), header:has(.teacher-top), #spHeader.topbar, header.topbar')}
 function ensureHeader(){let legacy=findLegacyHeader();if(legacy){legacy.classList.add('topbar');return legacy}const container=document.querySelector('.container')||document.querySelector('.page')||document.body;const header=document.createElement('header');header.className='topbar';container.insertBefore(header,container.firstChild);return header}
