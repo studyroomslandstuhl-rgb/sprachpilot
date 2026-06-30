@@ -4,5 +4,11 @@ const SP_USER=requireLogin();
 if(SP_USER){
   document.addEventListener("DOMContentLoaded",()=>renderAccountStrip());
 }
-import("/js/activity-tracker.js?v=1").catch(e=>console.warn("activity helper failed",e));
-import("/js/scoring.js?v=1").catch(e=>console.warn("scoring helper failed",e));
+import("/js/activity-tracker.js?v=1").catch(()=>{});
+import("/js/scoring.js?v=1").catch(()=>{});
+if(location.pathname.includes("/verben-A1/")){
+  import("/verben-A1/js/scoring-bridge.js?v=1").catch(()=>{});
+}
+if(location.pathname.includes("/fragen-A1/")||location.pathname.includes("/fragen/")){
+  import("/fragen-A1/scoring-bridge.js?v=1").catch(()=>{});
+}
