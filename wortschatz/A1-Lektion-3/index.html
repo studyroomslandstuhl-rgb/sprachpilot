@@ -28,12 +28,12 @@
 <script>
 renderL3Header({title:"A1 Lektion 3",subtitle:"Einkaufen",backHref:"../index.html",overviewHref:"index.html",statsHref:""});
 const themeData=[
-  {href:"Thema-1/",title:"Lebensmittel & Getränke",desc:"Wortschatz, Artikel, Plural, ein/eine, kein/keine und Fragen.",words:["Obst","Gemüse","Getränke","Artikel"]},
-  {href:"Thema-2/",title:"Mengen & Verpackungen",desc:"Kilo, Gramm, Liter, Flasche, Dose und Dialoge beim Einkaufen.",words:["1 Kilo","100 Gramm","1 Liter","Dialoge"]},
-  {href:"Thema-3/",title:"Einkaufen",desc:"Personen, Orte, Geld, Preise, Prospekte und kurze Lesetexte.",words:["Kunde","Verkäufer","Euro","Prospekt"]},
-  {href:"Thema-4/",title:"Kochen",desc:"Rezept, Zutaten, Wasser, Pfeffer und einfache Kochaufgaben.",words:["Rezept","Zutaten","Wasser","Pfeffer"]}
+  {href:"Thema-1/",title:"Lebensmittel & Getränke",desc:"Wortschatz, Artikel, Plural, ein/eine, kein/keine und Fragen.",words:["Obst","Gemüse","Getränke","Artikel"],icon:"🍎"},
+  {href:"Thema-2/",title:"Mengen & Verpackungen",desc:"Kilo, Gramm, Liter, Flasche, Dose und Dialoge beim Einkaufen.",words:["1 Kilo","100 Gramm","1 Liter","Dialoge"],icon:"🧺"},
+  {href:"Thema-3/",title:"Einkaufen",desc:"Personen, Orte, Geld, Preise, Prospekte und kurze Lesetexte.",words:["Kunde","Verkäufer","Euro","Prospekt"],icon:"🛒"},
+  {href:"Thema-4/",title:"Kochen",desc:"Rezept, Zutaten, Wasser, Pfeffer und einfache Kochaufgaben.",words:["Rezept","Zutaten","Wasser","Pfeffer"],icon:"🍳"}
 ];
-themes.innerHTML=themeData.map((t,i)=>moduleCard({href:t.href,num:i+1,title:t.title,desc:t.desc,words:t.words,status:"Starten",icon:""})).join("");
+themes.innerHTML=themeData.map((t,i)=>moduleCard({href:t.href,num:i+1,title:t.title,desc:t.desc,words:t.words,status:"Starten",icon:t.icon})).join("");
 </script>
 </body>
 </html>
