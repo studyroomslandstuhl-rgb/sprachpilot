@@ -34,15 +34,17 @@
 <script src="../shared/lektion3-standard.js?v=step12"></script>
 <script src="translations.js?v=40"></script>
 <script src="app.js?v=41"></script>
-<script src="../shared/lektion3-fix.js?v=2"></script>
+<script src="../shared/lektion3-fix.js?v=3"></script>
 <script>
 renderL3Header({title:"Lebensmittel & Getränke",subtitle:"A1 Lektion 3 · Thema 1",backHref:"../index.html",overviewHref:"uebersicht.html",statsHref:"statistik.html",resetButton:true});
-const allTasks=[...TASKS.map(t=>t.file),'pruefung.html'];
+const nonExamTasks=TASKS.map(t=>t.file);
+const allTasks=[...nonExamTasks,'pruefung.html'];
 const allP=Math.round(allTasks.reduce((s,f)=>s+taskPercent(f),0)/allTasks.length)||0;
 const doneCount=allTasks.filter(f=>taskPercent(f)>=100).length;
-progressArea.innerHTML=progressCard({percent:allP,doneText:`${doneCount} / ${allTasks.length} Aufgaben abgeschlossen`,goal:"Lebensmittel, Getränke, Artikel, Plural, einfache Fragen und Prüfung üben."});
+const examUnlocked=nonExamTasks.every(f=>taskPercent(f)>=100);
+progressArea.innerHTML=progressCard({percent:allP,doneText:`${doneCount} / ${allTasks.length} Aufgaben abgeschlossen`,goal:"Die Prüfung wird erst freigeschaltet, wenn alle Aufgaben 100% erreicht haben."});
 let b=batchInfo();
-batch.innerHTML=`<p>Gruppe ${b.batch+1}: Wörter ${b.start+1}–${b.end} von ${b.total}</p><p class="small">Die nächste Gruppe wird automatisch freigeschaltet, wenn alle Wortschatzaufgaben fertig sind.</p>`;
+batch.innerHTML=`<p>Gruppe ${b.batch+1}: Wörter ${b.start+1}–${b.end} von ${b.total}</p><p class="small">Die nächste Wortgruppe wird erst freigeschaltet, wenn alle Aufgaben und die Prüfung 100% erreicht haben.</p>`;
 const taskIcons={
   'karteikarten.html':'🃏',
   'bild-wort.html':'🖼️',
@@ -62,10 +64,11 @@ const taskIcons={
 const fallbackIcons=['🔤','📌','✓','◇','→','ABC','?','+'];
 function taskIcon(t,i){return taskIcons[t.file] || fallbackIcons[i % fallbackIcons.length]}
 function taskCard(t,i){let p=taskPercent(t.file);return moduleCard({href:t.file,num:i+1,title:t.name,desc:t.type==='vocab'?"Wortschatz üben":"Grammatik üben",progress:p,status:p>=100?"Fertig":"Starten",icon:taskIcon(t,i)})}
+function lockedExamCard(num){return `<div class="module locked-module"><div class="num">${num}. Prüfung</div><div class="icon">🔒</div><p>Erst alle Aufgaben mit 100% abschließen.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">gesperrt</div><div class="start">Gesperrt</div></div>`}
 vocab.innerHTML=TASKS.filter(t=>t.type==='vocab').map(taskCard).join('');
 grammar.innerHTML=TASKS.filter(t=>t.type==='grammar').map(taskCard).join('');
 const ep=taskPercent('pruefung.html');
-exam.innerHTML=moduleCard({href:'pruefung.html',num:allTasks.length,title:'Prüfung',desc:'Wiederhole die Prüfung, bis du 100% erreichst.',progress:ep,status:ep>=100?'Fertig':'Starten',icon:taskIcons['pruefung.html']});
+exam.innerHTML=examUnlocked?moduleCard({href:'pruefung.html',num:allTasks.length,title:'Prüfung',desc:'Wiederhole die Prüfung, bis du 100% erreichst.',progress:ep,status:ep>=100?'Fertig':'Starten',icon:taskIcons['pruefung.html']}):lockedExamCard(allTasks.length);
 </script>
 </body>
 </html>
