@@ -89,21 +89,15 @@ function currentAssessmentCount(){
   return (state.assessmentBatch&&state.assessmentBatch.length)||0;
 }
 
+const VERB_IMAGE_CACHE_VERSION="13";
 const VERB_IMAGE_BASES=[
-  "/sprachpilot/assets/",
-  "/sprachpilot/assets/img/",
-  "/assets/",
-  "/assets/img/",
-  "assets/",
-  "assets/img/",
-  "../assets/",
   "../assets/img/",
-  "../../assets/",
-  "../../assets/img/",
-  "https://raw.githubusercontent.com/studyroomslandstuhl-rgb/sprachpilot/4f1ebc6391558b144fbad1cfcb18a758d5634160/assets/",
-  "https://raw.githubusercontent.com/studyroomslandstuhl-rgb/sprachpilot/4f1ebc6391558b144fbad1cfcb18a758d5634160/assets/img/",
-  "https://studyroomslandstuhl-rgb.github.io/sprachpilot/assets/",
-  "https://studyroomslandstuhl-rgb.github.io/sprachpilot/assets/img/"
+  "/assets/img/",
+  "/sprachpilot/assets/img/",
+  "https://studyroomslandstuhl-rgb.github.io/sprachpilot/assets/img/",
+  "../assets/",
+  "/assets/",
+  "/sprachpilot/assets/"
 ];
 function imageBaseName(v){
   const entry=(typeof ALL_VERBS!=="undefined"?ALL_VERBS:[]).find(x=>x.v===v);
@@ -112,7 +106,25 @@ function imageBaseName(v){
 function imageFileCandidates(v){
   const base=imageBaseName(v);
   if(/\.(png|jpg|jpeg|webp)$/i.test(base)) return [base];
-  return [base+".png",base+".jpg",base+".webp"];
+  return [base+".png",base+".jpg",base+".jpeg",base+".webp"];
+}
+function imageSrcWithVersion(src){return src+(src.includes("?")?"&":"?")+"v="+VERB_IMAGE_CACHE_VERSION}
+function imageMimeFromBytes(bytes){
+  if(!bytes || bytes.length<12)return "";
+  if(bytes[0]===0x89 && bytes[1]===0x50 && bytes[2]===0x4E && bytes[3]===0x47)return "image/png";
+  if(bytes[0]===0xFF && bytes[1]===0xD8)return "image/jpeg";
+  if(bytes[0]===0x52 && bytes[1]===0x49 && bytes[2]===0x46 && bytes[3]===0x46 && bytes[8]===0x57 && bytes[9]===0x45 && bytes[10]===0x42 && bytes[11]===0x50)return "image/webp";
+  return "";
+}
+function loadImageBlobUrl(src){
+  return fetch(src,{cache:"force-cache"})
+    .then(r=>{if(!r.ok)throw new Error("image not found");return r.arrayBuffer()})
+    .then(buf=>{
+      const bytes=new Uint8Array(buf);
+      const type=imageMimeFromBytes(bytes);
+      if(!type)throw new Error("unknown image type");
+      return URL.createObjectURL(new Blob([buf],{type}));
+    });
 }
 function imageBox(v,small=false){const cls=small?"mem-img-holder":"img-holder";return `<span class="${cls}" data-verb="${safeText(v)}"><span class="image-fallback">Bild</span></span>`}
 function hydrateImages(root=document){
@@ -121,25 +133,36 @@ function hydrateImages(root=document){
     box.dataset.loaded="1";
     const v=box.getAttribute("data-verb");
     const files=imageFileCandidates(v);
+    const attempts=[];
+    VERB_IMAGE_BASES.forEach(base=>files.forEach(file=>attempts.push(imageSrcWithVersion(base+file))));
     const img=document.createElement("img");
     img.alt=safeText(v);
     img.loading="eager";
     img.decoding="async";
-    let basePos=0,filePos=0;
+    let pos=0;
+    let blobUrl="";
+    const cleanupBlob=()=>{if(blobUrl){try{URL.revokeObjectURL(blobUrl)}catch(e){} blobUrl=""}}
+    const showFallback=()=>{cleanupBlob();box.innerHTML="<span class='image-fallback'>Bild fehlt</span>";box.classList.add("image-missing")};
     const tryNext=()=>{
-      if(filePos>=files.length){filePos=0;basePos++;}
-      if(basePos>=VERB_IMAGE_BASES.length){box.innerHTML="<span class='image-fallback'>Bild fehlt</span>";return;}
-      img.src=VERB_IMAGE_BASES[basePos]+files[filePos++];
+      cleanupBlob();
+      if(pos>=attempts.length){showFallback();return;}
+      const src=attempts[pos++];
+      let triedBlob=false;
+      img.onload=()=>{box.classList.add("image-loaded")};
+      img.onerror=()=>{
+        if(triedBlob){tryNext();return;}
+        triedBlob=true;
+        loadImageBlobUrl(src).then(url=>{blobUrl=url;img.src=url}).catch(()=>tryNext());
+      };
+      img.src=src;
     };
-    img.onerror=tryNext;
-    img.onload=()=>{box.classList.add("image-loaded")};
     box.textContent="";
     box.appendChild(img);
     tryNext();
   });
 }
 function renderAndHydrate(){setTimeout(()=>hydrateImages(document),20)}
-function preloadActiveImages(){(state.active||[]).forEach(v=>{const files=imageFileCandidates(v);const img=new Image();img.src=VERB_IMAGE_BASES[0]+files[0];})}
+function preloadActiveImages(){(state.active||[]).forEach(v=>{const files=imageFileCandidates(v);const img=new Image();img.src=imageSrcWithVersion(VERB_IMAGE_BASES[0]+files[0]);})}
 
 function loadProfile(){
   try{profile=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){profile=null}
