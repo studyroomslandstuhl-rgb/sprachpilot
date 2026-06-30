@@ -19,50 +19,18 @@
 </div>
 
 <script src="app.js?v=14"></script>
-<script src="../shared/lektion3-fix.js?v=1"></script>
+<script src="../shared/lektion3-fix.js?v=2"></script>
 <script>
 header("Karteikarten");
-
 const FILE = "karteikarten.html";
 let i = null;
-
-function cardLang(){
-  if(typeof spL3PreferredLang==='function') return spL3PreferredLang();
-  try{
-    const p = JSON.parse(localStorage.getItem("SP_USER_PROFILE") || "{}");
-    const code = localStorage.getItem("SP_MOTHER_LANGUAGE_CODE") || localStorage.getItem("motherLanguage") || "";
-    const visible = p.muttersprache || localStorage.getItem("muttersprache") || "Russisch";
-    const codeToName = {
-      sq:"Albanisch", am:"Amharisch", ar:"Arabisch", hy:"Armenisch", az:"Aserbaidschanisch", bn:"Bengalisch", bs:"Bosnisch", bg:"Bulgarisch", zh:"Chinesisch",
-      fa:"Farsi/Persisch", prs:"Dari", de:"Deutsch", en:"Englisch", fr:"Französisch", ka:"Georgisch", el:"Griechisch", hi:"Hindi", it:"Italienisch", ja:"Japanisch",
-      kk:"Kasachisch", hr:"Kroatisch", ku:"Kurdisch", ps:"Paschtu", pl:"Polnisch", pt:"Portugiesisch", ro:"Rumänisch", ru:"Russisch", sr:"Serbisch", so:"Somali",
-      es:"Spanisch", ta:"Tamil", th:"Thai", ti:"Tigrinya", cs:"Tschechisch", tr:"Türkisch", uk:"Ukrainisch", hu:"Ungarisch", ur:"Urdu", uz:"Usbekisch", vi:"Vietnamesisch"
-    };
-    return codeToName[String(code).toLowerCase()] || visible || "Russisch";
-  }catch(e){
-    return "Russisch";
-  }
-}
-
-function translation(w){
-  const l = cardLang();
-  return (w.translations && (w.translations[l] || w.translations.Russisch || w.translations.Englisch)) || w.word;
-}
-
+function cardLang(){return typeof spL3PreferredLang==='function'?spL3PreferredLang():lang();}
+function translation(w){const l=cardLang();return (w.translations&&(w.translations[l]||w.translations.Russisch||w.translations.Englisch))||w.word;}
 function show(){
-  if(spLoadTaskState(FILE, WORDS.length).done.length >= WORDS.length){
-    complete(area, FILE, "bild-wort.html");
-    return;
-  }
-
+  if(spLoadTaskState(FILE, WORDS.length).done.length >= WORDS.length){complete(area, FILE, "bild-wort.html");return;}
   i = spNextIndex(FILE, WORDS.length);
-  if(i === undefined || i === null){
-    spResetTask(FILE);
-    i = spNextIndex(FILE, WORDS.length);
-  }
-
+  if(i === undefined || i === null){spResetTask(FILE);i = spNextIndex(FILE, WORDS.length);}
   const w = WORDS[i];
-
   area.innerHTML = `${spProgressHtml(FILE, WORDS.length)}
     <div class="question">Sage das deutsche Wort mit Artikel.</div>
     <div class="hint">Muttersprache: <b>${translation(w)}</b></div>
@@ -79,46 +47,11 @@ function show(){
     </div>
     <div id="fb" class="feedback"></div>`;
 }
-
-function writeBox(){
-  box.classList.remove("hidden");
-}
-
-function flip(){
-  const w = WORDS[i];
-  const tries = spMarkWrong(FILE, WORDS.length);
-  fb.innerHTML = feedbackForCard(tries, full(w), "Artikel und Wort");
-  box.classList.remove("hidden");
-  ans.value = full(w);
-}
-
-function say(){
-  startMic(micBtn, txt => {
-    writeBox();
-    ans.value = txt;
-    check(txt);
-  });
-}
-
-function check(txt){
-  const w = WORDS[i];
-
-  if(simple(txt) === simple(full(w))){
-    fb.textContent = "Richtig!";
-    spMarkRight(FILE, WORDS.length);
-    setTimeout(show, 700);
-  }else{
-    const tries = spMarkWrong(FILE, WORDS.length);
-    fb.innerHTML = feedbackForCard(tries, full(w), "Artikel und Wort");
-  }
-}
-
-function feedbackForCard(tries, solution, type){
-  if(tries === 1) return "Da ist noch ein Fehler.";
-  if(tries === 2) return "Tipp: Prüfe " + type + ".";
-  return "Lösung: " + solution;
-}
-
+function writeBox(){box.classList.remove("hidden");}
+function flip(){const w=WORDS[i];const tries=spMarkWrong(FILE,WORDS.length);fb.innerHTML=feedbackForCard(tries,full(w),"Artikel und Wort");box.classList.remove("hidden");ans.value=full(w);}
+function say(){startMic(micBtn,txt=>{writeBox();ans.value=txt;check(txt);});}
+function check(txt){const w=WORDS[i];if(simple(txt)===simple(full(w))){fb.textContent="Richtig!";spMarkRight(FILE,WORDS.length);setTimeout(show,700);}else{const tries=spMarkWrong(FILE,WORDS.length);fb.innerHTML=feedbackForCard(tries,full(w),"Artikel und Wort");}}
+function feedbackForCard(tries,solution,type){if(tries===1)return "Da ist noch ein Fehler.";if(tries===2)return "Tipp: Prüfe "+type+".";return "Lösung: "+solution;}
 show();
 </script>
 <script type="module" src="/js/guard.js"></script>
