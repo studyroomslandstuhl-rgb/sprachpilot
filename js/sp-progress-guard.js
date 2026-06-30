@@ -1,6 +1,7 @@
 // Globaler Schutz: Lehrer-Vorschau darf keine Schülerpunkte/Ranglisten/Fortschritte speichern.
 // Lehrer-Vorschau ist nur aktiv, wenn sie explizit im Lehrer-Dashboard gestartet wurde.
 (function(){
+  try{import('/js/topbar-standard.js?v=7').catch(function(){});}catch(e){}
   function readProfile(){
     try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"{}")}catch(e){return {}}
   }
@@ -29,10 +30,8 @@
   }
   function activeRole(profile){
     const stored=storedRole();
-    // Die aktive Login-Art entscheidet zuerst. Gleiche E-Mail darf Schüler und Lehrer sein.
     if(["student","schueler","schüler"].includes(stored))return "student";
     if(["teacher","lehrer","admin","owner"].includes(stored))return "teacher";
-
     const profileRole=roleOf(profile);
     if(["student","schueler","schüler"].includes(profileRole))return "student";
     if(["teacher","lehrer","admin","owner"].includes(profileRole))return "teacher";
@@ -58,7 +57,6 @@
   function isPreview(){
     const preview=readPreview();
     if(!preview || preview.teacherPreview!==true) return false;
-
     const profile=readProfile();
     if(activeRole(profile)!=="teacher"){
       clearTeacherPreviewState();
@@ -83,11 +81,9 @@
     try{const p=readPreview()||{};course=p.courseCode||p.kurs||course}catch(e){}
     return "SP_TEACHER_PREVIEW_PROGRESS_"+course+"_"+key;
   }
-
   const realSet=Storage.prototype.setItem;
   const realGet=Storage.prototype.getItem;
   const realRemove=Storage.prototype.removeItem;
-
   if(!window.__spProgressGuardStoragePatched){
     window.__spProgressGuardStoragePatched=true;
     Storage.prototype.setItem=function(key,value){
@@ -113,13 +109,11 @@
       return realRemove.call(this,key);
     };
   }
-
   window.spCanSaveStudentProgress=function(){return !isPreview()};
   window.spCanWriteFirebaseProgress=function(){return !isPreview()};
   window.spClearTeacherPreviewState=clearTeacherPreviewState;
   window.spIsTeacherPreview=isPreview;
   window.spActiveLoginRole=function(){return activeRole(readProfile())};
-
   function patchFirestore(){
     if(!isPreview()||!window.db||window.__spProgressGuardDbPatched)return;
     const originalCollection=window.db.collection?.bind(window.db);
@@ -143,7 +137,6 @@
   }
   patchFirestore();
   setInterval(patchFirestore,500);
-
   function loadFreshProgressModule(){
     if(isPreview())return;
     if(window.__spFreshProgressModuleRequested)return;
@@ -154,20 +147,14 @@
   loadFreshProgressModule();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadFreshProgressModule);else setTimeout(loadFreshProgressModule,0);
   setTimeout(loadFreshProgressModule,500);
-
-  function dashboardHref(){
-    return activeRole(readProfile())==="teacher" ? "/teacher/index.html" : "/student-dashboard/index.html";
-  }
+  function dashboardHref(){return activeRole(readProfile())==="teacher" ? "/teacher/index.html" : "/student-dashboard/index.html";}
   function patchDashboardButtons(){
     const href=dashboardHref();
     document.querySelectorAll('a,button').forEach(el=>{
       const text=String(el.textContent||"").trim().toLowerCase();
       if(!text.includes('dashboard'))return;
-      if(el.tagName.toLowerCase()==='a'){
-        el.setAttribute('href',href);
-      }else{
-        el.onclick=function(){ location.href=href; };
-      }
+      if(el.tagName.toLowerCase()==='a')el.setAttribute('href',href);
+      else el.onclick=function(){ location.href=href; };
     });
   }
   window.spDashboardHref=dashboardHref;
