@@ -36,4 +36,23 @@
   if(typeof oldComplete==='function'){
     window.complete=function(area,file,next){sync(file);return oldComplete(area,file,next);};
   }
+  window.markTaskDone=function(file,total){let st=window.loadTask(file,total);st.done=[...Array(total).keys()];st.queue=[];st.current=null;st.tries=0;st.hadWrong=false;window.saveTask(file,st);sync(file)};
+  window.spNextSequentialIndex=function(file,total){let st=window.loadTask(file,total);if(st.done.length>=total)return null;if(st.current===null||st.current===undefined){st.current=st.done.length;st.tries=0;st.hadWrong=false;window.saveTask(file,st)}return st.current};
+  window.shuffle=function(a){return[...a].sort(()=>Math.random()-.5)};
+  window.exactAnswer=function(ans,sol){if(Array.isArray(sol))return sol.some(s=>window.exactAnswer(ans,s));return window.simple(ans)===window.simple(sol)};
+  window.instruction=function(text){return `<div class="task-instruction">${text}</div>`};
+  window.exampleBox=function(html){return `<div class="example-box"><b>Beispiel:</b><br>${html}</div>`};
+  const oldHeader=window.header;
+  if(typeof oldHeader==='function'){
+    window.header=function(title,showReset){
+      oldHeader(title,showReset);
+      const page=(location.pathname.split('/').pop()||'index.html').toLowerCase();
+      let href='index.html';
+      if(showReset||page==='index.html')href='../index.html';
+      if(page==='statistik.html')href='uebersicht.html';
+      if(page==='uebersicht.html')href='index.html';
+      const back=document.querySelector('.sp-page-nav a.btn.secondary,.nav a.btn.secondary');
+      if(back)back.href=href;
+    };
+  }
 })();
