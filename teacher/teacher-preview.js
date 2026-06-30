@@ -7,6 +7,7 @@ const TeacherPreview = {
     const firstName=t.firstName || t.vorname || t.name || "Lehrer";
     const lastName=t.lastName || t.nachname || "";
     const course=preview.courseCode || preview.kurs || (preview.allAccess ? "ALLE" : "Lehrer-Vorschau");
+    const openAssignments={releaseMode:"all",defaultLocked:false,enabledModules:{"Fragen A1":true,"Wortschatz":true,"Verben A1":true}};
     return {
       vorname:firstName,
       nachname:lastName,
@@ -17,7 +18,7 @@ const TeacherPreview = {
       kursnummer:course,
       courseCode:course,
       muttersprache:"Deutsch",
-      assignments:preview.assignments || {enabledModules:{"Fragen A1":true,"Wortschatz":true,"Verben A1":true}},
+      assignments:{...openAssignments,...(preview.assignments||{})},
       releases:preview.releases || {},
       role:"teacher",
       loginRole:"teacher",
@@ -47,7 +48,7 @@ const TeacherPreview = {
       courseCode:"ALLE",
       kurs:"ALLE",
       name:"Alle Inhalte",
-      assignments:{enabledModules:{"Fragen A1":true,"Wortschatz":true,"Verben A1":true}},
+      assignments:{releaseMode:"all",defaultLocked:false,enabledModules:{"Fragen A1":true,"Wortschatz":true,"Verben A1":true}},
       releases:{},
       startedAt:new Date().toISOString()
     });
@@ -62,12 +63,12 @@ const TeacherPreview = {
 
     this.activate({
       teacherPreview:true,
-      allAccess:false,
+      allAccess:true,
       courseCode:code,
       kurs:code,
       name:course.courseName||course.name||code,
       releases:course.releases||course.release||{},
-      assignments:course.assignments||{},
+      assignments:{releaseMode:"all",defaultLocked:false,enabledModules:{"Fragen A1":true,"Wortschatz":true,"Verben A1":true}},
       startedAt:new Date().toISOString()
     });
 
