@@ -1,53 +1,11 @@
-<!DOCTYPE html>
-<html lang="de">
-<head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Lektion 3 · Thema 2</title>
-<link rel="stylesheet" href="../shared/lektion3-standard.css?v=step12">
-</head>
-<body>
-<div class="container">
-  <header class="topbar"></header>
-  <div id="progressArea"></div>
-  <section class="card"><h2 class="section-title">Wortschatz</h2><div class="grid" id="wortschatz"></div></section>
-  <section class="card"><h2 class="section-title">Verpackungen & Mengen</h2><div class="grid" id="mengen"></div></section>
-  <section class="card"><h2 class="section-title">Preise</h2><div class="grid" id="preise"></div></section>
-  <section class="card"><h2 class="section-title">Im Supermarkt</h2><div class="grid" id="supermarkt"></div></section>
-  <section class="card"><h2 class="section-title">Prüfung</h2><div class="grid" id="pruefung"></div></section>
-  <footer>© SprachPilot</footer>
-</div>
-<script type="module" src="/js/guard.js"></script>
-<script src="../shared/lektion3-standard.js?v=step12"></script>
-<script src="app.js?v=14"></script>
-<script src="../shared/lektion3-fix.js?v=3"></script>
-<script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 3 · Thema 2</title><link rel="stylesheet" href="../shared/lektion3-standard.css?v=step13"></head><body><div class="container"><header class="topbar"></header><section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div class="progress-main"><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Mengen, Verpackungen, Preise, Einkaufsdialoge und Prüfung üben.</p><div id="topicExamSummary"></div></div></section><section class="grid" id="taskGrid"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="../shared/lektion3-standard.js?v=step13"></script><script src="app.js?v=14"></script><script src="../shared/lektion3-fix.js?v=3"></script><script>
 renderL3Header({title:"Mengen & Verpackungen",subtitle:"A1 Lektion 3 · Thema 2",backHref:"../index.html",overviewHref:"uebersicht.html",statsHref:"statistik.html",resetButton:true});
 const releaseCtx={module:'wortschatz',lesson:'A1-Lektion-3',theme:'Thema-2'};
-function isReleased(file){return !window.SprachPilotRelease || SprachPilotRelease.taskReleased(file,releaseCtx)}
-const taskIcons={'karteikarten.html':'🃏','bild-wort.html':'🖼️','wort-bild.html':'🔁','hoeren.html':'🎧','artikel.html':'der die das','drag-drop-artikel.html':'🧲','plural.html':'1→2+','plural-drag-drop.html':'📦','memory.html':'🧠','verpackungen.html':'🧺','preis-hoeren.html':'💶','preis-schreiben.html':'✍️','preis-sprechen.html':'🎤','frage-und-antwort.html':'💬','pruefung.html':'★'};
-function iconFor(file){return taskIcons[file]||'•'}
-function card(file,label,total=WORDS.length,idx=1,desc="Aufgabe üben"){let p=pctFor(file,total);return moduleCard({href:file,num:idx,title:label,desc,progress:p,status:p>=100?'Fertig':'Starten',icon:iconFor(file)});}
-function lockedExamCard(num){return `<div class="module locked-module"><div class="num">${num}. Prüfung</div><div class="icon">🔒</div><p>Erst alle freigegebenen Aufgaben mit 100% abschließen.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">gesperrt</div><div class="start">Gesperrt</div></div>`}
-function renderPage(){
-  const taskDefs=[['karteikarten.html',WORDS.length],['bild-wort.html',WORDS.length],['wort-bild.html',WORDS.length],['hoeren.html',WORDS.length],['artikel.html',WORDS.length],['drag-drop-artikel.html',WORDS.length],['plural.html',WORDS.length],['plural-drag-drop.html',WORDS.length],['memory.html',WORDS.length],['verpackungen.html',COMBOS.length],['preis-hoeren.html',PRICE_TASKS.length],['preis-schreiben.html',PRICE_TASKS.length],['preis-sprechen.html',PRICE_TASKS.length],['frage-und-antwort.html',COMBOS.length]];
-  const rel=taskDefs.filter(t=>isReleased(t[0]));
-  const progressTasks=[...rel,['pruefung.html',WORDS.length]];
-  const examUnlocked=rel.length===0 || rel.every(t=>pctFor(t[0],t[1])>=100);
-  const done=progressTasks.filter(t=>pctFor(t[0],t[1])>=100).length;
-  const all=Math.round(progressTasks.reduce((s,t)=>s+pctFor(t[0],t[1]),0)/Math.max(1,progressTasks.length))||0;
-  progressArea.innerHTML=progressCard({percent:all,doneText:`${done} / ${progressTasks.length} freigegebene Aufgaben abgeschlossen`,goal:"Die Prüfung wird erst freigeschaltet, wenn alle freigegebenen Aufgaben 100% erreicht haben."});
-  let n=1;
-  function add(file,label,total,desc){return isReleased(file)?card(file,label,total,n++,desc):''}
-  wortschatz.innerHTML=[add('karteikarten.html','Karteikarten',WORDS.length,'Wörter lernen.'),add('bild-wort.html','Bild → Wort',WORDS.length,'Schreibe das Wort.'),add('wort-bild.html','Wort → Bild',WORDS.length,'Wähle das Bild.'),add('hoeren.html','Hören',WORDS.length,'Höre und wähle.'),add('artikel.html','Artikel',WORDS.length,'der, die oder das?'),add('drag-drop-artikel.html','Artikel zuordnen',WORDS.length,'Ordne die Artikel zu.'),add('plural.html','Plural',WORDS.length,'Schreibe den Plural.'),add('plural-drag-drop.html','Pluralgruppen',WORDS.length,'Ordne die Pluralformen.'),add('memory.html','Memory',WORDS.length,'Finde Paare.')].join('')||'<p class="small">Keine Wortschatzaufgaben freigegeben.</p>';
-  mengen.innerHTML=[add('verpackungen.html','Verpackung + Produkt',COMBOS.length,'Verbinde Menge und Produkt.')].join('')||'<p class="small">Keine Aufgaben freigegeben.</p>';
-  preise.innerHTML=[add('preis-hoeren.html','Preis hören',PRICE_TASKS.length,'Höre den Preis.'),add('preis-schreiben.html','Preis schreiben',PRICE_TASKS.length,'Schreibe den Preis.'),add('preis-sprechen.html','Preis sprechen',PRICE_TASKS.length,'Sprich den Preis.')].join('')||'<p class="small">Keine Preisaufgaben freigegeben.</p>';
-  supermarkt.innerHTML=[add('frage-und-antwort.html','Frage & Antwort',COMBOS.length,'Übe kurze Einkaufsdialoge.')].join('')||'<p class="small">Keine Dialogaufgaben freigegeben.</p>';
-  const ep=pctFor('pruefung.html',WORDS.length);
-  pruefung.innerHTML=examUnlocked?card('pruefung.html','Prüfung',WORDS.length,n++,'Wiederhole die Aufgabe, bis du 100% erreichst.'):lockedExamCard(n++);
-}
-renderPage();
-if(window.SprachPilotRelease)SprachPilotRelease.refresh().then(renderPage).catch(()=>{});
-</script>
-</body>
-</html>
+const baseTasks=[['karteikarten.html',WORDS.length,'Karteikarten','🃏','Wörter lernen.'],['bild-wort.html',WORDS.length,'Bild → Wort','🖼️','Schreibe das Wort.'],['wort-bild.html',WORDS.length,'Wort → Bild','🔁','Wähle das Bild.'],['hoeren.html',WORDS.length,'Hören','🎧','Höre und wähle.'],['artikel.html',WORDS.length,'Artikel','der die das','der, die oder das?'],['drag-drop-artikel.html',WORDS.length,'Artikel zuordnen','🧲','Ordne die Artikel zu.'],['plural.html',WORDS.length,'Plural','1→2+','Schreibe den Plural.'],['plural-drag-drop.html',WORDS.length,'Pluralgruppen','📦','Ordne die Pluralformen.'],['memory.html',WORDS.length,'Memory','🧠','Finde Paare.'],['verpackungen.html',COMBOS.length,'Verpackung + Produkt','🧺','Verbinde Menge und Produkt.'],['preis-hoeren.html',PRICE_TASKS.length,'Preis hören','💶','Höre den Preis.'],['preis-schreiben.html',PRICE_TASKS.length,'Preis schreiben','✍️','Schreibe den Preis.'],['preis-sprechen.html',PRICE_TASKS.length,'Preis sprechen','🎤','Sprich den Preis.'],['frage-und-antwort.html',COMBOS.length,'Frage & Antwort','💬','Übe kurze Einkaufsdialoge.']];
+function released(file){return !window.SprachPilotRelease||SprachPilotRelease.taskReleased(file,releaseCtx)}
+function moduleHtml(t,num){const p=pctFor(t[0],t[1]);return `<a class="module" href="${t[0]}"><div class="num">${num}. ${t[2]}</div><div class="icon">${t[3]}</div><p>${t[4]}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}
+function lockedExamHtml(num){return `<div class="module locked exam-locked"><div class="num">${num}. Prüfung</div><div class="icon exam-icon">🔒</div><p>Prüfung wird erst freigeschaltet, wenn alle freigegebenen Aufgaben 100% erreicht haben.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">gesperrt</div><div class="start">Prüfung gesperrt</div></div>`}
+function examHtml(num){const p=pctFor('pruefung.html',WORDS.length);return `<a class="module" href="pruefung.html" id="examLink"><div class="num">${num}. Prüfung</div><div class="icon exam-icon">★</div><p>Teste dein Wissen.</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}
+function renderPage(){const tasks=baseTasks.filter(t=>released(t[0]));let n=1;taskGrid.innerHTML=tasks.map(t=>moduleHtml(t,n++)).join('');const examUnlocked=tasks.length===0||tasks.every(t=>pctFor(t[0],t[1])>=100);taskGrid.innerHTML+=examUnlocked?examHtml(n++):lockedExamHtml(n++);const progressTasks=[...tasks,['pruefung.html',WORDS.length]];const done=progressTasks.filter(t=>pctFor(t[0],t[1])>=100).length;const all=Math.min(100,Math.round(progressTasks.reduce((s,t)=>s+pctFor(t[0],t[1]),0)/Math.max(1,progressTasks.length))||0);totalCircle.textContent=all+'%';totalBar.style.width=all+'%';totalText.textContent=done+' / '+progressTasks.length+' freigegebene Aufgaben abgeschlossen';if(document.getElementById('topicExamSummary')&&typeof bestExamSummaryHtml==='function'){const examSummary=bestExamSummaryHtml();topicExamSummary.innerHTML=examSummary;topicExamSummary.style.display=examSummary?'block':'none';}}
+renderPage();if(window.SprachPilotRelease)SprachPilotRelease.refresh().then(renderPage).catch(()=>{});
+</script></body></html>
