@@ -192,6 +192,46 @@ function clearPracticeProgressForVerbs(verbs){
   });
 }
 
+function resetAllVerbProgressKeepPoints(){
+  const alertsShown=state.alertsShown||{};
+  const taskRewardsShown=state.taskRewardsShown||{};
+
+  state.phase="home";
+  state.index=0;
+  state.known=[];
+  state.unsure=[];
+  state.unknown=[];
+  state.active=[];
+  state.learned=[];
+  state.practicePool=[];
+  state.archivedPackages=[];
+  state.assessmentBatch=[];
+  state.assessed=[];
+  state.currentPackageVerbs=[];
+  state.weak={};
+  state.currentGame="";
+  state.currentVerb="";
+  state.currentTask=null;
+  state.memoryCards=[];
+  state.memoryDone=[];
+  state.first=null;
+  state.openCards=[];
+  state.lock=false;
+  state.skillDone={};
+  state.skillAttempts={};
+  state.skillSuccess={};
+  state.taskQueues={};
+  state.taskDoneSets={};
+  state.alertsShown=alertsShown;
+  state.taskRewardsShown=taskRewardsShown;
+  state.packageNo=1;
+  state.assessmentStart=0;
+  state.assessmentTries=0;
+  state.revealed=false;
+  state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0};
+  clearVerbHash(true);
+}
+
 function renderHome(){
   clearVerbHash(true);
   const appNode=$("app"); if(appNode) appNode.classList.remove("card");
@@ -212,16 +252,9 @@ function renderHome(){
 }
 
 function resetCurrentPackage(){
-  if(!confirm("Fortschritte im aktuellen Verben-Paket löschen? Punkte bleiben erhalten."))return;
+  if(!confirm("Alle Verben wieder auf „nicht eingeschätzt“ setzen? Punkte bleiben erhalten."))return;
   migrateState();
-  recoverActiveVerbsForCurrentPackage();
-  const verbs=currentPracticeVerbs();
-
-  // Nur Lernfortschritt der aktuellen Aufgaben zurücksetzen.
-  // Einschätzungen, Verbenlisten, Bewertungs-/Punktefelder und archivierte Leistungen bleiben erhalten.
-  resetPackageTasks();
-  clearPracticeProgressForVerbs(verbs);
-  state.phase="home";
+  resetAllVerbProgressKeepPoints();
   saveState();
   renderHome();
 }
