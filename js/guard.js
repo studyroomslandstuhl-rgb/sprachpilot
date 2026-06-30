@@ -6,7 +6,7 @@ if(SP_USER){
 }
 import("/js/activity-tracker.js?v=1").catch(()=>{});
 import("/js/scoring.js?v=1").catch(()=>{});
-import("/js/release-helper.js?v=1").catch(()=>{});
+import("/js/release-helper.js?v=2").catch(()=>{});
 if(location.pathname.includes("/wortschatz/A1-Lektion-3/")){
   import("/wortschatz/A1-Lektion-3/shared/lektion3-topbar.js?v=1").catch(()=>{});
 }
