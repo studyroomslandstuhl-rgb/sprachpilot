@@ -2,12 +2,20 @@
 <body>
 <div id="accountStrip" class="account-strip"></div>
 <div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div>
-<section class="card"><p>Wort antippen, dann Gruppe antippen. Danach kontrollieren.</p><div id="chips"></div><div class="drop-grid" id="zones"></div>
-<button class="btn" onclick="control()">Kontrollieren</button><div id="fb" class="feedback"></div><a id="nextBtn" class="btn hidden" href="memory.html">Nächste Aufgabe →</a></section>
+<section class="card" id="area"><p>Wort antippen, dann Gruppe antippen. Danach kontrollieren.</p><div id="chips"></div><div class="drop-grid" id="zones"></div>
+<button id="controlBtn" class="btn" onclick="control()">Kontrollieren</button><div id="fb" class="feedback"></div><a id="nextBtn" class="btn hidden" href="memory.html">Nächste Aufgabe →</a></section>
 <footer>© SprachPilot</footer></div><script src="app.js?v=11"></script><script>
 header("Pluralgruppen");
 let groups=['-n','-en','-er/Umlaut','-e','-s','-'];
 let selected=null;
+const TASK_FILE='plural-drag-drop.html';
+const TASK_TOTAL=WORDS.length;
+
+function markTaskDone(file,total){
+  const done=[...Array(total).keys()];
+  const st={total,queue:[],done,current:null,tries:0};
+  try{localStorage.setItem(spTaskStateKey(file),JSON.stringify(st));}catch(e){}
+}
 
 zones.innerHTML=groups.map(g=>`<div class="dropzone" data-g="${g}"><h2>${g}</h2></div>`).join('');
 chips.innerHTML=WORDS.map(w=>`<span class="chip" data-id="${w.id}">${full(w)}</span>`).join('');
@@ -70,9 +78,8 @@ function control(){
  setupZones();
 
  if(ok===WORDS.length){
-   done('plural-drag-drop.html');
-   nextBtn.classList.remove('hidden');
-   fb.textContent='Gut gemacht!';
+   markTaskDone(TASK_FILE,TASK_TOTAL);
+   complete(area,TASK_FILE,'memory.html');
  }else{
    fb.textContent='Korrigiere die roten Wörter. Tippe ein rotes Wort an und tippe dann die richtige Tabelle an.';
  }
