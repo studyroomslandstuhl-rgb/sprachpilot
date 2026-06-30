@@ -1,7 +1,7 @@
 // wortschatz/index-release-lock.js
 (function(){
   function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'null')||{}}catch(e){return {}}}
-  function teacher(){const r=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase();return r==='teacher'||r==='lehrer'||localStorage.getItem('SP_TEACHER_MODE')==='1'}
+  function teacher(){const p=profile();const r=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||localStorage.getItem('SP_LOGIN_CONTEXT')||p.role||p.loginRole||'').toLowerCase();const c=String(p.kurs||p.kursnummer||p.courseCode||localStorage.getItem('SP_PREVIEW_COURSE')||'').toUpperCase();return r==='teacher'||r==='lehrer'||localStorage.getItem('SP_TEACHER_MODE')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'||p.teacherPreview===true||p.isTeacher===true||c==='ALLE'}
   function code(){const p=profile();return String(p.kurs||p.kursnummer||p.courseCode||localStorage.getItem('SP_COURSE_CODE')||'').trim()}
   function store(){try{return window.db||(window.firebase&&firebase.firestore?firebase.firestore():null)}catch(e){return null}}
   function val(obj,path){let cur=obj;for(const p of path){if(!cur||typeof cur!=='object'||!(p in cur))return undefined;cur=cur[p]}return cur}
@@ -49,7 +49,7 @@
   }
   async function run(){
     const c=code();
-    if(teacher()){const count=apply({teacherAccess:true});setStatus('Lehrerzugang: alle Lektionen sind zum Testen freigegeben.',false);return}
+    if(teacher()){const count=apply({teacherAccess:true});setStatus('Lehrerzugang: alle Wortschatz-Lektionen sind zum Testen freigegeben.',false);return}
     if(!c){apply(null);setStatus('Bitte zuerst auf der Startseite einloggen. Danach siehst du deine freigeschalteten Lektionen.',true);return}
     const data=await getCourseData(c);
     if(data){localStorage.setItem('SP_COURSE_RELEASES',JSON.stringify(data));try{const p=profile();p.assignments=data;localStorage.setItem('SP_USER_PROFILE',JSON.stringify(p))}catch(e){}}
