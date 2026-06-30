@@ -2,12 +2,20 @@
 <body>
 <div id="accountStrip" class="account-strip"></div>
 <div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div>
-<section class="card"><p>Wort antippen, dann Gruppe antippen. Danach kontrollieren.</p><div id="chips"></div>
+<section class="card" id="area"><p>Wort antippen, dann Gruppe antippen. Danach kontrollieren.</p><div id="chips"></div>
 <div class="drop-grid"><div class="dropzone" data-a="der"><h2>der</h2></div><div class="dropzone" data-a="die"><h2>die</h2></div><div class="dropzone" data-a="das"><h2>das</h2></div></div>
 <button id="controlBtn" class="btn" onclick="control()">Kontrollieren</button><div id="fb" class="feedback"></div><a id="nextBtn" class="btn hidden" href="plural.html">Weiter</a></section>
 <footer>© SprachPilot</footer></div><script src="app.js?v=11"></script><script>
 header("Artikel zuordnen");
 let selected=null;
+const TASK_FILE='drag-drop-artikel.html';
+const TASK_TOTAL=WORDS.length;
+
+function markTaskDone(file,total){
+  const done=[...Array(total).keys()];
+  const st={total,queue:[],done,current:null,tries:0};
+  try{localStorage.setItem(spTaskStateKey(file),JSON.stringify(st));}catch(e){}
+}
 
 chips.innerHTML=WORDS.map(w=>`<span class="chip" data-id="${w.id}">${w.word}</span>`).join('');
 
@@ -69,22 +77,8 @@ function control(){
  setupZones();
 
  if(ok===WORDS.length){
-   done('drag-drop-artikel.html');
-
-   fb.innerHTML=`
-     <div class="finish-box">
-       <div class="finish-icon">✓</div>
-       <div class="question">Aufgabe fertig!</div>
-       <div class="big">100% erreicht.</div>
-       <p>Alle Wörter sind richtig zugeordnet.</p>
-     </div>
-   `;
-
-   nextBtn.classList.remove('hidden');
-
-   if(window.controlBtn){
-     controlBtn.classList.add('hidden');
-   }
+   markTaskDone(TASK_FILE,TASK_TOTAL);
+   complete(area,TASK_FILE,'plural.html');
  }else{
    fb.textContent='Korrigiere die roten Wörter. Tippe ein rotes Wort an und tippe dann die richtige Tabelle an.';
  }
