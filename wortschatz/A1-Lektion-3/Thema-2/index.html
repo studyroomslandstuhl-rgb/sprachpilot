@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Lektion 3 · Thema 2</title>
-<link rel="stylesheet" href="../shared/lektion3-standard.css?v=step11">
+<link rel="stylesheet" href="../shared/lektion3-standard.css?v=step12">
 </head>
 <body>
 <div class="container">
@@ -14,20 +14,22 @@
   <section class="card"><h2 class="section-title">Verpackungen & Mengen</h2><div class="grid" id="mengen"></div></section>
   <section class="card"><h2 class="section-title">Preise</h2><div class="grid" id="preise"></div></section>
   <section class="card"><h2 class="section-title">Im Supermarkt</h2><div class="grid" id="supermarkt"></div></section>
+  <section class="card"><h2 class="section-title">Prüfung</h2><div class="grid" id="pruefung"></div></section>
   <section class="card"><h2 class="section-title">Fortschritt</h2><div class="grid" id="fortschritt"></div></section>
   <footer>© SprachPilot</footer>
 </div>
 <script type="module" src="/js/guard.js"></script>
-<script src="../shared/lektion3-standard.js?v=step11"></script>
-<script src="app.js?v=8"></script>
+<script src="../shared/lektion3-standard.js?v=step12"></script>
+<script src="app.js?v=14"></script>
+<script src="../shared/lektion3-fix.js?v=1"></script>
 <script>
 renderL3Header({title:"Mengen & Verpackungen",subtitle:"A1 Lektion 3 · Thema 2",backHref:"../index.html",overviewHref:"uebersicht.html",statsHref:"statistik.html",resetButton:true});
 const progressTasks=[
-  ['karteikarten.html',WORDS.length],['bild-wort.html',WORDS.length],['wort-bild.html',WORDS.length],['hoeren.html',WORDS.length],['artikel.html',WORDS.length],['drag-drop-artikel.html',WORDS.length],['plural.html',WORDS.length],['plural-drag-drop.html',WORDS.length],['memory.html',WORDS.length],['verpackungen.html',COMBOS.length],['preis-hoeren.html',PRICE_TASKS.length],['preis-schreiben.html',PRICE_TASKS.length],['preis-sprechen.html',PRICE_TASKS.length],['frage-und-antwort.html',COMBOS.length]
+  ['karteikarten.html',WORDS.length],['bild-wort.html',WORDS.length],['wort-bild.html',WORDS.length],['hoeren.html',WORDS.length],['artikel.html',WORDS.length],['drag-drop-artikel.html',WORDS.length],['plural.html',WORDS.length],['plural-drag-drop.html',WORDS.length],['memory.html',WORDS.length],['verpackungen.html',COMBOS.length],['preis-hoeren.html',PRICE_TASKS.length],['preis-schreiben.html',PRICE_TASKS.length],['preis-sprechen.html',PRICE_TASKS.length],['frage-und-antwort.html',COMBOS.length],['pruefung.html',WORDS.length]
 ];
 const done=progressTasks.filter(t=>pctFor(t[0],t[1])>=100).length;
 const all=Math.round(progressTasks.reduce((s,t)=>s+pctFor(t[0],t[1]),0)/progressTasks.length)||0;
-progressArea.innerHTML=progressCard({percent:all,doneText:`${done} / ${progressTasks.length} Aufgaben abgeschlossen`,goal:"Mengen, Verpackungen, Preise und Einkaufsdialoge üben."});
+progressArea.innerHTML=progressCard({percent:all,doneText:`${done} / ${progressTasks.length} Aufgaben abgeschlossen`,goal:"Mengen, Verpackungen, Preise, Einkaufsdialoge und Prüfung üben."});
 const taskIcons={
   'karteikarten.html':'🃏',
   'bild-wort.html':'🖼️',
@@ -43,6 +45,7 @@ const taskIcons={
   'preis-schreiben.html':'✍️',
   'preis-sprechen.html':'🎤',
   'frage-und-antwort.html':'💬',
+  'pruefung.html':'★',
   'statistik.html':'📊',
   'uebersicht.html':'🔎'
 };
@@ -70,6 +73,7 @@ preise.innerHTML=[
   card('preis-sprechen.html','Preis sprechen',PRICE_TASKS.length,n++,'Sprich den Preis.')
 ].join('');
 supermarkt.innerHTML=[card('frage-und-antwort.html','Frage & Antwort',COMBOS.length,n++,'Übe kurze Einkaufsdialoge.')].join('');
+pruefung.innerHTML=[card('pruefung.html','Prüfung',WORDS.length,n++,'Wiederhole die Aufgabe, bis du 100% erreichst.')].join('');
 fortschritt.innerHTML=[
   moduleCard({href:'statistik.html',num:n++,title:'Statistik',desc:'Sieh deinen Lernstand.',status:'Öffnen',icon:iconFor('statistik.html')}),
   moduleCard({href:'uebersicht.html',num:n++,title:'Übersicht',desc:'Sieh alle Wörter.',status:'Öffnen',icon:iconFor('uebersicht.html')})
