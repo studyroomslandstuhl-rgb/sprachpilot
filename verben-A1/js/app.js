@@ -80,6 +80,7 @@ function renderVerbOverview(){
   const appNode=$("app"); if(appNode) appNode.classList.remove("card");
   state.phase="home";
   migrateState();
+  recoverActiveVerbsForCurrentPackage();
   const g=verbsByStatus();
   $("app").innerHTML=`<section class="card">
     <h2>Verben-Übersicht</h2>
@@ -158,12 +159,46 @@ function examCard(){
   </button>`;
 }
 
+function recoverActiveVerbsForCurrentPackage(){
+  normalizeVerbStatusLists();
+  let packageVerbs=currentPackageAllVerbs();
+
+  // Reparatur für alte kaputte Zustände: Wenn der Reset früher active geleert hat,
+  // werden vorhandene unsichere/nicht gekonnte Verben wieder als Übungsverben aktiv.
+  if(!packageVerbs.length && !(state.active||[]).length && ((state.unsure||[]).length || (state.unknown||[]).length)){
+    packageVerbs=uniqueList([...(state.unsure||[]),...(state.unknown||[])]).slice(0,PRACTICE_TARGET_COUNT);
+    state.currentPackageVerbs=packageVerbs;
+    state.assessmentBatch=uniqueList([...(state.assessmentBatch||[]),...packageVerbs]);
+  }
+
+  const repair=uniqueList(packageVerbs).filter(v=>(state.unsure||[]).includes(v)||(state.unknown||[]).includes(v));
+  if(!repair.length)return false;
+
+  const before=JSON.stringify(state.active||[]);
+  state.active=uniqueList([...(state.active||[]),...repair]).filter(v=>
+    !(state.known||[]).includes(v) &&
+    !(state.learned||[]).includes(v) &&
+    ((state.unsure||[]).includes(v)||(state.unknown||[]).includes(v))
+  );
+  return before!==JSON.stringify(state.active||[]);
+}
+
+function clearPracticeProgressForVerbs(verbs){
+  (verbs||[]).forEach(v=>{
+    if(state.skillDone) delete state.skillDone[v];
+    if(state.skillAttempts) delete state.skillAttempts[v];
+    if(state.skillSuccess) delete state.skillSuccess[v];
+    if(state.weak) delete state.weak[v];
+  });
+}
+
 function renderHome(){
   clearVerbHash(true);
   const appNode=$("app"); if(appNode) appNode.classList.remove("card");
   state.phase="home";
   state.currentTask=null;
   migrateState();
+  recoverActiveVerbsForCurrentPackage();
   preloadActiveImages();
   const practiceCount=currentPracticeVerbs().length;
   if(practiceCount<PRACTICE_TARGET_COUNT && !packageExamPassed()){
@@ -177,9 +212,16 @@ function renderHome(){
 }
 
 function resetCurrentPackage(){
-  if(!confirm("Fortschritte im aktuellen Verben-Paket löschen?"))return;
-  state.active=[];
+  if(!confirm("Fortschritte im aktuellen Verben-Paket löschen? Punkte bleiben erhalten."))return;
+  migrateState();
+  recoverActiveVerbsForCurrentPackage();
+  const verbs=currentPracticeVerbs();
+
+  // Nur Lernfortschritt der aktuellen Aufgaben zurücksetzen.
+  // Einschätzungen, Verbenlisten, Bewertungs-/Punktefelder und archivierte Leistungen bleiben erhalten.
   resetPackageTasks();
+  clearPracticeProgressForVerbs(verbs);
+  state.phase="home";
   saveState();
   renderHome();
 }
