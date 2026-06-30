@@ -6,7 +6,7 @@ if(SP_USER){
 }
 import("/js/activity-tracker.js?v=1").catch(()=>{});
 import("/js/scoring.js?v=1").catch(()=>{});
-import("/js/release-helper.js?v=3").catch(()=>{});
+import("/js/release-helper.js?v=4").catch(()=>{});
 if(location.pathname.includes("/verben-A1/")){
   import("/verben-A1/js/scoring-bridge.js?v=1").catch(()=>{});
 }
