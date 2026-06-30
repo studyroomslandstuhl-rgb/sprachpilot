@@ -6,6 +6,16 @@ const RELEASE_CATALOG = {
   ],
   lessons:[
     {
+      key:"A1-Lektion-3",
+      title:"A1 Lektion 3",
+      themes:[
+        {key:"Thema-1",title:"Thema 1 · Lebensmittel & Getränke",sets:[]},
+        {key:"Thema-2",title:"Thema 2 · Mengen & Verpackungen",sets:[]},
+        {key:"Thema-3",title:"Thema 3 · Einkaufen",sets:[]},
+        {key:"Thema-4",title:"Thema 4 · Kochen",sets:[]}
+      ]
+    },
+    {
       key:"A1-Lektion-4",
       title:"A1 Lektion 4",
       themes:[
@@ -15,7 +25,8 @@ const RELEASE_CATALOG = {
           {key:"extra",aliases:["plus","nicht-aus-dem-buch"],title:"Wortschatz nicht aus dem Buch"}
         ]},
         {key:"Thema-3",title:"Thema 3 · Farben & Adjektive",sets:[]},
-        {key:"Thema-4",title:"Thema 4 · Wohnungsanzeigen",sets:[]}
+        {key:"Thema-4",title:"Thema 4 · Wohnungsanzeigen",sets:[]},
+        {key:"Thema-5",title:"Thema 5 · Am Telefon",sets:[]}
       ]
     }
   ]
@@ -118,6 +129,22 @@ function setPaths(lessonKey,themeKey,setKey,aliases=[]){
   return paths;
 }
 
+function themeReleasePaths(lessonKey,themeKey){
+  const paths=[
+    ["enabledThemes",`${lessonKey}/${themeKey}`],
+    ["enabledThemes",`wortschatz/${lessonKey}/${themeKey}`],
+    ["releases","wortschatz","lessons",lessonKey,"themes",themeKey,"enabled"]
+  ];
+  // Nur für alte Lektion-4-Daten bleibt der reine Thema-Schlüssel als Legacy-Pfad erhalten.
+  // Für Lektion 3 darf Thema-1/Thema-2 nicht mit Lektion 4 kollidieren.
+  if(lessonKey==="A1-Lektion-4") paths.push(["enabledThemes",themeKey]);
+  return paths;
+}
+
+function themeSetCommand(lessonKey,themeKey){
+  return `ReleaseDraft.setMany(${JSON.stringify(themeReleasePaths(lessonKey,themeKey))},this.checked)`;
+}
+
 function releaseCheck(label,paths,onchange){
   const flat=(Array.isArray(paths[0])?paths:[paths]);
   const id="rel_"+flat[0].join("_").replace(/[^a-z0-9_]/gi,"_");
@@ -145,7 +172,7 @@ function renderReleaseEditor(course){
 
     for(const theme of lesson.themes){
       html+=`<details class="release-sub" open><summary>${theme.title}</summary>`;
-      html+=releaseCheck(theme.title,[["enabledThemes",`${lesson.key}/${theme.key}`],["enabledThemes",`wortschatz/${lesson.key}/${theme.key}`],["enabledThemes",theme.key],["releases","wortschatz","lessons",lesson.key,"themes",theme.key,"enabled"]],`ReleaseDraft.setMany([["enabledThemes","${lesson.key}/${theme.key}"],["enabledThemes","wortschatz/${lesson.key}/${theme.key}"],["enabledThemes","${theme.key}"],["releases","wortschatz","lessons","${lesson.key}","themes","${theme.key}","enabled"]],this.checked)`);
+      html+=releaseCheck(theme.title,themeReleasePaths(lesson.key,theme.key),themeSetCommand(lesson.key,theme.key));
 
       if(theme.sets && theme.sets.length){
         html+=`<div class="release-subtitle">Wortschatz-Sets</div>`;
