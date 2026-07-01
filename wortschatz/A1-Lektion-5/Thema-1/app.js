@@ -3,16 +3,20 @@ const DATA=window.SP_A1_LEKTION5_WORTSCHATZ||{parts:[]};
 const THEME=(DATA.parts||[]).find(p=>p.id===CFG.id)||{words:[],title:CFG.title};
 const WORDS=THEME.words||[];
 const EXTRA_IMAGES={einkaufen:'/assets/img/einkaufen.png',aufstehen:'/assets/img/aufstehen.png',aufraeumen:'/assets/img/aufraumen.png',anrufen:'/assets/img/anrufen.png',fernsehen:'/assets/img/fernsehen.png'};
-const BAD_IMAGE_IDS=new Set(['spazieren_gehen']);
+const BAD_IMAGE_IDS=new Set(['spazieren_gehen','machen']);
 const STD_LANGS=[['en','EN'],['ru','RU'],['tr','TR'],['uk','UK'],['ar','AR'],['ja','JA'],['ro','RO']];
+const LANG_NAMES={en:'Englisch',ru:'Russisch',tr:'Türkisch',uk:'Ukrainisch',ar:'Arabisch',ja:'Japanisch',ro:'Rumänisch'};
 function displayImage(w){return EXTRA_IMAGES[w?.id]||w?.image||''}
 function hasGoodImage(w){return !!(w&&!BAD_IMAGE_IDS.has(w.id)&&displayImage(w))}
 function simple(x){return String(x||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:]/g,'').replace(/\s+/g,' ')}
 function full(w){return w.full||((w.article?`${w.article} `:'')+(w.word||''))}
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'null')}catch(e){return null}}
-function langKey(){const m=String(profile()?.muttersprache||'').toLowerCase();if(m.includes('russ'))return'ru';if(m.includes('türk')||m.includes('turk'))return'tr';if(m.includes('ukrain'))return'uk';if(m.includes('arab'))return'ar';if(m.includes('japan'))return'ja';if(m.includes('rumän')||m.includes('ruman')||m.includes('roman'))return'ro';return'en'}
+function langKey(){const m=String(profile()?.muttersprache||profile()?.motherLanguage||'').toLowerCase();if(m.includes('russ'))return'ru';if(m.includes('türk')||m.includes('turk'))return'tr';if(m.includes('ukrain'))return'uk';if(m.includes('arab'))return'ar';if(m.includes('japan'))return'ja';if(m.includes('rumän')||m.includes('ruman')||m.includes('roman'))return'ro';return'en'}
 function tr(w){const t=w.tr||{};return t[langKey()]||t.en||t.ru||t.tr||''}
+function nativeTrHtml(w){const k=langKey(),t=w.tr||{};return `<div class="native-trans"><b>Übersetzung (${LANG_NAMES[k]||k.toUpperCase()}):</b> ${t[k]||t.en||'—'}</div>`}
 function stdTr(w){const t=w.tr||{};return `<div class="std-trans">${STD_LANGS.map(([k,l])=>`<div><b>${l}:</b> ${t[k]||'—'}</div>`).join('')}</div>`}
+function cardPrompt(w){return w?.type==='noun'?'Sage das deutsche Wort mit Artikel.':'Sage das deutsche Wort.'}
+function cardTip(w){return w?.type==='noun'?'Artikel und Wort':'Wort'}
 function typeLabel(t){return({noun:'Nomen',verb:'Verben',adjective:'Adjektive',adverb:'Adverbien',preposition:'Präpositionen',phrase:'Ausdrücke',question:'Fragewörter',conjunction:'Verbindungen',determiner:'Begleiter',time:'Zeitwörter'})[t]||'Andere Wörter'}
 function byType(){const order=['noun','verb','adjective','adverb','preposition','phrase','question','conjunction','determiner','time'],g={};WORDS.forEach(w=>{(g[w.type||'other']||(g[w.type||'other']=[])).push(w)});return order.filter(k=>g[k]).map(k=>[typeLabel(k),g[k]]).concat(Object.keys(g).filter(k=>!order.includes(k)).map(k=>[typeLabel(k),g[k]]))}
 function imgHtml(w){return hasGoodImage(w)?`<img src="${displayImage(w)}" onerror="fixImg(this)" alt="">`:`<div class="word-placeholder">kein Bild</div>`}
