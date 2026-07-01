@@ -5,6 +5,7 @@
 
   function json(key){try{return JSON.parse(localStorage.getItem(key)||'null')||{}}catch(e){return {}}}
   function dbRef(){try{if(typeof db!=='undefined'&&db)return db}catch(e){} return window.db||null}
+  function hasState(){try{return typeof state!=='undefined'&&!!state}catch(e){return false}}
   function prof(){try{if(typeof profile!=='undefined'&&profile)return profile}catch(e){} return window.profile||json('SP_USER_PROFILE')||json('SP_STUDENT_PROFILE')||{}}
   function isTeacher(){var r=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase();var p=prof();return r==='teacher'||r==='lehrer'||p.role==='teacher'||p.teacherPreview===true||p.isTeacher===true||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}
   function hasData(d){return !!(d&&(d.enabledWords||d.releases||d.enabledModules||d.settings||d.defaultLocked!==undefined||d.releaseMode||d.verbenA1AssessmentEnabled!==undefined))}
@@ -67,9 +68,9 @@
   function filterQueue(q,allowed){return (q||[]).filter(function(x){return x&&allowed.has(x.v)})}
   function filterDoneKeys(q,allowed){return (q||[]).filter(function(k){return allowed.has(String(k).split(':')[0])})}
   function filterObjectKeys(obj,allowed){Object.keys(obj||{}).forEach(function(k){if(!allowed.has(k))delete obj[k]})}
-  function resetQueues(){if(!window.state)return;state.practicePool=[];state.taskQueues={};state.taskDoneSets={};state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0}}
+  function resetQueues(){if(!hasState())return;state.practicePool=[];state.taskQueues={};state.taskDoneSets={};state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0}}
   function seedPackageWhenAssessmentOff(){
-    if(assessmentOn()||!window.state)return false;
+    if(assessmentOn()||!hasState())return false;
     var list=released().slice(0,20);
     if(!list.length)return false;
     state.currentPackageVerbs=list.slice();
@@ -85,7 +86,7 @@
     return true;
   }
   function syncState(){
-    if(!window.state||isTeacher()||(!releaseLoaded&&!hasData(releaseData)))return false;
+    if(!hasState()||isTeacher()||(!releaseLoaded&&!hasData(releaseData)))return false;
     var allowed=new Set(released());
     var fingerprint=JSON.stringify({verbs:Array.from(allowed),assessment:assessmentOn()});
     var oldFingerprint=state._releaseFingerprint||'';
@@ -105,14 +106,41 @@
     if(before!==after){try{if(typeof saveState==='function')saveState()}catch(e){}}
     return before!==after;
   }
+  function shouldRenderBridgeHome(){
+    if(!hasState()||typeof currentPracticeVerbs!=='function')return false;
+    var releasedCount=released().length;
+    var practiceCount=currentPracticeVerbs().length;
+    var target=targetCount();
+    return !releasedCount||practiceCount===0||practiceCount<20&&target&&practiceCount>=target||(!assessmentOn()&&practiceCount>0&&practiceCount<20);
+  }
+  function renderBridgeHome(){
+    var app=document.getElementById('app');if(!app)return false;
+    try{if(typeof clearVerbHash==='function')clearVerbHash(true)}catch(e){}
+    try{app.classList.remove('card')}catch(e){}
+    if(hasState()){state.phase='home';state.currentTask=null}
+    syncState();
+    var releasedCount=released().length;
+    var practiceCount=typeof currentPracticeVerbs==='function'?currentPracticeVerbs().length:0;
+    var target=targetCount();
+    if(!releasedCount){app.innerHTML=(typeof statusBox==='function'?statusBox():'')+'<section class="card"><h2>Keine Verben freigegeben</h2><p class="small">Für deinen Kurs sind aktuell keine Verben A1 freigeschaltet.</p></section>';try{if(typeof saveState==='function')saveState()}catch(e){};return true}
+    if(!practiceCount){app.innerHTML=(typeof statusBox==='function'?statusBox():'')+'<section class="card"><h2>Keine aktiven Übungsverben</h2><p class="small">Alle aktuell freigegebenen Verben sind erledigt oder es gibt kein aktives Paket. Nutze „Fortschritte löschen“, wenn du neu starten möchtest.</p></section>';try{if(typeof saveState==='function')saveState()}catch(e){};return true}
+    if(practiceCount<20&&target&&practiceCount>=target){
+      var html=(typeof statusBox==='function'?statusBox():'')+'<section class="card"><div class="grid task-grid">';
+      if(typeof taskCard==='function'&&typeof examCard==='function')html+=taskCard('karteikarte','🃏','flashcards',1)+taskCard('memory','🧠','memory',2)+taskCard('bild_verb','🖼️','quiz',3)+taskCard('verb_bild','🔁','verbToImage',4)+taskCard('schreiben','✍️','writeVerb',5)+taskCard('hoeren_schreiben','👂','hearWrite',6)+taskCard('hoeren_sprechen','🎤','hearSpeak',7)+taskCard('bild_sprechen','🗣️','imageSpeak',8)+taskCard('satz_puzzle','🧩','sentencePuzzle',9)+taskCard('konjugieren','🔤','conjugationTask',10)+examCard();
+      html+='</div></section>';app.innerHTML=html;try{if(typeof saveState==='function')saveState()}catch(e){};return true;
+    }
+    return false;
+  }
   function patchFunctions(){
     if(typeof window.unusedVerbs==='function'&&!window.unusedVerbs.__releaseBridge){var oldUnused=window.unusedVerbs;window.unusedVerbs=function(){if(!assessmentOn())return [];return filterList(oldUnused())};window.unusedVerbs.__releaseBridge=true}
     if(typeof window.currentPracticeVerbs==='function'&&!window.currentPracticeVerbs.__releaseBridge){var oldPractice=window.currentPracticeVerbs;window.currentPracticeVerbs=function(){syncState();return filterList(oldPractice())};window.currentPracticeVerbs.__releaseBridge=true}
     if(typeof window.currentPackageAllVerbs==='function'&&!window.currentPackageAllVerbs.__releaseBridge){var oldPackage=window.currentPackageAllVerbs;window.currentPackageAllVerbs=function(){syncState();return filterList(oldPackage())};window.currentPackageAllVerbs.__releaseBridge=true}
+    if(typeof window.verbsByStatus==='function'&&!window.verbsByStatus.__releaseBridge){window.verbsByStatus=function(){syncState();var allowed=released();var allowedSet=new Set(allowed);var learned=new Set([].concat(state.learned||[],state.known||[]).filter(function(v){return allowedSet.has(v)}));var active=unique([].concat(state.active||[],state.unsure||[],state.unknown||[])).filter(function(v){return allowedSet.has(v)&&!learned.has(v)});var activeSet=new Set(active);return {active:active,learned:Array.from(learned),new:allowed.filter(function(v){return !learned.has(v)&&!activeSet.has(v)})}};window.verbsByStatus.__releaseBridge=true}
     if(typeof window.handleAssessmentClick==='function'&&!window.handleAssessmentClick.__releaseBridge){var oldHandle=window.handleAssessmentClick;window.handleAssessmentClick=function(){var run=function(){syncState();if(!assessmentOn()){seedPackageWhenAssessmentOff();if(typeof renderHome==='function')renderHome();return}return oldHandle.apply(this,arguments)}.bind(this);if(!releaseLoaded&&window.spVerbReleaseReady)return window.spVerbReleaseReady.then(run);return run()};window.handleAssessmentClick.__releaseBridge=true}
-    if(typeof window.renderHome==='function'&&!window.renderHome.__releaseBridge){var oldRender=window.renderHome;window.renderHome=function(){var args=arguments,ctx=this;if(!releaseLoaded&&window.spVerbReleaseReady){var app=document.getElementById('app');if(app)app.innerHTML='<section class="card"><h2>Verben werden geladen …</h2><p class="small">Die aktuelle Kursfreigabe wird geprüft.</p></section>';return window.spVerbReleaseReady.then(function(){syncState();return oldRender.apply(ctx,args)})}syncState();return oldRender.apply(ctx,args)};window.renderHome.__releaseBridge=true}
+    if(typeof window.resumePhase==='function'&&!window.resumePhase.__releaseBridge){var oldResume=window.resumePhase;window.resumePhase=function(){var run=function(){syncState();if(hasState()&&state.phase==='assessment'&&!assessmentOn()){if(typeof renderHome==='function')renderHome();return true}return oldResume.apply(this,arguments)}.bind(this);if(!releaseLoaded&&window.spVerbReleaseReady){if(typeof renderHome==='function')renderHome();window.spVerbReleaseReady.then(run);return true}return run()};window.resumePhase.__releaseBridge=true}
+    if(typeof window.renderHome==='function'&&!window.renderHome.__releaseBridge){var oldRender=window.renderHome;window.renderHome=function(){var args=arguments,ctx=this;if(!releaseLoaded&&window.spVerbReleaseReady){var app=document.getElementById('app');if(app)app.innerHTML='<section class="card"><h2>Verben werden geladen …</h2><p class="small">Die aktuelle Kursfreigabe wird geprüft.</p></section>';return window.spVerbReleaseReady.then(function(){syncState();if(shouldRenderBridgeHome())return renderBridgeHome();return oldRender.apply(ctx,args)})}syncState();if(shouldRenderBridgeHome())return renderBridgeHome();return oldRender.apply(ctx,args)};window.renderHome.__releaseBridge=true}
   }
-  function afterLoad(){patchFunctions();syncState();try{if(typeof renderHome==='function'&&window.state&&state.phase==='home')renderHome()}catch(e){}}
+  function afterLoad(){patchFunctions();syncState();try{if(typeof renderHome==='function'&&hasState()&&state.phase==='home')renderHome()}catch(e){}}
 
   releaseData=localData();
   window.spReleasedVerbList=released;
@@ -120,7 +148,7 @@
   window.spVerbAssessmentEnabled=assessmentOn;
   window.spVerbPracticeTargetCount=targetCount;
   window.spSyncVerbRelease=syncState;
-  window.spVerbReleaseDebug=function(){return {loaded:releaseLoaded,teacher:isTeacher(),codes:courseCodes(),released:released(),target:targetCount(),assessmentEnabled:assessmentOn(),data:data(),state:window.state?{active:state.active,currentPackageVerbs:state.currentPackageVerbs,phase:state.phase,releaseFingerprint:state._releaseFingerprint}:null}};
+  window.spVerbReleaseDebug=function(){return {loaded:releaseLoaded,teacher:isTeacher(),codes:courseCodes(),released:released(),target:targetCount(),assessmentEnabled:assessmentOn(),data:data(),state:hasState()?{active:state.active,currentPackageVerbs:state.currentPackageVerbs,phase:state.phase,releaseFingerprint:state._releaseFingerprint}:null}};
   releaseLoading=loadRemote().then(function(){afterLoad();return data()}).catch(function(e){releaseLoaded=true;afterLoad();return data()});
   window.spVerbReleaseReady=releaseLoading;
   patchFunctions();
