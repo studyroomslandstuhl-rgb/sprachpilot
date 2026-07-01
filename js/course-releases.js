@@ -94,6 +94,19 @@ function normalizeModule(module){
   if(low==="fragen-a1"||low==="fragen a1")return {title:"Fragen A1",slug:"fragen-A1"};
   return {title:m,slug:m};
 }
+function moduleExplicitOff(data,m){
+  return data.enabledModules?.[m.title]===false || data.enabledModules?.[m.slug]===false || data.releases?.[m.title]?.enabled===false || data.releases?.[m.slug]?.enabled===false;
+}
+function defaultOpen(data){return data.releaseMode==="all" || data.releaseMode==="open" || data.defaultLocked===false}
+function directModuleContent(data,m){
+  const prefixSlug=m.slug+"/";
+  const prefixTitle=m.title+"/";
+  return Object.keys(data.enabledLessons||{}).some(k=>k.startsWith(prefixSlug)||k.startsWith(prefixTitle)) ||
+    Object.keys(data.enabledThemes||{}).some(k=>k.startsWith(prefixSlug)||k.startsWith(prefixTitle)) ||
+    Object.keys(data.enabledTasks||{}).some(k=>k.startsWith(prefixSlug)||k.startsWith(prefixTitle)) ||
+    (m.slug==="verben-A1" && Object.keys(data.enabledWords||{}).length>0) ||
+    !!(data.releases?.[m.slug] || data.releases?.[m.title]);
+}
 export function moduleOpen(data,module){
   if(isTeacher())return true;
   if(!hasReleaseData(data))return true;
@@ -101,12 +114,14 @@ export function moduleOpen(data,module){
   const vals=[data.enabledModules?.[m.title],data.enabledModules?.[m.slug],data.releases?.[m.title]?.enabled,data.releases?.[m.slug]?.enabled];
   if(vals.some(v=>v===false))return false;
   if(vals.some(v=>v===true))return true;
-  if(data.releaseMode==="all" || data.releaseMode==="open" || data.defaultLocked===false)return true;
-  return false;
+  if(directModuleContent(data,m))return true;
+  return defaultOpen(data);
 }
 export function lessonOpen(data,module,lessonKey){
-  if(!moduleOpen(data,module))return false;
+  if(isTeacher())return true;
+  if(!hasReleaseData(data))return true;
   const m=normalizeModule(module);
+  if(moduleExplicitOff(data,m))return false;
   const keys=[lessonKey,`${m.slug}/${lessonKey}`,`${m.title}/${lessonKey}`];
   const vals=keys.map(k=>data.enabledLessons?.[k]).concat([
     getPath(data,["releases",m.slug,"lessons",lessonKey,"enabled"]),
@@ -114,11 +129,13 @@ export function lessonOpen(data,module,lessonKey){
   ]);
   if(vals.some(v=>v===false))return false;
   if(vals.some(v=>v===true))return true;
-  return data.releaseMode==="all" || data.releaseMode==="open" || data.defaultLocked===false;
+  return defaultOpen(data);
 }
 export function themeOpen(data,module,lessonKey,themeKey){
-  if(!lessonOpen(data,module,lessonKey))return false;
+  if(isTeacher())return true;
+  if(!hasReleaseData(data))return true;
   const m=normalizeModule(module);
+  if(moduleExplicitOff(data,m))return false;
   const keys=[themeKey,`${lessonKey}/${themeKey}`,`${m.slug}/${lessonKey}/${themeKey}`,`${m.title}/${lessonKey}/${themeKey}`];
   const vals=keys.map(k=>data.enabledThemes?.[k]).concat([
     getPath(data,["releases",m.slug,"lessons",lessonKey,"themes",themeKey,"enabled"]),
@@ -126,29 +143,34 @@ export function themeOpen(data,module,lessonKey,themeKey){
   ]);
   if(vals.some(v=>v===false))return false;
   if(vals.some(v=>v===true))return true;
-  return data.releaseMode==="all" || data.releaseMode==="open" || data.defaultLocked===false;
+  return lessonOpen(data,module,lessonKey);
 }
 export function taskOpen(data,module,lessonKey,themeKey,file){
-  if(!themeOpen(data,module,lessonKey,themeKey))return false;
+  if(isTeacher())return true;
+  if(!hasReleaseData(data))return true;
   const m=normalizeModule(module);
-  const keys=[file,`${themeKey}/${file}`,`${lessonKey}/${themeKey}/${file}`,`${m.slug}/${lessonKey}/${themeKey}/${file}`];
+  if(moduleExplicitOff(data,m))return false;
+  const keys=[file,`${themeKey}/${file}`,`${lessonKey}/${themeKey}/${file}`,`${m.slug}/${lessonKey}/${themeKey}/${file}`,`${m.title}/${lessonKey}/${themeKey}/${file}`];
   const vals=keys.map(k=>data.enabledTasks?.[k]).concat([
     getPath(data,["releases",m.slug,"lessons",lessonKey,"themes",themeKey,"tasks",file]),
     getPath(data,["releases",m.title,"lessons",lessonKey,"themes",themeKey,"tasks",file])
   ]);
   if(vals.some(v=>v===false))return false;
   if(vals.some(v=>v===true))return true;
-  return data.releaseMode==="all" || data.releaseMode==="open" || data.defaultLocked===false;
+  return themeOpen(data,module,lessonKey,themeKey);
 }
 export function verbOpen(data,verb){
-  if(!moduleOpen(data,"Verben A1"))return false;
+  if(isTeacher())return true;
+  if(!hasReleaseData(data))return true;
+  const m=normalizeModule("Verben A1");
+  if(moduleExplicitOff(data,m))return false;
   const vals=[
     data.enabledWords?.[verb],data.enabledWords?.[`verben-A1/${verb}`],data.enabledWords?.[`Verben A1/${verb}`],
     getPath(data,["releases","verben-A1","words",verb]),getPath(data,["releases","Verben A1","words",verb])
   ];
   if(vals.some(v=>v===false))return false;
   if(vals.some(v=>v===true))return true;
-  return data.releaseMode==="all" || data.releaseMode==="open" || data.defaultLocked===false;
+  return defaultOpen(data);
 }
 export function releasedVerbs(data,verbs){
   const list=(verbs||[]).map(v=>typeof v==="string"?v:v?.v).filter(Boolean);
