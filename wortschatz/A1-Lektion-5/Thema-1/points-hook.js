@@ -1,5 +1,18 @@
 (function(){
   const cfg=window.SP_L5_THEME||{key:'SP_L5_T1_V1'};
+  const TASK_TOTALS={
+    'karteikarten.html':21,
+    'bild-wort.html':15,
+    'wort-bild.html':15,
+    'hoeren-schreiben.html':21,
+    'trennbare-verben.html':15,
+    'trennbare-verben-im-satz.html':12,
+    'marias-tag.html':11,
+    'was-machst-du-gern.html':5,
+    'ja-nein-fragen.html':6,
+    'verb-passt.html':8,
+    'pruefung.html':20
+  };
   function ensureGuard(){
     if(window.__spL5PointsGuardAdded)return;
     window.__spL5PointsGuardAdded=true;
@@ -8,7 +21,7 @@
     document.head.appendChild(s);
     const p=document.createElement('script');
     p.type='module';
-    p.src='/js/progress.js?v=l5t1';
+    p.src='/js/progress.js?v=l5t1-2';
     document.head.appendChild(p);
   }
   function queue(method,payload){
@@ -21,16 +34,18 @@
     window.SP_PROGRESS_QUEUE.push({method,payload});
   }
   function payload(file,total,done){
-    return {module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:'5',theme:'1',title:'A1 Lektion 5 · Thema 1',file,taskKey:file,percent:total?Math.round((done||0)/total*100):100,completed:!total||done>=total,total:Number(total||0),done:Number(done||0)};
+    return {module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:'5',theme:'1',title:'A1 Lektion 5 · Thema 1',file,taskKey:file,taskTitle:title(file),percent:total?Math.round((done||0)/total*100):100,completed:!total||done>=total,total:Number(total||0),done:Number(done||0)};
   }
+  function title(file){return ({'karteikarten.html':'Karteikarten','bild-wort.html':'Bild → Wort','wort-bild.html':'Wort → Bild','hoeren-schreiben.html':'Hören → Schreiben','trennbare-verben.html':'Trennbare Verben erkennen','trennbare-verben-im-satz.html':'Sätze bauen','marias-tag.html':'Marias Tag','was-machst-du-gern.html':'Was machst du gern?','ja-nein-fragen.html':'Ja-/Nein-Fragen','verb-passt.html':'Mini-Situationen','pruefung.html':'Prüfung'})[file]||file;}
   function stateKey(file){return cfg.key+'_'+file;}
   function sync(file){
     try{
       const st=JSON.parse(localStorage.getItem(stateKey(file))||'null');
       if(!st||!st.total||!Array.isArray(st.done))return;
-      if(st.done.length>=st.total)queue('recordTaskProgress',payload(file,st.total,st.done.length));
+      if(st.done.length>=st.total)queue(file==='pruefung.html'?'recordExamResult':'recordTaskProgress',payload(file,st.total,st.done.length));
     }catch(e){}
   }
+  function syncAllCompleted(){Object.keys(TASK_TOTALS).forEach(sync)}
   ensureGuard();
   const oldSave=window.saveTask;
   if(typeof oldSave==='function'){
@@ -59,4 +74,6 @@
       if(back)back.href=href;
     };
   }
+  setTimeout(syncAllCompleted,800);
+  setTimeout(syncAllCompleted,2500);
 })();
