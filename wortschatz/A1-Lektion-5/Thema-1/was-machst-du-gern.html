@@ -30,7 +30,7 @@ window.SP_L5_THEME={id:'Thema-1',title:'Alltag und trennbare Verben',sub:'A1 Lek
   };
   const DATA=[
     ['kochen',['Ich koche gern.','Ich koche gerne.']],
-    ['spielen',['Ich spiele gern.','Ich spiele gerne.']],
+    ['spielen',['Ich spiele gern.','Ich spiele gerne.','Ich spiele gern Fußball.','Ich spiele gerne Fußball.']],
     ['essen',['Ich esse gern.','Ich esse gerne.']],
     ['schlafen',['Ich schlafe gern.','Ich schlafe gerne.']]
   ];
@@ -51,6 +51,7 @@ window.SP_L5_THEME={id:'Thema-1',title:'Alltag und trennbare Verben',sub:'A1 Lek
   function markWrong(){let st=getState();st.tries=(st.tries||0)+1;st.hadWrong=true;saveState(st)}
   function progress(){let st=getState();let p=Math.round((st.done.length||0)/ITEMS.length*100)||0;return `<div class="small">${st.done.length} richtig · ${ITEMS.length-st.done.length} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
   function done(){return getState().done.length>=ITEMS.length}
+  function intro(){return getState().done.length===0}
   function finish(){area.innerHTML='<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="ja-nein-fragen.html">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div></div>'}
   function fallbackHeader(){const h=document.querySelector('.topbar');if(h&&!h.innerHTML.trim())h.innerHTML='<div class="topbar-main"><a class="brand" href="/index.html"><div><h1>SprachPilot</h1><div class="subtitle">Was machst du gern? · A1 Lektion 5 · Thema 1</div></div></a></div><nav class="nav sp-page-nav"><a class="btn secondary" href="index.html">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a></nav>'}
   const ITEMS=DATA.map(d=>({w:word(d[0]),answer:d[1]})).filter(x=>x.w);
@@ -63,9 +64,11 @@ window.SP_L5_THEME={id:'Thema-1',title:'Alltag und trennbare Verben',sub:'A1 Lek
     if(done()){finish();return}
     const it=ITEMS[nextIndex()]||ITEMS[0];
     if(phase==='question'){
-      area.innerHTML=progress()+'<div class="task-instruction">Bilde zuerst die Frage. Beispiel: Was machst du gern?</div>'+img(it.w)+'<input id="q" placeholder="Schreibe die Frage hier"><div class="actions"><button class="btn" onclick="checkQuestion()">Kontrollieren</button></div><div id="fb" class="feedback"></div>';
+      const help=intro()?'<div class="task-instruction">Bilde zuerst die Frage.</div><div class="example-box"><b>Beispiel:</b><br>Was machst du gern?</div>':'';
+      area.innerHTML=progress()+help+img(it.w)+'<input id="q" placeholder="Schreibe die Frage hier"><div class="actions"><button class="btn" onclick="checkQuestion()">Kontrollieren</button></div><div id="fb" class="feedback"></div>';
     }else{
-      area.innerHTML=progress()+'<div class="task-instruction">Antworte mit einem ganzen Satz. Beispiel: Ich koche gern.</div>'+img(it.w)+'<input id="a" placeholder="Schreibe die Antwort hier"><div class="actions"><button class="btn" onclick="checkAnswer()">Kontrollieren</button></div><div id="fb" class="feedback"></div>';
+      const help=intro()?'<div class="task-instruction">Antworte mit einem ganzen Satz.</div><div class="example-box"><b>Beispiel:</b><br>Ich koche gern.</div>':'';
+      area.innerHTML=progress()+help+img(it.w)+'<input id="a" placeholder="Schreibe die Antwort hier"><div class="actions"><button class="btn" onclick="checkAnswer()">Kontrollieren</button></div><div id="fb" class="feedback"></div>';
     }
   }
   try{if(typeof header==='function')header('Was machst du gern?')}catch(e){}
