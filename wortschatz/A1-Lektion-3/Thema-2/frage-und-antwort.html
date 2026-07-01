@@ -32,7 +32,58 @@ function safeSimple(x){
     .toLowerCase()
     .trim()
     .replace(/[.,!?€]/g,"")
+    .replace(/ä/g,"ae")
+    .replace(/ö/g,"oe")
+    .replace(/ü/g,"ue")
+    .replace(/ß/g,"ss")
     .replace(/\s+/g," ");
+}
+function norm(x){return safeSimple(x)}
+function wordsOfCombo(c){
+  return norm(c.text||"").split(" ").filter(Boolean);
+}
+function hasComboWords(ans,c){
+  const a=norm(ans);
+  const parts=wordsOfCombo(c).filter(w=>!['ein','eine','einen','zwei','drei','vier','fuenf','zehn','2','3','4','5','10'].includes(w));
+  return parts.length===0 || parts.some(w=>a.includes(w));
+}
+function hasQuestionVerbOrPrice(ans){
+  const a=norm(ans);
+  return /(^| )(was|wieviel|wie viel|wie hoch|welcher|welchen)( |$)/.test(a) || a.includes('preis');
+}
+function hasCostVerb(ans){
+  const a=norm(ans);
+  return a.includes(' kostet') || a.includes(' kosten') || a.startsWith('kostet') || a.startsWith('kosten');
+}
+function hasPriceQuestion(ans){
+  const a=norm(ans);
+  return a.includes('preis') && (
+    a.includes('was ist') ||
+    a.includes('wie ist') ||
+    a.includes('wie hoch') ||
+    a.includes('welcher preis') ||
+    a.includes('welchen preis') ||
+    a.startsWith('preis') ||
+    a.includes(' der preis')
+  );
+}
+function priceVariants(price){
+  const raw=String(price||'');
+  const noEuro=raw.replace('€','').trim();
+  const simple=norm(raw);
+  const euro=norm(raw.replace('€','Euro'));
+  const parts=noEuro.split(/[,.]/);
+  const euros=Number(parts[0]||0);
+  const cents=Number((parts[1]||'').padEnd(2,'0').slice(0,2));
+  const out=[simple,euro,norm(noEuro),norm(noEuro+' Euro')];
+  if(cents>0){out.push(norm(`${euros} Euro ${cents} Cent`));out.push(norm(`${euros} Euro und ${cents} Cent`));}
+  if(euros===0&&cents>0){out.push(norm(`${cents} Cent`));}
+  return [...new Set(out.filter(Boolean))];
+}
+function hasPrice(ans,c){
+  const a=norm(ans);
+  if(a.includes('euro')||a.includes('cent'))return true;
+  return priceVariants(c.price).some(p=>p&&a.includes(p));
 }
 
 function ensureState(){
@@ -105,26 +156,19 @@ function ensureState(){
     };
   }
 
-  if(typeof spMarkWrong !== "function"){
-    window.spMarkWrong = function(file,total){
-      const state = spLoadTaskState(file,total);
-      state.tries = (state.tries || 0) + 1;
-      if(state.tries >= 2 && state.current !== null){
-        state.queue.push(state.current);
-        state.current = null;
-      }
-      spSaveTaskState(file,state);
-      return state.tries;
-    };
-  }
+  // 3-stufiges Hilfesystem: Aufgabe bleibt stehen. Kein automatisches Weiterspringen nach Fehlern.
+  window.spMarkWrong = function(file,total){
+    const state = spLoadTaskState(file,total);
+    state.tries = (state.tries || 0) + 1;
+    spSaveTaskState(file,state);
+    return state.tries;
+  };
 
-  if(typeof spFeedbackForTry !== "function"){
-    window.spFeedbackForTry = function(tries,solution,type){
-      if(tries === 1) return "Da ist noch ein Fehler.";
-      if(tries === 2) return "Tipp: Prüfe " + (type || "Form und Schreibweise") + ".";
-      return "Lösung: " + solution;
-    };
-  }
+  window.spFeedbackForTry = function(tries,solution,type){
+    if(tries === 1) return `<b>Hilfe 1:</b> Prüfe ${type || 'Form und Schreibweise'}. Lies langsam und vergleiche Wort für Wort.`;
+    if(tries === 2) return `<b>Hilfe 2:</b> Benutze den Satzbau. Frage: <b>Was kostet …?</b> oder <b>Wie viel kostet/kosten …?</b> Antwort: <b>… kostet/kosten … Euro/Cent.</b>`;
+    return `<b>Hilfe 3:</b> Richtige Lösung:<br><b>${solution}</b><br>Schreibe oder sprich die Lösung noch einmal. Die Aufgabe geht erst weiter, wenn sie richtig ist.`;
+  };
 
   if(typeof byId !== "function"){
     window.byId = function(list,id){ return list.find(x => x.id === id) || {}; };
@@ -147,36 +191,37 @@ function ensureState(){
     window.fixImg = function(img){ img.classList.add("missing"); };
   }
 
-  if(typeof acceptableQuestion !== "function"){
-    window.acceptableQuestion = function(ans,c){
-      const a = safeSimple(ans);
-      const verb = c.isPlural ? "kosten" : "kostet";
-      const wrong = c.isPlural ? "kostet" : "kosten";
-      const starts = ["was " + verb, "wie viel " + verb, "wieviel " + verb].map(safeSimple);
-      if(!starts.some(st => a.startsWith(st))) return false;
-      if(a.includes(safeSimple(" " + wrong + " "))) return false;
-      return true;
-    };
-  }
+  window.acceptableQuestion = function(ans,c){
+    const a = norm(ans);
+    if(!a) return false;
+    if(hasPriceQuestion(a) && hasComboWords(a,c)) return true;
+    if(!hasQuestionVerbOrPrice(a)) return false;
+    if(!hasCostVerb(a) && !a.includes('preis')) return false;
+    if(!hasComboWords(a,c) && !a.includes('preis')) return false;
+    // A1 tolerant: kostet und kosten werden beide akzeptiert, weil Mengen wie „2 Kilo Äpfel" natürlich mit „kosten" gebildet werden können.
+    return true;
+  };
 
-  if(typeof acceptableAnswer !== "function"){
-    window.acceptableAnswer = function(ans,c){
-      const a = safeSimple(ans);
-      const verb = c.isPlural ? "kosten" : "kostet";
-      const wrong = c.isPlural ? "kostet" : "kosten";
-      if(a.includes(safeSimple(" " + wrong + " "))) return false;
-
-      const price = safeSimple(c.price);
-      const priceText = safeSimple(String(c.price).replace("€","Euro"));
-      const starts = [
-        safeSimple(c.text + " " + verb),
-        safeSimple("das " + verb),
-        safeSimple("es " + verb),
-        safeSimple("das macht")
-      ];
-      return starts.some(st => a.startsWith(st)) && (a.includes(price) || a.includes(priceText) || a.includes("cent") || a.includes("euro"));
-    };
-  }
+  window.acceptableAnswer = function(ans,c){
+    const a = norm(ans);
+    if(!a) return false;
+    const priceOk=hasPrice(a,c);
+    if(!priceOk)return false;
+    const answerStarts=[
+      norm(c.text+' kostet'),
+      norm(c.text+' kosten'),
+      norm('das kostet'),
+      norm('das kosten'),
+      norm('es kostet'),
+      norm('sie kosten'),
+      norm('das macht'),
+      norm('der preis ist'),
+      norm('preis ist'),
+      norm('der preis betraegt'),
+      norm('preis betraegt')
+    ];
+    return answerStarts.some(st=>a.startsWith(st)) || (a.includes('preis')&&priceOk) || (hasComboWords(a,c)&&hasCostVerb(a));
+  };
 
   return true;
 }
@@ -314,9 +359,9 @@ function checkQuestion(text){
     show();
   }else{
     const tries = spMarkWrong(FILE,COMBOS.length);
-    fb.innerHTML = spFeedbackForTry(tries,c.question,"Fragewort und kostet/kosten");
+    fb.innerHTML = spFeedbackForTry(tries,c.question,"Fragewort, Preis-Frage und kostet/kosten");
     phase = "question";
-    if(tries >= 2) setTimeout(show,1200);
+    showWriteBox();
   }
 }
 
@@ -331,8 +376,8 @@ function checkAnswer(text){
   }else{
     const tries = spMarkWrong(FILE,COMBOS.length);
     fb.innerHTML = spFeedbackForTry(tries,c.answer,"Antwortsatz und Preis");
-    phase = "question";
-    if(tries >= 2) setTimeout(show,1200);
+    phase = "answer";
+    showWriteBox();
   }
 }
 
