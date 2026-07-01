@@ -56,38 +56,55 @@ function spGoBack(){
 
 function renderSideMenu(){const m=$("spMenu");if(m)m.innerHTML=""}
 
-
 function verbStatus(v){
-  if((state.learned||[]).includes(v) || (state.known||[]).includes(v)) return {label:"ich kann", cls:"status-known"};
-  if((state.unsure||[]).includes(v)) return {label:"unsicher", cls:"status-unsure"};
-  if((state.unknown||[]).includes(v)) return {label:"ich kann nicht", cls:"status-unknown"};
-  if((state.active||[]).includes(v)) return {label:"aktiv", cls:"status-active"};
-  return {label:"noch nicht eingeschätzt", cls:"status-new"};
+  if((state.learned||[]).includes(v) || (state.known||[]).includes(v)) return {label:"gelernt / ich kann", cls:"status-known", short:"ich kann"};
+  if((state.unsure||[]).includes(v)) return {label:"unsicher", cls:"status-unsure", short:"unsicher"};
+  if((state.unknown||[]).includes(v)) return {label:"ich kann nicht", cls:"status-unknown", short:"ich kann nicht"};
+  if((state.active||[]).includes(v)) return {label:"aktiv", cls:"status-active", short:"aktiv"};
+  return {label:"noch nicht gelernt", cls:"status-new", short:"neu"};
 }
+function verbMetaInfo(v){
+  const meta=(window.VERB_META&&window.VERB_META[v])||{};
+  const tags=[];
+  const type=String(meta.type||"");
+  const isModal=meta.modal||type==="modal"||(window.SP_MODAL_VERBS||[]).includes(v);
+  const isReflexive=meta.reflexive||type.includes("reflexive")||(window.SP_REFLEXIVE_VERBS||[]).includes(v)||(window.SP_REFLEXIVE_VERBS||[]).includes("sich "+v);
+  const isSep=meta.separable||type.includes("separable")||(window.SP_SEPARABLE_VERBS||[]).includes(v);
+  const isInsep=meta.inseparablePrefix||type.includes("inseparable")||(window.SP_INSEPARABLE_PREFIX_VERBS||[]).includes(v)||(!isSep&&/^(be|emp|ent|er|ge|miss|ver|zer)/.test(v));
+  const isStrong=meta.irregular||meta.strong||(window.SP_IRREGULAR_VERBS||[]).includes(v)||(typeof STRONG_IRREGULAR_VERBS!=="undefined"&&STRONG_IRREGULAR_VERBS.has(v));
+  tags.push((meta.level||(window.VERB_LEVELS&&VERB_LEVELS[v])||"A1"));
+  if(isModal)tags.push("Modalverb");
+  if(isReflexive)tags.push("reflexiv");
+  if(isSep)tags.push("trennbar");
+  else if(isInsep)tags.push("nicht trennbar · untrennbares Präfix");
+  else tags.push("nicht trennbar");
+  tags.push(isStrong&&!isModal?"stark/irregulär":"schwach");
+  return tags;
+}
+function verbSentence(v){return (window.VERB_SENTENCES&&window.VERB_SENTENCES[v])||(typeof sentenceForVerb==="function"?sentenceForVerb(v):"")}
 function verbsByStatus(){
-  const groups={package:[],practice:[],known:[],unsure:[],unknown:[],new:[]};
-  groups.package=currentPackageAllVerbs();
-  groups.practice=currentPracticeVerbs();
-  (ALL_VERBS||[]).forEach(item=>{
-    const v=item.v;
-    if((state.learned||[]).includes(v) || (state.known||[]).includes(v)) groups.known.push(v);
-    else if((state.unsure||[]).includes(v)) groups.unsure.push(v);
-    else if((state.unknown||[]).includes(v)) groups.unknown.push(v);
-    else groups.new.push(v);
-  });
-  return groups;
+  const learned=new Set([...(state.learned||[]),...(state.known||[])]);
+  const active=uniqueList([...(state.active||[]),...(state.unsure||[]),...(state.unknown||[])]).filter(v=>!learned.has(v));
+  const activeSet=new Set(active);
+  const newList=(ALL_VERBS||[]).map(item=>item.v).filter(v=>!learned.has(v)&&!activeSet.has(v));
+  return {active,learned:[...learned],new:newList};
 }
 function verbOverviewCard(v){
   const st=verbStatus(v);
+  const tags=verbMetaInfo(v).map(t=>`<span class="verb-tag">${safeText(t)}</span>`).join("");
+  const sentence=verbSentence(v);
   return `<div class="verb-overview-card ${st.cls}">
     ${imageBox(v,true)}
     <div class="verb-name">${safeText(v)}</div>
     <div class="small">${safeText(nativeWord(v))}</div>
     <div class="verb-status">${safeText(st.label)}</div>
+    <div class="verb-tags">${tags}</div>
+    ${sentence?`<div class="verb-sentence">${safeText(sentence)}</div>`:""}
   </div>`;
 }
-function verbOverviewSection(title,verbs){
-  return `<section class="verb-overview-section"><h3>${safeText(title)} <span class="small">${verbs.length}</span></h3><div class="verb-overview-grid">${verbs.map(verbOverviewCard).join("")||"<p class='small'>Keine Verben.</p>"}</div></section>`;
+function verbOverviewGrid(verbs){return `<div class="verb-overview-grid">${verbs.map(verbOverviewCard).join("")||"<p class='small'>Keine Verben.</p>"}</div>`}
+function verbOverviewDetails(title,verbs,open,note){
+  return `<details class="verb-overview-details" ${open?"open":""}><summary>${safeText(title)} <span class="small">${verbs.length}</span></summary>${note?`<p class="small">${safeText(note)}</p>`:""}${verbOverviewGrid(verbs)}</details>`;
 }
 function renderVerbOverview(){
   clearVerbHash(true);
@@ -98,13 +115,10 @@ function renderVerbOverview(){
   const g=verbsByStatus();
   $("app").innerHTML=`<section class="card">
     <h2>Verben-Übersicht</h2>
-    <p class="small">Hier siehst du alle Verben und den aktuellen Lernstand.</p>
-    ${verbOverviewSection("Aktueller Einschätzungsblock",g.package)}
-    ${verbOverviewSection("Aktive Übungsverben",g.practice)}
-    ${verbOverviewSection("Ich kann",g.known)}
-    ${verbOverviewSection("Unsicher",g.unsure)}
-    ${verbOverviewSection("Ich kann nicht",g.unknown)}
-    ${verbOverviewSection("Noch nicht eingeschätzt",g.new)}
+    <p class="small">Alle Verben mit Markierung und Beispielsatz.</p>
+    ${verbOverviewDetails("Aktive Verben · gerade lernen",g.active,true,"Diese Verben sind aktuell offen. Hier steht direkt, ob du unsicher bist oder das Verb noch nicht kannst.")}
+    ${verbOverviewDetails("Gelernt / ich kann",g.learned,false,"Diese Gruppe ist aufklappbar. Hier stehen alle Verben, die du schon kannst oder gelernt hast.")}
+    ${verbOverviewDetails("Noch nicht gelernt",g.new,false,"Diese Verben wurden noch nicht gelernt oder noch nicht eingeschätzt.")}
     <div class="actions"><button class="btn secondary" onclick="renderHome()">Zur Aufgabenübersicht</button></div>
   </section>`;
   saveState();
