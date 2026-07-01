@@ -32,8 +32,8 @@
 </div>
 
 <script type="module">
-import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "./js/auth.js?v=release-refresh-20260701";
-import { db, doc, getDoc, collection, query, where, getDocs, limit } from "./js/firebase.js";
+import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "./js/auth.js?v=release-core-20260701";
+import { loadCourseRelease, moduleOpen } from "./js/course-releases.js?v=release-core-20260701";
 window.logout=logout;
 
 function isTeacherAllAccess(){
@@ -43,60 +43,12 @@ function isTeacherAllAccess(){
     return !!(p && p.teacherPreview===true && p.allAccess===true);
   }catch(e){return false;}
 }
-function courseCodes(p){
-  const raw=[p?.courseDocId,p?.kurs,p?.kursnummer,p?.courseCode,p?.courseId,p?.courseName,p?.code,localStorage.getItem("SP_COURSE_CODE")]
-    .map(v=>String(v||"").trim()).filter(Boolean);
-  const out=[];
-  raw.forEach(v=>out.push(v,v.toUpperCase(),v.toLowerCase(),v.replace(/\s+/g,""),v.toLowerCase().replace(/\s+/g,"")));
-  return [...new Set(out.filter(Boolean))];
-}
-function hasReleaseData(d){return !!(d && (d.enabledModules || d.enabledLessons || d.enabledThemes || d.enabledWords || d.enabledSets || d.releases || d.releaseMode || d.defaultLocked!==undefined));}
-async function loadCourseRelease(p){
-  const fallback=p?.assignments || {};
-  const codes=courseCodes(p);
-  for(const code of codes){
-    try{
-      const snap=await getDoc(doc(db,"courses",String(code)));
-      if(snap.exists()){
-        const data={id:snap.id,...(snap.data()||{})};
-        if(hasReleaseData(data)) return data;
-      }
-    }catch(e){}
-  }
-  const fields=["courseCode","kurs","kursnummer","courseDocId","courseId","id","name","courseName","code"];
-  for(const field of fields){
-    for(const code of codes){
-      try{
-        const qs=await getDocs(query(collection(db,"courses"),where(field,"==",String(code)),limit(1)));
-        if(!qs.empty){
-          const d=qs.docs[0];
-          const data={id:d.id,...(d.data()||{})};
-          if(hasReleaseData(data)) return data;
-        }
-      }catch(e){}
-    }
-  }
-  return fallback;
-}
-function moduleOpen(assignments,key,slug){
-  if(!assignments || !hasReleaseData(assignments)) return true;
-  const vals=[
-    assignments.enabledModules?.[key],
-    assignments.enabledModules?.[slug],
-    assignments.releases?.[key]?.enabled,
-    assignments.releases?.[slug]?.enabled
-  ];
-  if(vals.some(v=>v===false)) return false;
-  if(vals.some(v=>v===true)) return true;
-  if(assignments.releaseMode==="all" || assignments.releaseMode==="open" || assignments.defaultLocked===false) return true;
-  return false;
-}
 function renderModules(p){
   const teacherAll=isTeacherAllAccess();
   const c=p?.assignments||{};
-  const verben=teacherAll || moduleOpen(c,"Verben A1","verben-A1");
-  const fragen=teacherAll || moduleOpen(c,"Fragen A1","fragen-A1");
-  const wortschatz=teacherAll || moduleOpen(c,"Wortschatz","wortschatz");
+  const verben=teacherAll || moduleOpen(c,"Verben A1");
+  const fragen=teacherAll || moduleOpen(c,"Fragen A1");
+  const wortschatz=teacherAll || moduleOpen(c,"Wortschatz");
   document.querySelector("#modules").innerHTML=`
     <a class="module" href="${fragen?'fragen-A1/':'#'}" ${fragen?'':'onclick="return false;" style="opacity:.55"'}>
       <div class="module-title">Fragen A1</div><p>${fragen?'Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.':'Für deinen Kurs noch nicht freigeschaltet.'}</p><span class="badge">${fragen?'Starten':'Gesperrt'}</span>
@@ -119,19 +71,12 @@ if(p){
   renderModules(p);
   loadCourseRelease(p).then(assignments=>{
     p={...p,assignments:assignments||{}};
-    if(assignments?.courseDocId || assignments?.id) p.courseDocId=assignments.courseDocId||assignments.id;
-    if(assignments?.courseCode || assignments?.kurs || assignments?.kursnummer) p.courseCode=assignments.courseCode||assignments.kurs||assignments.kursnummer;
-    try{
-      localStorage.setItem("SP_USER_PROFILE",JSON.stringify(p));
-      localStorage.setItem("SP_STUDENT_PROFILE",JSON.stringify(p));
-      localStorage.setItem("SP_COURSE_RELEASES",JSON.stringify(assignments||{}));
-    }catch(e){}
     renderModules(p);
   }).catch(()=>renderModules(p));
 }else if(role==="teacher"){
   box.innerHTML=`<div class="ok"><strong>Lehrerzugang:</strong> Du siehst SprachPilot im Testmodus. Es werden keine Schülerpunkte gespeichert.<br><a class="btn secondary" href="${dashboardHref()}">Lehrer-Dashboard</a> <button class="secondary" onclick="logout()">Abmelden</button></div>`;
   guest.classList.add("hidden");
-  renderModules({assignments:{enabledModules:{"Fragen A1":true,"Wortschatz":true,"Verben A1":true}}});
+  renderModules({assignments:{releaseMode:"all",defaultLocked:false}});
 }else{
   box.innerHTML='<p>Registriere dich oder logge dich mit deinem Kurscode ein.</p>';
   renderModules({assignments:{}});
