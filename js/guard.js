@@ -7,6 +7,7 @@ if(SP_USER){
 import("/js/activity-tracker.js?v=1").catch(()=>{});
 import("/js/scoring.js?v=4").catch(()=>{});
 import("/js/release-helper.js?v=5").catch(()=>{});
+import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(location.pathname)){
   import("/wortschatz/index-release-lock.js?v=11").catch(()=>{});
 }
