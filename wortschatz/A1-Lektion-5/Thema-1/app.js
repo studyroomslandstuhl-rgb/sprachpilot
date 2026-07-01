@@ -28,6 +28,7 @@ function spLogout(){['SP_USER_PROFILE','SP_KEEP_LOGGED_IN','SP_LOGIN_ROLE','SP_T
 function instruction(txt){return `<div class="task-instruction">${txt}</div>`}
 function exampleBox(txt){return `<div class="example-box">${txt}</div>`}
 function exactAnswer(value,solutions){const a=simple(value);return (Array.isArray(solutions)?solutions:[solutions]).some(s=>simple(s)===a)}
+function help3(tries,step1,step2,solution){if(tries===1)return `<div class="no">${step1}</div>`;if(tries===2)return `<div class="hint">${step2}</div>`;return `<div class="no">Lösung: ${solution}</div>`}
 function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function taskKey(file){return CFG.key+'_'+file}
 function loadTask(file,total){try{const st=JSON.parse(localStorage.getItem(taskKey(file))||'null');if(st&&st.total===total&&Array.isArray(st.done)&&Array.isArray(st.queue))return st}catch(e){}return{total,done:[],queue:[...Array(total).keys()].sort(()=>Math.random()-.5),current:null,tries:0,hadWrong:false}}
