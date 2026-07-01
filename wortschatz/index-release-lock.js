@@ -58,5 +58,5 @@
     setStatus('Eingeloggt: <strong>'+((profile().vorname||'')+' '+(profile().nachname||'')).trim()+'</strong> · Kurs: <strong>'+c+'</strong><br>Freigeschaltet: <strong>'+count+'</strong> Lektion(en)',count===0);
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run);else run();
-  setTimeout(run,500);setTimeout(run,1500);setTimeout(run,3000);
+  setTimeout(run,700);
 })();
