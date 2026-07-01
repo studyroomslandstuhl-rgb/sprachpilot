@@ -25,6 +25,7 @@ if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){
   import("/wortschatz/index-release-lock.js?v=11").catch(()=>{});
 }
 if(path.includes("/verben-A1/")){
+  import("/verben-A1/js/release-bridge.js?v=8").catch(()=>{});
   import("/verben-A1/js/scoring-bridge.js?v=5").catch(()=>{});
 }
 if(path.includes("/fragen-A1/")||path.includes("/fragen/")){
