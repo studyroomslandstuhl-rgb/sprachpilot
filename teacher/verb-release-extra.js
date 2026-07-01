@@ -11,15 +11,16 @@
       ].forEach(item=>{if(!existing.has(item.v)){window.ALL_VERBS.push(item);existing.add(item.v);}});
     }
     if(typeof STRONG_IRREGULAR_VERBS!=='undefined'){
-      ['anfangen','beginnen','fernsehen','aussterben','begraben','verbiegen','mitgeben','mitnehmen','vergeben','bleiben','einladen','biegen','abbiegen','können','müssen','wollen','dürfen','sollen','möchten','mögen'].forEach(v=>STRONG_IRREGULAR_VERBS.add(v));
+      ['anfangen','beginnen','fernsehen','aussterben','begraben','verbiegen','mitgeben','mitnehmen','vergeben','bleiben','einladen','biegen','abbiegen','können','müssen','wollen','dürfen','sollen','möchten','mögen','vorhaben','aufgeben','zusehen','abschreiben','vorlesen','verschlafen'].forEach(v=>STRONG_IRREGULAR_VERBS.add(v));
     }
   }catch(e){console.warn('Neue Verben konnten nicht klassifiziert werden',e)}
 
   const MODAL_VERBS=['können','müssen','wollen','dürfen','sollen','möchten','mögen'];
   const REFLEXIVE_VERBS=['anmelden','sich anmelden','sich bewerben','sich erinnern','sich beschweren'];
-  const SEPARABLE_VERBS=['aufräumen','einkaufen','anrufen','fernsehen','anfangen','aussterben','aufmachen','zumachen','mitgeben','mitnehmen','kennenlernen','einladen','aufstehen','anziehen','ausziehen','einsteigen','aussteigen','umsteigen','ankommen','abfahren','ausfüllen','anmelden','mitkommen','zurückkommen','abbiegen'];
-  const INSEPARABLE_PREFIX_VERBS=['bezahlen','bekommen','beginnen','besuchen','bestellen','benutzen','beschreiben','berichten','beantragen','begründen','befehlen','begraben','entscheiden','erklären','erzählen','erreichen','erledigen','empfehlen','gefallen','verstehen','vergessen','verlieren','vergleichen','vermeiden','verbessern','verschieben','vereinbaren','vergeben','verbringen','verbiegen','vermieten','zerstören'];
-  const IRREGULAR_EXTRA=['sein','haben','werden','wissen','tun','bleiben','beginnen','anfangen','fernsehen','aussterben','begraben','verbiegen','mitgeben','mitnehmen','vergeben','einladen','biegen','abbiegen'];
+  const SEPARABLE_VERBS=['aufräumen','einkaufen','anrufen','fernsehen','anfangen','aussterben','aufmachen','zumachen','mitgeben','mitnehmen','kennenlernen','einladen','aufstehen','anziehen','ausziehen','einsteigen','aussteigen','umsteigen','ankommen','abfahren','ausfüllen','anmelden','mitkommen','zurückkommen','abbiegen','vorhaben','aufgeben','zuhören','zusehen','abschreiben','vorlesen'];
+  const INSEPARABLE_PREFIX_VERBS=['bezahlen','bekommen','beginnen','besuchen','bestellen','benutzen','beschreiben','berichten','beantragen','begründen','befehlen','begraben','entscheiden','erklären','erzählen','erreichen','erledigen','empfehlen','gefallen','gehören','verstehen','vergessen','verlieren','vergleichen','vermeiden','verbessern','verschlafen','verschieben','vereinbaren','vergeben','verbringen','verbiegen','vermieten','zerstören'];
+  const IRREGULAR_EXTRA=['sein','haben','werden','wissen','tun','bleiben','beginnen','anfangen','fernsehen','aussterben','begraben','verbiegen','mitgeben','mitnehmen','vergeben','einladen','biegen','abbiegen','vorhaben','aufgeben','zusehen','abschreiben','vorlesen','verschlafen'];
+  const INSEPARABLE_PREFIX_RE=/^(be|emp|ent|er|ge|miss|ver|zer)/;
 
   function meta(v){return (window.VERB_META&&window.VERB_META[v])||{level:(window.VERB_LEVELS&&window.VERB_LEVELS[v])||'A1',type:'normal'};}
   function allVerbNames(){return (window.ALL_VERBS||[]).map(x=>x.v).filter(Boolean).sort(function(a,b){return a.localeCompare(b,'de',{sensitivity:'base'})});}
@@ -27,8 +28,8 @@
   function isModal(v){return inList(v,MODAL_VERBS)||((window.SP_MODAL_VERBS||[]).indexOf(v)>=0)||meta(v).modal||meta(v).type==='modal';}
   function isReflexive(v){return inList(v,REFLEXIVE_VERBS)||((window.SP_REFLEXIVE_VERBS||[]).indexOf(v)>=0)||meta(v).reflexive||String(meta(v).type||'').includes('reflexive');}
   function isSeparable(v){return inList(v,SEPARABLE_VERBS)||((window.SP_SEPARABLE_VERBS||[]).indexOf(v)>=0)||meta(v).separable||String(meta(v).type||'').includes('separable');}
-  function isInseparablePrefix(v){return !isSeparable(v)&&(inList(v,INSEPARABLE_PREFIX_VERBS)||/^(be|emp|ent|er|miss|ver|zer)/.test(v));}
-  function isIrregular(v){return inList(v,IRREGULAR_EXTRA)||(typeof STRONG_IRREGULAR_VERBS!=='undefined'&&STRONG_IRREGULAR_VERBS.has(v))||meta(v).irregular||meta(v).strong;}
+  function isInseparablePrefix(v){return !isSeparable(v)&&(inList(v,INSEPARABLE_PREFIX_VERBS)||((window.SP_INSEPARABLE_PREFIX_VERBS||[]).indexOf(v)>=0)||meta(v).inseparablePrefix||String(meta(v).type||'').includes('inseparable')||INSEPARABLE_PREFIX_RE.test(v));}
+  function isIrregular(v){return inList(v,IRREGULAR_EXTRA)||((window.SP_IRREGULAR_VERBS||[]).indexOf(v)>=0)||(typeof STRONG_IRREGULAR_VERBS!=='undefined'&&STRONG_IRREGULAR_VERBS.has(v))||meta(v).irregular||meta(v).strong;}
   function levelOf(v){return meta(v).level||((window.VERB_LEVELS&&window.VERB_LEVELS[v])||'A1');}
   function typeTags(v){
     const tags=[levelOf(v)];
@@ -88,7 +89,7 @@
       html+=renderCustomGroup('Modalverben',modal,'modal','Eigener Block für können, müssen, wollen, dürfen, sollen, möchten, mögen.');
       html+=renderCustomGroup('Reflexivverben',reflexive,'reflexive','Reflexive Verben werden separat angezeigt.');
       html+=renderCustomGroup('Trennbare Verben',separable,'separable','Diese Verben trennen sich im Satz: Ich stehe ... auf.');
-      html+=renderCustomGroup('Untrennbare Präfixverben',inseparable,'inseparable','Verben mit be-, emp-, ent-, er-, ver-, zer- usw. Sie bekommen keine zweite Präfix-Lücke.');
+      html+=renderCustomGroup('Untrennbare Präfixverben',inseparable,'inseparable','Verben mit be-, emp-, ent-, er-, ge-, miss-, ver-, zer-. Sie bekommen keine zweite Präfix-Lücke.');
       html+=renderCustomGroup('Starke / irreguläre Verben',irregular,'irregular','Eigene Kategorie für unregelmäßige und starke Verben.');
       html+=renderCustomGroup('Normale nicht trennbare Verben',normal,'normal','Regelmäßige Verben ohne trennbares oder untrennbares Präfix.');
       html+='</details>';
