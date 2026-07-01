@@ -122,9 +122,63 @@ function normalizeLessonKey(s){
   }
   return s;
 }
-function isAllowed(lessonId, allowed){
-  const normalized=allowed.map(normalizeLessonKey);
-  return normalized.includes(lessonId);
+function getPath(obj,path){
+  let cur=obj;
+  for(const p of path){
+    if(!cur || typeof cur!=="object" || !(p in cur)) return undefined;
+    cur=cur[p];
+  }
+  return cur;
+}
+function explicitValue(obj,keys){
+  if(!obj || typeof obj!=="object") return undefined;
+  for(const k of keys){
+    if(Object.prototype.hasOwnProperty.call(obj,k)) return obj[k];
+  }
+  return undefined;
+}
+function lessonReleased(data,lessonId){
+  if(!data || typeof data!=="object") return false;
+  const moduleOff=data.enabledModules?.["Wortschatz"]===false || data.releases?.Wortschatz?.enabled===false || data.releases?.wortschatz?.enabled===false;
+  if(moduleOff) return false;
+  const legacy=explicitValue(data.enabledLessons,[lessonId,"wortschatz/"+lessonId,normalizeLessonKey(lessonId)]);
+  if(legacy===false) return false;
+  if(legacy===true) return true;
+  const rel1=getPath(data,["releases","wortschatz","lessons",lessonId,"enabled"]);
+  const rel2=getPath(data,["releases","Wortschatz","lessons",lessonId,"enabled"]);
+  if(rel1===false || rel2===false) return false;
+  if(rel1===true || rel2===true) return true;
+  if(data.releaseMode==="all" || data.releaseMode==="open" || data.defaultLocked===false) return true;
+  return false;
+}
+function courseCodes(profile){
+  const raw=[profile?.courseDocId,profile?.kurs,profile?.kursnummer,profile?.courseCode,profile?.courseId,profile?.courseName,profile?.code,localStorage.getItem("SP_COURSE_CODE")]
+    .map(v=>String(v||"").trim()).filter(Boolean);
+  const out=[];
+  raw.forEach(v=>out.push(v,v.toUpperCase(),v.toLowerCase(),v.replace(/\s+/g,""),v.toLowerCase().replace(/\s+/g,"")));
+  return [...new Set(out.filter(Boolean))];
+}
+async function docCourse(id){
+  try{const s=await db.collection("courses").doc(String(id)).get();return s.exists?{id:s.id,...(s.data()||{})}:null}catch(e){return null}
+}
+async function queryCourse(field,value){
+  try{const s=await db.collection("courses").where(field,"==",String(value)).limit(1).get();return s&&!s.empty?{id:s.docs[0].id,...(s.docs[0].data()||{})}:null}catch(e){return null}
+}
+async function loadCourseRelease(profile){
+  const cached=profile?.assignments || {};
+  const codes=courseCodes(profile);
+  for(const code of codes){
+    const d=await docCourse(code);
+    if(d && (d.enabledLessons || d.enabledThemes || d.enabledModules || d.releases || d.releaseMode)) return d;
+  }
+  const fields=["courseCode","kurs","kursnummer","courseDocId","courseId","id","name","courseName","code"];
+  for(const field of fields){
+    for(const code of codes){
+      const d=await queryCourse(field,code);
+      if(d && (d.enabledLessons || d.enabledThemes || d.enabledModules || d.releases || d.releaseMode)) return d;
+    }
+  }
+  return cached;
 }
 function setStatus(text, bad=false){
   let box=document.getElementById("assignmentStatus");
@@ -137,48 +191,48 @@ function setStatus(text, bad=false){
   box.className="assignment-status"+(bad?" no":"");
   box.innerHTML=text;
 }
+function setLessonButton(a,open){
+  const label=a.textContent.replace("🔒","").replace("✅","").replace("Gesperrt","").replace("Offen","").trim();
+  a.textContent=label;
+  if(open){
+    a.classList.remove("locked");
+    a.classList.add("open");
+    a.onclick=null;
+  }else{
+    a.classList.add("locked");
+    a.classList.remove("open");
+    a.onclick=function(e){e.preventDefault();alert("Diese Lektion ist für deinen Kurs noch nicht freigeschaltet.");};
+  }
+}
 async function applyAssignments(){
   const profile=getProfile();
-  if(!profile || !(profile.kurs||profile.kursnummer)){
+  if(!profile || !(profile.kurs||profile.kursnummer||profile.courseCode)){
     setStatus("Bitte zuerst auf der Startseite einloggen. Danach siehst du deine freigeschalteten Lektionen.", true);
     lockAll();
     return;
   }
-  const courseId=profile.kurs||profile.kursnummer;
+  const courseId=profile.kurs||profile.kursnummer||profile.courseCode;
   try{
-    const snap=await db.collection("assignments").doc(courseId).get();
-    if(!snap.exists){
-      setStatus(`Für deinen Kurs <strong>${courseId}</strong> gibt es noch keine Wortschatz-Freigabe.`, true);
-      lockAll();
-      return;
-    }
-    const data=snap.data()||{};
-    const allowed=Array.isArray(data.wortschatz)?data.wortschatz:[];
-    if(!allowed.length){
-      setStatus(`Für deinen Kurs <strong>${courseId}</strong> ist noch keine Wortschatz-Lektion freigeschaltet.`, true);
-      lockAll();
-      return;
-    }
+    const data=await loadCourseRelease(profile);
     let count=0;
     document.querySelectorAll(".lesson-btn").forEach(a=>{
-      const lesson=a.dataset.lesson;
-      const label=a.textContent.replace("🔒","").replace("✅","").replace("Gesperrt","").replace("Offen","").trim();
-      if(isAllowed(lesson, allowed)){
-        a.classList.remove("locked");
-        a.classList.add("open");
-        a.textContent=label;
-        count++;
-      }else{
-        a.classList.add("locked");
-        a.classList.remove("open");
-        a.textContent=label;
-        a.addEventListener("click", function(e){
-          e.preventDefault();
-          alert("Diese Lektion ist für deinen Kurs noch nicht freigeschaltet.");
-        });
-      }
+      const open=lessonReleased(data,a.dataset.lesson);
+      setLessonButton(a,open);
+      if(open) count++;
     });
-    setStatus(`Eingeloggt: <strong>${profile.vorname||""} ${profile.nachname||""}</strong> · Kurs: <strong>${courseId}</strong><br>Freigeschaltet: <strong>${count}</strong> Lektion(en)`);
+    try{
+      profile.assignments=data||{};
+      if(data?.courseDocId || data?.id) profile.courseDocId=data.courseDocId||data.id;
+      if(data?.courseCode || data?.kurs || data?.kursnummer) profile.courseCode=data.courseCode||data.kurs||data.kursnummer;
+      localStorage.setItem("SP_USER_PROFILE",JSON.stringify(profile));
+      localStorage.setItem("SP_STUDENT_PROFILE",JSON.stringify(profile));
+      localStorage.setItem("SP_COURSE_RELEASES",JSON.stringify(data||{}));
+    }catch(e){}
+    if(count){
+      setStatus(`Eingeloggt: <strong>${profile.vorname||""} ${profile.nachname||""}</strong> · Kurs: <strong>${courseId}</strong><br>Freigeschaltet: <strong>${count}</strong> Lektion(en)`);
+    }else{
+      setStatus(`Für deinen Kurs <strong>${courseId}</strong> ist noch keine Wortschatz-Lektion freigeschaltet.`, true);
+    }
   }catch(e){
     console.error(e);
     setStatus("Firebase konnte nicht geladen werden. Bitte Internetverbindung und Firestore-Regeln prüfen.", true);
@@ -186,15 +240,7 @@ async function applyAssignments(){
   }
 }
 function lockAll(){
-  document.querySelectorAll(".lesson-btn").forEach(a=>{
-    const label=a.textContent.replace("🔒","").replace("✅","").replace("Gesperrt","").replace("Offen","").trim();
-    a.classList.add("locked");
-    a.textContent=label;
-    a.addEventListener("click", function(e){
-      e.preventDefault();
-      alert("Bitte zuerst auf der Startseite einloggen oder Lektion freischalten lassen.");
-    });
-  });
+  document.querySelectorAll(".lesson-btn").forEach(a=>setLessonButton(a,false));
 }
 applyAssignments();
 </script>
