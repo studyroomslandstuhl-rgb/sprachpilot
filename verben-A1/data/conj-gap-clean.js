@@ -1,0 +1,1 @@
+window.spCleanConjGap=function(text){var t=String(text||'');var i=t.indexOf('(');if(i>=0)t=t.slice(0,i);return t.trim();};
