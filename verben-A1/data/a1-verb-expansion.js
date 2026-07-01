@@ -35,131 +35,29 @@
     {v:'abbiegen',img:'abbiegen',level:'A1',type:'separable'}
   ];
   const SENTENCES={
-    'heißen':'Ich heiße Anna.',
-    'aufstehen':'Ich stehe um sieben Uhr auf.',
-    'frühstücken':'Ich frühstücke um acht Uhr.',
-    'duschen':'Ich dusche am Morgen.',
-    'anziehen':'Ich ziehe eine Jacke an.',
-    'ausziehen':'Ich ziehe die Schuhe aus.',
-    'einsteigen':'Ich steige in den Bus ein.',
-    'aussteigen':'Ich steige am Bahnhof aus.',
-    'umsteigen':'Ich steige am Bahnhof um.',
-    'ankommen':'Der Zug kommt um neun Uhr an.',
-    'abfahren':'Der Bus fährt um acht Uhr ab.',
-    'holen':'Ich hole Brot.',
-    'zahlen':'Ich zahle an der Kasse.',
-    'ausfüllen':'Ich fülle das Formular aus.',
-    'anmelden':'Ich melde mich zum Kurs an.',
-    'mitkommen':'Kommst du mit?',
-    'zurückkommen':'Ich komme um sechs Uhr zurück.',
-    'sitzen':'Ich sitze auf dem Stuhl.',
-    'liegen':'Das Buch liegt auf dem Tisch.',
-    'hängen':'Die Lampe hängt an der Decke.',
-    'stellen':'Ich stelle die Tasche auf den Boden.',
-    'legen':'Ich lege das Buch auf den Tisch.',
-    'können':'Ich kann Deutsch sprechen.',
-    'müssen':'Ich muss heute arbeiten.',
-    'wollen':'Ich will Wasser trinken.',
-    'dürfen':'Ich darf hier parken.',
-    'sollen':'Ich soll pünktlich kommen.',
-    'möchten':'Ich möchte einen Kaffee.',
-    'mögen':'Ich mag Kaffee.',
-    'biegen':'Ich biege den Draht.',
-    'abbiegen':'Ich biege rechts ab.'
+    'heißen':'Ich heiße Anna.','aufstehen':'Ich stehe um sieben Uhr auf.','frühstücken':'Ich frühstücke um acht Uhr.','duschen':'Ich dusche am Morgen.','anziehen':'Ich ziehe eine Jacke an.','ausziehen':'Ich ziehe die Schuhe aus.','einsteigen':'Ich steige in den Bus ein.','aussteigen':'Ich steige am Bahnhof aus.','umsteigen':'Ich steige am Bahnhof um.','ankommen':'Der Zug kommt um neun Uhr an.','abfahren':'Der Bus fährt um acht Uhr ab.','holen':'Ich hole Brot.','zahlen':'Ich zahle an der Kasse.','ausfüllen':'Ich fülle das Formular aus.','anmelden':'Ich melde mich zum Kurs an.','mitkommen':'Kommst du mit?','zurückkommen':'Ich komme um sechs Uhr zurück.','sitzen':'Ich sitze auf dem Stuhl.','liegen':'Das Buch liegt auf dem Tisch.','hängen':'Die Lampe hängt an der Decke.','stellen':'Ich stelle die Tasche auf den Boden.','legen':'Ich lege das Buch auf den Tisch.','können':'Ich kann Deutsch sprechen.','müssen':'Ich muss heute arbeiten.','wollen':'Ich will Wasser trinken.','dürfen':'Ich darf hier parken.','sollen':'Ich soll pünktlich kommen.','möchten':'Ich möchte einen Kaffee.','mögen':'Ich mag Kaffee.','biegen':'Ich biege den Draht.','abbiegen':'Ich biege rechts ab.'
   };
   const TRANSLATIONS={
-    'Englisch':{
-      'heißen':'to be called / be named','aufstehen':'to get up','frühstücken':'to have breakfast','duschen':'to shower','anziehen':'to put on clothes','ausziehen':'to take off clothes','einsteigen':'to get on / get in','aussteigen':'to get off / get out','umsteigen':'to change / transfer','ankommen':'to arrive','abfahren':'to depart / leave','holen':'to fetch / get','zahlen':'to pay','ausfüllen':'to fill out','anmelden':'to register / sign up','mitkommen':'to come along','zurückkommen':'to come back','sitzen':'to sit / be sitting','liegen':'to lie / be lying','hängen':'to hang','stellen':'to put upright / place','legen':'to put down / lay','können':'can / be able to','müssen':'must / have to','wollen':'to want to','dürfen':'may / be allowed to','sollen':'should / be supposed to','möchten':'would like to','mögen':'to like','biegen':'to bend','abbiegen':'to turn off / turn'
-    },
-    'Russisch':{
-      'heißen':'зваться / называться','aufstehen':'вставать','frühstücken':'завтракать','duschen':'принимать душ','anziehen':'надевать одежду','ausziehen':'снимать одежду','einsteigen':'садиться в транспорт','aussteigen':'выходить из транспорта','umsteigen':'пересаживаться','ankommen':'прибывать','abfahren':'отправляться','holen':'забирать / приносить','zahlen':'платить','ausfüllen':'заполнять','anmelden':'регистрироваться / записываться','mitkommen':'идти с кем-то / пойти вместе','zurückkommen':'возвращаться','sitzen':'сидеть','liegen':'лежать','hängen':'висеть','stellen':'ставить','legen':'класть','können':'мочь / уметь','müssen':'должен / нужно','wollen':'хотеть','dürfen':'можно / иметь право','sollen':'следует / должен','möchten':'хотел бы','mögen':'нравиться / любить','biegen':'гнуть','abbiegen':'поворачивать'
-    },
-    'Ukrainisch':{
-      'heißen':'зватися / називатися','aufstehen':'вставати','frühstücken':'снідати','duschen':'приймати душ','anziehen':'одягати','ausziehen':'знімати одяг','einsteigen':'сідати в транспорт','aussteigen':'виходити з транспорту','umsteigen':'пересідати','ankommen':'прибувати','abfahren':'відправлятися','holen':'забирати / приносити','zahlen':'платити','ausfüllen':'заповнювати','anmelden':'реєструватися / записуватися','mitkommen':'йти разом','zurückkommen':'повертатися','sitzen':'сидіти','liegen':'лежати','hängen':'висіти','stellen':'ставити','legen':'класти','können':'могти / вміти','müssen':'мусити / треба','wollen':'хотіти','dürfen':'можна / мати дозвіл','sollen':'слід / повинен','möchten':'хотів би','mögen':'подобатися / любити','biegen':'гнути','abbiegen':'повертати'
-    },
-    'Arabisch':{
-      'heißen':'يسمى','aufstehen':'ينهض','frühstücken':'يتناول الفطور','duschen':'يستحم','anziehen':'يرتدي الملابس','ausziehen':'يخلع الملابس','einsteigen':'يركب وسيلة النقل','aussteigen':'ينزل من وسيلة النقل','umsteigen':'يبدل وسيلة النقل','ankommen':'يصل','abfahren':'ينطلق / يغادر','holen':'يحضر / يجلب','zahlen':'يدفع','ausfüllen':'يملأ استمارة','anmelden':'يسجل نفسه','mitkommen':'يأتي مع شخص','zurückkommen':'يعود','sitzen':'يجلس','liegen':'يستلقي / يكون موضوعًا','hängen':'يتدلّى / يعلّق','stellen':'يضع بشكل قائم','legen':'يضع بشكل أفقي','können':'يستطيع','müssen':'يجب أن','wollen':'يريد أن','dürfen':'يُسمح له أن','sollen':'ينبغي أن','möchten':'يرغب في','mögen':'يحب / يعجبه','biegen':'يثني','abbiegen':'ينعطف'
-    },
-    'Türkisch':{
-      'heißen':'adı olmak','aufstehen':'kalkmak','frühstücken':'kahvaltı yapmak','duschen':'duş almak','anziehen':'giymek','ausziehen':'çıkarmak','einsteigen':'binmek','aussteigen':'inmek','umsteigen':'aktarma yapmak','ankommen':'varmak','abfahren':'hareket etmek','holen':'alıp getirmek','zahlen':'ödemek','ausfüllen':'doldurmak','anmelden':'kayıt olmak','mitkommen':'birlikte gelmek','zurückkommen':'geri gelmek','sitzen':'oturmak','liegen':'yatmak / bulunmak','hängen':'asılı olmak','stellen':'dik koymak','legen':'koymak / yatırmak','können':'-ebilmek','müssen':'zorunda olmak','wollen':'istemek','dürfen':'izinli olmak / -ebilir','sollen':'-meli / -malı','möchten':'istemek / rica etmek','mögen':'sevmek','biegen':'bükmek','abbiegen':'dönmek'
-    },
-    'Rumänisch':{
-      'heißen':'a se numi','aufstehen':'a se ridica','frühstücken':'a lua micul dejun','duschen':'a face duș','anziehen':'a îmbrăca','ausziehen':'a dezbrăca','einsteigen':'a urca în mijloc de transport','aussteigen':'a coborî din mijloc de transport','umsteigen':'a schimba mijlocul de transport','ankommen':'a ajunge','abfahren':'a pleca','holen':'a aduce / a lua','zahlen':'a plăti','ausfüllen':'a completa','anmelden':'a se înscrie / a se înregistra','mitkommen':'a veni împreună','zurückkommen':'a se întoarce','sitzen':'a sta jos','liegen':'a sta culcat / a se afla','hängen':'a atârna','stellen':'a pune în poziție verticală','legen':'a pune jos / a așeza','können':'a putea','müssen':'a trebui','wollen':'a vrea','dürfen':'a avea voie','sollen':'a trebui / a fi indicat','möchten':'a dori','mögen':'a plăcea','biegen':'a îndoi','abbiegen':'a vira'
-    },
-    'Japanisch':{
-      'heißen':'〜という名前である','aufstehen':'起きる','frühstücken':'朝食を食べる','duschen':'シャワーを浴びる','anziehen':'服を着る','ausziehen':'服を脱ぐ','einsteigen':'乗り込む','aussteigen':'降りる','umsteigen':'乗り換える','ankommen':'到着する','abfahren':'出発する','holen':'取ってくる','zahlen':'支払う','ausfüllen':'記入する','anmelden':'登録する / 申し込む','mitkommen':'一緒に来る','zurückkommen':'戻ってくる','sitzen':'座っている','liegen':'横になっている / 置いてある','hängen':'掛かっている','stellen':'立てて置く','legen':'横に置く','können':'できる','müssen':'しなければならない','wollen':'〜したい','dürfen':'〜してもよい','sollen':'〜すべきだ','möchten':'〜したいです','mögen':'好きである','biegen':'曲げる','abbiegen':'曲がる'
-    }
+    'Englisch':{'heißen':'to be called / be named','aufstehen':'to get up','frühstücken':'to have breakfast','duschen':'to shower','anziehen':'to put on clothes','ausziehen':'to take off clothes','einsteigen':'to get on / get in','aussteigen':'to get off / get out','umsteigen':'to change / transfer','ankommen':'to arrive','abfahren':'to depart / leave','holen':'to fetch / get','zahlen':'to pay','ausfüllen':'to fill out','anmelden':'to register / sign up','mitkommen':'to come along','zurückkommen':'to come back','sitzen':'to sit / be sitting','liegen':'to lie / be lying','hängen':'to hang','stellen':'to put upright / place','legen':'to put down / lay','können':'can / be able to','müssen':'must / have to','wollen':'to want to','dürfen':'may / be allowed to','sollen':'should / be supposed to','möchten':'would like to','mögen':'to like','biegen':'to bend','abbiegen':'to turn off / turn'},
+    'Russisch':{'heißen':'зваться / называться','aufstehen':'вставать','frühstücken':'завтракать','duschen':'принимать душ','anziehen':'надевать одежду','ausziehen':'снимать одежду','einsteigen':'садиться в транспорт','aussteigen':'выходить из транспорта','umsteigen':'пересаживаться','ankommen':'прибывать','abfahren':'отправляться','holen':'забирать / приносить','zahlen':'платить','ausfüllen':'заполнять','anmelden':'регистрироваться / записываться','mitkommen':'идти с кем-то / пойти вместе','zurückkommen':'возвращаться','sitzen':'сидеть','liegen':'лежать','hängen':'висеть','stellen':'ставить','legen':'класть','können':'мочь / уметь','müssen':'должен / нужно','wollen':'хотеть','dürfen':'можно / иметь право','sollen':'следует / должен','möchten':'хотел бы','mögen':'нравиться / любить','biegen':'гнуть','abbiegen':'поворачивать'},
+    'Ukrainisch':{'heißen':'зватися / називатися','aufstehen':'вставати','frühstücken':'снідати','duschen':'приймати душ','anziehen':'одягати','ausziehen':'знімати одяг','einsteigen':'сідати в транспорт','aussteigen':'виходити з транспорту','umsteigen':'пересідати','ankommen':'прибувати','abfahren':'відправлятися','holen':'забирати / приносити','zahlen':'платити','ausfüllen':'заповнювати','anmelden':'реєструватися / записуватися','mitkommen':'йти разом','zurückkommen':'повертатися','sitzen':'сидіти','liegen':'лежати','hängen':'висіти','stellen':'ставити','legen':'класти','können':'могти / вміти','müssen':'мусити / треба','wollen':'хотіти','dürfen':'можна / мати дозвіл','sollen':'слід / повинен','möchten':'хотів би','mögen':'подобатися / любити','biegen':'гнути','abbiegen':'повертати'},
+    'Arabisch':{'heißen':'يسمى','aufstehen':'ينهض','frühstücken':'يتناول الفطور','duschen':'يستحم','anziehen':'يرتدي الملابس','ausziehen':'يخلع الملابس','einsteigen':'يركب وسيلة النقل','aussteigen':'ينزل من وسيلة النقل','umsteigen':'يبدل وسيلة النقل','ankommen':'يصل','abfahren':'ينطلق / يغادر','holen':'يحضر / يجلب','zahlen':'يدفع','ausfüllen':'يملأ استمارة','anmelden':'يسجل نفسه','mitkommen':'يأتي مع شخص','zurückkommen':'يعود','sitzen':'يجلس','liegen':'يستلقي / يكون موضوعًا','hängen':'يتدلّى / يعلّق','stellen':'يضع بشكل قائم','legen':'يضع بشكل أفقي','können':'يستطيع','müssen':'يجب أن','wollen':'يريد أن','dürfen':'يُسمح له أن','sollen':'ينبغي أن','möchten':'يرغب في','mögen':'يحب / يعجبه','biegen':'يثني','abbiegen':'ينعطف'},
+    'Türkisch':{'heißen':'adı olmak','aufstehen':'kalkmak','frühstücken':'kahvaltı yapmak','duschen':'duş almak','anziehen':'giymek','ausziehen':'çıkarmak','einsteigen':'binmek','aussteigen':'inmek','umsteigen':'aktarma yapmak','ankommen':'varmak','abfahren':'hareket etmek','holen':'alıp getirmek','zahlen':'ödemek','ausfüllen':'doldurmak','anmelden':'kayıt olmak','mitkommen':'birlikte gelmek','zurückkommen':'geri gelmek','sitzen':'oturmak','liegen':'yatmak / bulunmak','hängen':'asılı olmak','stellen':'dik koymak','legen':'koymak / yatırmak','können':'-ebilmek','müssen':'zorunda olmak','wollen':'istemek','dürfen':'izinli olmak / -ebilir','sollen':'-meli / -malı','möchten':'istemek / rica etmek','mögen':'sevmek','biegen':'bükmek','abbiegen':'dönmek'},
+    'Rumänisch':{'heißen':'a se numi','aufstehen':'a se ridica','frühstücken':'a lua micul dejun','duschen':'a face duș','anziehen':'a îmbrăca','ausziehen':'a dezbrăca','einsteigen':'a urca în mijloc de transport','aussteigen':'a coborî din mijloc de transport','umsteigen':'a schimba mijlocul de transport','ankommen':'a ajunge','abfahren':'a pleca','holen':'a aduce / a lua','zahlen':'a plăti','ausfüllen':'a completa','anmelden':'a se înscrie / a se înregistra','mitkommen':'a veni împreună','zurückkommen':'a se întoarce','sitzen':'a sta jos','liegen':'a sta culcat / a se afla','hängen':'a atârna','stellen':'a pune în poziție verticală','legen':'a pune jos / a așeza','können':'a putea','müssen':'a trebui','wollen':'a vrea','dürfen':'a avea voie','sollen':'a trebui / a fi indicat','möchten':'a dori','mögen':'a plăcea','biegen':'a îndoi','abbiegen':'a vira'},
+    'Japanisch':{'heißen':'〜という名前である','aufstehen':'起きる','frühstücken':'朝食を食べる','duschen':'シャワーを浴びる','anziehen':'服を着る','ausziehen':'服を脱ぐ','einsteigen':'乗り込む','aussteigen':'降りる','umsteigen':'乗り換える','ankommen':'到着する','abfahren':'出発する','holen':'取ってくる','zahlen':'支払う','ausfüllen':'記入する','anmelden':'登録する / 申し込む','mitkommen':'一緒に来る','zurückkommen':'戻ってくる','sitzen':'座っている','liegen':'横になっている / 置いてある','hängen':'掛かっている','stellen':'立てて置く','legen':'横に置く','können':'できる','müssen':'しなければならない','wollen':'〜したい','dürfen':'〜してもよい','sollen':'〜すべきだ','möchten':'〜したいです','mögen':'好きである','biegen':'曲げる','abbiegen':'曲がる'}
   };
   const MODAL_VERBS=['können','müssen','wollen','dürfen','sollen','möchten','mögen'];
   const REFLEXIVE_VERBS=['anmelden'];
-  const SEPARABLE_MAP={
-    'aufstehen':{base:'stehen',prefix:'auf'},'anziehen':{base:'ziehen',prefix:'an'},'ausziehen':{base:'ziehen',prefix:'aus'},'einsteigen':{base:'steigen',prefix:'ein'},'aussteigen':{base:'steigen',prefix:'aus'},'umsteigen':{base:'steigen',prefix:'um'},'ankommen':{base:'kommen',prefix:'an'},'abfahren':{base:'fahren',prefix:'ab'},'ausfüllen':{base:'füllen',prefix:'aus'},'anmelden':{base:'melden',prefix:'an'},'mitkommen':{base:'kommen',prefix:'mit'},'zurückkommen':{base:'kommen',prefix:'zurück'},'abbiegen':{base:'biegen',prefix:'ab'}
-  };
-  const FULL_FORMS_EXTRA={
-    'heißen':{'ich':'heiße','du':'heißt','er/sie/es':'heißt','wir':'heißen','ihr':'heißt','sie/Sie':'heißen'},
-    'ziehen':{'ich':'ziehe','du':'ziehst','er/sie/es':'zieht','wir':'ziehen','ihr':'zieht','sie/Sie':'ziehen'},
-    'kommen':{'ich':'komme','du':'kommst','er/sie/es':'kommt','wir':'kommen','ihr':'kommt','sie/Sie':'kommen'},
-    'fahren':{'ich':'fahre','du':'fährst','er/sie/es':'fährt','wir':'fahren','ihr':'fahrt','sie/Sie':'fahren'},
-    'biegen':{'ich':'biege','du':'biegst','er/sie/es':'biegt','wir':'biegen','ihr':'biegt','sie/Sie':'biegen'},
-    'können':{'ich':'kann','du':'kannst','er/sie/es':'kann','wir':'können','ihr':'könnt','sie/Sie':'können'},
-    'müssen':{'ich':'muss','du':'musst','er/sie/es':'muss','wir':'müssen','ihr':'müsst','sie/Sie':'müssen'},
-    'wollen':{'ich':'will','du':'willst','er/sie/es':'will','wir':'wollen','ihr':'wollt','sie/Sie':'wollen'},
-    'dürfen':{'ich':'darf','du':'darfst','er/sie/es':'darf','wir':'dürfen','ihr':'dürft','sie/Sie':'dürfen'},
-    'sollen':{'ich':'soll','du':'sollst','er/sie/es':'soll','wir':'sollen','ihr':'sollt','sie/Sie':'sollen'},
-    'möchten':{'ich':'möchte','du':'möchtest','er/sie/es':'möchte','wir':'möchten','ihr':'möchtet','sie/Sie':'möchten'},
-    'mögen':{'ich':'mag','du':'magst','er/sie/es':'mag','wir':'mögen','ihr':'mögt','sie/Sie':'mögen'}
-  };
-  const EXAMPLES={
-    'heißen':'Anna','aufstehen':'um sieben Uhr','frühstücken':'um acht Uhr','duschen':'am Morgen','anziehen':'eine Jacke','ausziehen':'die Schuhe','einsteigen':'in den Bus','aussteigen':'am Bahnhof','umsteigen':'am Bahnhof','ankommen':'um neun Uhr','abfahren':'um acht Uhr','holen':'Brot','zahlen':'an der Kasse','ausfüllen':'das Formular','anmelden':'mich zum Kurs','mitkommen':'','zurückkommen':'um sechs Uhr','sitzen':'auf dem Stuhl','liegen':'auf dem Tisch','hängen':'an der Decke','stellen':'die Tasche auf den Boden','legen':'das Buch auf den Tisch','können':'Deutsch sprechen','müssen':'heute arbeiten','wollen':'Wasser trinken','dürfen':'hier parken','sollen':'pünktlich kommen','möchten':'einen Kaffee','mögen':'Kaffee','biegen':'den Draht','abbiegen':'rechts'
-  };
+  const SEPARABLE_MAP={'aufstehen':{base:'stehen',prefix:'auf'},'anziehen':{base:'ziehen',prefix:'an'},'ausziehen':{base:'ziehen',prefix:'aus'},'einsteigen':{base:'steigen',prefix:'ein'},'aussteigen':{base:'steigen',prefix:'aus'},'umsteigen':{base:'steigen',prefix:'um'},'ankommen':{base:'kommen',prefix:'an'},'abfahren':{base:'fahren',prefix:'ab'},'ausfüllen':{base:'füllen',prefix:'aus'},'anmelden':{base:'melden',prefix:'an'},'mitkommen':{base:'kommen',prefix:'mit'},'zurückkommen':{base:'kommen',prefix:'zurück'},'abbiegen':{base:'biegen',prefix:'ab'}};
+  const FULL_FORMS_EXTRA={'heißen':{'ich':'heiße','du':'heißt','er/sie/es':'heißt','wir':'heißen','ihr':'heißt','sie/Sie':'heißen'},'ziehen':{'ich':'ziehe','du':'ziehst','er/sie/es':'zieht','wir':'ziehen','ihr':'zieht','sie/Sie':'ziehen'},'kommen':{'ich':'komme','du':'kommst','er/sie/es':'kommt','wir':'kommen','ihr':'kommt','sie/Sie':'kommen'},'fahren':{'ich':'fahre','du':'fährst','er/sie/es':'fährt','wir':'fahren','ihr':'fahrt','sie/Sie':'fahren'},'biegen':{'ich':'biege','du':'biegst','er/sie/es':'biegt','wir':'biegen','ihr':'biegt','sie/Sie':'biegen'},'können':{'ich':'kann','du':'kannst','er/sie/es':'kann','wir':'können','ihr':'könnt','sie/Sie':'können'},'müssen':{'ich':'muss','du':'musst','er/sie/es':'muss','wir':'müssen','ihr':'müsst','sie/Sie':'müssen'},'wollen':{'ich':'will','du':'willst','er/sie/es':'will','wir':'wollen','ihr':'wollt','sie/Sie':'wollen'},'dürfen':{'ich':'darf','du':'darfst','er/sie/es':'darf','wir':'dürfen','ihr':'dürft','sie/Sie':'dürfen'},'sollen':{'ich':'soll','du':'sollst','er/sie/es':'soll','wir':'sollen','ihr':'sollt','sie/Sie':'sollen'},'möchten':{'ich':'möchte','du':'möchtest','er/sie/es':'möchte','wir':'möchten','ihr':'möchtet','sie/Sie':'möchten'},'mögen':{'ich':'mag','du':'magst','er/sie/es':'mag','wir':'mögen','ihr':'mögt','sie/Sie':'mögen'}};
+  const EXAMPLES={'heißen':'Anna','aufstehen':'um sieben Uhr','frühstücken':'um acht Uhr','duschen':'am Morgen','anziehen':'eine Jacke','ausziehen':'die Schuhe','einsteigen':'in den Bus','aussteigen':'am Bahnhof','umsteigen':'am Bahnhof','ankommen':'um neun Uhr','abfahren':'um acht Uhr','holen':'Brot','zahlen':'an der Kasse','ausfüllen':'das Formular','anmelden':'mich zum Kurs','mitkommen':'','zurückkommen':'um sechs Uhr','sitzen':'auf dem Stuhl','liegen':'auf dem Tisch','hängen':'an der Decke','stellen':'die Tasche auf den Boden','legen':'das Buch auf den Tisch','können':'Deutsch sprechen','müssen':'heute arbeiten','wollen':'Wasser trinken','dürfen':'hier parken','sollen':'pünktlich kommen','möchten':'einen Kaffee','mögen':'Kaffee','biegen':'den Draht','abbiegen':'rechts'};
   function ensureArray(name){if(!window[name])window[name]=[];return window[name];}
-  function addToAllVerbs(){
-    const all=ensureArray('ALL_VERBS');
-    const existing=new Set(all.map(x=>x.v));
-    NEW_A1_VERBS.forEach(item=>{if(!existing.has(item.v)){all.push(Object.assign({},item));existing.add(item.v);}});
-  }
-  function addTranslations(){
-    window.VERB_TRANSLATIONS=window.VERB_TRANSLATIONS||{};
-    Object.keys(TRANSLATIONS).forEach(lang=>{window.VERB_TRANSLATIONS[lang]=window.VERB_TRANSLATIONS[lang]||{};Object.assign(window.VERB_TRANSLATIONS[lang],TRANSLATIONS[lang]);});
-  }
-  function addSentences(){
-    window.VERB_SENTENCES=window.VERB_SENTENCES||{};Object.assign(window.VERB_SENTENCES,SENTENCES);
-    const old=window.sentenceForVerb;
-    window.sentenceForVerb=function(v){return window.VERB_SENTENCES[v]||(typeof old==='function'?old(v):`Ich lerne ${v}.`);};
-  }
-  function addGrammar(){
-    if(window.CONJ_EXAMPLES)Object.assign(window.CONJ_EXAMPLES,EXAMPLES);
-    if(window.SEPARABLE_VERBS)Object.assign(window.SEPARABLE_VERBS,SEPARABLE_MAP);
-    if(window.FULL_FORMS)Object.assign(window.FULL_FORMS,FULL_FORMS_EXTRA);
-  }
-  function classifyExistingVerbs(){
-    const levels=window.VERB_LEVELS||{};
-    const meta=window.VERB_META||{};
-    const sep=new Set([...(window.SP_SEPARABLE_VERBS||[]),...Object.keys(window.SEPARABLE_VERBS||{}),...Object.keys(SEPARABLE_MAP)]);
-    const modal=new Set([...(window.SP_MODAL_VERBS||[]),...MODAL_VERBS]);
-    const refl=new Set([...(window.SP_REFLEXIVE_VERBS||[]),...REFLEXIVE_VERBS]);
-    NEW_A1_VERBS.forEach(item=>{levels[item.v]=item.level;});
-    (window.ALL_VERBS||[]).forEach(item=>{
-      const v=item.v; const explicit=NEW_A1_VERBS.find(x=>x.v===v)||{};
-      const level=explicit.level||levels[v]||item.level||'A1';
-      let type=explicit.type||item.type||'normal';
-      if(modal.has(v))type='modal';
-      else if(refl.has(v)&&sep.has(v))type='reflexive-separable';
-      else if(refl.has(v))type='reflexive';
-      else if(sep.has(v))type='separable';
-      item.level=level; item.type=type;
-      meta[v]={level,type,separable:sep.has(v),modal:modal.has(v),reflexive:refl.has(v),defaultLocked:NEW_A1_VERBS.some(x=>x.v===v)};
-      levels[v]=level;
-    });
-    window.VERB_LEVELS=levels; window.VERB_META=meta;
-    window.SP_MODAL_VERBS=[...modal]; window.SP_SEPARABLE_VERBS=[...sep]; window.SP_REFLEXIVE_VERBS=[...refl];
-    const locked=new Set([...(window.SP_DEFAULT_LOCKED_VERBS||[]),...NEW_A1_VERBS.map(x=>x.v)]);
-    window.SP_DEFAULT_LOCKED_VERBS=[...locked];
-  }
-  function uniqueTranslations(){
-    const all=window.VERB_TRANSLATIONS||{};
-    Object.keys(all).forEach(lang=>{const map=all[lang]||{};const reverse={};Object.keys(map).forEach(v=>{const key=String(map[v]||'').trim().toLowerCase();if(!key)return;reverse[key]=reverse[key]||[];reverse[key].push(v);});Object.keys(reverse).forEach(key=>{if(reverse[key].length<2)return;reverse[key].forEach(v=>{if(!String(map[v]).toLowerCase().includes(String(v).toLowerCase()))map[v]=`${map[v]} (${v})`;});});});
-  }
-  addToAllVerbs(); addTranslations(); addSentences(); addGrammar(); classifyExistingVerbs(); uniqueTranslations();
+  function addToAllVerbs(){const all=ensureArray('ALL_VERBS');const existing=new Set(all.map(x=>x.v));NEW_A1_VERBS.forEach(item=>{if(!existing.has(item.v)){all.push(Object.assign({},item));existing.add(item.v);}});}
+  function addTranslations(){window.VERB_TRANSLATIONS=window.VERB_TRANSLATIONS||{};Object.keys(TRANSLATIONS).forEach(lang=>{window.VERB_TRANSLATIONS[lang]=window.VERB_TRANSLATIONS[lang]||{};Object.assign(window.VERB_TRANSLATIONS[lang],TRANSLATIONS[lang]);});}
+  function addSentences(){window.VERB_SENTENCES=window.VERB_SENTENCES||{};Object.assign(window.VERB_SENTENCES,SENTENCES);const old=window.sentenceForVerb;window.sentenceForVerb=function(v){return window.VERB_SENTENCES[v]||(typeof old==='function'?old(v):'Ich schreibe einen Satz.');};}
+  function addGrammar(){if(window.CONJ_EXAMPLES)Object.assign(window.CONJ_EXAMPLES,EXAMPLES);if(window.SEPARABLE_VERBS)Object.assign(window.SEPARABLE_VERBS,SEPARABLE_MAP);if(window.FULL_FORMS)Object.assign(window.FULL_FORMS,FULL_FORMS_EXTRA);}
+  function classifyExistingVerbs(){const levels=window.VERB_LEVELS||{};const meta=window.VERB_META||{};const sep=new Set([...(window.SP_SEPARABLE_VERBS||[]),...Object.keys(window.SEPARABLE_VERBS||{}),...Object.keys(SEPARABLE_MAP)]);const modal=new Set([...(window.SP_MODAL_VERBS||[]),...MODAL_VERBS]);const refl=new Set([...(window.SP_REFLEXIVE_VERBS||[]),...REFLEXIVE_VERBS]);NEW_A1_VERBS.forEach(item=>{levels[item.v]=item.level;});(window.ALL_VERBS||[]).forEach(item=>{const v=item.v;const explicit=NEW_A1_VERBS.find(x=>x.v===v)||{};const level=explicit.level||levels[v]||item.level||'A1';let type=explicit.type||item.type||'normal';if(modal.has(v))type='modal';else if(refl.has(v)&&sep.has(v))type='reflexive-separable';else if(refl.has(v))type='reflexive';else if(sep.has(v))type='separable';item.level=level;item.type=type;meta[v]={level,type,separable:sep.has(v),modal:modal.has(v),reflexive:refl.has(v),defaultLocked:NEW_A1_VERBS.some(x=>x.v===v)};levels[v]=level;});window.VERB_LEVELS=levels;window.VERB_META=meta;window.SP_MODAL_VERBS=[...modal];window.SP_SEPARABLE_VERBS=[...sep];window.SP_REFLEXIVE_VERBS=[...refl];const locked=new Set([...(window.SP_DEFAULT_LOCKED_VERBS||[]),...NEW_A1_VERBS.map(x=>x.v)]);window.SP_DEFAULT_LOCKED_VERBS=[...locked];}
+  function uniqueTranslations(){/* Keine deutschen Verbmarker in Übersetzungen. */}
+  addToAllVerbs();addTranslations();addSentences();addGrammar();classifyExistingVerbs();uniqueTranslations();
   window.SP_A1_EXPANSION_VERBS=NEW_A1_VERBS.map(x=>x.v);
 })();
