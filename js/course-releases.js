@@ -109,7 +109,7 @@ function directModuleContent(data,m){
 }
 export function moduleOpen(data,module){
   if(isTeacher())return true;
-  if(!hasReleaseData(data))return true;
+  if(!hasReleaseData(data))return false;
   const m=normalizeModule(module);
   const vals=[data.enabledModules?.[m.title],data.enabledModules?.[m.slug],data.releases?.[m.title]?.enabled,data.releases?.[m.slug]?.enabled];
   if(vals.some(v=>v===false))return false;
@@ -119,7 +119,7 @@ export function moduleOpen(data,module){
 }
 export function lessonOpen(data,module,lessonKey){
   if(isTeacher())return true;
-  if(!hasReleaseData(data))return true;
+  if(!hasReleaseData(data))return false;
   const m=normalizeModule(module);
   if(moduleExplicitOff(data,m))return false;
   const keys=[lessonKey,`${m.slug}/${lessonKey}`,`${m.title}/${lessonKey}`];
@@ -133,7 +133,7 @@ export function lessonOpen(data,module,lessonKey){
 }
 export function themeOpen(data,module,lessonKey,themeKey){
   if(isTeacher())return true;
-  if(!hasReleaseData(data))return true;
+  if(!hasReleaseData(data))return false;
   const m=normalizeModule(module);
   if(moduleExplicitOff(data,m))return false;
   const keys=[themeKey,`${lessonKey}/${themeKey}`,`${m.slug}/${lessonKey}/${themeKey}`,`${m.title}/${lessonKey}/${themeKey}`];
@@ -147,7 +147,7 @@ export function themeOpen(data,module,lessonKey,themeKey){
 }
 export function taskOpen(data,module,lessonKey,themeKey,file){
   if(isTeacher())return true;
-  if(!hasReleaseData(data))return true;
+  if(!hasReleaseData(data))return false;
   const m=normalizeModule(module);
   if(moduleExplicitOff(data,m))return false;
   const keys=[file,`${themeKey}/${file}`,`${lessonKey}/${themeKey}/${file}`,`${m.slug}/${lessonKey}/${themeKey}/${file}`,`${m.title}/${lessonKey}/${themeKey}/${file}`];
@@ -161,7 +161,7 @@ export function taskOpen(data,module,lessonKey,themeKey,file){
 }
 export function verbOpen(data,verb){
   if(isTeacher())return true;
-  if(!hasReleaseData(data))return true;
+  if(!hasReleaseData(data))return false;
   const m=normalizeModule("Verben A1");
   if(moduleExplicitOff(data,m))return false;
   const vals=[
