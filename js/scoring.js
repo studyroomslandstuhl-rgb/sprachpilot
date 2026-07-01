@@ -1,6 +1,16 @@
 import { db, doc, getDoc, setDoc, serverTimestamp } from "/js/firebase.js";
 import { getActiveProfile } from "/js/auth.js";
 
+if(!window.__SP_NO_AUTO_INPUT_FOCUS__){
+  window.__SP_NO_AUTO_INPUT_FOCUS__=true;
+  const nativeFocus=HTMLElement.prototype.focus;
+  HTMLElement.prototype.focus=function(){
+    const tag=String(this.tagName||"").toLowerCase();
+    if(tag==="input"||tag==="textarea"||tag==="select"||this.isContentEditable)return;
+    return nativeFocus.apply(this,arguments);
+  };
+}
+
 const RULES={
   taskPoints(run){run=Number(run)||1;if(run===1)return 5;if(run===2)return 10;if(run===3)return 15;return 1},
   examMax(run){run=Number(run)||1;if(run===1)return 100;if(run===2)return 200;if(run===3)return 300;return 1},
@@ -118,4 +128,5 @@ function drainQueues(){
 window.SprachPilotScoring={RULES,scopeInfo,currentRun,taskPointsForRun:RULES.taskPoints,examMaxForRun:RULES.examMax,examEarnedForRun:RULES.examEarned,awardTask,awardExam,resetScope};
 window.spL3RecordTaskDone=(file)=>awardTask(file,{info:scopeInfo()});
 window.spL3RecordExamResult=(result)=>awardExam(result||{percent:100},{info:scopeInfo()});
+
 patch();
