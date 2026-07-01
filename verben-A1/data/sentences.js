@@ -1,5 +1,6 @@
 // data/sentences.js
 // Genau ein kurzer A1-Satz pro Verb für das Satz-Puzzle.
+// Keine automatische Form: "Ich lerne + Verb".
 
 const VERB_SENTENCES = {
   "lieben": "Ich liebe Kaffee.",
@@ -143,11 +144,56 @@ const VERB_SENTENCES = {
   "gefallen": "Das Sofa gefällt mir.",
   "fehlen": "Der Schlüssel fehlt.",
   "mieten": "Ich miete eine Wohnung.",
-  "vermieten": "Frau Müller vermietet eine Wohnung."
+  "vermieten": "Frau Müller vermietet eine Wohnung.",
+  "heißen": "Ich heiße Anna.",
+  "aufstehen": "Ich stehe um sieben Uhr auf.",
+  "frühstücken": "Ich frühstücke um acht Uhr.",
+  "duschen": "Ich dusche am Morgen.",
+  "anziehen": "Ich ziehe eine Jacke an.",
+  "ausziehen": "Ich ziehe die Schuhe aus.",
+  "einsteigen": "Ich steige in den Bus ein.",
+  "aussteigen": "Ich steige am Bahnhof aus.",
+  "umsteigen": "Ich steige am Bahnhof um.",
+  "ankommen": "Der Zug kommt um neun Uhr an.",
+  "abfahren": "Der Bus fährt um acht Uhr ab.",
+  "holen": "Ich hole Brot.",
+  "zahlen": "Ich zahle an der Kasse.",
+  "ausfüllen": "Ich fülle das Formular aus.",
+  "anmelden": "Ich melde mich zum Kurs an.",
+  "mitkommen": "Kommst du mit?",
+  "zurückkommen": "Ich komme um sechs Uhr zurück.",
+  "sitzen": "Ich sitze auf dem Stuhl.",
+  "liegen": "Das Buch liegt auf dem Tisch.",
+  "hängen": "Die Lampe hängt an der Decke.",
+  "stellen": "Ich stelle die Tasche auf den Boden.",
+  "legen": "Ich lege das Buch auf den Tisch.",
+  "können": "Ich kann Deutsch sprechen.",
+  "müssen": "Ich muss heute arbeiten.",
+  "wollen": "Ich will Wasser trinken.",
+  "dürfen": "Ich darf hier parken.",
+  "sollen": "Ich soll pünktlich kommen.",
+  "möchten": "Ich möchte einen Kaffee.",
+  "mögen": "Ich mag Kaffee.",
+  "biegen": "Ich biege den Draht.",
+  "abbiegen": "Ich biege rechts ab.",
+  "vergeben": "Die Lehrerin vergibt Punkte.",
+  "verbringen": "Wir verbringen den Abend zu Hause.",
+  "kennenlernen": "Ich lerne heute Anna kennen.",
+  "bleiben": "Wir bleiben heute zu Hause.",
+  "einladen": "Ich lade meine Freunde ein.",
+  "vorhaben": "Ich habe heute viel vor.",
+  "planen": "Wir planen einen Ausflug.",
+  "aufgeben": "Bitte gib nicht auf.",
+  "zuhören": "Die Schüler hören gut zu.",
+  "zusehen": "Ich sehe beim Spiel zu.",
+  "gehören": "Das Buch gehört mir.",
+  "abschreiben": "Ich schreibe den Satz ab.",
+  "vorlesen": "Die Lehrerin liest den Text vor.",
+  "verschlafen": "Ich verschlafe den Termin."
 };
 
 function sentenceForVerb(v){
-  return VERB_SENTENCES[v] || `Ich lerne ${v}.`;
+  return VERB_SENTENCES[v] || "Ich schreibe einen Satz.";
 }
 
 if (typeof window !== "undefined") {
