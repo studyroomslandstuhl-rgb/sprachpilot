@@ -8,7 +8,7 @@
     {v:'aufgeben',img:'aufgeben',level:'A2',type:'separable',irregular:true},
     {v:'zuhören',img:'zuhoeren',level:'A1',type:'separable'},
     {v:'zusehen',img:'zusehen',level:'A2',type:'separable',irregular:true},
-    {v:'gehören',img:'gehoeren',level:'A1',type:'normal'},
+    {v:'gehören',img:'gehoeren',level:'A1',type:'inseparable-prefix'},
     {v:'abschreiben',img:'abschreiben',level:'A1',type:'separable',irregular:true},
     {v:'vorlesen',img:'vorlesen',level:'A1',type:'separable',irregular:true},
     {v:'verschlafen',img:'verschlafen',level:'A2',type:'inseparable-prefix',irregular:true}
@@ -70,8 +70,9 @@
   };
 
   const NEW_SEPARABLE=['vorhaben','aufgeben','zuhören','zusehen','abschreiben','vorlesen'];
-  const NEW_INSEPARABLE=['verschlafen'];
+  const NEW_INSEPARABLE=['gehören','verschlafen'];
   const NEW_IRREGULAR=['vorhaben','aufgeben','zusehen','abschreiben','vorlesen','verschlafen'];
+  const INSEPARABLE_PREFIX_RE=/^(be|emp|ent|er|ge|miss|ver|zer)/;
 
   const LOCKED_BY_DEFAULT=[
     'aufräumen','einkaufen','anrufen','fernsehen','anfangen','beginnen','starten','enden','aussterben','aufmachen','zumachen','begraben','zerstören','verbiegen','mitgeben','mitnehmen',
@@ -105,12 +106,12 @@
     const meta=window.VERB_META||{};
     JULY_VERBS.forEach(item=>{
       const separable=NEW_SEPARABLE.includes(item.v);
-      const inseparable=NEW_INSEPARABLE.includes(item.v);
+      const inseparable=NEW_INSEPARABLE.includes(item.v)||(!separable&&INSEPARABLE_PREFIX_RE.test(item.v));
       const irregular=NEW_IRREGULAR.includes(item.v)||item.irregular===true;
       const type=inseparable?'inseparable-prefix':(separable?'separable':item.type||'normal');
       levels[item.v]=item.level;
       meta[item.v]={level:item.level,type,separable,inseparablePrefix:inseparable,modal:false,reflexive:false,irregular,strong:irregular,defaultLocked:true};
-      const found=(window.ALL_VERBS||[]).find(x=>x.v===item.v);if(found){found.level=item.level;found.type=type;found.irregular=irregular;}
+      const found=(window.ALL_VERBS||[]).find(x=>x.v===item.v);if(found){found.level=item.level;found.type=type;found.irregular=irregular;found.separable=separable;found.inseparablePrefix=inseparable;}
     });
     window.VERB_LEVELS=levels;
     window.VERB_META=meta;
