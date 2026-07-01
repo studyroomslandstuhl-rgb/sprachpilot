@@ -19,7 +19,7 @@ if(SP_USER&&isL3T2Page){
 }
 import("/js/activity-tracker.js?v=1").catch(()=>{});
 import("/js/scoring.js?v=4").catch(()=>{});
-import("/js/release-helper.js?v=5").catch(()=>{});
+import("/js/release-helper.js?v=6").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){
   import("/wortschatz/index-release-lock.js?v=11").catch(()=>{});
