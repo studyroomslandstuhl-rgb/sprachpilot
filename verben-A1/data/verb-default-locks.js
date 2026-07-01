@@ -120,6 +120,43 @@
     window.SP_IRREGULAR_VERBS=[...new Set([...(window.SP_IRREGULAR_VERBS||[]),...NEW_IRREGULAR])];
     if(typeof STRONG_IRREGULAR_VERBS!=='undefined')NEW_IRREGULAR.forEach(v=>STRONG_IRREGULAR_VERBS.add(v));
   }
+  function classifyAllPrefixVerbs(){
+    const meta=window.VERB_META||{};
+    const sep=new Set(window.SP_SEPARABLE_VERBS||[]);
+    const insep=new Set(window.SP_INSEPARABLE_PREFIX_VERBS||[]);
+    (window.ALL_VERBS||[]).forEach(item=>{
+      const v=item.v;
+      if(!v||sep.has(v))return;
+      if(!INSEPARABLE_PREFIX_RE.test(v))return;
+      const old=meta[v]||{};
+      meta[v]={...old,type:'inseparable-prefix',separable:false,inseparablePrefix:true};
+      item.type='inseparable-prefix';
+      item.separable=false;
+      item.inseparablePrefix=true;
+      insep.add(v);
+    });
+    window.VERB_META=meta;
+    window.SP_INSEPARABLE_PREFIX_VERBS=[...insep];
+  }
+  function cleanGermanFromTranslations(){
+    const maps=window.VERB_TRANSLATIONS||{};
+    const verbs=(window.ALL_VERBS||[]).map(x=>x.v).filter(Boolean).sort((a,b)=>b.length-a.length);
+    Object.keys(maps).forEach(lang=>{
+      const map=maps[lang]||{};
+      Object.keys(map).forEach(v=>{
+        let txt=String(map[v]||'');
+        verbs.forEach(de=>{
+          const escaped=de.replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+          txt=txt.replace(new RegExp('\\s*\\('+escaped+'\\)\\s*','gi'),' ')
+                 .replace(new RegExp('\\s*/\\s*'+escaped+'\\s*','gi'),' ')
+                 .replace(new RegExp('\\s*·\\s*'+escaped+'\\s*','gi'),' ')
+                 .replace(new RegExp('\\b'+escaped+'\\b','gi'),' ');
+        });
+        txt=txt.replace(/\s{2,}/g,' ').replace(/\s+([,;/])/g,'$1').replace(/([,;/])\s*$/,'').trim();
+        map[v]=txt||String(map[v]||'');
+      });
+    });
+  }
   function lockDefaults(){
     const old=new Set(window.SP_DEFAULT_LOCKED_VERBS||[]);
     LOCKED_BY_DEFAULT.forEach(v=>old.add(v));
@@ -132,6 +169,8 @@
   addSentences();
   addGrammar();
   classify();
+  classifyAllPrefixVerbs();
+  cleanGermanFromTranslations();
   lockDefaults();
   window.SP_JULY_2026_VERBS=JULY_VERBS.map(x=>x.v);
 })();
