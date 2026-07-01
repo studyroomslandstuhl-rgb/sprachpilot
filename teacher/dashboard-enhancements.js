@@ -6,6 +6,8 @@
   function arr(x){return Array.isArray(x)?x:[]}
   function domId(id){return String(id||"").replace(/[^a-zA-Z0-9_-]/g,"_")}
   function jsString(v){return String(v||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'")}
+  function norm(v){return String(v||"").trim().toLowerCase()}
+  function uniq(a){return Array.from(new Set((a||[]).filter(Boolean)))}
   function tsValue(v){
     if(!v)return null;
     if(v.toDate && typeof v.toDate==="function")return v.toDate();
@@ -118,12 +120,51 @@
       TeacherApp.render();
     };
   }
+  function courseValues(R){return uniq([R.courseCode,R.courseName].map(x=>String(x||"").trim()).flatMap(x=>x?[x,x.toLowerCase(),x.toUpperCase()]:[]))}
+  function studentInCourse(s,values){const set=new Set(values.map(norm));return [s.kurs,s.kursnummer,s.courseCode,s.courseDocId,s.courseId].some(v=>set.has(norm(v)))}
+  async function syncStudentAssignments(){
+    try{
+      if(typeof ReleaseDraft==="undefined"||!ReleaseDraft.data)return 0;
+      const database=TeacherEnv.db&&TeacherEnv.db();
+      if(!database)return 0;
+      const values=courseValues(ReleaseDraft);
+      if(!values.length)return 0;
+      const payload=JSON.parse(JSON.stringify(ReleaseDraft.data||{}));
+      payload.courseCode=ReleaseDraft.courseCode||payload.courseCode||"";
+      payload.courseDocId=ReleaseDraft.courseName||payload.courseDocId||"";
+      payload.source="teacher-release-dashboard";
+      payload.updatedAt=new Date().toISOString();
+      const snap=await database.collection("students").get();
+      const batch=database.batch();
+      let count=0;
+      snap.docs.forEach(d=>{
+        const s=d.data()||{};
+        if(!studentInCourse(s,values))return;
+        batch.set(d.ref,{assignments:payload,courseCode:s.courseCode||ReleaseDraft.courseCode||"",kurs:s.kurs||ReleaseDraft.courseCode||ReleaseDraft.courseName||"",kursnummer:s.kursnummer||s.kurs||ReleaseDraft.courseCode||ReleaseDraft.courseName||"",courseDocId:s.courseDocId||ReleaseDraft.courseName||"",updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
+        count++;
+      });
+      if(count)await batch.commit();
+      console.log("[SprachPilot] Freigabe in Schülerprofile synchronisiert",count);
+      return count;
+    }catch(e){console.warn("[SprachPilot] Schüler-Freigabe-Sync fehlgeschlagen",e);return 0}
+  }
+  function installReleaseSync(){
+    if(typeof ReleaseDraft==="undefined"||ReleaseDraft.__dashboardStudentSync)return;
+    ReleaseDraft.__dashboardStudentSync=true;
+    const oldSave=ReleaseDraft.save&&ReleaseDraft.save.bind(ReleaseDraft);
+    ReleaseDraft.save=async function(){
+      const result=oldSave?await oldSave():undefined;
+      await syncStudentAssignments();
+      return result;
+    };
+    ReleaseDraft.syncStudentAssignments=syncStudentAssignments;
+  }
   function installTeacherAppPatch(){
     if(typeof TeacherApp==="undefined"||TeacherApp.__dashboardEnhancements)return;
     const oldRender=TeacherApp.render.bind(TeacherApp);
     TeacherApp.render=async function(options={}){const result=await oldRender(options);document.querySelectorAll(".stat div").forEach(el=>{if(el.textContent.trim()==="Ø Verben")el.textContent="Ø Fortschritt"});return result};
     TeacherApp.__dashboardEnhancements=true;
   }
-  function install(){if(!ready()){setTimeout(install,50);return}installAnalytics();installStudents();installTeacherAppPatch()}
+  function install(){if(!ready()){setTimeout(install,50);return}try{window.TeacherEnv=TeacherEnv;window.ReleaseDraft=ReleaseDraft;window.TeacherApp=TeacherApp}catch(e){}installAnalytics();installStudents();installReleaseSync();installTeacherAppPatch()}
   install();
 })();

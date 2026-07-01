@@ -16,9 +16,10 @@
     arbeiten:'/assets/img/arbeiten.png',
     spielen:'/assets/img/spielen.png',
     essen:'/assets/img/essen.png',
-    schlafen:'/assets/img/schlafen.png'
+    schlafen:'/assets/img/schlafen.png',
+    spazieren_gehen:'/assets/img/spazierengehen.png'
   };
-  const BAD=new Set(['spazieren_gehen']);
+  const BAD=new Set([]);
   window.displayImage=function(w){return EXTRA[w&&w.id]||w&&w.image||''};
   window.hasGoodImage=function(w){return !!(w&&!BAD.has(w.id)&&window.displayImage(w))};
   window.imgHtml=function(w){return window.hasGoodImage(w)?`<img src="${window.displayImage(w)}" onerror="fixImg(this)" alt="">`:`<div class="word-placeholder">kein Bild</div>`};
