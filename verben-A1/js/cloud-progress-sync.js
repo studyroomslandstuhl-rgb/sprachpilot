@@ -10,15 +10,7 @@
   function fallbackId(p){const c=normId(p.courseDocId||courseOf(p)||"kurs");const e=normId(emailOf(p)||p.vorname||p.firstName||"student");return c&&e?c+"_"+e:""}
   function idCandidates(){
     const p=prof();
-    return uniq([
-      p.docId,
-      p.studentId,
-      p.userId,
-      p.uid,
-      p.id,
-      localStorage.getItem("SP_STUDENT_ID"),
-      fallbackId(p)
-    ]);
+    return uniq([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem("SP_STUDENT_ID"),fallbackId(p)]);
   }
   function canonicalStudentId(){return idCandidates()[0]||"guest"}
   function pendingKey(){return "SP_VERBS_PENDING_SYNC_"+canonicalStudentId()}
@@ -61,11 +53,7 @@
     return out;
   }
   function localKeys(){return uniq(idCandidates().map(id=>"SP_VERBS_"+id))}
-  function readLocalMerged(){
-    let out={};
-    localKeys().forEach(k=>{out=mergeStates(out,safeJson(k,{}))});
-    return out;
-  }
+  function readLocalMerged(){let out={};localKeys().forEach(k=>{out=mergeStates(out,safeJson(k,{}))});return out}
   function cleanCurrentState(){
     try{if(typeof normalizeVerbStatusLists==="function")normalizeVerbStatusLists()}catch(e){}
     const raw={...state};
@@ -78,47 +66,13 @@
   function starCount(){try{return typeof totalStars==="function"?num(totalStars()):0}catch(e){return 0}}
   function packageVerbs(){try{return typeof currentPackageAllVerbs==="function"?currentPackageAllVerbs():(state.currentPackageVerbs||[])}catch(e){return state.currentPackageVerbs||[]}}
   function buildPayload(fullState){
-    const p=prof();
-    const sid=canonicalStudentId();
-    const course=courseOf(p);
-    const cleanState=fullState||cleanCurrentState();
-    const points=num(localStorage.getItem("SP_POINTS_TOTAL"));
-    const progress=progressPercent();
-    const stars=starCount();
-    const verben={
-      progress,
-      progressPercent:progress,
-      stars,
-      activeVerbs:cleanState.active||[],
-      learnedVerbs:cleanState.learned||[],
-      known:cleanState.known||[],
-      unsure:cleanState.unsure||[],
-      unknown:cleanState.unknown||[],
-      assessed:cleanState.assessed||[],
-      currentPackageVerbs:packageVerbs(),
-      exam:cleanState.exam||{},
-      state:cleanState,
-      updatedAt:ts()
-    };
+    const p=prof(),sid=canonicalStudentId(),course=courseOf(p),cleanState=fullState||cleanCurrentState();
+    const points=num(localStorage.getItem("SP_POINTS_TOTAL")),progress=progressPercent(),stars=starCount();
+    const verben={progress,progressPercent:progress,stars,activeVerbs:cleanState.active||[],learnedVerbs:cleanState.learned||[],known:cleanState.known||[],unsure:cleanState.unsure||[],unknown:cleanState.unknown||[],assessed:cleanState.assessed||[],currentPackageVerbs:packageVerbs(),exam:cleanState.exam||{},state:cleanState,updatedAt:ts()};
     return {
-      progressDoc:clean({
-        studentId:sid,userId:sid,docId:sid,email:emailOf(p),studentName:[p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(" "),
-        kurs:course,kursnummer:course,courseCode:course,courseDocId:p.courseDocId||"",
-        verben,
-        lifetimePoints:points,pointsTotal:points,punkteGesamt:points,totals:{points,updatedAt:new Date().toISOString()},
-        lastPage:location.pathname,lastActiveAt:ts(),updatedAt:ts()
-      }),
-      studentDoc:clean({
-        studentId:sid,userId:sid,docId:sid,email:emailOf(p),
-        vorname:p.vorname||p.firstName||p.name||"",nachname:p.nachname||p.lastName||"",muttersprache:p.muttersprache||p.fremdsprache||"",
-        kurs:course,kursnummer:course,courseCode:course,courseDocId:p.courseDocId||"",
-        verbenFortschritt:progress,lastActivity:ts(),lastActiveAt:ts(),updatedAt:ts(),active:true,role:"student",loginRole:"student",isStudent:true,isTeacher:false
-      }),
-      minimalProgress:clean({
-        studentId:sid,userId:sid,docId:sid,email:emailOf(p),kurs:course,kursnummer:course,courseCode:course,
-        verben:{progress,progressPercent:progress,stars,activeVerbs:cleanState.active||[],learnedVerbs:cleanState.learned||[],known:cleanState.known||[],unsure:cleanState.unsure||[],unknown:cleanState.unknown||[],assessed:cleanState.assessed||[],currentPackageVerbs:packageVerbs(),exam:cleanState.exam||{},updatedAt:ts()},
-        lastPage:location.pathname,lastActiveAt:ts(),updatedAt:ts()
-      })
+      progressDoc:clean({studentId:sid,userId:sid,docId:sid,email:emailOf(p),studentName:[p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(" "),kurs:course,kursnummer:course,courseCode:course,courseDocId:p.courseDocId||"",verben,lifetimePoints:points,pointsTotal:points,punkteGesamt:points,totals:{points,updatedAt:new Date().toISOString()},lastPage:location.pathname,lastActiveAt:ts(),updatedAt:ts()}),
+      studentDoc:clean({studentId:sid,userId:sid,docId:sid,email:emailOf(p),vorname:p.vorname||p.firstName||p.name||"",nachname:p.nachname||p.lastName||"",muttersprache:p.muttersprache||p.fremdsprache||"",kurs:course,kursnummer:course,courseCode:course,courseDocId:p.courseDocId||"",verbenFortschritt:progress,lastActivity:ts(),lastActiveAt:ts(),updatedAt:ts(),active:true,role:"student",loginRole:"student",isStudent:true,isTeacher:false}),
+      minimalProgress:clean({studentId:sid,userId:sid,docId:sid,email:emailOf(p),kurs:course,kursnummer:course,courseCode:course,verben:{progress,progressPercent:progress,stars,activeVerbs:cleanState.active||[],learnedVerbs:cleanState.learned||[],known:cleanState.known||[],unsure:cleanState.unsure||[],unknown:cleanState.unknown||[],assessed:cleanState.assessed||[],currentPackageVerbs:packageVerbs(),exam:cleanState.exam||{},updatedAt:ts()},lastPage:location.pathname,lastActiveAt:ts(),updatedAt:ts()})
     };
   }
   function markPending(){try{localStorage.setItem(pendingKey(),JSON.stringify({at:new Date().toISOString(),sid:canonicalStudentId()}))}catch(e){}}
@@ -150,23 +104,11 @@
           try{
             const snap=await db.collection("progress").doc(id).get();
             const exists=typeof snap.exists==="function"?snap.exists():!!snap.exists;
-            if(exists){
-              const data=snap.data?datasetsnap=snap.data():{};
-            }
-          }catch(e){console.warn("Progress-Lesen fehlgeschlagen",id,e)}
-        }
-      }
-      // Zweiter Durchlauf getrennt, damit ältere Browser keine Inline-Funktionssyntax-Probleme bekommen.
-      if(typeof db!=="undefined"&&db){
-        for(const id of idCandidates()){
-          try{
-            const snap=await db.collection("progress").doc(id).get();
-            const exists=typeof snap.exists==="function"?snap.exists():!!snap.exists;
             if(!exists)continue;
             const data=snap.data?snap.data():{};
             const v=data.verben||{};
             merged=mergeStates(merged,v.state||{});
-          }catch(e){}
+          }catch(e){console.warn("Progress-Lesen fehlgeschlagen",id,e)}
         }
       }
       state=mergeStates(state||{},merged);
@@ -178,12 +120,7 @@
   }
 
   let timer=null;
-  sendProgress=function(){
-    clearTimeout(timer);
-    markPending();
-    timer=setTimeout(writeCloud,500);
-  };
-
+  sendProgress=function(){clearTimeout(timer);markPending();timer=setTimeout(writeCloud,500)};
   function flush(){try{writeCloud()}catch(e){}}
   window.addEventListener("online",flush);
   window.addEventListener("pagehide",flush);
