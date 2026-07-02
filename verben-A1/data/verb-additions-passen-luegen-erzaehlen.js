@@ -1,9 +1,10 @@
-// Ergänzung: passen, lügen, erzählen
+// Ergänzung: passen, lügen, erzählen, abholen
 (function(){
   const additions=[
     {v:"passen",img:"passen"},
     {v:"lügen",img:"luegen"},
-    {v:"erzählen",img:"erzaehlen"}
+    {v:"erzählen",img:"erzaehlen"},
+    {v:"abholen",img:"abholen"}
   ];
 
   if(typeof window!=='undefined'){
@@ -19,37 +20,44 @@
     Object.assign(VERB_TRANSLATIONS["Rumänisch"]||(VERB_TRANSLATIONS["Rumänisch"]={}),{
       "passen":"a se potrivi",
       "lügen":"a minți",
-      "erzählen":"a povesti / a spune"
+      "erzählen":"a povesti / a spune",
+      "abholen":"a lua / a ridica"
     });
     Object.assign(VERB_TRANSLATIONS["Arabisch"]||(VERB_TRANSLATIONS["Arabisch"]={}),{
       "passen":"يناسب",
       "lügen":"يكذب",
-      "erzählen":"يحكي / يروي"
+      "erzählen":"يحكي / يروي",
+      "abholen":"يُحضر / يذهب ليأخذ"
     });
     Object.assign(VERB_TRANSLATIONS["Russisch"]||(VERB_TRANSLATIONS["Russisch"]={}),{
       "passen":"подходить / быть впору",
       "lügen":"лгать / врать",
-      "erzählen":"рассказывать"
+      "erzählen":"рассказывать",
+      "abholen":"забирать / встречать"
     });
     Object.assign(VERB_TRANSLATIONS["Ukrainisch"]||(VERB_TRANSLATIONS["Ukrainisch"]={}),{
       "passen":"підходити / пасувати",
       "lügen":"брехати",
-      "erzählen":"розповідати"
+      "erzählen":"розповідати",
+      "abholen":"забирати / зустрічати"
     });
     Object.assign(VERB_TRANSLATIONS["Türkisch"]||(VERB_TRANSLATIONS["Türkisch"]={}),{
       "passen":"uymak / uygun olmak",
       "lügen":"yalan söylemek",
-      "erzählen":"anlatmak"
+      "erzählen":"anlatmak",
+      "abholen":"alıp getirmek / almak"
     });
     Object.assign(VERB_TRANSLATIONS["Englisch"]||(VERB_TRANSLATIONS["Englisch"]={}),{
       "passen":"to fit / to suit",
       "lügen":"to lie",
-      "erzählen":"to tell / to narrate"
+      "erzählen":"to tell / to narrate",
+      "abholen":"to pick up"
     });
     Object.assign(VERB_TRANSLATIONS["Japanisch"]||(VERB_TRANSLATIONS["Japanisch"]={}),{
       "passen":"合う / 似合う",
       "lügen":"嘘をつく",
-      "erzählen":"話す / 語る"
+      "erzählen":"話す / 語る",
+      "abholen":"迎えに行く / 取りに行く"
     });
   }
 
@@ -57,7 +65,8 @@
     Object.assign(VERB_SENTENCES,{
       "passen":"Die Jacke passt gut.",
       "lügen":"Er lügt nicht.",
-      "erzählen":"Die Frau erzählt eine Geschichte."
+      "erzählen":"Die Frau erzählt eine Geschichte.",
+      "abholen":"Ich hole meine Mutter ab."
     });
   }
 
