@@ -26,12 +26,12 @@ const TIMES=[
 {id:'t2145',label:'21:45',h:21,m:45,formal:['einundzwanzig Uhr fünfundvierzig'],informal:['Viertel vor zehn','fünfzehn vor zehn']}
 ];
 const SCHON_ERST=[
-{time:'8:50',h:8,m:50,expected:'9:00',word:'erst',solution:'Es ist erst zehn vor neun.'},
-{time:'10:05',h:10,m:5,expected:'10:00',word:'schon',solution:'Es ist schon fünf nach zehn.'},
-{time:'7:55',h:7,m:55,expected:'8:00',word:'erst',solution:'Es ist erst fünf vor acht.'},
-{time:'12:10',h:12,m:10,expected:'12:00',word:'schon',solution:'Es ist schon zehn nach zwölf.'},
-{time:'15:57',h:15,m:57,expected:'16:00',word:'erst',solution:'Es ist erst kurz vor vier.'},
-{time:'18:03',h:18,m:3,expected:'18:00',word:'schon',solution:'Es ist schon kurz nach sechs.'}
+{word:'erst',dialog:['A: Der Kurs beginnt um neun Uhr.','B: Nein, wir haben noch Zeit. Es ist ___ zehn vor neun.']},
+{word:'schon',dialog:['A: Der Kurs beginnt um zehn Uhr.','B: Beeil dich! Es ist ___ fünf nach zehn.']},
+{word:'erst',dialog:['A: Der Bus kommt um acht Uhr.','B: Keine Sorge. Es ist ___ fünf vor acht.']},
+{word:'schon',dialog:['A: Ist es zwölf Uhr?','B: Nein, es ist ___ zehn nach zwölf.']},
+{word:'erst',dialog:['A: Der Termin ist um vier Uhr.','B: Wir sind früh. Es ist ___ kurz vor vier.']},
+{word:'schon',dialog:['A: Ich dachte, es ist sechs Uhr.','B: Es ist ___ kurz nach sechs.']}
 ];
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'null')}catch(e){return null}}
 function langKey(){const m=String(profile()?.muttersprache||profile()?.motherLanguage||'').toLowerCase();if(m.includes('russ'))return'ru';if(m.includes('türk')||m.includes('turk'))return'tr';if(m.includes('ukrain'))return'uk';if(m.includes('arab'))return'ar';if(m.includes('japan'))return'ja';if(m.includes('rumän')||m.includes('ruman')||m.includes('roman'))return'ro';return'en'}
@@ -43,11 +43,17 @@ function ok(v,arr){const s=simple(v);return arr.some(x=>simple(x)===s)}
 function allAnswers(t){return withSentence([...(t.formal||[]),...(t.informal||[])])}
 function formalAnswers(t){return withSentence(t.formal||[])}
 function informalAnswers(t){return withSentence(t.informal||[])}
+function digitalAnswers(t){const m=String(t.m||0).padStart(2,'0');const hours=[t.h];if(t.h>12)hours.push(t.h-12);else if(t.h>0&&t.h<12)hours.push(t.h+12);const forms=[];hours.forEach(h=>{const hs=String(h),hh=String(h).padStart(2,'0');forms.push(`${hs}:${m}`,`${hh}:${m}`,`${hs}.${m}`,`${hh}.${m}`,`${hs}:${m} Uhr`,`${hh}:${m} Uhr`,`${hs}.${m} Uhr`,`${hh}.${m} Uhr`);if(t.m===0)forms.push(hs,hh,`${hs} Uhr`,`${hh} Uhr`)});return withSentence([...new Set(forms)])}
+function hourWordAnswers(t){if(t.m!==0)return[];const names={1:['ein','eins'],2:['zwei'],3:['drei'],4:['vier'],5:['fünf'],6:['sechs'],7:['sieben'],8:['acht'],9:['neun'],10:['zehn'],11:['elf'],12:['zwölf'],13:['dreizehn'],14:['vierzehn'],15:['fünfzehn'],16:['sechzehn'],17:['siebzehn'],18:['achtzehn'],19:['neunzehn'],20:['zwanzig'],21:['einundzwanzig'],22:['zweiundzwanzig'],23:['dreiundzwanzig']};const hs=[t.h];if(t.h>12)hs.push(t.h-12);else if(t.h>0&&t.h<12)hs.push(t.h+12);let forms=[];hs.forEach(h=>{forms=forms.concat(names[h]||[])});return withSentence([...new Set(forms)])}
+function looseAnswers(t){return allAnswers(t).concat(digitalAnswers(t)).concat(hourWordAnswers(t))}
+function formalLooseAnswers(t){return formalAnswers(t).concat(digitalAnswers(t)).concat(hourWordAnswers(t))}
+function informalLooseAnswers(t){return informalAnswers(t).concat(hourWordAnswers(t))}
 function help3(n,a,b,c){if(n===1)return `<div class="no">${a}</div>`;if(n===2)return `<div class="hint">${b}</div>`;return `<div class="no">Lösung: ${c}</div>`}
 function imgHtml(w){return w.image?`<img src="${w.image}" onerror="fixImg(this)" alt="">`:`<div class="word-placeholder">kein Bild</div>`}
 function bigImgHtml(w){return w.image?`<img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">`:`<div class="placeholder-img">Bild fehlt<br>${full(w)}</div>`}
 function fixImg(img){const ph=document.createElement('div');ph.className='word-placeholder';ph.textContent='kein Bild';img.replaceWith(ph)}
-function clock(t){let h=t.h%12,m=t.m,hr=((h+m/60)*30),mn=m*6;return `<div class="clock-card"><div class="clock"><div class="hand hour" style="transform:rotate(${hr}deg)"></div><div class="hand minute" style="transform:rotate(${mn}deg)"></div><div class="dot"></div><span class="n n12">12</span><span class="n n3">3</span><span class="n n6">6</span><span class="n n9">9</span></div><div class="digital">${t.label}</div></div>`}
+function clock(t){let h=t.h%12,m=t.m,hr=((h+m/60)*30),mn=m*6;return `<div class="clock-card"><div class="clock"><div class="hand hour" style="transform:rotate(${hr}deg)"></div><div class="hand minute" style="transform:rotate(${mn}deg)"></div><div class="dot"></div><span class="n n12">12</span><span class="n n3">3</span><span class="n n6">6</span><span class="n n9">9</span></div><div class="digital">${t.label||t.time||''}</div></div>`}
+function analogClock(t){return clock(t).replace(/<div class="digital">[^<]*<\/div>/,'')}
 function sayGerman(txt){const u=new SpeechSynthesisUtterance(txt);u.lang='de-DE';speechSynthesis.cancel();speechSynthesis.speak(u)}
 function header(title,showReset=false){const h=document.querySelector('.topbar');if(!h)return;const p=profile();const name=[p?.vorname||p?.firstName||'',p?.nachname||p?.lastName||''].join(' ').trim()||'Schüler/in';const dash=localStorage.getItem('SP_LOGIN_ROLE')==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';h.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${title} · ${CFG.sub}</div></div></a><div class="account-tools"><span class="account-pill">${name}</span><a class="account-link" href="${dash}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="${location.pathname.endsWith('index.html')||/\/Thema-2\/?$/.test(location.pathname)?'../index.html':'index.html'}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a>${showReset?'<button class="btn danger" onclick="resetThemeProgress()">Fortschritte löschen</button>':''}</nav>`}
 function taskKey(file){return CFG.key+'_'+file}
