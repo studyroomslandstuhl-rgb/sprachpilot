@@ -8,7 +8,8 @@
     {id:'monat',article:'der',word:'Monat',full:'der Monat',plural:'die Monate',type:'time',image:'/assets/img/monat.png',sentence:'Das Jahr hat zwölf Monate.',tr:{en:'month',ru:'месяц',tr:'ay',uk:'місяць',ar:'شهر',ja:'月',ro:'lună'}},
     {id:'jahr',article:'das',word:'Jahr',full:'das Jahr',plural:'die Jahre',type:'time',image:'/assets/img/jahr.png',sentence:'Ein Jahr hat zwölf Monate.',tr:{en:'year',ru:'год',tr:'yıl',uk:'рік',ar:'سنة',ja:'年',ro:'an'}}
   ];
-  const existing=new Set((window.WORDS||[]).map(w=>w.id));
-  TIME_WORDS.forEach(w=>{if(!existing.has(w.id))window.WORDS.push(w)});
+  const target=(typeof WORDS!=='undefined')?WORDS:(window.WORDS=window.WORDS||[]);
+  const existing=new Set(target.map(w=>w.id));
+  TIME_WORDS.forEach(w=>{if(!existing.has(w.id))target.push(w)});
   window.TIME_NOUNS=TIME_WORDS;
 })();
