@@ -16,9 +16,30 @@ const Students = {
       return snap.docs.map(d=>({id:d.id,...d.data()}));
     }catch(e){TeacherEnv?.note?.("Fortschritt konnte nicht geladen werden", e);return []}
   },
+  norm(v){return String(v||"").trim().toLowerCase()},
+  progressKeys(x){
+    const course=this.norm(x.kurs||x.kursnummer||x.courseCode||x.courseDocId);
+    const email=this.norm(x.email);
+    return [...new Set([
+      x.id,x.studentId,x.userId,x.docId,x.uid,
+      email&&course?email+"|"+course:"",
+      email?"email:"+email:""
+    ].filter(Boolean).map(String))];
+  },
   mergeStudentProgress(students,progressRows){
-    const progressById=new Map((progressRows||[]).map(p=>[p.studentId||p.id,p]));
-    return (students||[]).map(s=>({...s,progressDoc:progressById.get(s.studentId||s.id)||null}));
+    const progressByKey=new Map();
+    for(const p of progressRows||[]){
+      for(const key of this.progressKeys(p)){
+        if(!progressByKey.has(key))progressByKey.set(key,p);
+      }
+    }
+    return (students||[]).map(s=>{
+      let progressDoc=null;
+      for(const key of this.progressKeys(s)){
+        if(progressByKey.has(key)){progressDoc=progressByKey.get(key);break;}
+      }
+      return {...s,progressDoc:progressDoc||null};
+    });
   },
   byCourse(students){
     const groups={};
