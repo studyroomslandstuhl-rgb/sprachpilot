@@ -85,12 +85,12 @@
       var practice=typeof currentPracticeVerbs==='function'?currentPracticeVerbs().length:0;
       var unused=typeof unusedVerbs==='function'?unusedVerbs().length:0;
       if(assessmentOn()&&practice<target&&unused>0){return startAssessment();}
-      if(practice>=target&&target>0&&typeof taskCard==='function'&&typeof examCard==='function'){
+      if(((practice>=target&&target>0)||(practice>0&&unused===0))&&typeof taskCard==='function'&&typeof examCard==='function'){
         if(app)app.innerHTML=(typeof statusBox==='function'?statusBox():'')+taskGrid();
         try{if(typeof preloadActiveImages==='function')preloadActiveImages();if(typeof saveState==='function')saveState();if(typeof renderAndHydrate==='function')renderAndHydrate()}catch(e){}
         return;
       }
-      if(assessmentOn()&&practice===0&&unused===0){if(app)app.innerHTML='<section class="card"><h2>Keine aktiven Übungsverben</h2><p class="small">Alle freigegebenen Verben sind bereits eingeschätzt oder es sind keine weiteren Verben offen.</p></section>';try{if(typeof saveState==='function')saveState()}catch(e){}return;}
+      if(assessmentOn()&&practice===0&&unused===0){if(app)app.innerHTML='<section class="card"><h2>Keine aktiven Übungsverben</h2><p class="small">Alle freigegebenen Verben sind bereits eingeschätzt. Der TN hat keine Verben als unsicher oder „kann ich nicht“ markiert.</p></section>';try{if(typeof saveState==='function')saveState()}catch(e){}return;}
       return oldHome.apply(this,arguments);
     };
     window.renderHome.__strictReleased=true;
