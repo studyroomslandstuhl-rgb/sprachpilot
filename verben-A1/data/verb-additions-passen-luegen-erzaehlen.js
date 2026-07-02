@@ -1,10 +1,11 @@
-// Ergänzung: passen, lügen, erzählen, abholen
+// Ergänzung: passen, lügen, erzählen, abholen, chatten
 (function(){
   const additions=[
     {v:"passen",img:"passen"},
     {v:"lügen",img:"luegen"},
     {v:"erzählen",img:"erzaehlen"},
-    {v:"abholen",img:"abholen"}
+    {v:"abholen",img:"abholen"},
+    {v:"chatten",img:"chatten"}
   ];
 
   if(typeof window!=='undefined'){
@@ -21,43 +22,50 @@
       "passen":"a se potrivi",
       "lügen":"a minți",
       "erzählen":"a povesti / a spune",
-      "abholen":"a lua / a ridica"
+      "abholen":"a lua / a ridica",
+      "chatten":"a discuta pe chat"
     });
     Object.assign(VERB_TRANSLATIONS["Arabisch"]||(VERB_TRANSLATIONS["Arabisch"]={}),{
       "passen":"يناسب",
       "lügen":"يكذب",
       "erzählen":"يحكي / يروي",
-      "abholen":"يُحضر / يذهب ليأخذ"
+      "abholen":"يُحضر / يذهب ليأخذ",
+      "chatten":"يدردش"
     });
     Object.assign(VERB_TRANSLATIONS["Russisch"]||(VERB_TRANSLATIONS["Russisch"]={}),{
       "passen":"подходить / быть впору",
       "lügen":"лгать / врать",
       "erzählen":"рассказывать",
-      "abholen":"забирать / встречать"
+      "abholen":"забирать / встречать",
+      "chatten":"общаться в чате"
     });
     Object.assign(VERB_TRANSLATIONS["Ukrainisch"]||(VERB_TRANSLATIONS["Ukrainisch"]={}),{
       "passen":"підходити / пасувати",
       "lügen":"брехати",
       "erzählen":"розповідати",
-      "abholen":"забирати / зустрічати"
+      "abholen":"забирати / зустрічати",
+      "chatten":"спілкуватися в чаті"
     });
     Object.assign(VERB_TRANSLATIONS["Türkisch"]||(VERB_TRANSLATIONS["Türkisch"]={}),{
       "passen":"uymak / uygun olmak",
       "lügen":"yalan söylemek",
       "erzählen":"anlatmak",
-      "abholen":"alıp getirmek / almak"
+      "abholen":"alıp getirmek / almak",
+      "chatten":"sohbet etmek / mesajlaşmak"
     });
     Object.assign(VERB_TRANSLATIONS["Englisch"]||(VERB_TRANSLATIONS["Englisch"]={}),{
       "passen":"to fit / to suit",
       "lügen":"to lie",
       "erzählen":"to tell / to narrate",
-      "abholen":"to pick up"
+      "abholen":"to pick up",
+      "chatten":"to chat / to message"
     });
     Object.assign(VERB_TRANSLATIONS["Japanisch"]||(VERB_TRANSLATIONS["Japanisch"]={}),{
       "passen":"合う / 似合う",
       "lügen":"嘘をつく",
       "erzählen":"話す / 語る",
-      "abholen":"迎えに行く / 取りに行く"
+      "abholen":"迎えに行く / 取りに行く",
+      "chatten":"チャットする"
     });
   }
 
@@ -66,7 +74,8 @@
       "passen":"Die Jacke passt gut.",
       "lügen":"Er lügt nicht.",
       "erzählen":"Die Frau erzählt eine Geschichte.",
-      "abholen":"Ich hole meine Mutter ab."
+      "abholen":"Ich hole meine Mutter ab.",
+      "chatten":"Ich chatte mit meiner Freundin."
     });
   }
 
