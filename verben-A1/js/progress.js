@@ -1,11 +1,13 @@
 let firebaseSaveTimer=null;
 function skillKey(skill){return skill==="zuordnung"?"bild_verb":skill}
+function uniqueVerbProgressList(list){return [...new Set((list||[]).filter(Boolean))]}
 function releaseFilterVerbs(list){
+  const source=uniqueVerbProgressList(list||[]);
   if(typeof window!=="undefined"&&typeof window.spStrictReleasedVerbList==="function"){
     const allowed=new Set(window.spStrictReleasedVerbList());
-    return (list||[]).filter(v=>allowed.has(v));
+    return source.filter(v=>allowed.has(v));
   }
-  return list||[];
+  return source;
 }
 function verbSkillCount(v){ensureSkillState(v);return VERB_SKILLS.filter(s=>state.skillDone[v]&&state.skillDone[v][s]).length}
 function verbPercent(v){return Math.round((verbSkillCount(v)*100)/VERB_SKILLS.length)}
@@ -15,12 +17,16 @@ function addEncounter(v,skill,good=true){const sk=skillKey(skill);ensureSkillSta
 function sendProgress(){if(!profile||!db)return;const sid=firebaseStudentId();if(!sid)return;clearTimeout(firebaseSaveTimer);firebaseSaveTimer=setTimeout(async()=>{try{if(typeof window.spSyncVerbRelease==="function")window.spSyncVerbRelease();const cleanState={...state,active:releaseFilterVerbs(state.active||[]),learned:releaseFilterVerbs(state.learned||[]),known:releaseFilterVerbs(state.known||[]),unsure:releaseFilterVerbs(state.unsure||[]),unknown:releaseFilterVerbs(state.unknown||[]),assessed:releaseFilterVerbs(state.assessed||[]),currentPackageVerbs:releaseFilterVerbs(state.currentPackageVerbs||[]),assessmentBatch:releaseFilterVerbs(state.assessmentBatch||[]),practicePool:releaseFilterVerbs(state.practicePool||[])};await db.collection("progress").doc(sid).set({studentId:sid,kurs:profile.kurs||profile.kursnummer||"",verben:{progress:overall(),stars:totalStars(),activeVerbs:cleanState.active,learnedVerbs:cleanState.learned,known:cleanState.known,unsure:cleanState.unsure,unknown:cleanState.unknown,assessed:cleanState.assessed,currentPackageVerbs:currentPackageAllVerbs(),exam:state.exam||{},state:cleanState,updatedAt:firebase.firestore.FieldValue.serverTimestamp()},updatedAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});await db.collection("students").doc(sid).set({studentId:sid,vorname:profile.vorname||"",nachname:profile.nachname||"",kurs:profile.kurs||profile.kursnummer||"",muttersprache:profile.muttersprache||"",verbenFortschritt:overall(),lastActivity:firebase.firestore.FieldValue.serverTimestamp()},{merge:true})}catch(e){console.warn("Firebase Speichern fehlgeschlagen",e)}},600)}
 function taskQueueKey(skill){return "queue_"+skillKey(skill)}
 function taskDoneSetKey(skill){return "done_"+skillKey(skill)}
-function weightForVerb(v){if((state.unknown||[]).includes(v))return 2;return 1}
+function weightForVerb(v){return 1}
 function buildPracticePool(){
-  let source=releaseFilterVerbs(currentPracticeVerbs());
-  const pool=[]; source.forEach(v=>{for(let i=0;i<weightForVerb(v);i++)pool.push(v)});
-  state.practicePool=shuffle(pool.length?pool:source);
+  const source=releaseFilterVerbs(currentPracticeVerbs());
+  state.practicePool=shuffle(source);
   saveState();return state.practicePool;
+}
+function doneVerbSetForSkill(skill){
+  const dKey=taskDoneSetKey(skill);
+  state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
+  return new Set((state.taskDoneSets[dKey]||[]).map(k=>String(k).split(":")[0]).filter(Boolean));
 }
 function initTaskQueue(skill){
   const qKey=taskQueueKey(skill),dKey=taskDoneSetKey(skill);
@@ -28,11 +34,11 @@ function initTaskQueue(skill){
   state.practicePool=releaseFilterVerbs(state.practicePool||[]);
   const source=(state.practicePool&&state.practicePool.length)?state.practicePool:buildPracticePool();
   const allowed=new Set(releaseFilterVerbs(source));
-  state.taskQueues[qKey]=(state.taskQueues[qKey]||[]).filter(x=>x&&allowed.has(x.v));
   state.taskDoneSets[dKey]=(state.taskDoneSets[dKey]||[]).filter(k=>allowed.has(String(k).split(":")[0]));
-  const done=new Set(state.taskDoneSets[dKey]);
+  const doneVerbs=doneVerbSetForSkill(skill);
+  state.taskQueues[qKey]=(state.taskQueues[qKey]||[]).filter(x=>x&&allowed.has(x.v)&&!doneVerbs.has(x.v));
   if(!Array.isArray(state.taskQueues[qKey])||!state.taskQueues[qKey].length){
-    state.taskQueues[qKey]=shuffle(source.map((v,i)=>({v,slot:i})).filter(x=>allowed.has(x.v)&&!done.has(x.v+":"+x.slot)));
+    state.taskQueues[qKey]=shuffle(source.map((v,i)=>({v,slot:i})).filter(x=>allowed.has(x.v)&&!doneVerbs.has(x.v)));
   }
   saveState();
 }
@@ -56,17 +62,28 @@ function finishQueuedVerb(skill,v,good=true){
   if(!allowed.has(v)){if(state.currentTask)state.currentTask=null;saveState();return}
   const sk=skillKey(skill), dKey=taskDoneSetKey(sk), qKey=taskQueueKey(sk);
   state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
-  const slot=(state.currentTask&&state.currentTask.skill===sk&&state.currentTask.v===v)?state.currentTask.slot:null;
+  const slot=(state.currentTask&&state.currentTask.skill===sk&&state.currentTask.v===v)?state.currentTask.slot:0;
   if(good){
-    if(slot!==null){const key=v+":"+slot;if(!state.taskDoneSets[dKey].includes(key))state.taskDoneSets[dKey].push(key)}
-    else {const source=(state.practicePool&&state.practicePool.length)?releaseFilterVerbs(state.practicePool):buildPracticePool();const found=source.findIndex((x,i)=>x===v&&!state.taskDoneSets[dKey].includes(x+":"+i));if(found>=0)state.taskDoneSets[dKey].push(v+":"+found)}
+    const doneVerbs=doneVerbSetForSkill(sk);
+    if(!doneVerbs.has(v))state.taskDoneSets[dKey].push(v+":"+slot);
+    state.taskQueues[qKey]=(state.taskQueues[qKey]||[]).filter(x=>x&&x.v!==v);
   } else {
     state.taskQueues[qKey]=state.taskQueues[qKey]||[];
-    if(slot!==null)state.taskQueues[qKey].push({v,slot});
+    if(slot!==null&&!state.taskQueues[qKey].some(x=>x&&x.v===v))state.taskQueues[qKey].push({v,slot});
   }
   if(state.currentTask&&state.currentTask.skill===sk)state.currentTask=null;
   saveState();
 }
-function queuedProgress(skill){const dKey=taskDoneSetKey(skill);state.practicePool=releaseFilterVerbs(state.practicePool||[]);const allowed=new Set(releaseFilterVerbs((state.practicePool&&state.practicePool.length)?state.practicePool:currentPracticeVerbs()));state.taskDoneSets[dKey]=(state.taskDoneSets[dKey]||[]).filter(k=>allowed.has(String(k).split(":")[0]));const done=(state.taskDoneSets[dKey]||[]).length;const total=((state.practicePool&&state.practicePool.length)?releaseFilterVerbs(state.practicePool):currentPracticeVerbs()).length;return {done:Math.min(done,total),total,pct:total?Math.min(100,Math.round(Math.min(done,total)*100/total)):0}}
+function queuedProgress(skill){
+  const sk=skillKey(skill),dKey=taskDoneSetKey(sk);
+  state.practicePool=releaseFilterVerbs(state.practicePool||[]);
+  const source=releaseFilterVerbs((state.practicePool&&state.practicePool.length)?state.practicePool:currentPracticeVerbs());
+  const allowed=new Set(source);
+  state.taskDoneSets[dKey]=(state.taskDoneSets[dKey]||[]).filter(k=>allowed.has(String(k).split(":")[0]));
+  const doneVerbs=[...doneVerbSetForSkill(sk)].filter(v=>allowed.has(v));
+  const done=doneVerbs.length;
+  const total=source.length;
+  return {done:Math.min(done,total),total,pct:total?Math.min(100,Math.round(Math.min(done,total)*100/total)):0}
+}
 function taskDone(skill){const p=queuedProgress(skill);return p.total>0&&p.done>=p.total}
 function taskProgressHtml(skill,label){const p=queuedProgress(skill);return `<div class="task-progress"><div class="task-progress-title"><span>${safeText(label)} · ${p.done}/${p.total} · ${p.pct}%</span></div><div class="task-progress-line"><div class="task-progress-fill" style="width:${p.pct}%"></div></div></div>`}
