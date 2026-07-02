@@ -2,8 +2,8 @@ const CFG=window.SP_L5_THEME||{id:'Thema-1',title:'Alltag und trennbare Verben',
 const DATA=window.SP_A1_LEKTION5_WORTSCHATZ||{parts:[]};
 const THEME=(DATA.parts||[]).find(p=>p.id===CFG.id)||{words:[],title:CFG.title};
 const WORDS=THEME.words||[];
-const EXTRA_IMAGES={einkaufen:'/assets/img/einkaufen.png',aufstehen:'/assets/img/aufstehen.png',aufraeumen:'/assets/img/aufraumen.png',anrufen:'/assets/img/anrufen.png',fernsehen:'/assets/img/fernsehen.png'};
-const BAD_IMAGE_IDS=new Set(['spazieren_gehen','machen']);
+const EXTRA_IMAGES={machen:'/assets/img/machen.png',praesentation:'/assets/img/praesentation.png',fruehstuecken:'/assets/img/fruehstuecken.png',einkaufen:'/assets/img/einkaufen.png',hoeren:'/assets/img/hoeren.png',kochen:'/assets/img/kochen.png',aufraeumen:'/assets/img/aufraumen.png',aufstehen:'/assets/img/aufstehen.png',gehen:'/assets/img/gehen.png',muede:'/assets/img/muede.png',anrufen:'/assets/img/anrufen.png',frueh:'/assets/img/frueh.png',fernsehen:'/assets/img/fernsehen.png',arbeiten:'/assets/img/arbeiten.png',spielen:'/assets/img/spielen.png',essen:'/assets/img/essen.png',schlafen:'/assets/img/schlafen.png',lange:'/assets/img/lange.png',gern:'/assets/img/gern.png',nicht_gern:'/assets/img/nichtgern.png',spazieren_gehen:'/assets/img/spazierengehen.png'};
+const BAD_IMAGE_IDS=new Set([]);
 const STD_LANGS=[['en','EN'],['ru','RU'],['tr','TR'],['uk','UK'],['ar','AR'],['ja','JA'],['ro','RO']];
 const LANG_NAMES={en:'Englisch',ru:'Russisch',tr:'Türkisch',uk:'Ukrainisch',ar:'Arabisch',ja:'Japanisch',ro:'Rumänisch'};
 function displayImage(w){return EXTRA_IMAGES[w?.id]||w?.image||''}
