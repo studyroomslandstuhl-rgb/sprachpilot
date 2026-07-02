@@ -8,13 +8,11 @@
   function courseOf(p){return String(p.courseCode||p.kurs||p.kursnummer||p.course||localStorage.getItem("SP_COURSE_CODE")||"").trim()}
   function emailOf(p){return String(p.email||"").trim().toLowerCase()}
   function fallbackId(p){const c=normId(p.courseDocId||courseOf(p)||"kurs");const e=normId(emailOf(p)||p.vorname||p.firstName||"student");return c&&e?c+"_"+e:""}
-  function idCandidates(){
-    const p=prof();
-    return uniq([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem("SP_STUDENT_ID"),fallbackId(p)]);
-  }
+  function idCandidates(){const p=prof();return uniq([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem("SP_STUDENT_ID"),fallbackId(p)])}
   function canonicalStudentId(){return idCandidates()[0]||"guest"}
   function pendingKey(){return "SP_VERBS_PENDING_SYNC_"+canonicalStudentId()}
   function ts(){try{return firebase.firestore.FieldValue.serverTimestamp()}catch(e){return new Date().toISOString()}}
+  function isFirestoreSpecial(v){return !!(v&&typeof v==="object"&&(typeof v.toDate==="function"||typeof v.isEqual==="function"||v._methodName||v._delegate))}
   function num(x){const n=Number(x);return Number.isFinite(n)?n:0}
   function clean(v){
     if(v===undefined||typeof v==="function")return undefined;
@@ -22,7 +20,7 @@
     if(typeof v==="number")return Number.isFinite(v)?v:0;
     if(Array.isArray(v))return v.map(clean).filter(x=>x!==undefined);
     if(typeof v==="object"){
-      if(typeof v.toDate==="function"||typeof v.isEqual==="function")return v;
+      if(isFirestoreSpecial(v))return v;
       const out={};
       Object.keys(v).forEach(k=>{const c=clean(v[k]);if(c!==undefined)out[k]=c});
       return out;
@@ -31,18 +29,8 @@
   }
   function union(a,b){return uniq([...(Array.isArray(a)?a:[]),...(Array.isArray(b)?b:[])])}
   function mergeObj(a,b){return {...(a&&typeof a==="object"?a:{}),...(b&&typeof b==="object"?b:{})}}
-  function mergeSkillMap(a,b){
-    const out=mergeObj(a,b);
-    Object.keys(a||{}).forEach(v=>out[v]=mergeObj(a[v],out[v]));
-    Object.keys(b||{}).forEach(v=>out[v]=mergeObj(out[v],b[v]));
-    return out;
-  }
-  function betterExam(a,b){
-    a=a||{};b=b||{};
-    const as=num(a.score),bs=num(b.score);
-    if((b.passed&&!a.passed)||bs>as)return mergeObj(a,b);
-    return mergeObj(b,a);
-  }
+  function mergeSkillMap(a,b){const out=mergeObj(a,b);Object.keys(a||{}).forEach(v=>out[v]=mergeObj(a[v],out[v]));Object.keys(b||{}).forEach(v=>out[v]=mergeObj(out[v],b[v]));return out}
+  function betterExam(a,b){a=a||{};b=b||{};const as=num(a.score),bs=num(b.score);if((b.passed&&!a.passed)||bs>as)return mergeObj(a,b);return mergeObj(b,a)}
   function mergeStates(base,inc){
     base=base||{};inc=inc||{};
     const out={...base,...inc};
@@ -51,6 +39,11 @@
     ["skillDone","skillAttempts","skillSuccess"].forEach(k=>out[k]=mergeSkillMap(base[k],inc[k]));
     out.exam=betterExam(base.exam,inc.exam);
     return out;
+  }
+  function stateFromVerben(v){
+    v=v||{};
+    const st=v.state&&typeof v.state==="object"?v.state:{};
+    return mergeStates(st,{active:v.activeVerbs||st.active||[],learned:v.learnedVerbs||st.learned||[],known:v.known||st.known||[],unsure:v.unsure||st.unsure||[],unknown:v.unknown||st.unknown||[],assessed:v.assessed||st.assessed||[],currentPackageVerbs:v.currentPackageVerbs||st.currentPackageVerbs||[],exam:v.exam||st.exam||{}});
   }
   function localKeys(){return uniq(idCandidates().map(id=>"SP_VERBS_"+id))}
   function readLocalMerged(){let out={};localKeys().forEach(k=>{out=mergeStates(out,safeJson(k,{}))});return out}
@@ -106,8 +99,7 @@
             const exists=typeof snap.exists==="function"?snap.exists():!!snap.exists;
             if(!exists)continue;
             const data=snap.data?snap.data():{};
-            const v=data.verben||{};
-            merged=mergeStates(merged,v.state||{});
+            merged=mergeStates(merged,stateFromVerben(data.verben||{}));
           }catch(e){console.warn("Progress-Lesen fehlgeschlagen",id,e)}
         }
       }
