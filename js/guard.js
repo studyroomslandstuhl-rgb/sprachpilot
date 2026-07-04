@@ -17,6 +17,8 @@ if(SP_USER&&isL3T2Page){
     if(el){el.innerHTML="";el.style.display="none";el.style.height="0";el.style.overflow="hidden";}
   });
 }
+import("/js/global-sync.js?v=1").then(m=>m.startGlobalSync()).then(()=>{try{renderAccountStrip()}catch(e){}}).catch(e=>console.warn("Global Sync konnte nicht gestartet werden",e));
+window.addEventListener("SP_PROFILE_SYNCED",()=>{try{renderAccountStrip()}catch(e){}});
 import("/js/activity-tracker.js?v=1").catch(()=>{});
 import("/js/scoring.js?v=4").catch(()=>{});
 import("/js/release-helper.js?v=8").catch(()=>{});
