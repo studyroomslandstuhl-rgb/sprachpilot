@@ -30,7 +30,7 @@ if(path.includes("/fragen-A1/")||path.includes("/fragen/")){
   import("/js/fragen-progress-sync.js?v=1").catch(e=>console.warn("Fragen Sync konnte nicht gestartet werden",e));
 }
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){
-  import("/wortschatz/index-release-lock.js?v=11").catch(()=>{});
+  import("/wortschatz/index-release-lock.js?v=12").catch(()=>{});
 }
 if(path.includes("/verben-A1/")){
   import("/verben-A1/js/release-bridge.js?v=8").catch(()=>{});
