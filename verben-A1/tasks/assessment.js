@@ -12,19 +12,20 @@ function unusedVerbs(){
   return allowed.filter(v=>!used.includes(v));
 }
 function currentAssessmentVerb(){const list=unusedVerbs();return list.length?list[0]:null}
-function startAssessment(){
+function startAssessment(force=false){
   if(typeof window.spSyncVerbRelease==="function")window.spSyncVerbRelease();
-  if(typeof window.spVerbAssessmentEnabled==="function"&&!window.spVerbAssessmentEnabled()){renderHome();return}
+  if(!force&&typeof window.spVerbAssessmentEnabled==="function"&&!window.spVerbAssessmentEnabled()){renderHome();return}
   normalizeVerbStatusLists();
   const target=assessmentTargetCount();
   if(!target){renderHome();return}
-  if(currentPracticeVerbs().length>=target && !packageExamPassed()){renderHome();return}
+  if(!force&&currentPracticeVerbs().length>=target && !packageExamPassed()){renderHome();return}
+  if(force&&currentPracticeVerbs().length>0&&currentPracticeVerbs().length>=target&&!packageExamPassed()){renderHome();return}
   const appNode=$("app"); if(appNode) appNode.classList.add("card");
-  state.phase="assessment";state.revealed=false;state.assessmentStart=Date.now();state.assessmentTries=0;saveState();setVerbHashForPhase("assessment");renderAssessment();
+  state.phase="assessment";state.revealed=false;state.assessmentStart=Date.now();state.assessmentTries=0;saveState();setVerbHashForPhase("assessment");renderAssessment(force);
 }
-function renderAssessment(){
+function renderAssessment(force=false){
   if(typeof window.spSyncVerbRelease==="function")window.spSyncVerbRelease();
-  if(typeof window.spVerbAssessmentEnabled==="function"&&!window.spVerbAssessmentEnabled()){renderHome();return}
+  if(!force&&typeof window.spVerbAssessmentEnabled==="function"&&!window.spVerbAssessmentEnabled()){renderHome();return}
   const target=assessmentTargetCount();
   const v=currentAssessmentVerb();
   if(!v || currentPracticeVerbs().length>=target){resetPackageTasks();buildPracticePool();if(!currentPracticeVerbs().length){state.assessmentBatch=[];state.currentPackageVerbs=[];resetPackageTasks();}state.phase="home";const appNode=$("app"); if(appNode) appNode.classList.remove("card");saveState();renderHome();return}
