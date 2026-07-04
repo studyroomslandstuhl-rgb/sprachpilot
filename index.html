@@ -34,6 +34,7 @@
 <script type="module">
 import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "./js/auth.js?v=release-core-20260701b";
 import { loadCourseRelease, moduleOpen } from "./js/course-releases.js?v=release-core-20260701b";
+import { startGlobalSync, refreshActiveProfileFromCloud } from "./js/global-sync.js?v=1";
 window.logout=logout;
 
 function isTeacherAllAccess(){
@@ -61,17 +62,30 @@ function renderModules(p){
     </a>`;
 }
 
+function renderLogged(p){
+  const box=document.querySelector("#loggedBox");
+  const guest=document.querySelector("#guestBox");
+  if(p){
+    box.innerHTML=`<div class="ok"><strong>Eingeloggt:</strong> ${safeText(p.vorname)} ${safeText(p.nachname)} | Kurs: ${safeText(p.kurs)} | Muttersprache: ${safeText(p.muttersprache)}<br><a class="btn secondary" href="profile/">Profil bearbeiten</a> <button class="secondary" onclick="logout()">Abmelden</button></div>`;
+    guest.classList.add("hidden");
+    renderModules(p);
+  }
+}
+
 const role=getActiveRole();
 let p=role==="student" ? getActiveProfile() : null;
 const box=document.querySelector("#loggedBox");
 const guest=document.querySelector("#guestBox");
 if(p){
-  box.innerHTML=`<div class="ok"><strong>Eingeloggt:</strong> ${safeText(p.vorname)} ${safeText(p.nachname)} | Kurs: ${safeText(p.kurs)} | Muttersprache: ${safeText(p.muttersprache)}<br><a class="btn secondary" href="profile/">Profil bearbeiten</a> <button class="secondary" onclick="logout()">Abmelden</button></div>`;
-  guest.classList.add("hidden");
-  renderModules(p);
-  loadCourseRelease(p).then(assignments=>{
-    p={...p,assignments:assignments||{}};
-    renderModules(p);
+  renderLogged(p);
+  startGlobalSync().then(async()=>{
+    p=await refreshActiveProfileFromCloud(p)||getActiveProfile()||p;
+    renderLogged(p);
+    renderAccountStrip();
+    return loadCourseRelease(p);
+  }).then(assignments=>{
+    p={...p,assignments:assignments||p.assignments||{}};
+    renderLogged(p);
   }).catch(()=>renderModules(p));
 }else if(role==="teacher"){
   box.innerHTML=`<div class="ok"><strong>Lehrerzugang:</strong> Du siehst SprachPilot im Testmodus. Es werden keine Schülerpunkte gespeichert.<br><a class="btn secondary" href="${dashboardHref()}">Lehrer-Dashboard</a> <button class="secondary" onclick="logout()">Abmelden</button></div>`;
@@ -81,6 +95,7 @@ if(p){
   box.innerHTML='<p>Registriere dich oder logge dich mit deinem Kurscode ein.</p>';
   renderModules({assignments:{}});
 }
+window.addEventListener("SP_PROFILE_SYNCED",e=>{p=e.detail.profile;renderLogged(p);renderAccountStrip();});
 renderAccountStrip();
 </script>
 <script src="/shared/sprachpilot-design-system.js"></script>
