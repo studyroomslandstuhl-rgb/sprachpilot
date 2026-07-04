@@ -1,10 +1,8 @@
 // Lehrer-Dashboard: Fortschritt nur aus freigeschalteten Kursinhalten berechnen.
 (function(){
-  if(!window.Analytics||window.Analytics.__releasedStatusFix)return;
-  const A=window.Analytics;
+  if(typeof Analytics==='undefined'||Analytics.__releasedStatusFix)return;
+  const A=Analytics;
   const oldTopicRecords=A.topicRecords?.bind(A);
-  const oldVerbStats=A.verbStats?.bind(A);
-  function norm(s){return String(s||'').toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
   function lessonKey(t){const raw=String(t.lesson||t.id||t.title||'');const m=raw.match(/lektion[- ]?(\d+)/i)||String(t.title||'').match(/lektion[- ]?(\d+)/i);return raw.includes('Lektion')?raw.match(/A\d[- ]Lektion[- ]\d+/i)?.[0]?.replace(/ /g,'-'):(m?'A1-Lektion-'+m[1]:'')}
   function themeKey(t){const raw=String(t.theme||t.id||t.title||'');const m=raw.match(/thema[- ]?(\d+)/i)||String(t.title||'').match(/thema[- ]?(\d+)/i);return raw.includes('Thema')?raw.match(/Thema[- ]\d+/i)?.[0]?.replace(/ /g,'-'):(m?'Thema-'+m[1]:'')}
   function hasReleaseData(c){return !!(c&&typeof c==='object'&&(c.enabledModules||c.enabledLessons||c.enabledThemes||c.enabledTasks||c.enabledWords||c.enabledSets||c.releases||c.releaseMode||c.defaultLocked!==undefined))}
@@ -60,7 +58,6 @@
       <td class="row-actions"><button class="secondary" onclick="Students.openEdit('${String(id).replace(/'/g,"\\'")}')">Schüler bearbeiten</button><button class="danger" onclick="Students.remove('${String(id).replace(/'/g,"\\'")}','${this.studentName(s).replace(/'/g,"\\'")}')">Löschen</button></td>
     </tr>`;
   };
-  const oldCourseCard=A.courseCard.bind(A);
   A.courseCard=function(courseName,students,courseData){
     const course=courseData||{id:courseName,name:courseName};
     const count=students.length;
