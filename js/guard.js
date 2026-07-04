@@ -19,12 +19,13 @@ if(SP_USER&&isL3T2Page){
 }
 import("/js/global-sync.js?v=1").then(m=>m.startGlobalSync()).then(()=>{try{renderAccountStrip()}catch(e){}}).catch(e=>console.warn("Global Sync konnte nicht gestartet werden",e));
 window.addEventListener("SP_PROFILE_SYNCED",()=>{try{renderAccountStrip()}catch(e){}});
+import("/js/progress.js?v=6").catch(()=>{});
 import("/js/activity-tracker.js?v=1").catch(()=>{});
 import("/js/scoring.js?v=4").catch(()=>{});
 import("/js/release-helper.js?v=8").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(path.includes("/wortschatz/")){
-  import("/js/topic-progress-sync.js?v=2").catch(e=>console.warn("Topic Sync konnte nicht gestartet werden",e));
+  import("/js/topic-progress-sync.js?v=3").catch(e=>console.warn("Topic Sync konnte nicht gestartet werden",e));
 }
 if(path.includes("/fragen-A1/")||path.includes("/fragen/")){
   import("/js/fragen-progress-sync.js?v=1").catch(e=>console.warn("Fragen Sync konnte nicht gestartet werden",e));
