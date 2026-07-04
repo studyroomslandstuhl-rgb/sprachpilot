@@ -27,7 +27,21 @@ T('h0830','8:30',8,30,['acht Uhr dreißig'],['halb neun'],{dialog:[{v:'m',t:'Wan
 T('h0756','7:56',7,56,['sieben Uhr sechsundfünfzig'],['kurz vor acht','gleich acht'],{tolerance:[{h:7,m:56},{h:7,m:57},{h:7,m:58},{h:7,m:59}],dialog:[{v:'f',t:'Wie viel Uhr ist es?'},{v:'m',t:'Es ist kurz vor acht.'},{v:'f',t:'Oh nein, der Bus kommt gleich!'}]}),
 T('h1120','11:20',11,20,['elf Uhr zwanzig'],['zwanzig nach elf','zehn vor halb zwölf'],{dialog:[{v:'m',t:'Wie spät ist es jetzt?'},{v:'f',t:'Es ist zehn vor halb zwölf.'},{v:'m',t:'Gut, ich habe noch Zeit.'}]}),
 T('h0835','8:35',8,35,['acht Uhr fünfunddreißig'],['fünf nach halb neun'],{dialog:[{v:'f',t:'Wann fährt der Bus?'},{v:'m',t:'Um Viertel vor neun.'},{v:'f',t:'Dann ist es jetzt fünf nach halb neun.'}]}),
-T('h1200','12:00',12,0,['zwölf Uhr'],['zwölf Uhr'],{dialog:[{v:'m',t:'Wie viel Uhr ist es?'},{v:'f',t:'Es ist zwölf Uhr.'},{v:'m',t:'Danke.'}]})
+T('h1200','12:00',12,0,['zwölf Uhr'],['zwölf Uhr'],{dialog:[{v:'m',t:'Wie viel Uhr ist es?'},{v:'f',t:'Es ist zwölf Uhr.'},{v:'m',t:'Danke.'}]}),
+T('h0740','7:40',7,40,['sieben Uhr vierzig'],['zwanzig vor acht','zehn nach halb acht'],{dialog:[{v:'f',t:'Wann kommt der Zug?'},{v:'m',t:'Um acht Uhr.'},{v:'f',t:'Dann ist es jetzt zwanzig vor acht.'}]}),
+T('h0925','9:25',9,25,['neun Uhr fünfundzwanzig'],['fünfundzwanzig nach neun','fünf vor halb zehn'],{dialog:[{v:'m',t:'Wie spät ist es?'},{v:'f',t:'Es ist fünf vor halb zehn.'},{v:'m',t:'Danke.'}]}),
+T('h1320','13:20',13,20,['dreizehn Uhr zwanzig','ein Uhr zwanzig'],['zwanzig nach eins','zehn vor halb zwei'],{dialog:[{v:'f',t:'Wann beginnt die Pause?'},{v:'m',t:'Um halb zwei.'},{v:'f',t:'Jetzt ist es zehn vor halb zwei.'}]}),
+T('h1435','14:35',14,35,['vierzehn Uhr fünfunddreißig','zwei Uhr fünfunddreißig'],['fünf nach halb drei','fünfundzwanzig vor drei'],{dialog:[{v:'m',t:'Wie viel Uhr ist es?'},{v:'f',t:'Es ist fünf nach halb drei.'},{v:'m',t:'Okay.'}]}),
+T('h1540','15:40',15,40,['fünfzehn Uhr vierzig','drei Uhr vierzig'],['zehn nach halb vier','zwanzig vor vier'],{dialog:[{v:'f',t:'Wann beginnt der Termin?'},{v:'m',t:'Um vier Uhr.'},{v:'f',t:'Dann ist es jetzt zwanzig vor vier.'}]}),
+T('h0645','6:45',6,45,['sechs Uhr fünfundvierzig'],['Viertel vor sieben','fünfzehn vor sieben'],{dialog:[{v:'m',t:'Wie spät ist es jetzt?'},{v:'f',t:'Es ist Viertel vor sieben.'},{v:'m',t:'Ich gehe gleich.'}]}),
+T('h1915','19:15',19,15,['neunzehn Uhr fünfzehn','sieben Uhr fünfzehn'],['Viertel nach sieben','fünfzehn nach sieben'],{dialog:[{v:'f',t:'Wie viel Uhr ist es?'},{v:'m',t:'Es ist Viertel nach sieben.'},{v:'f',t:'Danke.'}]}),
+T('h1025','10:25',10,25,['zehn Uhr fünfundzwanzig'],['fünfundzwanzig nach zehn','fünf vor halb elf'],{dialog:[{v:'m',t:'Wann fängt der Unterricht an?'},{v:'f',t:'Um halb elf.'},{v:'m',t:'Es ist schon fünf vor halb elf.'}]}),
+T('h1156','11:56',11,56,['elf Uhr sechsundfünfzig'],['kurz vor zwölf','gleich zwölf'],{tolerance:[{h:11,m:56},{h:11,m:57},{h:11,m:58},{h:11,m:59}],dialog:[{v:'f',t:'Ist es schon zwölf Uhr?'},{v:'m',t:'Nein, es ist gleich zwölf.'},{v:'f',t:'Gut.'}]}),
+T('h1205','12:05',12,5,['zwölf Uhr fünf'],['fünf nach zwölf','kurz nach zwölf'],{dialog:[{v:'m',t:'Wie spät ist es?'},{v:'f',t:'Es ist fünf nach zwölf.'},{v:'m',t:'Schon Mittag.'}]}),
+T('h1600','16:00',16,0,['sechzehn Uhr','vier Uhr'],['vier Uhr'],{dialog:[{v:'f',t:'Wann ist der Termin?'},{v:'m',t:'Um vier Uhr.'},{v:'f',t:'Es ist jetzt vier Uhr.'}]}),
+T('h1810','18:10',18,10,['achtzehn Uhr zehn','sechs Uhr zehn'],['zehn nach sechs'],{dialog:[{v:'m',t:'Wie viel Uhr ist es?'},{v:'f',t:'Es ist zehn nach sechs.'},{v:'m',t:'Danke.'}]}),
+T('h2120','21:20',21,20,['einundzwanzig Uhr zwanzig','neun Uhr zwanzig'],['zwanzig nach neun','zehn vor halb zehn'],{dialog:[{v:'f',t:'Wann kommt der Film?'},{v:'m',t:'Um halb zehn.'},{v:'f',t:'Jetzt ist es zehn vor halb zehn.'}]}),
+T('h2235','22:35',22,35,['zweiundzwanzig Uhr fünfunddreißig','zehn Uhr fünfunddreißig'],['fünf nach halb elf','fünfundzwanzig vor elf'],{dialog:[{v:'m',t:'Wie spät ist es?'},{v:'f',t:'Es ist fünfundzwanzig vor elf.'},{v:'m',t:'Schon spät.'}]})
 ];
 const TIMES_SPRECHEN=[
 T('p1100','11:00',11,0,['elf Uhr'],['elf Uhr','elf']),
@@ -37,7 +51,19 @@ T('p1805','18:05',18,5,['achtzehn Uhr fünf','sechs Uhr fünf'],['fünf nach sec
 T('p0825','8:25',8,25,['acht Uhr fünfundzwanzig'],['fünfundzwanzig nach acht','25 nach 8','fünf vor halb neun']),
 T('p1058','10:58',10,58,['zehn Uhr achtundfünfzig'],['kurz vor elf','gleich elf'],{tolerance:[{h:10,m:56},{h:10,m:57},{h:10,m:58},{h:10,m:59}]}),
 T('p0835','8:35',8,35,['acht Uhr fünfunddreißig'],['fünf nach halb neun']),
-T('p0300','3:00',3,0,['drei Uhr'],['drei Uhr','drei'])
+T('p0300','3:00',3,0,['drei Uhr'],['drei Uhr','drei']),
+T('p0740','7:40',7,40,['sieben Uhr vierzig'],['zwanzig vor acht','zehn nach halb acht']),
+T('p0925','9:25',9,25,['neun Uhr fünfundzwanzig'],['fünfundzwanzig nach neun','fünf vor halb zehn']),
+T('p1320','13:20',13,20,['dreizehn Uhr zwanzig','ein Uhr zwanzig'],['zwanzig nach eins','zehn vor halb zwei']),
+T('p1435','14:35',14,35,['vierzehn Uhr fünfunddreißig','zwei Uhr fünfunddreißig'],['fünf nach halb drei','fünfundzwanzig vor drei']),
+T('p1540','15:40',15,40,['fünfzehn Uhr vierzig','drei Uhr vierzig'],['zehn nach halb vier','zwanzig vor vier']),
+T('p0645','6:45',6,45,['sechs Uhr fünfundvierzig'],['Viertel vor sieben','fünfzehn vor sieben']),
+T('p1915','19:15',19,15,['neunzehn Uhr fünfzehn','sieben Uhr fünfzehn'],['Viertel nach sieben','fünfzehn nach sieben']),
+T('p1025','10:25',10,25,['zehn Uhr fünfundzwanzig'],['fünfundzwanzig nach zehn','fünf vor halb elf']),
+T('p1157','11:57',11,57,['elf Uhr siebenundfünfzig'],['kurz vor zwölf','gleich zwölf'],{tolerance:[{h:11,m:56},{h:11,m:57},{h:11,m:58},{h:11,m:59}]}),
+T('p1205','12:05',12,5,['zwölf Uhr fünf'],['fünf nach zwölf','kurz nach zwölf']),
+T('p1600','16:00',16,0,['sechzehn Uhr','vier Uhr'],['vier Uhr']),
+T('p1810','18:10',18,10,['achtzehn Uhr zehn','sechs Uhr zehn'],['zehn nach sechs'])
 ];
 const TIMES_FORMEN=[
 T('f0630','6:30',6,30,['sechs Uhr dreißig'],['halb sieben']),
@@ -117,4 +143,4 @@ function renderStats(el){const st=loadTask('karteikarten.html',WORDS.length);el.
 function startMic(btn,cb){const SR=window.SpeechRecognition||window.webkitSpeechRecognition,status=document.getElementById('micStatus');if(!SR){if(status)status.textContent='Mikrofon wird hier nicht unterstützt. Bitte schreibe.';return}const r=new SR();r.lang='de-DE';r.interimResults=true;r.maxAlternatives=5;let heard=[],done=false,timer=null;function finish(){if(done)return;done=true;btn.disabled=false;btn.textContent=btn.dataset.label||btn.textContent;clearTimeout(timer);const text=[...new Set(heard.filter(Boolean))].join(' || ');if(text){if(status)status.textContent='Erkannt: '+text.split(' || ')[0];cb(text)}else if(status)status.textContent='Nichts erkannt. Bitte noch einmal sprechen.'}btn.dataset.label=btn.textContent;btn.disabled=true;btn.textContent='Ich höre …';r.onresult=e=>{for(let i=e.resultIndex;i<e.results.length;i++){for(let j=0;j<e.results[i].length;j++)heard.push(e.results[i][j].transcript)}clearTimeout(timer);timer=setTimeout(finish,1000)};r.onspeechend=()=>{timer=setTimeout(finish,900)};r.onerror=()=>{btn.disabled=false;btn.textContent=btn.dataset.label;if(status)status.textContent='Mikrofon hat nicht funktioniert. Bitte schreibe oder noch einmal sprechen.'};r.onend=()=>setTimeout(finish,250);try{r.start();if(status)status.textContent='Ich höre zu …'}catch(e){btn.disabled=false;if(status)status.textContent='Mikrofon startet nicht. Bitte nochmal versuchen.'}}
 function nextBtn(next){return `<div class="actions"><a class="btn" href="${next}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div>`}
 function cardPrompt(w){return w.article?'Schreibe das deutsche Wort mit Artikel.':'Schreibe das deutsche Wort.'}
-function cardTip(w){return w.article?'Artikel und Wort':'Wort'}
+function cardTip(w){return w.article?'Artikel und Wort'}
