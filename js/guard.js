@@ -23,6 +23,9 @@ import("/js/activity-tracker.js?v=1").catch(()=>{});
 import("/js/scoring.js?v=4").catch(()=>{});
 import("/js/release-helper.js?v=8").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
+if(path.includes("/wortschatz/")||path.includes("/fragen-A1/")||path.includes("/fragen/")){
+  import("/js/topic-progress-sync.js?v=1").catch(e=>console.warn("Topic Sync konnte nicht gestartet werden",e));
+}
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){
   import("/wortschatz/index-release-lock.js?v=11").catch(()=>{});
 }
