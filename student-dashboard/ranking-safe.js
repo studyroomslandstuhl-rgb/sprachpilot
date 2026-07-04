@@ -1,4 +1,4 @@
-import { collection, query, where, getDocs, limit } from '/js/firebase.js';
+import { db, collection, query, where, getDocs, limit } from '/js/firebase.js';
 import { getActiveProfile } from '/js/auth.js';
 
 const $=id=>document.getElementById(id);
@@ -20,7 +20,7 @@ function realStudent(x){
 }
 async function queryRows(field,value){
   if(!value)return [];
-  try{const s=await getDocs(query(collection(db,'progress'),where(field,'==',value),limit(80)));return s.docs.map(d=>({id:d.id,...d.data()}))}catch(e){return []}
+  try{const s=await getDocs(query(collection(db,'progress'),where(field,'==',value),limit(80)));return s.docs.map(d=>({id:d.id,...d.data()}))}catch(e){console.warn('Ranking query failed',field,value,e);return []}
 }
 async function loadRankingSafe(){
   const box=$('leaderboard');
