@@ -5,152 +5,42 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SprachPilot - Wortschatz</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}:root{--sp-blue:#47ABC6;--sp-blue-dark:#2F7F96;--sp-baby:#84E3FF;--sp-light:#EAFBFF;--sp-soft:#F6FDFF;--sp-accent:#7E2D00;--sp-dark:#123047;--sp-muted:#5F7180;--sp-line:#D9EEF7;--sp-white:#FFFFFF;--sp-green:#2E9E4F;--sp-red:#E74C3C;--sp-shadow:0 14px 34px rgba(18,48,71,.12)}body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#E8FBFF 0,#F6FDFF 46%,#FFFFFF 100%);color:var(--sp-dark);padding:18px}.container{max-width:1000px;margin:0 auto}.hero{background:white;border-radius:28px;padding:28px 22px;box-shadow:var(--sp-shadow);border:1px solid var(--sp-line);text-align:center;margin-bottom:18px}.logo{width:96px;height:96px;margin:0 auto 14px;border-radius:26px;background:white;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(18,48,71,.10);border:3px solid var(--sp-line)}.logo img{width:84px;height:84px;object-fit:contain;border-radius:20px}h1{font-size:38px;color:var(--sp-dark);margin-bottom:8px}.subtitle{font-size:18px;color:var(--sp-muted);line-height:1.4}.back-wrap{text-align:center;margin-bottom:18px}.back{display:inline-block;text-decoration:none;background:#EFFAFF;color:var(--sp-dark);font-weight:800;padding:13px 18px;border-radius:15px;border:1px solid var(--sp-line)}.card{background:white;border-radius:24px;padding:22px;box-shadow:var(--sp-shadow);border:1px solid var(--sp-line);margin-bottom:18px}.level-title{font-size:30px;font-weight:900;color:var(--sp-blue-dark);margin-bottom:6px}.book-title{color:var(--sp-muted);font-size:16px;margin-bottom:18px}.lessons{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.lesson-btn{display:block;text-decoration:none;text-align:center;border-radius:16px;padding:16px 12px;font-size:17px;font-weight:900;background:linear-gradient(135deg,var(--sp-blue),var(--sp-blue-dark));color:white;box-shadow:0 8px 18px rgba(18,48,71,.15);transition:.2s}.lesson-btn:hover{transform:translateY(-3px);box-shadow:0 12px 24px rgba(18,48,71,.18)}footer{text-align:center;color:var(--sp-muted);margin-top:24px;font-size:14px}.lesson-btn.locked{background:#F3F7FA!important;color:#7A8994!important;box-shadow:none!important;cursor:not-allowed!important;border:2px solid #D7E4EA}.lesson-btn.locked::after{content:"Gesperrt";display:block;margin-top:6px;font-size:12px;color:#7A8994}.lesson-btn.locked:hover{transform:none!important;box-shadow:none!important}.lesson-btn.open{background:linear-gradient(135deg,var(--sp-blue),var(--sp-baby))!important;color:var(--sp-dark)!important}.lesson-btn.open::after{content:"Offen";display:block;margin-top:6px;font-size:12px;color:#24576A}.assignment-status{background:#E8F9F0;border-left:5px solid var(--sp-green);padding:12px;border-radius:12px;margin-bottom:14px;font-weight:700}.assignment-status.no{background:#FFE1E1;border-left-color:var(--sp-red)}@media(max-width:650px){body{padding:12px}h1{font-size:32px}.hero{padding:24px 16px}.lessons{grid-template-columns:repeat(2,1fr)}}
+*{box-sizing:border-box;margin:0;padding:0}:root{--sp-blue:#47ABC6;--sp-blue-dark:#2F7F96;--sp-baby:#84E3FF;--sp-light:#EAFBFF;--sp-soft:#F6FDFF;--sp-accent:#7E2D00;--sp-dark:#123047;--sp-muted:#5F7180;--sp-line:#D9EEF7;--sp-white:#FFFFFF;--sp-green:#2E9E4F;--sp-red:#E74C3C;--sp-shadow:0 14px 34px rgba(18,48,71,.12)}body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#E8FBFF 0,#F6FDFF 46%,#FFFFFF 100%);color:var(--sp-dark);padding:18px}.container{max-width:1000px;margin:0 auto}.hero{background:white;border-radius:28px;padding:28px 22px;box-shadow:var(--sp-shadow);border:1px solid var(--sp-line);text-align:center;margin-bottom:18px}.logo{width:96px;height:96px;margin:0 auto 14px;border-radius:26px;background:white;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(18,48,71,.10);border:3px solid var(--sp-line)}.logo img{width:84px;height:84px;object-fit:contain;border-radius:20px}h1{font-size:38px;color:var(--sp-dark);margin-bottom:8px}.subtitle{font-size:18px;color:var(--sp-muted);line-height:1.4}.back-wrap{text-align:center;margin-bottom:18px}.back{display:inline-block;text-decoration:none;background:#EFFAFF;color:var(--sp-dark);font-weight:800;padding:13px 18px;border-radius:15px;border:1px solid var(--sp-line)}.card{background:white;border-radius:24px;padding:22px;box-shadow:var(--sp-shadow);border:1px solid var(--sp-line);margin-bottom:18px}.level-title{font-size:30px;font-weight:900;color:var(--sp-blue-dark);margin-bottom:6px}.book-title{color:var(--sp-muted);font-size:16px;margin-bottom:18px}.lessons{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.lesson-btn{display:block;text-decoration:none;text-align:center;border-radius:16px;padding:16px 12px;font-size:17px;font-weight:900;background:linear-gradient(135deg,var(--sp-blue),var(--sp-blue-dark));color:white;box-shadow:0 8px 18px rgba(18,48,71,.15);transition:.2s}.lesson-btn:hover{transform:translateY(-3px);box-shadow:0 12px 24px rgba(18,48,71,.18)}footer{text-align:center;color:var(--sp-muted);margin-top:24px;font-size:14px}.lesson-btn.locked{display:none}.lesson-btn.open{background:linear-gradient(135deg,var(--sp-blue),var(--sp-baby))!important;color:var(--sp-dark)!important}.lesson-btn.open::after{content:"Offen";display:block;margin-top:6px;font-size:12px;color:#24576A}.assignment-status{background:#E8F9F0;border-left:5px solid var(--sp-green);padding:12px;border-radius:12px;margin-bottom:14px;font-weight:700}.assignment-status.no{background:#FFE1E1;border-left-color:var(--sp-red)}@media(max-width:650px){body{padding:12px}h1{font-size:32px}.hero{padding:24px 16px}.lessons{grid-template-columns:repeat(2,1fr)}}
 </style>
 </head>
-
 <body>
 <div id="accountStrip" class="account-strip"></div>
 <script type="module" src="/js/guard.js"></script>
 <div class="container">
-
-  <section class="hero">
-    <a class="logo" href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></a>
-    <h1>Wortschatz</h1>
-    <p class="subtitle">Schritte Plus Neu - A1, A2 und B1</p>
-  </section>
-
-  <div class="back-wrap">
-    <a class="back" href="../index.html">← Zur Startseite</a>
-  </div>
-
-  <section class="card">
-    <div class="level-title">A1</div>
-    <div class="book-title">Schritte Plus Neu A1 - 14 Lektionen</div>
-    <div class="lessons">
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-1" href="./A1-Lektion-1/">Lektion 1</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-2" href="./A1-Lektion-2/">Lektion 2</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-3" href="./A1-Lektion-3/">Lektion 3</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-4" href="./A1-Lektion-4/">Lektion 4</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-5" href="./A1-Lektion-5/">Lektion 5</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-6" href="./A1-Lektion-6/">Lektion 6</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-7" href="./A1-Lektion-7/">Lektion 7</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-8" href="./A1-Lektion-8/">Lektion 8</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-9" href="./A1-Lektion-9/">Lektion 9</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-10" href="./A1-Lektion-10/">Lektion 10</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-11" href="./A1-Lektion-11/">Lektion 11</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-12" href="./A1-Lektion-12/">Lektion 12</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-13" href="./A1-Lektion-13/">Lektion 13</a>
-      <a class="lesson-btn locked" data-lesson="A1-Lektion-14" href="./A1-Lektion-14/">Lektion 14</a>
-    </div>
-  </section>
-
-  <section class="card">
-    <div class="level-title">A2</div>
-    <div class="book-title">Schritte Plus Neu A2 - 14 Lektionen</div>
-    <div class="lessons">
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-1" href="./A2-Lektion-1/">Lektion 1</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-2" href="./A2-Lektion-2/">Lektion 2</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-3" href="./A2-Lektion-3/">Lektion 3</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-4" href="./A2-Lektion-4/">Lektion 4</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-5" href="./A2-Lektion-5/">Lektion 5</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-6" href="./A2-Lektion-6/">Lektion 6</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-7" href="./A2-Lektion-7/">Lektion 7</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-8" href="./A2-Lektion-8/">Lektion 8</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-9" href="./A2-Lektion-9/">Lektion 9</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-10" href="./A2-Lektion-10/">Lektion 10</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-11" href="./A2-Lektion-11/">Lektion 11</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-12" href="./A2-Lektion-12/">Lektion 12</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-13" href="./A2-Lektion-13/">Lektion 13</a>
-      <a class="lesson-btn locked" data-lesson="A2-Lektion-14" href="./A2-Lektion-14/">Lektion 14</a>
-    </div>
-  </section>
-
-  <section class="card">
-    <div class="level-title">B1</div>
-    <div class="book-title">Schritte Plus Neu B1 - 14 Lektionen</div>
-    <div class="lessons">
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-1" href="./B1-Lektion-1/">Lektion 1</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-2" href="./B1-Lektion-2/">Lektion 2</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-3" href="./B1-Lektion-3/">Lektion 3</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-4" href="./B1-Lektion-4/">Lektion 4</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-5" href="./B1-Lektion-5/">Lektion 5</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-6" href="./B1-Lektion-6/">Lektion 6</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-7" href="./B1-Lektion-7/">Lektion 7</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-8" href="./B1-Lektion-8/">Lektion 8</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-9" href="./B1-Lektion-9/">Lektion 9</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-10" href="./B1-Lektion-10/">Lektion 10</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-11" href="./B1-Lektion-11/">Lektion 11</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-12" href="./B1-Lektion-12/">Lektion 12</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-13" href="./B1-Lektion-13/">Lektion 13</a>
-      <a class="lesson-btn locked" data-lesson="B1-Lektion-14" href="./B1-Lektion-14/">Lektion 14</a>
-    </div>
-  </section>
-
-  <footer>© SprachPilot</footer>
-
+<section class="hero"><a class="logo" href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></a><h1>Wortschatz</h1><p class="subtitle">Schritte Plus Neu - A1, A2 und B1</p></section>
+<div class="back-wrap"><a class="back" href="../index.html">← Zur Startseite</a></div>
+<section class="card"><div class="level-title">A1</div><div class="book-title">Schritte Plus Neu A1</div><div class="lessons" id="a1Lessons"></div></section>
+<section class="card"><div class="level-title">A2</div><div class="book-title">Schritte Plus Neu A2</div><div class="lessons" id="a2Lessons"></div></section>
+<section class="card"><div class="level-title">B1</div><div class="book-title">Schritte Plus Neu B1</div><div class="lessons" id="b1Lessons"></div></section>
+<footer>© SprachPilot</footer>
 </div>
-
 <script type="module">
-import { loadCourseRelease, lessonOpen } from "/js/course-releases.js?v=release-core-20260701b";
-
-function getProfile(){
-  try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}
+import { loadCourseRelease } from "/js/course-releases.js?v=release-core-20260701b";
+function getProfile(){try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||localStorage.getItem("SP_STUDENT_PROFILE")||"null")}catch(e){return null}}
+function get(obj,path){let cur=obj;for(const p of path){if(!cur||typeof cur!=="object"||!(p in cur))return undefined;cur=cur[p]}return cur}
+function trueVal(data,paths){return paths.some(p=>get(data,p)===true)}
+function falseVal(data,paths){return paths.some(p=>get(data,p)===false)}
+function setStatus(text,bad=false){let box=document.getElementById("assignmentStatus");if(!box){box=document.createElement("div");box.id="assignmentStatus";document.querySelector(".card")?.prepend(box)}box.className="assignment-status"+(bad?" no":"");box.innerHTML=text}
+function lessonReleased(data,lesson){
+  const lPaths=[["enabledLessons",lesson],["enabledLessons","Wortschatz/"+lesson],["enabledLessons","wortschatz/"+lesson],["releases","Wortschatz","lessons",lesson,"enabled"],["releases","wortschatz","lessons",lesson,"enabled"]];
+  const moduleOff=falseVal(data,[["enabledModules","Wortschatz"],["enabledModules","wortschatz"],["releases","Wortschatz","enabled"],["releases","wortschatz","enabled"]]);
+  if(moduleOff||falseVal(data,lPaths))return false;
+  if(trueVal(data,lPaths))return true;
+  const prefixes=[lesson+"/","Wortschatz/"+lesson+"/","wortschatz/"+lesson+"/"];
+  if(Object.keys(data.enabledThemes||{}).some(k=>data.enabledThemes[k]===true&&prefixes.some(p=>String(k).startsWith(p))))return true;
+  if(Object.keys(data.enabledTasks||{}).some(k=>data.enabledTasks[k]===true&&prefixes.some(p=>String(k).startsWith(p))))return true;
+  const rel=data.releases?.Wortschatz||data.releases?.wortschatz||{};
+  const themes=rel.lessons?.[lesson]?.themes||{};
+  return Object.values(themes).some(t=>t&&t.enabled===true)||Object.values(themes).some(t=>t&&t.tasks&&Object.values(t.tasks).some(v=>v===true));
 }
-function setStatus(text, bad=false){
-  let box=document.getElementById("assignmentStatus");
-  if(!box){
-    box=document.createElement("div");
-    box.id="assignmentStatus";
-    const firstCard=document.querySelector(".card");
-    if(firstCard) firstCard.prepend(box);
-  }
-  box.className="assignment-status"+(bad?" no":"");
-  box.innerHTML=text;
-}
-function setLessonButton(a,open){
-  const label=a.textContent.replace("Gesperrt","").replace("Offen","").trim();
-  a.textContent=label;
-  if(open){
-    a.classList.remove("locked");
-    a.classList.add("open");
-    a.onclick=null;
-  }else{
-    a.classList.add("locked");
-    a.classList.remove("open");
-    a.onclick=function(e){e.preventDefault();alert("Diese Lektion ist für deinen Kurs noch nicht freigeschaltet.");};
-  }
-}
-async function applyAssignments(){
-  const profile=getProfile();
-  if(!profile || !(profile.kurs||profile.kursnummer||profile.courseCode)){
-    setStatus("Bitte zuerst auf der Startseite einloggen. Danach siehst du deine freigeschalteten Lektionen.", true);
-    lockAll();
-    return;
-  }
-  const courseId=profile.kurs||profile.kursnummer||profile.courseCode;
-  try{
-    const data=await loadCourseRelease(profile);
-    let count=0;
-    document.querySelectorAll(".lesson-btn").forEach(a=>{
-      const open=lessonOpen(data,"Wortschatz",a.dataset.lesson);
-      setLessonButton(a,open);
-      if(open) count++;
-    });
-    if(count){
-      setStatus(`Eingeloggt: <strong>${profile.vorname||""} ${profile.nachname||""}</strong> · Kurs: <strong>${courseId}</strong><br>Freigeschaltet: <strong>${count}</strong> Lektion(en)`);
-    }else{
-      setStatus(`Für deinen Kurs <strong>${courseId}</strong> ist noch keine Wortschatz-Lektion freigeschaltet.`, true);
-    }
-  }catch(e){
-    console.error(e);
-    setStatus("Firebase konnte nicht geladen werden. Bitte Internetverbindung und Firestore-Regeln prüfen.", true);
-    lockAll();
-  }
-}
-function lockAll(){document.querySelectorAll(".lesson-btn").forEach(a=>setLessonButton(a,false));}
+function renderLevel(level,target,data){const box=document.getElementById(target);box.innerHTML="";for(let i=1;i<=14;i++){const lesson=`${level}-Lektion-${i}`;if(!lessonReleased(data,lesson))continue;const a=document.createElement("a");a.className="lesson-btn open";a.dataset.lesson=lesson;a.href=`./${lesson}/`;a.textContent=`Lektion ${i}`;box.appendChild(a)}}
+async function applyAssignments(){const profile=getProfile();if(!profile){setStatus("Bitte zuerst einloggen. Danach siehst du deine freigeschalteten Lektionen.",true);return}const courseId=profile.kurs||profile.kursnummer||profile.courseCode||"";const data=await loadCourseRelease(profile).catch(()=>({}));renderLevel("A1","a1Lessons",data);renderLevel("A2","a2Lessons",data);renderLevel("B1","b1Lessons",data);const count=document.querySelectorAll(".lesson-btn.open").length;if(count){setStatus(`Eingeloggt: <strong>${profile.vorname||""} ${profile.nachname||""}</strong> · Kurs: <strong>${courseId}</strong><br>Freigeschaltet: <strong>${count}</strong> Lektion(en)`) }else{setStatus(`Für deinen Kurs <strong>${courseId}</strong> ist noch keine Wortschatz-Lektion freigeschaltet.`,true)}}
 applyAssignments();
 </script>
-
 </body>
 </html>
