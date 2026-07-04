@@ -73,14 +73,16 @@ function variants(x){return String(x||'').split(/\s*(?:\|\||\|)\s*/).map(simple)
 function ok(v,arr){const vs=variants(v);return arr.some(x=>vs.includes(simple(x)))}
 function withSentence(a){return [...a,...a.map(x=>/^es ist/i.test(x)?x:'Es ist '+x)]}
 function sentenceOnly(a){return a.map(x=>/^es ist/i.test(x)?x:'Es ist '+x)}
+function hourLabel(h){const n={1:'ein',2:'zwei',3:'drei',4:'vier',5:'fünf',6:'sechs',7:'sieben',8:'acht',9:'neun',10:'zehn',11:'elf',12:'zwölf'};const x=((h-1)%12)+1;return n[x]}
+function halfAliasAnswers(t){const h=((t.h-1)%12)+1,next=(h%12)+1,hw=hourLabel(h),nw=hourLabel(next);if(t.m===20)return[`zwanzig nach ${hw}`,`20 nach ${h}`,`zehn vor halb ${nw}`,`10 vor halb ${next}`];if(t.m===25)return[`fünfundzwanzig nach ${hw}`,`25 nach ${h}`,`fünf vor halb ${nw}`,`5 vor halb ${next}`];if(t.m===35)return[`fünf nach halb ${nw}`,`5 nach halb ${next}`,`fünfundzwanzig vor ${nw}`,`25 vor ${next}`];if(t.m===40)return[`zehn nach halb ${nw}`,`10 nach halb ${next}`,`zwanzig vor ${nw}`,`20 vor ${next}`];return[]}
 function formalAnswers(t){return withSentence(t.formal||[])}
-function informalAnswers(t){return withSentence(t.informal||[])}
-function informalSentenceAnswers(t){return sentenceOnly(t.informal||[])}
+function informalAnswers(t){return withSentence([...(t.informal||[]),...halfAliasAnswers(t)])}
+function informalSentenceAnswers(t){return sentenceOnly([...(t.informal||[]),...halfAliasAnswers(t)])}
 function pointsFor(t){return t.tolerance||[{h:t.h,m:t.m}]}
 function digitalForPoint(h,m,mode='both'){const mm=String(m).padStart(2,'0'),hours=[h];if(m>0&&(mode==='both'||mode==='formal')){if(h>12)hours.push(h-12);else if(h>0&&h<12)hours.push(h+12)}if(mode==='informal'&&h>12)hours.push(h-12);let forms=[];[...new Set(hours)].forEach(x=>{const hs=String(x),hh=String(x).padStart(2,'0');forms.push(`${hs}:${mm}`,`${hh}:${mm}`,`${hs}.${mm}`,`${hh}.${mm}`,`${hs}:${mm} Uhr`,`${hh}:${mm} Uhr`,`${hs}.${mm} Uhr`,`${hh}.${mm} Uhr`);if(m===0)forms.push(hs,`${hs} Uhr`,hh,`${hh} Uhr`)});return forms}
 function digitalAnswers(t,mode='both'){let forms=[];pointsFor(t).forEach(p=>forms=forms.concat(digitalForPoint(p.h,p.m,mode)));return withSentence([...new Set(forms)])}
 function hourWordAnswers(t,mode='both'){if(t.m!==0)return[];const names={1:['ein','eins'],2:['zwei'],3:['drei'],4:['vier'],5:['fünf'],6:['sechs'],7:['sieben'],8:['acht'],9:['neun'],10:['zehn'],11:['elf'],12:['zwölf'],13:['dreizehn'],14:['vierzehn'],15:['fünfzehn'],16:['sechzehn'],17:['siebzehn'],18:['achtzehn'],19:['neunzehn'],20:['zwanzig'],21:['einundzwanzig'],22:['zweiundzwanzig'],23:['dreiundzwanzig']};let forms=[];if(mode==='formal'){(names[t.h]||[]).forEach(n=>forms.push(n+' Uhr'));return withSentence(forms)}let hs=[t.h];if(mode==='informal'&&t.h>12)hs=[t.h-12];if(mode==='both'){if(t.h>12)hs.push(t.h-12);else if(t.h>0&&t.h<12)hs.push(t.h+12)}hs.forEach(h=>forms=forms.concat(names[h]||[],(names[h]||[]).map(n=>n+' Uhr')));return withSentence([...new Set(forms)])}
-function allAnswers(t){return withSentence([...(t.formal||[]),...(t.informal||[])])}
+function allAnswers(t){return withSentence([...(t.formal||[]),...(t.informal||[]),...halfAliasAnswers(t)])}
 function looseAnswers(t){return allAnswers(t).concat(digitalAnswers(t,'both')).concat(hourWordAnswers(t,'both'))}
 function formalLooseAnswers(t){return formalAnswers(t).concat(digitalAnswers(t,'formal')).concat(hourWordAnswers(t,'formal'))}
 function informalLooseAnswers(t){return informalAnswers(t).concat(digitalAnswers(t,'informal')).concat(hourWordAnswers(t,'informal'))}
