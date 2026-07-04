@@ -31,46 +31,7 @@
   <label>Muttersprache *</label>
   <select id="motherLanguage">
         <option value="">Bitte auswählen</option>
-        <option>Albanisch</option>
-        <option>Amharisch</option>
-        <option>Arabisch</option>
-        <option>Armenisch</option>
-        <option>Aserbaidschanisch</option>
-        <option>Bengalisch</option>
-        <option>Bosnisch</option>
-        <option>Bulgarisch</option>
-        <option>Chinesisch</option>
-        <option>Dari</option>
-        <option>Deutsch</option>
-        <option>Englisch</option>
-        <option>Farsi/Persisch</option>
-        <option>Französisch</option>
-        <option>Georgisch</option>
-        <option>Griechisch</option>
-        <option>Hindi</option>
-        <option>Italienisch</option>
-        <option>Japanisch</option>
-        <option>Kasachisch</option>
-        <option>Kroatisch</option>
-        <option>Kurdisch</option>
-        <option>Paschtu</option>
-        <option>Polnisch</option>
-        <option>Portugiesisch</option>
-        <option>Rumänisch</option>
-        <option>Russisch</option>
-        <option>Serbisch</option>
-        <option>Somali</option>
-        <option>Spanisch</option>
-        <option>Tamil</option>
-        <option>Thai</option>
-        <option>Tigrinya</option>
-        <option>Tschechisch</option>
-        <option>Türkisch</option>
-        <option>Ukrainisch</option>
-        <option>Ungarisch</option>
-        <option>Urdu</option>
-        <option>Usbekisch</option>
-        <option>Vietnamesisch</option>
+        <option>Albanisch</option><option>Amharisch</option><option>Arabisch</option><option>Armenisch</option><option>Aserbaidschanisch</option><option>Bengalisch</option><option>Bosnisch</option><option>Bulgarisch</option><option>Chinesisch</option><option>Dari</option><option>Deutsch</option><option>Englisch</option><option>Farsi/Persisch</option><option>Französisch</option><option>Georgisch</option><option>Griechisch</option><option>Hindi</option><option>Italienisch</option><option>Japanisch</option><option>Kasachisch</option><option>Kroatisch</option><option>Kurdisch</option><option>Paschtu</option><option>Polnisch</option><option>Portugiesisch</option><option>Rumänisch</option><option>Russisch</option><option>Serbisch</option><option>Somali</option><option>Spanisch</option><option>Tamil</option><option>Thai</option><option>Tigrinya</option><option>Tschechisch</option><option>Türkisch</option><option>Ukrainisch</option><option>Ungarisch</option><option>Urdu</option><option>Usbekisch</option><option>Vietnamesisch</option>
       </select>
 
   <label>Kurscode</label>
@@ -86,15 +47,14 @@
 
 <script type="module">
 import { requireLogin, updateStudentProfile, $, safeText, renderAccountStrip, logout } from "../js/auth.js?v=step21"; window.logout=logout;
+import { startGlobalSync, refreshActiveProfileFromCloud, saveProfileToCloud } from "../js/global-sync.js?v=1";
 
-const p=requireLogin();
+let p=requireLogin();
 if(p) renderAccountStrip();
-
-$("fname").value=p.vorname||"";
-$("lname").value=p.nachname||"";
-$("email").value=p.email||"";
-$("motherLanguage").value=p.muttersprache||"";
-$("course").value=p.kurs||"";
+try{await startGlobalSync();p=await refreshActiveProfileFromCloud(p)||p;}catch(e){console.warn("Profil-Sync nicht verfügbar",e)}
+function fill(profile){if(!profile)return;$("fname").value=profile.vorname||profile.firstName||"";$("lname").value=profile.nachname||profile.lastName||"";$("email").value=profile.email||"";$("motherLanguage").value=profile.muttersprache||profile.motherLanguage||"";$("course").value=profile.kurs||profile.courseCode||profile.kursnummer||"";}
+fill(p);
+window.addEventListener("SP_PROFILE_SYNCED",e=>{p=e.detail.profile;fill(p);renderAccountStrip();});
 
 window.saveProfile=async function(){
   const result=$("result");
@@ -107,7 +67,8 @@ window.saveProfile=async function(){
       email:$("email").value,
       muttersprache:$("motherLanguage").value
     });
-    result.innerHTML='<div class="ok">Gespeichert. Die Muttersprache wird ab jetzt in den Übungen verwendet.</div>';
+    await saveProfileToCloud(newP);
+    result.innerHTML='<div class="ok">Gespeichert. Die Änderung wird zentral mit allen Geräten synchronisiert.</div>';
   }catch(err){
     console.error(err);
     result.innerHTML='<div class="no">Profil konnte nicht gespeichert werden: '+safeText(err.message||err)+'</div>';
