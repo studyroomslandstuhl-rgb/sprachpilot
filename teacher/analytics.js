@@ -35,6 +35,51 @@ const Analytics = {
     return p.split("/").filter(Boolean).slice(-2).join(" / ")||"Startseite";
   },
   lastPlace(s){return this.pageLabel(this.progressDoc(s).lastPage||s.lastPage||"")},
+  topicPercent(t){
+    if(!t||typeof t!=="object")return 0;
+    const vals=Object.values(t.tasks||{}).filter(x=>x&&typeof x==="object");
+    if(vals.length){
+      const expected=Math.max(this.num(t.totalTasks||t.current?.totalTasks||0),vals.length);
+      const sum=vals.reduce((a,x)=>a+this.percent(x.percent||(x.completed?100:0)),0);
+      return this.percent(sum/Math.max(1,expected));
+    }
+    const completed=this.num(t.completedTasks||t.current?.completedTasks||0);
+    const total=this.num(t.totalTasks||t.current?.totalTasks||0);
+    const p=this.percent(t.progressPercent??t.current?.percent??t.percent??0);
+    if(total&&completed&&p>=100&&completed<total)return this.percent(completed/total*100);
+    return p;
+  },
+  topicRecords(s){
+    const p=this.progressDoc(s), out=[];
+    ["wortschatz","fragen","grammatik"].forEach(module=>{
+      Object.entries(p[module]||{}).forEach(([id,t])=>{
+        if(!t||typeof t!=="object"||Array.isArray(t))return;
+        if(!(t.tasks||t.exam||t.current||t.lifetime||t.progressPercent||t.title))return;
+        const percent=this.topicPercent(t);
+        const title=t.title||id;
+        const completed=this.num(t.completedTasks||t.current?.completedTasks||0);
+        const total=this.num(t.totalTasks||t.current?.totalTasks||0)||Object.keys(t.tasks||{}).length;
+        out.push({id,module,title,percent,completed,total,exam:t.exam||{},last:t.lastActiveAt||t.current?.updatedAt||t.updatedAt||""});
+      });
+    });
+    const v=this.verbStats(s);
+    if(v.progress||v.active.length||v.learned.length||v.known.length||v.unsure.length||v.unknown.length){out.push({id:"verben-a1",module:"verben",title:"Verben A1",percent:v.progress,completed:v.learned.length||v.known.length,total:v.active.length+v.learned.length+v.known.length+v.unsure.length+v.unknown.length,exam:{},last:(p.verben||{}).updatedAt||""})}
+    return out;
+  },
+  overallProgress(s){const rows=this.topicRecords(s);return rows.length?this.percent(rows.reduce((a,x)=>a+x.percent,0)/rows.length):this.percent(s.verbenFortschritt||0)},
+  topicSummary(s){
+    const rows=this.topicRecords(s);
+    if(!rows.length)return this.pill("kein Fortschritt","warn");
+    const active=rows.filter(x=>x.percent>0&&x.percent<100).length;
+    const done=rows.filter(x=>x.percent>=100).length;
+    const fresh=rows.filter(x=>x.percent===0).length;
+    return `${this.pill(`${active} aktiv`,active?"ok":"")} ${this.pill(`${done} fertig`,done?"ok":"")} ${fresh?this.pill(`${fresh} neu`,"warn"):""}`;
+  },
+  verbenProgressLine(s){
+    const st=this.verbStats(s);
+    if(!st.active.length&&!st.learned.length&&!st.known.length)return this.pill("keine Verben","warn");
+    return `${this.pill(`${st.learned.length} gelernt`,st.learned.length?"ok":"")} ${this.pill(`${st.active.length} aktiv`)} ${this.pill(`${st.known.length} sicher`,"ok")} ${this.pill(`${st.unsure.length} unsicher`,"warn")} ${this.pill(`${st.unknown.length} nicht sicher`,"no")}`;
+  },
   verbStats(s){
     const v=this.verbenData(s),state=v.state||{};
     const learned=v.learned||v.learnedVerbs||state.learned||state.learnedVerbs||[];
@@ -45,11 +90,6 @@ const Analytics = {
     const progress=this.percent(v.progress??v.progressPercent??s.verbenFortschritt??0);
     return {learned,active,known,unsure,unknown,progress};
   },
-  taskStatus(s){
-    const st=this.verbStats(s);
-    if(!st.active.length&&!st.learned.length)return this.pill("noch nicht gestartet","warn");
-    return `${this.pill(`${st.learned.length} gelernt`,st.learned.length?"ok":"")} ${this.pill(`${st.active.length} aktiv`)} ${this.pill(`${st.known.length} sicher`,"ok")} ${this.pill(`${st.unsure.length} unsicher`,"warn")} ${this.pill(`${st.unknown.length} nicht sicher`,"no")}`;
-  },
   studentStatus(s){
     const p=this.progressDoc(s);
     if(!p||!Object.keys(p).length)return this.pill("kein Fortschritt", "warn");
@@ -59,14 +99,14 @@ const Analytics = {
   },
   studentRow(s){
     const id=s.studentId||s.id;
-    const st=this.verbStats(s);
     const stars=this.num(this.verbenData(s).stars||this.totals(s).stars||0);
+    const overall=this.overallProgress(s);
     return `<tr data-student-row="${this.safe(id)}">
       <td><strong>${this.safe(this.studentName(s))}</strong><div class="small">${this.safe(s.email||"keine E-Mail")}<br>${this.safe(s.muttersprache||"")}</div></td>
       <td>${this.studentStatus(s)}<div class="small">${this.safe(s.kurs||s.kursnummer||s.courseCode||"ohne Kurs")}</div></td>
       <td><strong>${this.points(s)}</strong><div class="small">Punkte</div>${stars?`<div>${this.pill(`⭐ ${stars}`)}</div>`:""}</td>
-      <td>${this.progressBar(st.progress,"Verben")}</td>
-      <td>${this.taskStatus(s)}</td>
+      <td>${this.progressBar(overall,"Gesamt")}</td>
+      <td>${this.topicSummary(s)}<div class="small">${this.verbenProgressLine(s)}</div></td>
       <td><strong>${this.safe(this.lastPlace(s))}</strong><div class="small">${this.safe(this.formatDate(this.lastActiveRaw(s)))}</div></td>
       <td class="row-actions"><button class="secondary" onclick="Students.openEdit('${String(id).replace(/'/g,"\\'")}')">Schüler bearbeiten</button><button class="danger" onclick="Students.remove('${String(id).replace(/'/g,"\\'")}','${this.studentName(s).replace(/'/g,"\\'")}')">Löschen</button></td>
     </tr>`;
@@ -86,7 +126,7 @@ const Analytics = {
   },
   courseCard(courseName,students,courseData){
     const count=students.length;
-    const avg=count?Math.round(students.reduce((sum,s)=>sum+this.verbStats(s).progress,0)/count):0;
+    const avg=count?Math.round(students.reduce((sum,s)=>sum+this.overallProgress(s),0)/count):0;
     const points=students.reduce((sum,s)=>sum+this.points(s),0);
     const active=students.filter(s=>Object.keys(this.progressDoc(s)||{}).length).length;
     const course=courseData||{id:courseName,name:courseName};
@@ -116,12 +156,12 @@ const Analytics = {
         <div><b>${count}</b><span>Schüler</span></div>
         <div><b>${active}</b><span>aktiv</span></div>
         <div><b>${points}</b><span>Punkte gesamt</span></div>
-        <div><b>${avg}%</b><span>Ø Verben</span></div>
+        <div><b>${avg}%</b><span>Ø Gesamt</span></div>
       </div>
-      ${this.progressBar(avg,"Durchschnitt Verben")}
+      ${this.progressBar(avg,"Durchschnitt Gesamt")}
       <details class="teacher-course-details" open><summary>Schüler in diesem Kurs anzeigen</summary>
         <div class="student-table-wrap"><table class="student-table friendly-table">
-          <thead><tr><th>Schüler</th><th>Status</th><th>Punkte</th><th>Fortschritt</th><th>Verben</th><th>Zuletzt</th><th>Aktionen</th></tr></thead>
+          <thead><tr><th>Schüler</th><th>Status</th><th>Punkte</th><th>Fortschritt</th><th>Inhalte / Verben</th><th>Zuletzt</th><th>Aktionen</th></tr></thead>
           <tbody>${students.map(s=>this.studentRow(s)).join("")||`<tr><td colspan="7">Noch keine Schüler in diesem Kurs.</td></tr>`}</tbody>
         </table></div>
       </details>
