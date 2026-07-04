@@ -11,6 +11,7 @@
   function idCandidates(){const p=prof();return uniq([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem("SP_STUDENT_ID"),fallbackId(p)])}
   function canonicalStudentId(){return idCandidates()[0]||"guest"}
   function pendingKey(){return "SP_VERBS_PENDING_SYNC_"+canonicalStudentId()}
+  function statusKey(){return "SP_VERBS_SYNC_STATUS_"+canonicalStudentId()}
   function ts(){try{return firebase.firestore.FieldValue.serverTimestamp()}catch(e){return new Date().toISOString()}}
   function isFirestoreSpecial(v){return !!(v&&typeof v==="object"&&(typeof v.toDate==="function"||typeof v.isEqual==="function"||v._methodName||v._delegate))}
   function num(x){const n=Number(x);return Number.isFinite(n)?n:0}
@@ -40,21 +41,10 @@
     out.exam=betterExam(base.exam,inc.exam);
     return out;
   }
-  function stateFromVerben(v){
-    v=v||{};
-    const st=v.state&&typeof v.state==="object"?v.state:{};
-    return mergeStates(st,{active:v.activeVerbs||st.active||[],learned:v.learnedVerbs||st.learned||[],known:v.known||st.known||[],unsure:v.unsure||st.unsure||[],unknown:v.unknown||st.unknown||[],assessed:v.assessed||st.assessed||[],currentPackageVerbs:v.currentPackageVerbs||st.currentPackageVerbs||[],exam:v.exam||st.exam||{}});
-  }
+  function stateFromVerben(v){v=v||{};const st=v.state&&typeof v.state==="object"?v.state:{};return mergeStates(st,{active:v.activeVerbs||st.active||[],learned:v.learnedVerbs||st.learned||[],known:v.known||st.known||[],unsure:v.unsure||st.unsure||[],unknown:v.unknown||st.unknown||[],assessed:v.assessed||st.assessed||[],currentPackageVerbs:v.currentPackageVerbs||st.currentPackageVerbs||[],exam:v.exam||st.exam||{}})}
   function localKeys(){return uniq(idCandidates().map(id=>"SP_VERBS_"+id))}
   function readLocalMerged(){let out={};localKeys().forEach(k=>{out=mergeStates(out,safeJson(k,{}))});return out}
-  function cleanCurrentState(){
-    try{if(typeof normalizeVerbStatusLists==="function")normalizeVerbStatusLists()}catch(e){}
-    const raw={...state};
-    try{if(typeof releaseFilterVerbs==="function"){
-      ["known","unsure","unknown","active","learned","practicePool","assessmentBatch","assessed","currentPackageVerbs"].forEach(k=>raw[k]=releaseFilterVerbs(raw[k]||[]));
-    }}catch(e){}
-    return clean(raw);
-  }
+  function cleanCurrentState(){try{if(typeof normalizeVerbStatusLists==="function")normalizeVerbStatusLists()}catch(e){}const raw={...state};try{if(typeof releaseFilterVerbs==="function"){["known","unsure","unknown","active","learned","practicePool","assessmentBatch","assessed","currentPackageVerbs"].forEach(k=>raw[k]=releaseFilterVerbs(raw[k]||[]));}}catch(e){}return clean(raw)}
   function progressPercent(){try{return typeof overall==="function"?num(overall()):0}catch(e){return 0}}
   function starCount(){try{return typeof totalStars==="function"?num(totalStars()):0}catch(e){return 0}}
   function packageVerbs(){try{return typeof currentPackageAllVerbs==="function"?currentPackageAllVerbs():(state.currentPackageVerbs||[])}catch(e){return state.currentPackageVerbs||[]}}
@@ -68,20 +58,40 @@
       minimalProgress:clean({studentId:sid,userId:sid,docId:sid,email:emailOf(p),kurs:course,kursnummer:course,courseCode:course,verben:{progress,progressPercent:progress,stars,activeVerbs:cleanState.active||[],learnedVerbs:cleanState.learned||[],known:cleanState.known||[],unsure:cleanState.unsure||[],unknown:cleanState.unknown||[],assessed:cleanState.assessed||[],currentPackageVerbs:packageVerbs(),exam:cleanState.exam||{},updatedAt:ts()},lastPage:location.pathname,lastActiveAt:ts(),updatedAt:ts()})
     };
   }
-  function markPending(){try{localStorage.setItem(pendingKey(),JSON.stringify({at:new Date().toISOString(),sid:canonicalStudentId()}))}catch(e){}}
+  function setStatus(obj){try{localStorage.setItem(statusKey(),JSON.stringify({time:new Date().toISOString(),id:canonicalStudentId(),ids:idCandidates(),firebase:!!(typeof db!=="undefined"&&db),...obj}))}catch(e){}renderDebug()}
+  function getStatus(){return safeJson(statusKey(),{})}
+  function markPending(){try{localStorage.setItem(pendingKey(),JSON.stringify({at:new Date().toISOString(),sid:canonicalStudentId()}))}catch(e){}setStatus({status:"pending"})}
   function clearPending(){try{localStorage.removeItem(pendingKey())}catch(e){}}
   async function writeCloud(){
-    if(typeof db==="undefined"||!db||!prof())return false;
+    if(typeof db==="undefined"||!db||!prof()){setStatus({status:"error",error:"db oder Profil fehlt"});return false}
     const sid=canonicalStudentId();
-    if(!sid||sid==="guest")return false;
+    if(!sid||sid==="guest"){setStatus({status:"error",error:"Keine stabile Schüler-ID"});return false}
     const payload=buildPayload();
-    let progressOk=false,studentOk=false;
+    let progressOk=false,studentOk=false,errors=[];
     try{await db.collection("progress").doc(sid).set(payload.progressDoc,{merge:true});progressOk=true}
-    catch(e){console.warn("Verben Fortschritt voll konnte nicht gespeichert werden",e);try{await db.collection("progress").doc(sid).set(payload.minimalProgress,{merge:true});progressOk=true}catch(e2){console.warn("Verben Fortschritt minimal konnte nicht gespeichert werden",e2)}}
+    catch(e){errors.push("progress voll: "+(e.code||e.message||e));try{await db.collection("progress").doc(sid).set(payload.minimalProgress,{merge:true});progressOk=true}catch(e2){errors.push("progress minimal: "+(e2.code||e2.message||e2))}}
     try{await db.collection("students").doc(sid).set(payload.studentDoc,{merge:true});studentOk=true}
-    catch(e){console.warn("Schüler-Aktivität konnte nicht gespeichert werden",e)}
-    if(progressOk&&studentOk){clearPending();return true}
-    markPending();return false;
+    catch(e){errors.push("students: "+(e.code||e.message||e))}
+    if(progressOk&&studentOk){clearPending();setStatus({status:"ok",progress:progressPercent(),progressOk,studentOk,error:""});return true}
+    markPending();setStatus({status:"error",progress:progressPercent(),progressOk,studentOk,error:errors.join(" | ")});return false;
+  }
+  async function readCloudMerged(){
+    let merged={};
+    if(typeof db!=="undefined"&&db){
+      for(const id of idCandidates()){
+        try{const snap=await db.collection("progress").doc(id).get();const exists=typeof snap.exists==="function"?snap.exists():!!snap.exists;if(!exists)continue;const data=snap.data?snap.data():{};merged=mergeStates(merged,stateFromVerben(data.verben||{}))}catch(e){setStatus({status:"read-error",error:(e.code||e.message||e),readId:id})}
+      }
+    }
+    return merged;
+  }
+  function debugWanted(){return location.search.includes("syncdebug=1")||localStorage.getItem("SP_VERBS_SYNC_DEBUG")==="1"}
+  function esc(s){return String(s||"").replace(/[&<>\"]/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[m]))}
+  function renderDebug(){
+    if(!debugWanted())return;
+    let box=document.getElementById("spVerbSyncDebug");
+    if(!box){box=document.createElement("div");box.id="spVerbSyncDebug";box.style.cssText="position:fixed;left:10px;right:10px;bottom:10px;z-index:99999;background:#fff;border:2px solid #2563eb;border-radius:12px;padding:10px;font:12px Arial;box-shadow:0 8px 24px #0002;max-height:45vh;overflow:auto";document.body.appendChild(box)}
+    const s=getStatus(),p=prof();
+    box.innerHTML='<b>Verben Sync Debug</b><br>ID: '+esc(canonicalStudentId())+'<br>IDs: '+esc(idCandidates().join(", "))+'<br>Kurs: '+esc(courseOf(p))+'<br>E-Mail: '+esc(emailOf(p))+'<br>Firebase: '+(typeof db!=="undefined"&&db?"ja":"nein")+'<br>Status: '+esc(s.status||"-")+'<br>Progress: '+esc(s.progress||progressPercent())+'<br>Fehler: '+esc(s.error||"")+'<br>Zeit: '+esc(s.time||"")+'<br><button onclick="spVerbCloudSync.flush()">Sync jetzt testen</button> <button onclick="localStorage.removeItem(\'SP_VERBS_SYNC_DEBUG\');document.getElementById(\'spVerbSyncDebug\')?.remove()">Schließen</button>';
   }
 
   if(typeof firebaseStudentId==="function")firebaseStudentId=canonicalStudentId;
@@ -90,22 +100,13 @@
   const oldLoad=typeof loadState==="function"?loadState:null;
   if(oldLoad&&!oldLoad.__cloudSync){
     loadState=async function(){
-      try{await oldLoad.apply(this,arguments)}catch(e){console.warn("Alter Verben-Ladevorgang fehlgeschlagen",e)}
+      try{await oldLoad.apply(this,arguments)}catch(e){setStatus({status:"old-load-error",error:e.message||String(e)})}
       let merged=mergeStates(state||{},readLocalMerged());
-      if(typeof db!=="undefined"&&db){
-        for(const id of idCandidates()){
-          try{
-            const snap=await db.collection("progress").doc(id).get();
-            const exists=typeof snap.exists==="function"?snap.exists():!!snap.exists;
-            if(!exists)continue;
-            const data=snap.data?snap.data():{};
-            merged=mergeStates(merged,stateFromVerben(data.verben||{}));
-          }catch(e){console.warn("Progress-Lesen fehlgeschlagen",id,e)}
-        }
-      }
+      merged=mergeStates(merged,await readCloudMerged());
       state=mergeStates(state||{},merged);
       try{if(typeof migrateState==="function")migrateState()}catch(e){}
       try{localStorage.setItem(storageKey(),JSON.stringify(state))}catch(e){}
+      setStatus({status:"loaded",progress:progressPercent()});
       setTimeout(writeCloud,300);
     };
     loadState.__cloudSync=true;
@@ -113,10 +114,10 @@
 
   let timer=null;
   sendProgress=function(){clearTimeout(timer);markPending();timer=setTimeout(writeCloud,500)};
-  function flush(){try{writeCloud()}catch(e){}}
+  function flush(){return writeCloud()}
   window.addEventListener("online",flush);
   window.addEventListener("pagehide",flush);
   document.addEventListener("visibilitychange",function(){if(document.visibilityState==="hidden")flush()});
-  setTimeout(function(){if(localStorage.getItem(pendingKey()))flush()},1200);
-  window.spVerbCloudSync={id:canonicalStudentId,ids:idCandidates,flush};
+  setTimeout(function(){if(localStorage.getItem(pendingKey()))flush();renderDebug()},1200);
+  window.spVerbCloudSync={id:canonicalStudentId,ids:idCandidates,flush,status:getStatus,debug:function(){localStorage.setItem("SP_VERBS_SYNC_DEBUG","1");renderDebug()}};
 })();
