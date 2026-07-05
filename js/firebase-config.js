@@ -25,9 +25,17 @@
 
     window.auth = window.auth || firebase.auth();
     window.db = window.db || firebase.firestore();
+    window.spCompatAuthReady = new Promise(function(resolve){
+      const stop = window.auth.onAuthStateChanged(function(user){
+        if(user){try{stop()}catch(e){} resolve(user);}
+      });
+    });
+    window.auth.signInAnonymously().catch(function(error){
+      console.warn("Firebase Anonymous Auth konnte nicht gestartet werden:", error);
+    });
 
     window.dispatchEvent(new CustomEvent("TeacherFirebaseReady", {
-      detail: { auth: window.auth, db: window.db }
+      detail: { auth: window.auth, db: window.db, authReady: window.spCompatAuthReady }
     }));
   } catch (error) {
     console.error("Firebase konnte nicht initialisiert werden:", error);
