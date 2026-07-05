@@ -1,3 +1,4 @@
+try{import('./l5t2-theme-open.js?v=1')}catch(e){}
 function langKey(){return 'en'}
 (function(){
   if(typeof WORDS==='undefined')return;
