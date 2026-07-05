@@ -1,0 +1,81 @@
+rules_version = '2';
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function reasonableSize() {
+      return request.resource.data.size() < 200;
+    }
+
+    function knownClientCollections() {
+      return true;
+    }
+
+    match /courses/{courseId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /students/{studentId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /progress/{studentId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if false;
+    }
+
+    match /teachers/{teacherId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /teacherInvites/{inviteId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /courseInvites/{inviteId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /releases/{releaseId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /assignments/{assignmentId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /settings/{settingId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /diagnostics/{docId} {
+      allow read, create, update: if signedIn() && reasonableSize();
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
