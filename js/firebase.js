@@ -1,4 +1,5 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
+import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 
 import {
   getFirestore,
@@ -33,7 +34,12 @@ const firebaseConfig = {
 };
 
 const app = initializeApp(firebaseConfig);
+export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const authReady = new Promise(resolve=>{
+  const stop=onAuthStateChanged(auth,user=>{if(user){try{stop()}catch(e){}resolve(user)}});
+});
+signInAnonymously(auth).catch(e=>console.warn("Firebase Anonymous Auth konnte nicht gestartet werden",e));
 
 function spBuildQuery(path, constraints = []) {
   const ref = firestoreCollection(db, String(path));
@@ -51,21 +57,23 @@ function spCompatDoc(path, id) {
     _ref: ref,
 
     async get() {
+      await authReady;
       return getDoc(ref);
     },
 
     async set(data, options) {
-      if (options) {
-        return setDoc(ref, data, options);
-      }
+      await authReady;
+      if (options) return setDoc(ref, data, options);
       return setDoc(ref, data);
     },
 
     async update(data) {
+      await authReady;
       return updateDoc(ref, data);
     },
 
     async delete() {
+      await authReady;
       return deleteDoc(ref);
     },
 
@@ -85,32 +93,25 @@ function spCompatCollection(path, constraints = []) {
     },
 
     async add(data) {
+      await authReady;
       return addDoc(firestoreCollection(db, String(path)), data);
     },
 
     async get() {
+      await authReady;
       return getDocs(spBuildQuery(path, constraints));
     },
 
     where(field, operator, value) {
-      return spCompatCollection(path, [
-        ...constraints,
-        firestoreWhere(field, operator, value)
-      ]);
+      return spCompatCollection(path, [...constraints, firestoreWhere(field, operator, value)]);
     },
 
     orderBy(field, direction) {
-      return spCompatCollection(path, [
-        ...constraints,
-        firestoreOrderBy(field, direction)
-      ]);
+      return spCompatCollection(path, [...constraints, firestoreOrderBy(field, direction)]);
     },
 
     limit(count) {
-      return spCompatCollection(path, [
-        ...constraints,
-        firestoreLimit(count)
-      ]);
+      return spCompatCollection(path, [...constraints, firestoreLimit(count)]);
     },
 
     onSnapshot(next, error) {
@@ -126,23 +127,27 @@ const compatDb = {
 };
 
 window.spDb = db;
+window.spAuth = auth;
+window.spAuthReady = authReady;
 window.db = compatDb;
 
 window.spFirebase = {
   app,
+  auth,
+  authReady,
   db,
   compatDb,
   doc: firestoreDoc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  addDoc,
+  getDoc: async (...args)=>{await authReady;return getDoc(...args)},
+  setDoc: async (...args)=>{await authReady;return setDoc(...args)},
+  updateDoc: async (...args)=>{await authReady;return updateDoc(...args)},
+  deleteDoc: async (...args)=>{await authReady;return deleteDoc(...args)},
+  addDoc: async (...args)=>{await authReady;return addDoc(...args)},
   serverTimestamp,
   collection: firestoreCollection,
   query: firestoreQuery,
   where: firestoreWhere,
-  getDocs,
+  getDocs: async (...args)=>{await authReady;return getDocs(...args)},
   limit: firestoreLimit,
   orderBy: firestoreOrderBy,
   arrayUnion,
@@ -153,26 +158,13 @@ window.spFirebase = {
 };
 
 window.SP_FIREBASE = window.spFirebase;
-
 window.firebase = window.firebase || {};
 window.firebase.apps = window.firebase.apps || [app];
-
-window.firebase.initializeApp = function () {
-  return app;
-};
-
-window.firebase.firestore = function () {
-  return compatDb;
-};
-
-window.firebase.firestore.FieldValue = {
-  serverTimestamp,
-  arrayUnion,
-  arrayRemove,
-  increment
-};
-
+window.firebase.initializeApp = function () { return app; };
+window.firebase.firestore = function () { return compatDb; };
+window.firebase.firestore.FieldValue = { serverTimestamp, arrayUnion, arrayRemove, increment };
 window.firebase.firestore.Timestamp = Timestamp;
+window.firebase.auth = function(){ return auth; };
 
 export {
   firestoreDoc as doc,
