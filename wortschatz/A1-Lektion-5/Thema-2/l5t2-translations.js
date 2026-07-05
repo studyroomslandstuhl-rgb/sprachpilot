@@ -1,12 +1,12 @@
 function langKey(){
-  const p=profile&&profile();
+  const p=(typeof profile==='function')?profile():null;
   const m=String(p?.muttersprache||p?.motherLanguage||p?.mother_language||p?.language||'').toLowerCase();
-  if(m.includes('russ'))return'ru';
-  if(m.includes('türk')||m.includes('turk'))return'tr';
-  if(m.includes('ukrain'))return'uk';
-  if(m.includes('arab'))return'ar';
-  if(m.includes('japan'))return'ja';
-  if(m.includes('rumän')||m.includes('ruman')||m.includes('roman'))return'ro';
+  if(m.includes('russ')||m.includes('russian')||m==='ru')return'ru';
+  if(m.includes('türk')||m.includes('turk')||m.includes('turkish')||m==='tr')return'tr';
+  if(m.includes('ukrain')||m.includes('ukrainian')||m==='uk')return'uk';
+  if(m.includes('arab')||m.includes('arabic')||m==='ar')return'ar';
+  if(m.includes('japan')||m.includes('japanese')||m==='ja')return'ja';
+  if(m.includes('rumän')||m.includes('ruman')||m.includes('romanian')||m==='ro')return'ro';
   return'en';
 }
 (function(){
