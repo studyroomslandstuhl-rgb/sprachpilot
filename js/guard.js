@@ -22,7 +22,7 @@ window.addEventListener("SP_PROFILE_SYNCED",()=>{try{renderAccountStrip()}catch(
 import("/js/progress.js?v=6").catch(()=>{});
 import("/js/activity-tracker.js?v=1").catch(()=>{});
 import("/js/scoring.js?v=4").catch(()=>{});
-import("/js/release-helper.js?v=8").catch(()=>{});
+import("/js/release-helper.js?v=9").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(path.includes("/wortschatz/")){
   import("/js/topic-progress-sync.js?v=3").catch(e=>console.warn("Topic Sync konnte nicht gestartet werden",e));
