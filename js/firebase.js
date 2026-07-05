@@ -4,16 +4,16 @@ import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gsta
 import {
   getFirestore,
   doc as firestoreDoc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  addDoc,
+  getDoc as firestoreGetDoc,
+  setDoc as firestoreSetDoc,
+  updateDoc as firestoreUpdateDoc,
+  deleteDoc as firestoreDeleteDoc,
+  addDoc as firestoreAddDoc,
   serverTimestamp,
   collection as firestoreCollection,
   query as firestoreQuery,
   where as firestoreWhere,
-  getDocs,
+  getDocs as firestoreGetDocs,
   limit as firestoreLimit,
   orderBy as firestoreOrderBy,
   arrayUnion,
@@ -41,6 +41,13 @@ export const authReady = new Promise(resolve=>{
 });
 signInAnonymously(auth).catch(e=>console.warn("Firebase Anonymous Auth konnte nicht gestartet werden",e));
 
+export async function getDoc(...args){await authReady;return firestoreGetDoc(...args)}
+export async function setDoc(...args){await authReady;return firestoreSetDoc(...args)}
+export async function updateDoc(...args){await authReady;return firestoreUpdateDoc(...args)}
+export async function deleteDoc(...args){await authReady;return firestoreDeleteDoc(...args)}
+export async function addDoc(...args){await authReady;return firestoreAddDoc(...args)}
+export async function getDocs(...args){await authReady;return firestoreGetDocs(...args)}
+
 function spBuildQuery(path, constraints = []) {
   const ref = firestoreCollection(db, String(path));
   return constraints.length ? firestoreQuery(ref, ...constraints) : ref;
@@ -57,23 +64,19 @@ function spCompatDoc(path, id) {
     _ref: ref,
 
     async get() {
-      await authReady;
       return getDoc(ref);
     },
 
     async set(data, options) {
-      await authReady;
       if (options) return setDoc(ref, data, options);
       return setDoc(ref, data);
     },
 
     async update(data) {
-      await authReady;
       return updateDoc(ref, data);
     },
 
     async delete() {
-      await authReady;
       return deleteDoc(ref);
     },
 
@@ -94,12 +97,12 @@ function spCompatCollection(path, constraints = []) {
 
     async add(data) {
       await authReady;
-      return addDoc(firestoreCollection(db, String(path)), data);
+      return firestoreAddDoc(firestoreCollection(db, String(path)), data);
     },
 
     async get() {
       await authReady;
-      return getDocs(spBuildQuery(path, constraints));
+      return firestoreGetDocs(spBuildQuery(path, constraints));
     },
 
     where(field, operator, value) {
@@ -138,16 +141,16 @@ window.spFirebase = {
   db,
   compatDb,
   doc: firestoreDoc,
-  getDoc: async (...args)=>{await authReady;return getDoc(...args)},
-  setDoc: async (...args)=>{await authReady;return setDoc(...args)},
-  updateDoc: async (...args)=>{await authReady;return updateDoc(...args)},
-  deleteDoc: async (...args)=>{await authReady;return deleteDoc(...args)},
-  addDoc: async (...args)=>{await authReady;return addDoc(...args)},
+  getDoc,
+  setDoc,
+  updateDoc,
+  deleteDoc,
+  addDoc,
   serverTimestamp,
   collection: firestoreCollection,
   query: firestoreQuery,
   where: firestoreWhere,
-  getDocs: async (...args)=>{await authReady;return getDocs(...args)},
+  getDocs,
   limit: firestoreLimit,
   orderBy: firestoreOrderBy,
   arrayUnion,
@@ -168,16 +171,10 @@ window.firebase.auth = function(){ return auth; };
 
 export {
   firestoreDoc as doc,
-  getDoc,
-  setDoc,
-  updateDoc,
-  deleteDoc,
-  addDoc,
   serverTimestamp,
   firestoreCollection as collection,
   firestoreQuery as query,
   firestoreWhere as where,
-  getDocs,
   firestoreLimit as limit,
   firestoreOrderBy as orderBy,
   arrayUnion,
