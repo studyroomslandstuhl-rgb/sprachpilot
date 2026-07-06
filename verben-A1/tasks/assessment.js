@@ -2,14 +2,25 @@ function releasedAssessmentVerbs(){
   if(typeof window.spStrictReleasedVerbList==="function")return window.spStrictReleasedVerbList();
   return ALL_VERBS.map(x=>x.v).filter(Boolean);
 }
+function masteredAssessmentVerbs(){
+  const archived=[];
+  (state.archivedPackages||[]).forEach(p=>{
+    if(Array.isArray(p.verbs))archived.push(...p.verbs);
+    if(Array.isArray(p.practiced))archived.push(...p.practiced);
+  });
+  return [...new Set([...(state.known||[]),...(state.learned||[]),...archived].filter(Boolean))];
+}
 function assessmentTargetCount(){
-  const n=releasedAssessmentVerbs().length;
+  const mastered=new Set(masteredAssessmentVerbs());
+  const n=releasedAssessmentVerbs().filter(v=>!mastered.has(v)).length;
   return Math.min(PRACTICE_TARGET_COUNT,n||PRACTICE_TARGET_COUNT);
 }
 function unusedVerbs(){
-  const allowed=releasedAssessmentVerbs();
-  const used=[...state.known,...state.unsure,...state.unknown,...state.active,...state.learned,...(state.assessed||[]),...(state.currentPackageVerbs||[])];
-  return allowed.filter(v=>!used.includes(v));
+  normalizeVerbStatusLists();
+  const mastered=new Set(masteredAssessmentVerbs());
+  const used=[...mastered,...(state.unsure||[]),...(state.unknown||[]),...(state.active||[]),...(state.assessed||[]),...(state.currentPackageVerbs||[]),...(state.assessmentBatch||[])];
+  const usedSet=new Set(used.filter(Boolean));
+  return releasedAssessmentVerbs().filter(v=>!usedSet.has(v));
 }
 function currentAssessmentVerb(){const list=unusedVerbs();return list.length?list[0]:null}
 function startAssessment(force=false){
@@ -26,9 +37,11 @@ function startAssessment(force=false){
 function renderAssessment(force=false){
   if(typeof window.spSyncVerbRelease==="function")window.spSyncVerbRelease();
   if(!force&&typeof window.spVerbAssessmentEnabled==="function"&&!window.spVerbAssessmentEnabled()){renderHome();return}
+  normalizeVerbStatusLists();
   const target=assessmentTargetCount();
   const v=currentAssessmentVerb();
   if(!v || currentPracticeVerbs().length>=target){resetPackageTasks();buildPracticePool();if(!currentPracticeVerbs().length){state.assessmentBatch=[];state.currentPackageVerbs=[];resetPackageTasks();}state.phase="home";const appNode=$("app"); if(appNode) appNode.classList.remove("card");saveState();renderHome();return}
+  if(masteredAssessmentVerbs().includes(v)){state.assessed=uniqueList([...(state.assessed||[]),v]);saveState();renderAssessment(force);return}
   if(state.currentVerb!==v){state.assessmentStart=Date.now();state.assessmentTries=0;state.revealed=false;}
   state.currentVerb=v;saveState();
   const imgHtml=typeof imageBox==="function"?imageBox(v):"";
@@ -41,11 +54,12 @@ function removeFromAll(v){[state.known,state.unsure,state.unknown,state.active,s
 function markAssessment(level){
   const allowed=new Set(releasedAssessmentVerbs());
   const v=state.currentVerb||currentAssessmentVerb();if(!v||!allowed.has(v)){renderAssessment();return;}
+  if(masteredAssessmentVerbs().includes(v)){state.assessed=uniqueList([...(state.assessed||[]),v]);state.currentVerb="";saveState();renderAssessment();return}
   removeFromAll(v);
   addUnique(state.assessmentBatch,v);
   addUnique(state.assessed,v);
   addUnique(state.currentPackageVerbs,v);
-  if(level==="known")addUnique(state.known,v);
+  if(level==="known"){addUnique(state.known,v);addUnique(state.learned,v)}
   if(level==="unsure"){addUnique(state.unsure,v);addUnique(state.active,v)}
   if(level==="unknown"){addUnique(state.unknown,v);addUnique(state.active,v)}
   normalizeVerbStatusLists();
