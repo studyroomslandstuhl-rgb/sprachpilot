@@ -36,19 +36,25 @@
     const studentDoc=clean({studentId:sid,userId:sid,docId:sid,email:emailOf(p),vorname:p.vorname||p.firstName||p.name||'',nachname:p.nachname||p.lastName||'',muttersprache:p.muttersprache||p.fremdsprache||'',kurs:course,kursnummer:course,courseCode:course,courseDocId:p.courseDocId||'',verbenFortschritt:progress,lastActivity:ts(),lastActiveAt:ts(),updatedAt:ts(),active:true,role:'student',loginRole:'student',isStudent:true,isTeacher:false});
     try{await db.collection('progress').doc(sid).set(progressDoc,{merge:true});await db.collection('students').doc(sid).set(studentDoc,{merge:true});localStorage.setItem('SP_VERBS_SAVE_STATUS',JSON.stringify({status:'ok',time:new Date().toISOString(),id:sid,known:(s.known||[]).length,learned:(s.learned||[]).length,active:(s.active||[]).length,progress}));window.dispatchEvent(new CustomEvent('SP_PROGRESS_SYNCED'));return true}catch(e){localStorage.setItem('SP_VERBS_SAVE_STATUS',JSON.stringify({status:'error',time:new Date().toISOString(),id:sid,error:e.code||e.message||String(e)}));console.warn('Verben Cloud speichern fehlgeschlagen',e);return false}
   }
+  function dedupeVerbList(list){const seen=new Set();return (list||[]).filter(v=>{v=String(v||'');if(!v||seen.has(v))return false;seen.add(v);return true})}
+  function installOverviewDedupe(){try{
+    if(typeof verbsByStatus==='function'){
+      verbsByStatus=function(){normalizeState();const learned=new Set(dedupeVerbList([...(state.learned||[]),...(state.known||[])]));const active=dedupeVerbList([...(state.active||[]),...(state.unsure||[]),...(state.unknown||[])]).filter(v=>!learned.has(v));const activeSet=new Set(active);const all=dedupeVerbList((ALL_VERBS||[]).map(item=>item.v));const newList=all.filter(v=>!learned.has(v)&&!activeSet.has(v));return{active,learned:[...learned],new:newList}}
+    }
+  }catch(e){}}
   if(typeof firebaseStudentId==='function')firebaseStudentId=canonicalStudentId;
   if(typeof storageKey==='function')storageKey=function(){return 'SP_VERBS_'+canonicalStudentId()};
-  const oldLoad=typeof loadState==='function'?loadState:null;
   loadState=async function(){
     let local=readLocalMerged();if(isState(local))state=mergeStates(state||{},local);
     try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();writeLocal(state);
     let cloud=await readCloudMerged();state=mergeStates(state||{},cloud);
-    try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();writeLocal(state);setTimeout(writeCloud,500);
+    try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();writeLocal(state);installOverviewDedupe();setTimeout(writeCloud,500);
   };
   saveState=function(){try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();state.localUpdatedAt=Date.now();writeLocal(state);sendProgress()};
   let timer=null;sendProgress=function(){clearTimeout(timer);timer=setTimeout(writeCloud,300)};
   window.flushVerbProgress=function(){clearTimeout(timer);return writeCloud()};
   window.addEventListener('online',()=>writeCloud());window.addEventListener('pagehide',()=>{try{saveState();writeCloud()}catch(e){}});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){try{saveState();writeCloud()}catch(e){}}});
-  setTimeout(()=>{try{const backup=readLocalMerged();if(isState(backup)){state=mergeStates(state||{},backup);normalizeState();writeLocal(state)}}catch(e){}},300);
+  setTimeout(()=>{try{const backup=readLocalMerged();if(isState(backup)){state=mergeStates(state||{},backup);normalizeState();writeLocal(state)}installOverviewDedupe()}catch(e){}},300);
+  setTimeout(installOverviewDedupe,1000);
   window.spVerbCloudSync={id:canonicalStudentId,ids:idCandidates,flush:writeCloud,status:function(){return safeJsonKey('SP_VERBS_SAVE_STATUS',{})},debug:function(){alert(JSON.stringify(this.status(),null,2))}};
 })();
