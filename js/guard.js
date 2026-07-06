@@ -1,3 +1,4 @@
+import "/js/session-restore.js?v=1";
 import { requireLogin, renderAccountStrip, logout } from "/js/auth.js";
 window.logout=logout;
 const SP_USER=requireLogin();
@@ -7,6 +8,7 @@ if(isL3T2Page){const style=document.createElement("style");style.textContent="#a
 if(SP_USER&&!isL3T2Page){document.addEventListener("DOMContentLoaded",()=>{try{renderAccountStrip()}catch(e){}})}
 if(SP_USER&&isL3T2Page){document.addEventListener("DOMContentLoaded",()=>{const el=document.getElementById("accountStrip");if(el){el.innerHTML="";el.style.display="none";el.style.height="0";el.style.overflow="hidden"}})}
 window.addEventListener("SP_PROFILE_SYNCED",()=>{try{renderAccountStrip()}catch(e){}});
+import("/js/microphone-fallback.js?v=1").catch(()=>{});
 import("/js/release-helper.js?v=10").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
 setTimeout(()=>{import("/js/global-sync.js?v=1").then(m=>m.startGlobalSync()).then(()=>{try{renderAccountStrip()}catch(e){}}).catch(()=>{})},700);
