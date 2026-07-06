@@ -5,7 +5,7 @@ const CONJ_SUBJECTS=[
 ];
 const CONJ_EXAMPLES={
   "bekommen":"ein Paket","mieten":"eine Wohnung","vermieten":"eine Wohnung","gratulieren":"zum Geburtstag","gefallen":"mir","fehlen":"heute","kaufen":"Brot","lernen":"Deutsch","schreiben":"eine E-Mail","lesen":"ein Buch","essen":"einen Apfel","fahren":"mit dem Bus","sprechen":"Deutsch","sehen":"ein Auto","geben":"den Schlüssel","nehmen":"den Bus","helfen":"meiner Mutter","arbeiten":"heute","wohnen":"in Berlin","kommen":"um acht Uhr",
-  "einkaufen":"im Supermarkt","aufräumen":"das Zimmer","anrufen":"meine Mutter","aufstehen":"um 7 Uhr","anfangen":"um 8 Uhr","fernsehen":"am Abend","frühstücken":"um 8 Uhr"
+  "einkaufen":"im Supermarkt","aufräumen":"das Zimmer","anrufen":"meine Mutter","aufstehen":"um 7 Uhr","anfangen":"um 8 Uhr","fernsehen":"am Abend","frühstücken":"um 8 Uhr","füttern":"das Baby"
 };
 const SEPARABLE_VERBS={
   "einkaufen":{base:"kaufen",prefix:"ein"},
@@ -39,14 +39,15 @@ const FULL_FORMS={
   "laden":{"ich":"lade","du":"lädst","er/sie/es":"lädt","wir":"laden","ihr":"ladet","sie/Sie":"laden"},
   "gefallen":{"ich":"gefalle","du":"gefällst","er/sie/es":"gefällt","wir":"gefallen","ihr":"gefallt","sie/Sie":"gefallen"},
   "fehlen":{"ich":"fehle","du":"fehlst","er/sie/es":"fehlt","wir":"fehlen","ihr":"fehlt","sie/Sie":"fehlen"},
-  "gratulieren":{"ich":"gratuliere","du":"gratuliertst".replace("tst","st"),"er/sie/es":"gratuliert","wir":"gratulieren","ihr":"gratuliert","sie/Sie":"gratulieren"}
+  "gratulieren":{"ich":"gratuliere","du":"gratuliertst".replace("tst","st"),"er/sie/es":"gratuliert","wir":"gratulieren","ihr":"gratuliert","sie/Sie":"gratulieren"},
+  "füttern":{"ich":"füttere","du":"fütterst","er/sie/es":"füttert","wir":"füttern","ihr":"füttert","sie/Sie":"füttern"}
 };
 if(typeof window!=="undefined"){
   window.CONJ_EXAMPLES=CONJ_EXAMPLES;
   window.SEPARABLE_VERBS=SEPARABLE_VERBS;
   window.FULL_FORMS=FULL_FORMS;
 }
-function verbStem(v){if(v.endsWith("eln"))return v.slice(0,-3)+"el"; if(v.endsWith("ern"))return v.slice(0,-2); if(v.endsWith("en"))return v.slice(0,-2); if(v.endsWith("n"))return v.slice(0,-1); return v}
+function verbStem(v){if(v.endsWith("eln"))return v.slice(0,-3)+"el"; if(v.endsWith("ern"))return v.slice(0,-1); if(v.endsWith("en"))return v.slice(0,-2); if(v.endsWith("n"))return v.slice(0,-1); return v}
 function regularForm(v,key){
   const stem=verbStem(v);const needsE=/[td]$|chn$|ffn$|gn$|tm$/.test(stem);
   if(key==="ich")return stem+"e";
