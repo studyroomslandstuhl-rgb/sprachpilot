@@ -1,0 +1,11 @@
+(function(){
+  window.FULL_FORMS=window.FULL_FORMS||{};
+  window.FULL_FORMS['füttern']={
+    'ich':'füttere',
+    'du':'fütterst',
+    'er/sie/es':'füttert',
+    'wir':'füttern',
+    'ihr':'füttert',
+    'sie/Sie':'füttern'
+  };
+})();
