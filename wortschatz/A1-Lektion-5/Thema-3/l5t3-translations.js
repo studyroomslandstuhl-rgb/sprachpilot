@@ -37,8 +37,8 @@ function stdTr(w){const t=w?.tr||{};return `<div class="std-trans">${STD_LANGS.m
     lernen:{en:'to learn / to study',ru:'учиться / учить',tr:'öğrenmek / çalışmak',uk:'вчитися / вчити',ar:'يتعلم / يدرس',ja:'学ぶ / 勉強する',ro:'a învăța',pl:'uczyć się',ku:'fêr bûn'}
   };
   if(typeof WORDS!=='undefined')WORDS.forEach(w=>{if(TR[w.id])w.tr=TR[w.id];if(IMG[w.id])w.image='/assets/img/'+IMG[w.id]});
-  window.displayImage=function(w){return w?.image||''};
-  window.hasGoodImage=function(w){return !!(w&&w.image)};
+  window.displayImage=function(w){return w?.image||''};window.hasGoodImage=function(w){return !!(w&&w.image)};
+  window.fixImg=function(el){const ph=document.createElement('div');ph.className='word-placeholder';ph.textContent='kein Bild';el.replaceWith(ph)};
   window.imgHtml=function(w){return hasGoodImage(w)?`<img src="${displayImage(w)}" onerror="fixImg(this)" alt="">`:`<div class="word-placeholder">kein Bild</div>`};
   window.bigImgHtml=function(w){return hasGoodImage(w)?`<img class="task-img" src="${displayImage(w)}" onerror="fixImg(this)" alt="">`:`<div class="placeholder-img">Bild fehlt<br>${full(w)}</div>`};
   window.renderOverview=function(el){const groups={};WORDS.forEach(w=>(groups[w.type]=groups[w.type]||[]).push(w));el.innerHTML=Object.keys(groups).map(g=>`<div class="type-block"><div class="type-title">${g}</div>${groups[g].map(w=>`<div class="word-row">${imgHtml(w)}<div><b>${full(w)}</b><div class="small">${w.plural?`Plural: ${w.plural}`:'kein Plural'}</div>${stdTr(w)}<div class="small">${w.type}</div></div></div>`).join('')}</div>`).join('')};
