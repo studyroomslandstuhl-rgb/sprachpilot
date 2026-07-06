@@ -17,5 +17,9 @@ setTimeout(()=>{import("/js/progress.js?v=7").catch(()=>{});import("/js/activity
 if(path.includes("/wortschatz/")){setTimeout(()=>import("/js/topic-progress-sync.js?v=4").catch(()=>{}),1400)}
 if(path.includes("/fragen-A1/")||path.includes("/fragen/")){setTimeout(()=>import("/js/fragen-progress-sync.js?v=1").catch(()=>{}),1200)}
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){setTimeout(()=>import("/wortschatz/index-release-lock.js?v=12").catch(()=>{}),800)}
-if(path.includes("/verben-A1/")){import("/verben-A1/js/release-bridge.js?v=8").catch(()=>{});import("/verben-A1/js/scoring-bridge.js?v=5").catch(()=>{})}
+if(path.includes("/verben-A1/")){
+  import("/verben-A1/js/release-bridge.js?v=8").catch(()=>{});
+  import("/verben-A1/js/scoring-bridge.js?v=5").catch(()=>{});
+  window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/verben-A1/js/cloud-progress-sync.js?v=4";document.body.appendChild(s)},900));
+}
 if(path.includes("/fragen-A1/")||path.includes("/fragen/")){import("/fragen-A1/scoring-bridge.js?v=2").catch(()=>{})}
