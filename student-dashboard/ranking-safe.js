@@ -14,7 +14,7 @@ function hasActivity(x){return points(x)>0||Number(x.verben?.progress||x.verben?
 function realStudent(x){const name=String(displayName(x)||'').trim(),role=String(x.role||x.loginRole||'').toLowerCase();if(role==='teacher'||x.isTeacher===true||x.teacherPreview===true)return false;if(!name&&!x.email)return false;if(/^sch(ü|ue)ler\/?in$/i.test(name)||/^student$/i.test(name))return false;return hasActivity(x)}
 async function queryRows(col,field,value){if(!value)return [];try{const s=await getDocs(query(collection(db,col),where(field,'==',value),limit(100)));return s.docs.map(d=>({id:d.id,...d.data()}))}catch(e){console.warn('Ranking query failed',col,field,value,e);return []}}
 async function loadRankingSafe(force=false){
- const box=$('leaderboard');if(!box)return;const now=Date.now();if(loading)return;if(!force&&now-lastLoad<10000)return;loading=true;lastLoad=now;box.style.display='grid';box.innerHTML='<div class="empty">Rangliste lädt …</div>';
+ const box=$('leaderboard');if(!box)return;const now=Date.now();if(loading)return;if(!force&&now-lastLoad<5000)return;loading=true;lastLoad=now;box.style.display='grid';box.hidden=false;box.removeAttribute('hidden');box.innerHTML='<div class="empty">Rangliste lädt …</div>';
  const c=courseCode();if(!c){box.innerHTML='<div class="empty">Rangliste: Kurs noch nicht erkannt.</div>';loading=false;return}
  const rows=[];for(const val of variants(c)){for(const field of ['kurs','courseCode','kursnummer','courseDocId']){rows.push(...await queryRows('progress',field,val));rows.push(...await queryRows('students',field,val));}}
  const seen=new Map();rows.forEach(x=>{const id=x.studentId||x.userId||x.id||x.email;if(!id)return;const old=seen.get(id)||{};seen.set(id,{...old,...x})});
@@ -22,6 +22,9 @@ async function loadRankingSafe(force=false){
  box.innerHTML=list.length?list.map((x,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div><b>${esc(displayName(x))}</b><div class="small">${esc(x.kurs||x.courseCode||x.kursnummer||c)}</div></div><div class="points"><b>${points(x)}</b> Punkte</div></div>`).join(''):'<div class="empty">Noch keine Rangliste mit Fortschritt gefunden.</div>';
  loading=false;
 }
-window.loadRankingSafe=loadRankingSafe;const btn=$('rankingBtn');if(btn)btn.addEventListener('click',()=>loadRankingSafe(true));
+function openRanking(){const box=$('leaderboard');if(box){box.style.display='grid';box.hidden=false;box.removeAttribute('hidden')}loadRankingSafe(true);setTimeout(()=>box?.scrollIntoView({behavior:'smooth',block:'start'}),50)}
+window.loadRankingSafe=loadRankingSafe;window.openRanking=openRanking;
+function bind(){const btn=$('rankingBtn');const box=$('leaderboard');if(box){box.style.display='grid';box.hidden=false;box.removeAttribute('hidden')}if(btn&&!btn.dataset.rankingSafe){btn.dataset.rankingSafe='1';btn.type='button';btn.onclick=e=>{e.preventDefault();openRanking()}}}
+bind();document.addEventListener('DOMContentLoaded',bind);setTimeout(bind,200);setTimeout(bind,1000);
 setTimeout(()=>loadRankingSafe(true),800);setTimeout(()=>loadRankingSafe(true),3500);
 window.addEventListener('SP_PROGRESS_SYNCED',()=>loadRankingSafe(true));window.addEventListener('SP_PROFILE_SYNCED',()=>loadRankingSafe(true));
