@@ -1,25 +1,17 @@
 header('Lesen');
 const FILE='lesen.html';
-const ITEMS=[
-['Bibliothek','Die Bibliothek ist von Montag bis Freitag geöffnet. Sie öffnet um 9 Uhr und schließt um 17 Uhr. Am Sonntag ist die Bibliothek geschlossen.','Die Bibliothek ist am Sonntag geöffnet.','Die Bibliothek ist am Sonntag geschlossen.','Die Bibliothek ist von Montag bis Freitag geöffnet.','Die Bibliothek schließt um 17 Uhr.'],
-['Kino','Im Kino Luna läuft heute der Film Schönes Leben. Der Film fängt um 18:30 Uhr an. Eine Karte kostet 8 Euro.','Der Film fängt um 20:30 Uhr an.','Der Film fängt um 18:30 Uhr an.','Der Film heißt Schönes Leben.','Eine Karte kostet 8 Euro.'],
-['Geschäft','Das Geschäft ist am Samstag von 10 Uhr bis 14 Uhr geöffnet. Am Montag ist es wieder geöffnet. An Feiertagen ist das Geschäft geschlossen.','Das Geschäft ist an Feiertagen geöffnet.','Das Geschäft ist an Feiertagen geschlossen.','Das Geschäft ist am Samstag bis 14 Uhr geöffnet.','Am Montag ist das Geschäft wieder geöffnet.'],
-['Kita','Die Kita ist jeden Tag von 7:30 Uhr bis 17 Uhr geöffnet. Die Kinder essen am Mittag. Am Feiertag ist die Kita geschlossen.','Die Kita ist am Feiertag geöffnet.','Die Kita ist am Feiertag geschlossen.','Die Kita ist jeden Tag geöffnet.','Die Kinder essen am Mittag.'],
-['Praxis','In der Praxis kann man am Vormittag einen Termin vereinbaren. Die Praxis öffnet um 8 Uhr. Um 16 Uhr ist sie geschlossen.','Die Praxis öffnet um 10 Uhr.','Die Praxis öffnet um 8 Uhr.','Man kann am Vormittag einen Termin vereinbaren.','Um 16 Uhr ist die Praxis geschlossen.']
+const TOTAL=6;
+const TEXT=`Vera ist 33 Jahre alt und lebt mit ihren zwei Kindern in Stuttgart. Tom ist vier Jahre alt und Luka ist zwei Jahre alt. Tom geht in die Kita, Luka geht in die Krippe. Vera arbeitet in einer Bibliothek. Sie steht jeden Morgen um sechs Uhr auf. Um sieben Uhr fünfzehn bringt sie die Kinder in die Kita und in die Krippe. Von acht Uhr bis sechzehn Uhr arbeitet Vera. Um siebzehn Uhr holt sie die Kinder ab. Um achtzehn Uhr essen sie zusammen. Am Abend spielt Vera noch mit Tom und Luka. Um halb acht bringt sie die Kinder ins Bett. Ihre Freundin ruft an und fragt: „Wann hast du denn mal Zeit?“ Vera antwortet: „Heute nicht. Ich bin total fertig.“`;
+const STATEMENTS=[
+{txt:'Vera lebt mit ihren zwei Kindern in Stuttgart.',ok:true,fix:''},
+{txt:'Tom geht in die Krippe.',ok:false,fix:'Tom geht in die Kita.'},
+{txt:'Luka geht in die Krippe.',ok:true,fix:''},
+{txt:'Vera arbeitet in einem Geschäft.',ok:false,fix:'Vera arbeitet in einer Bibliothek.'},
+{txt:'Vera holt die Kinder um siebzehn Uhr ab.',ok:true,fix:''},
+{txt:'Am Abend ist Vera total fertig.',ok:true,fix:''}
 ];
-let i=0;
-function show(){
-  if(loadTask(FILE,ITEMS.length).done.length>=ITEMS.length){complete(area,FILE,'jede-zeit.html');return}
-  i=spNextIndex(FILE,ITEMS.length);
-  const it=ITEMS[i],opts=shuffle([it[2],it[4],it[5]]);
-  area.innerHTML=`${spProgressHtml(FILE,ITEMS.length)}${instruction('Lesen Sie den Text. Eine Aussage passt nicht. Markieren Sie diese Aussage.')}<div class="open-text"><h2>${it[0]}</h2><p>${it[1]}</p></div><div class="choice-grid">${opts.map(o=>`<button class="choice" onclick="check(this,'${encodeURIComponent(o)}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`;
-}
-function check(btn,raw){
-  const val=decodeURIComponent(raw),it=ITEMS[i];
-  if(val===it[2]){
-    btn.classList.add('ok');fb.innerHTML='<div class="ok">Richtig!</div><div class="hint">Richtig ist: '+it[3]+'</div>';spMarkRight(FILE,ITEMS.length);setTimeout(show,1000);
-  }else{
-    btn.classList.add('no');const t=spMarkWrong(FILE,ITEMS.length);fb.innerHTML=help3(t,'Diese Aussage passt zum Text. Lesen Sie noch einmal.','Tipp: Prüfen Sie Tag, Uhrzeit und geöffnet oder geschlossen.',it[3]);
-  }
-}
+let selected=new Set();
+function show(){if(loadTask(FILE,TOTAL).done.length>=TOTAL){complete(area,FILE,'tv-programm.html');return}area.innerHTML=`${spProgressHtml(FILE,TOTAL)}${instruction('Lesen Sie den Text. Markieren Sie alle falschen Aussagen. Zwei Aussagen sind falsch.')}<div class="open-text"><h2>Veras Tag</h2><p>${TEXT}</p></div><div class="choice-grid">${STATEMENTS.map((s,i)=>`<button class="choice statement-choice" id="st${i}" onclick="toggle(${i})">${i+1}. ${s.txt}</button>`).join('')}</div><div class="actions"><button class="btn" onclick="check()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`}
+function toggle(i){if(selected.has(i)){selected.delete(i);document.getElementById('st'+i).classList.remove('selected')}else{selected.add(i);document.getElementById('st'+i).classList.add('selected')}}
+function check(){const wrong=STATEMENTS.map((s,i)=>!s.ok?i:null).filter(i=>i!==null);const ok=wrong.length===selected.size&&wrong.every(i=>selected.has(i));if(ok){wrong.forEach(i=>document.getElementById('st'+i).classList.add('ok'));fb.innerHTML='<div class="ok">Richtig!</div><div class="feedback-lines">'+wrong.map(i=>'<div class="hint">'+STATEMENTS[i].fix+'</div>').join('')+'</div>';markTaskDone(FILE,TOTAL);setTimeout(show,1300)}else{STATEMENTS.forEach((s,i)=>{const b=document.getElementById('st'+i);if(selected.has(i)&&s.ok)b.classList.add('no')});const t=spMarkWrong(FILE,TOTAL);fb.innerHTML=help3(t,'Nicht ganz. Es gibt genau zwei falsche Aussagen.','Tipp: Prüfen Sie Kita/Krippe und den Arbeitsplatz.','Falsch sind: 2 und 4.')}}
 show();
