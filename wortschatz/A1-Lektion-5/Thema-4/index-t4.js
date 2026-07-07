@@ -4,7 +4,7 @@ const tasks=[
   ['hoeren.html',6,'Hören','Zeitangaben hören.'],
   ['lesen.html',5,'Lesen','Texte und Aussagen lesen.'],
   ['jede-zeit.html',10,'jeden / jede / jedes','Zeitwörter üben.'],
-  ['pruefung.html',6,'Prüfung','Alles prüfen.']
+  ['pruefung.html',12,'Prüfung','Alles prüfen.']
 ];
 function card(t,n){
   const p=pctFor(t[0],t[1]);
