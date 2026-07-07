@@ -19,170 +19,39 @@
   function obj(a,b){return {...(a&&typeof a==='object'?a:{}),...(b&&typeof b==='object'?b:{})}}
   function deep(a,b){const out=obj(a,b);Object.keys(a||{}).forEach(k=>out[k]=obj(a[k],out[k]));Object.keys(b||{}).forEach(k=>out[k]=obj(out[k],b[k]));return out}
   function betterExam(a,b){a=a||{};b=b||{};const as=Number(a.score||0),bs=Number(b.score||0);return (b.passed&&!a.passed)||bs>as?obj(a,b):obj(b,a)}
-  function mergeStates(a,b){
-    a=a||{};b=b||{};
-    const out={...a,...b};
-    ['known','learned','assessed','assessmentBatch','currentPackageVerbs','unsure','unknown','active','practicePool','memoryDone','openCards','archivedPackages'].forEach(k=>out[k]=union(a[k],b[k]));
-    ['weak','alertsShown','taskRewardsShown'].forEach(k=>out[k]=obj(a[k],b[k]));
-    ['skillDone','skillAttempts','skillSuccess','taskQueues','taskDoneSets'].forEach(k=>out[k]=deep(a[k],b[k]));
-    out.exam=betterExam(a.exam,b.exam);
-    return out;
-  }
+  function mergeStates(a,b){a=a||{};b=b||{};const out={...a,...b};['known','learned','assessed','assessmentBatch','currentPackageVerbs','unsure','unknown','active','practicePool','memoryDone','openCards','archivedPackages'].forEach(k=>out[k]=union(a[k],b[k]));['weak','alertsShown','taskRewardsShown'].forEach(k=>out[k]=obj(a[k],b[k]));['skillDone','skillAttempts','skillSuccess','taskQueues','taskDoneSets'].forEach(k=>out[k]=deep(a[k],b[k]));out.exam=betterExam(a.exam,b.exam);return out}
   function readLocalMerged(){let out={};allLocalKeys().forEach(k=>{const x=safeJsonKey(k,null);if(isState(x))out=mergeStates(out,x)});try{const s=safeJsonValue(sessionStorage.getItem('SP_VERBS_SESSION_BACKUP'),null);if(isState(s))out=mergeStates(out,s)}catch(e){}return out}
   function normalizeState(){
     try{if(typeof normalizeVerbStatusLists==='function')normalizeVerbStatusLists()}catch(e){}
     try{
       state.known=union(state.known,state.learned);
       state.learned=union(state.learned,state.known);
-      state.unsure=uniq(state.unsure).filter(v=>!state.known.includes(v)&&!state.learned.includes(v));
+      const base=union(state.active,state.unsure,state.unknown,state.currentPackageVerbs,state.assessmentBatch).filter(v=>!state.known.includes(v)&&!state.learned.includes(v));
+      state.active=base;
+      state.unsure=union(state.unsure,base).filter(v=>!state.known.includes(v)&&!state.learned.includes(v));
       state.unknown=uniq(state.unknown).filter(v=>!state.known.includes(v)&&!state.learned.includes(v)&&!state.unsure.includes(v));
-      state.active=uniq(state.active).filter(v=>!state.known.includes(v)&&!state.learned.includes(v)&&((state.unsure||[]).includes(v)||(state.unknown||[]).includes(v)));
-      state.assessmentBatch=uniq(state.assessmentBatch).filter(v=>!state.known.includes(v)&&!state.learned.includes(v));
-      state.currentPackageVerbs=uniq(state.currentPackageVerbs).filter(v=>!state.known.includes(v)&&!state.learned.includes(v));
+      state.assessmentBatch=union(state.assessmentBatch,base);
+      state.currentPackageVerbs=union(state.currentPackageVerbs,state.assessmentBatch,base);
       state.assessed=uniq(state.assessed);
     }catch(e){}
   }
-  function writeLocal(st=state){
-    const text=JSON.stringify(st||{});
-    try{localStorage.setItem(canonicalKey(),text)}catch(e){}
-    try{localStorage.setItem('SP_VERBS_LAST_STATE',text)}catch(e){}
-    try{localStorage.setItem('SP_VERBS_BACKUP_STATE',text)}catch(e){}
-    try{sessionStorage.setItem('SP_VERBS_SESSION_BACKUP',text)}catch(e){}
-    try{localStorage.setItem('SP_STUDENT_ID',canonicalStudentId())}catch(e){}
-  }
-  function installFastImages(){
-    try{
-      window.preloadActiveImages=function(){};
-      window.loadImageBlobUrl=function(){return Promise.reject(new Error('disabled'))};
-      window.hydrateImages=function(root=document){
-        const boxes=[...root.querySelectorAll('[data-verb]')].filter(box=>!box.dataset.loaded);
-        const visible=boxes.filter(box=>!box.closest('details:not([open])')).slice(0,60);
-        visible.forEach(box=>{
-          box.dataset.loaded='1';
-          const v=box.getAttribute('data-verb')||'';
-          let file='';
-          try{file=(typeof imageFileCandidates==='function'?imageFileCandidates(v)[0]:'')||''}catch(e){}
-          if(!file){box.innerHTML="<span class='image-fallback'>Bild</span>";return;}
-          const img=document.createElement('img');
-          img.alt=v;
-          img.loading='lazy';
-          img.decoding='async';
-          img.onerror=function(){box.innerHTML="<span class='image-fallback'>Bild fehlt</span>";box.classList.add('image-missing')};
-          img.onload=function(){box.classList.add('image-loaded')};
-          img.src='/assets/img/'+file+(file.includes('?')?'&':'?')+'v=fast14';
-          box.textContent='';
-          box.appendChild(img);
-        });
-      };
-      window.renderAndHydrate=function(){setTimeout(()=>window.hydrateImages(document),120)};
-      document.addEventListener('toggle',e=>{if(e.target&&e.target.matches&&e.target.matches('details[open]'))setTimeout(()=>window.hydrateImages(e.target),80)},true);
-    }catch(e){}
-  }
+  function writeLocal(st=state){const text=JSON.stringify(st||{});try{localStorage.setItem(canonicalKey(),text)}catch(e){}try{localStorage.setItem('SP_VERBS_LAST_STATE',text)}catch(e){}try{localStorage.setItem('SP_VERBS_BACKUP_STATE',text)}catch(e){}try{sessionStorage.setItem('SP_VERBS_SESSION_BACKUP',text)}catch(e){}try{localStorage.setItem('SP_STUDENT_ID',canonicalStudentId())}catch(e){}}
+  function installFastImages(){try{window.preloadActiveImages=function(){};window.loadImageBlobUrl=function(){return Promise.reject(new Error('disabled'))};window.hydrateImages=function(root=document){const boxes=[...root.querySelectorAll('[data-verb]')].filter(box=>!box.dataset.loaded);const visible=boxes.filter(box=>!box.closest('details:not([open])')).slice(0,60);visible.forEach(box=>{box.dataset.loaded='1';const v=box.getAttribute('data-verb')||'';let file='';try{file=(typeof imageFileCandidates==='function'?imageFileCandidates(v)[0]:'')||''}catch(e){}if(!file){box.innerHTML="<span class='image-fallback'>Bild</span>";return;}const img=document.createElement('img');img.alt=v;img.loading='lazy';img.decoding='async';img.onerror=function(){box.innerHTML="<span class='image-fallback'>Bild fehlt</span>";box.classList.add('image-missing')};img.onload=function(){box.classList.add('image-loaded')};img.src='/assets/img/'+file+(file.includes('?')?'&':'?')+'v=fast15';box.textContent='';box.appendChild(img)})};window.renderAndHydrate=function(){setTimeout(()=>window.hydrateImages(document),120)};document.addEventListener('toggle',e=>{if(e.target&&e.target.matches&&e.target.matches('details[open]'))setTimeout(()=>window.hydrateImages(e.target),80)},true)}catch(e){}}
   function esc(s){try{return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}catch(e){return ''}}
-  function allVerbNames(){try{return uniq((ALL_VERBS||[]).map(x=>x&&x.v).filter(Boolean)).sort((a,b)=>a.localeCompare(b,'de'))}catch(e){return[]}}
+  function allVerbNames(){try{const rel=typeof window.spStrictReleasedVerbList==='function'?window.spStrictReleasedVerbList():null;const list=rel&&rel.length?rel:(ALL_VERBS||[]).map(x=>x&&x.v).filter(Boolean);return uniq(list).sort((a,b)=>a.localeCompare(b,'de'))}catch(e){return[]}}
   function currentManualSelection(){try{return uniq([...(state.active||[]),...(state.currentPackageVerbs||[]),...(state.assessmentBatch||[])]).filter(v=>!(state.known||[]).includes(v)&&!(state.learned||[]).includes(v)).slice(0,20)}catch(e){return[]}}
-  function forceSave(){try{normalizeState();writeLocal(state);if(typeof renderHeader==='function')renderHeader()}catch(e){}}
-  function chooseVerbData(){return allVerbNames().map(v=>({v,native:(typeof nativeWord==='function'?nativeWord(v):'')}))}
-  window.spToggleManualVerb=function(v){
-    const box=document.querySelector('[data-verb-choice="'+CSS.escape(v)+'"]');
-    if(!box)return;
-    const selected=document.querySelectorAll('[data-verb-choice].selected');
-    if(box.classList.contains('selected'))box.classList.remove('selected');
-    else{
-      if(selected.length>=20){alert('Du kannst maximal 20 Verben wählen.');return;}
-      box.classList.add('selected');
-    }
-    const count=document.getElementById('manualVerbCount');
-    if(count)count.textContent=String(document.querySelectorAll('[data-verb-choice].selected').length);
-  };
-  window.spFilterManualVerbs=function(){
-    const q=String((document.getElementById('manualVerbSearch')||{}).value||'').trim().toLowerCase();
-    document.querySelectorAll('[data-verb-choice]').forEach(el=>{const txt=String(el.textContent||'').toLowerCase();el.style.display=!q||txt.includes(q)?'block':'none'});
-  };
-  window.spSaveManualVerbs=function(){
-    const chosen=[...document.querySelectorAll('[data-verb-choice].selected')].map(el=>el.getAttribute('data-verb-choice')).filter(Boolean).slice(0,20);
-    if(!chosen.length){alert('Bitte wähle mindestens ein Verb.');return;}
-    try{
-      state.phase='home';
-      state.active=uniq(chosen);
-      state.unsure=uniq(chosen);
-      state.unknown=[];
-      state.currentPackageVerbs=uniq(chosen);
-      state.assessmentBatch=uniq(chosen);
-      state.practicePool=uniq(chosen);
-      state.currentTask=null;
-      state.memoryCards=[];
-      state.memoryDone=[];
-      state.openCards=[];
-      state.first=null;
-      state.lock=false;
-      state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0};
-      state.taskQueues={};
-      state.taskDoneSets={};
-      chosen.forEach(v=>{if(state.skillDone)delete state.skillDone[v];if(state.skillAttempts)delete state.skillAttempts[v];if(state.skillSuccess)delete state.skillSuccess[v];if(state.weak)delete state.weak[v];});
-      normalizeState();
-      writeLocal(state);
-      if(typeof clearVerbHash==='function')clearVerbHash(true);
-      if(typeof renderHome==='function')renderHome();
-    }catch(e){alert('Speichern war nicht möglich. Bitte Seite neu laden und noch einmal versuchen.');console.warn(e)}
-  };
-  window.renderVerbChooser=function(){
-    try{
-      if(typeof clearVerbHash==='function')clearVerbHash(true);
-      const app=document.getElementById('app');if(!app)return;
-      const selected=new Set(currentManualSelection());
-      const verbs=chooseVerbData();
-      app.classList.add('card');
-      app.innerHTML=`<section class="card"><h2>Verben wählen</h2><p class="small">Wähle bis zu 20 Verben zum Üben. Diese Auswahl wird sofort lokal gespeichert und bleibt nach dem Neuladen erhalten.</p><div class="actions"><input id="manualVerbSearch" oninput="spFilterManualVerbs()" placeholder="Verb suchen" style="max-width:320px"><span class="badge"><span id="manualVerbCount">${selected.size}</span>/20 gewählt</span></div><div class="verb-choice-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:14px">${verbs.map(item=>`<button type="button" class="btn secondary ${selected.has(item.v)?'selected':''}" data-verb-choice="${esc(item.v)}" onclick="spToggleManualVerb('${esc(item.v)}')" style="text-align:left;white-space:normal"><b>${esc(item.v)}</b><br><span class="small">${esc(item.native)}</span></button>`).join('')}</div><div class="actions" style="margin-top:16px"><button class="btn green" onclick="spSaveManualVerbs()">Auswahl speichern</button><button class="btn secondary" onclick="renderHome()">Zurück</button></div></section>`;
-    }catch(e){console.warn(e)}
-  };
-  function addChooserButton(){
-    try{
-      const nav=document.querySelector('#spHeader .nav');
-      if(nav&&!nav.querySelector('[data-manual-verb-button]')){
-        const b=document.createElement('button');b.className='btn secondary';b.type='button';b.dataset.manualVerbButton='1';b.textContent='Verben wählen';b.onclick=()=>window.renderVerbChooser();
-        const reset=nav.querySelector('.danger-btn');nav.insertBefore(b,reset||null);
-      }
-    }catch(e){}
-  }
-  function addHomeChooserCard(){
-    try{
-      const app=document.getElementById('app');if(!app||app.querySelector('[data-manual-verb-card]'))return;
-      const first=app.querySelector('section.card');if(!first)return;
-      const div=document.createElement('section');div.className='card';div.dataset.manualVerbCard='1';
-      div.innerHTML='<h2>Verben selbst wählen</h2><p class="small">Falls die Einschätzung nicht speichert, kannst du hier direkt bis zu 20 Verben zum Üben auswählen.</p><div class="actions"><button class="btn green" onclick="renderVerbChooser()">Verben wählen</button></div>';
-      first.insertAdjacentElement('afterend',div);
-    }catch(e){}
-  }
-  function patchVerbUi(){
-    try{
-      if(typeof renderHeader==='function'&&!renderHeader.__manualVerbPatch){const old=renderHeader;renderHeader=function(){old();addChooserButton()};renderHeader.__manualVerbPatch=true;}
-      if(typeof renderHome==='function'&&!renderHome.__manualVerbPatch){const old=renderHome;renderHome=function(){old();addChooserButton();addHomeChooserCard()};renderHome.__manualVerbPatch=true;}
-      addChooserButton();addHomeChooserCard();
-    }catch(e){}
-  }
-  if(typeof firebaseStudentId==='function')firebaseStudentId=canonicalStudentId;
-  if(typeof storageKey==='function')storageKey=canonicalKey;
-  loadState=async function(){
-    const local=readLocalMerged();
-    if(isState(local))state=mergeStates(state||{},local);
-    try{if(typeof migrateState==='function')migrateState()}catch(e){}
-    normalizeState();
-    writeLocal(state);
-    installFastImages();
-    setTimeout(patchVerbUi,0);
-  };
-  saveState=function(){
-    try{if(typeof migrateState==='function')migrateState()}catch(e){}
-    normalizeState();
-    state.localUpdatedAt=Date.now();
-    writeLocal(state);
-  };
-  sendProgress=function(){};
-  window.flushVerbProgress=function(){writeLocal(state);return Promise.resolve(true)};
-  window.spVerbStorageSchedule=function(){writeLocal(state)};
-  window.spVerbStorageFlush=window.flushVerbProgress;
-  window.spVerbCloudSync={id:canonicalStudentId,ids:idCandidates,flush:window.flushVerbProgress,status:function(){return {status:'local-only',id:canonicalStudentId(),time:new Date().toISOString()}},debug:function(){alert(JSON.stringify(this.status(),null,2))}};
-  installFastImages();
-  document.addEventListener('DOMContentLoaded',()=>setTimeout(patchVerbUi,300));
+  window.spToggleManualVerb=function(v){const box=document.querySelector('[data-verb-choice="'+String(v||'').replace(/"/g,'\\"')+'"]');if(!box)return;const selected=document.querySelectorAll('[data-verb-choice].selected');if(box.classList.contains('selected'))box.classList.remove('selected');else{if(selected.length>=20){alert('Du kannst maximal 20 Verben wählen.');return}box.classList.add('selected')}const count=document.getElementById('manualVerbCount');if(count)count.textContent=String(document.querySelectorAll('[data-verb-choice].selected').length)};
+  window.spFilterManualVerbs=function(){const q=String((document.getElementById('manualVerbSearch')||{}).value||'').trim().toLowerCase();document.querySelectorAll('[data-verb-choice]').forEach(el=>{const txt=String(el.textContent||'').toLowerCase();el.style.display=!q||txt.includes(q)?'block':'none'})};
+  window.spSaveManualVerbs=function(){const chosen=[...document.querySelectorAll('[data-verb-choice].selected')].map(el=>el.getAttribute('data-verb-choice')).filter(Boolean).slice(0,20);if(!chosen.length){alert('Bitte wähle mindestens ein Verb.');return}try{state.phase='home';state.active=uniq(chosen);state.unsure=uniq(chosen);state.unknown=[];state.currentPackageVerbs=uniq(chosen);state.assessmentBatch=uniq(chosen);state.practicePool=uniq(chosen);state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0};state.taskQueues={};state.taskDoneSets={};chosen.forEach(v=>{if(state.skillDone)delete state.skillDone[v];if(state.skillAttempts)delete state.skillAttempts[v];if(state.skillSuccess)delete state.skillSuccess[v];if(state.weak)delete state.weak[v]});normalizeState();writeLocal(state);if(typeof clearVerbHash==='function')clearVerbHash(true);if(typeof renderHome==='function')renderHome()}catch(e){alert('Speichern war nicht möglich. Bitte Seite neu laden und noch einmal versuchen.');console.warn(e)}};
+  window.renderVerbChooser=function(){try{if(typeof clearVerbHash==='function')clearVerbHash(true);const app=document.getElementById('app');if(!app)return;const selected=new Set(currentManualSelection());const verbs=allVerbNames();app.classList.add('card');app.innerHTML=`<section class="card"><h2>Verben wählen</h2><p class="small">Wähle bis zu 20 freigegebene deutsche Verben zum Üben.</p><div class="actions"><input id="manualVerbSearch" oninput="spFilterManualVerbs()" placeholder="Verb suchen" style="max-width:320px"><span class="badge"><span id="manualVerbCount">${selected.size}</span>/20 gewählt</span></div>${verbs.length?`<div class="verb-choice-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:14px">${verbs.map(v=>`<button type="button" class="btn secondary ${selected.has(v)?'selected':''}" data-verb-choice="${esc(v)}" style="text-align:left;white-space:normal"><b>${esc(v)}</b></button>`).join('')}</div>`:'<div class="empty">Für diesen Kurs sind aktuell keine Verben freigegeben.</div>'}<div class="actions" style="margin-top:16px"><button class="btn green" data-action="save-manual-verbs">Auswahl speichern</button><button class="btn secondary" data-action="home">Zurück</button></div></section>`}catch(e){console.warn(e)}};
+  function addChooserButton(){try{const nav=document.querySelector('#spHeader .nav');if(nav&&!nav.querySelector('[data-manual-verb-button]')){const b=document.createElement('button');b.className='btn secondary';b.type='button';b.dataset.manualVerbButton='1';b.dataset.action='verb-chooser';b.textContent='Verben wählen';const reset=nav.querySelector('.danger-btn');nav.insertBefore(b,reset||null)}}catch(e){}}
+  function addHomeChooserCard(){try{const app=document.getElementById('app');if(!app||app.querySelector('[data-manual-verb-card]'))return;const first=app.querySelector('section.card');if(!first)return;const div=document.createElement('section');div.className='card';div.dataset.manualVerbCard='1';div.innerHTML='<h2>Verben selbst wählen</h2><p class="small">Falls die Einschätzung nicht speichert, kannst du hier direkt bis zu 20 Verben zum Üben auswählen.</p><div class="actions"><button class="btn green" data-action="verb-chooser">Verben wählen</button></div>';first.insertAdjacentElement('afterend',div)}catch(e){}}
+  function patchVerbUi(){try{if(typeof renderHeader==='function'&&!renderHeader.__manualVerbPatch){const old=renderHeader;renderHeader=function(){old();addChooserButton()};renderHeader.__manualVerbPatch=true}if(typeof renderHome==='function'&&!renderHome.__manualVerbPatch){const old=renderHome;renderHome=function(){old();addChooserButton();addHomeChooserCard()};renderHome.__manualVerbPatch=true}addChooserButton();addHomeChooserCard()}catch(e){}}
+  function safeClick(e){const b=e.target&&e.target.closest?e.target.closest('button,a'):null;if(!b)return;const txt=String(b.textContent||'').trim();const action=b.dataset&&b.dataset.action;if(action==='verb-chooser'||txt==='Verben wählen'){e.preventDefault();e.stopPropagation();window.renderVerbChooser();return}if(action==='save-manual-verbs'||txt==='Auswahl speichern'){e.preventDefault();e.stopPropagation();window.spSaveManualVerbs();return}if(action==='home'||txt==='Zurück'){if(typeof renderHome==='function'){e.preventDefault();e.stopPropagation();renderHome()}return}if(txt==='Übersicht'&&typeof renderVerbOverview==='function'){e.preventDefault();e.stopPropagation();renderVerbOverview();return}if(txt==='Statistik'&&typeof renderStudentDashboard==='function'){e.preventDefault();e.stopPropagation();renderStudentDashboard();return}if(txt==='Weitere Verben einschätzen'&&typeof handleAssessmentClick==='function'){e.preventDefault();e.stopPropagation();handleAssessmentClick();return}if(txt==='Fortschritte löschen'&&typeof resetCurrentPackage==='function'){e.preventDefault();e.stopPropagation();resetCurrentPackage();return}const choice=b.getAttribute&&b.getAttribute('data-verb-choice');if(choice){e.preventDefault();e.stopPropagation();window.spToggleManualVerb(choice);return}}
+  if(!window.__SP_VERB_SAFE_CLICK){window.__SP_VERB_SAFE_CLICK=true;document.addEventListener('click',safeClick,true)}
+  if(typeof firebaseStudentId==='function')firebaseStudentId=canonicalStudentId;if(typeof storageKey==='function')storageKey=canonicalKey;
+  loadState=async function(){const local=readLocalMerged();if(isState(local))state=mergeStates(state||{},local);try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();writeLocal(state);installFastImages();setTimeout(patchVerbUi,0)};
+  saveState=function(){try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();state.localUpdatedAt=Date.now();writeLocal(state)};
+  sendProgress=function(){};window.flushVerbProgress=function(){writeLocal(state);return Promise.resolve(true)};window.spVerbStorageSchedule=function(){writeLocal(state)};window.spVerbStorageFlush=window.flushVerbProgress;window.spVerbCloudSync={id:canonicalStudentId,ids:idCandidates,flush:window.flushVerbProgress,status:function(){return {status:'local-only',id:canonicalStudentId(),time:new Date().toISOString()}},debug:function(){alert(JSON.stringify(this.status(),null,2))}};
+  installFastImages();document.addEventListener('DOMContentLoaded',()=>setTimeout(patchVerbUi,300));
 })();
