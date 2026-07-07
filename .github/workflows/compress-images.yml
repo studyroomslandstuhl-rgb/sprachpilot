@@ -1,0 +1,58 @@
+name: Compress Images on Push
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '**.png'
+      - '**.jpg'
+      - '**.jpeg'
+
+jobs:
+  compress:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Install dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y imagemagick optipng pngquant
+
+      - name: Compress PNG images
+        run: |
+          find . -type f \( -name '*.png' \) ! -path './node_modules/*' ! -path './.git/*' | while read file; do
+            original_size=$(stat -c%s "$file")
+            optipng -o2 -quiet "$file" || true
+            pngquant --quality=75-90 --speed=1 --force --output="${file}.tmp" "$file" || true
+            [ -f "${file}.tmp" ] && mv "${file}.tmp" "$file"
+            new_size=$(stat -c%s "$file")
+            if [ "$original_size" -gt 0 ]; then
+              reduction=$(( (original_size - new_size) * 100 / original_size ))
+              echo "✓ $file: reduced by ${reduction}%"
+            else
+              echo "✓ $file: processed"
+            fi
+          done
+
+      - name: Compress JPEG images
+        run: |
+          find . -type f \( -name '*.jpg' -o -name '*.jpeg' \) ! -path './node_modules/*' ! -path './.git/*' | while read file; do
+            convert "$file" -quality 82 -strip "$file"
+            echo "✓ $file: compressed"
+          done
+
+      - name: Commit and push
+        run: |
+          if ! git diff --quiet; then
+            git config user.email "action@github.com"
+            git config user.name "Image Compression Bot"
+            git add -A
+            git commit -m "perf: auto-compress images" --no-verify
+            git push
+          fi
