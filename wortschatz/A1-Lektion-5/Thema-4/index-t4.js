@@ -1,9 +1,11 @@
 header(CFG.title,true);
 const tasks=[
   ['karteikarten.html',WORDS.length,'Karteikarten','🃏','Wörter lernen.'],
-  ['hoeren.html',6,'Hören','🎧','Zeitangaben hören.'],
-  ['lesen.html',5,'Lesen','🔎','Texte und Aussagen lesen.'],
-  ['jede-zeit.html',10,'jeden / jede / jedes','🧩','Zeitwörter üben.']
+  ['hoeren.html',10,'Hören: Öffnungszeiten','🎧','Längere Ansagen hören und die richtige Information wählen.'],
+  ['schilder.html',8,'Schilder lesen','🪧','Öffnungszeiten lesen und eigene Sätze schreiben.'],
+  ['lesen.html',6,'Lesen: Veras Tag','🔎','Text lesen und zwei falsche Aussagen markieren.'],
+  ['tv-programm.html',6,'TV-Programm','📺','Fehler im Satz finden und den Satz richtig schreiben.'],
+  ['jede-zeit.html',16,'jeden / jede / jedes','🧩','Zeitangaben in ganzen Sätzen üben.']
 ];
 function card(t,n){
   const p=pctFor(t[0],t[1]);
