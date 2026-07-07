@@ -34,7 +34,7 @@
 <script type="module">
 import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "./js/auth.js?v=release-core-20260701b";
 import { loadCourseRelease, moduleOpen } from "./js/course-releases.js?v=release-core-20260701b";
-import { startGlobalSync, refreshActiveProfileFromCloud } from "./js/global-sync.js?v=1";
+import { startGlobalSync } from "./js/global-sync.js?v=2";
 window.logout=logout;
 
 function isTeacherAllAccess(){
@@ -78,8 +78,8 @@ const box=document.querySelector("#loggedBox");
 const guest=document.querySelector("#guestBox");
 if(p){
   renderLogged(p);
-  startGlobalSync().then(async()=>{
-    p=await refreshActiveProfileFromCloud(p)||getActiveProfile()||p;
+  startGlobalSync().then(async synced=>{
+    p=synced||getActiveProfile()||p;
     renderLogged(p);
     renderAccountStrip();
     return loadCourseRelease(p);
