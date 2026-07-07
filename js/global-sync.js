@@ -6,6 +6,11 @@ let unsubscribeStudent=null;
 let unsubscribeProgress=null;
 let localWrite=false;
 let profileWriteTimer=null;
+let refreshTimer=null;
+let lastRefresh=0;
+let lastProfileJSON="";
+let lastDashboardJSON="";
+const REFRESH_GAP=60000;
 
 function readJSON(key,fallback=null){try{return JSON.parse(localStorage.getItem(key)||"")||fallback}catch(e){return fallback}}
 function uniq(list){return Array.from(new Set((list||[]).filter(Boolean).map(String)))}
@@ -27,8 +32,9 @@ function activeLocalProfile(){return getActiveProfile() || readJSON("SP_USER_PRO
 function courseOf(p={}){return String(p.kurs||p.kursnummer||p.courseCode||p.course||localStorage.getItem("SP_COURSE_CODE")||"").trim()}
 function emailOf(p={}){return String(p.email||"").trim().toLowerCase()}
 function fallbackId(p={}){const c=normId(p.courseDocId||courseOf(p)||"kurs");const e=normId(emailOf(p)||p.vorname||p.firstName||"student");return c&&e?c+"_"+e:""}
-export function globalStudentId(p=activeLocalProfile()||{}){return (idCandidates(p)[0]||"")}
 export function idCandidates(p=activeLocalProfile()||{}){return uniq([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem("SP_STUDENT_ID"),fallbackId(p)])}
+function primaryIds(p=activeLocalProfile()||{}){return uniq([p.docId,p.studentId,p.userId,localStorage.getItem("SP_STUDENT_ID"),fallbackId(p)]).slice(0,3)}
+export function globalStudentId(p=activeLocalProfile()||{}){return (idCandidates(p)[0]||"")}
 function isStudentSession(){return getActiveRole()==="student" && !!activeLocalProfile()}
 function mergeProfile(local={},remote={},docId=""){
   const course=remote.kurs||remote.courseCode||remote.kursnummer||local.kurs||local.courseCode||local.kursnummer||"";
@@ -56,6 +62,9 @@ function mergeProfile(local={},remote={},docId=""){
 function applyProfile(profile,{dispatch=true}={}){
   if(!profile)return null;
   const p={...profile};
+  const json=JSON.stringify(clean(p));
+  const changed=json!==lastProfileJSON;
+  lastProfileJSON=json;
   safeSet("SP_USER_PROFILE",JSON.stringify(p));
   safeSet("SP_STUDENT_PROFILE",JSON.stringify(p));
   safeSet("SP_KEEP_LOGGED_IN","1");
@@ -66,7 +75,7 @@ function applyProfile(profile,{dispatch=true}={}){
   safeSet("motherLanguage",p.muttersprache||"");
   safeSet("muttersprache",p.muttersprache||"");
   window.SP_GLOBAL_PROFILE=p;
-  if(dispatch)window.dispatchEvent(new CustomEvent("SP_PROFILE_SYNCED",{detail:{profile:p}}));
+  if(dispatch&&changed)window.dispatchEvent(new CustomEvent("SP_PROFILE_SYNCED",{detail:{profile:p}}));
   return p;
 }
 function progressToDashboard(progress={}){
@@ -85,16 +94,17 @@ function progressToDashboard(progress={}){
   const unsure=(v.unsure||v.state?.unsure||[]).length||0;
   const unknown=(v.unknown||v.state?.unknown||[]).length||0;
   const vp=Math.max(0,Math.min(100,Math.round(Number(v.progress||v.progressPercent||0)||0)));
-  if(learned||active||known||unsure||unknown||vp){
-    all["verben-a1"]={id:"verben-a1",module:"verben",moduleTitle:"Verben",title:"Verben A1",isVerbSummary:true,learned,active,known,unsure,unknown,percent:vp,packagePercent:vp};
-  }
-  safeSet("SP_DASHBOARD_PROGRESS",JSON.stringify(all));
+  if(learned||active||known||unsure||unknown||vp){all["verben-a1"]={id:"verben-a1",module:"verben",moduleTitle:"Verben",title:"Verben A1",isVerbSummary:true,learned,active,known,unsure,unknown,percent:vp,packagePercent:vp};}
+  const json=JSON.stringify(all);
+  const changed=json!==lastDashboardJSON;
+  lastDashboardJSON=json;
+  safeSet("SP_DASHBOARD_PROGRESS",json);
   const points=Math.max(Number(progress.lifetimePoints||0),Number(progress.pointsTotal||0),Number(progress.punkteGesamt||0),Number(progress.totals?.points||0));
   if(points)safeSet("SP_POINTS_TOTAL",String(points));
-  window.dispatchEvent(new CustomEvent("SP_PROGRESS_SYNCED",{detail:{progress,items:all}}));
+  if(changed)window.dispatchEvent(new CustomEvent("SP_PROGRESS_SYNCED",{detail:{progress,items:all}}));
 }
 async function findStudentDoc(profile){
-  for(const id of idCandidates(profile)){
+  for(const id of primaryIds(profile)){
     try{const snap=await getDoc(doc(db,"students",id));if(snap.exists())return {id:snap.id,data:snap.data()||{}}}catch(e){console.warn("GlobalSync student direct failed",id,e)}
   }
   const email=emailOf(profile),course=courseOf(profile);
@@ -104,21 +114,24 @@ async function findStudentDoc(profile){
     for(const field of fields){
       for(const value of variants){
         if(!value)continue;
-        try{const qs=await getDocs(query(collection(db,"students"),where("email","==",email),where(field,"==",value),limit(5)));if(!qs.empty){const d=qs.docs[0];return {id:d.id,data:d.data()||{}}}}catch(e){}
+        try{const qs=await getDocs(query(collection(db,"students"),where("email","==",email),where(field,"==",value),limit(3)));if(!qs.empty){const d=qs.docs[0];return {id:d.id,data:d.data()||{}}}}catch(e){}
       }
     }
   }
   return null;
 }
 async function readProgressFor(profile){
-  const ids=idCandidates(profile);
-  for(const id of ids){
+  for(const id of primaryIds(profile)){
     try{const snap=await getDoc(doc(db,"progress",id));if(snap.exists())return {id:snap.id,data:snap.data()||{}}}catch(e){console.warn("GlobalSync progress read failed",id,e)}
   }
   return null;
 }
-export async function refreshActiveProfileFromCloud(existing=activeLocalProfile()){
+export async function refreshActiveProfileFromCloud(existing=activeLocalProfile(),opts={}){
   if(!existing||getActiveRole()!=="student")return existing||null;
+  const force=!!opts.force;
+  const nowMs=Date.now();
+  if(!force&&nowMs-lastRefresh<REFRESH_GAP)return existing;
+  lastRefresh=nowMs;
   const found=await findStudentDoc(existing);
   let merged=existing;
   if(found){
@@ -165,10 +178,14 @@ function patchLocalStorage(){
     const out=native.apply(this,arguments);
     if(!localWrite && ["SP_USER_PROFILE","SP_STUDENT_PROFILE","motherLanguage","muttersprache"].includes(String(key))){
       clearTimeout(profileWriteTimer);
-      profileWriteTimer=setTimeout(()=>saveProfileToCloud().catch(e=>console.warn("GlobalSync profile write",e)),700);
+      profileWriteTimer=setTimeout(()=>saveProfileToCloud().catch(e=>console.warn("GlobalSync profile write",e)),2500);
     }
     return out;
   };
+}
+function scheduleRefresh(){
+  clearTimeout(refreshTimer);
+  refreshTimer=setTimeout(()=>refreshActiveProfileFromCloud(activeLocalProfile(),{force:false}).then(p=>p&&watchCloud(p)).catch(()=>{}),800);
 }
 export async function startGlobalSync(){
   if(started)return activeLocalProfile();
@@ -176,10 +193,10 @@ export async function startGlobalSync(){
   patchLocalStorage();
   if(!isStudentSession())return null;
   let p=activeLocalProfile();
-  try{p=await refreshActiveProfileFromCloud(p)}catch(e){console.warn("GlobalSync refresh failed",e)}
+  try{p=await refreshActiveProfileFromCloud(p,{force:true})}catch(e){console.warn("GlobalSync refresh failed",e)}
   if(p)watchCloud(p);
-  window.addEventListener("focus",()=>refreshActiveProfileFromCloud().then(p=>p&&watchCloud(p)).catch(()=>{}));
-  document.addEventListener("visibilitychange",()=>{if(!document.hidden)refreshActiveProfileFromCloud().then(p=>p&&watchCloud(p)).catch(()=>{})});
+  window.addEventListener("focus",scheduleRefresh);
+  document.addEventListener("visibilitychange",()=>{if(!document.hidden)scheduleRefresh()});
   return p;
 }
 window.SprachPilotGlobalSync={start:startGlobalSync,refresh:refreshActiveProfileFromCloud,saveProfile:saveProfileToCloud,id:globalStudentId,ids:idCandidates};
