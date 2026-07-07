@@ -1,4 +1,4 @@
-import { recordTaskProgress, recordExamResult, recordThemeReset } from "/js/progress.js?v=6";
+import { recordTaskProgress, recordExamResult, recordThemeReset } from "/js/progress.js?v=9";
 
 const RULES={
   taskPoints(run){run=Number(run)||1;if(run===1)return 5;if(run===2)return 10;if(run===3)return 15;return 1},
@@ -20,14 +20,14 @@ async function awardTask(file,options={}){return recordTaskProgress({...taskPayl
 async function awardExam(result={},options={}){const percent=Math.max(0,Math.min(100,Math.round(Number(result.percent??result.scorePercent??result.score??100)||0)));const p={...taskPayload('pruefung.html',percent),scorePercent:percent,score:percent,stars:percent>=100?3:percent>=70?2:percent>=50?1:0,...(options.payload||{})};await recordExamResult(p);return recordTaskProgress(p)}
 async function resetScope(info=scopeInfo()){return recordThemeReset({module:info.module,level:"A1",lesson:info.lesson,theme:info.theme,topicId:info.topicId,title:info.title})}
 function patch(){
-  if(window.__SP_SCORING_PATCHED_V6)return;window.__SP_SCORING_PATCHED_V6=true;
+  if(window.__SP_SCORING_PATCHED_V9)return;window.__SP_SCORING_PATCHED_V9=true;
   const later=()=>{
-    if(typeof window.complete==="function"&&!window.complete.__spScoringV6){const old=window.complete;window.complete=function(area,file,nextFile){const out=old.apply(this,arguments);if(String(file||"").includes("pruefung"))awardExam({percent:100});else awardTask(file);return out};window.complete.__spScoringV6=true;}
-    if(typeof window.done==="function"&&!window.done.__spScoringV6){const old=window.done;window.done=function(file,total){const out=old.apply(this,arguments);awardTask(file,{payload:{total:Number(total||100),done:Number(total||100)}});return out};window.done.__spScoringV6=true;}
-    if(typeof window.saveExamResult==="function"&&!window.saveExamResult.__spScoringV6){const old=window.saveExamResult;window.saveExamResult=function(result){const out=old.apply(this,arguments);awardExam(result||{});return out};window.saveExamResult.__spScoringV6=true;}
+    if(typeof window.complete==="function"&&!window.complete.__spScoringV9){const old=window.complete;window.complete=function(area,file,nextFile){const out=old.apply(this,arguments);if(String(file||"").includes("pruefung"))awardExam({percent:100});else awardTask(file);return out};window.complete.__spScoringV9=true;}
+    if(typeof window.done==="function"&&!window.done.__spScoringV9){const old=window.done;window.done=function(file,total){const out=old.apply(this,arguments);awardTask(file,{payload:{total:Number(total||100),done:Number(total||100)}});return out};window.done.__spScoringV9=true;}
+    if(typeof window.saveExamResult==="function"&&!window.saveExamResult.__spScoringV9){const old=window.saveExamResult;window.saveExamResult=function(result){const out=old.apply(this,arguments);awardExam(result||{});return out};window.saveExamResult.__spScoringV9=true;}
     drainQueues();
   };
-  later();document.addEventListener("DOMContentLoaded",later);setTimeout(later,0);setTimeout(later,250);setTimeout(later,1000);
+  later();document.addEventListener("DOMContentLoaded",later);setTimeout(later,300);
 }
 function drainQueues(){const tq=Array.isArray(window.SP_L3_TASK_DONE_QUEUE)?window.SP_L3_TASK_DONE_QUEUE.splice(0):[];tq.forEach(file=>awardTask(file));const eq=Array.isArray(window.SP_L3_EXAM_QUEUE)?window.SP_L3_EXAM_QUEUE.splice(0):[];eq.forEach(r=>awardExam(r||{percent:100}))}
 window.SprachPilotScoring={RULES,scopeInfo,currentRun,taskPointsForRun:RULES.taskPoints,examMaxForRun:RULES.examMax,examEarnedForRun:RULES.examEarned,awardTask,awardExam,resetScope};
