@@ -1,0 +1,1 @@
+header(CFG.title,true);
