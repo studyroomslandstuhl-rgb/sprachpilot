@@ -1,1 +1,18 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><title>Mini-Dialoge</title></head><body><div id="area">Mini-Dialoge</div></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Mini-Dialoge</title><link rel="stylesheet" href="style.css?v=3"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="../data/wortschatz.js?v=7"></script><script>window.SP_L5_THEME={id:'Thema-4',title:'Öffnungszeiten und Freizeit',sub:'A1 Lektion 5 · Thema 4',key:'SP_L5_T4_V1'};</script><script src="app.js?v=2"></script><script src="../Thema-1/points-hook.js?v=5"></script><script>
+header('Mini-Dialoge');
+const FILE='mini-dialoge.html';
+const ITEMS=[
+{d:['A: Wann ist die Kita geöffnet?','B: Die Kita ist von Montag bis Freitag von 7:30 bis 17:00 Uhr ___.'],a:'geöffnet'},
+{d:['A: Ist die Bibliothek am Feiertag geöffnet?','B: Nein, sie ist am Feiertag ___.'],a:'geschlossen'},
+{d:['A: Kann ich einen Termin ___?','B: Ja, am Vormittag.'],a:'vereinbaren'},
+{d:['A: Kann ich das Buch ___?','B: Ja, natürlich.'],a:'ausleihen'},
+{d:['A: Wann fängt der Film an?','B: Der Film fängt um halb sieben ___.'],a:'an'},
+{d:['A: Hast du heute Zeit?','B: Nein, ich bin ___.'],a:'fertig'},
+{d:['A: Wo stehen die Öffnungszeiten?','B: Die Öffnungszeiten stehen auf dem ___.'],a:'Schild'},
+{d:['A: Ist das Geschäft den ganzen Tag geöffnet?','B: Ja, es ist den ganzen Tag ___.'],a:'geöffnet'}
+];
+let i=0;
+function show(){if(loadTask(FILE,ITEMS.length).done.length>=ITEMS.length){complete(area,FILE,'jede-zeit.html');return}i=spNextSequentialIndex(FILE,ITEMS.length);const it=ITEMS[i];area.innerHTML=`${spProgressHtml(FILE,ITEMS.length)}${instruction('Ergänzen Sie den Dialog. Schreiben Sie nur das fehlende Wort.')}<div class="dialog-task">${it.d.map(x=>`<p>${x}</p>`).join('')}</div><input id="ans" placeholder="fehlendes Wort"><div class="actions"><button class="btn" onclick="check()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`}
+function check(){const it=ITEMS[i];if(simple(ans.value)===simple(it.a)){ans.classList.add('is-ok');fb.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,ITEMS.length);setTimeout(show,800)}else{ans.classList.add('is-no');const t=spMarkWrong(FILE,ITEMS.length);fb.innerHTML=help3(t,'Das passt noch nicht.','Tipp: Lesen Sie beide Sätze im Dialog.',it.a)}}
+show();
+</script></body></html>
