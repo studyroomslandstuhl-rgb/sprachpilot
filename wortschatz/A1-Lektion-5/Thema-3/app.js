@@ -40,7 +40,7 @@ const INTERVIEW=[
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'null')}catch(e){return null}}
 function tr(w){return (w.tr&&w.tr.en)||'—'}
 function full(w){return w.article?`${w.article} ${w.word}`:w.word}
-function simple(x){return String(x||'').trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/\s+/g,' ').toLowerCase().replace(/[!?;:]/g,'').replace(/\.$/,'')}
+function simple(x){let s=String(x||'').trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').toLowerCase();const map={eins:'1',ein:'1',eine:'1',zwei:'2',drei:'3',vier:'4',funf:'5',fuenf:'5',sechs:'6',sieben:'7',acht:'8',neun:'9',zehn:'10',elf:'11',zwolf:'12',zwoelf:'12',dreizehn:'13',vierzehn:'14',funfzehn:'15',fuenfzehn:'15',sechzehn:'16',siebzehn:'17',achtzehn:'18',neunzehn:'19',zwanzig:'20',einundzwanzig:'21',zweiundzwanzig:'22',dreiundzwanzig:'23',vierundzwanzig:'24'};Object.keys(map).forEach(k=>{s=s.replace(new RegExp('\\b'+k+'\\b','g'),map[k])});s=s.replace(/\b(\d{1,2})\s*:\s*00\s*uhr\b/g,'$1 uhr').replace(/\b(\d{1,2})\s*:\s*00\b/g,'$1 uhr').replace(/\b(\d{1,2})\s*uhr\s*[-–]\s*(\d{1,2})\s*uhr\b/g,'$1 bis $2 uhr').replace(/\b(\d{1,2})\s*[-–]\s*(\d{1,2})\s*uhr\b/g,'$1 bis $2 uhr').replace(/\s+/g,' ').replace(/[!?;:]/g,'').replace(/\.$/,'').trim();return s}
 function ok(v,a){const s=simple(v);return (Array.isArray(a)?a:[a]).some(x=>s===simple(x))}
 function sentenceLooksRight(v){const raw=String(v||'').trim();if(!/^[A-ZÄÖÜ]/.test(raw))return false;if(!/\.$/.test(raw))return false;return true}
 function hasTime(v){const s=simple(v);return /\bum\b|\bam\b|\bin der nacht\b|\bvon\b.*\bbis\b/.test(s)}
