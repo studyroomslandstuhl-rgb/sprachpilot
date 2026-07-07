@@ -15,11 +15,11 @@ import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},400))}
 setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).then(()=>{try{renderAccountStrip()}catch(e){}}).catch(()=>{})},1000);
 setTimeout(()=>{import("/js/progress.js?v=9").catch(()=>{});import("/js/scoring.js?v=5").catch(()=>{})},1300);
-if(path.includes("/fragen-A1/")||path.includes("/fragen/")){setTimeout(()=>import("/js/fragen-progress-sync.js?v=1").catch(()=>{}),1600)}
+if(path.includes("/fragen-A1/")||path.includes("/fragen/")){setTimeout(()=>import("/js/fragen-progress-sync.js?v=2").catch(()=>{}),1600)}
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){setTimeout(()=>import("/wortschatz/index-release-lock.js?v=12").catch(()=>{}),800)}
 if(path.includes("/verben-A1/")){
   import("/verben-A1/js/release-bridge.js?v=8").catch(()=>{});
   import("/verben-A1/js/scoring-bridge.js?v=5").catch(()=>{});
-  window.addEventListener("load",()=>setTimeout(()=>{let s=document.createElement("script");s.src="/verben-A1/js/cloud-progress-sync.js?v=4";document.body.appendChild(s);s=document.createElement("script");s.src="/verben-A1/js/verb-overview-dedupe.js?v=1";document.body.appendChild(s)},1200));
+  window.addEventListener("load",()=>setTimeout(()=>{let s=document.createElement("script");s.src="/verben-A1/js/cloud-progress-sync.js?v=5";document.body.appendChild(s);s=document.createElement("script");s.src="/verben-A1/js/verb-overview-dedupe.js?v=1";document.body.appendChild(s)},1200));
 }
 if(path.includes("/fragen-A1/")||path.includes("/fragen/")){import("/fragen-A1/scoring-bridge.js?v=2").catch(()=>{})}
