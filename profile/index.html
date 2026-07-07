@@ -47,7 +47,7 @@
 
 <script type="module">
 import { requireLogin, updateStudentProfile, $, safeText, renderAccountStrip, logout } from "../js/auth.js?v=step21"; window.logout=logout;
-import { startGlobalSync, refreshActiveProfileFromCloud, saveProfileToCloud } from "../js/global-sync.js?v=1";
+import { startGlobalSync, refreshActiveProfileFromCloud, saveProfileToCloud } from "../js/global-sync.js?v=2";
 
 let p=requireLogin();
 if(p) renderAccountStrip();
