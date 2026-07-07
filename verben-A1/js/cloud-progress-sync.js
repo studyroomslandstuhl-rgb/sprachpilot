@@ -1,4 +1,4 @@
-// Robuste Firebase-Synchronisierung für Verben A1.
+// Robuste, aber gedrosselte Firebase-Synchronisierung für Verben A1.
 (function(){
   function safeJsonValue(v,f){try{return JSON.parse(v||'')||f}catch(e){return f}}
   function safeJsonKey(k,f){return safeJsonValue(localStorage.getItem(k),f)}
@@ -26,34 +26,34 @@
   function clean(v){if(v===undefined||typeof v==='function')return undefined;if(v===null||typeof v==='string'||typeof v==='boolean')return v;if(typeof v==='number')return Number.isFinite(v)?v:0;if(Array.isArray(v))return v.map(clean).filter(x=>x!==undefined);if(typeof v==='object'){if(typeof v.toDate==='function'||v._methodName||v._delegate)return v;const out={};Object.keys(v).forEach(k=>{const c=clean(v[k]);if(c!==undefined)out[k]=c});return out}return String(v||'')}
   function progressPercent(){try{return typeof overall==='function'?Number(overall()||0):0}catch(e){return 0}}
   function starCount(){try{return typeof totalStars==='function'?Number(totalStars()||0):0}catch(e){return 0}}
-  async function readCloudMerged(){let merged={};if(typeof db!=='undefined'&&db){for(const id of idCandidates()){try{const snap=await db.collection('progress').doc(id).get();const exists=typeof snap.exists==='function'?snap.exists():!!snap.exists;if(!exists)continue;const data=snap.data?snap.data():{};merged=mergeStates(merged,stateFromVerben(data.verben||{}))}catch(e){console.warn('Verben Cloud lesen fehlgeschlagen',e)}}}return merged}
-  async function writeCloud(){
+  async function readCloudMerged(){let merged={};if(typeof db!=='undefined'&&db){for(const id of idCandidates().slice(0,2)){try{const snap=await db.collection('progress').doc(id).get();const exists=typeof snap.exists==='function'?snap.exists():!!snap.exists;if(!exists)continue;const data=snap.data?snap.data():{};merged=mergeStates(merged,stateFromVerben(data.verben||{}))}catch(e){console.warn('Verben Cloud lesen fehlgeschlagen',e)}}}return merged}
+  let lastCloudSig='',writeRunning=false;
+  function cloudSig(s=state){try{return JSON.stringify({known:(s.known||[]).length,learned:(s.learned||[]).length,active:(s.active||[]).length,unsure:(s.unsure||[]).length,unknown:(s.unknown||[]).length,assessed:(s.assessed||[]).length,exam:s.exam||{},progress:progressPercent(),stars:starCount()})}catch(e){return String(Date.now())}}
+  async function writeCloud(force=false){
+    if(writeRunning)return false;
     if(typeof db==='undefined'||!db||canonicalStudentId()==='guest')return false;
     normalizeState();writeLocal(state);
+    const sig=cloudSig(state);if(!force&&sig===lastCloudSig)return false;lastCloudSig=sig;writeRunning=true;
     const p=prof(),sid=canonicalStudentId(),course=courseOf(p),s=clean(state),points=Number(localStorage.getItem('SP_POINTS_TOTAL')||0),progress=progressPercent(),stars=starCount();
     const verben={progress,progressPercent:progress,stars,activeVerbs:s.active||[],learnedVerbs:s.learned||[],known:s.known||[],unsure:s.unsure||[],unknown:s.unknown||[],assessed:s.assessed||[],currentPackageVerbs:s.currentPackageVerbs||[],exam:s.exam||{},state:s,updatedAt:ts()};
     const progressDoc=clean({studentId:sid,userId:sid,docId:sid,email:emailOf(p),studentName:[p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(' '),kurs:course,kursnummer:course,courseCode:course,courseDocId:p.courseDocId||'',verben,lifetimePoints:points,pointsTotal:points,punkteGesamt:points,lastPage:location.pathname,lastActiveAt:ts(),updatedAt:ts()});
     const studentDoc=clean({studentId:sid,userId:sid,docId:sid,email:emailOf(p),vorname:p.vorname||p.firstName||p.name||'',nachname:p.nachname||p.lastName||'',muttersprache:p.muttersprache||p.fremdsprache||'',kurs:course,kursnummer:course,courseCode:course,courseDocId:p.courseDocId||'',verbenFortschritt:progress,lastActivity:ts(),lastActiveAt:ts(),updatedAt:ts(),active:true,role:'student',loginRole:'student',isStudent:true,isTeacher:false});
-    try{await db.collection('progress').doc(sid).set(progressDoc,{merge:true});await db.collection('students').doc(sid).set(studentDoc,{merge:true});localStorage.setItem('SP_VERBS_SAVE_STATUS',JSON.stringify({status:'ok',time:new Date().toISOString(),id:sid,known:(s.known||[]).length,learned:(s.learned||[]).length,active:(s.active||[]).length,progress}));window.dispatchEvent(new CustomEvent('SP_PROGRESS_SYNCED'));return true}catch(e){localStorage.setItem('SP_VERBS_SAVE_STATUS',JSON.stringify({status:'error',time:new Date().toISOString(),id:sid,error:e.code||e.message||String(e)}));console.warn('Verben Cloud speichern fehlgeschlagen',e);return false}
+    try{await db.collection('progress').doc(sid).set(progressDoc,{merge:true});await db.collection('students').doc(sid).set(studentDoc,{merge:true});localStorage.setItem('SP_VERBS_SAVE_STATUS',JSON.stringify({status:'ok',time:new Date().toISOString(),id:sid,known:(s.known||[]).length,learned:(s.learned||[]).length,active:(s.active||[]).length,progress}));window.dispatchEvent(new CustomEvent('SP_PROGRESS_SYNCED'));return true}catch(e){localStorage.setItem('SP_VERBS_SAVE_STATUS',JSON.stringify({status:'error',time:new Date().toISOString(),id:sid,error:e.code||e.message||String(e)}));console.warn('Verben Cloud speichern fehlgeschlagen',e);return false}finally{writeRunning=false}
   }
   function dedupeVerbList(list){const seen=new Set();return (list||[]).filter(v=>{v=String(v||'');if(!v||seen.has(v))return false;seen.add(v);return true})}
-  function installOverviewDedupe(){try{
-    if(typeof verbsByStatus==='function'){
-      verbsByStatus=function(){normalizeState();const learned=new Set(dedupeVerbList([...(state.learned||[]),...(state.known||[])]));const active=dedupeVerbList([...(state.active||[]),...(state.unsure||[]),...(state.unknown||[])]).filter(v=>!learned.has(v));const activeSet=new Set(active);const all=dedupeVerbList((ALL_VERBS||[]).map(item=>item.v));const newList=all.filter(v=>!learned.has(v)&&!activeSet.has(v));return{active,learned:[...learned],new:newList}}
-    }
-  }catch(e){}}
+  function installOverviewDedupe(){try{if(typeof verbsByStatus==='function'){verbsByStatus=function(){normalizeState();const learned=new Set(dedupeVerbList([...(state.learned||[]),...(state.known||[])]));const active=dedupeVerbList([...(state.active||[]),...(state.unsure||[]),...(state.unknown||[])]).filter(v=>!learned.has(v));const activeSet=new Set(active);const all=dedupeVerbList((ALL_VERBS||[]).map(item=>item.v));const newList=all.filter(v=>!learned.has(v)&&!activeSet.has(v));return{active,learned:[...learned],new:newList}}}}catch(e){}}
   if(typeof firebaseStudentId==='function')firebaseStudentId=canonicalStudentId;
   if(typeof storageKey==='function')storageKey=function(){return 'SP_VERBS_'+canonicalStudentId()};
   loadState=async function(){
     let local=readLocalMerged();if(isState(local))state=mergeStates(state||{},local);
     try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();writeLocal(state);
     let cloud=await readCloudMerged();state=mergeStates(state||{},cloud);
-    try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();writeLocal(state);installOverviewDedupe();setTimeout(writeCloud,500);
+    try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();writeLocal(state);installOverviewDedupe();
   };
   saveState=function(){try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();state.localUpdatedAt=Date.now();writeLocal(state);sendProgress()};
-  let timer=null;sendProgress=function(){clearTimeout(timer);timer=setTimeout(writeCloud,300)};
-  window.flushVerbProgress=function(){clearTimeout(timer);return writeCloud()};
-  window.addEventListener('online',()=>writeCloud());window.addEventListener('pagehide',()=>{try{saveState();writeCloud()}catch(e){}});document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden'){try{saveState();writeCloud()}catch(e){}}});
+  let timer=null;sendProgress=function(){clearTimeout(timer);timer=setTimeout(()=>writeCloud(false),1800)};
+  window.flushVerbProgress=function(){clearTimeout(timer);return writeCloud(true)};
+  window.addEventListener('online',()=>setTimeout(()=>writeCloud(false),1200));
   setTimeout(()=>{try{const backup=readLocalMerged();if(isState(backup)){state=mergeStates(state||{},backup);normalizeState();writeLocal(state)}installOverviewDedupe()}catch(e){}},300);
   setTimeout(installOverviewDedupe,1000);
   window.spVerbCloudSync={id:canonicalStudentId,ids:idCandidates,flush:writeCloud,status:function(){return safeJsonKey('SP_VERBS_SAVE_STATUS',{})},debug:function(){alert(JSON.stringify(this.status(),null,2))}};
