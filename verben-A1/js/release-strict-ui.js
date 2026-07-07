@@ -5,13 +5,18 @@
   }
 
   function allVerbNames(){return (window.ALL_VERBS||[]).map(function(x){return x&&x.v}).filter(Boolean)}
+  function releaseKnown(){
+    try{if(typeof window.spVerbReleaseDebug==='function'){var d=window.spVerbReleaseDebug();if(d&&d.releaseKnown===false)return false;if(d&&d.releaseKnown===true)return true}}catch(e){}
+    if(!releaseReady&&window.spVerbReleaseReady)return false;
+    try{var rel=JSON.parse(localStorage.getItem('SP_COURSE_RELEASES')||'null');return !!(rel&&(rel.enabledWords||rel.releases||rel.enabledModules||rel.settings||rel.defaultLocked!==undefined||rel.releaseMode||rel.verbenA1AssessmentEnabled!==undefined))}catch(e){return false}
+  }
   function allowedList(){
-    if(!releaseReady&&window.spVerbReleaseReady)return null;
+    if(!releaseKnown())return null;
     try{if(typeof window.spStrictReleasedVerbList==='function')return window.spStrictReleasedVerbList().filter(Boolean)}catch(e){}
     return allVerbNames();
   }
   function allowedSet(){var a=allowedList();return a?new Set(a):null}
-  function targetCount(){var a=allowedList()||[];var n=typeof PRACTICE_TARGET_COUNT!=='undefined'?PRACTICE_TARGET_COUNT:20;return Math.min(n,a.length)}
+  function targetCount(){var a=allowedList();if(!a)return 20;var n=typeof PRACTICE_TARGET_COUNT!=='undefined'?PRACTICE_TARGET_COUNT:20;return Math.min(n,a.length)}
   function assessmentOn(){try{return typeof window.spVerbAssessmentEnabled==='function'?window.spVerbAssessmentEnabled()!==false:true}catch(e){return true}}
   function filt(arr,A){return (arr||[]).filter(function(v){return A.has(v)})}
   function uniq(arr){return Array.from(new Set((arr||[]).filter(Boolean)))}
@@ -19,6 +24,7 @@
   function strictSync(){
     var A=allowedSet();
     if(!A||typeof state==='undefined')return false;
+    if(A.size===0)return false;
     try{if(typeof window.spSyncVerbRelease==='function')window.spSyncVerbRelease()}catch(e){}
     var before='';try{before=JSON.stringify(state)}catch(e){}
     ['known','unsure','unknown','active','learned','practicePool','assessmentBatch','assessed','currentPackageVerbs'].forEach(function(k){if(Array.isArray(state[k]))state[k]=filt(state[k],A)});
@@ -37,16 +43,17 @@
   function patchCoreLists(){
     if(typeof currentPracticeVerbs==='function'&&!currentPracticeVerbs.__strictReleased){
       var oldPractice=currentPracticeVerbs;
-      currentPracticeVerbs=function(){strictSync();var A=allowedSet();var out=oldPractice.apply(this,arguments)||[];return A?out.filter(function(v){return A.has(v)}):out};
+      currentPracticeVerbs=function(){var A=allowedSet();if(!A)return oldPractice.apply(this,arguments)||[];strictSync();var out=oldPractice.apply(this,arguments)||[];return A.size?out.filter(function(v){return A.has(v)}):out};
       currentPracticeVerbs.__strictReleased=true;
     }
     if(typeof currentPackageAllVerbs==='function'&&!currentPackageAllVerbs.__strictReleased){
       var oldPackage=currentPackageAllVerbs;
-      currentPackageAllVerbs=function(){strictSync();var A=allowedSet();var out=oldPackage.apply(this,arguments)||[];return A?uniq(out).filter(function(v){return A.has(v)}):uniq(out)};
+      currentPackageAllVerbs=function(){var A=allowedSet();if(!A)return uniq(oldPackage.apply(this,arguments)||[]);strictSync();var out=oldPackage.apply(this,arguments)||[];return A.size?uniq(out).filter(function(v){return A.has(v)}):uniq(out)};
       currentPackageAllVerbs.__strictReleased=true;
     }
     if(typeof verbsByStatus==='function'&&!verbsByStatus.__strictReleased){
-      verbsByStatus=function(){strictSync();var allowed=allowedList()||[];var A=new Set(allowed);var learned=new Set([].concat(state.learned||[],state.known||[]).filter(function(v){return A.has(v)}));var active=uniq([].concat(state.active||[],state.unsure||[],state.unknown||[])).filter(function(v){return A.has(v)&&!learned.has(v)});var AS=new Set(active);return {active:active,learned:Array.from(learned),new:allowed.filter(function(v){return !learned.has(v)&&!AS.has(v)})}};
+      var oldStatus=verbsByStatus;
+      verbsByStatus=function(){var allowed=allowedList();if(!allowed)return oldStatus.apply(this,arguments);strictSync();var A=new Set(allowed);if(!A.size)return oldStatus.apply(this,arguments);var learned=new Set([].concat(state.learned||[],state.known||[]).filter(function(v){return A.has(v)}));var active=uniq([].concat(state.active||[],state.unsure||[],state.unknown||[])).filter(function(v){return A.has(v)&&!learned.has(v)});var AS=new Set(active);return {active:active,learned:Array.from(learned),new:allowed.filter(function(v){return !learned.has(v)&&!AS.has(v)})}};
       verbsByStatus.__strictReleased=true;
     }
   }
@@ -56,13 +63,16 @@
 
   function patchOverview(){
     if(typeof renderVerbOverview!=='function'||renderVerbOverview.__strictReleased)return;
+    var oldOverview=renderVerbOverview;
     renderVerbOverview=function(){
       if(!releaseReady&&window.spVerbReleaseReady){loading();return window.spVerbReleaseReady.then(function(){releaseReady=true;renderVerbOverview()})}
+      var allowed=allowedList();
+      if(!allowed)return oldOverview.apply(this,arguments);
       strictSync();
       try{if(typeof clearVerbHash==='function')clearVerbHash(true)}catch(e){}
       var app=document.getElementById('app');if(!app)return;
       if(typeof state!=='undefined')state.phase='home';
-      var g=typeof verbsByStatus==='function'?verbsByStatus():{active:[],learned:[],new:allowedList()||[]};
+      var g=typeof verbsByStatus==='function'?verbsByStatus():{active:[],learned:[],new:allowed};
       app.classList.remove('card');
       app.innerHTML='<section class="card"><h2>Verben-Übersicht</h2><p class="small">Nur die für deinen Kurs freigegebenen Verben.</p>'+verbOverviewDetails('Aktive Verben · gerade lernen',g.active,true,'Diese Verben sind aktuell offen.')+verbOverviewDetails('Gelernt / ich kann',g.learned,false,'Diese Verben kannst du schon.')+verbOverviewDetails('Noch nicht gelernt',g.new,false,'Diese Verben sind freigegeben, aber noch nicht gelernt.')+'<div class="actions"><button class="btn secondary" onclick="renderHome()">Zur Aufgabenübersicht</button></div></section>';
       try{if(typeof saveState==='function')saveState();if(typeof renderAndHydrate==='function')renderAndHydrate()}catch(e){}
@@ -75,22 +85,23 @@
     var oldHome=renderHome;
     renderHome=function(){
       if(!releaseReady&&window.spVerbReleaseReady){loading();return window.spVerbReleaseReady.then(function(){releaseReady=true;renderHome()})}
+      var allowed=allowedList();
+      if(!allowed)return oldHome.apply(this,arguments);
       strictSync();
       var app=document.getElementById('app');if(app)app.classList.remove('card');
       if(typeof state!=='undefined'){state.phase='home';state.currentTask=null}
-      var allowed=allowedList()||[];
-      if(!allowed.length){if(app)app.innerHTML='<section class="card"><h2>Keine Verben freigegeben</h2><p class="small">Für deinen Kurs sind aktuell keine Verben A1 freigeschaltet.</p></section>';try{if(typeof saveState==='function')saveState()}catch(e){}return;}
+      if(!allowed.length){if(app)app.innerHTML='<section class="card"><h2>Keine Verben freigegeben</h2><p class="small">Für deinen Kurs sind aktuell keine Verben A1 freigeschaltet.</p></section>';return;}
       var target=targetCount();
       var practice=typeof currentPracticeVerbs==='function'?currentPracticeVerbs().length:0;
       var unused=typeof unusedVerbs==='function'?unusedVerbs().length:0;
-      if(practice===0&&unused>0&&typeof startAssessment==='function'){return startAssessment(true);}
-      if(assessmentOn()&&practice<target&&unused>0&&typeof startAssessment==='function'){return startAssessment();}
+      if(practice===0&&unused>0&&typeof startAssessment==='function'){return startAssessment(true)}
+      if(assessmentOn()&&practice<target&&unused>0&&typeof startAssessment==='function'){return startAssessment()}
       if(((practice>=target&&target>0)||(practice>0&&unused===0))&&typeof taskCard==='function'&&typeof examCard==='function'){
         if(app)app.innerHTML=(typeof statusBox==='function'?statusBox():'')+taskGrid();
         try{if(typeof preloadActiveImages==='function')preloadActiveImages();if(typeof saveState==='function')saveState();if(typeof renderAndHydrate==='function')renderAndHydrate()}catch(e){}
         return;
       }
-      if(practice===0&&unused===0){if(app)app.innerHTML='<section class="card"><h2>Keine aktiven Übungsverben</h2><p class="small">Alle freigegebenen Verben sind bereits eingeschätzt. Der TN hat keine Verben als unsicher oder „kann ich nicht“ markiert.</p></section>';try{if(typeof saveState==='function')saveState()}catch(e){}return;}
+      if(practice===0&&unused===0){if(app)app.innerHTML='<section class="card"><h2>Keine aktiven Übungsverben</h2><p class="small">Alle freigegebenen Verben sind bereits eingeschätzt. Der TN hat keine Verben als unsicher oder „kann ich nicht“ markiert.</p></section>';return;}
       return oldHome.apply(this,arguments);
     };
     renderHome.__strictReleased=true;
@@ -101,8 +112,10 @@
       var oldStart=startAssessment;
       startAssessment=function(force){
         if(!releaseReady&&window.spVerbReleaseReady){loading();return window.spVerbReleaseReady.then(function(){releaseReady=true;startAssessment(force)})}
+        var allowed=allowedList();
+        if(!allowed)return oldStart.call(this,force===true);
         strictSync();
-        if(!(allowedList()||[]).length){return renderHome()}
+        if(!allowed.length){return renderHome()}
         return oldStart.call(this,force===true);
       };
       startAssessment.__strictReleased=true;
@@ -112,6 +125,7 @@
   function autoStartWhenEmpty(){
     try{
       if(!releaseReady)return;
+      if(!allowedList())return;
       if(typeof state==='undefined'||state.phase!=='home')return;
       if(typeof currentPracticeVerbs!=='function'||typeof unusedVerbs!=='function'||typeof startAssessment!=='function')return;
       strictSync();
