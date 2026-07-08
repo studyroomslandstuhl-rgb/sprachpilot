@@ -1,6 +1,6 @@
 header('Prüfung');
 const FILE='pruefung.html';
-const need=[['karteikarten.html',WORDS.length],['artikel.html',12],['hoeren-schreiben.html',12],['hoeren-bild.html',12],['bild-wort.html',14],['hoeren.html',13],['schilder.html',10],['lesen.html',6],['tv-programm.html',6],['zuordnen.html',10],['saetze-bauen.html',8],['mini-dialoge.html',8],['jede-zeit.html',16]];
+const need=[['karteikarten.html',WORDS.length],['artikel.html',12],['hoeren-schreiben.html',13],['hoeren-bild.html',WORDS.filter(w=>w&&w.image).length],['bild-wort.html',WORDS.filter(w=>w&&(w.image||w.cue)).length],['hoeren.html',13],['schilder.html',10],['lesen.html',6],['tv-programm.html',6],['zuordnen.html',10],['saetze-bauen.html',8],['mini-dialoge.html',8],['jede-zeit.html',16]];
 const ok=need.every(x=>pctFor(x[0],x[1])>=100);
 const q=[
 ['Der Film fängt um ___ an.',['20:15 Uhr','20 Uhr 15']],
@@ -13,7 +13,7 @@ const q=[
 ['jedes ___',['Wochenende']],
 ['Ich möchte ein Buch ___.',['ausleihen']],
 ['Emil geht in die / in den ___.',['Kita','Kindergarten']],
-['Die Öffnungszeiten stehen auf dem ___.',['Schild']],
+['Ich bin ___ fertig.',['total']],
 ['Das Geschäft ist den ganzen ___ geöffnet.',['Tag']]
 ];
 let i=0,score=0;
