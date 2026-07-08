@@ -2,8 +2,8 @@ header('Sätze bauen');
 const FILE='saetze-bauen.html';
 const ITEMS=[
 {cue:'Nora – jeden Morgen – um 6:15 Uhr – aufstehen',ans:['Nora steht jeden Morgen um 6:15 Uhr auf.','Nora steht jeden Morgen um 6.15 Uhr auf.']},
-{cue:'Nora – Emil – um 7:30 Uhr – in die Kita – bringen',ans:['Nora bringt Emil um 7:30 Uhr in die Kita.','Nora bringt Emil um 7.30 Uhr in die Kita.']},
-{cue:'die Kita – von Montag bis Freitag – geöffnet sein',ans:['Die Kita ist von Montag bis Freitag geöffnet.']},
+{cue:'Nora – Emil – um 7:30 Uhr – in die Kita / in den Kindergarten – bringen',ans:['Nora bringt Emil um 7:30 Uhr in die Kita.','Nora bringt Emil um 7.30 Uhr in die Kita.','Nora bringt Emil um 7:30 Uhr in den Kindergarten.','Nora bringt Emil um 7.30 Uhr in den Kindergarten.']},
+{cue:'die Kita / der Kindergarten – von Montag bis Freitag – geöffnet sein',ans:['Die Kita ist von Montag bis Freitag geöffnet.','Der Kindergarten ist von Montag bis Freitag geöffnet.']},
 {cue:'das Geschäft – am Mittwoch – um 13:00 Uhr – schließen',ans:['Das Geschäft schließt am Mittwoch um 13:00 Uhr.','Das Geschäft schließt am Mittwoch um 13 Uhr.']},
 {cue:'Nora – in der Bibliothek – ein Buch – ausleihen',ans:['Nora leiht in der Bibliothek ein Buch aus.']},
 {cue:'ich – einen Termin – vereinbaren',ans:['Ich vereinbare einen Termin.']},
