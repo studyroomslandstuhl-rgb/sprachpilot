@@ -26,6 +26,8 @@
   patch('kita',{image:'/assets/img/kindergarten.png',full:'die Kita / der Kindergarten',word:'Kita / Kindergarten',plural:'die Kitas / die Kindergärten',pluralGroup:'Pl.',aliases:['die Kita','Kita','der Kindergarten','Kindergarten']})
   patch('jugend',{image:'/assets/img/jugendliche.png',full:'die Jugend / die Jugendlichen',word:'Jugend / Jugendliche',plural:'die Jugendlichen',pluralGroup:'Pl.',aliases:['die Jugend','Jugend','die Jugendlichen','Jugendliche','Jugendlichen']})
 
+  const oldDisplay=window.displayImage||displayImage;
+  window.displayImage=displayImage=function(w){return w&&w.image?w.image:oldDisplay(w)}
   const oldBig=window.bigImgHtml||bigImgHtml;
   window.bigImgHtml=bigImgHtml=function(w){if(w&&w.cue)return `<div class="placeholder-img">${w.cue}</div>`;return oldBig(w)}
   const oldSmall=window.imgHtml||imgHtml;
