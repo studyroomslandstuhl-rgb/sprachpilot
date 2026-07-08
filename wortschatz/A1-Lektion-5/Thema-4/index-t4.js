@@ -3,7 +3,7 @@ const tasks=[
   ['karteikarten.html',WORDS.length,'Karteikarten','🃏','Wörter lernen.'],
   ['hoeren.html',10,'Hören: Öffnungszeiten','🎧','Längere Ansagen hören und die richtige Information wählen.'],
   ['schilder.html',8,'Schilder lesen','🪧','Öffnungszeiten lesen und eigene Sätze schreiben.'],
-  ['lesen.html',6,'Lesen: Veras Tag','🔎','Text lesen und zwei falsche Aussagen markieren.'],
+  ['lesen.html',6,'Lesen: Noras Tag','🔎','Text lesen und zwei falsche Aussagen markieren.'],
   ['tv-programm.html',6,'TV-Programm','📺','Fehler im Satz finden und den Satz richtig schreiben.'],
   ['jede-zeit.html',16,'jeden / jede / jedes','🧩','Zeitangaben in ganzen Sätzen üben.']
 ];
@@ -13,7 +13,7 @@ function card(t,n){
 }
 function examTile(n,open){
   const p=pctFor('pruefung.html',12);
-  return open?'<a class="module" href="pruefung.html"><div class="num">'+n+'. Prüfung</div><div class="icon exam-icon">★</div><p>Gemischte Prüfung.</p><div class="progress"><div class="bar" style="width:'+p+'%"></div></div><div class="small">'+(p?p+'%':'offen')+'</div><div class="start">Starten</div></a>':'<div class="module locked exam-locked"><div class="num">'+n+'. Prüfung</div><div class="icon exam-icon">★</div><p>Prüfung wird erst freigeschaltet, wenn alle Aufgaben 100% erreicht haben.</p><div class="small">gesperrt</div><div class="start">Prüfung gesperrt</div></div>';
+  return open?'<a class="module" href="pruefung.html"><div class="num">'+n+'. Prüfung</div><div class="icon exam-icon">⭐</div><p>Gemischte Prüfung.</p><div class="progress"><div class="bar" style="width:'+p+'%"></div></div><div class="small">'+(p?p+'%':'offen')+'</div><div class="start">Starten</div></a>':'<div class="module locked exam-locked"><div class="num">'+n+'. Prüfung</div><div class="icon exam-icon">⭐</div><p>Prüfung wird erst freigeschaltet, wenn alle Aufgaben 100% erreicht haben.</p><div class="small">gesperrt</div><div class="start">Prüfung gesperrt</div></div>';
 }
 let n=1;
 taskGrid.innerHTML=tasks.map(t=>card(t,n++)).join('');
