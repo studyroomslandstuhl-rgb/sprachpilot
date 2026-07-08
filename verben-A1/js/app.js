@@ -58,7 +58,6 @@ function wordReleased(d,v){
 }
 function releasedVerbList(){
   const d=releaseData(),all=allVerbNames();
-  if(typeof window.spStrictReleasedVerbList==="function"&&!window.__SP_APP_RELEASE_INTERNAL){try{const r=window.spStrictReleasedVerbList();if(Array.isArray(r)&&r.length)return r.filter(Boolean)}catch(e){}}
   if(!hasReleaseData(d))return [];
   const closed=[appGet(d,["enabledModules","Verben A1"]),appGet(d,["enabledModules","verben-A1"]),appGet(d,["releases","Verben A1","enabled"]),appGet(d,["releases","verben-A1","enabled"])].some(x=>x===false);
   if(closed)return [];
@@ -68,13 +67,11 @@ function releasedVerbList(){
 }
 function allowedSet(){return new Set(releasedVerbList())}
 function filterReleased(list){const A=allowedSet();return A.size?(list||[]).filter(v=>A.has(v)):[]}
-window.__SP_APP_RELEASE_INTERNAL=true;
 window.spStrictReleasedVerbList=function(){return releasedVerbList()};
 window.spReleasedVerbList=window.spStrictReleasedVerbList;
 window.spVerbAssessmentEnabled=function(){return true};
 window.spVerbPracticeTargetCount=function(){return Math.min(PRACTICE_TARGET_COUNT,releasedVerbList().length||PRACTICE_TARGET_COUNT)};
 window.spSyncVerbRelease=function(){normalizeAppVerbState();saveState()};
-window.__SP_APP_RELEASE_INTERNAL=false;
 
 function normalizeAppVerbState(){
   migrateState();
@@ -125,7 +122,18 @@ function markCurrentPackageLearned(){const verbs=currentPracticeVerbs();if(!verb
 function resetAllVerbProgressKeepPoints(){const alertsShown=state.alertsShown||{},taskRewardsShown=state.taskRewardsShown||{};state.phase="home";state.index=0;state.known=[];state.unsure=[];state.unknown=[];state.active=[];state.learned=[];state.practicePool=[];state.archivedPackages=[];state.assessmentBatch=[];state.assessed=[];state.currentPackageVerbs=[];state.weak={};state.currentGame="";state.currentVerb="";state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.first=null;state.openCards=[];state.lock=false;state.skillDone={};state.skillAttempts={};state.skillSuccess={};state.taskQueues={};state.taskDoneSets={};state.alertsShown=alertsShown;state.taskRewardsShown=taskRewardsShown;state.packageNo=1;state.assessmentStart=0;state.assessmentTries=0;state.revealed=false;state.manualVerbSelection=false;state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0};clearVerbHash(true)}
 function resetCurrentPackage(){if(!confirm("Alle Verben wieder auf ‚nicht gelernt‘ setzen? Punkte bleiben erhalten."))return;resetAllVerbProgressKeepPoints();saveState();renderHome()}
 function handleAssessmentClick(){if(typeof startAssessment==="function")startAssessment(true);else renderHome()}
-function renderVerbChooser(){if(typeof window.renderVerbChooser==="function"&&window.renderVerbChooser!==renderVerbChooser)return window.renderVerbChooser();const app=$("app");if(app)app.innerHTML='<section class="card"><h2>Verben wählen</h2><p class="small">Die Auswahl wird geladen …</p></section>'}
+function escVerbText(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
+function renderVerbChooser(){
+  const app=$("app");if(!app)return;
+  const verbs=releasedVerbList();
+  const selected=new Set(currentPracticeVerbs().slice(0,20));
+  app.classList.add("card");
+  app.innerHTML=`<section class="card"><h2>Verben wählen</h2><p class="small">Wähle 1 bis 20 freigegebene deutsche Verben. Sie werden als „ich kann nicht“ gespeichert.</p><div class="actions"><input id="manualVerbSearch" oninput="spFilterManualVerbs()" placeholder="Verb suchen" style="max-width:320px"><span class="badge"><span id="manualVerbCount">${selected.size}</span>/20 gewählt</span></div>${verbs.length?`<div class="verb-choice-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:14px">${verbs.map(v=>`<button type="button" class="btn secondary ${selected.has(v)?"selected":""}" data-verb-choice="${escVerbText(v)}" style="text-align:left;white-space:normal"><b>${escVerbText(v)}</b></button>`).join("")}</div>`:`<div class="empty">Keine freigegebenen Verben gefunden.</div>`}<div class="actions" style="margin-top:16px"><button class="btn green" onclick="spSaveManualVerbs()">Auswahl speichern</button><button class="btn secondary" onclick="renderHome()">Zurück</button></div></section>`;
+}
+function spFilterManualVerbs(){const q=String(($('manualVerbSearch')||{}).value||'').trim().toLowerCase();document.querySelectorAll('[data-verb-choice]').forEach(el=>{el.style.display=!q||String(el.textContent||'').toLowerCase().includes(q)?'block':'none'})}
+function spToggleManualVerb(v){const box=[...document.querySelectorAll('[data-verb-choice]')].find(el=>el.getAttribute('data-verb-choice')===v);if(!box)return;const n=document.querySelectorAll('[data-verb-choice].selected').length;if(box.classList.contains('selected'))box.classList.remove('selected');else{if(n>=20){alert('Du kannst maximal 20 Verben wählen.');return}box.classList.add('selected')}const c=$('manualVerbCount');if(c)c.textContent=document.querySelectorAll('[data-verb-choice].selected').length}
+function spSaveManualVerbs(){const A=allowedSet();const chosen=[...document.querySelectorAll('[data-verb-choice].selected')].map(el=>el.getAttribute('data-verb-choice')).filter(v=>A.has(v)).slice(0,20);if(!chosen.length){alert('Bitte wähle mindestens ein freigegebenes Verb.');return}state.manualVerbSelection=true;state.phase='home';state.active=chosen.slice();state.unknown=chosen.slice();state.unsure=[];state.currentPackageVerbs=chosen.slice();state.assessmentBatch=chosen.slice();state.practicePool=chosen.slice();state.currentTask=null;state.taskQueues={};state.taskDoneSets={};state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0};saveState();renderTaskOverview()}
+document.addEventListener('click',e=>{const b=e.target&&e.target.closest?e.target.closest('[data-verb-choice]'):null;if(!b)return;e.preventDefault();spToggleManualVerb(b.getAttribute('data-verb-choice'))},true);
 function renderHome(){
   clearVerbHash(true);
   const app=$("app");if(!app)return;
