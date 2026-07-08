@@ -1,6 +1,6 @@
 header('Prüfung');
 const FILE='pruefung.html';
-const need=[['karteikarten.html',WORDS.length],['hoeren.html',10],['schilder.html',8],['lesen.html',6],['tv-programm.html',6],['zuordnen.html',10],['saetze-bauen.html',8],['mini-dialoge.html',8],['jede-zeit.html',16]];
+const need=[['karteikarten.html',WORDS.length],['hoeren.html',10],['schilder.html',10],['lesen.html',6],['tv-programm.html',6],['zuordnen.html',10],['saetze-bauen.html',8],['mini-dialoge.html',8],['jede-zeit.html',16]];
 const ok=need.every(x=>pctFor(x[0],x[1])>=100);
 const q=[['Der Film fängt um ___ an.','20:15 Uhr'],['Die Kita ist von Montag bis Freitag ___.','geöffnet'],['Ich vereinbare einen ___.','Termin'],['Die Bibliothek ist an Feiertagen ___.','geschlossen'],['Nora ist ___.','fertig'],['jeden ___','Tag'],['jede ___','Woche'],['jedes ___','Wochenende'],['Ich möchte ein Buch ___.','ausleihen'],['Emil geht in die ___.','Kita'],['Die Öffnungszeiten stehen auf dem ___.','Schild'],['Das Geschäft ist den ganzen ___ geöffnet.','Tag']];
 let i=0,score=0;
