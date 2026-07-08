@@ -26,6 +26,8 @@
   patch('kita',{image:'/assets/img/kindergarten.png',full:'die Kita / der Kindergarten',word:'Kita / Kindergarten',plural:'die Kitas / die Kindergärten',pluralGroup:'Pl.',aliases:['die Kita','Kita','der Kindergarten','Kindergarten']})
   patch('jugend',{image:'/assets/img/jugendliche.png',full:'die Jugend / die Jugendlichen',word:'Jugend / Jugendliche',plural:'die Jugendlichen',pluralGroup:'Pl.',aliases:['die Jugend','Jugend','die Jugendlichen','Jugendliche','Jugendlichen']})
 
+  if(!findWord('ich_bin_total_fertig'))WORDS.push({id:'ich_bin_total_fertig',section:'Freizeit',word:'ich bin total fertig',article:'',full:'ich bin total fertig',plural:'',pluralGroup:'',type:'phrase',image:'/assets/img/ich_bin_total_fertig.png',sentence:'Ich bin total fertig.',aliases:['ich bin total fertig'],tr:{en:'I am totally exhausted',ru:'я совсем устал(а)',tr:'çok yoruldum',uk:'я дуже втомився / втомилася',ar:'أنا متعب جدًا',ja:'とても疲れています',ro:'sunt foarte obosit(ă)',pl:'jestem totalnie zmęczony / zmęczona',ku:'ez pir westiyayî me'}})
+
   const oldDisplay=window.displayImage||displayImage;
   window.displayImage=displayImage=function(w){return w&&w.image?w.image:oldDisplay(w)}
   const oldBig=window.bigImgHtml||bigImgHtml;
