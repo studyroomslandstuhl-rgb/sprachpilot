@@ -11,7 +11,7 @@ const ITEMS=[
 {w:'das Schild',a:'Darauf stehen Informationen.',opts:['Darauf stehen Informationen.','Damit kocht man Essen.','Damit hört man Musik.']},
 {w:'einen Termin vereinbaren',a:'Man macht eine Zeit aus.',opts:['Man macht eine Zeit aus.','Man sieht einen Film.','Man räumt das Zimmer auf.']},
 {w:'etwas ausleihen',a:'Man nimmt etwas und bringt es später zurück.',opts:['Man nimmt etwas und bringt es später zurück.','Man bleibt den ganzen Tag zu Hause.','Man öffnet ein Geschäft.']},
-{w:'ich bin fertig',a:'Ich bin sehr müde. Ich kann nicht mehr.',opts:['Ich bin sehr müde. Ich kann nicht mehr.','Ich habe morgen Geburtstag.','Ich gehe jetzt einkaufen.']}
+{w:'z.B.',a:'Das bedeutet: zum Beispiel.',opts:['Das bedeutet: zum Beispiel.','Das ist ein freier Tag.','Das ist eine Uhrzeit.']}
 ];
 let i=0;
 function show(){if(loadTask(FILE,ITEMS.length).done.length>=ITEMS.length){complete(area,FILE,'saetze-bauen.html');return}i=spNextIndex(FILE,ITEMS.length);const it=ITEMS[i];const opts=shuffle(it.opts);area.innerHTML=`${spProgressHtml(FILE,ITEMS.length)}${instruction('Was passt zusammen? Wählen Sie die richtige Bedeutung.')}<div class="sentence-box">${it.w}</div><div class="choice-grid">${opts.map(o=>`<button class="choice" onclick="check(this,'${encodeURIComponent(o)}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`}
