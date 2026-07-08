@@ -45,6 +45,37 @@ function uniqueAppList(a){return [...new Set((a||[]).filter(Boolean))]}
 function readAppJson(k,f){try{return JSON.parse(localStorage.getItem(k)||"")||f}catch(e){return f}}
 function appProfile(){try{return profile||readAppJson("SP_USER_PROFILE",null)||readAppJson("SP_STUDENT_PROFILE",{})||{}}catch(e){return {}}}
 function appGet(o,path){let c=o;for(const p of path){if(!c||typeof c!=="object"||!(p in c))return undefined;c=c[p]}return c}
+
+const SP_VERB_IMAGE_VERSION="31";
+const SP_VERB_IMAGE_BASES=["../assets/img/","/assets/img/","/sprachpilot/assets/img/","assets/img/","../assets/img/verben/","/assets/img/verben/","/sprachpilot/assets/img/verben/","assets/img/verben/"];
+function appSlug(s){return String(s||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
+function appImageBaseName(v){const e=(window.ALL_VERBS||[]).find(x=>x&&x.v===v);return String((e&&e.img)||appSlug(v)||"").replace(/^\/+/,"")}
+function appImageFiles(v){const b=appImageBaseName(v);if(!b)return[];if(/\.(png|jpe?g|webp)$/i.test(b))return [b];return [b+".webp",b+".png",b+".jpg",b+".jpeg",b+"-compressed.webp",b+"-compressed.png",b+"_compressed.webp",b+"_compressed.png",b+".min.webp",b+".min.png"]}
+function appImageCandidates(v){const files=appImageFiles(v);const out=[];SP_VERB_IMAGE_BASES.forEach(base=>files.forEach(file=>out.push(base+file+(file.includes("?")?"&":"?")+"v="+SP_VERB_IMAGE_VERSION)));return out}
+function hydrateImages(root=document){
+  const boxes=[...root.querySelectorAll("[data-verb]")].filter(box=>box.dataset.loaded!=="1").filter(box=>!box.closest("details:not([open])")).slice(0,80);
+  boxes.forEach(box=>{
+    box.dataset.loaded="1";
+    const v=box.getAttribute("data-verb")||"";
+    const urls=appImageCandidates(v);
+    if(!urls.length){box.innerHTML="<span class='image-fallback'>Bild</span>";return}
+    const img=document.createElement("img");
+    img.alt=v;
+    img.loading="lazy";
+    img.decoding="async";
+    let i=0;
+    img.onload=function(){box.classList.add("image-loaded")};
+    img.onerror=function(){i++;if(i<urls.length){img.src=urls[i]}else{box.innerHTML="<span class='image-fallback'>Bild fehlt</span>";box.classList.add("image-missing")}};
+    box.textContent="";
+    box.appendChild(img);
+    img.src=urls[0];
+  });
+}
+function renderAndHydrate(){setTimeout(()=>hydrateImages(document),80)}
+window.hydrateImages=hydrateImages;
+window.renderAndHydrate=renderAndHydrate;
+document.addEventListener("toggle",e=>{if(e.target&&e.target.matches&&e.target.matches("details[open]"))setTimeout(()=>hydrateImages(e.target),80)},true);
+
 function releaseData(){const p=appProfile();return p.assignments||readAppJson("SP_COURSE_RELEASES",{})||{}}
 function hasReleaseData(d){return !!(d&&(d.enabledWords||d.releases||d.enabledModules||d.defaultLocked!==undefined||d.releaseMode||d.settings||d.verbenA1AssessmentEnabled!==undefined))}
 function allVerbNames(){return uniqueAppList((window.ALL_VERBS||[]).map(x=>x&&x.v).filter(Boolean)).sort((a,b)=>a.localeCompare(b,"de"))}
