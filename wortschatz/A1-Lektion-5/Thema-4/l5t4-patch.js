@@ -19,10 +19,12 @@
   patch('ganzen_tag',{image:'/assets/img/den_ganzen_tag.png'})
   patch('wieder',{image:'/assets/img/wieder.png'})
 
-  patch('zum_beispiel',{image:'/assets/img/zum_beispiel.svg',word:'zum Beispiel',full:'zum Beispiel',sentence:'Zum Beispiel: Die Kita ist geöffnet.',aliases:['zum Beispiel','z.B.','z. B.']})
+  patch('zum_beispiel',{image:null,cue:'z.B.',word:'zum Beispiel',full:'zum Beispiel',sentence:'Zum Beispiel: Die Kita ist geöffnet.',aliases:['zum Beispiel']})
   patch('total',{image:null,word:'total',full:'total',sentence:'total = absolut',aliases:['total','absolut']})
   patch('kita',{image:'/assets/img/kindergarten.png',full:'die Kita / der Kindergarten',word:'Kita / Kindergarten',plural:'die Kitas / die Kindergärten',pluralGroup:'Pl.',aliases:['die Kita','Kita','der Kindergarten','Kindergarten']})
   patch('jugend',{image:'/assets/img/jugendliche.png',full:'die Jugend / die Jugendlichen',word:'Jugend / Jugendliche',plural:'die Jugendlichen',pluralGroup:'Pl.',aliases:['die Jugend','Jugend','die Jugendlichen','Jugendliche','Jugendlichen']})
 
+  const oldBig=window.bigImgHtml||bigImgHtml;
+  window.bigImgHtml=bigImgHtml=function(w){if(w&&w.cue)return `<div class="placeholder-img">${w.cue}</div>`;return oldBig(w)}
   window.l5t4Accepted=function(txt,w){const a=simple(txt);return !!(w&&Array.isArray(w.aliases)&&w.aliases.some(x=>simple(x)===a))}
 })();
