@@ -19,7 +19,7 @@
   patch('ganzen_tag',{image:'/assets/img/den_ganzen_tag.png'})
   patch('wieder',{image:'/assets/img/wieder.png'})
 
-  patch('zum_beispiel',{word:'z.B.',full:'z.B.',sentence:'z.B.: Die Kita ist geöffnet.'})
+  patch('zum_beispiel',{image:'/assets/img/zum_beispiel.svg',word:'zum Beispiel',full:'zum Beispiel',sentence:'Zum Beispiel: Die Kita ist geöffnet.',aliases:['zum Beispiel','z.B.','z. B.']})
   patch('total',{image:null,word:'total',full:'total',sentence:'total = absolut',aliases:['total','absolut']})
   patch('kita',{image:'/assets/img/kindergarten.png',full:'die Kita / der Kindergarten',word:'Kita / Kindergarten',plural:'die Kitas / die Kindergärten',pluralGroup:'Pl.',aliases:['die Kita','Kita','der Kindergarten','Kindergarten']})
   patch('jugend',{image:'/assets/img/jugendliche.png',full:'die Jugend / die Jugendlichen',word:'Jugend / Jugendliche',plural:'die Jugendlichen',pluralGroup:'Pl.',aliases:['die Jugend','Jugend','die Jugendlichen','Jugendliche','Jugendlichen']})
