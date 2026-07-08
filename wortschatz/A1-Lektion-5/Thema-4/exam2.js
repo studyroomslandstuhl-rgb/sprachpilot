@@ -1,13 +1,13 @@
 header('Prüfung');
 const FILE='pruefung.html';
-const need=[['karteikarten.html',WORDS.length],['hoeren.html',10],['schilder.html',10],['lesen.html',6],['tv-programm.html',6],['zuordnen.html',10],['saetze-bauen.html',8],['mini-dialoge.html',8],['jede-zeit.html',16]];
+const need=[['karteikarten.html',WORDS.length],['artikel.html',12],['hoeren-schreiben.html',12],['hoeren-bild.html',12],['bild-wort.html',14],['hoeren.html',13],['schilder.html',10],['lesen.html',6],['tv-programm.html',6],['zuordnen.html',10],['saetze-bauen.html',8],['mini-dialoge.html',8],['jede-zeit.html',16]];
 const ok=need.every(x=>pctFor(x[0],x[1])>=100);
 const q=[
 ['Der Film fängt um ___ an.',['20:15 Uhr','20 Uhr 15']],
 ['Die Kita ist von Montag bis Freitag ___.',['geöffnet']],
 ['Ich vereinbare einen ___.',['Termin']],
 ['Die Bibliothek ist an Feiertagen ___.',['geschlossen']],
-['Nora ist ___.',['fertig']],
+['z.B. = ___.',['zum Beispiel']],
 ['jeden ___',['Tag']],
 ['jede ___',['Woche']],
 ['jedes ___',['Wochenende']],
