@@ -1,0 +1,11 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören und Bild</title><link rel="stylesheet" href="style.css?v=3"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="../data/wortschatz.js?v=7"></script><script>window.SP_L5_THEME={id:'Thema-4',title:'Öffnungszeiten und Freizeit',sub:'A1 Lektion 5 · Thema 4',key:'SP_L5_T4_V1'};</script><script src="app.js?v=2"></script><script src="l5t4-patch.js?v=5"></script><script src="../Thema-1/points-hook.js?v=5"></script><script>
+header('Hören und Bild');
+const FILE='hoeren-bild.html';
+const VOCAB=WORDS.filter(w=>w&&w.image).slice(0,12);
+let i=0;
+function sayWord(w){const txt=w.article?full(w):w.word;if(!('speechSynthesis'in window)){fb.innerHTML='<div class="hint">Audio wird hier nicht unterstützt.</div>';return}speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(txt);u.lang='de-DE';u.rate=.85;speechSynthesis.speak(u)}
+function wrongLater(){let st=loadTask(FILE,VOCAB.length),c=st.current;if(c!==null&&c!==undefined&&!st.done.includes(c)&&!st.queue.includes(c))st.queue.push(c);st.current=null;saveTask(FILE,st)}
+function show(){if(loadTask(FILE,VOCAB.length).done.length>=VOCAB.length){complete(area,FILE,'bild-wort.html');return}i=spNextIndex(FILE,VOCAB.length);const w=VOCAB[i];const opts=shuffle([w,...shuffle(VOCAB.filter(x=>x.id!==w.id)).slice(0,3)]);area.innerHTML=`${spProgressHtml(FILE,VOCAB.length)}${instruction('Hören Sie das Wort. Wählen Sie das passende Bild.')}<div class="actions"><button class="btn" onclick="sayWord(VOCAB[i])">Hören</button></div><div class="choice-grid">${opts.map(o=>`<button class="choice" onclick="check(this,'${o.id}')">${imgHtml(o)}</button>`).join('')}</div><div id="fb" class="feedback"></div>`}
+function check(btn,id){const w=VOCAB[i];if(id===w.id){btn.classList.add('ok');fb.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,VOCAB.length);setTimeout(show,700)}else{btn.classList.add('no');fb.innerHTML='<div class="no">Noch nicht richtig. Die Aufgabe kommt später wieder.</div>';wrongLater();setTimeout(show,1000)}}
+show();
+</script></body></html>
