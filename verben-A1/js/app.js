@@ -23,7 +23,7 @@ function renderHeader(){
       <button class="btn secondary" onclick="spGoBack()">← Zurück</button>
       <button class="btn secondary" onclick="renderVerbOverview()">Übersicht</button>
       <button class="btn secondary" onclick="renderStudentDashboard()">Statistik</button>
-      <button class="btn secondary" onclick="handleAssessmentClick()">Weitere Verben einschätzen</button>
+      <button class="btn secondary" onclick="handleAssessmentClick()">Verben einschätzen</button>
       <button class="btn secondary" onclick="renderVerbChooser()">Verben wählen</button>
       <button class="btn danger-btn" onclick="resetCurrentPackage()">Fortschritte löschen</button>
     </nav>`;
@@ -38,7 +38,6 @@ function spVerbLogout(){
 }
 function spGoBack(){
   if(location.hash||state.phase&&state.phase!=="home"){closeVerbTaskAndRenderHome();return}
-  if(currentPracticeVerbs().length){renderTaskOverview();return}
   renderHome();
 }
 function renderSideMenu(){const m=$("spMenu");if(m)m.innerHTML=""}
@@ -46,7 +45,6 @@ function uniqueAppList(a){return [...new Set((a||[]).filter(Boolean))]}
 function readAppJson(k,f){try{return JSON.parse(localStorage.getItem(k)||"")||f}catch(e){return f}}
 function appProfile(){try{return profile||readAppJson("SP_USER_PROFILE",null)||readAppJson("SP_STUDENT_PROFILE",{})||{}}catch(e){return {}}}
 function appGet(o,path){let c=o;for(const p of path){if(!c||typeof c!=="object"||!(p in c))return undefined;c=c[p]}return c}
-
 
 function releaseData(){const p=appProfile();return p.assignments||readAppJson("SP_COURSE_RELEASES",{})||{}}
 function hasReleaseData(d){return !!(d&&(d.enabledWords||d.releases||d.enabledModules||d.defaultLocked!==undefined||d.releaseMode||d.settings||d.verbenA1AssessmentEnabled!==undefined))}
@@ -73,22 +71,37 @@ function filterReleased(list){const A=allowedSet();return A.size?(list||[]).filt
 window.spStrictReleasedVerbList=function(){return releasedVerbList()};
 window.spReleasedVerbList=window.spStrictReleasedVerbList;
 window.spVerbAssessmentEnabled=function(){return true};
-window.spVerbPracticeTargetCount=function(){return Math.min(PRACTICE_TARGET_COUNT,releasedVerbList().length||PRACTICE_TARGET_COUNT)};
-window.spSyncVerbRelease=function(){normalizeAppVerbState();saveState()};
+window.spVerbPracticeTargetCount=function(){const r=remainingUnlearnedVerbs();return Math.min(PRACTICE_TARGET_COUNT,r.length||PRACTICE_TARGET_COUNT)};
+window.spSyncVerbRelease=function(){normalizeAppVerbState();saveState();syncVerbDashboardSummary()};
 
+function archivedLearnedVerbs(){const out=[];(state.archivedPackages||[]).forEach(p=>{if(Array.isArray(p.verbs))out.push(...p.verbs);if(Array.isArray(p.practiced))out.push(...p.practiced)});return uniqueAppList(out)}
+function masteredVerbSet(){return new Set(uniqueAppList([...(state.known||[]),...(state.learned||[]),...archivedLearnedVerbs()]))}
 function normalizeAppVerbState(){
   migrateState();
   const A=allowedSet();
-  const learned=new Set(uniqueAppList([...(state.known||[]),...(state.learned||[])]).filter(v=>!A.size||A.has(v)));
+  const mastered=masteredVerbSet();
   if(A.size)["known","learned","unsure","unknown","active","practicePool","assessmentBatch","assessed","currentPackageVerbs"].forEach(k=>state[k]=Array.isArray(state[k])?state[k].filter(v=>A.has(v)):[]);
-  const active=uniqueAppList([...(state.active||[]),...(state.unsure||[]),...(state.unknown||[]),...(state.currentPackageVerbs||[]),...(state.assessmentBatch||[])]).filter(v=>(!A.size||A.has(v))&&!learned.has(v));
+  const active=uniqueAppList([...(state.active||[]),...(state.unsure||[]),...(state.unknown||[]),...(state.currentPackageVerbs||[]),...(state.assessmentBatch||[])]).filter(v=>(!A.size||A.has(v))&&!mastered.has(v));
   state.active=active;
+  state.unsure=uniqueAppList(state.unsure||[]).filter(v=>(!A.size||A.has(v))&&!mastered.has(v));
+  state.unknown=uniqueAppList(state.unknown||[]).filter(v=>(!A.size||A.has(v))&&!mastered.has(v)&&!state.unsure.includes(v));
+  state.currentPackageVerbs=uniqueAppList([...(state.currentPackageVerbs||[]),...(state.assessmentBatch||[]),...active]).filter(v=>(!A.size||A.has(v))&&!mastered.has(v));
+  state.assessmentBatch=uniqueAppList([...(state.assessmentBatch||[]),...active]).filter(v=>(!A.size||A.has(v))&&!mastered.has(v));
   if(state.manualVerbSelection){state.unknown=active.slice();state.unsure=[];state.currentPackageVerbs=active.slice();state.assessmentBatch=active.slice();state.practicePool=active.slice()}
 }
-function currentPracticeVerbs(){normalizeAppVerbState();const A=allowedSet(),learned=new Set([...(state.known||[]),...(state.learned||[])]);return uniqueAppList([...(state.active||[]),...(state.unsure||[]),...(state.unknown||[])]).filter(v=>(!A.size||A.has(v))&&!learned.has(v))}
+function currentPracticeVerbs(){normalizeAppVerbState();const A=allowedSet(),mastered=masteredVerbSet();return uniqueAppList([...(state.active||[]),...(state.unsure||[]),...(state.unknown||[])]).filter(v=>(!A.size||A.has(v))&&!mastered.has(v))}
 function currentPackageAllVerbs(){normalizeAppVerbState();return filterReleased(uniqueAppList([...(state.currentPackageVerbs||[]),...(state.assessmentBatch||[]),...(state.active||[]),...(state.unsure||[]),...(state.unknown||[])]))}
-function masteredVerbSet(){return new Set(uniqueAppList([...(state.known||[]),...(state.learned||[])]))}
-function unusedVerbs(){normalizeAppVerbState();const A=releasedVerbList(),learned=masteredVerbSet(),used=new Set(uniqueAppList([...(state.assessed||[]),...(state.assessmentBatch||[]),...(state.currentPackageVerbs||[]),...(state.active||[]),...(state.unsure||[]),...(state.unknown||[])]));return A.filter(v=>!learned.has(v)&&!used.has(v))}
+function remainingUnlearnedVerbs(){normalizeAppVerbState();const mastered=masteredVerbSet();return releasedVerbList().filter(v=>!mastered.has(v))}
+function unusedVerbs(){const busy=new Set(uniqueAppList([...(state.active||[]),...(state.unsure||[]),...(state.unknown||[]),...(state.currentPackageVerbs||[]),...(state.assessmentBatch||[])]));return remainingUnlearnedVerbs().filter(v=>!busy.has(v))}
+function allReleasedVerbsLearned(){const released=releasedVerbList();if(!released.length)return false;const mastered=masteredVerbSet();return released.every(v=>mastered.has(v))}
+function syncVerbDashboardSummary(){
+  try{
+    const released=releasedVerbList(),mastered=masteredVerbSet(),active=currentPracticeVerbs();
+    const learned=released.filter(v=>mastered.has(v));
+    const percent=released.length?Math.round(learned.length*100/released.length):(active.length?overall():0);
+    localStorage.setItem("SP_VERBS_DASHBOARD_SUMMARY",JSON.stringify({released,learned,active,percent:Math.max(0,Math.min(100,percent)),completed:released.length>0&&learned.length>=released.length,updatedAt:Date.now()}));
+  }catch(e){}
+}
 
 function returnCurrentTaskToQueue(){
   try{
@@ -104,26 +117,18 @@ function returnCurrentTaskToQueue(){
 function closeOpenVerbTask(){
   returnCurrentTaskToQueue();
   state.phase="home";state.currentGame="";state.currentVerb="";state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;
-  saveState();
+  saveState();syncVerbDashboardSummary();
 }
 function resetOpenTaskOnReload(){
   returnCurrentTaskToQueue();
-  state.phase="home";
-  state.currentGame="";
-  state.currentVerb="";
-  state.currentTask=null;
-  state.memoryCards=[];
-  state.memoryDone=[];
-  state.openCards=[];
-  state.first=null;
-  state.lock=false;
-  saveState();
+  state.phase="home";state.currentGame="";state.currentVerb="";state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;
+  saveState();syncVerbDashboardSummary();
 }
 function goVerbHome(){resetOpenTaskOnReload();clearVerbHash(true);renderHome()}
 function closeVerbTaskAndRenderHome(){goVerbHome()}
 
 function verbStatus(v){
-  if((state.learned||[]).includes(v)||(state.known||[]).includes(v))return {label:"gelernt / ich kann",cls:"status-known",short:"ich kann"};
+  if((state.learned||[]).includes(v)||(state.known||[]).includes(v)||archivedLearnedVerbs().includes(v))return {label:"gelernt / ich kann",cls:"status-known",short:"ich kann"};
   if((state.unsure||[]).includes(v))return {label:"unsicher",cls:"status-unsure",short:"unsicher"};
   if((state.unknown||[]).includes(v))return {label:"ich kann nicht",cls:"status-unknown",short:"ich kann nicht"};
   if((state.active||[]).includes(v))return {label:"aktiv",cls:"status-active",short:"aktiv"};
@@ -131,14 +136,14 @@ function verbStatus(v){
 }
 function verbMetaInfo(v){return [(window.VERB_LEVELS&&VERB_LEVELS[v])||"A1"]}
 function verbSentence(v){return (window.VERB_SENTENCES&&window.VERB_SENTENCES[v])||(typeof sentenceForVerb==="function"?sentenceForVerb(v):"")}
-function verbsByStatus(){const allowed=releasedVerbList(),learned=filterReleased([...(state.learned||[]),...(state.known||[])]),active=currentPracticeVerbs(),L=new Set(learned),A=new Set(active);return {active,learned,new:allowed.filter(v=>!L.has(v)&&!A.has(v))}}
+function verbsByStatus(){const allowed=releasedVerbList(),mastered=masteredVerbSet(),active=currentPracticeVerbs(),A=new Set(active);return {active,learned:allowed.filter(v=>mastered.has(v)),new:allowed.filter(v=>!mastered.has(v)&&!A.has(v))}}
 function verbOverviewCard(v){const st=verbStatus(v),sentence=verbSentence(v);return `<div class="verb-overview-card ${st.cls}">${imageBox(v,true)}<div class="verb-name">${safeText(v)}</div><div class="verb-status">${safeText(st.label)}</div>${sentence?`<div class="verb-sentence">${safeText(sentence)}</div>`:""}</div>`}
 function verbOverviewGrid(verbs){return `<div class="verb-overview-grid">${verbs.map(verbOverviewCard).join("")||"<p class='small'>Keine Verben.</p>"}</div>`}
 function verbOverviewDetails(title,verbs,open,note){return `<details class="verb-overview-details" ${open?"open":""}><summary>${safeText(title)} <span class="small">${verbs.length}</span></summary>${note?`<p class="small">${safeText(note)}</p>`:""}${verbOverviewGrid(verbs)}</details>`}
-function renderVerbOverview(){const app=$("app");if(!app)return;state.phase="overview";normalizeAppVerbState();const g=verbsByStatus();app.classList.remove("card");app.innerHTML=`<section class="card"><h2>Verben-Übersicht</h2><p class="small">Nur freigegebene Verben.</p>${verbOverviewDetails("Aktive Verben · gerade lernen",g.active,true,"Diese Verben sind aktuell offen.")}${verbOverviewDetails("Gelernt / ich kann",g.learned,false,"Diese Verben kommen nicht mehr in Aufgaben vor.")}${verbOverviewDetails("Noch nicht gelernt",g.new,false,"Diese Verben sind freigegeben, aber noch nicht gelernt.")}<div class="actions"><button class="btn secondary" onclick="closeVerbTaskAndRenderHome()">Zur Aufgabenübersicht</button></div></section>`;saveState();setVerbHashForPhase("overview");renderAndHydrate()}
+function renderVerbOverview(){const app=$("app");if(!app)return;state.phase="overview";normalizeAppVerbState();const g=verbsByStatus();app.classList.remove("card");app.innerHTML=`<section class="card"><h2>Verben-Übersicht</h2><p class="small">Nur freigegebene Verben.</p>${verbOverviewDetails("Aktive Verben · gerade lernen",g.active,true,"Diese Verben sind aktuell offen.")}${verbOverviewDetails("Gelernt / ich kann",g.learned,false,"Diese Verben kommen nicht mehr in Aufgaben vor.")}${verbOverviewDetails("Noch nicht gelernt",g.new,false,"Diese Verben sind freigegeben, aber noch nicht gelernt.")}<div class="actions"><button class="btn secondary" onclick="closeVerbTaskAndRenderHome()">Zur Aufgabenübersicht</button></div></section>`;saveState();syncVerbDashboardSummary();setVerbHashForPhase("overview");renderAndHydrate()}
 
 function statusBox(){
-  const pct=overall(),practiceCount=currentPracticeVerbs().length,packageCount=currentPackageAllVerbs().length,knownInPackage=currentPackageAllVerbs().filter(v=>(state.known||[]).includes(v)||(state.learned||[]).includes(v)).length;
+  const pct=overall(),practiceCount=currentPracticeVerbs().length,packageCount=currentPackageAllVerbs().length,knownInPackage=currentPackageAllVerbs().filter(v=>masteredVerbSet().has(v)).length;
   const examTxt=state.exam&&state.exam.passed?"Prüfung 100%":(allPracticeTasksDone()?"Prüfung offen":"Prüfung gesperrt");
   return `<section class="card progress-card"><div class="circle">${pct}%</div><div class="progress-main"><h2>Dein Fortschritt</h2><div class="small">${packageCount} Verben im Paket · ${knownInPackage} ich kann · ${practiceCount} Verben zu üben · ${examTxt}</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div></div></section>`;
 }
@@ -153,28 +158,30 @@ function openVerbTask(skill){
 function taskCard(skill,icon,fn,num){const done=taskDone(skill),p=queuedProgress(skill);return `<button type="button" class="module task-card ${done?"done-card":""}" onclick="openVerbTask('${skill}')"><div><div class="num">${num}. ${VERB_SKILL_LABELS[skill]}</div></div><div class="icon big-icon">${icon}</div><p>${taskDescription(skill)}</p><div><div class="progress"><div class="bar" style="width:${done?100:p.pct}%"></div></div><div class="small">${done?"100%":p.pct+"%"}</div><div class="start">Starten</div></div></button>`}
 function examCard(){const ready=allPracticeTasksDone(),passed=state.exam&&state.exam.passed;return `<button type="button" class="module task-card ${passed?"done-card":""}" ${ready?"onclick=\"startVerbExam()\"":"disabled"}><div><div class="num">11. Prüfung</div></div><div class="icon big-icon">⭐</div><p>Prüfe die aktiven Verben.</p><div><div class="progress"><div class="bar" style="width:${passed?100:0}%"></div></div><div class="small">${passed?"100%":ready?"offen":"gesperrt"}</div><div class="start">Starten</div></div></button>`}
 function taskGrid(){return taskCard("karteikarte","🃏","flashcards",1)+taskCard("memory","🧠","memory",2)+taskCard("bild_verb","🖼️","quiz",3)+taskCard("verb_bild","🔁","verbToImage",4)+taskCard("schreiben","✍️","writeVerb",5)+taskCard("hoeren_schreiben","👂","hearWrite",6)+taskCard("hoeren_sprechen","🎤","hearSpeak",7)+taskCard("bild_sprechen","🗣️","imageSpeak",8)+taskCard("satz_puzzle","🧩","sentencePuzzle",9)+taskCard("konjugieren","🔤","conjugationTask",10)+examCard()}
-function renderTaskOverview(){const app=$("app");if(!app)return;app.classList.remove("card");state.phase="home";state.currentTask=null;buildPracticePool();app.innerHTML=`${statusBox()}<section class="card"><div class="grid task-grid">${taskGrid()}</div></section>`;saveState();clearVerbHash(true);renderAndHydrate()}
+function renderTaskOverview(){const app=$("app");if(!app)return;normalizeAppVerbState();if(!currentPracticeVerbs().length){renderHome();return}app.classList.remove("card");state.phase="home";state.currentTask=null;buildPracticePool();app.innerHTML=`${statusBox()}<section class="card"><div class="grid task-grid">${taskGrid()}</div></section>`;saveState();syncVerbDashboardSummary();clearVerbHash(true);renderAndHydrate()}
 function recoverActiveVerbsForCurrentPackage(){normalizeAppVerbState();return true}
 function clearPracticeProgressForVerbs(verbs){(verbs||[]).forEach(v=>{if(state.skillDone)delete state.skillDone[v];if(state.skillAttempts)delete state.skillAttempts[v];if(state.skillSuccess)delete state.skillSuccess[v];if(state.weak)delete state.weak[v]})}
 function resetPackageTasks(){state.practicePool=[];state.taskQueues={};state.taskDoneSets={};state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0}}
 function packageExamPassed(){return !!(state.exam&&state.exam.passed&&Number(state.exam.score)===100)}
 function allPracticeTasksDone(){return VERB_SKILLS.every(taskDone)}
-function markCurrentPackageLearned(){const verbs=currentPracticeVerbs();if(!verbs.length)return false;state.learned=uniqueAppList([...(state.learned||[]),...verbs]);state.known=uniqueAppList([...(state.known||[]),...verbs]);state.archivedPackages=state.archivedPackages||[];state.archivedPackages.push({type:"completed",date:new Date().toISOString(),verbs:verbs.slice()});state.unsure=[];state.unknown=[];state.active=[];state.currentPackageVerbs=[];state.assessmentBatch=[];state.manualVerbSelection=false;resetPackageTasks();saveState();return true}
+function markCurrentPackageLearned(){const verbs=currentPracticeVerbs();if(!verbs.length)return false;state.learned=uniqueAppList([...(state.learned||[]),...verbs]);state.known=uniqueAppList([...(state.known||[]),...verbs]);state.archivedPackages=state.archivedPackages||[];state.archivedPackages.push({type:"completed",date:new Date().toISOString(),verbs:verbs.slice()});state.unsure=[];state.unknown=[];state.active=[];state.practicePool=[];state.currentPackageVerbs=[];state.assessmentBatch=[];state.manualVerbSelection=false;resetPackageTasks();saveState();syncVerbDashboardSummary();return true}
 function resetAllVerbProgressKeepPoints(){const alertsShown=state.alertsShown||{},taskRewardsShown=state.taskRewardsShown||{};state.phase="home";state.index=0;state.known=[];state.unsure=[];state.unknown=[];state.active=[];state.learned=[];state.practicePool=[];state.archivedPackages=[];state.assessmentBatch=[];state.assessed=[];state.currentPackageVerbs=[];state.weak={};state.currentGame="";state.currentVerb="";state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.first=null;state.openCards=[];state.lock=false;state.skillDone={};state.skillAttempts={};state.skillSuccess={};state.taskQueues={};state.taskDoneSets={};state.alertsShown=alertsShown;state.taskRewardsShown=taskRewardsShown;state.packageNo=1;state.assessmentStart=0;state.assessmentTries=0;state.revealed=false;state.manualVerbSelection=false;state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0};clearVerbHash(true)}
-function resetCurrentPackage(){if(!confirm("Alle Verben wieder auf ‚nicht gelernt‘ setzen? Punkte bleiben erhalten."))return;resetAllVerbProgressKeepPoints();saveState();renderHome()}
+function resetCurrentPackage(){if(!confirm("Alle Verben wieder auf ‚nicht gelernt‘ setzen? Punkte bleiben erhalten."))return;resetAllVerbProgressKeepPoints();saveState();syncVerbDashboardSummary();renderHome()}
 function handleAssessmentClick(){if(typeof startAssessment==="function")startAssessment(true);else renderHome()}
+function renderAllVerbsCompletedPage(){const app=$("app");if(!app)return;app.classList.remove("card");state.phase="home";saveState();syncVerbDashboardSummary();app.innerHTML='<section class="card completion-card"><div class="finish-icon">✓</div><h2>Du hast alle Verben gelernt.</h2><p class="small">Komm später zurück, um neue Verben zu lernen.</p><div class="actions"><button class="btn secondary" onclick="renderVerbOverview()">Übersicht ansehen</button></div></section>'}
 function escVerbText(s){return String(s||"").replace(/[&<>"']/g,m=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;","'":"&#039;"}[m]))}
 function renderVerbChooser(){
   const app=$("app");if(!app)return;
   state.phase="chooser";setVerbHashForPhase("chooser");
-  const verbs=releasedVerbList();
+  const mastered=masteredVerbSet();
+  const verbs=releasedVerbList().filter(v=>!mastered.has(v));
   const selected=new Set(currentPracticeVerbs().slice(0,20));
   app.classList.add("card");
-  app.innerHTML=`<section class="card"><h2>Verben wählen</h2><p class="small">Wähle 1 bis 20 freigegebene deutsche Verben. Sie werden als „ich kann nicht“ gespeichert.</p><div class="actions"><input id="manualVerbSearch" oninput="spFilterManualVerbs()" placeholder="Verb suchen" style="max-width:320px"><span class="badge"><span id="manualVerbCount">${selected.size}</span>/20 gewählt</span></div>${verbs.length?`<div class="verb-choice-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:14px">${verbs.map(v=>`<button type="button" class="btn secondary ${selected.has(v)?"selected":""}" data-verb-choice="${escVerbText(v)}" style="text-align:left;white-space:normal"><b>${escVerbText(v)}</b></button>`).join("")}</div>`:`<div class="empty">Keine freigegebenen Verben gefunden.</div>`}<div class="actions" style="margin-top:16px"><button class="btn green" onclick="spSaveManualVerbs()">Auswahl speichern</button><button class="btn secondary" onclick="closeVerbTaskAndRenderHome()">Zurück</button></div></section>`;
+  app.innerHTML=`<section class="card"><h2>Verben wählen</h2><p class="small">Wähle 1 bis 20 freigegebene deutsche Verben. Sie werden als „ich kann nicht“ gespeichert.</p><div class="actions"><input id="manualVerbSearch" oninput="spFilterManualVerbs()" placeholder="Verb suchen" style="max-width:320px"><span class="badge"><span id="manualVerbCount">${selected.size}</span>/20 gewählt</span></div>${verbs.length?`<div class="verb-choice-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:14px">${verbs.map(v=>`<button type="button" class="btn secondary ${selected.has(v)?"selected":""}" data-verb-choice="${escVerbText(v)}" style="text-align:left;white-space:normal"><b>${escVerbText(v)}</b></button>`).join("")}</div>`:`<div class="empty">Keine freigegebenen Verben zum Lernen gefunden.</div>`}<div class="actions" style="margin-top:16px"><button class="btn green" onclick="spSaveManualVerbs()">Auswahl speichern</button><button class="btn secondary" onclick="closeVerbTaskAndRenderHome()">Zurück</button></div></section>`;
 }
 function spFilterManualVerbs(){const q=String(($("manualVerbSearch")||{}).value||'').trim().toLowerCase();document.querySelectorAll('[data-verb-choice]').forEach(el=>{el.style.display=!q||String(el.textContent||'').toLowerCase().includes(q)?'block':'none'})}
 function spToggleManualVerb(v){const box=[...document.querySelectorAll('[data-verb-choice]')].find(el=>el.getAttribute('data-verb-choice')===v);if(!box)return;const n=document.querySelectorAll('[data-verb-choice].selected').length;if(box.classList.contains('selected'))box.classList.remove('selected');else{if(n>=20){alert('Du kannst maximal 20 Verben wählen.');return}box.classList.add('selected')}const c=$('manualVerbCount');if(c)c.textContent=document.querySelectorAll('[data-verb-choice].selected').length}
-function spSaveManualVerbs(){const A=allowedSet();const chosen=[...document.querySelectorAll('[data-verb-choice].selected')].map(el=>el.getAttribute('data-verb-choice')).filter(v=>!A.size||A.has(v)).slice(0,20);if(!chosen.length){alert('Bitte wähle mindestens ein freigegebenes Verb.');return}state.manualVerbSelection=true;state.phase='home';state.active=chosen.slice();state.unknown=chosen.slice();state.unsure=[];state.currentPackageVerbs=chosen.slice();state.assessmentBatch=chosen.slice();state.practicePool=chosen.slice();state.currentTask=null;state.taskQueues={};state.taskDoneSets={};state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0};saveState();renderTaskOverview()}
+function spSaveManualVerbs(){const A=allowedSet(),mastered=masteredVerbSet();const chosen=[...document.querySelectorAll('[data-verb-choice].selected')].map(el=>el.getAttribute('data-verb-choice')).filter(v=>(!A.size||A.has(v))&&!mastered.has(v)).slice(0,20);if(!chosen.length){alert('Bitte wähle mindestens ein freigegebenes Verb.');return}state.manualVerbSelection=true;state.phase='home';state.active=chosen.slice();state.unknown=chosen.slice();state.unsure=[];state.currentPackageVerbs=chosen.slice();state.assessmentBatch=chosen.slice();state.practicePool=chosen.slice();state.currentTask=null;state.taskQueues={};state.taskDoneSets={};state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0};saveState();syncVerbDashboardSummary();renderTaskOverview()}
 document.addEventListener('click',e=>{if(e.defaultPrevented)return;const b=e.target&&e.target.closest?e.target.closest('[data-verb-choice]'):null;if(!b)return;e.preventDefault();spToggleManualVerb(b.getAttribute('data-verb-choice'))},true);
 function renderHome(){
   clearVerbHash(true);
@@ -182,16 +189,17 @@ function renderHome(){
   resetOpenTaskOnReload();
   normalizeAppVerbState();
   if(packageExamPassed()&&allPracticeTasksDone()){markCurrentPackageLearned();normalizeAppVerbState()}
-  if(currentPracticeVerbs().length){renderTaskOverview();return}
-  if(unusedVerbs().length){handleAssessmentClick();return}
+  const active=currentPracticeVerbs();
+  if(active.length){renderTaskOverview();return}
+  if(allReleasedVerbsLearned()){renderAllVerbsCompletedPage();return}
+  const remaining=remainingUnlearnedVerbs();
+  if(remaining.length){handleAssessmentClick();return}
   if(!releasedVerbList().length){
     app.classList.remove("card");
     app.innerHTML='<section class="card"><h2>Keine freigegebenen Verben gefunden</h2><p class="small">Öffne einmal das Dashboard, damit die Kursfreigabe geladen wird. Danach zurück zu Verben.</p><div class="actions"><button class="btn secondary" onclick="renderVerbChooser()">Verben wählen</button></div></section>';
-    return;
+    saveState();syncVerbDashboardSummary();return;
   }
-  app.classList.remove("card");
-  app.innerHTML='<section class="card"><h2>Alle freigegebenen Verben sind fertig</h2><p class="small">Alle aktuell freigegebenen Verben sind gelernt. Mit „Fortschritte löschen“ beginnt alles wieder von vorne.</p><div class="actions"><button class="btn green" onclick="renderVerbChooser()">Verben wählen</button></div></section>';
-  saveState();
+  renderAllVerbsCompletedPage();
 }
 function openNextTask(){const order=["karteikarte","memory","bild_verb","verb_bild","schreiben","hoeren_schreiben","hoeren_sprechen","bild_sprechen","satz_puzzle","konjugieren"];for(const s of order){if(!taskDone(s)){openVerbTask(s);return}}renderHome()}
 function resumePhase(){if(state.phase==="overview"){renderVerbOverview();return true}if(state.phase==="chooser"){renderVerbChooser();return true}if(state.phase==="assessment"){renderAssessment();return true}if(state.phase==="memory"&&state.memoryCards&&state.memoryCards.length){renderMemory();return true}const map={karteikarte:flashcards,bild_verb:quiz,verb_bild:verbToImage,schreiben:writeVerb,hoeren_schreiben:hearWrite,hoeren_sprechen:hearSpeak,bild_sprechen:imageSpeak,satz_puzzle:sentencePuzzle,konjugieren:conjugationTask,pruefung:resumeVerbExam};if(state.phase&&map[state.phase]){map[state.phase]();return true}return false}
@@ -199,6 +207,7 @@ function renderSafeHomeFallback(error){
   const app=$("app");if(!app)return;
   app.classList.remove("card");
   try{localStorage.setItem("SP_VERBS_LAST_BOOT_ERROR",String(error&&error.stack||error||"unknown"))}catch(e){}
+  try{if(currentPracticeVerbs().length){renderTaskOverview();return}if(remainingUnlearnedVerbs().length){handleAssessmentClick();return}if(allReleasedVerbsLearned()){renderAllVerbsCompletedPage();return}}catch(e){}
   app.innerHTML='<section class="card"><h2>Verben konnten nicht vollständig geladen werden</h2><p class="small">Bitte lade die Seite neu. Der Fehler wurde lokal gespeichert, damit er geprüft werden kann.</p><div class="actions"><button class="btn green" onclick="location.reload()">Neu laden</button><button class="btn secondary" onclick="renderVerbChooser()">Verben wählen</button></div></section>';
 }
 async function boot(){if(!loadProfile())return;renderHeader();await loadState();renderHeader();renderSideMenu();try{resetOpenTaskOnReload();clearVerbHash(true);renderHome()}catch(e){console.warn(e);renderSafeHomeFallback(e)}renderAndHydrate()}
