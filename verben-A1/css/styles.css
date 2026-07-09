@@ -46,16 +46,20 @@ body > .account-strip { display:none !important; }
 .account-tools, .top-actions { display:flex; gap:10px; align-items:center; flex-wrap:wrap; justify-content:flex-end; }
 .account-pill, .account-link, .account-btn, .account-mini {
   border:2px solid var(--line);
-  border-radius:14px;
+  border-radius:16px;
   background:var(--white);
   padding:10px 16px;
-  font-weight:700;
+  font-weight:800;
   color:var(--gold-dark);
   text-decoration:none;
-  box-shadow:none;
+  box-shadow:0 6px 16px rgba(18,48,71,.06);
 }
+.account-link:hover, .account-btn:hover { border-color:var(--gold); background:var(--soft); }
 .account-btn { cursor:pointer; font-family:inherit; font-size:15px; }
-.nav { display:flex; gap:12px; margin-top:18px; flex-wrap:wrap; }
+.nav { display:flex; gap:10px; margin-top:18px; flex-wrap:wrap; align-items:center; }
+.nav .btn, .nav button { min-height:46px; padding:10px 16px; border-radius:16px; }
+.nav .sp-nav-back { background:var(--soft); border-color:var(--line); }
+.nav .sp-nav-link { white-space:nowrap; }
 
 button, .btn {
   display:inline-flex;
@@ -72,15 +76,17 @@ button, .btn {
   cursor:pointer;
   font-family:inherit;
   font-size:16px;
-  box-shadow:none;
+  box-shadow:0 6px 16px rgba(18,48,71,.06);
   margin:0;
+  transition:transform .15s ease, border-color .15s ease, background .15s ease, box-shadow .15s ease;
 }
-button:hover, .btn:hover { transform: translateY(-1px); }
-button.secondary, .btn.secondary { background:var(--white); }
+button:hover, .btn:hover { transform: translateY(-1px); box-shadow:0 10px 22px rgba(18,48,71,.12); }
+button.secondary, .btn.secondary { background:var(--white); border-color:var(--line); }
+button.secondary:hover, .btn.secondary:hover { border-color:var(--gold); background:var(--soft); }
 button.success, .btn.green { border-color:var(--green); background:var(--green); color:white; }
 button.danger { border-color:var(--red); background:var(--red); color:white; }
 button.warning, .btn.danger-btn { background:var(--yellow-light); color:var(--gold-dark); border-color:var(--yellow); }
-button:disabled { opacity:.45; cursor:not-allowed; transform:none; }
+button:disabled, .disabled-card { opacity:.45; cursor:not-allowed; transform:none; box-shadow:none; }
 
 .card {
   background:var(--white);
@@ -206,6 +212,7 @@ footer { text-align:center; color:var(--gold-dark); margin:24px 0; }
   .topbar, .card { border-radius:22px; padding:18px; }
   .topbar-main { align-items:center; }
   .account-tools, .top-actions, .nav { width:100%; justify-content:center; }
+  .account-tools > *, .nav .btn, .nav button { flex:1 1 160px; max-width:100%; }
   .btn, button { width:100%; }
   .grid, .task-grid { grid-template-columns:1fr; }
   .options, .image-grid-4, .quiz-options { grid-template-columns:1fr; }
