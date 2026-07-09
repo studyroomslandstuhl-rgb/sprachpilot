@@ -52,14 +52,20 @@
     ensurePracticeState();
     try{state.phase='taskOverview';state.currentGame='';state.currentVerb='';state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;saveQuiet()}catch(e){}
   }
+  function nav(){return document.querySelector('header .nav')}
+  function makeBtn(label,fn){const b=document.createElement('button');b.type='button';b.className='btn secondary sp-nav-link';b.textContent=label;b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();fn()},true);return b}
   function simplifyHeader(root){
-    const r=root||document;
+    const n=nav();if(!n)return;
     try{
-      r.querySelectorAll('header .nav .sp-nav-link, header .nav .danger-btn').forEach(el=>el.remove());
-      r.querySelectorAll('header .nav a, header .nav button').forEach(el=>{
-        const t=String(el.textContent||'').trim();
-        if(t&&t!=='← Zurück'&&t!=='Zurück')el.remove();
+      [...n.querySelectorAll('a,button')].forEach(el=>{
+        const t=String(el.textContent||'').replace(/\s+/g,' ').trim();
+        if(t.includes('Zurück')){el.classList.add('sp-nav-back');return}
+        if(t==='Übersicht'){el.classList.add('sp-overview-link');el.onclick=null;el.setAttribute('type','button');return}
+        el.remove();
       });
+      if(!n.querySelector('.sp-nav-back'))n.prepend(makeBtn('← Zurück',()=>window.spGoBack()));
+      let overview=n.querySelector('.sp-overview-link');
+      if(!overview){overview=makeBtn('Übersicht',()=>goOverview(false));overview.classList.add('sp-overview-link');n.appendChild(overview)}
     }catch(e){}
   }
   function normalizeStaticLinks(root){
@@ -80,7 +86,11 @@
   }
   function goIndex(replace){setCleanUrl('',null,replace);renderIndex()}
   function goChooser(replace){setCleanUrl('chooser',null,replace);if(typeof renderVerbChooser==='function'){renderVerbChooser();normalizeStaticLinks(document)}else renderIndex()}
-  function goAssessment(replace){setCleanUrl('assessment',null,replace);try{if(typeof startAssessment==='function'){startAssessment(true);normalizeStaticLinks(document);return}}catch(e){}renderIndex()}
+  function goAssessment(replace){
+    setCleanUrl('assessment',null,replace);
+    try{if(typeof startAssessment==='function'){startAssessment(true);normalizeStaticLinks(document);return}}catch(e){try{localStorage.setItem('SP_VERBS_LAST_ASSESSMENT_ERROR',String(e&&e.stack||e))}catch(x){}}
+    renderIndex();
+  }
   function goOverview(replace){setCleanUrl('overview',null,replace);if(typeof renderVerbOverview==='function'){renderVerbOverview();normalizeStaticLinks(document)}else renderIndex()}
   function goTask(task,replace){
     if(!task)return showTaskOverview(replace);
@@ -108,10 +118,8 @@
   window.handleAssessmentClick=function(){goAssessment(false)};
   const originalRenderHeader=window.renderHeader;
   if(typeof originalRenderHeader==='function')window.renderHeader=function(){originalRenderHeader.apply(this,arguments);simplifyHeader(document)};
-  const originalRenderHome=window.renderHome;
   window.renderHome=function(){goIndex(true)};
   window.renderSafeHomeFallback=function(error){try{localStorage.setItem('SP_VERBS_LAST_BOOT_ERROR',String(error&&error.stack||error||'unknown'))}catch(e){}goIndex(true)};
-  const oldRoute=window.routeVerbenHash;
   window.routeVerbenHash=function(){
     const task=taskParam()||legacyTask();
     const view=viewParam()||legacyView();
@@ -125,8 +133,13 @@
   };
   document.addEventListener('click',function(e){
     const el=e.target&&e.target.closest?e.target.closest('a,button'):null;if(!el)return;
-    const text=String(el.textContent||'').replace(/\s+/g,' ').trim();
+    const card=e.target&&e.target.closest?e.target.closest('.verb-action-card,.task-card,.module'):null;
+    const text=String((card||el).textContent||'').replace(/\s+/g,' ').trim();
     if(el.classList&&el.classList.contains('sp-nav-back')){e.preventDefault();e.stopPropagation();window.spGoBack();return}
+    if(el.classList&&el.classList.contains('sp-overview-link')){e.preventDefault();e.stopPropagation();goOverview(false);return}
+    if(card&&card.classList&&card.classList.contains('verb-practice-card')){e.preventDefault();e.stopPropagation();showTaskOverview(false);return}
+    if(card&&/Einschätzen|einschätzen/.test(text)){e.preventDefault();e.stopPropagation();goAssessment(false);return}
+    if(card&&/Wählen|wählen/.test(text)){e.preventDefault();e.stopPropagation();goChooser(false);return}
     if(el.matches&&el.matches('a[href]')){
       const href=el.getAttribute('href')||'';
       const u=new URL(el.href,location.origin);
@@ -134,10 +147,7 @@
       if(u.pathname===BASE&&u.searchParams.get('task')){e.preventDefault();e.stopPropagation();goTask(HASH_TO_TASK[u.searchParams.get('task')]||u.searchParams.get('task'),false);return}
       if((href===BASE||href==='/verben-A1'||href==='/verben-A1/')&&u.pathname===BASE&&!u.search){e.preventDefault();e.stopPropagation();goIndex(false);return}
     }
-    if(text==='Aufgabenübersicht'||text==='Üben'||text==='Starten'){const card=el.closest&&el.closest('.verb-practice-card');if(text!=='Starten'||card){e.preventDefault();e.stopPropagation();showTaskOverview(false);return}}
-    if(text==='Einschätzen'||text==='Verben einschätzen'){e.preventDefault();e.stopPropagation();goAssessment(false);return}
-    if(text==='Wählen'||text==='Verben wählen'){e.preventDefault();e.stopPropagation();goChooser(false);return}
-    if(text==='Übersicht'){e.preventDefault();e.stopPropagation();goOverview(false);return}
+    if(/Aufgabenübersicht/.test(text)){e.preventDefault();e.stopPropagation();showTaskOverview(false);return}
   },true);
   window.addEventListener('popstate',function(){if(typeof window.routeVerbenHash==='function')window.routeVerbenHash()});
   document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){simplifyHeader(document);normalizeStaticLinks(document);if(viewParam()==='aufgaben'||legacyView()==='aufgaben')showTaskOverview(true)},80)},{once:true});
