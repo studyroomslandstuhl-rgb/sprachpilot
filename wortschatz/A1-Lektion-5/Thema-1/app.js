@@ -3,11 +3,11 @@ const CFG=window.SP_L5_THEME||{id:'Thema-1',title:'Alltag und trennbare Verben',
 const DATA=window.SP_A1_LEKTION5_WORTSCHATZ||{parts:[]};
 const THEME=(DATA.parts||[]).find(p=>p.id===CFG.id)||{words:[],title:CFG.title};
 const WORDS=THEME.words||[];
-const EXTRA_IMAGES={machen:'machen.webp',praesentation:'praesentation.webp',fruehstuecken:'fruehstuecken.webp',einkaufen:'einkaufen.webp',hoeren:'hoeren.webp',kochen:'kochen.webp',aufraeumen:'aufraeumen.webp',aufstehen:'aufstehen.webp',gehen:'gehen.webp',muede:'muede.webp',anrufen:'anrufen.webp',frueh:'frueh.webp',fernsehen:'fernsehen.webp',arbeiten:'arbeiten.webp',spielen:'spielen.webp',essen:'essen.webp',schlafen:'schlafen.webp',lange:'lange.webp',gern:'gern.webp',nicht_gern:'nicht_gern.webp',spazieren_gehen:'spazieren_gehen.webp'};
+const EXTRA_IMAGES={machen:'machen.webp',praesentation:'https://sprachpilot.b-cdn.net/Neu/praesentation.png',fruehstuecken:'fruehstuecken.webp',einkaufen:'einkaufen.webp',hoeren:'hoeren.webp',kochen:'kochen.webp',aufraeumen:'aufraeumen.webp',aufstehen:'aufstehen.webp',gehen:'gehen.webp',muede:'muede.webp',anrufen:'anrufen.webp',frueh:'frueh.webp',fernsehen:'fernsehen.webp',arbeiten:'arbeiten.webp',spielen:'spielen.webp',essen:'essen.webp',schlafen:'schlafen.webp',lange:'lange.webp',gern:'gern.webp',nicht_gern:'nicht_gern.webp',spazieren_gehen:'https://sprachpilot.b-cdn.net/Neu/spazierengehen.webp'};
 const BAD_IMAGE_IDS=new Set([]);
 const STD_LANGS=[['en','EN'],['ru','RU'],['tr','TR'],['uk','UK'],['ar','AR'],['ja','JA'],['ro','RO']];
 const LANG_NAMES={en:'Englisch',ru:'Russisch',tr:'Türkisch',uk:'Ukrainisch',ar:'Arabisch',ja:'Japanisch',ro:'Rumänisch'};
-function cdnImg(v){return v?(window.SP_ASSET_URL?window.SP_ASSET_URL(v):'https://sprachpilot.b-cdn.net/'+String(v).split('/').pop().replace(/\.(png|jpe?g|webp|gif|svg)$/i,'.webp')):''}
+function cdnImg(v){const s=String(v||'');if(!s)return'';if(/^https?:\/\//i.test(s))return s;return window.SP_ASSET_URL?window.SP_ASSET_URL(s):'https://sprachpilot.b-cdn.net/'+s.split('/').pop().replace(/\.(png|jpe?g|webp|gif|svg)$/i,'.webp')}
 function displayImage(w){return cdnImg(EXTRA_IMAGES[w?.id]||w?.image||(w?.id?w.id+'.webp':''))}
 function hasGoodImage(w){return !!(w&&!BAD_IMAGE_IDS.has(w.id)&&displayImage(w))}
 function simple(x){return String(x||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:]/g,'').replace(/\s+/g,' ')}
