@@ -4,8 +4,8 @@ function uniqueVerbProgressList(list){return [...new Set((list||[]).filter(Boole
 function releaseFilterVerbs(list){
   const source=uniqueVerbProgressList(list||[]);
   if(typeof window!=="undefined"&&typeof window.spStrictReleasedVerbList==="function"){
-    const allowed=new Set(window.spStrictReleasedVerbList());
-    return source.filter(v=>allowed.has(v));
+    const released=window.spStrictReleasedVerbList()||[];
+    if(released.length){const allowed=new Set(released);return source.filter(v=>allowed.has(v))}
   }
   return source;
 }
@@ -89,3 +89,40 @@ function queuedProgress(skill){
 }
 function taskDone(skill){const p=queuedProgress(skill);return p.total>0&&p.done>=p.total}
 function taskProgressHtml(skill,label){const p=queuedProgress(skill);return `<div class="task-progress"><div class="task-progress-title"><span>${safeText(label)} · ${p.done}/${p.total} · ${p.pct}%</span></div><div class="task-progress-line"><div class="task-progress-fill" style="width:${p.pct}%"></div></div></div>`}
+
+function ensureAttempt(skill,v){
+  const sk=skillKey(skill);
+  ensureSkillState(v);
+  state.currentTask=state.currentTask||{skill:sk,v,slot:0,tries:0,hadWrong:false,helped:false};
+  if(state.currentTask.skill!==sk||state.currentTask.v!==v)state.currentTask={skill:sk,v,slot:0,tries:0,hadWrong:false,helped:false};
+  state.currentTask.tries=Number(state.currentTask.tries||0);
+  saveState();
+}
+function markHelped(skill,v){ensureAttempt(skill,v);state.currentTask.helped=true;saveState()}
+function optionVerbs(correct,count=4){
+  const pool=uniqueVerbProgressList([...(currentPackageAllVerbs?currentPackageAllVerbs():[]),...(currentPracticeVerbs?currentPracticeVerbs():[]),...(typeof ALL_VERBS!=="undefined"?ALL_VERBS.map(x=>x&&x.v):[])]).filter(Boolean).filter(v=>v!==correct);
+  return shuffle([correct,...shuffle(pool).slice(0,Math.max(0,count-1))]).slice(0,count);
+}
+function standardFeedback(tries,solution,focus="Antwort"){
+  const n=Number(tries||1);
+  if(n<=1)return `Noch nicht richtig. Prüfe ${focus}.`;
+  if(n===2)return `Fast. Achte genau auf ${focus}.`;
+  return `Lösung: ${solution}`;
+}
+function setTaskFeedback(id,html){const el=$(id||"fb");if(el)el.innerHTML=html}
+function handleCorrectAnswer(skill,v,nextFn,delay=700,fbId="fb"){
+  ensureAttempt(skill,v);
+  addEncounter(v,skill,true);
+  finishQueuedVerb(skill,v,true);
+  setTaskFeedback(fbId,"<div class='ok'>Richtig.</div>");
+  const next=typeof nextFn==="function"?nextFn:renderHome;
+  setTimeout(()=>{if(taskDone(skill))renderHome();else next()},delay);
+}
+function handleWrongAnswer(skill,v,solution,focus="Antwort",fbId="fb"){
+  ensureAttempt(skill,v);
+  state.currentTask.tries=Number(state.currentTask.tries||0)+1;
+  state.currentTask.hadWrong=true;
+  addEncounter(v,skill,false);
+  saveState();
+  setTaskFeedback(fbId,`<div class='no'>${safeText(standardFeedback(state.currentTask.tries,solution,focus))}</div>`);
+}
