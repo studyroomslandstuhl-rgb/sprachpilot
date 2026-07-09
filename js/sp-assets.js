@@ -40,6 +40,17 @@ function bunnyUrl(value){
 function toBunny(value){return shouldUseBunny(value)?bunnyUrl(value):value}
 window.SP_ASSET_URL=function(name){return isLogo(name)?name:bunnyFromName(name)};
 window.SP_LOCAL_TO_CDN=toBunny;
+function looksLikeVocabObject(obj){
+  return !!(obj&&typeof obj==="object"&&obj.id&&(obj.word||obj.full||obj.article||obj.type||obj.sentence||obj.tr));
+}
+function fillMissingImageFromId(obj){
+  if(!looksLikeVocabObject(obj))return;
+  if(isLogo(obj.id))return;
+  if(!obj.image && !obj.img && !obj.bild && !obj.src){
+    obj.image=bunnyFromName(String(obj.id)+".webp");
+    if(Object.prototype.hasOwnProperty.call(obj,"imageNeeded"))obj.imageNeeded=false;
+  }
+}
 function connectObjectImages(obj){
   if(!obj||typeof obj!=="object")return;
   ["image","img","bild","src","url","poster"].forEach(k=>{
@@ -55,6 +66,7 @@ function connectObjectImages(obj){
   ["imageKey","imgKey","bildKey"].forEach(k=>{
     if(obj[k]&&!obj.image&&!isLogo(obj[k]))obj.image=bunnyFromName(fileNameFromImageKey(obj[k]));
   });
+  fillMissingImageFromId(obj);
 }
 function deepConnect(v,seen=new Set()){
   if(!v||typeof v!=="object"||seen.has(v))return;
@@ -71,6 +83,7 @@ function connectAssetObjects(){
   });
 }
 window.SP_CONNECT_ASSET_OBJECTS=connectAssetObjects;
+window.SP_FILL_MISSING_IMAGES=function(root){deepConnect(root||window)};
 function rewriteCssText(txt){
   return String(txt||"").replace(/url\((['\"]?)([^)'\"]+)\1\)/gi,(m,q,u)=>{
     const next=toBunny(u.trim());
