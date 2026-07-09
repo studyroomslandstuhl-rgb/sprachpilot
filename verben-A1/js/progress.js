@@ -1,6 +1,6 @@
 let firebaseSaveTimer=null;
 function skillKey(skill){return skill==="zuordnung"?"bild_verb":skill}
-function uniqueVerbProgressList(list){return [...new Set((list||[]).filter(Boolean))]}
+function uniqueVerbProgressList(list){return [...new Set((Array.isArray(list)?list:[]).filter(Boolean))]}
 function releaseFilterVerbs(list){
   const source=uniqueVerbProgressList(list||[]);
   if(typeof window!=="undefined"&&typeof window.spStrictReleasedVerbList==="function"){
@@ -8,6 +8,16 @@ function releaseFilterVerbs(list){
     if(released.length){const allowed=new Set(released);return source.filter(v=>allowed.has(v))}
   }
   return source;
+}
+function ensureProgressObjects(){
+  state.taskDoneSets=state.taskDoneSets&&typeof state.taskDoneSets==="object"&&!Array.isArray(state.taskDoneSets)?state.taskDoneSets:{};
+  state.taskQueues=state.taskQueues&&typeof state.taskQueues==="object"&&!Array.isArray(state.taskQueues)?state.taskQueues:{};
+  state.practicePool=Array.isArray(state.practicePool)?state.practicePool:[];
+}
+function ensureArrayStore(obj,key){
+  if(!obj||typeof obj!=="object")return [];
+  if(!Array.isArray(obj[key]))obj[key]=[];
+  return obj[key];
 }
 function verbSkillCount(v){ensureSkillState(v);return VERB_SKILLS.filter(s=>state.skillDone[v]&&state.skillDone[v][s]).length}
 function verbPercent(v){return Math.round((verbSkillCount(v)*100)/VERB_SKILLS.length)}
@@ -21,36 +31,41 @@ function taskQueueKey(skill){return "queue_"+skillKey(skill)}
 function taskDoneSetKey(skill){return "done_"+skillKey(skill)}
 function weightForVerb(v){return 1}
 function buildPracticePool(){
+  ensureProgressObjects();
   const source=releaseFilterVerbs(currentPracticeVerbs());
   state.practicePool=shuffle(source);
   saveState();return state.practicePool;
 }
 function doneVerbSetForSkill(skill){
+  ensureProgressObjects();
   const dKey=taskDoneSetKey(skill);
-  state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
-  return new Set((state.taskDoneSets[dKey]||[]).map(k=>String(k).split(":")[0]).filter(Boolean));
+  const done=ensureArrayStore(state.taskDoneSets,dKey);
+  return new Set(done.map(k=>String(k).split(":")[0]).filter(Boolean));
 }
 function initTaskQueue(skill){
+  ensureProgressObjects();
   const qKey=taskQueueKey(skill),dKey=taskDoneSetKey(skill);
-  state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
+  ensureArrayStore(state.taskDoneSets,dKey);
+  ensureArrayStore(state.taskQueues,qKey);
   state.practicePool=releaseFilterVerbs(state.practicePool||[]);
   const source=(state.practicePool&&state.practicePool.length)?state.practicePool:buildPracticePool();
   const allowed=new Set(releaseFilterVerbs(source));
-  state.taskDoneSets[dKey]=(state.taskDoneSets[dKey]||[]).filter(k=>allowed.has(String(k).split(":")[0]));
+  state.taskDoneSets[dKey]=ensureArrayStore(state.taskDoneSets,dKey).filter(k=>allowed.has(String(k).split(":")[0]));
   const doneVerbs=doneVerbSetForSkill(skill);
-  state.taskQueues[qKey]=(state.taskQueues[qKey]||[]).filter(x=>x&&allowed.has(x.v)&&!doneVerbs.has(x.v));
-  if(!Array.isArray(state.taskQueues[qKey])||!state.taskQueues[qKey].length){
+  state.taskQueues[qKey]=ensureArrayStore(state.taskQueues,qKey).filter(x=>x&&allowed.has(x.v)&&!doneVerbs.has(x.v));
+  if(!state.taskQueues[qKey].length){
     state.taskQueues[qKey]=shuffle(source.map((v,i)=>({v,slot:i})).filter(x=>allowed.has(x.v)&&!doneVerbs.has(x.v)));
   }
   saveState();
 }
 function currentTaskItem(skill){
+  ensureProgressObjects();
   const sk=skillKey(skill);
   const allowed=new Set(releaseFilterVerbs(currentPracticeVerbs()));
   if(state.currentTask&&state.currentTask.skill===sk&&state.currentTask.v&&allowed.has(state.currentTask.v))return state.currentTask;
   if(state.currentTask&&state.currentTask.skill===sk&&state.currentTask.v&&!allowed.has(state.currentTask.v))state.currentTask=null;
   initTaskQueue(sk);
-  const q=state.taskQueues[taskQueueKey(sk)]||[];
+  const q=ensureArrayStore(state.taskQueues,taskQueueKey(sk));
   const item=q.shift();
   state.taskQueues[taskQueueKey(sk)]=q;
   if(!item){state.currentTask=null;saveState();return null}
@@ -60,28 +75,30 @@ function currentTaskItem(skill){
 }
 function nextFromTaskQueue(skill){const item=currentTaskItem(skill);return item?item.v:null}
 function finishQueuedVerb(skill,v,good=true){
+  ensureProgressObjects();
   const allowed=new Set(releaseFilterVerbs(currentPracticeVerbs()));
   if(!allowed.has(v)){if(state.currentTask)state.currentTask=null;saveState();return}
   const sk=skillKey(skill), dKey=taskDoneSetKey(sk), qKey=taskQueueKey(sk);
-  state.taskDoneSets[dKey]=state.taskDoneSets[dKey]||[];
+  ensureArrayStore(state.taskDoneSets,dKey);
+  ensureArrayStore(state.taskQueues,qKey);
   const slot=(state.currentTask&&state.currentTask.skill===sk&&state.currentTask.v===v)?state.currentTask.slot:0;
   if(good){
     const doneVerbs=doneVerbSetForSkill(sk);
     if(!doneVerbs.has(v))state.taskDoneSets[dKey].push(v+":"+slot);
-    state.taskQueues[qKey]=(state.taskQueues[qKey]||[]).filter(x=>x&&x.v!==v);
+    state.taskQueues[qKey]=ensureArrayStore(state.taskQueues,qKey).filter(x=>x&&x.v!==v);
   } else {
-    state.taskQueues[qKey]=state.taskQueues[qKey]||[];
     if(slot!==null&&!state.taskQueues[qKey].some(x=>x&&x.v===v))state.taskQueues[qKey].push({v,slot});
   }
   if(state.currentTask&&state.currentTask.skill===sk)state.currentTask=null;
   saveState();
 }
 function queuedProgress(skill){
+  ensureProgressObjects();
   const sk=skillKey(skill),dKey=taskDoneSetKey(sk);
   state.practicePool=releaseFilterVerbs(state.practicePool||[]);
   const source=releaseFilterVerbs((state.practicePool&&state.practicePool.length)?state.practicePool:currentPracticeVerbs());
   const allowed=new Set(source);
-  state.taskDoneSets[dKey]=(state.taskDoneSets[dKey]||[]).filter(k=>allowed.has(String(k).split(":")[0]));
+  state.taskDoneSets[dKey]=ensureArrayStore(state.taskDoneSets,dKey).filter(k=>allowed.has(String(k).split(":")[0]));
   const doneVerbs=[...doneVerbSetForSkill(sk)].filter(v=>allowed.has(v));
   const done=doneVerbs.length;
   const total=source.length;
