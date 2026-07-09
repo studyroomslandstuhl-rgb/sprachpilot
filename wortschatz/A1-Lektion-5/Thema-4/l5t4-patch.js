@@ -1,6 +1,6 @@
 (function(){
   const CDN='https://sprachpilot.b-cdn.net/';
-  const V='?v=l5t4-3';
+  const V='?v=l5t4-4';
   function safe(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
   function cleanName(name){return String(name||'').split('?')[0].split('#')[0].split('/').pop().replace(/\.(webp|png|jpe?g|gif|svg)$/i,'')}
   function bunny(name){const n=cleanName(name);return n?CDN+n+'.webp'+V:''}
@@ -8,6 +8,7 @@
   function patch(id,data){const w=findWord(id);if(w)Object.assign(w,data)}
   function forceImage(w,name){if(!w)return;const n=cleanName(name||w.imageBase||w.id||w.image);if(!n)return;w.imageBase=n;w.image=bunny(n);w.localImage=''}
 
+  ['halb'].forEach(id=>{const idx=WORDS.findIndex(w=>w&&w.id===id);if(idx>=0)WORDS.splice(idx,1)});
   if(Array.isArray(WORDS)) WORDS.forEach(w=>forceImage(w));
 
   patch('ist_geoeffnet',{imageBase:'ist_geoeffnet',image:bunny('ist_geoeffnet'),aliases:['ist geöffnet','geöffnet']});
