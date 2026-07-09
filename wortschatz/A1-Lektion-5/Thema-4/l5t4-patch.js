@@ -1,73 +1,47 @@
 (function(){
   const CDN='https://sprachpilot.b-cdn.net/';
+  const V='?v=l5t4-3';
+  function safe(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
+  function cleanName(name){return String(name||'').split('?')[0].split('#')[0].split('/').pop().replace(/\.(webp|png|jpe?g|gif|svg)$/i,'')}
+  function bunny(name){const n=cleanName(name);return n?CDN+n+'.webp'+V:''}
   function findWord(id){return WORDS.find(w=>w&&w.id===id)}
   function patch(id,data){const w=findWord(id);if(w)Object.assign(w,data)}
-  function cleanName(name){return String(name||'').replace(/^\/+/, '').replace(/\.(webp|png|jpe?g)$/i,'')}
-  function bunny(name){return CDN+cleanName(name)+'.webp'}
-  function local(name){return '/assets/img/'+cleanName(name)+'.png'}
-  function setImage(id,name,localName){patch(id,{image:bunny(name),imageBase:cleanName(name),localImage:local(localName||name)})}
-  function enc(s){return encodeURIComponent(String(s||''))}
-  function esc(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
-  function imgCandidates(w){
-    if(!w)return [];
-    const bases=[];
-    if(w.imageBase)bases.push(w.imageBase);
-    if(w.id)bases.push(w.id);
-    if(w.image&&!/^https?:\/\//.test(w.image))bases.push(cleanName(String(w.image).split('/').pop()));
-    const uniq=[...new Set(bases.filter(Boolean).map(cleanName))];
-    const out=[];
-    uniq.forEach(b=>out.push(CDN+b+'.webp',CDN+b+'.png',CDN+b+'.jpg',CDN+b+'.jpeg'));
-    if(w.localImage)out.push(w.localImage);
-    if(w.image&&!/^https?:\/\//.test(w.image))out.push(w.image);
-    return [...new Set(out.filter(Boolean))];
-  }
-  window.l5t4ImgFallback=function(img){
-    const raw=String(img.getAttribute('data-fallbacks')||'');
-    const list=raw?raw.split('|').map(x=>decodeURIComponent(x)).filter(Boolean):[];
-    if(list.length){img.setAttribute('data-fallbacks',list.slice(1).map(enc).join('|'));img.src=list[0];return}
-    const ph=document.createElement('div');ph.className=img.classList.contains('task-img')?'placeholder-img':'word-placeholder';ph.textContent='Wort';img.replaceWith(ph);
-  }
-  function imgTag(w,cls){
-    const c=imgCandidates(w);
-    if(!c.length)return '';
-    return `<img${cls?` class="${cls}"`:''} src="${esc(c[0])}" data-fallbacks="${c.slice(1).map(enc).join('|')}" onerror="l5t4ImgFallback(this)" alt="">`;
-  }
+  function forceImage(w,name){if(!w)return;const n=cleanName(name||w.imageBase||w.id||w.image);if(!n)return;w.imageBase=n;w.image=bunny(n);w.localImage=''}
 
-  ['halb','kindergarten','jugendliche','ich_bin_fertig'].forEach(id=>{const idx=WORDS.findIndex(w=>w&&w.id===id);if(idx>=0)WORDS.splice(idx,1)})
+  if(Array.isArray(WORDS)) WORDS.forEach(w=>forceImage(w));
 
-  setImage('ist_geoeffnet','ist_geoeffnet')
-  setImage('ist_geschlossen','ist_geschlossen')
-  setImage('oeffnen','oeffnen')
-  setImage('schliessen','schliessen')
-  setImage('anfangen','anfangen')
-  setImage('enden','enden')
-  setImage('vereinbaren','vereinbaren')
-  setImage('ausleihen','ausleihen')
-  setImage('geschaeft','geschaeft')
-  setImage('bibliothek','bibliothek')
-  setImage('krippe','krippe')
-  setImage('praxis','praxis')
-  setImage('kino','kino')
-  setImage('termin','termin')
-  setImage('feiertag','feiertag')
-  setImage('oeffnungszeiten','oeffnungszeiten')
-  setImage('schild','schild')
-  setImage('ganz','ganz')
-  setImage('ganzen_tag','den_ganzen_tag')
-  setImage('wieder','wieder')
+  patch('ist_geoeffnet',{imageBase:'ist_geoeffnet',image:bunny('ist_geoeffnet'),aliases:['ist geöffnet','geöffnet']});
+  patch('ist_geschlossen',{imageBase:'ist_geschlossen',image:bunny('ist_geschlossen'),aliases:['ist geschlossen','geschlossen']});
+  patch('oeffnen',{imageBase:'oeffnen',image:bunny('oeffnen')});
+  patch('schliessen',{imageBase:'schliessen',image:bunny('schliessen')});
+  patch('anfangen',{imageBase:'anfangen',image:bunny('anfangen')});
+  patch('enden',{imageBase:'enden',image:bunny('enden')});
+  patch('vereinbaren',{imageBase:'vereinbaren',image:bunny('vereinbaren')});
+  patch('ausleihen',{imageBase:'ausleihen',image:bunny('ausleihen')});
+  patch('geschaeft',{imageBase:'geschaeft',image:bunny('geschaeft')});
+  patch('bibliothek',{imageBase:'bibliothek',image:bunny('bibliothek')});
+  patch('kita',{imageBase:'kita',image:bunny('kita'),full:'die Kita',word:'Kita',aliases:['die Kita','Kita']});
+  patch('krippe',{imageBase:'krippe',image:bunny('krippe')});
+  patch('kindergarten',{imageBase:'kindergarten',image:bunny('kindergarten')});
+  patch('praxis',{imageBase:'praxis',image:bunny('praxis')});
+  patch('kino',{imageBase:'kino',image:bunny('kino')});
+  patch('termin',{imageBase:'termin',image:bunny('termin')});
+  patch('feiertag',{imageBase:'feiertag',image:bunny('feiertag')});
+  patch('oeffnungszeiten',{imageBase:'oeffnungszeiten',image:bunny('oeffnungszeiten')});
+  patch('schild',{imageBase:'schild',image:bunny('schild')});
+  patch('ganz',{imageBase:'ganz',image:bunny('ganz')});
+  patch('ganzen_tag',{imageBase:'ganzen_tag',image:bunny('ganzen_tag')});
+  patch('zum_beispiel',{imageBase:'zum_beispiel',image:bunny('zum_beispiel'),cue:null,aliases:['zum Beispiel']});
+  patch('wieder',{imageBase:'wieder',image:bunny('wieder')});
+  patch('total',{imageBase:'total',image:bunny('total'),cue:null,aliases:['total','absolut']});
+  patch('ich_bin_fertig',{imageBase:'ich_bin_fertig',image:bunny('ich_bin_fertig')});
+  patch('jugend',{imageBase:'jugend',image:bunny('jugend')});
+  patch('jugendliche',{imageBase:'jugendliche',image:bunny('jugendliche')});
 
-  patch('zum_beispiel',{image:null,cue:'z.B.',word:'zum Beispiel',full:'zum Beispiel',sentence:'z.B. = zum Beispiel',aliases:['zum Beispiel']})
-  patch('total',{image:null,cue:'Alternative für „absolut“',word:'total',full:'total',sentence:'total = Alternative für „absolut“',aliases:['total','absolut']})
-  patch('kita',{image:bunny('kindergarten'),imageBase:'kindergarten',localImage:local('kindergarten'),full:'die Kita / der Kindergarten',word:'Kita / Kindergarten',plural:'die Kitas / die Kindergärten',pluralGroup:'Pl.',aliases:['die Kita','Kita','der Kindergarten','Kindergarten']})
-  patch('jugend',{image:bunny('jugendliche'),imageBase:'jugendliche',localImage:local('jugendliche'),full:'die Jugend / die Jugendlichen',word:'Jugend / Jugendliche',plural:'die Jugendlichen',pluralGroup:'Pl.',aliases:['die Jugend','Jugend','die Jugendlichen','Jugendliche','Jugendlichen']})
+  if(!findWord('ich_bin_total_fertig'))WORDS.push({id:'ich_bin_total_fertig',section:'Freizeit',word:'ich bin total fertig',article:'',full:'ich bin total fertig',plural:'',pluralGroup:'',type:'phrase',image:bunny('ich_bin_total_fertig'),imageBase:'ich_bin_total_fertig',sentence:'Ich bin total fertig.',aliases:['ich bin total fertig'],tr:{en:'I am totally exhausted',ru:'я совсем устал(а)',tr:'çok yoruldum',uk:'я дуже втомився / втомилася',ar:'أنا متعب جدًا',ja:'とても疲れています',ro:'sunt foarte obosit(ă)',pl:'jestem totalnie zmęczony / zmęczona',ku:'ez pir westiyayî me'}})
 
-  if(!findWord('ich_bin_total_fertig'))WORDS.push({id:'ich_bin_total_fertig',section:'Freizeit',word:'ich bin total fertig',article:'',full:'ich bin total fertig',plural:'',pluralGroup:'',type:'phrase',image:bunny('ich_bin_total_fertig'),imageBase:'ich_bin_total_fertig',localImage:local('ich_bin_total_fertig'),sentence:'Ich bin total fertig.',aliases:['ich bin total fertig'],tr:{en:'I am totally exhausted',ru:'я совсем устал(а)',tr:'çok yoruldum',uk:'я дуже втомився / втомилася',ar:'أنا متعب جدًا',ja:'とても疲れています',ro:'sunt foarte obosit(ă)',pl:'jestem totalnie zmęczony / zmęczona',ku:'ez pir westiyayî me'}})
-
-  const oldDisplay=window.displayImage||displayImage;
-  window.displayImage=displayImage=function(w){const c=imgCandidates(w);return c[0]||(w&&w.image?w.image:oldDisplay(w))}
-  const oldBig=window.bigImgHtml||bigImgHtml;
-  window.bigImgHtml=bigImgHtml=function(w){if(w&&w.cue)return `<div class="placeholder-img">${esc(w.cue)}</div>`;const tag=imgTag(w,'task-img');return tag||oldBig(w)}
-  const oldSmall=window.imgHtml||imgHtml;
-  window.imgHtml=imgHtml=function(w){if(w&&w.cue)return `<div class="word-placeholder">${esc(w.cue)}</div>`;const tag=imgTag(w,'');return tag||oldSmall(w)}
+  window.displayImage=displayImage=function(w){return w?bunny(w.imageBase||w.id||w.image):''}
+  window.bigImgHtml=bigImgHtml=function(w){const src=displayImage(w);return src?`<img class="task-img" src="${safe(src)}" alt="${safe(w&&w.word||'')}" style="display:block!important;visibility:visible!important;opacity:1!important;max-width:260px;width:100%;height:180px;object-fit:contain;margin:12px auto;background:#fff;border:2px solid var(--lesson-line);border-radius:18px;">`:`<div class="placeholder-img">${safe(w&&w.word||'Bild')}</div>`}
+  window.imgHtml=imgHtml=function(w){const src=displayImage(w);return src?`<img src="${safe(src)}" alt="${safe(w&&w.word||'')}" style="display:block!important;visibility:visible!important;opacity:1!important;width:76px;height:76px;object-fit:contain;border-radius:12px;background:#fff;border:1px solid var(--lesson-line);">`:`<div class="word-placeholder">${safe(w&&w.word||'Wort')}</div>`}
   window.l5t4Accepted=function(txt,w){const a=simple(txt);return !!(w&&Array.isArray(w.aliases)&&w.aliases.some(x=>simple(x)===a))}
 })();
