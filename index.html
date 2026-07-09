@@ -11,7 +11,7 @@
 <div class="container">
   <section class="hero">
     <a class="brand-logo" href="/index.html">
-      <img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo">
+      <img src="https://sprachpilot.b-cdn.net/sprachpilot-logo.webp" alt="SprachPilot Logo">
       <h1>SprachPilot</h1>
     </a>
     <p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p>
@@ -51,21 +51,15 @@ function renderModules(p){
   const wortschatz=teacherAll || moduleOpen(c,"Wortschatz");
   document.querySelector("#modules").innerHTML=`
     <a class="module" href="${fragen?'fragen-A1/':'#'}" ${fragen?'':'onclick="return false;" style="opacity:.55"'}>
-      <div class="module-title">Fragen A1</div><p>${fragen?'Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.':'Für deinen Kurs noch nicht freigeschaltet.'}</p><span class="badge">${fragen?'Starten':'Gesperrt'}</span>
-    </a>
-    <a class="module" href="${wortschatz?'wortschatz/':'#'}" ${wortschatz?'':'onclick="return false;" style="opacity:.55"'}>
-      <div class="module-title">Wortschatz</div><p>${wortschatz?'Wortschatz nach Lektionen und Themen.':'Für deinen Kurs noch nicht freigeschaltet.'}</p><span class="badge">${wortschatz?'Starten':'Gesperrt'}</span>
-    </a>
-    <a class="module" href="${verben?'verben-A1/':'#'}" ${verben?'':'onclick="return false;" style="opacity:.55"'}>
-      <div class="module-title">Verben A1</div><p>${verben?'Verben mit Bildern, Karteikarten, Sprechen, Schreiben und Wiederholung.':'Für deinen Kurs noch nicht freigeschaltet.'}</p><span class="badge">${verben?'Starten':'Gesperrt'}</span>
-    </a>`;
+      <div class="module-title">Fragen A1</div><p>${fragen?'Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.':'Für deinen Kurs noch nicht freigeschaltet.'}</p><span class="badge">${fragen?'
+`;
 }
 
 function renderLogged(p){
   const box=document.querySelector("#loggedBox");
   const guest=document.querySelector("#guestBox");
   if(p){
-    box.innerHTML=`<div class="ok"><strong>Eingeloggt:</strong> ${safeText(p.vorname)} ${safeText(p.nachname)} | Kurs: ${safeText(p.kurs)} | Muttersprache: ${safeText(p.muttersprache)}<br><a class="btn secondary" href="profile/">Profil bearbeiten</a> <button class="secondary" onclick="logout()">Abmelden</button></div>`;
+    box.innerHTML=`<div class="ok"><strong>Eingeloggt:</strong> ${safeText(p.vorname)} ${safeText(p.nachname)} | Kurs: ${safeText(p.kurs)} | Muttersprache: ${safeText(p.muttersprache)}<br><a class`
     guest.classList.add("hidden");
     renderModules(p);
   }
@@ -104,7 +98,7 @@ if(p){
   }).catch(()=>renderModules(p));
   idle(()=>refreshStudentInBackground(p));
 }else if(role==="teacher"){
-  box.innerHTML=`<div class="ok"><strong>Lehrerzugang:</strong> Du siehst SprachPilot im Testmodus. Es werden keine Schülerpunkte gespeichert.<br><a class="btn secondary" href="${dashboardHref()}">Lehrer-Dashboard</a> <button class="secondary" onclick="logout()">Abmelden</button></div>`;
+  box.innerHTML=`<div class="ok"><strong>Lehrerzugang:</strong> Du siehst SprachPilot im Testmodus. Es werden keine Schülerpunkte gespeichert.<br><a class="btn secondary" href="${dashboardHref()[0]||"/index.html"}">Zum Dashboard</a></div>`;
   guest.classList.add("hidden");
   renderModules({assignments:{releaseMode:"all",defaultLocked:false}});
 }else{
