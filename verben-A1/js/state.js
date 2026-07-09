@@ -3,6 +3,7 @@ function clean(s){return String(s||'').trim().toLowerCase().replace(/[.,!?]/g,''
 function shuffle(a){return [...(a||[])].sort(()=>Math.random()-.5)}
 function safeText(s){return String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
 function uniqueList(arr){return [...new Set((arr||[]).filter(Boolean))]}
+function readProfileJson(k,f=null){try{return JSON.parse(localStorage.getItem(k)||sessionStorage.getItem(k)||'')||f}catch(e){return f}}
 
 let profile=null;
 let state={
@@ -76,7 +77,24 @@ function renderAndHydrate(){setTimeout(()=>hydrateImages(document),80)}
 function preloadActiveImages(){}
 if(typeof window!=='undefined'){window.hydrateImages=hydrateImages;window.renderAndHydrate=renderAndHydrate;document.addEventListener('toggle',e=>{if(e.target&&e.target.matches&&e.target.matches('details[open]'))setTimeout(()=>hydrateImages(e.target),80)},true)}
 
-function loadProfile(){try{profile=JSON.parse(localStorage.getItem('SP_USER_PROFILE')||'null')}catch(e){profile=null}if(!profile){const app=$('app');if(app)app.innerHTML='<section class="card"><div class="no">Bitte zuerst auf der Startseite registrieren oder einloggen.</div><button onclick="location.href=\'/index.html\'">Zur Startseite</button></section>';return false}return true}
+function makeTeacherPreviewProfileLocal(){
+  const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase();
+  const preview=readProfileJson('SP_TEACHER_PREVIEW',null);
+  if(role!=='teacher'||!preview||preview.teacherPreview!==true)return null;
+  const teacher=readProfileJson('SP_TEACHER_PROFILE',{})||{};
+  const firstName=teacher.firstName||teacher.vorname||teacher.name||'Lehrer';
+  const lastName=teacher.lastName||teacher.nachname||'';
+  const course=preview.courseCode||preview.kurs||(preview.allAccess?'ALLE':'Lehrer-Vorschau');
+  return {vorname:firstName,nachname:lastName,firstName,lastName,email:teacher.email||'',kurs:course,kursnummer:course,courseCode:course,muttersprache:preview.muttersprache||teacher.muttersprache||'Deutsch',assignments:preview.assignments||{enabledModules:{'Fragen A1':true,'Wortschatz':true,'Verben A1':true}},releases:preview.releases||{},role:'teacher',loginRole:'teacher',isTeacher:true,teacherPreview:true,allAccess:!!preview.allAccess,previewOnly:true};
+}
+function getVerbenProfile(){return readProfileJson('SP_USER_PROFILE',null)||readProfileJson('SP_STUDENT_PROFILE',null)||makeTeacherPreviewProfileLocal()}
+function loginUrlForVerben(){return '/login/?redirect='+encodeURIComponent(location.pathname+location.search+location.hash)}
+function loadProfile(){
+  profile=getVerbenProfile();
+  if(profile&&profile.role!=='teacher'&&!profile.teacherPreview){try{localStorage.setItem('SP_USER_PROFILE',JSON.stringify(profile));localStorage.setItem('SP_STUDENT_PROFILE',JSON.stringify(profile));localStorage.setItem('SP_KEEP_LOGGED_IN','1')}catch(e){}}
+  if(!profile){const app=$('app');if(app)app.innerHTML='<section class="card"><h2>Bitte einloggen</h2><p class="small">Du musst eingeloggt sein, um Verben zu öffnen.</p><div class="actions"><a class="btn green" href="'+loginUrlForVerben()+'">Einloggen</a><a class="btn secondary" href="/index.html">Zur Startseite</a></div></section>';return false}
+  return true;
+}
 async function loadState(){try{const saved=JSON.parse(localStorage.getItem(storageKey())||'null');if(saved)state={...state,...saved}}catch(e){}migrateState();localStorage.setItem(storageKey(),JSON.stringify(state))}
 function saveState(){migrateState();localStorage.setItem(storageKey(),JSON.stringify(state));try{localStorage.setItem('SP_VERBS_LAST_STATE',JSON.stringify(state));localStorage.setItem('SP_VERBS_BACKUP_STATE',JSON.stringify(state));sessionStorage.setItem('SP_VERBS_SESSION_BACKUP',JSON.stringify(state))}catch(e){}}
 
