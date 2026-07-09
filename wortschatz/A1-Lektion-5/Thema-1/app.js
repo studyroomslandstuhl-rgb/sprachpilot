@@ -1,12 +1,14 @@
+try{import('/js/sp-assets.js?v=3').catch(()=>{})}catch(e){}
 const CFG=window.SP_L5_THEME||{id:'Thema-1',title:'Alltag und trennbare Verben',sub:'A1 Lektion 5 · Thema 1',key:'SP_L5_T1_V1'};
 const DATA=window.SP_A1_LEKTION5_WORTSCHATZ||{parts:[]};
 const THEME=(DATA.parts||[]).find(p=>p.id===CFG.id)||{words:[],title:CFG.title};
 const WORDS=THEME.words||[];
-const EXTRA_IMAGES={machen:'/assets/img/machen.png',praesentation:'/assets/img/praesentation.png',fruehstuecken:'/assets/img/fruehstuecken.png',einkaufen:'/assets/img/einkaufen.png',hoeren:'/assets/img/hoeren.png',kochen:'/assets/img/kochen.png',aufraeumen:'/assets/img/aufraumen.png',aufstehen:'/assets/img/aufstehen.png',gehen:'/assets/img/gehen.png',muede:'/assets/img/muede.png',anrufen:'/assets/img/anrufen.png',frueh:'/assets/img/frueh.png',fernsehen:'/assets/img/fernsehen.png',arbeiten:'/assets/img/arbeiten.png',spielen:'/assets/img/spielen.png',essen:'/assets/img/essen.png',schlafen:'/assets/img/schlafen.png',lange:'/assets/img/lange.png',gern:'/assets/img/gern.png',nicht_gern:'/assets/img/nichtgern.png',spazieren_gehen:'/assets/img/spazierengehen.png'};
+const EXTRA_IMAGES={machen:'machen.webp',praesentation:'praesentation.webp',fruehstuecken:'fruehstuecken.webp',einkaufen:'einkaufen.webp',hoeren:'hoeren.webp',kochen:'kochen.webp',aufraeumen:'aufraumen.webp',aufstehen:'aufstehen.webp',gehen:'gehen.webp',muede:'muede.webp',anrufen:'anrufen.webp',frueh:'frueh.webp',fernsehen:'fernsehen.webp',arbeiten:'arbeiten.webp',spielen:'spielen.webp',essen:'essen.webp',schlafen:'schlafen.webp',lange:'lange.webp',gern:'gern.webp',nicht_gern:'nichtgern.webp',spazieren_gehen:'spazierengehen.webp'};
 const BAD_IMAGE_IDS=new Set([]);
 const STD_LANGS=[['en','EN'],['ru','RU'],['tr','TR'],['uk','UK'],['ar','AR'],['ja','JA'],['ro','RO']];
 const LANG_NAMES={en:'Englisch',ru:'Russisch',tr:'Türkisch',uk:'Ukrainisch',ar:'Arabisch',ja:'Japanisch',ro:'Rumänisch'};
-function displayImage(w){return EXTRA_IMAGES[w?.id]||w?.image||''}
+function cdnImg(v){return v?(window.SP_ASSET_URL?window.SP_ASSET_URL(v):'https://sprachpilot.b-cdn.net/'+String(v).split('/').pop().replace(/\.(png|jpe?g|webp|gif|svg)$/i,'.webp')):''}
+function displayImage(w){return cdnImg(EXTRA_IMAGES[w?.id]||w?.image||'')}
 function hasGoodImage(w){return !!(w&&!BAD_IMAGE_IDS.has(w.id)&&displayImage(w))}
 function simple(x){return String(x||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:]/g,'').replace(/\s+/g,' ')}
 function full(w){return w.full||((w.article?`${w.article} `:'')+(w.word||''))}
