@@ -9,7 +9,7 @@
     einkaufen:'einkaufen.webp',
     hoeren:'hoeren.webp',
     kochen:'kochen.webp',
-    aufraeumen:'aufraumen.webp',
+    aufraeumen:'aufraeumen.webp',
     aufstehen:'aufstehen.webp',
     gehen:'gehen.webp',
     muede:'muede.webp',
@@ -22,8 +22,8 @@
     schlafen:'schlafen.webp',
     lange:'lange.webp',
     gern:'gern.webp',
-    nicht_gern:'nichtgern.webp',
-    spazieren_gehen:'spazierengehen.webp'
+    nicht_gern:'nicht_gern.webp',
+    spazieren_gehen:'spazieren_gehen.webp'
   };
   const BAD=new Set([]);
   window.displayImage=function(w){const raw=EXTRA[w&&w.id]||w&&w.image||(w&&w.id?w.id+'.webp':'');return raw?(window.SP_ASSET_URL?window.SP_ASSET_URL(raw):bunny(raw)):''};
