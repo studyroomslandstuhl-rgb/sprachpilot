@@ -1,5 +1,6 @@
 /* SprachPilot Global Design System v15 */
 (function(){
+  try{import('/js/sp-assets.js?v=3').catch(function(){});}catch(e){}
   function safe(value){
     return String(value || "")
       .replace(/&/g,"&amp;")
