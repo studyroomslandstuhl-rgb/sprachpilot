@@ -28,7 +28,7 @@ function clearHash(){clearVerbHash(true)}
 function isTaskPhase(){return ['karteikarte','memory','bild_verb','verb_bild','schreiben','hoeren_schreiben','hoeren_sprechen','bild_sprechen','satz_puzzle','konjugieren','pruefung'].includes(state.phase)||!!state.currentTask}
 function returnCurrentTaskToQueue(){try{const t=state.currentTask;if(!t||!t.skill||!t.v)return;const qKey=taskQueueKey(t.skill),dKey=taskDoneSetKey(t.skill);const done=(state.taskDoneSets&&state.taskDoneSets[dKey]||[]).some(k=>String(k).split(':')[0]===t.v);state.taskQueues=state.taskQueues||{};state.taskQueues[qKey]=state.taskQueues[qKey]||[];if(!done&&!state.taskQueues[qKey].some(x=>x&&x.v===t.v))state.taskQueues[qKey].unshift({v:t.v,slot:t.slot||0})}catch(e){}}
 function closeOpenVerbTask(){returnCurrentTaskToQueue();state.phase='home';state.currentGame='';state.currentVerb='';state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;saveState();spSyncDashboardSummary()}
-function spGoBack(){const fromTask=isTaskPhase();closeOpenVerbTask();clearHash();if(fromTask&&currentPracticeVerbs().length){renderTaskOverview();return}location.href='/student-dashboard/index.html'}
+function spGoBack(){closeOpenVerbTask();clearHash();renderHome()}
 function closeVerbTaskAndRenderHome(){closeOpenVerbTask();renderHome()}
 function goVerbHome(){closeVerbTaskAndRenderHome()}
 function renderSideMenu(){}
