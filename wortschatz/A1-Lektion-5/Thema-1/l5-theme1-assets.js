@@ -1,29 +1,32 @@
 (function(){
+  try{import('/js/sp-assets.js?v=3').catch(()=>{})}catch(e){}
+  const BASE='https://sprachpilot.b-cdn.net/';
+  function bunny(name){return BASE+String(name||'').split('/').pop().replace(/\.(png|jpe?g|webp|gif|svg)$/i,'')+'.webp'}
   const EXTRA={
-    machen:'/assets/img/machen.png',
-    praesentation:'/assets/img/praesentation.png',
-    fruehstuecken:'/assets/img/fruehstuecken.png',
-    einkaufen:'/assets/img/einkaufen.png',
-    hoeren:'/assets/img/hoeren.png',
-    kochen:'/assets/img/kochen.png',
-    aufraeumen:'/assets/img/aufraumen.png',
-    aufstehen:'/assets/img/aufstehen.png',
-    gehen:'/assets/img/gehen.png',
-    muede:'/assets/img/muede.png',
-    anrufen:'/assets/img/anrufen.png',
-    frueh:'/assets/img/frueh.png',
-    fernsehen:'/assets/img/fernsehen.png',
-    arbeiten:'/assets/img/arbeiten.png',
-    spielen:'/assets/img/spielen.png',
-    essen:'/assets/img/essen.png',
-    schlafen:'/assets/img/schlafen.png',
-    lange:'/assets/img/lange.png',
-    gern:'/assets/img/gern.png',
-    nicht_gern:'/assets/img/nichtgern.png',
-    spazieren_gehen:'/assets/img/spazierengehen.png'
+    machen:'machen.webp',
+    praesentation:'praesentation.webp',
+    fruehstuecken:'fruehstuecken.webp',
+    einkaufen:'einkaufen.webp',
+    hoeren:'hoeren.webp',
+    kochen:'kochen.webp',
+    aufraeumen:'aufraumen.webp',
+    aufstehen:'aufstehen.webp',
+    gehen:'gehen.webp',
+    muede:'muede.webp',
+    anrufen:'anrufen.webp',
+    frueh:'frueh.webp',
+    fernsehen:'fernsehen.webp',
+    arbeiten:'arbeiten.webp',
+    spielen:'spielen.webp',
+    essen:'essen.webp',
+    schlafen:'schlafen.webp',
+    lange:'lange.webp',
+    gern:'gern.webp',
+    nicht_gern:'nichtgern.webp',
+    spazieren_gehen:'spazierengehen.webp'
   };
   const BAD=new Set([]);
-  window.displayImage=function(w){return EXTRA[w&&w.id]||w&&w.image||''};
+  window.displayImage=function(w){const raw=EXTRA[w&&w.id]||w&&w.image||'';return raw?(window.SP_ASSET_URL?window.SP_ASSET_URL(raw):bunny(raw)):''};
   window.hasGoodImage=function(w){return !!(w&&!BAD.has(w.id)&&window.displayImage(w))};
   window.imgHtml=function(w){return window.hasGoodImage(w)?`<img src="${window.displayImage(w)}" onerror="fixImg(this)" alt="">`:`<div class="word-placeholder">kein Bild</div>`};
   window.bigImgHtml=function(w){return window.hasGoodImage(w)?`<img class="task-img" src="${window.displayImage(w)}" onerror="fixImg(this)" alt="">`:`<div class="placeholder-img">Bild fehlt<br>${full(w)}</div>`};
