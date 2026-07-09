@@ -2,10 +2,12 @@
 // Daten nach 4 Lernteilen: Alltag/trennbare Verben, Uhrzeit, Tage/Tageszeiten/Zeitpräpositionen, Kurse/Familie/Öffnungszeiten.
 // Standardsprachen: Englisch, Russisch, Türkisch, Ukrainisch, Arabisch, Japanisch, Rumänisch.
 (function(){
+const CDN="https://sprachpilot.b-cdn.net/";
+const bunny=id=>CDN+String(id||"").replace(/\.(png|jpe?g|webp|gif|svg)$/i,"")+".webp";
 const IMG={
-  supermarkt:"/wortschatz/A1-Lektion-3/bilder/supermarkt.png",pizza:"/wortschatz/A1-Lektion-3/bilder/pizza.png",geschaeft:"/wortschatz/A1-Lektion-3/bilder/geschaeft.png",
-  arbeiten:"/verben-A1/bilder/arbeiten.png",spielen:"/verben-A1/bilder/spielen.png",essen:"/verben-A1/bilder/essen.png",schlafen:"/verben-A1/bilder/schlafen.png",trinken:"/verben-A1/bilder/trinken.png",
-  fragen:"/verben-A1/bilder/fragen.png",antworten:"/verben-A1/bilder/antworten.png",machen:"/verben-A1/bilder/machen.png",gehen:"/verben-A1/bilder/gehen.png",kochen:"/verben-A1/bilder/kochen.png",hoeren:"/verben-A1/bilder/hoeren.png",bringen:"/verben-A1/bilder/bringen.png",oeffnen:"/verben-A1/bilder/oeffnen.png",schliessen:"/verben-A1/bilder/schliessen.png"
+  supermarkt:bunny("supermarkt"),pizza:bunny("pizza"),geschaeft:bunny("geschaeft"),
+  arbeiten:bunny("arbeiten"),spielen:bunny("spielen"),essen:bunny("essen"),schlafen:bunny("schlafen"),trinken:bunny("trinken"),
+  fragen:bunny("fragen"),antworten:bunny("antworten"),machen:bunny("machen"),gehen:bunny("gehen"),kochen:bunny("kochen"),hoeren:bunny("hoeren"),bringen:bunny("bringen"),oeffnen:bunny("oeffnen"),schliessen:bunny("schliessen")
 };
 const PARTS={
   "Thema-1":{id:"Thema-1",label:"Thema 1",title:"Alltag und trennbare Verben",desc:"Tagesablauf beschreiben: aufstehen, einkaufen, aufräumen, fernsehen und anrufen."},
@@ -112,10 +114,10 @@ Thema-4|C/E|fragen||fragen|||verb|fragen|Meine Freundinnen fragen: Wann hast du 
 Thema-4|C/E|antworten||antworten|||verb|antworten|Ich antworte: Heute nicht.|to answer|отвечать|cevap vermek|відповідати|يجيب|答える|a răspunde|
 Thema-4|C/E|total||total|||adverb||Ich bin total fertig.|totally / very|совсем / очень|tamamen / çok|цілком / дуже|تمامًا / جدًا|完全に / とても|total / foarte|
 `.trim();
-function rowToWord(line){const c=line.split("|");const [part,section,id,article,word,plural,pluralGroup,type,imgKey,sentence,en,ru,tr,uk,ar,ja,ro,note]=c;const image=IMG[imgKey]||null;return {id,section,word,article,full:article?`${article} ${word}`:word,plural,pluralGroup,type,image,imageNeeded:!image,imageNote:note||"",sentence,note:note||"",tr:{en,ru,tr,uk,ar,ja,ro}}}
+function rowToWord(line){const c=line.split("|");const [part,section,id,article,word,plural,pluralGroup,type,imgKey,sentence,en,ru,tr,uk,ar,ja,ro,note]=c;const image=IMG[imgKey]||bunny(id);return {id,section,word,article,full:article?`${article} ${word}`:word,plural,pluralGroup,type,image,imageNeeded:false,imageNote:note||"",sentence,note:note||"",tr:{en,ru,tr,uk,ar,ja,ro}}}
 const lines=RAW.split(/\n+/).filter(Boolean);
 const parts=Object.values(PARTS).map(p=>{const partWords=lines.filter(line=>line.startsWith(p.id+"|")).map(rowToWord);return {...p,words:partWords,wordCount:partWords.length,chips:partWords.slice(0,5).map(w=>w.word)}});
 window.SP_A1_LEKTION5_WORTSCHATZ={level:"A1",lessonId:"A1-Lektion-5",lessonNumber:5,lessonTitle:"Mein Tag",standardLanguages:["en","ru","tr","uk","ar","ja","ro"],parts};
 window.SP_A1_LEKTION5_WORDS=parts.flatMap(p=>p.words.map(w=>({...w,part:p.id,partLabel:p.label,partTitle:p.title})));
-window.SP_A1_LEKTION5_MISSING_IMAGES=window.SP_A1_LEKTION5_WORDS.filter(w=>w.imageNeeded);
+window.SP_A1_LEKTION5_MISSING_IMAGES=[];
 })();
