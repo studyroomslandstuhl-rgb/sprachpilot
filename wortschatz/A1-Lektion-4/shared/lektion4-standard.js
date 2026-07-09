@@ -1,3 +1,4 @@
+try{import('/js/sp-assets.js?v=3').catch(function(){});}catch(e){}
 function spSafe(value) {
   return String(value || "")
     .replace(/&/g, "&amp;")
@@ -72,7 +73,6 @@ function spActiveRole(profile = spRawProfile()) {
   if (profileRole === "student" || profileRole === "schueler" || profileRole === "schüler") return "student";
   if (profileRole === "teacher" || profileRole === "lehrer" || profileRole === "admin") return "teacher";
 
-  // Wichtig: Schülerprofil schlägt alte Lehrer-/Preview-Speicherwerte.
   if (spLooksLikeStudent(profile)) return "student";
 
   const storedRole = String(
@@ -106,7 +106,6 @@ function spTeacherPreview() {
 
   if (!preview || preview.teacherPreview !== true) return null;
 
-  // Thema-Seiten dürfen alte Vorschau nie in einer echten Schüler-Session anzeigen.
   if (role !== "teacher") {
     spClearTeacherPreviewState();
     return null;
@@ -138,7 +137,6 @@ function spGetProfile() {
   return profile;
 }
 
-/* ---------- Lehrer-Vorschau / Testmodus ---------- */
 function spIsTeacherProfile(profile) {
   return spActiveRole(profile || spRawProfile()) === "teacher";
 }
