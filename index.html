@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SprachPilot</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=login-main-2">
 </head>
 <body>
 <div id="accountStrip" class="account-strip"></div>
@@ -21,9 +21,9 @@
     <h2>Willkommen</h2>
     <div id="loggedBox"></div>
     <div id="guestBox" class="actions">
-      <a class="btn success" href="register/">Als Schüler registrieren</a>
-      <a class="btn secondary" href="login/">Schüler-Login</a>
-      <a class="btn secondary" href="teacher/login.html">Lehrer-Login</a>
+      <a class="btn success" href="/register/">Als Schüler registrieren</a>
+      <a class="btn secondary" href="/login/">Schüler-Login</a>
+      <a class="btn secondary" href="/teacher/login.html">Lehrer-Login</a>
     </div>
   </section>
 
@@ -32,9 +32,13 @@
 </div>
 
 <script type="module">
-import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "./js/auth.js?v=release-core-20260701b";
-import { loadCourseRelease, moduleOpen } from "./js/course-releases.js?v=release-core-20260701b";
+import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "./js/auth.js?v=login-main-2";
+import { loadCourseRelease, moduleOpen } from "./js/course-releases.js?v=login-main-2";
 window.logout=logout;
+
+const modulesEl=document.querySelector("#modules");
+const loggedBox=document.querySelector("#loggedBox");
+const guestBox=document.querySelector("#guestBox");
 
 function isTeacherAllAccess(){
   if(getActiveRole()!=="teacher") return false;
@@ -43,70 +47,75 @@ function isTeacherAllAccess(){
     return !!(p && p.teacherPreview===true && p.allAccess===true);
   }catch(e){return false;}
 }
-function renderModules(p){
+
+function moduleCard(title,href,desc,open){
+  const locked=!open;
+  return `<a class="module ${locked?'locked':''}" href="${open?href:'#'}" ${open?'':'onclick="return false;" aria-disabled="true"'}>
+    <div class="module-title">${safeText(title)}</div>
+    <p>${safeText(open?desc:'Für deinen Kurs noch nicht freigeschaltet.')}</p>
+    <span class="badge">${open?'Öffnen':'Gesperrt'}</span>
+  </a>`;
+}
+
+function renderModules(assignments={}){
   const teacherAll=isTeacherAllAccess();
-  const c=p?.assignments||{};
-  const verben=teacherAll || moduleOpen(c,"Verben A1");
-  const fragen=teacherAll || moduleOpen(c,"Fragen A1");
-  const wortschatz=teacherAll || moduleOpen(c,"Wortschatz");
-  document.querySelector("#modules").innerHTML=`
-    <a class="module" href="${fragen?'fragen-A1/':'#'}" ${fragen?'':'onclick="return false;" style="opacity:.55"'}>
-      <div class="module-title">Fragen A1</div><p>${fragen?'Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.':'Für deinen Kurs noch nicht freigeschaltet.'}</p><span class="badge">${fragen?'
-`;
+  const fragen=teacherAll || moduleOpen(assignments,"Fragen A1");
+  const wortschatz=teacherAll || moduleOpen(assignments,"Wortschatz");
+  const verben=teacherAll || moduleOpen(assignments,"Verben A1");
+  modulesEl.innerHTML=`
+    ${moduleCard('Fragen A1','/fragen-A1/','Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.',fragen)}
+    ${moduleCard('Wortschatz','/wortschatz/','Wörter nach Lektionen und Themen üben.',wortschatz)}
+    ${moduleCard('Verben A1','/verben-A1/','Verben einschätzen, wählen und üben.',verben)}
+  `;
 }
 
-function renderLogged(p){
-  const box=document.querySelector("#loggedBox");
-  const guest=document.querySelector("#guestBox");
-  if(p){
-    box.innerHTML=`<div class="ok"><strong>Eingeloggt:</strong> ${safeText(p.vorname)} ${safeText(p.nachname)} | Kurs: ${safeText(p.kurs)} | Muttersprache: ${safeText(p.muttersprache)}<br><a class`
-    guest.classList.add("hidden");
-    renderModules(p);
+function renderLogged(profile,assignments=null){
+  const p=profile||getActiveProfile();
+  if(!p) return;
+  const data=assignments||p.assignments||{};
+  loggedBox.innerHTML=`<div class="ok"><strong>Eingeloggt:</strong> ${safeText(p.vorname||p.firstName||'')} ${safeText(p.nachname||p.lastName||'')} · Kurs: ${safeText(p.kurs||p.courseCode||p.kursnummer||'')}<br><a class="btn secondary" href="${dashboardHref()}">Zum Dashboard</a> <button class="btn secondary" onclick="logout()">Abmelden</button></div>`;
+  guestBox.classList.add("hidden");
+  renderModules(data);
+}
+
+async function init(){
+  const role=getActiveRole();
+  const profile=role==="student" ? getActiveProfile() : null;
+
+  if(profile){
+    renderLogged(profile);
+    try{
+      const assignments=await loadCourseRelease(profile);
+      const next={...profile,assignments:assignments||profile.assignments||{}};
+      renderLogged(next,assignments);
+    }catch(e){
+      console.warn("Kursfreigaben konnten nicht geladen werden",e);
+    }
+  }else if(role==="teacher"){
+    loggedBox.innerHTML=`<div class="ok"><strong>Lehrerzugang:</strong> Du bist als Lehrkraft eingeloggt.<br><a class="btn secondary" href="${dashboardHref()}">Zum Dashboard</a> <button class="btn secondary" onclick="logout()">Abmelden</button></div>`;
+    guestBox.classList.add("hidden");
+    renderModules({releaseMode:"all",defaultLocked:false});
+  }else{
+    loggedBox.innerHTML='<p>Registriere dich oder logge dich mit deinem Kurscode ein.</p>';
+    guestBox.classList.remove("hidden");
+    renderModules({});
   }
+
+  try{renderAccountStrip()}catch(e){}
 }
 
-function idle(fn){
-  const run=()=>setTimeout(fn,0);
-  if("requestIdleCallback" in window)requestIdleCallback(fn,{timeout:2500});
-  else if(document.readyState==="complete")run();
-  else window.addEventListener("load",run,{once:true});
-}
+window.addEventListener("SP_PROFILE_SYNCED",e=>{
+  const p=e.detail&&e.detail.profile;
+  if(p) renderLogged(p);
+  try{renderAccountStrip()}catch(x){}
+});
 
-async function refreshStudentInBackground(currentProfile){
-  try{
-    const sync=await import("./js/global-sync.js?v=3");
-    const synced=await sync.startGlobalSync();
-    const next=synced||getActiveProfile()||currentProfile;
-    renderLogged(next);
-    renderAccountStrip();
-    const assignments=await loadCourseRelease(next);
-    renderLogged({...next,assignments:assignments||next.assignments||{}});
-  }catch(e){
-    console.warn("SprachPilot Hintergrund-Sync übersprungen",e);
-  }
-}
-
-const role=getActiveRole();
-let p=role==="student" ? getActiveProfile() : null;
-const box=document.querySelector("#loggedBox");
-const guest=document.querySelector("#guestBox");
-if(p){
-  renderLogged(p);
-  loadCourseRelease(p).then(assignments=>{
-    p={...p,assignments:assignments||p.assignments||{}};
-    renderLogged(p);
-  }).catch(()=>renderModules(p));
-  idle(()=>refreshStudentInBackground(p));
-}else if(role==="teacher"){
-  box.innerHTML=`<div class="ok"><strong>Lehrerzugang:</strong> Du siehst SprachPilot im Testmodus. Es werden keine Schülerpunkte gespeichert.<br><a class="btn secondary" href="${dashboardHref()[0]||"/index.html"}">Zum Dashboard</a></div>`;
-  guest.classList.add("hidden");
-  renderModules({assignments:{releaseMode:"all",defaultLocked:false}});
-}else{
-  box.innerHTML='<p>Registriere dich oder logge dich mit deinem Kurscode ein.</p>';
-  renderModules({assignments:{}});
-}
-window.addEventListener("SP_PROFILE_SYNCED",e=>{p=e.detail.profile;renderLogged(p);renderAccountStrip();});
-renderAccountStrip();
+init().catch(e=>{
+  console.error("Startseite konnte nicht geladen werden",e);
+  loggedBox.innerHTML='<p>Registriere dich oder logge dich mit deinem Kurscode ein.</p>';
+  guestBox.classList.remove("hidden");
+  renderModules({});
+});
 </script>
 <script defer src="js/performance-boot.js?v=20260709b"></script>
 <script src="/shared/sprachpilot-design-system.js"></script>
