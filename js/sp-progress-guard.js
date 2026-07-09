@@ -1,6 +1,7 @@
 // Globaler Schutz: Lehrer-Vorschau darf keine Schülerpunkte/Ranglisten/Fortschritte speichern.
 // Lehrer-Vorschau ist nur aktiv, wenn sie explizit im Lehrer-Dashboard gestartet wurde.
 (function(){
+  try{import('/js/sp-assets.js?v=3').catch(function(){});}catch(e){}
   try{import('/js/topbar-standard.js?v=7').catch(function(){});}catch(e){}
   function readProfile(){
     try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"{}") }catch(e){return {}}
