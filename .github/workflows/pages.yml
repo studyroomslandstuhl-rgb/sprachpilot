@@ -1,6 +1,9 @@
 name: Pages
 
 on:
+  push:
+    branches:
+      - main
   workflow_dispatch:
 
 permissions:
@@ -9,8 +12,8 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
-  cancel-in-progress: true
+  group: pages-deploy-main
+  cancel-in-progress: false
 
 jobs:
   deploy:
