@@ -66,18 +66,18 @@
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startImageTuning,{once:true});
   else startImageTuning();
 
-  if(!("serviceWorker" in navigator))return;
-  if(location.protocol!=="https:"&&location.hostname!=="localhost")return;
-  function basePath(){
-    var parts=location.pathname.split("/").filter(Boolean);
-    return parts[0]==="sprachpilot"?"/sprachpilot/":"/";
+  function clearOldRuntimeCache(){
+    if("caches" in window){
+      caches.keys().then(function(keys){
+        return Promise.all(keys.map(function(key){return caches.delete(key)}));
+      }).catch(function(){});
+    }
+    if("serviceWorker" in navigator){
+      navigator.serviceWorker.getRegistrations().then(function(regs){
+        return Promise.all(regs.map(function(reg){return reg.unregister()}));
+      }).catch(function(){});
+    }
   }
-  function register(){
-    var base=basePath();
-    navigator.serviceWorker.register(base+"service-worker.js",{scope:base}).catch(function(err){
-      console.warn("SprachPilot cache konnte nicht aktiviert werden",err);
-    });
-  }
-  if(document.readyState==="complete")idle(register,1200);
-  else window.addEventListener("load",function(){idle(register,1200)},{once:true});
+
+  idle(clearOldRuntimeCache,400);
 })();
