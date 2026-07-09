@@ -80,12 +80,12 @@ function loadProfile(){try{profile=JSON.parse(localStorage.getItem('SP_USER_PROF
 async function loadState(){try{const saved=JSON.parse(localStorage.getItem(storageKey())||'null');if(saved)state={...state,...saved}}catch(e){}migrateState();localStorage.setItem(storageKey(),JSON.stringify(state))}
 function saveState(){migrateState();localStorage.setItem(storageKey(),JSON.stringify(state));try{localStorage.setItem('SP_VERBS_LAST_STATE',JSON.stringify(state));localStorage.setItem('SP_VERBS_BACKUP_STATE',JSON.stringify(state));sessionStorage.setItem('SP_VERBS_SESSION_BACKUP',JSON.stringify(state))}catch(e){}}
 
-const PHASE_HASHES={home:'home',overview:'overview',chooser:'chooser',assessment:'assessment',karteikarte:'karteikarte',memory:'memory',bild_verb:'bild-verb',verb_bild:'verb-bild',schreiben:'schreiben',hoeren_schreiben:'hoeren-schreiben',hoeren_sprechen:'hoeren-sprechen',bild_sprechen:'bild-sprechen',satz_puzzle:'satz-puzzle',konjugieren:'konjugieren',pruefung:'pruefung'};
+const PHASE_HASHES={home:'home',taskOverview:'aufgaben',overview:'overview',chooser:'chooser',assessment:'assessment',karteikarte:'karteikarte',memory:'memory',bild_verb:'bild-verb',verb_bild:'verb-bild',schreiben:'schreiben',hoeren_schreiben:'hoeren-schreiben',hoeren_sprechen:'hoeren-sprechen',bild_sprechen:'bild-sprechen',satz_puzzle:'satz-puzzle',konjugieren:'konjugieren',pruefung:'pruefung'};
 const HASH_PHASES=Object.fromEntries(Object.entries(PHASE_HASHES).map(([k,v])=>[v,k]));
 function setVerbHashForPhase(phase){if(!phase||phase==='home')return;const h=PHASE_HASHES[phase];if(h&&location.hash!=='#'+h)history.pushState(null,'','#'+h)}
 function clearVerbHash(replace=true){if(location.hash){const url=location.pathname+location.search;if(replace)history.replaceState(null,'',url);else history.pushState(null,'',url)}}
 function phaseFromHash(){return HASH_PHASES[(location.hash||'').replace(/^#/,'')]||'home'}
-function rememberPhase(phase){state.phase=phase;const app=$('app');if(app){if(phase==='home')app.classList.remove('card');else app.classList.add('card')}if(phase!=='home')setVerbHashForPhase(phase);saveState()}
+function rememberPhase(phase){state.phase=phase;const app=$('app');if(app){if(phase==='home'||phase==='taskOverview')app.classList.remove('card');else app.classList.add('card')}if(phase!=='home'&&phase!=='taskOverview')setVerbHashForPhase(phase);saveState()}
 function clearCurrentTask(skill){if(!state.currentTask||!skill||state.currentTask.skill===skillKey(skill))state.currentTask=null}
 function resetPackageTasks(){state.practicePool=[];state.taskQueues={};state.taskDoneSets={};state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0,hadWrong:false}}
 function packageExamPassed(){return !!(state.exam&&state.exam.passed&&Number(state.exam.score)===100)}
