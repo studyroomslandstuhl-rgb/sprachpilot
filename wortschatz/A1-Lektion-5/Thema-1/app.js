@@ -1,4 +1,4 @@
-try{import('/js/sp-assets.js?v=3').catch(()=>{})}catch(e){}
+try{import('/js/sp-assets.js?v=4').catch(()=>{})}catch(e){}
 const CFG=window.SP_L5_THEME||{id:'Thema-1',title:'Alltag und trennbare Verben',sub:'A1 Lektion 5 · Thema 1',key:'SP_L5_T1_V1'};
 const DATA=window.SP_A1_LEKTION5_WORTSCHATZ||{parts:[]};
 const THEME=(DATA.parts||[]).find(p=>p.id===CFG.id)||{words:[],title:CFG.title};
@@ -8,7 +8,7 @@ const BAD_IMAGE_IDS=new Set([]);
 const STD_LANGS=[['en','EN'],['ru','RU'],['tr','TR'],['uk','UK'],['ar','AR'],['ja','JA'],['ro','RO']];
 const LANG_NAMES={en:'Englisch',ru:'Russisch',tr:'Türkisch',uk:'Ukrainisch',ar:'Arabisch',ja:'Japanisch',ro:'Rumänisch'};
 function cdnImg(v){return v?(window.SP_ASSET_URL?window.SP_ASSET_URL(v):'https://sprachpilot.b-cdn.net/'+String(v).split('/').pop().replace(/\.(png|jpe?g|webp|gif|svg)$/i,'.webp')):''}
-function displayImage(w){return cdnImg(EXTRA_IMAGES[w?.id]||w?.image||'')}
+function displayImage(w){return cdnImg(EXTRA_IMAGES[w?.id]||w?.image||(w?.id?w.id+'.webp':''))}
 function hasGoodImage(w){return !!(w&&!BAD_IMAGE_IDS.has(w.id)&&displayImage(w))}
 function simple(x){return String(x||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:]/g,'').replace(/\s+/g,' ')}
 function full(w){return w.full||((w.article?`${w.article} `:'')+(w.word||''))}
