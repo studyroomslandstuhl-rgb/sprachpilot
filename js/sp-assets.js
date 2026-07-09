@@ -23,10 +23,10 @@ function shouldUseBunny(value){
 function bunnyUrl(value){
   const name=fileNameFromPath(value);
   if(!name)return value;
-  return SP_BUNNY_BASE+"/"+name.toLowerCase();
+  return SP_BUNNY_BASE+"/"+name;
 }
 function toBunny(value){return shouldUseBunny(value)?bunnyUrl(value):value}
-window.SP_ASSET_URL=function(name){return SP_BUNNY_BASE+"/"+String(name||"").split("/").pop().replace(/\.(png|jpe?g|webp|gif|svg)$/i,".webp").toLowerCase()};
+window.SP_ASSET_URL=function(name){return SP_BUNNY_BASE+"/"+String(name||"").split("/").pop().replace(/\.(png|jpe?g|webp|gif|svg)$/i,".webp")};
 window.SP_LOCAL_TO_CDN=toBunny;
 function rewriteElement(el){
   if(!el||!el.getAttribute)return;
