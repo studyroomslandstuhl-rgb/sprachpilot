@@ -1,9 +1,8 @@
 (function(){
-  const CDN='https://sprachpilot.b-cdn.net/';
-  const V='';
+  const CDN='https://sprachpilot.b-cdn.net/Neu/';
   function safe(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
   function cleanName(name){return String(name||'').split('?')[0].split('#')[0].split('/').pop().replace(/\.(webp|png|jpe?g|gif|svg)$/i,'')}
-  function bunny(name){const n=cleanName(name);return n?CDN+n+'.webp'+V:''}
+  function bunny(name){const n=cleanName(name);return n?CDN+n+'.webp':''}
   function findWord(id){return WORDS.find(w=>w&&w.id===id)}
   function patch(id,data){const w=findWord(id);if(w)Object.assign(w,data)}
   function forceImage(w,name){if(!w)return;const n=cleanName(name||w.imageBase||w.id||w.image);if(!n)return;w.imageBase=n;w.image=bunny(n);w.localImage=''}
@@ -21,7 +20,7 @@
   patch('ausleihen',{imageBase:'ausleihen',image:bunny('ausleihen')});
   patch('geschaeft',{imageBase:'geschaeft',image:bunny('geschaeft')});
   patch('bibliothek',{imageBase:'bibliothek',image:bunny('bibliothek')});
-  patch('kita',{imageBase:'kita',image:bunny('kita'),full:'die Kita',word:'Kita',aliases:['die Kita','Kita']});
+  patch('kita',{imageBase:'kindergarten',image:bunny('kindergarten'),full:'die Kita',word:'Kita',aliases:['die Kita','Kita','der Kindergarten','Kindergarten']});
   patch('krippe',{imageBase:'krippe',image:bunny('krippe')});
   patch('kindergarten',{imageBase:'kindergarten',image:bunny('kindergarten')});
   patch('praxis',{imageBase:'praxis',image:bunny('praxis')});
@@ -31,12 +30,12 @@
   patch('oeffnungszeiten',{imageBase:'oeffnungszeiten',image:bunny('oeffnungszeiten')});
   patch('schild',{imageBase:'schild',image:bunny('schild')});
   patch('ganz',{imageBase:'ganz',image:bunny('ganz')});
-  patch('ganzen_tag',{imageBase:'ganzen_tag',image:bunny('ganzen_tag')});
+  patch('ganzen_tag',{imageBase:'den_ganzen_tag',image:bunny('den_ganzen_tag')});
   patch('zum_beispiel',{imageBase:'zum_beispiel',image:bunny('zum_beispiel'),cue:null,aliases:['zum Beispiel']});
   patch('wieder',{imageBase:'wieder',image:bunny('wieder')});
-  patch('total',{imageBase:'total',image:bunny('total'),cue:null,aliases:['total','absolut']});
-  patch('ich_bin_fertig',{imageBase:'ich_bin_fertig',image:bunny('ich_bin_fertig')});
-  patch('jugend',{imageBase:'jugend',image:bunny('jugend')});
+  patch('total',{imageBase:'ich_bin_total_fertig',image:bunny('ich_bin_total_fertig'),cue:null,aliases:['total','absolut']});
+  patch('ich_bin_fertig',{imageBase:'ich_bin_total_fertig',image:bunny('ich_bin_total_fertig')});
+  patch('jugend',{imageBase:'jugendliche',image:bunny('jugendliche')});
   patch('jugendliche',{imageBase:'jugendliche',image:bunny('jugendliche')});
 
   if(!findWord('ich_bin_total_fertig'))WORDS.push({id:'ich_bin_total_fertig',section:'Freizeit',word:'ich bin total fertig',article:'',full:'ich bin total fertig',plural:'',pluralGroup:'',type:'phrase',image:bunny('ich_bin_total_fertig'),imageBase:'ich_bin_total_fertig',sentence:'Ich bin total fertig.',aliases:['ich bin total fertig'],tr:{en:'I am totally exhausted',ru:'я совсем устал(а)',tr:'çok yoruldum',uk:'я дуже втомився / втомилася',ar:'أنا متعب جدًا',ja:'とても疲れています',ro:'sunt foarte obosit(ă)',pl:'jestem totalnie zmęczony / zmęczona',ku:'ez pir westiyayî me'}})
