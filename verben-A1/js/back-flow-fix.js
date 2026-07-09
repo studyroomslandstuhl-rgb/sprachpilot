@@ -10,6 +10,10 @@
   function uniq(a){return [...new Set((a||[]).filter(Boolean))]}
   function qs(){return new URLSearchParams(location.search||'')}
   function hashValue(){return String(location.hash||'').replace(/^#/,'')}
+  function viewParam(){return qs().get('view')||''}
+  function taskParam(){const t=qs().get('task')||'';return HASH_TO_TASK[t]||t}
+  function legacyView(){const h=hashValue();if(['aufgaben','taskOverview','task-overview','tasks'].includes(h))return 'aufgaben';if(h==='overview')return 'overview';if(h==='chooser')return 'chooser';if(h==='assessment')return 'assessment';return ''}
+  function legacyTask(){return HASH_TO_TASK[hashValue()]||''}
   function routeUrl(view){return BASE+(view?'?view='+encodeURIComponent(view):'')}
   function taskUrl(task){return BASE+'?task='+encodeURIComponent(TASK_TO_URL[task]||task)}
   function setCleanUrl(view,task,replace){
@@ -18,10 +22,6 @@
     if(now===next)return;
     try{(replace?history.replaceState:history.pushState).call(history,null,'',next)}catch(e){location.href=next}
   }
-  function viewParam(){return qs().get('view')||''}
-  function taskParam(){const t=qs().get('task')||'';return HASH_TO_TASK[t]||t}
-  function legacyView(){const h=hashValue();if(['aufgaben','taskOverview','task-overview','tasks'].includes(h))return 'aufgaben';if(h==='overview')return 'overview';if(h==='chooser')return 'chooser';if(h==='assessment')return 'assessment';return ''}
-  function legacyTask(){return HASH_TO_TASK[hashValue()]||''}
   function stateArr(k){try{return Array.isArray(state&&state[k])?state[k]:[]}catch(e){return[]}}
   function activeVerbs(){
     let out=[];
@@ -50,8 +50,16 @@
   function closeTaskForOverview(){
     try{if(typeof returnCurrentTaskToQueue==='function')returnCurrentTaskToQueue()}catch(e){}
     ensurePracticeState();
+    try{state.phase='taskOverview';state.currentGame='';state.currentVerb='';state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;saveQuiet()}catch(e){}
+  }
+  function simplifyHeader(root){
+    const r=root||document;
     try{
-      state.phase='taskOverview';state.currentGame='';state.currentVerb='';state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;saveQuiet();
+      r.querySelectorAll('header .nav .sp-nav-link, header .nav .danger-btn').forEach(el=>el.remove());
+      r.querySelectorAll('header .nav a, header .nav button').forEach(el=>{
+        const t=String(el.textContent||'').trim();
+        if(t&&t!=='← Zurück'&&t!=='Zurück')el.remove();
+      });
     }catch(e){}
   }
   function normalizeStaticLinks(root){
@@ -59,28 +67,29 @@
     try{
       r.querySelectorAll('a[href="#aufgaben"],a[href="/verben-A1/?view=aufgaben"]').forEach(a=>a.href=routeUrl('aufgaben'));
       r.querySelectorAll('a[href="/verben-A1/"],a[href="/verben-A1"]').forEach(a=>a.href=BASE);
-      r.querySelectorAll('a[href^="#"]').forEach(a=>{
-        const h=(a.getAttribute('href')||'').replace(/^#/,'');
-        const task=HASH_TO_TASK[h];
-        if(task)a.href=taskUrl(task);
-      });
+      r.querySelectorAll('a[href^="#"]').forEach(a=>{const h=(a.getAttribute('href')||'').replace(/^#/,'');const task=HASH_TO_TASK[h];if(task)a.href=taskUrl(task)});
     }catch(e){}
+    simplifyHeader(r);
   }
-  function normalizeHeaderLinks(){normalizeStaticLinks(document)}
+  function renderIndex(){if(typeof renderVerbIndexPage==='function'){renderVerbIndexPage();normalizeStaticLinks(document)}}
   function showTaskOverview(replace){
     ensurePracticeState();
     setCleanUrl('aufgaben',null,replace);
     if(hasPracticeVerbs()&&typeof renderTaskOverview==='function'){renderTaskOverview();normalizeStaticLinks(document);return}
-    if(typeof renderVerbIndexPage==='function'){renderVerbIndexPage();normalizeStaticLinks(document)}
+    renderIndex();
   }
-  function goIndex(replace){setCleanUrl('',null,replace);if(typeof renderVerbIndexPage==='function'){renderVerbIndexPage();normalizeStaticLinks(document)}}
-  function goChooser(replace){setCleanUrl('chooser',null,replace);if(typeof renderVerbChooser==='function'){renderVerbChooser();normalizeStaticLinks(document)}}
-  function goAssessment(replace){setCleanUrl('assessment',null,replace);try{if(typeof startAssessment==='function'){startAssessment(true);normalizeStaticLinks(document);return}}catch(e){}if(typeof renderVerbIndexPage==='function')renderVerbIndexPage()}
-  function goOverview(replace){setCleanUrl('overview',null,replace);if(typeof renderVerbOverview==='function'){renderVerbOverview();normalizeStaticLinks(document)}}
+  function goIndex(replace){setCleanUrl('',null,replace);renderIndex()}
+  function goChooser(replace){setCleanUrl('chooser',null,replace);if(typeof renderVerbChooser==='function'){renderVerbChooser();normalizeStaticLinks(document)}else renderIndex()}
+  function goAssessment(replace){setCleanUrl('assessment',null,replace);try{if(typeof startAssessment==='function'){startAssessment(true);normalizeStaticLinks(document);return}}catch(e){}renderIndex()}
+  function goOverview(replace){setCleanUrl('overview',null,replace);if(typeof renderVerbOverview==='function'){renderVerbOverview();normalizeStaticLinks(document)}else renderIndex()}
   function goTask(task,replace){
     if(!task)return showTaskOverview(replace);
     setCleanUrl(null,task,replace);
-    if(task==='pruefung'){try{if(typeof allPracticeTasksDone==='function'&&allPracticeTasksDone()&&typeof startVerbExam==='function'){startVerbExam();normalizeStaticLinks(document);return}}catch(e){}showTaskOverview(true);return}
+    if(!hasPracticeVerbs()){renderIndex();return}
+    if(task==='pruefung'){
+      try{if(typeof allPracticeTasksDone==='function'&&allPracticeTasksDone()&&typeof startVerbExam==='function'){startVerbExam();normalizeStaticLinks(document);return}}catch(e){}
+      showTaskOverview(true);return;
+    }
     if(typeof openVerbTask==='function'){openVerbTask(task);normalizeStaticLinks(document);return}
     showTaskOverview(true);
   }
@@ -96,6 +105,12 @@
     if(view==='aufgaben'||(typeof state!=='undefined'&&state.phase==='taskOverview')){goIndex(false);return}
     goIndex(false);
   };
+  window.handleAssessmentClick=function(){goAssessment(false)};
+  const originalRenderHeader=window.renderHeader;
+  if(typeof originalRenderHeader==='function')window.renderHeader=function(){originalRenderHeader.apply(this,arguments);simplifyHeader(document)};
+  const originalRenderHome=window.renderHome;
+  window.renderHome=function(){goIndex(true)};
+  window.renderSafeHomeFallback=function(error){try{localStorage.setItem('SP_VERBS_LAST_BOOT_ERROR',String(error&&error.stack||error||'unknown'))}catch(e){}goIndex(true)};
   const oldRoute=window.routeVerbenHash;
   window.routeVerbenHash=function(){
     const task=taskParam()||legacyTask();
@@ -106,28 +121,25 @@
     if(view==='assessment'){goAssessment(true);return}
     if(view==='overview'){goOverview(true);return}
     if(location.hash){goIndex(true);return}
-    if(typeof oldRoute==='function')return oldRoute.apply(this,arguments);
     goIndex(true);
   };
-  const oldHeader=window.renderHeader;
-  if(typeof oldHeader==='function')window.renderHeader=function(){oldHeader.apply(this,arguments);normalizeHeaderLinks()};
   document.addEventListener('click',function(e){
     const el=e.target&&e.target.closest?e.target.closest('a,button'):null;if(!el)return;
-    const text=String(el.textContent||'').trim();
+    const text=String(el.textContent||'').replace(/\s+/g,' ').trim();
     if(el.classList&&el.classList.contains('sp-nav-back')){e.preventDefault();e.stopPropagation();window.spGoBack();return}
     if(el.matches&&el.matches('a[href]')){
       const href=el.getAttribute('href')||'';
-      if(href===routeUrl('aufgaben')||href==='#aufgaben'){e.preventDefault();showTaskOverview(false);return}
-      if(href===BASE||href==='/verben-A1'){e.preventDefault();goIndex(false);return}
       const u=new URL(el.href,location.origin);
-      if(u.pathname===BASE&&u.searchParams.get('view')==='aufgaben'){e.preventDefault();showTaskOverview(false);return}
-      if(u.pathname===BASE&&u.searchParams.get('task')){e.preventDefault();goTask(HASH_TO_TASK[u.searchParams.get('task')]||u.searchParams.get('task'),false);return}
+      if(href==='#aufgaben'||(u.pathname===BASE&&u.searchParams.get('view')==='aufgaben')){e.preventDefault();e.stopPropagation();showTaskOverview(false);return}
+      if(u.pathname===BASE&&u.searchParams.get('task')){e.preventDefault();e.stopPropagation();goTask(HASH_TO_TASK[u.searchParams.get('task')]||u.searchParams.get('task'),false);return}
+      if((href===BASE||href==='/verben-A1'||href==='/verben-A1/')&&u.pathname===BASE&&!u.search){e.preventDefault();e.stopPropagation();goIndex(false);return}
     }
-    if(text==='Aufgabenübersicht'){e.preventDefault();showTaskOverview(false);return}
-    if(text==='Übersicht'){e.preventDefault();goOverview(false);return}
-    if(text==='Verben einschätzen'){e.preventDefault();goAssessment(false);return}
-    if(text==='Verben wählen'){e.preventDefault();goChooser(false);return}
+    if(text==='Aufgabenübersicht'||text==='Üben'||text==='Starten'){const card=el.closest&&el.closest('.verb-practice-card');if(text!=='Starten'||card){e.preventDefault();e.stopPropagation();showTaskOverview(false);return}}
+    if(text==='Einschätzen'||text==='Verben einschätzen'){e.preventDefault();e.stopPropagation();goAssessment(false);return}
+    if(text==='Wählen'||text==='Verben wählen'){e.preventDefault();e.stopPropagation();goChooser(false);return}
+    if(text==='Übersicht'){e.preventDefault();e.stopPropagation();goOverview(false);return}
   },true);
   window.addEventListener('popstate',function(){if(typeof window.routeVerbenHash==='function')window.routeVerbenHash()});
-  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){normalizeHeaderLinks();if(viewParam()==='aufgaben'||legacyView()==='aufgaben')showTaskOverview(true)},80)},{once:true});
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(function(){simplifyHeader(document);normalizeStaticLinks(document);if(viewParam()==='aufgaben'||legacyView()==='aufgaben')showTaskOverview(true)},80)},{once:true});
+  try{new MutationObserver(function(){simplifyHeader(document)}).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
 })();
