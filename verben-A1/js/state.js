@@ -66,7 +66,7 @@ function currentPracticeVerbs(){normalizeVerbStatusLists();return (state.active|
 function currentPackageAllVerbs(){normalizeVerbStatusLists();return uniqueList([...(state.currentPackageVerbs||[]), ...(state.assessmentBatch||[]), ...(state.active||[])])}
 function currentAssessmentCount(){normalizeVerbStatusLists();return (state.assessmentBatch&&state.assessmentBatch.length)||0}
 
-const VERB_IMAGE_CACHE_VERSION="13";
+const VERB_IMAGE_CACHE_VERSION="33";
 const VERB_IMAGE_BASES=["../assets/img/","/assets/img/","/sprachpilot/assets/img/","https://studyroomslandstuhl-rgb.github.io/sprachpilot/assets/img/","../assets/","/assets/","/sprachpilot/assets/"];
 function imageBaseName(v){const entry=(typeof ALL_VERBS!=="undefined"?ALL_VERBS:[]).find(x=>x.v===v);return (entry&&entry.img)?String(entry.img):String(v||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
 function imageFileCandidates(v){const base=imageBaseName(v);if(/\.(png|jpg|jpeg|webp)$/i.test(base)) return [base];return [base+".png",base+".jpg",base+".jpeg",base+".webp"]}
@@ -82,7 +82,7 @@ function loadProfile(){try{profile=JSON.parse(localStorage.getItem("SP_USER_PROF
 async function loadState(){try{const saved=JSON.parse(localStorage.getItem(storageKey())||"null");if(saved)state={...state,...saved}}catch(e){}migrateState();localStorage.setItem(storageKey(),JSON.stringify(state))}
 function saveState(){migrateState();localStorage.setItem(storageKey(),JSON.stringify(state));try{localStorage.setItem('SP_VERBS_LAST_STATE',JSON.stringify(state));localStorage.setItem('SP_VERBS_BACKUP_STATE',JSON.stringify(state));sessionStorage.setItem('SP_VERBS_SESSION_BACKUP',JSON.stringify(state))}catch(e){}}
 
-const PHASE_HASHES={assessment:"assessment",karteikarte:"karteikarte",memory:"memory",bild_verb:"bild-verb",verb_bild:"verb-bild",schreiben:"schreiben",hoeren_schreiben:"hoeren-schreiben",hoeren_sprechen:"hoeren-sprechen",bild_sprechen:"bild-sprechen",satz_puzzle:"satz-puzzle",konjugieren:"konjugieren",pruefung:"pruefung"};
+const PHASE_HASHES={home:"home",overview:"overview",chooser:"chooser",assessment:"assessment",karteikarte:"karteikarte",memory:"memory",bild_verb:"bild-verb",verb_bild:"verb-bild",schreiben:"schreiben",hoeren_schreiben:"hoeren-schreiben",hoeren_sprechen:"hoeren-sprechen",bild_sprechen:"bild-sprechen",satz_puzzle:"satz-puzzle",konjugieren:"konjugieren",pruefung:"pruefung"};
 const HASH_PHASES=Object.fromEntries(Object.entries(PHASE_HASHES).map(([k,v])=>[v,k]));
 function setVerbHashForPhase(phase){if(!phase||phase==="home")return;const h=PHASE_HASHES[phase];if(h && location.hash!=="#"+h){history.pushState(null,"","#"+h)}}
 function clearVerbHash(replace=true){if(location.hash){const url=location.pathname+location.search;if(replace)history.replaceState(null,"",url);else history.pushState(null,"",url)}}
