@@ -3,7 +3,7 @@ const CFG=window.SP_L5_THEME||{id:'Thema-1',title:'Alltag und trennbare Verben',
 const DATA=window.SP_A1_LEKTION5_WORTSCHATZ||{parts:[]};
 const THEME=(DATA.parts||[]).find(p=>p.id===CFG.id)||{words:[],title:CFG.title};
 const WORDS=THEME.words||[];
-const EXTRA_IMAGES={machen:'machen.webp',praesentation:'praesentation.webp',fruehstuecken:'fruehstuecken.webp',einkaufen:'einkaufen.webp',hoeren:'hoeren.webp',kochen:'kochen.webp',aufraeumen:'aufraumen.webp',aufstehen:'aufstehen.webp',gehen:'gehen.webp',muede:'muede.webp',anrufen:'anrufen.webp',frueh:'frueh.webp',fernsehen:'fernsehen.webp',arbeiten:'arbeiten.webp',spielen:'spielen.webp',essen:'essen.webp',schlafen:'schlafen.webp',lange:'lange.webp',gern:'gern.webp',nicht_gern:'nichtgern.webp',spazieren_gehen:'spazierengehen.webp'};
+const EXTRA_IMAGES={machen:'machen.webp',praesentation:'praesentation.webp',fruehstuecken:'fruehstuecken.webp',einkaufen:'einkaufen.webp',hoeren:'hoeren.webp',kochen:'kochen.webp',aufraeumen:'aufraeumen.webp',aufstehen:'aufstehen.webp',gehen:'gehen.webp',muede:'muede.webp',anrufen:'anrufen.webp',frueh:'frueh.webp',fernsehen:'fernsehen.webp',arbeiten:'arbeiten.webp',spielen:'spielen.webp',essen:'essen.webp',schlafen:'schlafen.webp',lange:'lange.webp',gern:'gern.webp',nicht_gern:'nicht_gern.webp',spazieren_gehen:'spazieren_gehen.webp'};
 const BAD_IMAGE_IDS=new Set([]);
 const STD_LANGS=[['en','EN'],['ru','RU'],['tr','TR'],['uk','UK'],['ar','AR'],['ja','JA'],['ro','RO']];
 const LANG_NAMES={en:'Englisch',ru:'Russisch',tr:'Türkisch',uk:'Ukrainisch',ar:'Arabisch',ja:'Japanisch',ro:'Rumänisch'};
