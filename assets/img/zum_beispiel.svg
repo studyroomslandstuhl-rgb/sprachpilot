@@ -1,6 +1,0 @@
-<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="z.B.">
-  <rect width="512" height="512" rx="72" fill="#ffffff"/>
-  <circle cx="256" cy="256" r="206" fill="#f5d15f"/>
-  <rect x="86" y="150" width="340" height="212" rx="42" fill="#ffffff" opacity="0.95"/>
-  <text x="256" y="295" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="118" font-weight="700" fill="#3b2a1a">z.B.</text>
-</svg>
