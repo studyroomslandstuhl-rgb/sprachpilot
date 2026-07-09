@@ -27,8 +27,7 @@
       saveQuiet();
     }catch(e){}
   }
-  function clearHash(){try{if(typeof clearVerbHash==='function')clearVerbHash(true);else if(location.hash)history.replaceState(null,'',location.pathname+location.search)}catch(e){}
-  }
+  function clearHash(){try{if(typeof clearVerbHash==='function')clearVerbHash(true);else if(location.hash)history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
   function completePage(){
     const app=document.getElementById('app');if(!app)return;
     app.classList.remove('card');
@@ -42,7 +41,6 @@
   function startTasksOrFallback(active){
     try{state.active=active.slice();if(!state.practicePool||!state.practicePool.length)state.practicePool=active.slice();saveQuiet()}catch(e){}
     try{if(typeof window.__spOriginalRenderTaskOverview==='function'){window.__spOriginalRenderTaskOverview();return true}}catch(e){console.warn(e)}
-    try{if(typeof renderTaskOverview==='function'){renderTaskOverview();return true}}catch(e){console.warn(e)}
     return false;
   }
   function startAssessmentOrFallback(){
@@ -59,6 +57,12 @@
     if(released.length){completePage();return}
     noReleasePage();
   }
+  function appShowsBadFallback(){const app=document.getElementById('app');return !!(app&&/Verben konnten nicht/.test(app.textContent||''))}
+  function routeIfNeeded(){
+    if(appShowsBadFallback()){routeVerbs();return}
+    const active=activeSafe(),remaining=remainingSafe(),released=releasedSafe();
+    if(active.length||remaining.length||released.length)routeVerbs();
+  }
   if(typeof renderTaskOverview==='function'&&!window.__spOriginalRenderTaskOverview)window.__spOriginalRenderTaskOverview=renderTaskOverview;
   if(typeof renderHome==='function'&&!window.__spOriginalRenderHome)window.__spOriginalRenderHome=renderHome;
   window.renderHome=function(){clearOpenTaskOnly();routeVerbs()};
@@ -71,4 +75,6 @@
     if(fromTask&&activeSafe().length){startTasksOrFallback(activeSafe());return}
     location.href='/student-dashboard/index.html';
   };
+  document.addEventListener('DOMContentLoaded',function(){setTimeout(routeIfNeeded,0);setTimeout(routeIfNeeded,250);setTimeout(routeIfNeeded,900);},{once:true});
+  try{new MutationObserver(function(){if(appShowsBadFallback())routeVerbs()}).observe(document.getElementById('app')||document.documentElement,{childList:true,subtree:true,characterData:true})}catch(e){}
 })();
