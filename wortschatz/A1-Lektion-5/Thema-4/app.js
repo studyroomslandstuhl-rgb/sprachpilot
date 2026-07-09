@@ -1,8 +1,9 @@
+try{import('/js/sp-assets.js?v=3').catch(()=>{})}catch(e){}
 const CFG=window.SP_L5_THEME||{id:'Thema-4',title:'Öffnungszeiten und Freizeit',sub:'A1 Lektion 5 · Thema 4',key:'SP_L5_T4_V1'};
 const DATA=window.SP_A1_LEKTION5_WORTSCHATZ||{parts:[]};
 const THEME=(DATA.parts||[]).find(p=>p.id===CFG.id)||{words:[],title:CFG.title};
 const BASE_WORDS=THEME.words||[];
-const EXTRA_IMAGES={geschaeft:'/wortschatz/A1-Lektion-3/bilder/geschaeft.png',kino:'/assets/img/kino.png',kita:'/assets/img/kita.png',bibliothek:'/assets/img/bibliothek.png',oeffnen:'/verben-A1/bilder/oeffnen.png',schliessen:'/verben-A1/bilder/schliessen.png'};
+const EXTRA_IMAGES={geschaeft:'geschaeft.webp',kino:'kino.webp',kita:'kita.webp',bibliothek:'bibliothek.webp',oeffnen:'oeffnen.webp',schliessen:'schliessen.webp'};
 const EXTRA_WORDS=[
 {id:'ist_geoeffnet',section:'Öffnungszeiten',word:'ist geöffnet',article:'',full:'ist geöffnet',plural:'',pluralGroup:'',type:'phrase',image:EXTRA_IMAGES.oeffnen,sentence:'Das Geschäft ist geöffnet.',tr:{en:'is open',ru:'открыто',tr:'açık',uk:'відчинено',ar:'مفتوح',ja:'開いています',ro:'este deschis',pl:'jest otwarte',ku:'vekirî ye'}},
 {id:'ist_geschlossen',section:'Öffnungszeiten',word:'ist geschlossen',article:'',full:'ist geschlossen',plural:'',pluralGroup:'',type:'phrase',image:EXTRA_IMAGES.schliessen,sentence:'Die Bibliothek ist geschlossen.',tr:{en:'is closed',ru:'закрыто',tr:'kapalı',uk:'зачинено',ar:'مغلق',ja:'閉まっています',ro:'este închis',pl:'jest zamknięte',ku:'girtî ye'}},
@@ -26,7 +27,8 @@ const WORDS=FOCUS_IDS.map(id=>byId[id]).filter(Boolean);
 const BAD_IMAGE_IDS=new Set([]);
 const STD_LANGS=[['en','EN'],['ru','RU'],['tr','TR'],['uk','UK'],['ar','AR'],['ja','JA'],['ro','RO'],['pl','PL'],['ku','KU']];
 const LANG_NAMES={en:'Englisch',ru:'Russisch',tr:'Türkisch',uk:'Ukrainisch',ar:'Arabisch',ja:'Japanisch',ro:'Rumänisch',pl:'Polnisch',ku:'Kurdisch'};
-function displayImage(w){return EXTRA_IMAGES[w?.id]||w?.image||''}
+function cdnImg(v){return v?(window.SP_ASSET_URL?window.SP_ASSET_URL(v):'https://sprachpilot.b-cdn.net/'+String(v).split('/').pop().replace(/\.(png|jpe?g|webp|gif|svg)$/i,'.webp')):''}
+function displayImage(w){return cdnImg(EXTRA_IMAGES[w?.id]||w?.image||'')}
 function hasGoodImage(w){return !!(w&&!BAD_IMAGE_IDS.has(w.id)&&displayImage(w))}
 function simple(x){return String(x||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:]/g,'').replace(/\s+/g,' ')}
 function full(w){return w.full||((w.article?`${w.article} `:'')+(w.word||''))}
