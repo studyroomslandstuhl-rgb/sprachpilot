@@ -1,4 +1,4 @@
-import "/js/sp-assets.js?v=1";
+import "/js/sp-assets.js?v=2";
 import "/js/session-restore.js?v=1";
 import { requireLogin, renderAccountStrip, logout } from "/js/auth.js";
 window.logout=logout;
