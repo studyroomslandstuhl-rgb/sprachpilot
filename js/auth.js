@@ -33,10 +33,10 @@ export function startTeacherSession(){
   setLoginRole("teacher");
 }
 export function getActiveRole(){
-  // Die aktive Login-Art entscheidet. Gleiche E-Mail darf SchÃ¼ler UND Lehrer sein.
+  // Die aktive Login-Art entscheidet. Gleiche E-Mail darf Schüler UND Lehrer sein.
   const stored=String(localStorage.getItem("SP_LOGIN_ROLE")||localStorage.getItem("SP_ACTIVE_ROLE")||"").toLowerCase();
   if(["teacher","lehrer","admin","owner"].includes(stored)) return "teacher";
-  if(["student","schueler","schÃ¼ler"].includes(stored)) return "student";
+  if(["student","schueler","schüler"].includes(stored)) return "student";
 
   const p=getActiveProfile();
   const profileRole=String(p?.role||p?.loginRole||p?.type||p?.accountType||"").toLowerCase();
@@ -107,7 +107,7 @@ export async function loadCourse(courseCode){
    raw.toLowerCase().replace(/\s+/g,"")
  ].filter(Boolean))];
 
- // 1) Direkte Dokument-ID-Varianten prÃ¼fen
+ // 1) Direkte Dokument-ID-Varianten prüfen
  for(const c of variants){
    try{
      const snap=await getDoc(doc(db,"courses",c));
@@ -130,7 +130,7 @@ export async function loadCourse(courseCode){
    }
  }
 
- // 3) Letzter Fallback fÃ¼r alte Kursdokumente: kleine Liste normalisiert vergleichen
+ // 3) Letzter Fallback für alte Kursdokumente: kleine Liste normalisiert vergleichen
  try{
    const snap=await getDocs(query(collection(db,"courses"),limit(500)));
    const wanted=raw.toLowerCase().replace(/\s+/g,"");
@@ -193,7 +193,7 @@ export async function findStudentByEmailAndCourse(email,courseInput,courseDocId=
   const courseNorm=courseRaw.toLowerCase();
   const courseDocNorm=courseDocRaw.toLowerCase();
 
-  // 1) Direkte Dokument-ID-Varianten prÃ¼fen
+  // 1) Direkte Dokument-ID-Varianten prüfen
   const possibleIds=[
     makeStudentId(emailNorm,courseRaw),
     makeStudentId(emailNorm,courseNorm),
@@ -259,7 +259,7 @@ export async function findStudentByEmailAndCourse(email,courseInput,courseDocId=
     console.warn("student email fallback failed", e);
   }
 
-  // 4) Letzter Fallback fÃ¼r alte Daten: kleine Liste lesen und normalisiert vergleichen
+  // 4) Letzter Fallback für alte Daten: kleine Liste lesen und normalisiert vergleichen
   try{
     const snap=await getDocs(query(collection(db,"students"),limit(500)));
     const match=snap.docs.find(d=>{
@@ -344,13 +344,12 @@ export async function loginStudent(email,kurs){
   return saveActiveProfile(normalizedStudent,courseData,found.id);
 }
 
-
 export async function updateStudentProfile({vorname,nachname,email,muttersprache}){
   const p=getActiveProfile();
   if(!p) throw new Error("NOT_LOGGED_IN");
 
-  // Profilbearbeitung ist nur fÃ¼r echte SchÃ¼ler-Sessions gedacht.
-  // Lehrer-Vorschau darf hier keine SchÃ¼lerdaten Ã¼berschreiben.
+  // Profilbearbeitung ist nur für echte Schüler-Sessions gedacht.
+  // Lehrer-Vorschau darf hier keine Schülerdaten überschreiben.
   const activeRole=getActiveRole();
   if(activeRole!=="student") throw new Error("NOT_STUDENT_SESSION");
 
@@ -374,7 +373,7 @@ export async function updateStudentProfile({vorname,nachname,email,muttersprache
   let docId=p.docId || p.studentId || p.userId || "";
 
   // Alte Profile hatten manchmal keine docId oder eine andere Dokument-ID.
-  // Dann suchen wir den SchÃ¼ler robust Ã¼ber E-Mail + Kurs.
+  // Dann suchen wir den Schüler robust über E-Mail + Kurs.
   if(!docId){
     const found=await findStudentByEmailAndCourse(oldEmail || emailNorm, courseCode, courseDocId);
     if(found) docId=found.id;
@@ -388,3 +387,108 @@ export async function updateStudentProfile({vorname,nachname,email,muttersprache
   const studentId=p.studentId || p.userId || docId;
 
   // setDoc mit merge statt updateDoc: So scheitert Speichern nicht, wenn ein altes
+  // Schülerprofil zwar lokal vorhanden ist, aber das Dokument in Firebase anders/noch nicht existiert.
+  await setDoc(doc(db,"students",docId),{
+    ...updateData,
+    docId,
+    studentId,
+    userId:studentId,
+    kurs:courseCode || p.kurs || "",
+    kursnummer:courseCode || p.kursnummer || "",
+    courseCode:courseCode || p.courseCode || "",
+    courseDocId:courseDocId || p.courseDocId || "",
+    role:"student",
+    loginRole:"student",
+    isStudent:true,
+    isTeacher:false,
+    active:true
+  },{merge:true});
+
+  const newProfile={
+    ...p,
+    ...updateData,
+    email:emailNorm,
+    docId,
+    studentId,
+    userId:studentId,
+    role:"student",
+    loginRole:"student",
+    isStudent:true,
+    isTeacher:false
+  };
+
+  startStudentSession();
+  localStorage.setItem("SP_USER_PROFILE",JSON.stringify(newProfile));
+  localStorage.setItem("SP_STUDENT_PROFILE",JSON.stringify(newProfile));
+  localStorage.setItem("SP_KEEP_LOGGED_IN","1");
+  localStorage.setItem("SP_STUDENT_ID",studentId);
+  localStorage.setItem("SP_USER_ROLE","student");
+  localStorage.setItem("motherLanguage",updateData.muttersprache);
+  localStorage.setItem("muttersprache",updateData.muttersprache);
+
+  return newProfile;
+}
+
+export function requireLogin(){
+  const p=getEffectiveProfile();
+  if(!p){
+    const target=location.pathname + location.search + location.hash;
+    location.href="/login/?redirect="+encodeURIComponent(target);
+    return null;
+  }
+  return p;
+}
+
+export function loginUrlForCurrent(){
+  const target=location.pathname + location.search + location.hash;
+  return "/login/?redirect="+encodeURIComponent(target);
+}
+
+export function getRedirectTarget(defaultTarget="/index.html"){
+  const params=new URLSearchParams(location.search);
+  return params.get("redirect") || sessionStorage.getItem("SP_AFTER_LOGIN") || defaultTarget;
+}
+
+export function renderAccountStrip(rootId="accountStrip"){
+  const el=document.getElementById(rootId);
+  if(!el) return;
+  const role=getActiveRole();
+  const p=role==="student" ? getActiveProfile() : null;
+
+  if(role==="teacher"){
+    const tp=(()=>{try{return JSON.parse(localStorage.getItem("SP_TEACHER_PROFILE")||"{}") }catch(e){return {}}})();
+    const preview=makeTeacherPreviewProfile();
+    const name=[tp.firstName,tp.lastName].filter(Boolean).join(" ") || tp.email || "Lehrkraft";
+    const suffix=preview ? " · Lehrer-Vorschau" : " · Lehrerzugang";
+    el.innerHTML=`
+      <div class="who">${safeText(name)}${suffix}</div>
+      <div class="account-links">
+        <a href="/teacher/index.html">Lehrer-Dashboard</a>
+        <button onclick="logout()">Abmelden</button>
+      </div>
+    `;
+    return;
+  }
+
+  if(!p){
+    el.innerHTML=`
+      <div class="who">Nicht eingeloggt</div>
+      <div class="account-links">
+        <a href="${loginUrlForCurrent()}">Login</a>
+        <a href="/register/">Registrieren</a>
+      </div>
+    `;
+    return;
+  }
+
+  el.innerHTML=`
+    <div class="who">
+      ${safeText(p.vorname||"")} ${safeText(p.nachname||"")} · ${safeText(p.kurs||"")}
+    </div>
+    <div class="account-links">
+      <a href="${dashboardHref()}">Dashboard</a>
+      <a href="/profile/">Profil</a>
+      <button onclick="logout()">Abmelden</button>
+    </div>
+  `;
+}
