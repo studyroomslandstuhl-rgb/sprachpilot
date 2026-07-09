@@ -15,6 +15,15 @@ function assessmentTargetCount(){
   const n=releasedAssessmentVerbs().filter(v=>!mastered.has(v)).length;
   return Math.min(PRACTICE_TARGET_COUNT,n||PRACTICE_TARGET_COUNT);
 }
+function assessmentViewRequested(){try{return new URLSearchParams(location.search||"").get("view")==="assessment"||(location.hash||"").replace(/^#/,"")==="assessment"}catch(e){return false}}
+function taskOverviewUrl(){return "/verben-A1/?view=aufgaben"}
+function goAssessmentTasks(){if(typeof goTaskOverview==="function"){goTaskOverview();return}location.href=taskOverviewUrl()}
+function renderAssessmentBlocked(message){
+  const app=$("app");if(!app)return;
+  app.classList.remove("card");
+  state.phase="assessment";saveState();
+  app.innerHTML=`<section class="card"><p class="eyebrow">Verben A1</p><h2>Neue Verben einschätzen</h2><p class="small">${safeText(message||"Du hast schon genug Verben zum Üben.")}</p><div class="actions"><button class="btn green" onclick="goAssessmentTasks()">Aufgaben starten</button><button class="btn secondary" onclick="renderVerbOverview()">Übersicht</button></div></section>`;
+}
 function unusedVerbs(){
   normalizeVerbStatusLists();
   const mastered=new Set(masteredAssessmentVerbs());
@@ -28,11 +37,16 @@ function startAssessment(force=false){
   if(!force&&typeof window.spVerbAssessmentEnabled==="function"&&!window.spVerbAssessmentEnabled()){renderHome();return}
   normalizeVerbStatusLists();
   const target=assessmentTargetCount();
-  if(!target){renderHome();return}
-  if(!force&&currentPracticeVerbs().length>=target && !packageExamPassed()){renderHome();return}
-  if(force&&currentPracticeVerbs().length>0&&currentPracticeVerbs().length>=target&&!packageExamPassed()){renderHome();return}
+  const activeCount=currentPracticeVerbs().length;
+  if(!target){renderAssessmentBlocked("Es sind keine freigegebenen Verben für die Einschätzung vorhanden.");return}
+  if(activeCount>=target&&!packageExamPassed()){
+    renderAssessmentBlocked(`Du hast bereits ${activeCount} Verben zum Üben. Du musst nicht zuerst weitere Verben wählen oder einschätzen. Starte direkt die Aufgaben.`);
+    return;
+  }
   const appNode=$("app"); if(appNode) appNode.classList.add("card");
-  state.phase="assessment";state.revealed=false;state.assessmentStart=Date.now();state.assessmentTries=0;saveState();setVerbHashForPhase("assessment");renderAssessment(force);
+  state.phase="assessment";state.revealed=false;state.assessmentStart=Date.now();state.assessmentTries=0;saveState();
+  try{if(history&&location.search!=="?view=assessment")history.replaceState(null,"","/verben-A1/?view=assessment")}catch(e){}
+  renderAssessment(force);
 }
 function renderAssessment(force=false){
   if(typeof window.spSyncVerbRelease==="function")window.spSyncVerbRelease();
@@ -40,7 +54,11 @@ function renderAssessment(force=false){
   normalizeVerbStatusLists();
   const target=assessmentTargetCount();
   const v=currentAssessmentVerb();
-  if(!v || currentPracticeVerbs().length>=target){resetPackageTasks();buildPracticePool();if(!currentPracticeVerbs().length){state.assessmentBatch=[];state.currentPackageVerbs=[];resetPackageTasks();}state.phase="home";const appNode=$("app"); if(appNode) appNode.classList.remove("card");saveState();renderHome();return}
+  if(!v || currentPracticeVerbs().length>=target){
+    resetPackageTasks();buildPracticePool();
+    if(!currentPracticeVerbs().length){state.assessmentBatch=[];state.currentPackageVerbs=[];resetPackageTasks();state.phase="home";saveState();renderVerbIndexPage();return}
+    state.phase="taskOverview";saveState();goAssessmentTasks();return
+  }
   if(masteredAssessmentVerbs().includes(v)){state.currentVerb="";saveState();renderAssessment(force);return}
   if(state.currentVerb!==v){state.assessmentStart=Date.now();state.assessmentTries=0;state.revealed=false;}
   state.currentVerb=v;saveState();
@@ -65,7 +83,7 @@ function markAssessment(level){
   ensureSkillState(v);
   state.assessmentTries=0;state.revealed=false;state.currentVerb="";
   const target=assessmentTargetCount();
-  if(currentPracticeVerbs().length>=target||unusedVerbs().length===0){resetPackageTasks();buildPracticePool();if(!currentPracticeVerbs().length){state.assessmentBatch=[];state.currentPackageVerbs=[];resetPackageTasks();}state.phase="home";saveState();renderHome();return}
+  if(currentPracticeVerbs().length>=target||unusedVerbs().length===0){resetPackageTasks();buildPracticePool();if(!currentPracticeVerbs().length){state.assessmentBatch=[];state.currentPackageVerbs=[];resetPackageTasks();state.phase="home";saveState();renderVerbIndexPage();return}state.phase="taskOverview";saveState();goAssessmentTasks();return}
   saveState();renderAssessment();
 }
 function checkAssessmentAnswer(){
@@ -84,3 +102,4 @@ function revealAssessmentVerb(){
   state.revealed=true;saveState();
   $("assessmentFeedback").innerHTML=`<div class="reveal-card"><div class="small">Deutsch</div><div class="german-word">${safeText(state.currentVerb)}</div><p>Dieses Verb wird als <strong>kann ich nicht</strong> markiert.</p><button class="danger" onclick="markAssessment('unknown')">Weiter</button></div>`
 }
+window.spOpenAssessmentFromUrl=function(){startAssessment(true)};
