@@ -1,6 +1,6 @@
 (function(){
   const CDN='https://sprachpilot.b-cdn.net/';
-  const V='?v=l5t4-4';
+  const V='';
   function safe(s){return String(s||'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]))}
   function cleanName(name){return String(name||'').split('?')[0].split('#')[0].split('/').pop().replace(/\.(webp|png|jpe?g|gif|svg)$/i,'')}
   function bunny(name){const n=cleanName(name);return n?CDN+n+'.webp'+V:''}
