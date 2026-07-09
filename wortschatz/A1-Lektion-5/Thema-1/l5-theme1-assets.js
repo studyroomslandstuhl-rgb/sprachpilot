@@ -1,5 +1,5 @@
 (function(){
-  try{import('/js/sp-assets.js?v=3').catch(()=>{})}catch(e){}
+  try{import('/js/sp-assets.js?v=4').catch(()=>{})}catch(e){}
   const BASE='https://sprachpilot.b-cdn.net/';
   function bunny(name){return BASE+String(name||'').split('/').pop().replace(/\.(png|jpe?g|webp|gif|svg)$/i,'')+'.webp'}
   const EXTRA={
@@ -26,7 +26,7 @@
     spazieren_gehen:'spazierengehen.webp'
   };
   const BAD=new Set([]);
-  window.displayImage=function(w){const raw=EXTRA[w&&w.id]||w&&w.image||'';return raw?(window.SP_ASSET_URL?window.SP_ASSET_URL(raw):bunny(raw)):''};
+  window.displayImage=function(w){const raw=EXTRA[w&&w.id]||w&&w.image||(w&&w.id?w.id+'.webp':'');return raw?(window.SP_ASSET_URL?window.SP_ASSET_URL(raw):bunny(raw)):''};
   window.hasGoodImage=function(w){return !!(w&&!BAD.has(w.id)&&window.displayImage(w))};
   window.imgHtml=function(w){return window.hasGoodImage(w)?`<img src="${window.displayImage(w)}" onerror="fixImg(this)" alt="">`:`<div class="word-placeholder">kein Bild</div>`};
   window.bigImgHtml=function(w){return window.hasGoodImage(w)?`<img class="task-img" src="${window.displayImage(w)}" onerror="fixImg(this)" alt="">`:`<div class="placeholder-img">Bild fehlt<br>${full(w)}</div>`};
