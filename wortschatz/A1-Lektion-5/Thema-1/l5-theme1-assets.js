@@ -1,10 +1,10 @@
 (function(){
   try{import('/js/sp-assets.js?v=4').catch(()=>{})}catch(e){}
   const BASE='https://sprachpilot.b-cdn.net/';
-  function bunny(name){return BASE+String(name||'').split('/').pop().replace(/\.(png|jpe?g|webp|gif|svg)$/i,'')+'.webp'}
+  function bunny(name){const s=String(name||'');if(/^https?:\/\//i.test(s))return s;return BASE+s.split('/').pop().replace(/\.(png|jpe?g|webp|gif|svg)$/i,'')+'.webp'}
   const EXTRA={
     machen:'machen.webp',
-    praesentation:'praesentation.webp',
+    praesentation:'https://sprachpilot.b-cdn.net/Neu/praesentation.png',
     fruehstuecken:'fruehstuecken.webp',
     einkaufen:'einkaufen.webp',
     hoeren:'hoeren.webp',
@@ -23,10 +23,10 @@
     lange:'lange.webp',
     gern:'gern.webp',
     nicht_gern:'nicht_gern.webp',
-    spazieren_gehen:'spazieren_gehen.webp'
+    spazieren_gehen:'https://sprachpilot.b-cdn.net/Neu/spazierengehen.webp'
   };
   const BAD=new Set([]);
-  window.displayImage=function(w){const raw=EXTRA[w&&w.id]||w&&w.image||(w&&w.id?w.id+'.webp':'');return raw?(window.SP_ASSET_URL?window.SP_ASSET_URL(raw):bunny(raw)):''};
+  window.displayImage=function(w){const raw=EXTRA[w&&w.id]||w&&w.image||(w&&w.id?w.id+'.webp':'');return raw?bunny(raw):''};
   window.hasGoodImage=function(w){return !!(w&&!BAD.has(w.id)&&window.displayImage(w))};
   window.imgHtml=function(w){return window.hasGoodImage(w)?`<img src="${window.displayImage(w)}" onerror="fixImg(this)" alt="">`:`<div class="word-placeholder">kein Bild</div>`};
   window.bigImgHtml=function(w){return window.hasGoodImage(w)?`<img class="task-img" src="${window.displayImage(w)}" onerror="fixImg(this)" alt="">`:`<div class="placeholder-img">Bild fehlt<br>${full(w)}</div>`};
