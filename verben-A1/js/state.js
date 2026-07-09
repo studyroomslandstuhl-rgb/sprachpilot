@@ -66,18 +66,64 @@ function currentPracticeVerbs(){normalizeVerbStatusLists();return (state.active|
 function currentPackageAllVerbs(){normalizeVerbStatusLists();return uniqueList([...(state.currentPackageVerbs||[]), ...(state.assessmentBatch||[]), ...(state.active||[])])}
 function currentAssessmentCount(){normalizeVerbStatusLists();return (state.assessmentBatch&&state.assessmentBatch.length)||0}
 
-const VERB_IMAGE_CACHE_VERSION="33";
-const VERB_IMAGE_BASES=["../assets/img/","/assets/img/","/sprachpilot/assets/img/","https://studyroomslandstuhl-rgb.github.io/sprachpilot/assets/img/","../assets/","/assets/","/sprachpilot/assets/"];
-function imageBaseName(v){const entry=(typeof ALL_VERBS!=="undefined"?ALL_VERBS:[]).find(x=>x.v===v);return (entry&&entry.img)?String(entry.img):String(v||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
-function imageFileCandidates(v){const base=imageBaseName(v);if(/\.(png|jpg|jpeg|webp)$/i.test(base)) return [base];return [base+".png",base+".jpg",base+".jpeg",base+".webp"]}
-function imageSrcWithVersion(src){return src+(src.includes("?")?"&":"?")+"v="+VERB_IMAGE_CACHE_VERSION}
+const VERB_IMAGE_CACHE_VERSION="34";
+const VERB_IMAGE_BASES=[
+  "../assets/img/",
+  "/assets/img/",
+  "/sprachpilot/assets/img/",
+  "https://studyroomslandstuhl-rgb.github.io/sprachpilot/assets/img/",
+  "../assets/img/verben/",
+  "/assets/img/verben/",
+  "/sprachpilot/assets/img/verben/",
+  "https://studyroomslandstuhl-rgb.github.io/sprachpilot/assets/img/verben/",
+  "../assets/",
+  "/assets/",
+  "/sprachpilot/assets/"
+];
+function imageSlug(s){return String(s||"").toLowerCase().replaceAll("ä","ae").replaceAll("ö","oe").replaceAll("ü","ue").replaceAll("ß","ss").normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")}
+function imageRawName(s){return String(s||"").trim().toLowerCase().replace(/\s+/g,"_").replace(/[\\/]+/g,"_")}
+function imageBaseNames(v){
+  const entry=(typeof ALL_VERBS!=="undefined"?ALL_VERBS:[]).find(x=>x&&x.v===v);
+  return uniqueList([String((entry&&entry.img)||"").replace(/^\/+/,""),imageSlug(v),imageRawName(v)]).filter(Boolean);
+}
+function imageFileCandidates(v){
+  const out=[];
+  imageBaseNames(v).forEach(base=>{
+    const explicit=/\.(png|jpg|jpeg|webp)$/i.test(base);
+    const stem=explicit?base.replace(/\.(png|jpg|jpeg|webp)$/i,""):base;
+    if(explicit)out.push(base);
+    out.push(stem+".webp",stem+".png",stem+".jpg",stem+".jpeg",stem+"-compressed.webp",stem+"-compressed.png",stem+"_compressed.webp",stem+"_compressed.png",stem+".min.webp",stem+".min.png");
+  });
+  return uniqueList(out);
+}
+function imageSrcWithVersion(src){return encodeURI(src)+(src.includes("?")?"&":"?")+"v="+VERB_IMAGE_CACHE_VERSION}
 function imageMimeFromBytes(bytes){if(!bytes || bytes.length<12)return "";if(bytes[0]===0x89 && bytes[1]===0x50 && bytes[2]===0x4E && bytes[3]===0x47)return "image/png";if(bytes[0]===0xFF && bytes[1]===0xD8)return "image/jpeg";if(bytes[0]===0x52 && bytes[1]===0x49 && bytes[2]===0x46 && bytes[3]===0x46 && bytes[8]===0x57 && bytes[9]===0x45 && bytes[10]===0x42 && bytes[11]===0x50)return "image/webp";return ""}
 function loadImageBlobUrl(src){return Promise.reject(new Error("disabled"))}
 function imageBox(v,small=false){const cls=small?"mem-img-holder":"img-holder";return `<span class="${cls}" data-verb="${safeText(v)}"><span class="image-fallback">Bild</span></span>`}
-function hydrateImages(root=document){root.querySelectorAll("[data-verb]").forEach(box=>{if(box.dataset.loaded==="1")return;box.dataset.loaded="1";const v=box.getAttribute("data-verb");const files=imageFileCandidates(v);const img=document.createElement("img");img.alt=safeText(v);img.loading="lazy";img.decoding="async";img.onerror=()=>{box.innerHTML="<span class='image-fallback'>Bild fehlt</span>";box.classList.add("image-missing")};img.onload=()=>{box.classList.add("image-loaded")};box.textContent="";box.appendChild(img);img.src=imageSrcWithVersion("/assets/img/"+files[0])})}
-function renderAndHydrate(){setTimeout(()=>hydrateImages(document),120)}
+function hydrateImages(root=document){
+  const boxes=[...root.querySelectorAll("[data-verb]")].filter(box=>box.dataset.loaded!=="1").filter(box=>!box.closest("details:not([open])")).slice(0,140);
+  boxes.forEach(box=>{
+    box.dataset.loaded="1";
+    const v=box.getAttribute("data-verb")||"";
+    const files=imageFileCandidates(v);
+    const urls=[];
+    VERB_IMAGE_BASES.forEach(base=>files.forEach(file=>urls.push(imageSrcWithVersion(base+file))));
+    if(!urls.length){box.innerHTML="<span class='image-fallback'>Bild</span>";return}
+    const img=document.createElement("img");
+    img.alt=safeText(v);
+    img.loading="lazy";
+    img.decoding="async";
+    let i=0;
+    img.onload=()=>{box.classList.add("image-loaded")};
+    img.onerror=()=>{i++;if(i<urls.length){img.src=urls[i]}else{box.innerHTML="<span class='image-fallback'>Bild fehlt</span>";box.classList.add("image-missing")}};
+    box.textContent="";
+    box.appendChild(img);
+    img.src=urls[0];
+  });
+}
+function renderAndHydrate(){setTimeout(()=>hydrateImages(document),80)}
 function preloadActiveImages(){}
-
+if(typeof window!=="undefined"){window.hydrateImages=hydrateImages;window.renderAndHydrate=renderAndHydrate;document.addEventListener("toggle",e=>{if(e.target&&e.target.matches&&e.target.matches("details[open]"))setTimeout(()=>hydrateImages(e.target),80)},true)}
 function loadProfile(){try{profile=JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){profile=null}if(!profile){const app=$("app");if(app) app.innerHTML=`<section class="card"><div class="no">Bitte zuerst auf der Startseite registrieren oder einloggen.</div><button onclick="location.href='/index.html'">Zur Startseite</button></section>`;return false}const profileBox=$("profileBox");if(profileBox){profileBox.innerHTML=`<div class="ok"><strong>${safeText(profile.vorname)} ${safeText(profile.nachname)}</strong><br><span class="small">Kurs: ${safeText(profile.kurs||profile.kursnummer||"")} · Sprache: ${safeText(nativeLang())}</span></div>`}return true}
 async function loadState(){try{const saved=JSON.parse(localStorage.getItem(storageKey())||"null");if(saved)state={...state,...saved}}catch(e){}migrateState();localStorage.setItem(storageKey(),JSON.stringify(state))}
 function saveState(){migrateState();localStorage.setItem(storageKey(),JSON.stringify(state));try{localStorage.setItem('SP_VERBS_LAST_STATE',JSON.stringify(state));localStorage.setItem('SP_VERBS_BACKUP_STATE',JSON.stringify(state));sessionStorage.setItem('SP_VERBS_SESSION_BACKUP',JSON.stringify(state))}catch(e){}}
