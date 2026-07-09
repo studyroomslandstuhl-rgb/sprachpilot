@@ -42,5 +42,6 @@ function renderLevel(level,target,data){const box=document.getElementById(target
 async function applyAssignments(){const profile=getProfile();if(!profile){setStatus("Bitte zuerst einloggen. Danach siehst du deine freigeschalteten Lektionen.",true);return}const courseId=profile.kurs||profile.kursnummer||profile.courseCode||"";const data=await loadCourseRelease(profile).catch(()=>({}));renderLevel("A1","a1Lessons",data);renderLevel("A2","a2Lessons",data);renderLevel("B1","b1Lessons",data);const count=document.querySelectorAll(".lesson-btn.open").length;if(count){setStatus(`Eingeloggt: <strong>${profile.vorname||""} ${profile.nachname||""}</strong> · Kurs: <strong>${courseId}</strong><br>Freigeschaltet: <strong>${count}</strong> Lektion(en)`) }else{setStatus(`Für deinen Kurs <strong>${courseId}</strong> ist noch keine Wortschatz-Lektion freigeschaltet.`,true)}}
 applyAssignments();
 </script>
+<script defer src="../js/performance-boot.js?v=20260709"></script>
 </body>
 </html>
