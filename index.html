@@ -34,7 +34,6 @@
 <script type="module">
 import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "./js/auth.js?v=release-core-20260701b";
 import { loadCourseRelease, moduleOpen } from "./js/course-releases.js?v=release-core-20260701b";
-import { startGlobalSync } from "./js/global-sync.js?v=2";
 window.logout=logout;
 
 function isTeacherAllAccess(){
@@ -72,21 +71,38 @@ function renderLogged(p){
   }
 }
 
+function idle(fn){
+  const run=()=>setTimeout(fn,0);
+  if("requestIdleCallback" in window)requestIdleCallback(fn,{timeout:2500});
+  else if(document.readyState==="complete")run();
+  else window.addEventListener("load",run,{once:true});
+}
+
+async function refreshStudentInBackground(currentProfile){
+  try{
+    const sync=await import("./js/global-sync.js?v=3");
+    const synced=await sync.startGlobalSync();
+    const next=synced||getActiveProfile()||currentProfile;
+    renderLogged(next);
+    renderAccountStrip();
+    const assignments=await loadCourseRelease(next);
+    renderLogged({...next,assignments:assignments||next.assignments||{}});
+  }catch(e){
+    console.warn("SprachPilot Hintergrund-Sync übersprungen",e);
+  }
+}
+
 const role=getActiveRole();
 let p=role==="student" ? getActiveProfile() : null;
 const box=document.querySelector("#loggedBox");
 const guest=document.querySelector("#guestBox");
 if(p){
   renderLogged(p);
-  startGlobalSync().then(async synced=>{
-    p=synced||getActiveProfile()||p;
-    renderLogged(p);
-    renderAccountStrip();
-    return loadCourseRelease(p);
-  }).then(assignments=>{
+  loadCourseRelease(p).then(assignments=>{
     p={...p,assignments:assignments||p.assignments||{}};
     renderLogged(p);
   }).catch(()=>renderModules(p));
+  idle(()=>refreshStudentInBackground(p));
 }else if(role==="teacher"){
   box.innerHTML=`<div class="ok"><strong>Lehrerzugang:</strong> Du siehst SprachPilot im Testmodus. Es werden keine Schülerpunkte gespeichert.<br><a class="btn secondary" href="${dashboardHref()}">Lehrer-Dashboard</a> <button class="secondary" onclick="logout()">Abmelden</button></div>`;
   guest.classList.add("hidden");
@@ -98,6 +114,7 @@ if(p){
 window.addEventListener("SP_PROFILE_SYNCED",e=>{p=e.detail.profile;renderLogged(p);renderAccountStrip();});
 renderAccountStrip();
 </script>
+<script defer src="js/performance-boot.js?v=20260709"></script>
 <script src="/shared/sprachpilot-design-system.js"></script>
 </body>
 </html>
