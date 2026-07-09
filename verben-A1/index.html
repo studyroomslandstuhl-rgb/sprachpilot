@@ -49,6 +49,103 @@
   <script defer src="data/verb-additions-passen-luegen-erzaehlen.js?v=2"></script>
   <script defer src="dashboard/student-dashboard.js?v=12"></script>
   <script defer src="js/app.js?v=33"></script>
+  <script>
+    // Patch 2026-07-09: Verben dürfen nicht im Fallback hängen bleiben.
+    // Diese Logik läuft vor dem app.js-Boot-Handler und überschreibt nur die kaputten Einstiegspunkte.
+    document.addEventListener('DOMContentLoaded', function(){
+      function uniq(list){return Array.from(new Set((list||[]).filter(Boolean).map(String)))}
+      function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]})}
+      function id(x){return document.getElementById(x)}
+      function activeVerbs(){
+        try{
+          var known=new Set([].concat(state.known||[],state.learned||[]));
+          var list=uniq([].concat(state.active||[],state.unsure||[],state.unknown||[],state.currentPackageVerbs||[],state.assessmentBatch||[]));
+          return list.filter(function(v){return !known.has(v)});
+        }catch(e){return []}
+      }
+      function resetTaskViewOnly(){
+        try{
+          state.phase='home';
+          state.currentGame='';
+          state.currentVerb='';
+          state.currentTask=null;
+          state.memoryCards=[];
+          state.memoryDone=[];
+          state.openCards=[];
+          state.first=null;
+          state.lock=false;
+        }catch(e){}
+      }
+      function saveQuiet(){try{if(typeof saveState==='function')saveState()}catch(e){try{localStorage.setItem(storageKey(),JSON.stringify(state))}catch(x){}}}
+      function clearHashQuiet(){try{if(location.hash)history.replaceState(null,'',location.pathname+location.search)}catch(e){}}
+      function progressFor(skill){try{return typeof queuedProgress==='function'?queuedProgress(skill):{pct:0,done:0,total:activeVerbs().length}}catch(e){return {pct:0,done:0,total:activeVerbs().length}}}
+      function isDone(skill){try{return typeof taskDone==='function'&&taskDone(skill)}catch(e){return false}}
+      function openTask(skill){
+        var map={karteikarte:'flashcards',memory:'memory',bild_verb:'quiz',verb_bild:'verbToImage',schreiben:'writeVerb',hoeren_schreiben:'hearWrite',hoeren_sprechen:'hearSpeak',bild_sprechen:'imageSpeak',satz_puzzle:'sentencePuzzle',konjugieren:'conjugationTask'};
+        var fn=window[map[skill]];
+        if(typeof fn==='function'){fn();return}
+        var app=id('app');
+        if(app)app.innerHTML='<section class="card"><h2>Aufgabe</h2><p class="small">Diese Aufgabe wurde noch nicht geladen. Bitte Seite neu laden.</p><button class="btn secondary" onclick="renderTaskOverview()">Zur Aufgabenübersicht</button></section>';
+      }
+      function taskCard(skill,icon,label,num,desc){
+        var p=progressFor(skill),done=isDone(skill);
+        return '<button type="button" class="module task-card '+(done?'done-card':'')+'" onclick="openVerbTask(\''+skill+'\')"><div><div class="num">'+num+'. '+esc(label)+'</div></div><div class="icon big-icon">'+icon+'</div><p>'+esc(desc)+'</p><div><div class="progress"><div class="bar" style="width:'+(done?100:p.pct)+'%"></div></div><div class="small">'+(done?'100%':p.pct+'%')+'</div><div class="start">Starten</div></div></button>';
+      }
+      function renderTasks(){
+        var app=id('app'); if(!app)return;
+        var verbs=activeVerbs();
+        resetTaskViewOnly();
+        clearHashQuiet();
+        try{state.active=verbs.slice();if(!state.practicePool||!state.practicePool.length)state.practicePool=verbs.slice()}catch(e){}
+        saveQuiet();
+        if(!verbs.length){renderChooseOrEmpty();return}
+        var pct=0;try{pct=typeof overall==='function'?overall():0}catch(e){}
+        app.classList.remove('card');
+        app.innerHTML='<section class="card progress-card"><div class="circle">'+pct+'%</div><div class="progress-main"><h2>Dein Fortschritt</h2><div class="small">'+verbs.length+' Verben zu üben</div><div class="progress"><div class="bar" style="width:'+pct+'%"></div></div></div></section><section class="card"><div class="grid task-grid">'
+          +taskCard('karteikarte','🃏','Karteikarten',1,'Lerne das Verb mit Bild.')
+          +taskCard('memory','🧠','Memory',2,'Finde Bild und Verb.')
+          +taskCard('bild_verb','🖼️','Bild → Verb',3,'Sieh das Bild und wähle das Verb.')
+          +taskCard('verb_bild','🔁','Verb → Bild',4,'Lies das Verb und wähle das Bild.')
+          +taskCard('schreiben','✍️','Schreiben',5,'Schreibe das Verb zum Bild.')
+          +taskCard('hoeren_schreiben','👂','Hören → Schreiben',6,'Höre und schreibe das Verb.')
+          +taskCard('hoeren_sprechen','🎤','Hören → Sprechen',7,'Höre und sprich das Verb.')
+          +taskCard('bild_sprechen','🗣️','Bild → Sprechen',8,'Sieh das Bild und sprich das Verb.')
+          +taskCard('satz_puzzle','🧩','Satz-Puzzle',9,'Höre und baue den Satz.')
+          +taskCard('konjugieren','🔤','Konjugieren',10,'Schreibe die richtige Form.')
+          +'<button type="button" class="module task-card" onclick="startVerbExam()"><div><div class="num">11. Prüfung</div></div><div class="icon big-icon">⭐</div><p>Prüfe die aktiven Verben.</p><div><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">offen</div><div class="start">Starten</div></div></button>'
+          +'</div></section>';
+        try{if(typeof renderAndHydrate==='function')renderAndHydrate()}catch(e){}
+      }
+      function renderChooseOrEmpty(){
+        var app=id('app'); if(!app)return;
+        app.classList.remove('card');
+        app.innerHTML='<section class="card"><h2>Verben</h2><p class="small">Keine aktiven Verben zum Üben gefunden.</p><div class="actions"><button class="btn green" onclick="renderVerbChooser()">Verben wählen</button></div></section>';
+      }
+      function patchedHome(){
+        clearHashQuiet();
+        var verbs=activeVerbs();
+        if(verbs.length){renderTasks();return}
+        try{if(typeof unusedVerbs==='function'&&unusedVerbs().length&&typeof startAssessment==='function'){startAssessment(true);return}}catch(e){}
+        renderChooseOrEmpty();
+      }
+      function patchedBack(){
+        var verbs=activeVerbs();
+        if(verbs.length){renderTasks();return}
+        patchedHome();
+      }
+      window.openVerbTask=openTask;
+      window.renderTaskOverview=renderTasks;
+      window.renderSafeHomeFallback=patchedHome;
+      window.renderHome=patchedHome;
+      window.closeVerbTaskAndRenderHome=patchedBack;
+      window.spGoBack=patchedBack;
+      try{renderTaskOverview=renderTasks}catch(e){}
+      try{renderSafeHomeFallback=patchedHome}catch(e){}
+      try{renderHome=patchedHome}catch(e){}
+      try{closeVerbTaskAndRenderHome=patchedBack}catch(e){}
+      try{spGoBack=patchedBack}catch(e){}
+    }, {once:true});
+  </script>
   <script defer src="../js/performance-boot.js?v=20260709b"></script>
 </body>
 </html>
