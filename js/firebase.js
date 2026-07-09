@@ -36,17 +36,46 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
-export const authReady = new Promise(resolve=>{
-  const stop=onAuthStateChanged(auth,user=>{if(user){try{stop()}catch(e){}resolve(user)}});
-});
-signInAnonymously(auth).catch(e=>console.warn("Firebase Anonymous Auth konnte nicht gestartet werden",e));
 
-export async function getDoc(...args){await authReady;return firestoreGetDoc(...args)}
-export async function setDoc(...args){await authReady;return firestoreSetDoc(...args)}
-export async function updateDoc(...args){await authReady;return firestoreUpdateDoc(...args)}
-export async function deleteDoc(...args){await authReady;return firestoreDeleteDoc(...args)}
-export async function addDoc(...args){await authReady;return firestoreAddDoc(...args)}
-export async function getDocs(...args){await authReady;return firestoreGetDocs(...args)}
+let authReadyResolved=false;
+export const authReady = new Promise(resolve=>{
+  function done(user){
+    if(authReadyResolved)return;
+    authReadyResolved=true;
+    resolve(user||auth.currentUser||null);
+  }
+  let stop=null;
+  try{
+    stop=onAuthStateChanged(auth,user=>{
+      if(user){try{if(stop)stop()}catch(e){}done(user)}
+    },err=>{
+      console.warn("Firebase Auth State konnte nicht gelesen werden",err);
+      try{if(stop)stop()}catch(e){}
+      done(null);
+    });
+  }catch(e){
+    console.warn("Firebase Auth State Start fehlgeschlagen",e);
+    done(null);
+  }
+  setTimeout(()=>done(auth.currentUser||null),2500);
+});
+
+signInAnonymously(auth).then(cred=>{
+  try{window.SP_FIREBASE_AUTH_MODE="anonymous"}catch(e){}
+}).catch(e=>{
+  console.warn("Firebase Anonymous Auth konnte nicht gestartet werden; Firestore wird ohne blockierendes Warten versucht",e);
+  try{window.SP_FIREBASE_AUTH_MODE="none";window.SP_FIREBASE_AUTH_ERROR=e&&e.message?e.message:String(e)}catch(x){}
+});
+
+async function waitAuthNonBlocking(){
+  try{await authReady}catch(e){}
+}
+export async function getDoc(...args){await waitAuthNonBlocking();return firestoreGetDoc(...args)}
+export async function setDoc(...args){await waitAuthNonBlocking();return firestoreSetDoc(...args)}
+export async function updateDoc(...args){await waitAuthNonBlocking();return firestoreUpdateDoc(...args)}
+export async function deleteDoc(...args){await waitAuthNonBlocking();return firestoreDeleteDoc(...args)}
+export async function addDoc(...args){await waitAuthNonBlocking();return firestoreAddDoc(...args)}
+export async function getDocs(...args){await waitAuthNonBlocking();return firestoreGetDocs(...args)}
 
 function spBuildQuery(path, constraints = []) {
   const ref = firestoreCollection(db, String(path));
@@ -96,12 +125,12 @@ function spCompatCollection(path, constraints = []) {
     },
 
     async add(data) {
-      await authReady;
+      await waitAuthNonBlocking();
       return firestoreAddDoc(firestoreCollection(db, String(path)), data);
     },
 
     async get() {
-      await authReady;
+      await waitAuthNonBlocking();
       return firestoreGetDocs(spBuildQuery(path, constraints));
     },
 
