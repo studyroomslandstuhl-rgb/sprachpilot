@@ -6,6 +6,16 @@
   <title>Verben A1 · SprachPilot</title>
   <script>
     (function(){
+      var resetKey='SP_VERBEN_CACHE_RESET_20260709_1';
+      try{
+        if(!sessionStorage.getItem(resetKey)){
+          sessionStorage.setItem(resetKey,'1');
+          var jobs=[];
+          if('caches' in window)jobs.push(caches.keys().then(function(keys){return Promise.all(keys.map(function(k){return caches.delete(k)}));}));
+          if('serviceWorker' in navigator)jobs.push(navigator.serviceWorker.getRegistrations().then(function(regs){return Promise.all(regs.map(function(r){return r.unregister()}));}));
+          Promise.all(jobs).then(function(){if(navigator.serviceWorker&&navigator.serviceWorker.controller)location.reload();}).catch(function(){});
+        }
+      }catch(e){}
       var h=String(location.hash||'').replace(/^#/, '');
       if(!h)return;
       var taskMap={
@@ -65,6 +75,6 @@
   <script defer src="dashboard/student-dashboard.js?v=12"></script>
   <script defer src="js/app.js?v=109"></script>
   <script defer src="js/back-flow-fix.js?v=7"></script>
-  <script defer src="../js/performance-boot.js?v=20260709b"></script>
+  <script defer src="../js/performance-boot.js?v=20260709c"></script>
 </body>
 </html>
