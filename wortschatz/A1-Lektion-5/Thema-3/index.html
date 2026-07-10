@@ -4,12 +4,28 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Lektion 5 · Thema 3</title>
-<link rel="stylesheet" href="style.css?v=6">
+<script>
+(function(){
+  if(location.hostname!=='www.sprachpilot.org')return;
+  try{
+    const key='SP_DOMAIN_PROGRESS_MIGRATION_V1';
+    const re=/^(SP_USER_PROFILE|SP_STUDENT_PROFILE|SP_KEEP_LOGGED_IN|SP_STUDENT_ID|SP_LOGIN_ROLE|SP_ACTIVE_ROLE|SP_USER_ROLE|motherLanguage|muttersprache|SP_L\d|SP_TASK_STATE_|SP_PROGRESS_|SP_POINTS_|SP_SCORE_RUN_|SP_DASHBOARD_PROGRESS|A1_ACTIVE_SESSION)/;
+    const data={from:location.hostname,createdAt:Date.now(),items:{}};
+    for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(k&&re.test(k))data.items[k]=localStorage.getItem(k)}
+    window.name=JSON.stringify({[key]:data});
+  }catch(e){}
+  location.replace('https://sprachpilot.org'+location.pathname+location.search+location.hash);
+})();
+</script>
+<link rel="stylesheet" href="../Thema-2/style.css?v=3">
+<link rel="stylesheet" href="style.css?v=7">
 <style>
-  .container{min-height:100vh}
-  .topbar{min-height:128px}
-  .progress-card{min-height:156px}
-  #taskGrid{min-height:760px}
+  .container{min-height:100vh;max-width:1120px;margin:0 auto;padding:24px 16px 40px}
+  .topbar{min-height:128px;contain:layout paint}
+  .progress-card{min-height:156px;contain:layout paint}
+  #taskGrid{min-height:760px;contain:layout paint}
+  .module{min-height:230px;contain:layout paint}
+  .logo img,.sp-logo-img{width:56px;height:56px;object-fit:contain;display:block}
   body{overflow-anchor:none}
 </style>
 </head>
