@@ -1,5 +1,5 @@
 import "/js/header-stability.js?v=2";
-import "/js/sp-assets.js?v=4";
+import "/js/sp-assets.js?v=5";
 import "/js/session-restore.js?v=1";
 import { requireLogin, renderAccountStrip, logout } from "/js/auth.js?v=step136-login-fix";
 
@@ -73,22 +73,20 @@ if(SP_USER&&LIGHT_FIREBASE_PAGE){document.addEventListener("DOMContentLoaded",()
 window.addEventListener("SP_PROFILE_SYNCED",()=>{if(!LIGHT_FIREBASE_PAGE){try{renderAccountStrip()}catch(e){}}});
 import("/js/microphone-fallback.js?v=1").catch(()=>{});
 import("/js/back-button-fix.js?v=1").catch(()=>{});
-import("/js/release-helper.js?v=10").catch(()=>{});
+import("/js/release-helper.js?v=11").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
-if(!EXPLICIT_NO_FIREBASE_SYNC){
+if(!EXPLICIT_NO_FIREBASE_SYNC&&!LIGHT_FIREBASE_PAGE){
   setTimeout(()=>import("/js/progress.js?v=restore-20260710").catch(()=>{}),700);
 }
 if(FULL_FIREBASE){
   setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).then(()=>{try{renderAccountStrip()}catch(e){}}).catch(()=>{})},1500);
   setTimeout(()=>{import("/js/scoring.js?v=6").catch(()=>{})},1800);
 }
-if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){setTimeout(()=>import("/wortschatz/index-release-lock.js?v=12").catch(()=>{}),900)}
 if(IS_VERBEN_EXERCISE){
   import("/verben-A1/js/release-bridge.js?v=8").catch(()=>{});
   if(!EXPLICIT_NO_FIREBASE_SYNC){
     import("/verben-A1/js/scoring-bridge.js?v=6").catch(()=>{});
-    window.addEventListener("load",()=>setTimeout(()=>{let s=document.createElement("script");s.src="/verben-A1/js/cloud-progress-sync.js?v=6";document.body.appendChild(s);s=document.createElement("script");s.src="/verben-A1/js/verb-overview-dedupe.js?v=1";document.body.appendChild(s)},2500));
   }
 }
 if(!EXPLICIT_NO_FIREBASE_SYNC&&IS_FRAGEN_EXERCISE){
