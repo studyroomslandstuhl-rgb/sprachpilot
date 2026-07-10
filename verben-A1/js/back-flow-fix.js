@@ -82,6 +82,17 @@
       if(!overview){overview=makeBtn('Übersicht',()=>{if(typeof goOverviewView==='function')goOverviewView();else if(typeof renderVerbOverview==='function')renderVerbOverview()});overview.classList.add('sp-overview-link');n.appendChild(overview)}
     }catch(e){}
   }
+  function maybeFinishScreen(){
+    try{
+      const sk=state&&state.lastCompletedTaskSkill;
+      if(sk&&typeof renderTaskFinishScreen==='function'){renderTaskFinishScreen(sk);return true}
+    }catch(e){}
+    return false;
+  }
+  const originalRenderHome=window.renderHome;
+  if(typeof originalRenderHome==='function'){
+    window.renderHome=function(){if(maybeFinishScreen())return;return originalRenderHome.apply(this,arguments)};
+  }
   const originalRenderTaskOverview=window.renderTaskOverview;
   if(typeof originalRenderTaskOverview==='function'){
     window.renderTaskOverview=function(){
