@@ -1,1 +1,45 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=4"></head><body><script type="module" src="/js/guard.js"></script><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>SprachPilot</footer></div><script>window.SP_L5_THEME={id:'Thema-3',title:'Wann? Termine und Tageszeiten',sub:'A1 Lektion 5 Thema 3',key:'SP_L5_T3_V2'};</script><script src="app.js?v=4"></script><script src="l5t3-translations.js?v=4"></script><script src="l5t3-word-filter.js?v=1"></script><script src="../l5-points.js?v=1"></script><script>header('Prüfung');const FILE='pruefung.html';const PR=[['karteikarten.html',WORDS.length],['sortieren.html',SORT_ITEMS.length],['um-am.html',PREP.length],['hoeren-waehlen.html',6],['saetze-bauen.html',BUILD.length],['plan-lesen.html',6],['sprechen.html',8],['satzvarianten.html',8],['dialoge.html',15],['schreiben.html',10]];if(!PR.every(t=>pctFor(t[0],t[1])>=100)){area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p>Schließe zuerst alle Aufgaben mit 100% ab.</p><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div></div>'}else{area.innerHTML='<div class="finish-box"><div class="question">Prüfung</div><p>Die Voraussetzung ist erfüllt.</p><div class="actions"><a class="btn" href="index.html">Zum Thema</a></div></div>'}</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=5"></head><body><script type="module" src="/js/guard.js"></script><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>SprachPilot</footer></div><script>window.SP_L5_THEME={id:'Thema-3',title:'Wann? Termine und Tageszeiten',sub:'A1 Lektion 5 Thema 3',key:'SP_L5_T3_V2'};</script><script src="app.js?v=5"></script><script src="l5t3-translations.js?v=4"></script><script src="l5t3-word-filter.js?v=1"></script><script src="../l5-points.js?v=1"></script><script>
+header('Prüfung');
+const FILE='pruefung.html';
+const PR=[['karteikarten.html',WORDS.length],['sortieren.html',SORT_ITEMS.length],['um-am.html',PREP.length],['hoeren-waehlen.html',6],['saetze-bauen.html',BUILD.length],['plan-lesen.html',6],['sprechen.html',8],['satzvarianten.html',8],['dialoge.html',15],['schreiben.html',10]];
+function prereqOk(){return PR.every(t=>pctFor(t[0],t[1])>=100)}
+const EXAM=[
+  ...PREP.slice(0,4).map(x=>({type:'gap',q:x[0],a:x[1]})),
+  ...BUILD.slice(0,3).map(x=>({type:'build',q:x.parts,a:x.answers})),
+  ...PLAN_Q.slice(0,3).map(x=>({type:'question',q:x[0],a:x[1]}))
+];
+let pos=0,score=0,answered=false;
+function progress(){return `<div class="small">${pos+1} / ${EXAM.length}</div><div class="progress"><div class="bar" style="width:${Math.round(pos/EXAM.length*100)}%"></div></div>`}
+function taskBody(t){
+  if(t.type==='gap')return `<div class="question">Ergänze die Präposition.</div><div class="example-box big">${t.q.replace('___','<b>___</b>')}</div><input id="ans" autocomplete="off" placeholder="Antwort schreiben">`;
+  if(t.type==='build')return `<div class="question">Baue einen Satz.</div><div class="example-box big">${t.q}</div><input id="ans" autocomplete="off" placeholder="Ganzer Satz">`;
+  return `<div class="question">Antworte auf die Frage.</div><div class="example-box big">${t.q}</div><input id="ans" autocomplete="off" placeholder="Antwort schreiben">`;
+}
+function renderExam(){
+  if(pos>=EXAM.length)return finishExam();
+  answered=false;
+  const t=EXAM[pos];
+  area.innerHTML=progress()+taskBody(t)+`<div class="actions"><button class="btn" onclick="checkExam()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+  setTimeout(()=>document.getElementById('ans')?.focus(),50);
+}
+function checkExam(){
+  if(answered)return;
+  answered=true;
+  const t=EXAM[pos], val=document.getElementById('ans')?.value||'';
+  const good=ok(val,t.a)&&(!['build','question'].includes(t.type)||sentenceLooksRight(val));
+  if(good){score++;fb.innerHTML='<div class="ok">Richtig.</div>'}
+  else{fb.innerHTML='<div class="no">Nicht ganz richtig.</div><div class="hint">Lösung: '+(Array.isArray(t.a)?t.a[0]:t.a)+'</div>'}
+  setTimeout(()=>{pos++;renderExam()},1200);
+}
+function finishExam(){
+  const percent=Math.round(score/EXAM.length*100);
+  const done=percent>=50?[...Array(EXAM.length).keys()]:[];
+  try{saveTask(FILE,{total:EXAM.length,done,queue:[],current:null,tries:0,hadWrong:false})}catch(e){}
+  area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung beendet</div><div class="big">${percent}%</div><p class="small">${score} von ${EXAM.length} richtig.</p><div class="actions"><button class="btn green" onclick="location.reload()">Nochmal versuchen</button><a class="btn secondary" href="index.html">Zum Thema</a></div></div>`;
+}
+if(!prereqOk()){
+  area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p>Schließe zuerst alle Aufgaben mit 100% ab.</p><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div></div>';
+}else{
+  renderExam();
+}
+</script></body></html>
