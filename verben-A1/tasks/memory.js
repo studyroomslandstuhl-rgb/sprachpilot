@@ -14,12 +14,12 @@ function pendingMemoryItems(){
 function memory(){
   rememberPhase("memory");state.currentGame="memory";
   const items=shuffle(pendingMemoryItems()).slice(0,6);
-  if(!items.length){renderHome();return}
+  if(!items.length){if(typeof renderTaskFinishScreen==='function')renderTaskFinishScreen('memory');else renderTaskOverview();return}
   state.memoryCards=shuffle(items.flatMap(item=>[{type:"word",v:item.v,slot:item.slot},{type:"img",v:item.v,slot:item.slot}]));state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;saveState();renderMemory()
 }
 function renderMemory(){
   const done=state.memoryDone||[], open=state.openCards||[];
-  $("app").innerHTML=`<h2>Memory</h2>${taskProgressHtml("memory","Memory")}<div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${(done.includes(i)?"done":"")} ${(open.includes(i)?"open":"")}" onclick="openMemory(${i})" id="mem${i}">${done.includes(i)||open.includes(i)?(c.type==="img"?imageBox(c.v,true):safeText(c.v)):"?"}</button>`).join("")}</div><div id="fb"></div>`;
+  $("app").innerHTML=`<h2>Memory</h2>${taskProgressHtml("memory","Memory")}<div class="memory">${state.memoryCards.map((c,i)=>`<button class="mem ${(done.includes(i)?"done":"")} ${(open.includes(i)?"open":"")}" onclick="openMemory(${i})" id="mem${i}">${done.includes(i)||open.includes(i)?(c.type==="img"?imageBox(c.v,true):`<span class="mem-word">${safeText(c.v)}</span>`):"?"}</button>`).join("")}</div><div id="fb"></div>`;
   renderAndHydrate()
 }
 function openMemory(i){
@@ -36,7 +36,7 @@ function openMemory(i){
       state.memoryDone.push(a,b);
       state.currentTask={skill:skillKey("memory"),v:ca.v,slot:ca.slot,tries:0,hadWrong:false,helped:false};
       ensureAttempt("memory",ca.v);handleCorrectAnswer("memory",ca.v,()=>{},0,"fb");state.openCards=[];
-      if((state.memoryDone||[]).length===state.memoryCards.length){$("fb").innerHTML="<div class='ok'>Memory-Runde geschafft.</div>";setTimeout(()=>{if(taskDone("memory"))renderTaskOverview();else memory()},700)}
+      if((state.memoryDone||[]).length===state.memoryCards.length){$("fb").innerHTML="<div class='ok'>Memory-Runde geschafft.</div>";setTimeout(()=>{if(taskDone("memory")){if(typeof renderTaskFinishScreen==='function')renderTaskFinishScreen('memory');else renderTaskOverview()}else memory()},700)}
     } else {
       try{markTaskNeedsRepeat("memory",ca.v);markTaskNeedsRepeat("memory",cb.v)}catch(e){}
       if($("fb"))$("fb").innerHTML="<div class='no'>Nicht passend. Diese Karten werden später wiederholt.</div>";
