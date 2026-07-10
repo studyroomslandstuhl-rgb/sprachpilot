@@ -114,11 +114,14 @@
   }
   if(typeof FULL_FORMS!=='undefined'){
     Object.assign(FULL_FORMS,{
-      "versprechen":{"ich":"verspreche","du":"versprichst","er/sie/es":"verspricht","wir":"versprechen","ihr":"versprecht","sie/Sie":"versprechen"}
+      "versprechen":{"ich":"verspreche","du":"versprichst","er/sie/es":"verspricht","wir":"versprechen","ihr":"versprecht","sie/Sie":"versprechen"},
+      "holen":{"ich":"hole","du":"holst","er/sie/es":"holt","wir":"holen","ihr":"holt","sie/Sie":"holen"},
+      "leihen":{"ich":"leihe","du":"leihst","er/sie/es":"leiht","wir":"leihen","ihr":"leiht","sie/Sie":"leihen"}
     });
   }
   if(typeof CONJ_EXAMPLES!=='undefined'){
     Object.assign(CONJ_EXAMPLES,{
+      "abholen":"meine Mutter",
       "ausleihen":"ein Buch",
       "versprechen":"es dir",
       "vereinbaren":"einen Termin"
@@ -126,6 +129,7 @@
   }
   if(typeof SEPARABLE_VERBS!=='undefined'){
     Object.assign(SEPARABLE_VERBS,{
+      "abholen":{base:"holen",prefix:"ab"},
       "ausleihen":{base:"leihen",prefix:"aus"}
     });
   }
