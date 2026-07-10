@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Frage & Antwort</title>
-  <link rel="stylesheet" href="style.css?v=qa3">
+  <link rel="stylesheet" href="style.css?v=qa4">
 </head>
 <body>
 <div id="accountStrip" class="account-strip"></div>
@@ -30,7 +30,7 @@ function loadState(){try{const s=JSON.parse(localStorage.getItem(stateKey())||'n
 function saveState(s){localStorage.setItem(stateKey(),JSON.stringify(s))}
 function nextIndex(){let s=loadState();if(s.done.length>=TOTAL)return null;if(s.current===null||s.current===undefined){if(!s.queue.length)s.queue=[...Array(TOTAL).keys()].filter(i=>!s.done.includes(i)).sort(()=>Math.random()-.5);s.current=s.queue.shift();s.tries=0;saveState(s)}return s.current}
 function markWrong(){let s=loadState();s.tries=(s.tries||0)+1;saveState(s);return s.tries}
-function markRight(){let s=loadState();if(s.current!==null&&!s.done.includes(s.current))s.done.push(s.current);s.current=null;s.tries=0;saveState(s);try{done(FILE,TOTAL)}catch(e){}return s.done.length>=TOTAL}
+function markRight(){let s=loadState();if(s.current!==null&&!s.done.includes(s.current))s.done.push(s.current);s.current=null;s.tries=0;const complete=s.done.length>=TOTAL;saveState(s);if(complete){try{done(FILE,TOTAL)}catch(e){}}return complete}
 function progressHtml(){let s=loadState();let doneCount=s.done.length;let pct=Math.round(doneCount/Math.max(1,TOTAL)*100)||0;return `<div class="small">${doneCount} richtig · ${TOTAL-doneCount} übrig · ${pct}%</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div>`}
 function byId(list,id){return (list||[]).find(x=>x.id===id)||{}}
 function comboImages(c){const cont=byId(WORDS,c.container),prod=byId(PRODUCTS,c.product);return `<div class="combo-images"><div class="combo-part"><div class="amount-badge">${esc((c.text||'').split(' ')[0]||'')}</div><img src="${esc(cont.image||'')}" onerror="fixImg(this)" alt=""></div><div class="combo-plus">+</div><div class="combo-part"><img src="${esc(prod.image||'')}" onerror="fixImg(this)" alt=""></div></div>`}
