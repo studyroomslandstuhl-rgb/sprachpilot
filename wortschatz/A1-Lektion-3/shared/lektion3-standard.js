@@ -10,14 +10,17 @@ function spLogout(){
   ["SP_USER_PROFILE","SP_KEEP_LOGGED_IN","SP_LOGIN_ROLE","SP_TEACHER_PREVIEW","SP_PREVIEW_COURSE","SP_TEACHER_PREVIEW_COURSE"].forEach(k=>localStorage.removeItem(k));
   location.href="/index.html";
 }
+function spIsThemeStartPage(){return /\/Thema-\d+\/?(?:index\.html)?$/.test(location.pathname)}
+function spCleanThemeStart(){
+  if(!spIsThemeStartPage()) return;
+  document.querySelector('.progress-card')?.remove();
+}
 function renderL3Header(config={}){
   const header=document.querySelector(".topbar");
   if(!header) return;
   const title=config.title||"A1 Lektion 3";
   const subtitle=config.subtitle||"Einkaufen";
   const backHref=config.backHref||"../index.html";
-  const overviewHref=config.overviewHref||"index.html";
-  const statsHref=config.statsHref||"statistik.html";
   const course=spCourse();
   header.innerHTML=`
     <div class="topbar-main sp-account-row">
@@ -34,10 +37,10 @@ function renderL3Header(config={}){
     </div>
     <nav class="nav sp-page-nav">
       <a class="btn secondary" href="${backHref}">← Zurück</a>
-      <a class="btn secondary" href="${overviewHref}">Übersicht</a>
-      ${statsHref?`<a class="btn secondary" href="${statsHref}">Statistik</a>`:""}
       ${config.resetButton?`<button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>`:""}
     </nav>`;
+  spCleanThemeStart();
+  setTimeout(spCleanThemeStart,0);
 }
 function moduleCard({href,num,title,desc,words=[],progress=null,status="Starten",icon=""}){
   const wordHtml=words.length?`<div class="word-list">${words.map(w=>`<span class="word">${spSafe(w)}</span>`).join("")}</div>`:"";
