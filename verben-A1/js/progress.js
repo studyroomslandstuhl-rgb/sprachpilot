@@ -12,6 +12,7 @@ function releaseFilterVerbs(list){
 function ensureProgressObjects(){
   state.taskDoneSets=state.taskDoneSets&&typeof state.taskDoneSets==="object"&&!Array.isArray(state.taskDoneSets)?state.taskDoneSets:{};
   state.taskQueues=state.taskQueues&&typeof state.taskQueues==="object"&&!Array.isArray(state.taskQueues)?state.taskQueues:{};
+  state.taskErrorSets=state.taskErrorSets&&typeof state.taskErrorSets==="object"&&!Array.isArray(state.taskErrorSets)?state.taskErrorSets:{};
   state.practicePool=Array.isArray(state.practicePool)?state.practicePool:[];
 }
 function ensureArrayStore(obj,key){
@@ -23,12 +24,13 @@ function verbSkillCount(v){ensureSkillState(v);return VERB_SKILLS.filter(s=>stat
 function verbPercent(v){return Math.round((verbSkillCount(v)*100)/VERB_SKILLS.length)}
 function overall(){const verbs=currentPracticeVerbs();if(!verbs.length)return 0;return Math.round(verbs.reduce((s,v)=>s+verbPercent(v),0)/verbs.length)}
 function totalStars(){return currentPracticeVerbs().filter(v=>verbPercent(v)===100).length}
-function addEncounter(v,skill,good=true){const sk=skillKey(skill);ensureSkillState(v);state.skillAttempts[v][sk]=(state.skillAttempts[v][sk]||0)+1;if(good){state.skillSuccess[v][sk]=(state.skillSuccess[v][sk]||0)+1;state.skillDone[v][sk]=true}else{state.weak[v]=(state.weak[v]||0)+1}saveState();try{sendProgress()}catch(e){}}
+function addEncounter(v,skill,good=true){const sk=skillKey(skill);ensureSkillState(v);state.skillAttempts[v][sk]=(state.skillAttempts[v][sk]||0)+1;if(good){state.skillSuccess[v][sk]=(state.skillSuccess[v][sk]||0)+1;if(!taskNeedsRepeat(sk,v))state.skillDone[v][sk]=true}else{state.weak[v]=(state.weak[v]||0)+1}saveState();try{sendProgress()}catch(e){}}
 async function doSaveVerbProgress(){if(typeof window.spVerbStorageFlush==='function')return window.spVerbStorageFlush();return null}
 function sendProgress(){clearTimeout(firebaseSaveTimer);firebaseSaveTimer=setTimeout(()=>{if(typeof window.spVerbStorageSchedule==='function')window.spVerbStorageSchedule()},500)}
 window.flushVerbProgress=function(){clearTimeout(firebaseSaveTimer);return doSaveVerbProgress()};
 function taskQueueKey(skill){return "queue_"+skillKey(skill)}
 function taskDoneSetKey(skill){return "done_"+skillKey(skill)}
+function taskErrorSetKey(skill){return "error_"+skillKey(skill)}
 function weightForVerb(v){return 1}
 function buildPracticePool(){
   ensureProgressObjects();
@@ -41,6 +43,24 @@ function doneVerbSetForSkill(skill){
   const dKey=taskDoneSetKey(skill);
   const done=ensureArrayStore(state.taskDoneSets,dKey);
   return new Set(done.map(k=>String(k).split(":")[0]).filter(Boolean));
+}
+function markTaskNeedsRepeat(skill,v){
+  ensureProgressObjects();
+  const sk=skillKey(skill),eKey=taskErrorSetKey(sk);
+  const errors=ensureArrayStore(state.taskErrorSets,eKey);
+  if(v&&!errors.includes(v))errors.push(v);
+}
+function clearTaskRepeatFlag(skill,v){
+  ensureProgressObjects();
+  const eKey=taskErrorSetKey(skillKey(skill));
+  state.taskErrorSets[eKey]=ensureArrayStore(state.taskErrorSets,eKey).filter(x=>x!==v);
+}
+function taskNeedsRepeat(skill,v){
+  ensureProgressObjects();
+  const sk=skillKey(skill),eKey=taskErrorSetKey(sk);
+  const byFlag=ensureArrayStore(state.taskErrorSets,eKey).includes(v);
+  const byCurrent=!!(state.currentTask&&state.currentTask.skill===sk&&state.currentTask.v===v&&(state.currentTask.hadWrong||state.currentTask.helped||Number(state.currentTask.tries||0)>0));
+  return byFlag||byCurrent;
 }
 function initTaskQueue(skill){
   ensureProgressObjects();
@@ -77,20 +97,25 @@ function nextFromTaskQueue(skill){const item=currentTaskItem(skill);return item?
 function finishQueuedVerb(skill,v,good=true){
   ensureProgressObjects();
   const allowed=new Set(releaseFilterVerbs(currentPracticeVerbs()));
-  if(!allowed.has(v)){if(state.currentTask)state.currentTask=null;saveState();return}
+  if(!allowed.has(v)){if(state.currentTask)state.currentTask=null;saveState();return "skip"}
   const sk=skillKey(skill), dKey=taskDoneSetKey(sk), qKey=taskQueueKey(sk);
   ensureArrayStore(state.taskDoneSets,dKey);
   ensureArrayStore(state.taskQueues,qKey);
   const slot=(state.currentTask&&state.currentTask.skill===sk&&state.currentTask.v===v)?state.currentTask.slot:0;
-  if(good){
+  const needsRepeat=taskNeedsRepeat(sk,v);
+  if(good&&!needsRepeat){
     const doneVerbs=doneVerbSetForSkill(sk);
     if(!doneVerbs.has(v))state.taskDoneSets[dKey].push(v+":"+slot);
     state.taskQueues[qKey]=ensureArrayStore(state.taskQueues,qKey).filter(x=>x&&x.v!==v);
   } else {
-    if(slot!==null&&!state.taskQueues[qKey].some(x=>x&&x.v===v))state.taskQueues[qKey].push({v,slot});
+    markTaskNeedsRepeat(sk,v);
+    state.taskQueues[qKey]=ensureArrayStore(state.taskQueues,qKey).filter(x=>x&&x.v!==v);
+    state.taskQueues[qKey].push({v,slot});
+    if(good)clearTaskRepeatFlag(sk,v);
   }
   if(state.currentTask&&state.currentTask.skill===sk)state.currentTask=null;
   saveState();try{sendProgress()}catch(e){}
+  return good&&!needsRepeat?"done":"repeat";
 }
 function queuedProgress(skill){
   ensureProgressObjects();
@@ -115,7 +140,7 @@ function ensureAttempt(skill,v){
   state.currentTask.tries=Number(state.currentTask.tries||0);
   saveState();
 }
-function markHelped(skill,v){ensureAttempt(skill,v);state.currentTask.helped=true;saveState()}
+function markHelped(skill,v){ensureAttempt(skill,v);state.currentTask.helped=true;markTaskNeedsRepeat(skill,v);saveState()}
 function optionVerbs(correct,count=4){
   const pool=uniqueVerbProgressList([...(currentPackageAllVerbs?currentPackageAllVerbs():[]),...(currentPracticeVerbs?currentPracticeVerbs():[]),...(typeof ALL_VERBS!=="undefined"?ALL_VERBS.map(x=>x&&x.v):[])]).filter(Boolean).filter(v=>v!==correct);
   return shuffle([correct,...shuffle(pool).slice(0,Math.max(0,count-1))]).slice(0,count);
@@ -129,9 +154,10 @@ function standardFeedback(tries,solution,focus="Antwort"){
 function setTaskFeedback(id,html){const el=$(id||"fb");if(el)el.innerHTML=html}
 function handleCorrectAnswer(skill,v,nextFn,delay=700,fbId="fb"){
   ensureAttempt(skill,v);
+  const wasRepeat=taskNeedsRepeat(skill,v);
   addEncounter(v,skill,true);
-  finishQueuedVerb(skill,v,true);
-  setTaskFeedback(fbId,"<div class='ok'>Richtig.</div>");
+  const result=finishQueuedVerb(skill,v,true);
+  setTaskFeedback(fbId,result==="repeat"?"<div class='ok'>Richtig. Dieses Verb wird wegen des Fehlers später wiederholt.</div>":"<div class='ok'>Richtig.</div>");
   const next=typeof nextFn==="function"?nextFn:renderHome;
   setTimeout(()=>{
     if(taskDone(skill)){
@@ -144,6 +170,7 @@ function handleWrongAnswer(skill,v,solution,focus="Antwort",fbId="fb"){
   ensureAttempt(skill,v);
   state.currentTask.tries=Number(state.currentTask.tries||0)+1;
   state.currentTask.hadWrong=true;
+  markTaskNeedsRepeat(skill,v);
   addEncounter(v,skill,false);
   saveState();try{sendProgress()}catch(e){}
   setTaskFeedback(fbId,`<div class='no'>${safeText(standardFeedback(state.currentTask.tries,solution,focus))}</div>`);
