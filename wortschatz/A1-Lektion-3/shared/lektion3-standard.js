@@ -39,7 +39,6 @@ function renderL3Header(config={}){
       <a class="btn secondary" href="${backHref}">← Zurück</a>
       ${config.resetButton?`<button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>`:""}
     </nav>`;
-  spCleanThemeStart();
   setTimeout(spCleanThemeStart,0);
 }
 function moduleCard({href,num,title,desc,words=[],progress=null,status="Starten",icon=""}){
