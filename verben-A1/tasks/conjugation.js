@@ -5,7 +5,7 @@ const CONJ_SUBJECTS=[
 ];
 const CONJ_EXAMPLES={
   "bekommen":"ein Paket","mieten":"eine Wohnung","vermieten":"eine Wohnung","gratulieren":"zum Geburtstag","gefallen":"mir","fehlen":"heute","kaufen":"Brot","lernen":"Deutsch","schreiben":"eine E-Mail","lesen":"ein Buch","essen":"einen Apfel","fahren":"mit dem Bus","sprechen":"Deutsch","sehen":"ein Auto","geben":"den Schlüssel","nehmen":"den Bus","helfen":"meiner Mutter","arbeiten":"heute","wohnen":"in Berlin","kommen":"um acht Uhr",
-  "einkaufen":"im Supermarkt","aufräumen":"das Zimmer","anrufen":"meine Mutter","aufstehen":"um 7 Uhr","anfangen":"um 8 Uhr","fernsehen":"am Abend","frühstücken":"um 8 Uhr","füttern":"das Baby"
+  "einkaufen":"im Supermarkt","aufräumen":"das Zimmer","anrufen":"meine Mutter","aufstehen":"um 7 Uhr","anfangen":"um 8 Uhr","fernsehen":"am Abend","frühstücken":"um 8 Uhr","füttern":"das Baby","abholen":"meine Mutter","ausleihen":"ein Buch"
 };
 const SEPARABLE_VERBS={
   "einkaufen":{base:"kaufen",prefix:"ein"},
@@ -13,7 +13,19 @@ const SEPARABLE_VERBS={
   "anrufen":{base:"rufen",prefix:"an"},
   "aufstehen":{base:"stehen",prefix:"auf"},
   "anfangen":{base:"fangen",prefix:"an"},
-  "fernsehen":{base:"sehen",prefix:"fern"}
+  "fernsehen":{base:"sehen",prefix:"fern"},
+  "abholen":{base:"holen",prefix:"ab"},
+  "ausleihen":{base:"leihen",prefix:"aus"},
+  "zumachen":{base:"machen",prefix:"zu"},
+  "aufmachen":{base:"machen",prefix:"auf"},
+  "mitnehmen":{base:"nehmen",prefix:"mit"},
+  "mitgeben":{base:"geben",prefix:"mit"},
+  "einladen":{base:"laden",prefix:"ein"},
+  "zuhören":{base:"hören",prefix:"zu"},
+  "vorlesen":{base:"lesen",prefix:"vor"},
+  "abschreiben":{base:"schreiben",prefix:"ab"},
+  "abfahren":{base:"fahren",prefix:"ab"},
+  "ankommen":{base:"kommen",prefix:"an"}
 };
 const FULL_FORMS={
   "sein":{"ich":"bin","du":"bist","er/sie/es":"ist","wir":"sind","ihr":"seid","sie/Sie":"sind"},
@@ -40,7 +52,9 @@ const FULL_FORMS={
   "gefallen":{"ich":"gefalle","du":"gefällst","er/sie/es":"gefällt","wir":"gefallen","ihr":"gefallt","sie/Sie":"gefallen"},
   "fehlen":{"ich":"fehle","du":"fehlst","er/sie/es":"fehlt","wir":"fehlen","ihr":"fehlt","sie/Sie":"fehlen"},
   "gratulieren":{"ich":"gratuliere","du":"gratuliertst".replace("tst","st"),"er/sie/es":"gratuliert","wir":"gratulieren","ihr":"gratuliert","sie/Sie":"gratulieren"},
-  "füttern":{"ich":"füttere","du":"fütterst","er/sie/es":"füttert","wir":"füttern","ihr":"füttert","sie/Sie":"füttern"}
+  "füttern":{"ich":"füttere","du":"fütterst","er/sie/es":"füttert","wir":"füttern","ihr":"füttert","sie/Sie":"füttern"},
+  "holen":{"ich":"hole","du":"holst","er/sie/es":"holt","wir":"holen","ihr":"holt","sie/Sie":"holen"},
+  "leihen":{"ich":"leihe","du":"leihst","er/sie/es":"leiht","wir":"leihen","ihr":"leiht","sie/Sie":"leihen"}
 };
 if(typeof window!=="undefined"){
   window.CONJ_EXAMPLES=CONJ_EXAMPLES;
@@ -65,37 +79,44 @@ function conjugationParts(v,subj){
   if(sep) return {finite:conjugatedForm(sep.base,subj.key),prefix:sep.prefix,separable:true};
   return {finite:conjugatedForm(v,subj.key),prefix:"",separable:false};
 }
+function stripFinalPrefix(rest,prefix){
+  const r=String(rest||"").replace(/[.!?]+$/g,"").trim();
+  const rx=new RegExp("\\s+"+String(prefix||"").replace(/[.*+?^${}()|[\]\\]/g,"\\$&")+"$","i");
+  return r.replace(rx,"").trim();
+}
+function conjugationRest(v,p){
+  const fromExample=CONJ_EXAMPLES[v];
+  if(fromExample)return stripFinalPrefix(fromExample,p&&p.prefix);
+  const s=sentenceForVerb(v).replace(/[.!?]+$/g,"").trim();
+  const rest=s.replace(/^[^ ]+ [^ ]+ /,"");
+  return stripFinalPrefix(rest,p&&p.prefix);
+}
 function conjugationSentence(v,subj){
-  const rest=(CONJ_EXAMPLES[v]||sentenceForVerb(v).replace(/^[^ ]+ [^ ]+ /,"")).replace(/[.!?]+$/g,"").trim();
-  if(isSeparableVerb(v)) return `${capFirst(subj.s)} _____ ${rest} _____. (${v})`.replace(/\s+/g," ").trim();
+  const p=conjugationParts(v,subj);
+  const rest=conjugationRest(v,p);
+  if(p.separable) return `${capFirst(subj.s)} _____ (${v}) ${rest} ${p.prefix}.`.replace(/\s+/g," ").trim();
   return `${capFirst(subj.s)} _____ (${v}) ${rest}.`.replace(/\s+/g," ").trim();
 }
 function conjugationSubjectHint(subj){return subj&&subj.note?`<div class="example-box conj-hint">${safeText(subj.note)}</div>`:""}
-function conjugationSolution(v,subj){const p=conjugationParts(v,subj);return p.separable?`${p.finite} ... ${p.prefix}`:p.finite}
-function conjugationInputHtml(v){
-  if(isSeparableVerb(v)){
-    return `<div class="answer-line conjugation-two-inputs"><input id="conjInput" placeholder="Verbform"><input id="conjPrefixInput" placeholder="Prefix"></div>`;
-  }
-  return `<input id="conjInput" placeholder="Verbform schreiben">`;
-}
+function conjugationSolution(v,subj){const p=conjugationParts(v,subj);return p.finite}
+function conjugationInputHtml(v){return `<input id="conjInput" placeholder="Verbform schreiben">`}
 function isConjugationAnswerCorrect(v,subj,mainValue,prefixValue=""){
   const p=conjugationParts(v,subj);
   const main=clean(mainValue), prefix=clean(prefixValue);
   if(!p.separable) return main===clean(p.finite);
-  const combined=clean(`${mainValue} ${prefixValue}`);
-  return (main===clean(p.finite)&&prefix===clean(p.prefix)) || combined===clean(`${p.finite} ${p.prefix}`) || main===clean(`${p.finite} ${p.prefix}`) || main===clean(`${p.finite} ... ${p.prefix}`);
+  return main===clean(p.finite) || main===clean(`${p.finite} ${p.prefix}`) || main===clean(`${p.finite} ... ${p.prefix}`) || (main===clean(p.finite)&&prefix===clean(p.prefix));
 }
 function conjugationTask(){
   rememberPhase("konjugieren");
   const v=nextFromTaskQueue("konjugieren");if(!v){renderHome();return}
   ensureAttempt("konjugieren",v);
   const subj=(state.currentConj&&state.currentConj.v===v&&state.currentConj.subj)?state.currentConj.subj:shuffle(CONJ_SUBJECTS)[0];state.currentConj={v,subj};saveState();
-  $("app").innerHTML=`<h2>Konjugieren</h2>${taskProgressHtml("konjugieren","Konjugieren")}${imageBox(v)}<p class="small">Schreibe die richtige Verbform.${isSeparableVerb(v)?" Das trennbare Verb hat zwei Lücken.":""}</p>${conjugationSubjectHint(subj)}<div class="assessment-card"><div class="german-word sentence-gap">${safeText(conjugationSentence(v,subj))}</div></div>${conjugationInputHtml(v)}<button class="success" onclick="checkConjugation('${safeText(v)}')">Kontrollieren</button><div id="fb"></div>`;
+  $("app").innerHTML=`<h2>Konjugieren</h2>${taskProgressHtml("konjugieren","Konjugieren")}${imageBox(v)}<p class="small">Schreibe die richtige Verbform.</p>${conjugationSubjectHint(subj)}<div class="assessment-card"><div class="german-word sentence-gap">${safeText(conjugationSentence(v,subj))}</div></div>${conjugationInputHtml(v)}<button class="success" onclick="checkConjugation('${safeText(v)}')">Kontrollieren</button><div id="fb"></div>`;
   renderAndHydrate();setTimeout(()=>$(`conjInput`)?.focus(),50);
 }
 function checkConjugation(v){
   const subj=state.currentConj&&state.currentConj.v===v?state.currentConj.subj:CONJ_SUBJECTS[0];
   const good=isConjugationAnswerCorrect(v,subj,$("conjInput")?.value||"",$("conjPrefixInput")?.value||"");
   const sol=conjugationSolution(v,subj);
-  if(good){state.currentConj=null;handleCorrectAnswer("konjugieren",v,conjugationTask,900,"fb")}else{handleWrongAnswer("konjugieren",v,sol,"Verbform, Prefix und Subjekt","fb")}
+  if(good){state.currentConj=null;handleCorrectAnswer("konjugieren",v,conjugationTask,900,"fb")}else{handleWrongAnswer("konjugieren",v,sol,"Verbform und Subjekt","fb")}
 }
