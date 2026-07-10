@@ -21,24 +21,21 @@ function isLogo(value){
   const name=rawPath(s).split("/").pop()||"";
   return s.includes("/assets/logo/")||name.includes("logo")||name.includes("sprachpilot-logo");
 }
+function canonicalBunny(value){
+  if(isLogo(value))return value;
+  const name=fileNameFromPath(value)||fileNameFromImageKey(value);
+  return name?SP_BUNNY_BASE+"/"+name:value;
+}
 function shouldUseBunny(value){
   const s=String(value||"");
   if(!s||s.startsWith("data:")||s.startsWith("blob:"))return false;
-  if(s.includes("sprachpilot.b-cdn.net"))return false;
   if(isLogo(s))return false;
   return IMG_RE.test(rawPath(s));
 }
-function bunnyFromName(name){
-  const n=String(name||"").split("/").pop().replace(/\.(png|jpe?g|webp|gif|svg)$/i,".webp");
-  return n?SP_BUNNY_BASE+"/"+n:name;
-}
-function bunnyUrl(value){
-  const name=fileNameFromPath(value);
-  if(!name)return value;
-  return SP_BUNNY_BASE+"/"+name;
-}
-function toBunny(value){return shouldUseBunny(value)?bunnyUrl(value):value}
-window.SP_ASSET_URL=function(name){return isLogo(name)?name:bunnyFromName(name)};
+function bunnyFromName(name){return canonicalBunny(name)}
+function bunnyUrl(value){return canonicalBunny(value)}
+function toBunny(value){return shouldUseBunny(value)?canonicalBunny(value):value}
+window.SP_ASSET_URL=function(name){return isLogo(name)?name:canonicalBunny(name)};
 window.SP_LOCAL_TO_CDN=toBunny;
 function connectObjectImages(obj){
   if(!obj||typeof obj!=="object")return;
@@ -49,11 +46,11 @@ function connectObjectImages(obj){
     if(shouldUseBunny(v))obj[k]=toBunny(v);
     else if(!/^https?:\/\//i.test(v)&&!v.includes("/")&&!isLogo(v)){
       const name=fileNameFromImageKey(v);
-      if(name)obj[k]=bunnyFromName(name);
+      if(name)obj[k]=canonicalBunny(name);
     }
   });
   ["imageKey","imgKey","bildKey"].forEach(k=>{
-    if(obj[k]&&!obj.image&&!isLogo(obj[k]))obj.image=bunnyFromName(fileNameFromImageKey(obj[k]));
+    if(obj[k]&&!obj.image&&!isLogo(obj[k]))obj.image=canonicalBunny(fileNameFromImageKey(obj[k]));
   });
 }
 function deepConnect(v,seen=new Set()){
@@ -66,7 +63,7 @@ function deepConnect(v,seen=new Set()){
 function connectAssetObjects(){
   const seen=new Set();
   Object.keys(window).forEach(k=>{
-    if(!/SP_|WORDS|WORT|VERB|VOCAB|BILD|IMAGE|DATA|ITEMS|CARDS|TASKS/i.test(k))return;
+    if(!/SP_|WORDS|WORT|VERB|VOCAB|BILD|IMAGE|DATA|ITEMS|CARDS|TASKS|COLORS|ADJECTIVES|FURNITURE|SENTENCES|WRITING/i.test(k))return;
     deepConnect(window[k],seen);
   });
 }
@@ -126,8 +123,8 @@ function patchProp(proto,prop){
 }
 [HTMLImageElement?.prototype,HTMLSourceElement?.prototype,HTMLVideoElement?.prototype,HTMLLinkElement?.prototype,HTMLAnchorElement?.prototype].filter(Boolean).forEach(p=>["src","href","poster"].forEach(x=>patchProp(p,x)));
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",()=>rewriteAll());else rewriteAll();
-window.addEventListener("load",()=>{rewriteAll();setTimeout(rewriteAll,200);setTimeout(rewriteAll,800);setTimeout(rewriteAll,1800)});
-setInterval(()=>{connectAssetObjects();rewriteAll()},2000);
+window.addEventListener("load",()=>{rewriteAll();setTimeout(rewriteAll,100);setTimeout(rewriteAll,300);setTimeout(rewriteAll,800);setTimeout(rewriteAll,1800)});
+setInterval(()=>{connectAssetObjects();rewriteAll()},1000);
 new MutationObserver(muts=>{
   connectAssetObjects();
   muts.forEach(m=>m.addedNodes&&m.addedNodes.forEach(n=>{
