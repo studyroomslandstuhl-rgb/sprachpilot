@@ -4,7 +4,7 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Prüfung Thema 3</title>
-  <link rel="stylesheet" href="style.css?v=318">
+  <link rel="stylesheet" href="style.css?v=319">
 </head>
 <body>
   <div class="container">
@@ -13,15 +13,10 @@
     <footer>© SprachPilot</footer>
   </div>
 
-  <script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=318"></script>
+  <script src="/js/sp-progress-guard.js?v=points-safe"></script>
+  <script src="app.js?v=319"></script>
   <script>
     header('Farben & Adjektive');
-
-    if (!examUnlocked()) {
-      area.innerHTML = '<div class="finish-box"><div class="question">Prüfung gesperrt</div><p>Schließe zuerst alle Aufgaben mit 100% ab.</p><div class="actions"><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>';
-    } else {
-      startExam();
-    }
 
     const EXAM_WRITING_TEXTS = [
       'Der Schrank ist modern.',
@@ -63,9 +58,9 @@
     ];
 
     function safeExamTasks() {
-      const writing = WRITING.filter(x => EXAM_WRITING_TEXTS.includes(x.text)).map(x => ({ type: 'write', solution: x.text, ...x }));
-      const gefallen = GEFAELLEN_TASKS.filter(x => EXAM_GEFAELLEN_QUESTIONS.includes(x.question)).map(x => ({ type: 'gefallen', solution: x.answer, ...x }));
-      const contrast = CONTRAST_TASKS.filter(x => EXAM_CONTRAST_SENTENCES.includes(x.sentence)).map(x => ({ type: 'contrast', solution: x.sentence, ...x }));
+      const writing = (window.WRITING || WRITING || []).filter(x => EXAM_WRITING_TEXTS.includes(x.text)).map(x => ({ type: 'write', solution: x.text, ...x }));
+      const gefallen = (window.GEFAELLEN_TASKS || GEFAELLEN_TASKS || []).filter(x => EXAM_GEFAELLEN_QUESTIONS.includes(x.question)).map(x => ({ type: 'gefallen', solution: x.answer, ...x }));
+      const contrast = (window.CONTRAST_TASKS || CONTRAST_TASKS || []).filter(x => EXAM_CONTRAST_SENTENCES.includes(x.sentence)).map(x => ({ type: 'contrast', solution: x.sentence, ...x }));
       return shuffle([...shuffle(writing).slice(0, 7), ...shuffle(gefallen).slice(0, 7), ...shuffle(contrast).slice(0, 6)]).slice(0, 20);
     }
 
@@ -96,6 +91,10 @@
 
     function startExam() {
       const tasks = safeExamTasks();
+      if (!tasks.length) {
+        area.innerHTML = '<div class="finish-box"><div class="question">Prüfung konnte nicht geladen werden</div><p class="small">Es wurden keine passenden Prüfungsaufgaben gefunden.</p><div class="actions"><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>';
+        return;
+      }
       let pos = 0;
       let score = 0;
       const max = tasks.length * 10;
@@ -141,6 +140,12 @@
         area.innerHTML = `<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig!</div><div class="big">${percent}% erreicht.</div><div>${starsHtml(stars)}</div><div class="summary-row"><div class="summary-tile">Punkte<br>${score}/${max}</div><div class="summary-tile">Versuch<br>${hist.length}</div></div><div class="actions finish-actions"><button class="btn" onclick="location.reload()">Nochmal</button><a class="btn green" href="index.html">Zurück zum Thema</a></div></div>`;
       }
       render();
+    }
+
+    if (!examUnlocked()) {
+      area.innerHTML = '<div class="finish-box"><div class="question">Prüfung gesperrt</div><p>Schließe zuerst alle Aufgaben mit 100% ab.</p><div class="actions"><a class="btn secondary" href="index.html">Zurück zum Thema</a></div></div>';
+    } else {
+      startExam();
     }
   </script>
 </body>
