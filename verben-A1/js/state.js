@@ -53,29 +53,66 @@ function currentPackageAllVerbs(){normalizeVerbStatusLists();return uniqueList([
 function currentAssessmentCount(){return currentPackageAllVerbs().length}
 
 const SP_BUNNY_IMAGE_BASE='https://sprachpilot.b-cdn.net/';
-const VERB_IMAGE_CACHE_VERSION='bunny-20260709';
+const VERB_IMAGE_CACHE_VERSION='bunny-20260710-preload';
+const SP_VERB_IMAGE_READY=new Map();
+const SP_VERB_IMAGE_LOADING=new Map();
 function imageSlug(s){return String(s||'').toLowerCase().replaceAll('ä','ae').replaceAll('ö','oe').replaceAll('ü','ue').replaceAll('ß','ss').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 function imageRawName(s){return String(s||'').trim().toLowerCase().replaceAll('ä','ae').replaceAll('ö','oe').replaceAll('ü','ue').replaceAll('ß','ss').replace(/\s+/g,'_').replace(/[\/]+/g,'_')}
 function imageBaseNames(v){const entry=(typeof ALL_VERBS!=='undefined'?ALL_VERBS:[]).find(x=>x&&x.v===v);return uniqueList([String((entry&&entry.img)||'').replace(/^\/+/,''),imageSlug(v),imageRawName(v)]).filter(Boolean)}
 function imageFileCandidates(v){const out=[];imageBaseNames(v).forEach(base=>{const stem=String(base).replace(/\.(webp|png|jpe?g)$/i,'');out.push(stem+'.webp',stem+'.png',stem+'.jpg',stem+'.jpeg')});return uniqueList(out)}
 function imageSrcWithVersion(src){return encodeURI(src)+(src.includes('?')?'&':'?')+'v='+VERB_IMAGE_CACHE_VERSION}
-function imageBox(v,small=false){const cls=small?'mem-img-holder':'img-holder';return `<span class="${cls}" data-verb="${safeText(v)}"><span class="image-fallback">Bild</span></span>`}
+function imageUrls(v){return imageFileCandidates(v).map(file=>imageSrcWithVersion(SP_BUNNY_IMAGE_BASE+file))}
+function preloadVerbImage(v){
+  if(!v)return Promise.resolve('');
+  if(SP_VERB_IMAGE_READY.has(v))return Promise.resolve(SP_VERB_IMAGE_READY.get(v));
+  if(SP_VERB_IMAGE_LOADING.has(v))return SP_VERB_IMAGE_LOADING.get(v);
+  const urls=imageUrls(v);
+  if(!urls.length)return Promise.resolve('');
+  const p=new Promise(resolve=>{
+    let i=0;
+    const tryNext=()=>{
+      if(i>=urls.length){resolve('');return}
+      const img=new Image();
+      img.decoding='async';
+      img.loading='eager';
+      img.onload=()=>{SP_VERB_IMAGE_READY.set(v,urls[i]);resolve(urls[i])};
+      img.onerror=()=>{i++;tryNext()};
+      img.src=urls[i];
+    };
+    tryNext();
+  }).finally(()=>SP_VERB_IMAGE_LOADING.delete(v));
+  SP_VERB_IMAGE_LOADING.set(v,p);
+  return p;
+}
+function preloadVerbImages(list,limit=20){uniqueList(list).slice(0,limit).forEach(v=>preloadVerbImage(v))}
+function imageBox(v,small=false){
+  const cls=small?'mem-img-holder':'img-holder';
+  const ready=SP_VERB_IMAGE_READY.get(v);
+  if(ready)return `<span class="${cls} image-loaded" data-verb="${safeText(v)}" data-loaded="1"><img src="${ready}" alt="${safeText(v)}" loading="eager" decoding="sync" fetchpriority="high"></span>`;
+  preloadVerbImage(v);
+  return `<span class="${cls}" data-verb="${safeText(v)}"><span class="image-fallback">Bild</span></span>`
+}
 function hydrateImages(root=document){
-  const boxes=[...root.querySelectorAll('[data-verb]')].filter(box=>box.dataset.loaded!=='1').slice(0,160);
+  const boxes=[...root.querySelectorAll('[data-verb]')].filter(box=>box.dataset.loaded!=='1').slice(0,200);
   boxes.forEach(box=>{
     box.dataset.loaded='1';
     const v=box.getAttribute('data-verb')||'';
-    const urls=imageFileCandidates(v).map(file=>imageSrcWithVersion(SP_BUNNY_IMAGE_BASE+file));
+    const ready=SP_VERB_IMAGE_READY.get(v);
+    const urls=imageUrls(v);
     if(!urls.length){box.innerHTML='<span class="image-fallback">Bild fehlt</span>';return}
-    const img=document.createElement('img');img.alt=safeText(v);img.loading='lazy';img.decoding='async';let i=0;
+    const img=document.createElement('img');img.alt=safeText(v);img.loading='eager';img.decoding='async';img.fetchPriority='high';let i=0;
     img.onload=()=>box.classList.add('image-loaded');
     img.onerror=()=>{i++;if(i<urls.length)img.src=urls[i];else{box.innerHTML='<span class="image-fallback">Bild fehlt</span>';box.classList.add('image-missing')}};
-    box.textContent='';box.appendChild(img);img.src=urls[0];
+    box.textContent='';box.appendChild(img);img.src=ready||urls[0];
+    preloadVerbImage(v);
   });
 }
-function renderAndHydrate(){setTimeout(()=>hydrateImages(document),80)}
-function preloadActiveImages(){}
-if(typeof window!=='undefined'){window.hydrateImages=hydrateImages;window.renderAndHydrate=renderAndHydrate;document.addEventListener('toggle',e=>{if(e.target&&e.target.matches&&e.target.matches('details[open]'))setTimeout(()=>hydrateImages(e.target),80)},true)}
+function renderAndHydrate(){hydrateImages(document);setTimeout(()=>hydrateImages(document),30)}
+function preloadActiveImages(){try{preloadVerbImages([...(currentPracticeVerbs?currentPracticeVerbs():[]),...(state&&state.practicePool||[]),...(state&&state.currentPackageVerbs||[])],30)}catch(e){}}
+if(typeof window!=='undefined'){
+  window.hydrateImages=hydrateImages;window.renderAndHydrate=renderAndHydrate;window.preloadVerbImage=preloadVerbImage;window.preloadVerbImages=preloadVerbImages;window.preloadActiveImages=preloadActiveImages;
+  document.addEventListener('toggle',e=>{if(e.target&&e.target.matches&&e.target.matches('details[open]'))setTimeout(()=>hydrateImages(e.target),30)},true)
+}
 
 function makeTeacherPreviewProfileLocal(){
   const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase();
