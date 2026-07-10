@@ -17,23 +17,16 @@ function saveMemoryPairDone(v,slot){
   const sk=skillKey("memory"),dKey=taskDoneSetKey(sk),qKey=taskQueueKey(sk),eKey=taskErrorSetKey(sk);
   state.taskDoneSets[dKey]=ensureArrayStore(state.taskDoneSets,dKey);
   state.taskQueues[qKey]=ensureArrayStore(state.taskQueues,qKey);
-  state.taskErrorSets[eKey]=ensureArrayStore(state.taskErrorSets,eKey);
+  state.taskErrorSets[eKey]=ensureArrayStore(state.taskErrorSets,eKey).filter(x=>x!==v);
   const key=v+":"+slot;
-  const hadError=state.taskErrorSets[eKey].includes(v);
-  if(!hadError&&!state.taskDoneSets[dKey].includes(key))state.taskDoneSets[dKey].push(key);
-  if(hadError){
-    state.taskQueues[qKey]=state.taskQueues[qKey].filter(x=>x&&!(x.v===v&&Number(x.slot)===Number(slot)));
-    if(!state.taskQueues[qKey].some(x=>x&&x.v===v&&Number(x.slot)===Number(slot)))state.taskQueues[qKey].push({v,slot});
-    state.taskErrorSets[eKey]=state.taskErrorSets[eKey].filter(x=>x!==v);
-  }else{
-    state.taskQueues[qKey]=state.taskQueues[qKey].filter(x=>x&&x.v!==v);
-    ensureSkillState(v);
-    state.skillDone[v][sk]=true;
-  }
+  if(!state.taskDoneSets[dKey].includes(key))state.taskDoneSets[dKey].push(key);
+  state.taskQueues[qKey]=state.taskQueues[qKey].filter(x=>x&&x.v!==v);
+  ensureSkillState(v);
+  state.skillDone[v][sk]=true;
   if(state.currentTask&&state.currentTask.skill===sk&&state.currentTask.v===v)state.currentTask=null;
   saveState();
   try{sendProgress()}catch(e){}
-  return !hadError;
+  return true;
 }
 function memory(){
   rememberPhase("memory");state.currentGame="memory";
@@ -62,17 +55,16 @@ function openMemory(i){
       state.currentTask={skill:skillKey("memory"),v:ca.v,slot:ca.slot,tries:0,hadWrong:false,helped:false};
       ensureAttempt("memory",ca.v);
       addEncounter(ca.v,"memory",true);
-      const saved=saveMemoryPairDone(ca.v,ca.slot);
+      saveMemoryPairDone(ca.v,ca.slot);
       state.openCards=[];
-      if($("fb"))$("fb").innerHTML=saved?"<div class='ok'>Richtig. Gespeichert.</div>":"<div class='ok'>Richtig. Dieses Verb wird später wiederholt.</div>";
+      if($("fb"))$("fb").innerHTML="<div class='ok'>Richtig. Gespeichert.</div>";
       if((state.memoryDone||[]).length===state.memoryCards.length){
         saveState();
         try{if(typeof window.flushVerbProgress==='function')window.flushVerbProgress()}catch(e){}
         setTimeout(()=>{if(taskDone("memory")){if(typeof renderTaskFinishScreen==='function')renderTaskFinishScreen('memory');else renderTaskOverview()}else memory()},700)
       }
     } else {
-      try{markTaskNeedsRepeat("memory",ca.v);markTaskNeedsRepeat("memory",cb.v)}catch(e){}
-      if($("fb"))$("fb").innerHTML="<div class='no'>Nicht passend. Diese Karten werden später wiederholt.</div>";
+      if($("fb"))$("fb").innerHTML="<div class='no'>Nicht passend. Versuch es weiter.</div>";
     }
   }
   saveState();renderMemory();
