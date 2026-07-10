@@ -88,7 +88,7 @@ function currentTaskItem(skill){
   const q=ensureArrayStore(state.taskQueues,taskQueueKey(sk));
   const item=q.shift();
   state.taskQueues[taskQueueKey(sk)]=q;
-  if(!item){state.currentTask=null;saveState();return null}
+  if(!item){state.currentTask=null;state.lastCompletedTaskSkill=sk;saveState();return null}
   state.currentTask={skill:sk,v:item.v,slot:item.slot,tries:0,hadWrong:false,helped:false};
   saveState();
   return state.currentTask;
@@ -131,6 +131,14 @@ function queuedProgress(skill){
 }
 function taskDone(skill){const p=queuedProgress(skill);return p.total>0&&p.done>=p.total}
 function taskProgressHtml(skill,label){const p=queuedProgress(skill);return `<div class="task-progress"><div class="task-progress-title"><span>${safeText(label)} · ${p.done}/${p.total} · ${p.pct}%</span></div><div class="task-progress-line"><div class="task-progress-fill" style="width:${p.pct}%"></div></div></div>`}
+function renderTaskFinishScreen(skill){
+  const app=$("app");if(!app)return;
+  const sk=skillKey(skill||state.lastCompletedTaskSkill||"");
+  const label=(typeof taskLabel==="function"?taskLabel(sk):(VERB_SKILL_LABELS[sk]||"Aufgabe"));
+  try{state.phase='taskComplete';state.currentTask=null;state.currentVerb='';state.currentGame='';state.memoryCards=[];state.memoryDone=[];state.openCards=[];state.first=null;state.lock=false;state.lastCompletedTaskSkill='';saveState();if(typeof window.flushVerbProgress==='function')window.flushVerbProgress()}catch(e){}
+  app.classList.remove('card');
+  app.innerHTML=`<section class="card finish-box task-finish-card"><div class="finish-icon">✓</div><p class="eyebrow">${safeText(label)}</p><h2>Gut gemacht!</h2><p class="small">Du hast diesen Abschnitt geschafft. Gehe weiter zur Aufgabenübersicht.</p><div class="actions finish-actions"><button class="btn green" onclick="goTaskOverview()">Weiter</button></div></section>`;
+}
 
 function ensureAttempt(skill,v){
   const sk=skillKey(skill);
@@ -154,7 +162,6 @@ function standardFeedback(tries,solution,focus="Antwort"){
 function setTaskFeedback(id,html){const el=$(id||"fb");if(el)el.innerHTML=html}
 function handleCorrectAnswer(skill,v,nextFn,delay=700,fbId="fb"){
   ensureAttempt(skill,v);
-  const wasRepeat=taskNeedsRepeat(skill,v);
   addEncounter(v,skill,true);
   const result=finishQueuedVerb(skill,v,true);
   setTaskFeedback(fbId,result==="repeat"?"<div class='ok'>Richtig. Dieses Verb wird wegen des Fehlers später wiederholt.</div>":"<div class='ok'>Richtig.</div>");
@@ -162,7 +169,7 @@ function handleCorrectAnswer(skill,v,nextFn,delay=700,fbId="fb"){
   setTimeout(()=>{
     if(taskDone(skill)){
       saveState();try{if(typeof window.flushVerbProgress==='function')window.flushVerbProgress()}catch(e){}
-      if(typeof renderTaskOverview==='function')renderTaskOverview();else renderHome();
+      renderTaskFinishScreen(skill);
     }else next()
   },delay);
 }
