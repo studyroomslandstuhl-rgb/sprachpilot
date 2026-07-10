@@ -8,6 +8,14 @@
   function saveLocalState(s){try{if(typeof save==='function')save(s)}catch(e){}}
   function activeList(){try{return typeof activeWords==='function'?activeWords():typeof singularWords==='function'?singularWords():typeof WORDS!=='undefined'?WORDS:[]}catch(e){return []}}
   function ids(list){return (list||[]).map((w,i)=>w&&w.id?w.id:String(i)).filter(Boolean)}
+  function syncL3Task(file,count){
+    try{
+      const theme=currentTheme();
+      const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:'3',theme:theme,title:'A1 Lektion 3 · Thema '+theme,file:file,taskKey:file,taskTitle:String(file||'Aufgabe').replace(/\.html$/,'').replace(/-/g,' '),total:count,done:count,percent:100,completed:true};
+      if(window.SPProgress&&typeof window.SPProgress.recordTaskProgress==='function')window.SPProgress.recordTaskProgress(payload);
+      else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:'recordTaskProgress',payload});import('/js/progress.js?v=restore-20260710').catch(()=>{})}
+    }catch(e){}
+  }
   function markThemeDone(file,total){
     if(!file)return;
     const list=activeList();
@@ -22,6 +30,7 @@
       saveLocalState(s);
     }catch(e){}
     try{if(typeof spTaskStateKey==='function')localStorage.setItem(spTaskStateKey(file),JSON.stringify({total:count,queue:[],done:[...Array(count).keys()],current:null,tries:0}))}catch(e){}
+    try{syncL3Task(file,count)}catch(e){}
     try{window.SP_L3_TASK_DONE_QUEUE=[];if(typeof window.spL3RecordTaskDone==='function')window.spL3RecordTaskDone(file)}catch(e){}
   }
   window.done=function(file,total){markThemeDone(file,total)};
