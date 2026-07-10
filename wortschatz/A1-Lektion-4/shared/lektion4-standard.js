@@ -193,6 +193,15 @@ function spTeacherPreviewNotice() {
   return `<div class="hint"><b>Lehrer-Vorschau${course ? " · " + spSafe(course) : ""}</b><br>Du siehst und testest die Schüleransicht. Es werden keine Punkte, keine Rangliste und kein Schülerfortschritt gespeichert.</div>`;
 }
 
+function spIsThemeStartPage() {
+  return /\/Thema-\d+\/?(?:index\.html)?$/.test(location.pathname);
+}
+
+function spCleanThemeStart() {
+  if (!spIsThemeStartPage()) return;
+  document.querySelector('.progress-card')?.remove();
+}
+
 function renderSprachPilotHeader(config = {}) {
   const header = document.querySelector(".topbar");
   if (!header) return;
@@ -212,8 +221,6 @@ function renderSprachPilotHeader(config = {}) {
   const title = config.title || "SprachPilot";
   const subtitle = config.subtitle || "A1 Lektion 4";
   const backHref = config.backHref || "index.html";
-  const overviewHref = config.overviewHref || "uebersicht.html";
-  const statsHref = config.statsHref || "statistik.html";
   const dashboardHref = isTeacher ? "/teacher/index.html" : "/student-dashboard/index.html";
 
   header.innerHTML = `
@@ -237,11 +244,11 @@ function renderSprachPilotHeader(config = {}) {
 
     <nav class="nav">
       <a class="btn secondary" href="${backHref}">← Zurück</a>
-      <a class="btn secondary" href="${overviewHref}">Übersicht</a>
-      <a class="btn secondary" href="${statsHref}">Statistik</a>
       <button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>
     </nav>
   `;
+  spCleanThemeStart();
+  setTimeout(spCleanThemeStart, 0);
 }
 
 function spLogout() {
