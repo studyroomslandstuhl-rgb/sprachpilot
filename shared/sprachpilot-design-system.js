@@ -1,7 +1,7 @@
-/* SprachPilot Global Design System v17 */
+/* SprachPilot Global Design System v18 */
 (function(){
   try{import('/js/header-stability.js?v=2').catch(function(){});}catch(e){}
-  try{import('/js/sp-assets.js?v=3').catch(function(){});}catch(e){}
+  try{import('/js/sp-assets.js?v=5').catch(function(){});}catch(e){}
   function safe(value){
     return String(value || "")
       .replace(/&/g,"&amp;")
