@@ -4,9 +4,9 @@ const releaseCtx={module:'wortschatz',lesson:'A1-Lektion-4',theme:'Thema-2'};
 const baseTasks=[
  ['karteikarten.html', WORDS.length,'Karteikarten','🃏','Lerne die Wörter.'],
  ['hoeren.html', WORDS.length,'Hören','🎧','Höre und wähle das Bild.'],
- ['artikel-klick.html', WORDS.length,'Artikel klicken','der die das','Wähle den richtigen Artikel.'],
- ['artikel.html', WORDS.length,'Artikel zuordnen','📋','Ordne den Artikel zu.'],
- ['plural.html', WORDS.length,'Plural','1→2+','Schreibe den Plural.'],
+ ['artikel-klick.html', WORDS.length,'Artikel klicken','🔤','Wähle den richtigen Artikel.'],
+ ['artikel.html', WORDS.length,'Artikel zuordnen','🔤','Ordne den Artikel zu.'],
+ ['plural.html', WORDS.length,'Plural','🔢','Schreibe den Plural.'],
  ['bild-wort.html', WORDS.length,'Bild → Wort','🖼️','Schreibe das Wort mit Artikel.'],
  ['wort-bild.html', WORDS.length,'Wort → Bild','🔁','Wähle das richtige Bild.'],
  ['kategorien.html', categoryTaskWords().length,'Kategorien','📦','Ordne zu.'],
@@ -14,12 +14,12 @@ const baseTasks=[
 ];
 function released(file){return !window.SprachPilotRelease||SprachPilotRelease.taskReleased(file,releaseCtx)}
 function moduleHtml(t,num){const p=pct(t[0],t[1]);return `<a class="module" href="${t[0]}"><div class="num">${num}. ${t[2]}</div><div class="icon">${t[3]}</div><p>${t[4]}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}
-function lockedExamHtml(num){return `<div class="module locked exam-locked"><div class="num">${num}. Prüfung</div><div class="icon exam-icon">🔒</div><p>Prüfung wird erst freigeschaltet, wenn alle freigegebenen Aufgaben 100% erreicht haben.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">gesperrt</div><div class="start">Prüfung gesperrt</div></div>`}
+function lockedExamHtml(num){return `<div class="module locked exam-locked"><div class="num">${num}. Prüfung</div><div class="icon exam-icon">★</div><p>Prüfung wird erst freigeschaltet, wenn alle freigegebenen Aufgaben 100% erreicht haben.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">gesperrt</div><div class="start">Prüfung gesperrt</div></div>`}
 function examHtml(num){const p=pct('pruefung.html',100);return `<a class="module" href="pruefung.html" id="examLink"><div class="num">${num}. Prüfung</div><div class="icon exam-icon">★</div><p>Teste dein Wissen.</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}
 function renderTasks(){
  const tasks=baseTasks.filter(t=>released(t[0]));
  let n=1;taskGrid.innerHTML=tasks.map(t=>moduleHtml(t,n++)).join('');
- const examUnlocked=tasks.length===0||tasks.every(t=>pct(t[0],t[1])>=100);
+ const examUnlocked=tasks.length>0&&tasks.every(t=>pct(t[0],t[1])>=100);
  taskGrid.innerHTML+=examUnlocked?examHtml(n++):lockedExamHtml(n++);
  const progressTasks=[...tasks,['pruefung.html',100]];
  let sum=0;progressTasks.forEach(t=>sum+=pct(t[0],t[1]));
