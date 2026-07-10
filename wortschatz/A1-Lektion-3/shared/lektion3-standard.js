@@ -1,4 +1,4 @@
-try{import('/js/sp-assets.js?v=3').catch(function(){});}catch(e){}
+try{import('/js/sp-assets.js?v=4').catch(function(){});}catch(e){}
 function spSafe(value){return String(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
 function spProfile(){try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"{}")}catch(e){return {}}}
 function spWho(){const p=spProfile();const first=p.vorname||p.firstName||"";const last=p.nachname||p.lastName||"";return `${first} ${last}`.trim()||"Schüler/in"}
