@@ -6,7 +6,7 @@
   <title>Verben A1 · SprachPilot</title>
   <script>
     (function(){
-      var resetKey='SP_VERBEN_CACHE_RESET_20260709_6';
+      var resetKey='SP_VERBEN_CACHE_RESET_20260710_1';
       try{
         if(!sessionStorage.getItem(resetKey)){
           sessionStorage.setItem(resetKey,'1');
@@ -29,6 +29,8 @@
       if(taskMap[h]){location.replace(base+'?task='+encodeURIComponent(taskMap[h]));return;}
     })();
   </script>
+  <link rel="preconnect" href="https://sprachpilot.b-cdn.net" crossorigin>
+  <link rel="dns-prefetch" href="//sprachpilot.b-cdn.net">
   <link rel="stylesheet" href="css/styles.css?v=13">
   <link rel="stylesheet" href="css/menu.css?v=12">
   <link rel="stylesheet" href="css/verb-ui.css?v=3">
@@ -50,13 +52,13 @@
   <script defer src="data/translations.js?v=12"></script>
   <script defer src="data/sentences.js?v=13"></script>
   <script defer src="data/grammar.js?v=12"></script>
-  <script defer src="js/state.js?v=19"></script>
+  <script defer src="js/state.js?v=20"></script>
   <script defer src="js/progress.js?v=22"></script>
   <script defer src="js/cloud-progress-sync.js?v=14"></script>
   <script defer src="js/profile-sync-bridge.js?v=1"></script>
   <script defer src="js/menu.js?v=12"></script>
   <script defer src="tasks/assessment.js?v=18"></script>
-  <script defer src="tasks/flashcards.js?v=12"></script>
+  <script defer src="tasks/flashcards.js?v=13"></script>
   <script defer src="tasks/memory.js?v=16"></script>
   <script defer src="tasks/image-to-verb.js?v=12"></script>
   <script defer src="tasks/verb-to-image.js?v=12"></script>
