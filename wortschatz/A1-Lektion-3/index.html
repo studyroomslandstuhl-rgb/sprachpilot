@@ -19,7 +19,7 @@ body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-g
   <footer class="note">© SprachPilot</footer>
 </div>
 <script type="module">
-import { getActiveProfile, logout, safeText } from "/js/auth.js?v=l3overview3";
+import { getActiveProfile, logout, safeText } from "/js/auth.js?v=l3overview4";
 import { db, doc, getDoc } from "/js/firebase.js";
 window.logout=logout;
 const THEMES=[
@@ -29,6 +29,7 @@ const THEMES=[
   {id:"Thema-4",number:"4",title:"Kochen",href:"Thema-4/",desc:"Rezept, Zutaten, Wasser, Pfeffer und einfache Kochaufgaben.",words:["Rezept","Zutaten","Wasser","Pfeffer"]}
 ];
 function profile(){try{return getActiveProfile() || JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}}
+function cachedRelease(p){try{return p?.assignments||JSON.parse(localStorage.getItem("SP_COURSE_RELEASES")||"{}")||{}}catch(e){return p?.assignments||{}}}
 async function loadCourseData(p){const code=p?.kurs||p?.kursnummer||p?.courseCode;let data=p?.assignments||{};if(!code)return data||{};try{const snap=await getDoc(doc(db,"courses",String(code)));if(snap.exists())data={...data,...snap.data()}}catch(e){console.warn("Kursdaten konnten nicht geladen werden:",e)}return data||{}}
 function explicitValue(obj,keys){if(!obj||typeof obj!=="object")return undefined;for(const k of keys){if(Object.prototype.hasOwnProperty.call(obj,k))return obj[k]}return undefined}
 function hasAnyKey(obj,prefixes){if(!obj||typeof obj!=="object")return false;return Object.keys(obj).some(k=>prefixes.some(p=>k===p||k.startsWith(p)))}
@@ -54,8 +55,9 @@ function themeRelease(courseData,themeId){
   if(hasThemeControls)return false;
   return lessonLegacy===true || lesson.enabled===true;
 }
-function renderThemes(courseData){themeGrid.innerHTML=THEMES.map(t=>{const open=themeRelease(courseData,t.id);const tag=open?"Starten":"Gesperrt";const cls=open?"theme-card":"theme-card locked";const words=t.words.map(w=>`<span class="word">${safeText(w)}</span>`).join("");const body=`<div class="theme-top"><div class="theme-number">${safeText(t.number)}</div><span class="theme-status ${open?"":"locked"}">${tag}</span></div><div class="theme-title">${safeText(t.title)}</div><p class="theme-desc">${safeText(t.desc)}</p><div class="words">${words}</div><div class="card-footer"><div class="start-btn">${tag}</div></div>`;return open?`<a class="${cls}" href="${t.href}">${body}</a>`:`<div class="${cls}" aria-disabled="true">${body}</div>`}).join("")}
-async function init(){const p=profile();const pill=document.getElementById("accountPill");if(p){pill.textContent=`${p.vorname||""} ${p.nachname||""} · ${p.kurs||p.kursnummer||""}`.trim()}else{pill.textContent="Nicht eingeloggt"}const data=await loadCourseData(p);try{if(p&&data){p.assignments=data;localStorage.setItem("SP_USER_PROFILE",JSON.stringify(p));localStorage.setItem("SP_COURSE_RELEASES",JSON.stringify(data))}}catch(e){}renderThemes(data)}
+function renderThemes(courseData){themeGrid.innerHTML=THEMES.map(t=>{const open=themeRelease(courseData||{},t.id);const tag=open?"Starten":"Gesperrt";const cls=open?"theme-card":"theme-card locked";const words=t.words.map(w=>`<span class="word">${safeText(w)}</span>`).join("");const body=`<div class="theme-top"><div class="theme-number">${safeText(t.number)}</div><span class="theme-status ${open?"":"locked"}">${tag}</span></div><div class="theme-title">${safeText(t.title)}</div><p class="theme-desc">${safeText(t.desc)}</p><div class="words">${words}</div><div class="card-footer"><div class="start-btn">${tag}</div></div>`;return open?`<a class="${cls}" href="${t.href}">${body}</a>`:`<div class="${cls}" aria-disabled="true">${body}</div>`}).join("")}
+function storeRelease(p,data){try{if(p&&data){p.assignments=data;localStorage.setItem("SP_USER_PROFILE",JSON.stringify(p));localStorage.setItem("SP_COURSE_RELEASES",JSON.stringify(data))}}catch(e){}}
+function init(){const p=profile();const pill=document.getElementById("accountPill");if(p){pill.textContent=`${p.vorname||""} ${p.nachname||""} · ${p.kurs||p.kursnummer||""}`.trim()}else{pill.textContent="Nicht eingeloggt"}const cached=cachedRelease(p);renderThemes(cached);loadCourseData(p).then(data=>{storeRelease(p,data);renderThemes(data||cached)}).catch(()=>renderThemes(cached))}
 init();
 </script>
 </body>
