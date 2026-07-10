@@ -1,5 +1,6 @@
-/* SprachPilot Global Design System v15 */
+/* SprachPilot Global Design System v16 */
 (function(){
+  try{import('/js/header-stability.js?v=1').catch(function(){});}catch(e){}
   try{import('/js/sp-assets.js?v=3').catch(function(){});}catch(e){}
   function safe(value){
     return String(value || "")
@@ -50,7 +51,7 @@
     el.innerHTML=`
       <div class="sp-topbar-main">
         <a class="sp-brand" href="/index.html">
-          <img class="sp-logo-img" src="${logoPath()}" alt="SprachPilot Logo">
+          <img class="sp-logo-img" src="${logoPath()}" alt="SprachPilot Logo" width="72" height="72">
           <div><div class="sp-brand-title">SprachPilot</div><div class="sp-subtitle">${safe(title)} · ${safe(subtitle)}</div></div>
         </a>
         <div class="sp-account">
@@ -66,6 +67,7 @@
         ${opts.statsHref?`<a class="sp-btn secondary" href="${opts.statsHref}">Statistik</a>`:""}
         ${showReset?`<button class="sp-btn danger" type="button" onclick="resetThemeProgress && resetThemeProgress()">Fortschritte löschen</button>`:""}
       </nav>`;
+    try{document.body.classList.add('sp-header-ready')}catch(e){}
   }
   window.SprachPilotDesign={safe,readJson,getLoginRole,getActiveProfile,dashboardHref,logoPath,clearPreview,logoutAll,renderHeader};
 })();
