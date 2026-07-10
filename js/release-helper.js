@@ -1,4 +1,3 @@
-import('/js/topbar-standard.js?v=7').catch(function(){});
 (function(){
 let remoteData=null;let refreshPromise=null;
 function safeJson(s,f){try{return JSON.parse(s||'')||f}catch(e){return f}}
