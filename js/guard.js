@@ -1,3 +1,4 @@
+import "/js/header-stability.js?v=1";
 import "/js/sp-assets.js?v=4";
 import "/js/session-restore.js?v=1";
 import { requireLogin, renderAccountStrip, logout } from "/js/auth.js?v=step136-login-fix";
