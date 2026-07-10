@@ -36,7 +36,10 @@ function openMemory(i){
       state.memoryDone.push(a,b);
       state.currentTask={skill:skillKey("memory"),v:ca.v,slot:ca.slot,tries:0,hadWrong:false,helped:false};
       ensureAttempt("memory",ca.v);handleCorrectAnswer("memory",ca.v,()=>{},0,"fb");state.openCards=[];
-      if((state.memoryDone||[]).length===state.memoryCards.length){$("fb").innerHTML="<div class='ok'>Memory-Runde geschafft.</div>";setTimeout(()=>{if(taskDone("memory"))renderHome();else memory()},700)}
+      if((state.memoryDone||[]).length===state.memoryCards.length){$("fb").innerHTML="<div class='ok'>Memory-Runde geschafft.</div>";setTimeout(()=>{if(taskDone("memory"))renderTaskOverview();else memory()},700)}
+    } else {
+      try{markTaskNeedsRepeat("memory",ca.v);markTaskNeedsRepeat("memory",cb.v)}catch(e){}
+      if($("fb"))$("fb").innerHTML="<div class='no'>Nicht passend. Diese Karten werden später wiederholt.</div>";
     }
   }
   saveState();renderMemory();
