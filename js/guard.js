@@ -63,11 +63,14 @@ if(EXPLICIT_NO_FIREBASE_SYNC){
   window.SP_PERFORMANCE_MODE=false;
   window.SP_NO_FIREBASE_SYNC=false;
 }
-const isL3T2Page=path.indexOf("/wortschatz/A1-Lektion-3/Thema-2/")>=0;
-if(isL3T2Page){const style=document.createElement("style");style.textContent="#accountStrip,.account-strip{display:none!important;height:0!important;min-height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;border:0!important}";document.head.appendChild(style)}
-if(SP_USER&&!isL3T2Page){document.addEventListener("DOMContentLoaded",()=>{try{renderAccountStrip()}catch(e){}})}
-if(SP_USER&&isL3T2Page){document.addEventListener("DOMContentLoaded",()=>{const el=document.getElementById("accountStrip");if(el){el.innerHTML="";el.style.display="none";el.style.height="0";el.style.overflow="hidden"}})}
-window.addEventListener("SP_PROFILE_SYNCED",()=>{try{renderAccountStrip()}catch(e){}});
+if(LIGHT_FIREBASE_PAGE){
+  const style=document.createElement("style");
+  style.textContent="#accountStrip,.account-strip{display:none!important;height:0!important;min-height:0!important;max-height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;border:0!important}";
+  document.head.appendChild(style);
+}
+if(SP_USER&&!LIGHT_FIREBASE_PAGE){document.addEventListener("DOMContentLoaded",()=>{try{renderAccountStrip()}catch(e){}})}
+if(SP_USER&&LIGHT_FIREBASE_PAGE){document.addEventListener("DOMContentLoaded",()=>{const el=document.getElementById("accountStrip");if(el){el.innerHTML="";el.style.display="none";el.style.height="0";el.style.overflow="hidden"}})}
+window.addEventListener("SP_PROFILE_SYNCED",()=>{if(!LIGHT_FIREBASE_PAGE){try{renderAccountStrip()}catch(e){}}});
 import("/js/microphone-fallback.js?v=1").catch(()=>{});
 import("/js/back-button-fix.js?v=1").catch(()=>{});
 import("/js/release-helper.js?v=10").catch(()=>{});
