@@ -1,6 +1,15 @@
 (function(){
   "use strict";
 
+  function loadHeaderStability(){
+    if(window.SP_HEADER_STABILITY_LOADED)return;
+    var s=document.createElement("script");
+    s.src="/js/header-stability.js?v=1";
+    s.defer=true;
+    (document.head||document.documentElement).appendChild(s);
+  }
+  loadHeaderStability();
+
   function idle(fn,timeout){
     if("requestIdleCallback" in window)return requestIdleCallback(fn,{timeout:timeout||1500});
     return setTimeout(fn,timeout||600);
