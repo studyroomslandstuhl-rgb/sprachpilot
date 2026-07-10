@@ -27,13 +27,14 @@
 <script src="../shared/lektion3-standard.js?v=step14"></script>
 <script src="translations.js?v=40"></script>
 <script src="app.js?v=41"></script>
-<script src="../shared/lektion3-fix.js?v=4"></script>
+<script src="../shared/lektion3-fix.js?v=5"></script>
 <script>
 renderL3Header({title:"Lebensmittel & Getränke",subtitle:"A1 Lektion 3 · Thema 1",backHref:"../index.html",overviewHref:"uebersicht.html",statsHref:"statistik.html",resetButton:true});
 const releaseCtx={module:'wortschatz',lesson:'A1-Lektion-3',theme:'Thema-1'};
 function released(file){return !window.SprachPilotRelease || SprachPilotRelease.taskReleased(file,releaseCtx)}
 const taskIcons={'karteikarten.html':'🃏','bild-wort.html':'🖼️','wort-bild.html':'🔁','hoeren.html':'🎧','artikel.html':'🔤','plural.html':'🔢','memory.html':'🧠','fragen-bilden.html':'💬','ein-eine.html':'🔤','kein-keine.html':'🚫','pruefung.html':'★'};
-function moduleHtml(t,num){const p=taskPercent(t.file);const icon=taskIcons[t.file]||spTaskIcon(t.file,t.name);const desc=t.type==='vocab'?'Wortschatz üben.':'Grammatik üben.';return `<a class="module" href="${t.file}"><div class="num">${num}. ${t.name}</div><div class="icon">${icon}</div><p>${desc}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}
+function hrefFor(file){return file==='memory.html'?'memory.html?v=imgfix1':file}
+function moduleHtml(t,num){const p=taskPercent(t.file);const icon=taskIcons[t.file]||spTaskIcon(t.file,t.name);const desc=t.type==='vocab'?'Wortschatz üben.':'Grammatik üben.';return `<a class="module" href="${hrefFor(t.file)}"><div class="num">${num}. ${t.name}</div><div class="icon">${icon}</div><p>${desc}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}
 function lockedExamHtml(num){return `<div class="module locked exam-locked"><div class="num">${num}. Prüfung</div><div class="icon exam-icon">★</div><p>Prüfung wird erst freigeschaltet, wenn alle freigegebenen Aufgaben 100% erreicht haben.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">gesperrt</div><div class="start">Prüfung gesperrt</div></div>`}
 function examHtml(num){const p=taskPercent('pruefung.html');return `<a class="module" href="pruefung.html" id="examLink"><div class="num">${num}. Prüfung</div><div class="icon exam-icon">★</div><p>Teste dein Wissen.</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}
 function renderPage(){
