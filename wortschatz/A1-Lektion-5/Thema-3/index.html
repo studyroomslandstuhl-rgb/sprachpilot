@@ -4,20 +4,14 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Lektion 5 · Thema 3</title>
-<script>
-(function(){
-  if(location.hostname==='www.sprachpilot.org'){
-    location.replace('https://sprachpilot.org'+location.pathname+location.search+location.hash);
-    return;
-  }
-  document.documentElement.classList.add('sp-booting');
-})();
-</script>
+<link rel="stylesheet" href="style.css?v=6">
 <style>
-  html.sp-booting body{visibility:hidden}
-  html.sp-ready body{visibility:visible}
+  .container{min-height:100vh}
+  .topbar{min-height:128px}
+  .progress-card{min-height:156px}
+  #taskGrid{min-height:760px}
+  body{overflow-anchor:none}
 </style>
-<link rel="stylesheet" href="style.css?v=5">
 </head>
 <body>
 <script type="module" src="/js/guard.js?v=restore-20260710"></script>
@@ -36,13 +30,12 @@
   <footer>© SprachPilot</footer>
 </div>
 <script>window.SP_L5_THEME={id:'Thema-3',title:'Wann? Termine und Tageszeiten',sub:'A1 Lektion 5 · Thema 3',key:'SP_L5_T3_V2'};</script>
-<script src="app.js?v=5"></script>
+<script src="app.js?v=6"></script>
 <script src="l5t3-translations.js?v=4"></script>
 <script src="l5t3-word-filter.js?v=1"></script>
 <script src="../l5-points.js?v=2"></script>
 <script>
 (function(){
-  function ready(){document.documentElement.classList.remove('sp-booting');document.documentElement.classList.add('sp-ready')}
   try{
     header(CFG.title,true);
     document.querySelectorAll('a[href="uebersicht.html"],a[href="statistik.html"]').forEach(el=>el.remove());
@@ -73,8 +66,8 @@
     totalText.textContent=done+' / '+all.length+' Aufgaben abgeschlossen';
   }catch(e){
     console.error('L5/T3 konnte nicht stabil gerendert werden',e);
-  }finally{
-    ready();
+    const grid=document.getElementById('taskGrid');
+    if(grid)grid.innerHTML='<section class="card"><h2>Seite konnte nicht geladen werden</h2><p class="small">Bitte Seite neu laden.</p></section>';
   }
 })();
 </script>
