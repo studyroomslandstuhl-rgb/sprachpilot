@@ -2,9 +2,9 @@
   "use strict";
 
   function loadHeaderStability(){
-    if(window.SP_HEADER_STABILITY_LOADED)return;
+    if(window.SP_HEADER_STABILITY_LOADED_V2)return;
     var s=document.createElement("script");
-    s.src="/js/header-stability.js?v=1";
+    s.src="/js/header-stability.js?v=2";
     s.defer=true;
     (document.head||document.documentElement).appendChild(s);
   }
