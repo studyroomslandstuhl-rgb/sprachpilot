@@ -3,37 +3,81 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>SprachPilot – Lektion 4: Wohnen</title>
-<style>
-*{box-sizing:border-box;margin:0;padding:0}:root{--sp-yellow:#f3c400;--sp-yellow-dark:#c99a00;--sp-yellow-soft:#fff8d9;--sp-border:#eadb8b;--sp-text:#20242b;--sp-muted:#6b7280;--sp-white:#fff;--sp-bg1:#f7cf35;--sp-bg2:#f9df7b;--sp-shadow:0 12px 34px rgba(0,0,0,.12)}body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,var(--sp-bg1),var(--sp-bg2));color:var(--sp-text);padding:24px}.page{max-width:1180px;margin:0 auto}.sp-shell{background:rgba(255,255,255,.94);border-radius:30px;box-shadow:var(--sp-shadow);padding:22px 26px;margin-bottom:22px}.sp-head{display:flex;justify-content:space-between;align-items:flex-start;gap:22px}.sp-brand{display:flex;align-items:center;gap:18px;text-decoration:none;color:inherit}.sp-logo{width:74px;height:74px;border-radius:18px;background:linear-gradient(135deg,#f7d000,#efbd00);display:flex;align-items:center;justify-content:center;color:white;font-size:28px;font-weight:900;letter-spacing:.5px;box-shadow:0 10px 22px rgba(222,170,0,.24)}.sp-title h1{font-size:34px;line-height:1.05;font-weight:900;letter-spacing:.2px}.sp-subtitle{color:var(--sp-muted);font-size:16px;margin-top:6px}.account-area{display:flex;flex-wrap:wrap;justify-content:flex-end;gap:10px;align-items:center;max-width:620px}.account-pill,.account-link,.nav-btn{border:2px solid var(--sp-border);background:rgba(255,255,255,.72);color:#594100;border-radius:18px;padding:10px 14px;font-size:15px;font-weight:900;text-decoration:none;min-height:44px;display:inline-flex;align-items:center;justify-content:center;gap:6px}.account-pill{background:var(--sp-yellow-soft);color:#55503f;min-width:210px}.logout-btn{cursor:pointer;font-family:inherit}.lesson-nav{display:flex;flex-wrap:wrap;gap:10px;margin-top:20px}.nav-btn{min-width:128px;background:rgba(255,255,255,.72)}.intro{background:rgba(255,255,255,.88);border-radius:26px;box-shadow:var(--sp-shadow);padding:24px 26px;margin-bottom:18px}.intro h2{font-size:28px;margin-bottom:0}.lesson-title-card{padding:26px 28px}.theme-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:18px;min-height:260px}.theme-card{position:relative;min-height:260px;background:rgba(255,255,255,.96);border:2px solid rgba(234,219,139,.85);border-radius:26px;padding:22px;box-shadow:0 10px 26px rgba(0,0,0,.10);text-decoration:none;color:inherit;display:flex;flex-direction:column;transition:.18s ease;overflow:hidden}.theme-card:before{content:"";position:absolute;left:0;top:0;right:0;height:8px;background:linear-gradient(90deg,#f7d000,#f1bd00)}.theme-card:hover{transform:translateY(-3px);box-shadow:0 14px 32px rgba(0,0,0,.14);border-color:#e1bd2f}.theme-card.locked{display:none}.theme-top{display:flex;justify-content:space-between;gap:12px;align-items:flex-start;margin-bottom:12px}.theme-number{width:46px;height:46px;border-radius:16px;background:linear-gradient(135deg,#ffe56d,#f2c400);display:flex;align-items:center;justify-content:center;font-size:22px;font-weight:900;color:#4c3800;flex:0 0 auto}.theme-status{border-radius:999px;padding:7px 10px;font-size:13px;font-weight:900;background:#fff8d9;border:1px solid var(--sp-border);color:#665000}.theme-title{font-size:22px;font-weight:900;margin-bottom:8px}.theme-desc{color:#5f6670;line-height:1.4;font-size:15.5px;min-height:66px}.words{margin-top:15px;display:flex;gap:7px;flex-wrap:wrap}.word{background:#fff8d9;color:#5f4700;border:1px solid var(--sp-border);border-radius:999px;padding:6px 9px;font-size:12.5px;font-weight:800}.card-footer{margin-top:auto;padding-top:18px}.start-btn{width:100%;border:2px solid #e6c832;background:white;color:#9a7600;border-radius:16px;padding:12px 14px;text-align:center;font-weight:900}.note{margin-top:16px;color:rgba(255,255,255,.95);text-align:center;font-size:14px}@media(max-width:760px){body{padding:14px}.sp-shell{padding:18px}.sp-head{flex-direction:column}.account-area{justify-content:flex-start;max-width:none}.account-pill{min-width:0}.sp-title h1{font-size:28px}.sp-logo{width:62px;height:62px;font-size:24px}.theme-grid{grid-template-columns:1fr}}
-</style>
+<title>SprachPilot - Lektion 4: Wohnen</title>
+<link rel="stylesheet" href="/css/sp-header.css">
+<link rel="stylesheet" href="/css/sp-lesson-overview.css">
 </head>
 <body>
 <script type="module" src="/js/guard.js"></script>
-<div class="page">
-<header class="sp-shell"><div class="sp-head"><a class="sp-brand" href="/index.html"><div class="sp-logo">SP</div><div class="sp-title"><h1>SprachPilot</h1><div class="sp-subtitle">Wortschatz · A1 Lektion 4 · Wohnen</div></div></a><div class="account-area"><span class="account-pill" id="accountPill">Profil wird geladen …</span><a class="account-link" href="/student-dashboard/index.html">📊 Dashboard</a><a class="account-link" href="/profile/index.html">👤 Profil</a><button class="account-link logout-btn" type="button" onclick="logout()">🚪 Abmelden</button></div></div><nav class="lesson-nav"><a class="nav-btn" href="../index.html">← Zurück</a></nav></header>
-<section class="intro lesson-title-card"><h2>Lektion 4: Wohnen</h2></section>
-<section class="theme-grid" id="themeGrid"><div class="intro"><p>Freigaben werden geladen …</p></div></section>
-<footer class="note">© SprachPilot</footer>
-</div>
+<div id="lessonOverview"></div>
+
 <script type="module">
-import { getActiveProfile, logout, safeText } from "/js/auth.js?v=l4overview238";
-import { loadCourseRelease } from "/js/course-releases.js?v=release-core-20260701b";
-window.logout=logout;
-const THEMES=[{id:"Thema-1",number:"1",title:"Wohnung & Zimmer",href:"Thema-1/",desc:"Wohnung, Zimmer, Räume und Fragen mit Wo.",words:["Wohnung","Küche","Bad","Wo?"]},{id:"Thema-2",number:"2",title:"Möbel & Elektrogeräte",href:"Thema-2/",desc:"Möbel, Elektrogeräte, Artikel, Plural und Pronomen.",words:["Tisch","Bett","Lampe","er/es/sie"]},{id:"Thema-3",number:"3",title:"Farben & Adjektive",href:"Thema-3/",desc:"Farben, Gegenteile und einfache Sätze mit ist/sind.",words:["rot","schön","klein","gefällt"]},{id:"Thema-4",number:"4",title:"Wohnung suchen",href:"Thema-4/",desc:"Anzeigen lesen, Miete verstehen und Wohnungen vergleichen.",words:["Miete","qm","Kaution","Anzeige"]},{id:"Thema-5",number:"5",title:"Am Telefon",href:"Thema-5/",desc:"Kleinanzeigen, Möbel kaufen und kurze Telefongespräche.",words:["noch da?","Adresse","Preis","Termin"]}];
-function profile(){try{return getActiveProfile()||JSON.parse(localStorage.getItem("SP_USER_PROFILE")||localStorage.getItem("SP_STUDENT_PROFILE")||"null")}catch(e){return null}}
-function cachedRelease(p){try{return p?.assignments||JSON.parse(localStorage.getItem("SP_COURSE_RELEASES")||"{}")||{}}catch(e){return p?.assignments||{}}}
-function hasReleaseData(data){return !!(data&&typeof data==="object"&&(Object.keys(data.enabledThemes||{}).length||Object.keys(data.enabledTasks||{}).length||Object.keys(data.enabledLessons||{}).length||Object.keys(data.enabledModules||{}).length||data.releases||data.releaseMode||data.defaultLocked===false))}
-function openFallback(){return {releaseMode:"open",defaultLocked:false,enabledModules:{Wortschatz:true},enabledLessons:{"A1-Lektion-4":true}}}
-function delay(ms,value){return new Promise(resolve=>setTimeout(()=>resolve(value),ms))}
-function get(obj,path){let cur=obj;for(const p of path){if(!cur||typeof cur!=="object"||!(p in cur))return undefined;cur=cur[p]}return cur}
-function valTrue(data,paths){return paths.some(p=>get(data,p)===true)}
-function valFalse(data,paths){return paths.some(p=>get(data,p)===false)}
-function themeRelease(data,themeId){const lesson="A1-Lektion-4";const moduleOff=valFalse(data,[["enabledModules","Wortschatz"],["enabledModules","wortschatz"],["releases","Wortschatz","enabled"],["releases","wortschatz","enabled"]]);if(moduleOff)return false;const lPaths=[["enabledLessons",lesson],["enabledLessons","Wortschatz/"+lesson],["enabledLessons","wortschatz/"+lesson],["releases","Wortschatz","lessons",lesson,"enabled"],["releases","wortschatz","lessons",lesson,"enabled"]];const tPaths=[["enabledThemes",themeId],["enabledThemes",lesson+"/"+themeId],["enabledThemes","Wortschatz/"+lesson+"/"+themeId],["enabledThemes","wortschatz/"+lesson+"/"+themeId],["releases","Wortschatz","lessons",lesson,"themes",themeId,"enabled"],["releases","wortschatz","lessons",lesson,"themes",themeId,"enabled"]];if(valFalse(data,lPaths)||valFalse(data,tPaths))return false;if(valTrue(data,lPaths)||valTrue(data,tPaths))return true;if(data?.releaseMode==="all"||data?.releaseMode==="open"||data?.defaultLocked===false)return true;const taskPrefix=[themeId+"/",lesson+"/"+themeId+"/","Wortschatz/"+lesson+"/"+themeId+"/","wortschatz/"+lesson+"/"+themeId+"/"];return Object.keys(data.enabledTasks||{}).some(k=>data.enabledTasks[k]===true&&taskPrefix.some(p=>String(k).startsWith(p)))}
-function renderThemes(data){const shown=THEMES.filter(t=>themeRelease(data||{},t.id));themeGrid.innerHTML=shown.map(t=>{const words=t.words.map(w=>`<span class="word">${safeText(w)}</span>`).join("");return `<a class="theme-card" href="${t.href}"><div class="theme-top"><div class="theme-number">${safeText(t.number)}</div><span class="theme-status">Starten</span></div><div class="theme-title">${safeText(t.title)}</div><p class="theme-desc">${safeText(t.desc)}</p><div class="words">${words}</div><div class="card-footer"><div class="start-btn">Starten</div></div></a>`}).join("")||'<div class="intro"><p>Für diese Lektion sind noch keine Themen freigeschaltet.</p></div>'}
-function saveRelease(p,data){try{if(p&&data&&hasReleaseData(data)){p.assignments=data;localStorage.setItem("SP_USER_PROFILE",JSON.stringify(p));localStorage.setItem("SP_COURSE_RELEASES",JSON.stringify(data));}}catch(e){}}
-async function init(){const p=profile();const pill=document.getElementById("accountPill");pill.textContent=p?`${p.vorname||""} ${p.nachname||""} · ${p.kurs||p.kursnummer||p.courseCode||""}`.trim():"Nicht eingeloggt";const cached=cachedRelease(p);if(hasReleaseData(cached))renderThemes(cached);const releasePromise=loadCourseRelease(p||{}).catch(()=>null);const quick=await Promise.race([releasePromise,delay(1800,null)]);if(hasReleaseData(quick)){saveRelease(p,quick);renderThemes(quick)}else if(!hasReleaseData(cached)){renderThemes(openFallback())}releasePromise.then(data=>{if(hasReleaseData(data)){saveRelease(p,data);renderThemes(data)}}).catch(()=>{})}
-init();
+import { renderLessonOverview } from "/js/sp-lesson-overview.js";
+
+renderLessonOverview({
+  module: "wortschatz",
+  lessonId: "A1-Lektion-4",
+  lessonNumber: 4,
+  lessonTitle: "Lektion 4: Wohnen",
+  subtitle: "Wortschatz · A1 Lektion 4 · Wohnen",
+  backHref: "../index.html",
+
+  color: {
+    main: "#f3c400",
+    dark: "#6f5200",
+    soft: "#fff8d9",
+    line: "#eadb8b",
+    bg2: "#f9df7b"
+  },
+
+  themes: [
+    {
+      id: "Thema-1",
+      number: "1",
+      title: "Wohnung & Zimmer",
+      text: "Wohnung, Zimmer, Räume und Fragen mit Wo.",
+      href: "Thema-1/",
+      chips: ["Wohnung", "Küche", "Bad", "Wo?"],
+      tasks: ["karteikarten.html", "hoeren.html", "bild-wort.html", "wort-bild.html", "artikel.html", "plural.html", "memory.html", "schreiben.html", "sprechen.html"]
+    },
+    {
+      id: "Thema-2",
+      number: "2",
+      title: "Möbel & Elektrogeräte",
+      text: "Möbel, Elektrogeräte, Artikel, Plural und Pronomen.",
+      href: "Thema-2/",
+      chips: ["Tisch", "Bett", "Lampe", "er/es/sie"],
+      tasks: ["karteikarten.html", "hoeren.html", "artikel-klick.html", "artikel.html", "plural.html", "bild-wort.html", "wort-bild.html", "kategorien.html", "dialoge.html"]
+    },
+    {
+      id: "Thema-3",
+      number: "3",
+      title: "Farben & Adjektive",
+      text: "Farben, Gegenteile und einfache Sätze mit ist/sind.",
+      href: "Thema-3/",
+      chips: ["rot", "schön", "klein", "gefällt"],
+      tasks: ["karteikarten.html", "hoeren.html", "bild-wort.html", "wort-bild.html", "artikel.html", "plural.html", "memory.html", "schreiben.html", "sprechen.html"]
+    },
+    {
+      id: "Thema-4",
+      number: "4",
+      title: "Wohnung suchen",
+      text: "Anzeigen lesen, Miete verstehen und Wohnungen vergleichen.",
+      href: "Thema-4/",
+      chips: ["Miete", "qm", "Kaution", "Anzeige"],
+      tasks: ["karteikarten.html", "hoeren.html", "paare.html", "anzeige-lesen.html", "welche-anzeige.html", "schreiben.html"]
+    },
+    {
+      id: "Thema-5",
+      number: "5",
+      title: "Am Telefon",
+      text: "Kleinanzeigen, Möbel kaufen und kurze Telefongespräche.",
+      href: "Thema-5/",
+      chips: ["noch da?", "Adresse", "Preis", "Termin"],
+      tasks: ["karteikarten.html", "hoeren.html", "rollenspiel.html", "schreiben.html", "sprechen.html"]
+    }
+  ]
+});
 </script>
 </body>
 </html>
