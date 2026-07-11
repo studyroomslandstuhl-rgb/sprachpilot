@@ -29,6 +29,9 @@ function setColor(name,value){
   if(value) document.documentElement.style.setProperty(name,value);
 }
 
+function lessonHref(lessonNumber){return `/wortschatz/A1-Lektion-${lessonNumber}/`}
+function themeHref(lessonNumber,themeNumber){return `/wortschatz/A1-Lektion-${lessonNumber}/Thema-${themeNumber}/`}
+
 export function detectSpHeaderContext(pathname=window.location.pathname){
   const path=String(pathname||"/").replace(/\/index\.html$/i,"/");
   const match=path.match(/\/wortschatz\/A1-Lektion-(\d+)\/?(?:Thema-(\d+)\/?)?(?:([^/]+\.html))?$/i);
@@ -45,11 +48,13 @@ export function detectSpHeaderContext(pathname=window.location.pathname){
       : level==="theme"
         ? `A1 Lektion ${lessonNumber} · Thema ${themeNumber}`
         : lesson.subtitle;
+    const backHref=level==="lesson" ? "/wortschatz/" : (level==="theme" ? lessonHref(lessonNumber) : themeHref(lessonNumber,themeNumber));
+    const overviewHref=themeNumber ? themeHref(lessonNumber,themeNumber) : lessonHref(lessonNumber);
     const navItems=level==="lesson"
-      ? [{label:"← Zurück",href:"../index.html"}]
+      ? [{label:"← Zurück",href:backHref}]
       : [
-          {label:"← Zurück",href:level==="theme" ? "../" : "index.html"},
-          {label:"Übersicht",href:"uebersicht.html"},
+          {label:"← Zurück",href:backHref},
+          {label:"Übersicht",href:overviewHref},
           {label:"Fortschritte löschen",type:"button",action:"reset-progress",variant:"danger"}
         ];
     return {area:"wortschatz",level,lessonNumber,themeNumber,taskTitle,title:"SprachPilot",subtitle,navItems,color:lesson.color,variant:level};
