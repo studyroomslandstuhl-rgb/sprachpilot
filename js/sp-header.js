@@ -5,8 +5,8 @@ const LESSONS={
   2:{title:"Lektion 2",subtitle:"Wortschatz · A1 Lektion 2",color:{main:"#6f8f2f",dark:"#3d5415"}},
   3:{title:"Lektion 3: Einkaufen",subtitle:"Wortschatz · A1 Lektion 3 · Einkaufen",color:{main:"#f28c28",dark:"#8a4600"}},
   4:{title:"Lektion 4: Wohnen",subtitle:"Wortschatz · A1 Lektion 4 · Wohnen",color:{main:"#f3c400",dark:"#6f5200"}},
-  5:{title:"Lektion 5",subtitle:"Wortschatz · A1 Lektion 5",color:{main:"#2f95ad",dark:"#0b5c73"}},
-  6:{title:"Lektion 6",subtitle:"Wortschatz · A1 Lektion 6",color:{main:"#3a8f6a",dark:"#1f5e42"}}
+  5:{title:"Lektion 5: Mein Tag",subtitle:"Wortschatz · A1 Lektion 5 · Mein Tag",color:{main:"#2f95ad",dark:"#0b5c73"}},
+  6:{title:"Lektion 6: Wetter",subtitle:"Wortschatz · A1 Lektion 6 · Wetter",color:{main:"#FFB6C1",dark:"#8a3a4f"}}
 };
 
 function profileText(profile){
@@ -31,7 +31,7 @@ function setColor(name,value){
 
 export function detectSpHeaderContext(pathname=window.location.pathname){
   const path=String(pathname||"/").replace(/\/index\.html$/i,"/");
-  const match=path.match(/\/wortschatz\/A1-Lektion-(\d+)\/??(?:Thema-(\d+)\/?)?(?:([^/]+\.html))?$/i);
+  const match=path.match(/\/wortschatz\/A1-Lektion-(\d+)\/?(?:Thema-(\d+)\/?)?(?:([^/]+\.html))?$/i);
   if(match){
     const lessonNumber=Number(match[1]);
     const themeNumber=match[2] ? Number(match[2]) : null;
