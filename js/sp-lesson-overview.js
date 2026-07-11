@@ -134,6 +134,56 @@ export async function renderLessonOverview(config){
   setColor("--lesson-bg-2",config.color?.bg2||config.color?.soft);
 
   const profile=getActiveProfile();
+  const account=profileText(profile);
+  const dash=dashboardHref ? dashboardHref() : "/student-dashboard/index.html";
+
+  function draw(releaseData={},progress={},ready=false){
+    const cards=(config.themes||[]).map(theme=>{
+      const open=ready ? themeOpen(releaseData,config.module||"wortschatz",config.lessonId,theme.id) : true;
+      const topic=findTopicProgress(progress,config,theme);
+      const started=ready ? themeStarted(topic,theme) : false;
+      const allComplete=ready ? themeAllComplete(topic,theme) : false;
+      const repeats=ready ? repeatCount(topic,allComplete) : 0;
+      const status=getThemeStatus({isReleased:open,started,allComplete,repeats});
+      return renderThemeCard(theme,status);
+    }).join("");
+
+    root.innerHTML=`
+      <div class="sp-page">
+        <header class="sp-lesson-header">
+          <div class="sp-header-main">
+            <a class="sp-brand" href="/index.html">
+              <div class="sp-logo">SP</div>
+              <div class="sp-title">
+                <h1>SprachPilot</h1>
+                <div class="sp-subtitle">${safeText(config.subtitle||config.lessonTitle)}</div>
+              </div>
+            </a>
+            <div class="sp-account">
+              <span class="sp-pill">${safeText(account)}</span>
+              <a class="sp-link" href="${safeText(dash)}">Dashboard</a>
+              <a class="sp-link" href="/profile/index.html">Profil</a>
+              <button class="sp-link" type="button" id="spLogoutBtn">Abmelden</button>
+            </div>
+          </div>
+          <nav class="sp-nav">
+            <a class="sp-back" href="${safeText(config.backHref||"../index.html")}">Zurück</a>
+          </nav>
+        </header>
+        <section class="lesson-title-card">
+          <h2>${safeText(config.lessonTitle)}</h2>
+        </section>
+        <section class="theme-grid">${cards}</section>
+        <footer class="sp-note">© SprachPilot</footer>
+      </div>
+    `;
+
+    const logoutBtn=document.getElementById("spLogoutBtn");
+    if(logoutBtn) logoutBtn.addEventListener("click",()=>logout());
+  }
+
+  draw();
+
   let releaseData={};
   let progress={};
   try{
@@ -146,49 +196,5 @@ export async function renderLessonOverview(config){
   }catch(e){
     console.warn("Fortschritt konnte nicht geladen werden:",e);
   }
-  const account=profileText(profile);
-  const dash=dashboardHref ? dashboardHref() : "/student-dashboard/index.html";
-
-  const cards=(config.themes||[]).map(theme=>{
-    const open=themeOpen(releaseData,config.module||"wortschatz",config.lessonId,theme.id);
-    const topic=findTopicProgress(progress,config,theme);
-    const started=themeStarted(topic,theme);
-    const allComplete=themeAllComplete(topic,theme);
-    const repeats=repeatCount(topic,allComplete);
-    const status=getThemeStatus({isReleased:open,started,allComplete,repeats});
-    return renderThemeCard(theme,status);
-  }).join("");
-
-  root.innerHTML=`
-    <div class="sp-page">
-      <header class="sp-lesson-header">
-        <div class="sp-header-main">
-          <a class="sp-brand" href="/index.html">
-            <div class="sp-logo">SP</div>
-            <div class="sp-title">
-              <h1>SprachPilot</h1>
-              <div class="sp-subtitle">${safeText(config.subtitle||config.lessonTitle)}</div>
-            </div>
-          </a>
-          <div class="sp-account">
-            <span class="sp-pill">${safeText(account)}</span>
-            <a class="sp-link" href="${safeText(dash)}">Dashboard</a>
-            <a class="sp-link" href="/profile/index.html">Profil</a>
-            <button class="sp-link" type="button" id="spLogoutBtn">Abmelden</button>
-          </div>
-        </div>
-        <nav class="sp-nav">
-          <a class="sp-back" href="${safeText(config.backHref||"../index.html")}">Zurück</a>
-        </nav>
-      </header>
-      <section class="lesson-title-card">
-        <h2>${safeText(config.lessonTitle)}</h2>
-      </section>
-      <section class="theme-grid">${cards}</section>
-      <footer class="sp-note">© SprachPilot</footer>
-    </div>
-  `;
-
-  const logoutBtn=document.getElementById("spLogoutBtn");
-  if(logoutBtn) logoutBtn.addEventListener("click",()=>logout());
+  draw(releaseData,progress,true);
 }
