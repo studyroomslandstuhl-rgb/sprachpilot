@@ -16,7 +16,7 @@
 .progress{height:14px;background:var(--theme-soft);border-radius:999px;overflow:hidden;margin-bottom:18px}.bar{height:100%;background:linear-gradient(135deg,var(--theme-main),var(--theme-green));border-radius:999px}.small{color:var(--theme-muted);font-weight:800}.question{font-size:25px;font-weight:900;color:var(--theme-dark);margin:14px 0}.hint{background:var(--theme-soft);border:1px solid var(--theme-line);border-radius:14px;padding:12px 14px;margin:12px 0;color:var(--theme-text)}
 .sp-flip-wrap{display:flex;justify-content:center;margin:18px 0;perspective:1200px}.sp-flip-card{width:min(100%,420px);height:330px;position:relative;transform-style:preserve-3d;transition:transform .45s ease;cursor:pointer}.sp-flip-card.flipped{transform:rotateY(180deg)}.sp-flip-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;border:2px solid var(--theme-line);border-radius:20px;background:#fff;box-shadow:0 12px 28px rgba(18,48,71,.13);backface-visibility:hidden;text-align:center}.sp-flip-front{background:linear-gradient(180deg,#fff,var(--theme-soft))}.sp-flip-back{transform:rotateY(180deg);background:#fff}.sp-flip-word{font-size:34px;font-weight:900;color:var(--theme-dark)}.sp-flip-plural{font-size:18px;color:var(--theme-muted);font-weight:800}.food-img{max-width:210px;max-height:190px;object-fit:contain}.sp-card-tap{font-size:15px;color:var(--theme-muted);font-weight:800}
 .image-fallback{width:210px;min-height:150px;border:2px dashed var(--theme-line);border-radius:18px;background:var(--theme-soft);display:flex;align-items:center;justify-content:center;text-align:center;padding:18px;font-size:24px;font-weight:900;color:var(--theme-dark)}
-.actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:16px 0}.btn{border:2px solid var(--theme-main);background:var(--theme-main);color:#fff;border-radius:14px;padding:12px 18px;font-weight:900;font-size:16px;text-decoration:none;cursor:pointer}.btn.secondary{background:#fff;color:var(--theme-dark);border-color:var(--theme-line)}.btn:disabled{opacity:.65;cursor:not-allowed}.hidden{display:none!important}input{width:min(100%,420px);border:2px solid var(--theme-line);border-radius:14px;padding:13px 14px;font-size:18px}.feedback{min-height:34px;text-align:center;font-weight:900;margin-top:12px}.ok{color:var(--theme-green)}.no{color:var(--theme-red)}.finish-box{text-align:center;padding:24px}.finish-icon{font-size:48px;color:var(--theme-green);font-weight:900}.mic-status{text-align:center;color:var(--theme-muted);font-weight:800}.missing{background:#eee;border-radius:14px}
+.actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:16px 0}.btn{border:2px solid var(--theme-main);background:var(--theme-main);color:#fff;border-radius:14px;padding:12px 18px;font-weight:900;font-size:16px;text-decoration:none;cursor:pointer}.btn.secondary{background:#fff;color:var(--theme-dark);border-color:var(--theme-line)}.btn:disabled{opacity:.65;cursor:not-allowed}.hidden{display:none!important}input{width:min(100%,420px);border:2px solid var(--theme-line);border-radius:14px;padding:13px 14px;font-size:18px}.feedback{min-height:34px;text-align:center;font-weight:900;margin-top:12px}.ok{color:var(--theme-green)}.no{color:var(--theme-red)}.finish-box{text-align:center;padding:24px}.finish-icon{font-size:48px;color:var(--theme-green);font-weight:900}.mic-status{text-align:center;color:var(--theme-muted);font-weight:800}.mic-hint{display:inline-block}.missing{background:#eee;border-radius:14px}
 @media(max-width:760px){.sp-task-shell{padding:14px}.sp-task-title__name{font-size:24px}.sp-task-panel{padding:16px}.sp-flip-card{height:300px}.question{font-size:21px}.sp-flip-word{font-size:28px}}
 </style>
 </head>
@@ -45,6 +45,7 @@ if(requireLogin()){
 }
 import("/js/back-button-fix.js?v=1").catch(()=>{});
 </script>
+<script src="/js/sp-microphone.js?v=1"></script>
 <script src="app.js?v=41"></script>
 <script type="module" src="/js/scoring.js?v=6"></script>
 <script>
@@ -121,7 +122,11 @@ function revealCard(help){
     after.innerHTML='<button class="btn" onclick="repeatLater()">Weiter</button>';
   }
 }
-function say(){startMic(micBtn,txt=>{writeBox();ans.value=txt;check(txt)})}
+function say(){
+  const starter=window.spStartMicRobust||window.startMic;
+  if(typeof starter==="function")starter(micBtn,txt=>{writeBox();ans.value=txt;check(txt)},{timeoutMs:9000,lang:"de-DE"});
+  else writeBox();
+}
 function check(txt){
   const w=Q.cur;
   const d=diagnose(txt,w);
