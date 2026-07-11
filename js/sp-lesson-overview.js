@@ -154,19 +154,23 @@ export async function renderLessonOverview(config){
     bindSpHeader(root);
   }
 
-  draw();
+  root.innerHTML=`
+    <div class="sp-page">
+      <section class="lesson-title-card">
+        <h2>${safeText(config.lessonTitle)}</h2>
+      </section>
+    </div>
+  `;
 
-  let releaseData={};
-  let progress={};
-  try{
-    releaseData=await loadCourseRelease(profile);
-  }catch(e){
-    console.warn("Lektionsfreigaben konnten nicht geladen werden:",e);
-  }
-  try{
-    progress=await loadCurrentStudentProgress();
-  }catch(e){
-    console.warn("Fortschritt konnte nicht geladen werden:",e);
-  }
-  draw(releaseData,progress,true);
+  const [releaseResult,progressResult]=await Promise.allSettled([
+    loadCourseRelease(profile),
+    loadCurrentStudentProgress()
+  ]);
+  if(releaseResult.status==="rejected")console.warn("Lektionsfreigaben konnten nicht geladen werden:",releaseResult.reason);
+  if(progressResult.status==="rejected")console.warn("Fortschritt konnte nicht geladen werden:",progressResult.reason);
+  draw(
+    releaseResult.status==="fulfilled"?releaseResult.value:{},
+    progressResult.status==="fulfilled"?progressResult.value:{},
+    true
+  );
 }
