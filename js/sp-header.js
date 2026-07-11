@@ -48,7 +48,7 @@ export function detectSpHeaderContext(pathname=window.location.pathname){
     const navItems=level==="lesson"
       ? [{label:"Zurück",href:"../index.html"}]
       : [
-          {label:"Zurück",href:"index.html"},
+          {label:"Zurück",href:level==="theme" ? "../" : "index.html"},
           {label:"Übersicht",href:"uebersicht.html"},
           {label:"Fortschritte löschen",type:"button",action:"reset-progress",variant:"danger"}
         ];
