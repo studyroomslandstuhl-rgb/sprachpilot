@@ -1,5 +1,9 @@
 #accountStrip,
-.account-strip{
+.account-strip,
+.topbar:not(.sp-header),
+#spHeader:not(.sp-header),
+.hero > .topbar,
+.hero > #spHeader{
   display:none!important;
   height:0!important;
   min-height:0!important;
@@ -7,6 +11,7 @@
   padding:0!important;
   overflow:hidden!important;
   border:0!important;
+  box-shadow:none!important;
 }
 
 .sp-header{
