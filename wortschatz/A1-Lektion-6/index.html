@@ -1,1 +1,86 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>A1 Lektion 6</title><link rel="stylesheet" href="Thema-1/style.css?v=2"></head><body><div class="container"><header class="topbar"><div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">A1 Lektion 6</div></div></a></div></header><section class="card progress-card"><div class="circle">6</div><div><h2>Lektion 6</h2><p class="small">Freizeit, Wetter, Essen und Hobbys.</p></div></section><section class="grid"><a class="module" href="Thema-1/index.html"><div class="num">1. Wetter</div><div class="icon">☔</div><p>Wetter-Wortschatz, Sätze, Geräusche und Hören.</p><div class="start">Starten</div></a><div class="module locked"><div class="num">2. Himmelsrichtungen und Jahreszeiten</div><div class="icon">🧭</div><p>Kommt als nächstes.</p><div class="small">gesperrt</div></div></section><footer>© SprachPilot</footer></div></body></html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SprachPilot - Lektion 6</title>
+<link rel="stylesheet" href="/css/sp-header.css">
+<link rel="stylesheet" href="/css/sp-lesson-overview.css">
+</head>
+<body>
+<script type="module" src="/js/guard.js"></script>
+<div id="lessonOverview"></div>
+
+<script type="module">
+import { renderLessonOverview } from "/js/sp-lesson-overview.js";
+
+renderLessonOverview({
+  module: "wortschatz",
+  lessonId: "A1-Lektion-6",
+  lessonNumber: 6,
+  lessonTitle: "Lektion 6: Wetter",
+  subtitle: "Wortschatz · A1 Lektion 6 · Wetter",
+  backHref: "../index.html",
+
+  color: {
+    main: "#3a8f6a",
+    dark: "#1f5e42",
+    soft: "#e8f7ef",
+    line: "#b7dec7",
+    bg2: "#cfeede"
+  },
+
+  themes: [
+    {
+      id: "Thema-1",
+      number: "1",
+      title: "Wetter",
+      text: "Wetter-Wortschatz, Sätze, Geräusche und Wetterberichte hören.",
+      href: "Thema-1/",
+      chips: ["Wetter", "Geräusche", "Sätze", "Hören"],
+      tasks: [
+        "karteikarten.html",
+        "artikel.html",
+        "hoeren-schreiben.html",
+        "hoeren-bild.html",
+        "nomen-satz-a.html",
+        "nomen-satz-b.html",
+        "geraeusche.html",
+        "geraeusche-satz.html",
+        "wetter-saetze.html",
+        "hoeren.html",
+        "pruefung.html"
+      ]
+    },
+    {
+      id: "Thema-2",
+      number: "2",
+      title: "Himmelsrichtungen & Jahreszeiten",
+      text: "Norden, Süden, Osten, Westen sowie Frühling, Sommer, Herbst und Winter.",
+      href: "Thema-2/",
+      chips: ["Richtungen", "Jahreszeiten", "Monate", "Sätze"],
+      tasks: []
+    },
+    {
+      id: "Thema-3",
+      number: "3",
+      title: "Länder",
+      text: "Deutschland, Österreich, Schweiz, Türkei, Ukraine, USA und einfache Herkunftssätze.",
+      href: "Thema-3/",
+      chips: ["Länder", "Flaggen", "Herkunft", "Sprechen"],
+      tasks: []
+    },
+    {
+      id: "Thema-4",
+      number: "4",
+      title: "Freizeit & Alltag",
+      text: "Kurze Alltagssätze, Freizeitaktivitäten und einfache Fragen im Gespräch.",
+      href: "Thema-4/",
+      chips: ["Freizeit", "Alltag", "Fragen", "Dialoge"],
+      tasks: []
+    }
+  ]
+});
+</script>
+</body>
+</html>
