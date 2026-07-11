@@ -75,10 +75,13 @@ body{
   transform:translateY(-1px);
 }
 
-.theme-card.is-locked{
-  background:#eeeeee;
-  border-color:#d6d6d6;
-  opacity:.5;
+.theme-grid .theme-card.is-locked{
+  display:flex!important;
+  visibility:visible!important;
+  background:#eeeeee!important;
+  border-color:#d6d6d6!important;
+  color:#6f6f6f;
+  opacity:1!important;
   pointer-events:none;
   box-shadow:none;
 }
@@ -138,6 +141,10 @@ body{
   line-height:1.45;
   font-size:15.5px;
   min-height:74px;
+}
+
+.theme-card.is-locked .theme-desc{
+  color:#777;
 }
 
 .theme-meta{
