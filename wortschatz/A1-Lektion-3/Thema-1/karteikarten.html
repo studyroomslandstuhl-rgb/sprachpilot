@@ -4,105 +4,125 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Karteikarten</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="/css/sp-header.css">
+<link rel="stylesheet" href="/css/sp-theme-overview.css">
+<style>
+.sp-task-shell{max-width:1180px;margin:0 auto;padding:24px;font-family:Arial,Helvetica,sans-serif;color:var(--theme-text)}
+.sp-task-title{background:#fff;border:1px solid var(--theme-line);border-radius:18px;padding:18px;margin:18px 0;box-shadow:0 10px 24px rgba(18,48,71,.10)}
+.sp-task-title__kicker{font-size:15px;color:var(--theme-muted);font-weight:800;margin-bottom:6px}
+.sp-task-title__name{font-size:28px;font-weight:900;color:var(--theme-dark);line-height:1.15}
+.sp-task-panel{background:#fff;border:1px solid var(--theme-line);border-radius:18px;padding:22px;box-shadow:0 10px 24px rgba(18,48,71,.10)}
+.sp-task-progress-text{font-weight:900;color:var(--theme-dark);margin-bottom:8px}
+.progress{height:14px;background:var(--theme-soft);border-radius:999px;overflow:hidden;margin-bottom:18px}.bar{height:100%;background:linear-gradient(135deg,var(--theme-main),var(--theme-green));border-radius:999px}.small{color:var(--theme-muted);font-weight:800}.question{font-size:25px;font-weight:900;color:var(--theme-dark);margin:14px 0}.hint{background:var(--theme-soft);border:1px solid var(--theme-line);border-radius:14px;padding:12px 14px;margin:12px 0;color:var(--theme-text)}
+.sp-flip-wrap{display:flex;justify-content:center;margin:18px 0;perspective:1200px}.sp-flip-card{width:min(100%,420px);height:330px;position:relative;transform-style:preserve-3d;transition:transform .45s ease;cursor:pointer}.sp-flip-card.flipped{transform:rotateY(180deg)}.sp-flip-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;padding:20px;border:2px solid var(--theme-line);border-radius:20px;background:#fff;box-shadow:0 12px 28px rgba(18,48,71,.13);backface-visibility:hidden;text-align:center}.sp-flip-front{background:linear-gradient(180deg,#fff,var(--theme-soft))}.sp-flip-back{transform:rotateY(180deg);background:#fff}.sp-flip-word{font-size:34px;font-weight:900;color:var(--theme-dark)}.sp-flip-plural{font-size:18px;color:var(--theme-muted);font-weight:800}.food-img{max-width:210px;max-height:190px;object-fit:contain}.sp-card-tap{font-size:15px;color:var(--theme-muted);font-weight:800}
+.actions{display:flex;flex-wrap:wrap;justify-content:center;gap:12px;margin:16px 0}.btn{border:2px solid var(--theme-main);background:var(--theme-main);color:#fff;border-radius:14px;padding:12px 18px;font-weight:900;font-size:16px;text-decoration:none;cursor:pointer}.btn.secondary{background:#fff;color:var(--theme-dark);border-color:var(--theme-line)}.btn:disabled{opacity:.65;cursor:not-allowed}.hidden{display:none!important}input{width:min(100%,420px);border:2px solid var(--theme-line);border-radius:14px;padding:13px 14px;font-size:18px}.feedback{min-height:34px;text-align:center;font-weight:900;margin-top:12px}.ok{color:var(--theme-green)}.no{color:var(--theme-red)}.finish-box{text-align:center;padding:24px}.finish-icon{font-size:48px;color:var(--theme-green);font-weight:900}.mic-status{text-align:center;color:var(--theme-muted);font-weight:800}.missing{background:#eee;border-radius:14px}
+@media(max-width:760px){.sp-task-shell{padding:14px}.sp-task-title__name{font-size:24px}.sp-task-panel{padding:16px}.sp-flip-card{height:300px}.question{font-size:21px}.sp-flip-word{font-size:28px}}
+</style>
 </head>
 <body>
-<div id="accountStrip" class="account-strip"></div>
-
-<div class="container">
-  <section class="hero"></section>
-  <div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div>
-  <section class="card" id="area">
-    <div class="question">Aufgabe wird geladen …</div>
+<div class="sp-task-shell">
+  <div id="spHeaderSlot"></div>
+  <section class="sp-task-title">
+    <div class="sp-task-title__kicker">Lektion 3 · Thema 1</div>
+    <div class="sp-task-title__name">1. Karteikarten</div>
   </section>
-  <footer>© SprachPilot</footer>
+  <section class="sp-task-panel" id="area">
+    <div class="question">Aufgabe wird geladen ...</div>
+  </section>
+  <footer style="text-align:center;margin:28px 0;color:var(--theme-muted);font-weight:800">© SprachPilot</footer>
 </div>
 
+<script type="module">
+import "/js/sp-assets.js?v=3";
+import "/js/session-restore.js?v=1";
+import { requireLogin, logout } from "/js/auth.js";
+import { renderSpHeader, bindSpHeader } from "/js/sp-header.js";
+window.logout=logout;
+if(requireLogin()){
+  const slot=document.getElementById("spHeaderSlot");
+  if(slot){slot.innerHTML=renderSpHeader();bindSpHeader(slot)}
+}
+import("/js/back-button-fix.js?v=1").catch(()=>{});
+</script>
 <script src="app.js?v=41"></script>
+<script type="module" src="/js/scoring.js?v=6"></script>
 <script>
-header("Karteikarten");
-
 const FILE = "karteikarten.html";
 const CARD_WORDS = (typeof singularWords === "function" ? singularWords() : activeWords());
 let Q = queueFor(FILE, CARD_WORDS);
+let revealed = false;
+let solved = false;
 
-function cardTranslation(w){
-  return trans(w) || w.word || full(w);
-}
+function cardTranslation(w){return trans(w) || w.word || full(w)}
+function cardBack(w){return `<div class="sp-flip-word">${full(w)}</div>${w.plural?`<div class="sp-flip-plural">Plural: <b>${w.plural}</b></div>`:""}<button class="btn secondary" onclick="speak('${String(full(w)).replace(/'/g,"&#039;")}');return false">Deutsch hören</button>`}
+function progressHtml(){const left=Q.q.length+Q.bad.length+(Q.cur?1:0),done=Q.done.length,p=Math.round(done/(done+left)*100)||0;return `<div class="sp-task-progress-text">${done} richtig · ${left} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
+function finishWithSync(){if(window.SprachPilotScoring&&typeof window.SprachPilotScoring.awardTask==="function")window.SprachPilotScoring.awardTask(FILE);complete(area,FILE,"bild-wort.html")}
 
 function show(){
   Q.cur = nextItem(Q);
-
-  if(!Q.cur){
-    complete(area, FILE, "bild-wort.html");
-    return;
-  }
-
+  if(!Q.cur){finishWithSync();return}
   Q.tries = 0;
   Q.had = false;
+  revealed = false;
+  solved = false;
   const w = Q.cur;
-
-  area.innerHTML = `${prog(Q)}
-    <div class="question">Sage das deutsche Wort mit Artikel.</div>
+  area.innerHTML = `${progressHtml()}
+    <div class="question">Sage oder schreibe das deutsche Wort mit Artikel.</div>
     <div class="hint">Muttersprache: <b>${cardTranslation(w)}</b></div>
-    <img class="food-img" src="${w.image}" onerror="fixImg(this)" alt="">
+    <div class="sp-flip-wrap">
+      <div id="fcard" class="sp-flip-card" onclick="revealCard(true)" role="button" tabindex="0" aria-label="Karte umdrehen">
+        <div class="sp-flip-face sp-flip-front">
+          <img class="food-img" src="${w.image}" onerror="fixImg(this)" alt="">
+          <div class="sp-card-tap">Klicken oder tippen: Karte umdrehen</div>
+        </div>
+        <div class="sp-flip-face sp-flip-back">${cardBack(w)}</div>
+      </div>
+    </div>
     <div class="actions">
       <button id="micBtn" class="btn mic-btn" onclick="say()">🎤 Sprechen</button>
       <button class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button>
-      <button class="btn secondary" onclick="flip()">Karte umdrehen</button>
     </div>
     <div id="micStatus" class="mic-status"></div>
     <div id="box" class="hidden">
-      <input id="ans" placeholder="z. B. die Tomate">
-      <button class="btn" onclick="check(ans.value)">Kontrollieren</button>
+      <div class="actions"><input id="ans" placeholder="z. B. die Tomate"><button class="btn" onclick="check(ans.value)">Kontrollieren</button></div>
     </div>
-    <div id="fb" class="feedback"></div>`;
+    <div id="fb" class="feedback"></div>
+    <div id="after" class="actions"></div>`;
+  fcard.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();revealCard(true)}});
 }
 
-function writeBox(){
-  box.classList.remove("hidden");
-}
-
-function flip(){
-  const w = Q.cur;
-  wrong(Q);
-  persist(Q);
-  fb.innerHTML = feedbackForCard(Q.tries, full(w), "Artikel und Wort");
-  box.classList.remove("hidden");
-  ans.value = full(w);
-}
-
-function say(){
-  startMic(micBtn, txt => {
-    writeBox();
-    ans.value = txt;
-    check(txt);
-  });
-}
-
-function check(txt){
-  const w = Q.cur;
-  const d = diagnose(txt, w);
-
-  if(d.ok){
-    fb.textContent = "Richtig!";
-    right(Q, w);
-    setTimeout(show, 700);
-  }else{
+function writeBox(){box.classList.remove("hidden");setTimeout(()=>ans&&ans.focus(),0)}
+function repeatLater(){const w=Q.cur;if(w&&!Q.bad.includes(w))Q.bad.push(w);persist(Q);show()}
+function revealCard(help){
+  if(solved)return;
+  fcard.classList.add("flipped");
+  if(help&&!revealed){
+    revealed=true;
     wrong(Q);
-    fb.innerHTML = feedbackForCard(Q.tries, d.sol || full(w), d.tip || "Artikel und Wort");
-    // Wichtig: NICHT automatisch weitergehen.
+    persist(Q);
+    fb.innerHTML=Q.tries<3?"Die Karte wurde umgedreht. Dieses Wort kommt später noch einmal.":"Lösung: "+full(Q.cur);
+    box.classList.remove("hidden");
+    ans.value=full(Q.cur);
+    after.innerHTML='<button class="btn" onclick="repeatLater()">Weiter</button>';
   }
 }
-
-function feedbackForCard(tries, solution, type){
-  if(tries === 1) return "Da ist noch ein Fehler.";
-  if(tries === 2) return "Tipp: Prüfe " + type + ".";
-  return "Lösung: " + solution;
+function say(){startMic(micBtn,txt=>{writeBox();ans.value=txt;check(txt)})}
+function check(txt){
+  const w=Q.cur;
+  const d=diagnose(txt,w);
+  if(d.ok){
+    solved=true;
+    fcard.classList.add("flipped");
+    fb.innerHTML='<div class="ok">Richtig!</div>';
+    right(Q,w);
+    after.innerHTML='<button class="btn" onclick="show()">Weiter</button>';
+  }else{
+    wrong(Q);
+    fb.innerHTML=feedbackForCard(Q.tries,d.sol||full(w),d.tip||"Artikel und Wort");
+  }
 }
-
+function feedbackForCard(tries,solution,type){if(tries===1)return '<div class="no">Da ist noch ein Fehler.</div>';if(tries===2)return '<div class="no">Tipp: Prüfe '+type+'.</div>';return '<div class="no">Lösung: '+solution+'</div>'}
 show();
 </script>
-<script type="module" src="/js/guard.js"></script>
 </body>
 </html>
