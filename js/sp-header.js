@@ -150,12 +150,66 @@ export function bindSpHeader(root=document){
   });
 }
 
+function ensureHeaderCss(){
+  if(document.querySelector('link[href="/css/sp-header.css"]')) return;
+  const link=document.createElement("link");
+  link.rel="stylesheet";
+  link.href="/css/sp-header.css";
+  document.head.appendChild(link);
+}
+
+function hideOldAccountStrip(){
+  document.querySelectorAll("#accountStrip,.account-strip").forEach(el=>{
+    el.innerHTML="";
+    el.style.display="none";
+    el.style.height="0";
+    el.style.minHeight="0";
+    el.style.overflow="hidden";
+  });
+}
+
+function replaceOldHeader(){
+  hideOldAccountStrip();
+  const html=renderSpHeader();
+  const explicit=document.getElementById("spHeader");
+  if(explicit){
+    explicit.outerHTML=html;
+    bindSpHeader(document);
+    return true;
+  }
+  const topbar=document.querySelector(".topbar");
+  if(topbar){
+    topbar.outerHTML=html;
+    bindSpHeader(document);
+    return true;
+  }
+  const hero=document.querySelector(".hero");
+  if(hero){
+    hero.innerHTML=html;
+    bindSpHeader(hero);
+    return true;
+  }
+  return false;
+}
+
+export function installSpHeader(){
+  ensureHeaderCss();
+  hideOldAccountStrip();
+  const run=()=>replaceOldHeader();
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",run,{once:true});
+  else run();
+  window.addEventListener("load",run,{once:true});
+  setTimeout(run,100);
+  setTimeout(run,500);
+  setTimeout(run,1200);
+}
+
 export function renderAutoSpHeader(target=document.getElementById("spHeader")){
   if(!target) return;
-  target.innerHTML=renderSpHeader();
-  bindSpHeader(target);
+  target.outerHTML=renderSpHeader();
+  bindSpHeader(document);
 }
 
 if(document.currentScript?.hasAttribute("data-sp-auto-header")){
-  renderAutoSpHeader();
+  installSpHeader();
 }
