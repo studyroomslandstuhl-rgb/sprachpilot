@@ -1,5 +1,14 @@
 import { getActiveProfile, logout, safeText, dashboardHref } from "./auth.js";
 
+const LESSONS={
+  1:{title:"Lektion 1",subtitle:"Wortschatz · A1 Lektion 1",color:{main:"#2f95ad",dark:"#0b5c73"}},
+  2:{title:"Lektion 2",subtitle:"Wortschatz · A1 Lektion 2",color:{main:"#6f8f2f",dark:"#3d5415"}},
+  3:{title:"Lektion 3: Einkaufen",subtitle:"Wortschatz · A1 Lektion 3 · Einkaufen",color:{main:"#f28c28",dark:"#8a4600"}},
+  4:{title:"Lektion 4",subtitle:"Wortschatz · A1 Lektion 4",color:{main:"#7d5fb2",dark:"#49306f"}},
+  5:{title:"Lektion 5",subtitle:"Wortschatz · A1 Lektion 5",color:{main:"#2f95ad",dark:"#0b5c73"}},
+  6:{title:"Lektion 6",subtitle:"Wortschatz · A1 Lektion 6",color:{main:"#3a8f6a",dark:"#1f5e42"}}
+};
+
 function profileText(profile){
   if(!profile) return "Nicht eingeloggt";
   const name=[profile.vorname||profile.firstName||profile.name,profile.nachname||profile.lastName]
@@ -8,6 +17,76 @@ function profileText(profile){
     .trim();
   const course=profile.kurs||profile.kursnummer||profile.courseCode||profile.course||"";
   return [name||profile.email||"Profil",course].filter(Boolean).join(" · ");
+}
+
+function fileTitle(file){
+  const raw=String(file||"").replace(/\.html$/i,"").replace(/[-_]+/g," ").trim();
+  if(!raw||raw.toLowerCase()==="index") return "";
+  return raw.charAt(0).toUpperCase()+raw.slice(1);
+}
+
+function setColor(name,value){
+  if(value) document.documentElement.style.setProperty(name,value);
+}
+
+export function detectSpHeaderContext(pathname=window.location.pathname){
+  const path=String(pathname||"/").replace(/\/index\.html$/i,"/");
+  const match=path.match(/\/wortschatz\/A1-Lektion-(\d+)\/?(?:Thema-(\d+)\/?)?(?:([^/]+\.html))?$/i);
+  if(match){
+    const lessonNumber=Number(match[1]);
+    const themeNumber=match[2] ? Number(match[2]) : null;
+    const file=match[3]||"";
+    const lesson=LESSONS[lessonNumber]||{title:`Lektion ${lessonNumber}`,subtitle:`Wortschatz · A1 Lektion ${lessonNumber}`,color:{}};
+    const isTask=!!file && !/^index\.html$/i.test(file);
+    const level=isTask ? "task" : (themeNumber ? "theme" : "lesson");
+    const taskTitle=fileTitle(file);
+    const subtitle=level==="task"
+      ? `${taskTitle} · A1 Lektion ${lessonNumber} · Thema ${themeNumber}`
+      : level==="theme"
+        ? `A1 Lektion ${lessonNumber} · Thema ${themeNumber}`
+        : lesson.subtitle;
+    const navItems=level==="lesson"
+      ? [{label:"Zurück",href:"../index.html"}]
+      : [
+          {label:"Zurück",href:"index.html"},
+          {label:"Übersicht",href:"uebersicht.html"},
+          {label:"Fortschritte löschen",type:"button",action:"reset-progress",variant:"danger"}
+        ];
+    return {
+      area:"wortschatz",
+      level,
+      lessonNumber,
+      themeNumber,
+      taskTitle,
+      title:"SprachPilot",
+      subtitle,
+      navItems,
+      color:lesson.color,
+      variant:level
+    };
+  }
+
+  if(/^\/verben-A1\/?/i.test(path)){
+    return {
+      area:"verben-A1",
+      level:"verben",
+      title:"SprachPilot",
+      subtitle:"Verben A1",
+      navItems:[{label:"Zurück",href:"/student-dashboard/index.html"}],
+      color:{main:"#2f95ad",dark:"#0b5c73"},
+      variant:"verben"
+    };
+  }
+
+  return {
+    area:"default",
+    level:"default",
+    title:"SprachPilot",
+    subtitle:"",
+    navItems:[],
+    color:{main:"#2f95ad",dark:"#0b5c73"},
+    variant:"default"
+  };
 }
 
 function navItem(item){
@@ -20,16 +99,22 @@ function navItem(item){
 }
 
 export function renderSpHeader(options={}){
-  const profile=options.profile||getActiveProfile();
-  const account=options.accountText||profileText(profile);
-  const title=options.title||"SprachPilot";
-  const subtitle=options.subtitle||"";
-  const homeHref=options.homeHref||"/index.html";
-  const dash=options.dashboardHref||((typeof dashboardHref==="function") ? dashboardHref() : "/student-dashboard/index.html");
-  const nav=(options.navItems||[]).map(navItem).join("");
+  const detected=detectSpHeaderContext(options.pathname||window.location.pathname);
+  const context={...detected,...options};
+  const color={...(detected.color||{}),...(options.color||{})};
+  setColor("--lesson-main",color.main);
+  setColor("--lesson-dark",color.dark);
+
+  const profile=context.profile||getActiveProfile();
+  const account=context.accountText||profileText(profile);
+  const title=context.title||"SprachPilot";
+  const subtitle=context.subtitle||"";
+  const homeHref=context.homeHref||"/index.html";
+  const dash=context.dashboardHref||((typeof dashboardHref==="function") ? dashboardHref() : "/student-dashboard/index.html");
+  const nav=(context.navItems||[]).map(navItem).join("");
 
   return `
-    <header class="sp-header ${safeText(options.variant?`sp-header--${options.variant}`:"")}">
+    <header class="sp-header ${safeText(context.variant?`sp-header--${context.variant}`:"")}">
       <div class="sp-header__main">
         <a class="sp-header__brand" href="${safeText(homeHref)}">
           <span class="sp-header__logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></span>
@@ -54,4 +139,23 @@ export function bindSpHeader(root=document){
   root.querySelectorAll("[data-sp-logout]").forEach(button=>{
     button.addEventListener("click",()=>logout());
   });
+  root.querySelectorAll('[data-sp-action="reset-progress"]').forEach(button=>{
+    button.addEventListener("click",()=>{
+      if(typeof window.resetThemeProgress==="function"){
+        window.resetThemeProgress();
+      }else{
+        window.dispatchEvent(new CustomEvent("sp:reset-theme-progress"));
+      }
+    });
+  });
+}
+
+export function renderAutoSpHeader(target=document.getElementById("spHeader")){
+  if(!target) return;
+  target.innerHTML=renderSpHeader();
+  bindSpHeader(target);
+}
+
+if(document.currentScript?.hasAttribute("data-sp-auto-header")){
+  renderAutoSpHeader();
 }
