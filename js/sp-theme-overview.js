@@ -24,7 +24,8 @@ function taskKey(file){return cleanId(file.replace(/\.html$/i,""))}
 function iconFor(task){const key=task.iconKey||taskKey(taskFile(task));return task.icon||DEFAULT_ICONS[key]||DEFAULT_ICONS.default}
 
 function releaseBridge(){return window.SprachPilotRelease||null}
-function taskAllowed(task){
+function taskAllowed(task,config={}){
+  if(config.showAllTasks)return true;
   const file=taskFile(task);
   if(!file)return false;
   const bridge=releaseBridge();
@@ -73,10 +74,10 @@ function statusText(percent,locked=false){
   return "Starten";
 }
 
-function renderTask(task,index,progress,examUnlocked){
+function renderTask(task,index,progress,examUnlocked,config){
   const file=taskFile(task);
   const isExam=task.exam||/pruefung/i.test(file);
-  const allowed=taskAllowed(task);
+  const allowed=taskAllowed(task,config);
   if(!allowed&&!isExam)return "";
   const locked=isExam&&!examUnlocked;
   const percent=locked?0:taskPercent(task,progress);
@@ -101,9 +102,9 @@ export function renderThemeOverview(config){
   const profile=getActiveProfile();
   const tasks=config.tasks||[];
   const progress=config.progress||{};
-  const visiblePractice=tasks.filter(t=>!t.exam&&!/pruefung/i.test(taskFile(t))&&taskAllowed(t));
+  const visiblePractice=tasks.filter(t=>!t.exam&&!/pruefung/i.test(taskFile(t))&&taskAllowed(t,config));
   const examUnlocked=allPracticeComplete(visiblePractice,progress);
-  const visibleTasks=tasks.filter(t=>taskAllowed(t)||t.exam||/pruefung/i.test(taskFile(t)));
+  const visibleTasks=tasks.filter(t=>taskAllowed(t,config)||t.exam||/pruefung/i.test(taskFile(t)));
   const avg=visiblePractice.length?Math.round(visiblePractice.reduce((sum,t)=>sum+taskPercent(t,progress),0)/visiblePractice.length):0;
 
   root.innerHTML=`<div class="sp-theme-page">
@@ -112,7 +113,7 @@ export function renderThemeOverview(config){
       <div class="sp-theme-progress__top"><span>${safeText(config.title||"Thema")}</span><span>${avg}%</span></div>
       <div class="sp-theme-progress__bar"><div class="sp-theme-progress__fill" style="width:${avg}%"></div></div>
     </section>
-    <section class="sp-task-grid">${visibleTasks.map((task,i)=>renderTask(task,i,progress,examUnlocked)).join("")}</section>
+    <section class="sp-task-grid">${visibleTasks.map((task,i)=>renderTask(task,i,progress,examUnlocked,config)).join("")}</section>
   </div>`;
   bindSpHeader(root);
 }
