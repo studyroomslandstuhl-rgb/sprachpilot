@@ -1,4 +1,5 @@
-import { getActiveProfile, logout, safeText, dashboardHref } from "./auth.js";
+import { getActiveProfile, safeText } from "./auth.js";
+import { renderSpHeader, bindSpHeader } from "./sp-header.js";
 import { loadCourseRelease, themeOpen } from "./course-releases.js";
 import { loadCurrentStudentProgress } from "./progress.js";
 
@@ -13,13 +14,6 @@ function cleanId(s){
 function percent(v){
   const n=Number(v);
   return Number.isFinite(n)?Math.max(0,Math.min(100,Math.round(n))):0;
-}
-
-function profileText(profile){
-  if(!profile) return "Nicht eingeloggt";
-  const name=[profile.vorname||profile.firstName||profile.name,profile.nachname||profile.lastName].filter(Boolean).join(" ").trim();
-  const course=profile.kurs||profile.kursnummer||profile.courseCode||profile.course||"";
-  return [name||profile.email||"Profil",course].filter(Boolean).join(" · ");
 }
 
 function progressKeys(config,theme){
@@ -114,7 +108,7 @@ function renderThemeCard(theme,status){
         <span class="theme-status ${locked?"is-locked":""}">${statusText(status)}</span>
       </div>
       <div class="theme-title">${safeText(theme.title)}</div>
-      <p class="theme-desc">${safeText(theme.text||theme.desc)}</p>
+      <p class="theme-desc">${safeText(theme.text||theme.desc||"")}</p>
       <div class="theme-meta">${chips}</div>
       <div class="theme-footer">
         <div class="theme-button">${locked?"Gesperrt":"Starten"}</div>
@@ -134,8 +128,6 @@ export async function renderLessonOverview(config){
   setColor("--lesson-bg-2",config.color?.bg2||config.color?.soft);
 
   const profile=getActiveProfile();
-  const account=profileText(profile);
-  const dash=dashboardHref ? dashboardHref() : "/student-dashboard/index.html";
 
   function draw(releaseData={},progress={},ready=false){
     const cards=(config.themes||[]).map(theme=>{
@@ -150,26 +142,13 @@ export async function renderLessonOverview(config){
 
     root.innerHTML=`
       <div class="sp-page">
-        <header class="sp-lesson-header">
-          <div class="sp-header-main">
-            <a class="sp-brand" href="/index.html">
-              <div class="sp-logo">SP</div>
-              <div class="sp-title">
-                <h1>SprachPilot</h1>
-                <div class="sp-subtitle">${safeText(config.subtitle||config.lessonTitle)}</div>
-              </div>
-            </a>
-            <div class="sp-account">
-              <span class="sp-pill">${safeText(account)}</span>
-              <a class="sp-link" href="${safeText(dash)}">Dashboard</a>
-              <a class="sp-link" href="/profile/index.html">Profil</a>
-              <button class="sp-link" type="button" id="spLogoutBtn">Abmelden</button>
-            </div>
-          </div>
-          <nav class="sp-nav">
-            <a class="sp-back" href="${safeText(config.backHref||"../index.html")}">Zurück</a>
-          </nav>
-        </header>
+        ${renderSpHeader({
+          profile,
+          variant:"lesson-overview",
+          title:"SprachPilot",
+          subtitle:config.subtitle||config.lessonTitle,
+          navItems:[{label:"Zurück",href:config.backHref||"../index.html"}]
+        })}
         <section class="lesson-title-card">
           <h2>${safeText(config.lessonTitle)}</h2>
         </section>
@@ -178,8 +157,7 @@ export async function renderLessonOverview(config){
       </div>
     `;
 
-    const logoutBtn=document.getElementById("spLogoutBtn");
-    if(logoutBtn) logoutBtn.addEventListener("click",()=>logout());
+    bindSpHeader(root);
   }
 
   draw();
