@@ -1,6 +1,7 @@
 import "/js/sp-assets.js?v=3";
 import "/js/session-restore.js?v=1";
-import { requireLogin, renderAccountStrip, logout } from "/js/auth.js";
+import { requireLogin, logout } from "/js/auth.js";
+import { installSpHeader } from "/js/sp-header.js";
 window.logout=logout;
 const SP_USER=requireLogin();
 const path=location.pathname;
@@ -19,18 +20,15 @@ if(PERFORMANCE_SYNC_OFF){
   window.SP_NO_FIREBASE_SYNC=true;
   window.SP_PERFORMANCE_MODE=true;
 }
-const isL3T2Page=path.indexOf("/wortschatz/A1-Lektion-3/Thema-2/")>=0;
-if(isL3T2Page){const style=document.createElement("style");style.textContent="#accountStrip,.account-strip{display:none!important;height:0!important;min-height:0!important;overflow:hidden!important;margin:0!important;padding:0!important;border:0!important}";document.head.appendChild(style)}
-if(SP_USER&&!isL3T2Page){document.addEventListener("DOMContentLoaded",()=>{try{renderAccountStrip()}catch(e){}})}
-if(SP_USER&&isL3T2Page){document.addEventListener("DOMContentLoaded",()=>{const el=document.getElementById("accountStrip");if(el){el.innerHTML="";el.style.display="none";el.style.height="0";el.style.overflow="hidden"}})}
-window.addEventListener("SP_PROFILE_SYNCED",()=>{try{renderAccountStrip()}catch(e){}});
+if(SP_USER){installSpHeader()}
+window.addEventListener("SP_PROFILE_SYNCED",()=>{try{installSpHeader()}catch(e){}});
 import("/js/microphone-fallback.js?v=1").catch(()=>{});
 import("/js/back-button-fix.js?v=1").catch(()=>{});
 import("/js/release-helper.js?v=10").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
 if(FULL_FIREBASE){
-  setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).then(()=>{try{renderAccountStrip()}catch(e){}}).catch(()=>{})},1500);
+  setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).catch(()=>{})},1500);
   setTimeout(()=>{import("/js/scoring.js?v=6").catch(()=>{})},1800);
 }
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){setTimeout(()=>import("/wortschatz/index-release-lock.js?v=12").catch(()=>{}),900)}
