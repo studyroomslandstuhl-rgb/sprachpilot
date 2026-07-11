@@ -1,0 +1,168 @@
+#accountStrip,
+.account-strip{
+  display:none!important;
+  height:0!important;
+  min-height:0!important;
+  margin:0!important;
+  padding:0!important;
+  overflow:hidden!important;
+  border:0!important;
+}
+
+.sp-header{
+  background:var(--lesson-main,#2f95ad);
+  color:#fff;
+  border:0;
+  border-radius:0 0 26px 26px;
+  box-shadow:0 10px 28px rgba(0,0,0,.16);
+  padding:20px 24px 18px;
+  margin:0 calc(50% - 50vw) 22px;
+}
+
+.sp-header__main{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:22px;
+  flex-wrap:wrap;
+}
+
+.sp-header__brand{
+  display:flex;
+  align-items:center;
+  gap:18px;
+  color:#fff;
+  text-decoration:none;
+  min-width:0;
+}
+
+.sp-header__logo{
+  width:66px;
+  height:66px;
+  border-radius:16px;
+  background:rgba(255,255,255,.94);
+  display:grid;
+  place-items:center;
+  box-shadow:0 8px 18px rgba(0,0,0,.16);
+  flex:0 0 auto;
+  overflow:hidden;
+}
+
+.sp-header__logo img{
+  width:52px;
+  height:52px;
+  object-fit:contain;
+  display:block;
+}
+
+.sp-header__title h1{
+  font-size:32px;
+  line-height:1.05;
+  font-weight:900;
+  margin:0;
+}
+
+.sp-header__subtitle{
+  color:rgba(255,255,255,.92);
+  font-size:16px;
+  font-weight:900;
+  margin-top:6px;
+}
+
+.sp-header__account{
+  display:flex;
+  flex-wrap:wrap;
+  justify-content:flex-end;
+  gap:10px;
+  align-items:center;
+  max-width:620px;
+}
+
+.sp-header__pill,
+.sp-header__button,
+.sp-header__nav-link{
+  border:2px solid rgba(255,255,255,.82);
+  background:rgba(255,255,255,.92);
+  color:var(--lesson-dark,#0b5c73);
+  border-radius:14px;
+  padding:10px 14px;
+  min-height:44px;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+  font-family:Arial,Helvetica,sans-serif;
+  font-size:15px;
+  font-weight:900;
+  line-height:1.15;
+  text-decoration:none;
+  white-space:nowrap;
+}
+
+.sp-header__pill{
+  background:rgba(255,255,255,.78);
+  min-width:210px;
+}
+
+.sp-header__button{
+  cursor:pointer;
+}
+
+.sp-header__button:hover,
+.sp-header__nav-link:hover{
+  transform:translateY(-1px);
+  box-shadow:0 6px 14px rgba(0,0,0,.13);
+}
+
+.sp-header__nav{
+  display:flex;
+  flex-wrap:wrap;
+  gap:10px;
+  margin-top:20px;
+}
+
+.sp-header__nav-link.is-danger{
+  background:#fff;
+  border-color:#d85a5a;
+  color:#b82020;
+}
+
+@media(max-width:760px){
+  .sp-header{
+    padding:18px;
+    margin-bottom:18px;
+  }
+
+  .sp-header__main{
+    flex-direction:column;
+  }
+
+  .sp-header__account{
+    justify-content:flex-start;
+    max-width:none;
+  }
+
+  .sp-header__pill{
+    min-width:0;
+    white-space:normal;
+  }
+
+  .sp-header__title h1{
+    font-size:28px;
+  }
+
+  .sp-header__logo{
+    width:62px;
+    height:62px;
+  }
+
+  .sp-header__logo img{
+    width:49px;
+    height:49px;
+  }
+
+  .sp-header__button,
+  .sp-header__nav-link{
+    flex:1 1 auto;
+  }
+}
