@@ -46,9 +46,9 @@ export function detectSpHeaderContext(pathname=window.location.pathname){
         ? `A1 Lektion ${lessonNumber} · Thema ${themeNumber}`
         : lesson.subtitle;
     const navItems=level==="lesson"
-      ? [{label:"Zurück",href:"../index.html"}]
+      ? [{label:"← Zurück",href:"../index.html"}]
       : [
-          {label:"Zurück",href:level==="theme" ? "../" : "index.html"},
+          {label:"← Zurück",href:level==="theme" ? "../" : "index.html"},
           {label:"Übersicht",href:"uebersicht.html"},
           {label:"Fortschritte löschen",type:"button",action:"reset-progress",variant:"danger"}
         ];
@@ -72,7 +72,7 @@ export function detectSpHeaderContext(pathname=window.location.pathname){
       level:"verben",
       title:"SprachPilot",
       subtitle:"Verben A1",
-      navItems:[{label:"Zurück",href:"/student-dashboard/index.html"}],
+      navItems:[{label:"← Zurück",href:"/student-dashboard/index.html"}],
       color:{main:"#2f95ad",dark:"#0b5c73"},
       variant:"verben"
     };
@@ -137,9 +137,13 @@ export function renderSpHeader(options={}){
 
 export function bindSpHeader(root=document){
   root.querySelectorAll("[data-sp-logout]").forEach(button=>{
+    if(button.dataset.spBound) return;
+    button.dataset.spBound="1";
     button.addEventListener("click",()=>logout());
   });
   root.querySelectorAll('[data-sp-action="reset-progress"]').forEach(button=>{
+    if(button.dataset.spBound) return;
+    button.dataset.spBound="1";
     button.addEventListener("click",()=>{
       if(typeof window.resetThemeProgress==="function"){
         window.resetThemeProgress();
@@ -168,8 +172,30 @@ function hideOldAccountStrip(){
   });
 }
 
+function removeExtraSharedHeaders(){
+  const headers=[...document.querySelectorAll(".sp-header")];
+  headers.slice(1).forEach(el=>el.remove());
+}
+
+function removeOldHeaders(){
+  document.querySelectorAll(".topbar,#spHeader").forEach(el=>{
+    if(!el.classList.contains("sp-header")) el.remove();
+  });
+  document.querySelectorAll(".hero").forEach(hero=>{
+    const shared=hero.querySelector(":scope > .sp-header");
+    if(shared && document.querySelector("body > .sp-header, .container > .sp-header, .sp-page > .sp-header")) shared.remove();
+  });
+}
+
 function replaceOldHeader(){
   hideOldAccountStrip();
+  removeExtraSharedHeaders();
+  const existing=document.querySelector(".sp-header");
+  if(existing){
+    removeOldHeaders();
+    bindSpHeader(document);
+    return true;
+  }
   const html=renderSpHeader();
   const explicit=document.getElementById("spHeader");
   if(explicit){
@@ -202,6 +228,13 @@ export function installSpHeader(){
   setTimeout(run,100);
   setTimeout(run,500);
   setTimeout(run,1200);
+  setTimeout(run,2500);
+  if(!window.SP_HEADER_OBSERVER){
+    window.SP_HEADER_OBSERVER=new MutationObserver(()=>run());
+    const startObserver=()=>document.body&&window.SP_HEADER_OBSERVER.observe(document.body,{childList:true,subtree:true});
+    if(document.body) startObserver();
+    else document.addEventListener("DOMContentLoaded",startObserver,{once:true});
+  }
 }
 
 export function renderAutoSpHeader(target=document.getElementById("spHeader")){
