@@ -6,7 +6,7 @@ function l6t1CleanWords(){
         if(list[i]&&list[i].id==='unter_null')list.splice(i,1);
       }
       list.forEach(w=>{
-        if(w&&w.id==='eis')w.image=L6T1_CDN_CLEAN+'das_eis.webp';
+        if(w&&w.id==='eis')w.image=L6T1_CDN_CLEAN+'eis.webp';
       });
     });
   }catch(e){}
