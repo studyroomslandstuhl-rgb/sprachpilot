@@ -1,12 +1,13 @@
 const L6T1_CDN_CLEAN='https://sprachpilot.b-cdn.net/';
 function l6t1CleanWords(){
   try{
+    if(Array.isArray(window.BASE_WORDS)&&!BASE_WORDS.some(w=>w&&w.id==='unter_null')){
+      BASE_WORDS.push({id:'unter_null',group:'Im Buch',type:'phrase',article:'',word:'unter Null',full:'unter Null',sentence:'Es sind drei Grad unter Null.',symbol:'➖',image:L6T1_CDN_CLEAN+'unternull.webp',tr:{en:'below zero',ru:'ниже нуля',tr:'sıfırın altında',uk:'нижче нуля',ar:'تحت الصفر',ja:'氷点下',ro:'sub zero',pl:'poniżej zera',ku:'bin sifirê'}});
+    }
     [window.BASE_WORDS,window.EXTRA_WORDS].filter(Array.isArray).forEach(list=>{
-      for(let i=list.length-1;i>=0;i--){
-        if(list[i]&&list[i].id==='unter_null')list.splice(i,1);
-      }
       list.forEach(w=>{
-        if(w&&w.id==='eis')w.image=L6T1_CDN_CLEAN+'eis.webp';
+        if(w&&w.id==='eis')w.image=L6T1_CDN_CLEAN+'das_eis.webp';
+        if(w&&w.id==='unter_null')w.image=L6T1_CDN_CLEAN+'unternull.webp';
       });
     });
   }catch(e){}
@@ -26,3 +27,4 @@ function l6t1InstallCleanCss(){
 }
 l6t1CleanWords();
 l6t1InstallCleanCss();
+setTimeout(()=>{try{l6t1CleanWords();if(document.getElementById('wordList')&&typeof renderOverview==='function')renderOverview(document.getElementById('wordList'));if(document.getElementById('taskGrid')&&typeof renderMenu==='function')renderMenu();}catch(e){}},100);
