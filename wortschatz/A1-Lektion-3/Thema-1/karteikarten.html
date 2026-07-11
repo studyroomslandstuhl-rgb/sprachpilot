@@ -59,18 +59,44 @@ function cardTranslation(w){return trans(w) || w.word || full(w)}
 function cardBack(w){return `<div class="sp-flip-word">${full(w)}</div>${w.plural?`<div class="sp-flip-plural">Plural: <b>${w.plural}</b></div>`:""}<button class="btn secondary" onclick="speak('${String(full(w)).replace(/'/g,"&#039;")}');return false">Deutsch hören</button>`}
 function progressHtml(){const left=Q.q.length+Q.bad.length+(Q.cur?1:0),done=Q.done.length,p=Math.round(done/(done+left)*100)||0;return `<div class="sp-task-progress-text">${done} richtig · ${left} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
 function finishWithSync(){if(window.SprachPilotScoring&&typeof window.SprachPilotScoring.awardTask==="function")window.SprachPilotScoring.awardTask(FILE);complete(area,FILE,"bild-wort.html")}
-function absoluteImageSrc(w){const file=String(w?.image||"").split("/").pop();return file?`/wortschatz/A1-Lektion-3/bilder/${file}`:""}
-function imageSrc(w){return absoluteImageSrc(w)||w.image||""}
+function safeAttr(v){return String(v||"").replace(/&/g,"&amp;").replace(/"/g,"&quot;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function imageFile(w){return String(w?.image||"").split("/").pop()}
+function imageCandidates(w){
+  const file=imageFile(w);
+  if(!file)return [];
+  const id=String(w?.id||"").trim();
+  const list=[
+    `/wortschatz/A1-Lektion-3/bilder/${file}`,
+    `../bilder/${file}`,
+    id?`/wortschatz/A1-Lektion-3/bilder/${id}.png`:"",
+    id?`../bilder/${id}.png`:""
+  ].filter(Boolean);
+  return [...new Set(list)];
+}
+function imageSrc(w){return imageCandidates(w)[0]||""}
 function fixImg(img){
-  const current=String(img.getAttribute("src")||"");
-  const file=current.split("/").pop();
-  const absolute=file?`/wortschatz/A1-Lektion-3/bilder/${file}`:"";
-  if(absolute&&current!==absolute){img.src=absolute;return}
+  const candidates=String(img.dataset.candidates||"").split("|").filter(Boolean);
+  const attempt=Number(img.dataset.attempt||0)+1;
+  if(candidates[attempt]){
+    img.dataset.attempt=String(attempt);
+    img.src=candidates[attempt];
+    return;
+  }
   const word=img.dataset.word||img.alt||"Bild";
   const fallback=document.createElement("div");
   fallback.className="image-fallback";
   fallback.textContent=word;
   img.replaceWith(fallback);
+}
+function ensureCardImage(w){
+  const img=document.getElementById("cardImage");
+  if(!img)return;
+  const candidates=imageCandidates(w);
+  img.dataset.attempt="0";
+  img.dataset.candidates=candidates.join("|");
+  img.dataset.word=full(w);
+  img.alt=full(w);
+  img.src=candidates[0]||"";
 }
 
 function show(){
@@ -88,7 +114,7 @@ function show(){
     <div class="sp-flip-wrap">
       <div id="fcard" class="sp-flip-card" onclick="revealCard(true)" role="button" tabindex="0" aria-label="Karte umdrehen">
         <div class="sp-flip-face sp-flip-front">
-          <img class="food-img" src="${imageSrc(w)}" data-word="${wordText}" onerror="fixImg(this)" alt="${wordText}">
+          <img id="cardImage" class="food-img" src="${imageSrc(w)}" data-candidates="${safeAttr(imageCandidates(w).join("|"))}" data-word="${safeAttr(wordText)}" onerror="fixImg(this)" alt="${safeAttr(wordText)}">
           <div class="sp-card-tap">Klicken oder tippen: Karte umdrehen</div>
         </div>
         <div class="sp-flip-face sp-flip-back">${cardBack(w)}</div>
@@ -104,6 +130,7 @@ function show(){
     </div>
     <div id="fb" class="feedback"></div>
     <div id="after" class="actions"></div>`;
+  ensureCardImage(w);
   fcard.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();revealCard(true)}});
 }
 
