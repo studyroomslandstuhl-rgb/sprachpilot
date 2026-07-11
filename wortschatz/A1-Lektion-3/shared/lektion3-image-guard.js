@@ -1,11 +1,14 @@
 (function(){
   const CDN='https://sprachpilot.b-cdn.net/';
   function clean(s){return String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'')}
-  function localPath(w){return '../bilder/'+clean(w&&w.id||w&&w.word)+'.png'}
   function bunnyPath(w){return CDN+clean(w&&w.id||w&&w.word)+'.webp'}
   function ensureImages(list){
     if(!Array.isArray(list))return;
-    list.forEach(w=>{if(w&&!w.image)w.image=localPath(w)})
+    list.forEach(w=>{
+      if(!w)return;
+      const src=String(w.image||'');
+      if(!src||src.includes('../bilder/')||/\.png$/i.test(src))w.image=bunnyPath(w);
+    });
   }
   ensureImages(window.WORDS);
   ensureImages(window.EXTRA_WORDS);
@@ -17,15 +20,12 @@
     const row=img.closest('.word-row,.choice,.card,.module')||document;
     const label=(img.getAttribute('alt')||row.textContent||'').trim();
     const guessed=clean(label.split('\n')[0]);
+    const src=img.getAttribute('src')||'';
+    const file=src.split('/').pop()||'';
     img.dataset.try=String(tries+1);
-    if(tries===0){
-      const src=img.getAttribute('src')||'';
-      const file=src.split('/').pop()||'';
-      img.src=CDN+file.replace(/\.png$/i,'.webp');
-      return;
-    }
-    if(tries===1&&guessed){img.src='../bilder/'+guessed+'.png';return;}
-    if(tries===2&&guessed){img.src=CDN+guessed+'.webp';return;}
+    if(tries===0&&file){img.src=CDN+file.replace(/\.png$/i,'.webp');return;}
+    if(tries===1&&guessed){img.src=CDN+guessed+'.webp';return;}
+    if(tries===2&&guessed){img.src='../bilder/'+guessed+'.png';return;}
     if(typeof oldFix==='function'){try{oldFix(img);return}catch(e){}}
     img.style.display='none';
   };
