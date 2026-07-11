@@ -3,8 +3,8 @@ import { getActiveProfile, logout, safeText, dashboardHref } from "./auth.js";
 const LESSONS={
   1:{title:"Lektion 1",subtitle:"Wortschatz · A1 Lektion 1",color:{main:"#2f95ad",dark:"#0b5c73"}},
   2:{title:"Lektion 2",subtitle:"Wortschatz · A1 Lektion 2",color:{main:"#6f8f2f",dark:"#3d5415"}},
-  3:{title:"Lektion 3: Einkaufen",subtitle:"Wortschatz · A1 Lektion 3 · Einkaufen",color:{main:"#f28c28",dark:"#8a4600"}},
-  4:{title:"Lektion 4: Wohnen",subtitle:"Wortschatz · A1 Lektion 4 · Wohnen",color:{main:"#f3c400",dark:"#6f5200"}},
+  3:{title:"Lektion 3: Einkaufen",subtitle:"Wortschatz · A1 Lektion 3 · Einkaufen",color:{main:"#f6b46b",dark:"#8a4f16"}},
+  4:{title:"Lektion 4: Wohnen",subtitle:"Wortschatz · A1 Lektion 4 · Wohnen",color:{main:"#f6d96b",dark:"#6d5a00"}},
   5:{title:"Lektion 5: Mein Tag",subtitle:"Wortschatz · A1 Lektion 5 · Mein Tag",color:{main:"#2f95ad",dark:"#0b5c73"}},
   6:{title:"Lektion 6: Wetter",subtitle:"Wortschatz · A1 Lektion 6 · Wetter",color:{main:"#FFB6C1",dark:"#8a3a4f"}}
 };
