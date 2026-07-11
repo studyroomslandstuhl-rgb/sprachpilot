@@ -14,28 +14,42 @@
       });
     }catch(e){}
   }
+  function unique(list){const seen=new Set();return (list||[]).filter(w=>w&&w.id&&!seen.has(w.id)&&seen.add(w.id))}
   ensureAdded();
   const oldWords=window.words;
   window.words=words=function(){
     ensureAdded();
     const list=typeof oldWords==='function'?oldWords():(BASE_WORDS||[]).concat((typeof extraOn==='function'&&extraOn())?EXTRA_WORDS:[]);
-    const seen=new Set();
-    return list.filter(w=>w&&w.id&&!seen.has(w.id)&&seen.add(w.id));
+    return unique(list);
   };
-  const oldNouns=window.nouns;
-  window.nouns=nouns=function(){return words().filter(w=>w.type==='noun')};
   window.wordItems=wordItems=function(){return words()};
-  window.cardItems=cardItems=function(){
-    return words().flatMap(w=>[{mode:w.type==='verb'?'verb':'noun',w},{mode:'sentence',w}]);
-  };
+  window.nouns=nouns=function(){return words().filter(w=>w.type==='noun')};
+  window.sentenceItems=sentenceItems=function(){return words().filter(w=>w.sentence&&!['wetter','grad'].includes(w.id)).map(w=>({w,sol:sentenceSolutions(w)}))};
+  window.cardItems=cardItems=function(){return words().flatMap(w=>[{mode:w.type==='verb'?'verb':(w.type==='phrase'?'phrase':'noun'),w},{mode:'sentence',w}])};
   const oldTaskTotals=window.taskTotals;
   window.taskTotals=taskTotals=function(){
     const base=typeof oldTaskTotals==='function'?oldTaskTotals():[];
-    return base.map(t=>t[0]==='karteikarten.html'?[t[0],cardItems().length,t[2]]:t);
+    return base.map(t=>{
+      if(t[0]==='karteikarten.html')return [t[0],cardItems().length,t[2]];
+      if(t[0]==='hoeren-schreiben.html')return [t[0],wordItems().length,t[2]];
+      if(t[0]==='hoeren-bild.html')return [t[0],words().length,t[2]];
+      if(t[0]==='nomen-satz-a.html'||t[0]==='nomen-satz-b.html')return [t[0],sentenceItems().length,t[2]];
+      return t;
+    });
+  };
+  const oldRenderOverview=window.renderOverview;
+  window.renderOverview=renderOverview=function(target){
+    ensureAdded();
+    if(typeof oldRenderOverview==='function')return oldRenderOverview(target);
+    if(!target)return;
+    target.innerHTML=unique(BASE_WORDS).map(w=>`<div class="word-row"><div class="word-placeholder"><img class="weather-img" src="${w.image||CDN+w.id+'.webp'}" alt=""></div><div><b>${w.full||w.word}</b><br><span class="small">${w.sentence||''}</span><span class="tag">${w.type||''}</span></div></div>`).join('');
   };
   function rerender(){
-    try{const wordList=document.getElementById('wordList');if(wordList&&typeof renderOverview==='function')renderOverview(wordList)}catch(e){}
+    ensureAdded();
+    try{const wordList=document.getElementById('wordList');if(wordList)renderOverview(wordList)}catch(e){}
     try{if(document.getElementById('taskGrid')&&typeof renderMenu==='function')renderMenu()}catch(e){}
   }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',rerender);else setTimeout(rerender,0);
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',rerender);else rerender();
+  setTimeout(rerender,100);
+  setTimeout(rerender,700);
 })();
