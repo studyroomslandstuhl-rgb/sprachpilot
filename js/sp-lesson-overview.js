@@ -129,7 +129,14 @@ export async function renderLessonOverview(config){
 
   const profile=getActiveProfile();
 
+  function removeForeignHeaders(){
+    document.querySelectorAll(".sp-header").forEach(header=>{
+      if(!root.contains(header)) header.remove();
+    });
+  }
+
   function draw(releaseData={},progress={},ready=false){
+    removeForeignHeaders();
     const cards=(config.themes||[]).map(theme=>{
       const open=ready ? themeOpen(releaseData,config.module||"wortschatz",config.lessonId,theme.id) : true;
       const topic=findTopicProgress(progress,config,theme);
@@ -154,13 +161,7 @@ export async function renderLessonOverview(config){
     bindSpHeader(root);
   }
 
-  root.innerHTML=`
-    <div class="sp-page">
-      <section class="lesson-title-card">
-        <h2>${safeText(config.lessonTitle)}</h2>
-      </section>
-    </div>
-  `;
+  removeForeignHeaders();
 
   const [releaseResult,progressResult]=await Promise.allSettled([
     loadCourseRelease(profile),
