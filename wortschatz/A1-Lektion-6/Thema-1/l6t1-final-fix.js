@@ -11,9 +11,9 @@
   function patchContent(){
     allWords().forEach(w=>{
       if(!w||!w.id)return;
-      if(w.id==='warm'){w.type='noun';w.article='die';w.word='Wärme';w.full='die Wärme';w.sentence='Es ist warm.';w.symbol='🌤️';w.image=url(IMG.waerme)}
-      if(w.id==='kalt'){w.type='noun';w.article='die';w.word='Kälte';w.full='die Kälte';w.sentence='Es ist kalt.';w.symbol='🥶';w.image=url(IMG.kaelte)}
-      if(w.id==='heiss'){w.type='noun';w.article='die';w.word='Hitze';w.full='die Hitze';w.sentence='Es ist heiß.';w.symbol='🔥';w.image=url(IMG.hitze)}
+      if(w.id==='warm'){w.type='noun';w.article='die';w.word='Wärme';w.full='die Wärme';w.sentence='Es ist warm.';w.symbol='🌤️';w.image=url(IMG.waerme);w.tr={...(w.tr||{}),en:'warmth',ru:'тепло',tr:'sıcaklık',uk:'тепло',ar:'الدفء',ja:'暖かさ',ro:'căldură',pl:'ciepło',ku:'germahî'}}
+      if(w.id==='kalt'){w.type='noun';w.article='die';w.word='Kälte';w.full='die Kälte';w.sentence='Es ist kalt.';w.symbol='🥶';w.image=url(IMG.kaelte);w.tr={...(w.tr||{}),en:'cold',ru:'холод',tr:'soğukluk',uk:'холод',ar:'البرد',ja:'寒さ',ro:'frig',pl:'zimno',ku:'sarî'}}
+      if(w.id==='heiss'){w.type='noun';w.article='die';w.word='Hitze';w.full='die Hitze';w.sentence='Es ist heiß.';w.symbol='🔥';w.image=url(IMG.hitze);w.tr={...(w.tr||{}),en:'heat',ru:'жара',tr:'sıcaklık',uk:'спека',ar:'الحرارة',ja:'暑さ',ro:'căldură mare',pl:'upał',ku:'germa zêde'}}
       if(IMG[w.id])w.image=url(IMG[w.id]);
       if(AUDIO_FILES[w.id])w.sound=audioUrl(AUDIO_FILES[w.id]);
     });
@@ -61,6 +61,7 @@
   window.saveTask=saveTask=function(file,st){if(typeof oldSave==='function')oldSave(file,st);else localStorage.setItem(taskKey(file),JSON.stringify(st));syncTask(file,st)};
   const oldMarkTaskDone=window.markTaskDone;
   window.markTaskDone=markTaskDone=function(file,total){if(typeof oldMarkTaskDone==='function')oldMarkTaskDone(file,total);else saveTask(file,{total,done:[...Array(total).keys()],queue:[],current:null,tries:0,hadWrong:false});syncTask(file,loadTask(file,total))};
+  function uploadLocalProgress(){try{taskTotals().forEach(t=>{const file=t[0],total=t[1];let st=null;try{st=JSON.parse(localStorage.getItem(taskKey(file))||'null')}catch(e){}if(st&&Array.isArray(st.done)&&Number(st.total||total)>0)syncTask(file,{...st,total:Number(st.total||total)})})}catch(e){}}
   async function restoreFirebaseProgress(){
     try{
       await import('/js/progress.js?v=restore-20260710');
@@ -82,6 +83,7 @@
     }catch(e){console.warn('L6T1 Firebase restore failed',e)}
   }
   setTimeout(restoreFirebaseProgress,250);
+  setTimeout(uploadLocalProgress,900);
   const css=document.createElement('style');
   css.textContent='.card-mode-marker{margin:14px auto 0;display:inline-flex;border-radius:999px;padding:8px 14px;background:#fff3f8;border:2px solid var(--lesson-line);font-weight:900;color:#7b123d}.exam-gray{background:#f1f5f9!important;border-color:#cbd5e1!important;color:#64748b!important}.exam-gray .num,.exam-gray .big-icon{color:#64748b!important}.exam-gray .start{background:#e2e8f0!important;border-color:#cbd5e1!important;color:#475569!important}.weather-card .weather-img{object-fit:cover}';
   document.head.appendChild(css);
