@@ -3,13 +3,21 @@
   const AUDIO=CDN+'audio/';
   const TOPIC_ID='wortschatz-a1-lektion-6-thema-1';
   const PAYLOAD={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:1,title:'A1 Lektion 6 · Thema 1 Wetter',topicId:TOPIC_ID};
-  const IMG={wetter:'wetter.webp',sonne:'sonne.webp',regen:'regen.webp',wind:'wind.webp',wolke:'wolke.webp',schnee:'schnee.webp',waerme:'warm.webp',warm:'warm.webp',kaelte:'kalt.webp',kalt:'kalt.webp',hitze:'heiss.webp',heiss:'heiss.webp',grad:'grad.webp',unter_null:'eis.webp',gewitter:'gewitter.webp',blitz:'blitz.webp',eis:'eis.webp',donner:'donner.webp',hagel:'hagel.webp',nebel:'nebel.webp',sturm:'sturm.webp'};
+  const IMG={wetter:'wetter.webp',sonne:'sonne.webp',regen:'regen.webp',wind:'wind.webp',wolke:'wolke.webp',schnee:'schnee.webp',waerme:'warm.webp',warm:'warm.webp',kaelte:'kalt.webp',kalt:'kalt.webp',hitze:'heiss.webp',heiss:'heiss.webp',grad:'grad.webp',unter_null:'unternull.webp',gewitter:'gewitter.webp',blitz:'blitz.webp',eis:'das_eis.webp',donner:'donner.webp',hagel:'hagel.webp',nebel:'nebel.webp',sturm:'sturm.webp'};
   const AUDIO_FILES={regen:'a1-l6-t1-sound-regen.mp3',wind:'a1-l6-t1-sound-wind.mp3',schnee:'a1-l6-t1-sound-schnee.mp3',gewitter:'a1-l6-t1-sound-gewitter.mp3',blitz:'a1-l6-t1-sound-blitz.mp3',eis:'a1-l6-t1-sound-eis.mp3',donner:'a1-l6-t1-sound-donner.mp3',hagel:'a1-l6-t1-sound-hagel.mp3'};
   const TASK_NAMES={'karteikarten.html':'Karteikarten','artikel.html':'Artikel','hoeren-schreiben.html':'Hören/Schreiben','hoeren-bild.html':'Hören/Karte','nomen-satz-a.html':'Nomen → Satz','nomen-satz-b.html':'Satz hören → Nomen','geraeusche.html':'Geräusche','geraeusche-satz.html':'Geräusch → Satz','wetter-saetze.html':'Sätze schreiben','hoeren.html':'Hören','pruefung.html':'Prüfung'};
   function url(file){return /^https?:\/\//i.test(String(file||''))?file:CDN+file}
   function audioUrl(file){return /^https?:\/\//i.test(String(file||''))?file:AUDIO+file}
   function allWords(){try{return BASE_WORDS.concat(EXTRA_WORDS)}catch(e){return[]}}
+  function ensureUnterNull(){
+    try{
+      if(Array.isArray(window.BASE_WORDS)&&!BASE_WORDS.some(w=>w&&w.id==='unter_null')){
+        BASE_WORDS.push({id:'unter_null',group:'Im Buch',type:'phrase',article:'',word:'unter Null',full:'unter Null',sentence:'Es sind drei Grad unter Null.',symbol:'➖',tr:{en:'below zero',ru:'ниже нуля',tr:'sıfırın altında',uk:'нижче нуля',ar:'تحت الصفر',ja:'氷点下',ro:'sub zero',pl:'poniżej zera',ku:'bin sifirê'}});
+      }
+    }catch(e){}
+  }
   function patchContent(){
+    ensureUnterNull();
     allWords().forEach(w=>{
       if(!w||!w.id)return;
       if(w.id==='warm'){w.type='noun';w.article='die';w.word='Wärme';w.full='die Wärme';w.sentence='Es ist warm.';w.symbol='🌤️';w.image=url(IMG.waerme);w.tr={...(w.tr||{}),en:'warmth',ru:'тепло',tr:'sıcaklık',uk:'тепло',ar:'الدفء',ja:'暖かさ',ro:'căldură',pl:'ciepło',ku:'germahî'}}
@@ -46,7 +54,7 @@
     return data.map(x=>({audio:audioUrl(x[0]),audioName:x[0],q:x[1],a:x[2],opts:x[3],transcript:x[4]}));
   };
   function afterAmUmFinal(w){const s=w.sentence;if(s==='Die Sonne scheint.')return 'scheint die Sonne.';let m=s.match(/^Es ist (.+)\.$/);if(m)return `ist es ${m[1]}.`;m=s.match(/^Es sind (.+)\.$/);if(m)return `sind es ${m[1]}.`;m=s.match(/^Es (.+)\.$/);if(m)return `${m[1]} es.`;return s.charAt(0).toLowerCase()+s.slice(1)}
-  window.writingItems=writingItems=function(){const pool=words().filter(w=>w.sentence&&!['wetter','grad','unter_null'].includes(w.id));const res=[];let n=0;while(res.length<20&&pool.length){const day=DAYS[n%DAYS.length],time=TIMES[n%TIMES.length],w=pool[n%pool.length];res.push({short:day[0],day:day[1],time,w,sol:`Am ${day[1]} um ${time} ${afterAmUmFinal(w)}`});n++}return res};
+  window.writingItems=writingItems=function(){const pool=words().filter(w=>w.sentence&&!['wetter','grad'].includes(w.id));const res=[];let n=0;while(res.length<20&&pool.length){const day=DAYS[n%DAYS.length],time=TIMES[n%TIMES.length],w=pool[n%pool.length];res.push({short:day[0],day:day[1],time,w,sol:`Am ${day[1]} um ${time} ${afterAmUmFinal(w)}`});n++}return res};
   window.visual=visual=function(w,small=false){patchContent();const img=w&&w.image||'';const alt=String((w&&w.full)||(w&&w.word)||'Wetterbild').replace(/"/g,'&quot;');const fallback=w&&w.symbol||'•';return `<div class="weather-card ${small?'small-card':''}" aria-label="${alt}">${img?`<img class="weather-img" src="${img}" alt="${alt}" loading="lazy" onerror="this.remove();this.parentElement.textContent='${fallback}'">`:fallback}</div>`};
   window.renderOverview=renderOverview=function(target){patchContent();target.innerHTML=['Im Buch','Nicht im Buch'].map(g=>{const visible=g==='Im Buch'?bookOn():extraOn();const list=(g==='Im Buch'?BASE_WORDS:EXTRA_WORDS);if(!visible&&!isTeacher())return '';if(!visible)return `<section class="type-block locked-set"><div class="type-title">${g} 🔒</div><p class="small">Diese Wortschatzliste ist für deinen Kurs noch nicht freigegeben.</p></section>`;return `<section class="type-block"><div class="type-title">${g}</div>${list.map(w=>`<div class="word-row"><div class="word-placeholder">${visual(w,true)}</div><div><b>${full(w)}</b><br><span class="small">${w.sentence}${w.altSentences?' / '+w.altSentences.join(' / '):''}</span><div class="small">Übersetzung (${LANGS[langKey()]||'EN'}): ${tr(w)}</div><span class="tag">${w.type}</span></div></div>`).join('')}</section>`}).join('')};
   window.renderTaskList=renderTaskList=function(includeExam=true){const ts=taskTotals().filter(t=>includeExam||t[0]!=='pruefung.html');return `<div class="grid task-grid">${ts.map((t,i)=>{const p=pctFor(t[0],t[1]);const icon=L6_T1_TASK_ICONS[t[0]]||'▶';const exam=t[0]==='pruefung.html';return `<a class="module task-card ${exam?'exam-gray':''}" href="${t[0]}"><div class="num">${i+1}. ${t[2]}</div><div class="icon big-icon">${icon}</div><p>${exam?'Teste dein Wissen.':'Wetter und Sätze üben.'}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}).join('')}</div>`};
@@ -55,34 +63,14 @@
     if(!file||!st)return;
     const done=Array.isArray(st.done)?st.done.length:0,total=Number(st.total||0)||0,percent=total?Math.round(done/total*100):0;
     const payload={...PAYLOAD,file,taskTitle:TASK_NAMES[file]||file.replace(/\.html$/,''),percent,done,total,completed:percent>=100};
-    try{
-      if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload);
-      else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:'recordTaskProgress',payload});import('/js/progress.js?v=restore-20260710').catch(()=>{})}
-    }catch(e){}
+    try{if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload);else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:'recordTaskProgress',payload});import('/js/progress.js?v=restore-20260710').catch(()=>{})}}catch(e){}
   }
   window.saveTask=saveTask=function(file,st){if(typeof oldSave==='function')oldSave(file,st);else localStorage.setItem(taskKey(file),JSON.stringify(st));syncTask(file,st)};
   const oldMarkTaskDone=window.markTaskDone;
   window.markTaskDone=markTaskDone=function(file,total){if(typeof oldMarkTaskDone==='function')oldMarkTaskDone(file,total);else saveTask(file,{total,done:[...Array(total).keys()],queue:[],current:null,tries:0,hadWrong:false});syncTask(file,loadTask(file,total))};
   function uploadLocalProgress(){try{taskTotals().forEach(t=>{const file=t[0],total=t[1];let st=null;try{st=JSON.parse(localStorage.getItem(taskKey(file))||'null')}catch(e){}if(st&&Array.isArray(st.done)&&Number(st.total||total)>0)syncTask(file,{...st,total:Number(st.total||total)})})}catch(e){}}
   async function restoreFirebaseProgress(){
-    try{
-      await import('/js/progress.js?v=restore-20260710');
-      if(!window.SPProgress||!SPProgress.loadCurrentStudentProgress)return;
-      const data=await SPProgress.loadCurrentStudentProgress();
-      const topic=data&&data.wortschatz&&data.wortschatz[TOPIC_ID];
-      if(!topic||!topic.tasks)return;
-      Object.values(topic.tasks).forEach(t=>{
-        const file=t.file||t.key;if(!file)return;
-        const total=Number(t.total||0)||0,done=Number(t.done||0)||0;if(!total||!done)return;
-        const key=taskKey(file);let local=null;try{local=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}
-        if(!local||!Array.isArray(local.done)||local.done.length<done){
-          localStorage.setItem(key,JSON.stringify({total,done:[...Array(Math.min(done,total)).keys()],queue:[...Array(total).keys()].slice(done),current:null,tries:0,hadWrong:false}));
-        }
-      });
-      if(document.getElementById('wordList'))renderOverview(document.getElementById('wordList'));
-      if(document.getElementById('stats'))renderStats(document.getElementById('stats'));
-      if(document.getElementById('taskGrid'))renderMenu();
-    }catch(e){console.warn('L6T1 Firebase restore failed',e)}
+    try{await import('/js/progress.js?v=restore-20260710');if(!window.SPProgress||!SPProgress.loadCurrentStudentProgress)return;const data=await SPProgress.loadCurrentStudentProgress();const topic=data&&data.wortschatz&&data.wortschatz[TOPIC_ID];if(!topic||!topic.tasks)return;Object.values(topic.tasks).forEach(t=>{const file=t.file||t.key;if(!file)return;const total=Number(t.total||0)||0,done=Number(t.done||0)||0;if(!total||!done)return;const key=taskKey(file);let local=null;try{local=JSON.parse(localStorage.getItem(key)||'null')}catch(e){}if(!local||!Array.isArray(local.done)||local.done.length<done){localStorage.setItem(key,JSON.stringify({total,done:[...Array(Math.min(done,total)).keys()],queue:[...Array(total).keys()].slice(done),current:null,tries:0,hadWrong:false}))}});if(document.getElementById('wordList'))renderOverview(document.getElementById('wordList'));if(document.getElementById('stats'))renderStats(document.getElementById('stats'));if(document.getElementById('taskGrid'))renderMenu()}catch(e){console.warn('L6T1 Firebase restore failed',e)}
   }
   setTimeout(restoreFirebaseProgress,250);
   setTimeout(uploadLocalProgress,900);
