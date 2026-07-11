@@ -142,13 +142,7 @@ export async function renderLessonOverview(config){
 
     root.innerHTML=`
       <div class="sp-page">
-        ${renderSpHeader({
-          profile,
-          variant:"lesson-overview",
-          title:"SprachPilot",
-          subtitle:config.subtitle||config.lessonTitle,
-          navItems:[{label:"Zurück",href:config.backHref||"../index.html"}]
-        })}
+        ${renderSpHeader({profile})}
         <section class="lesson-title-card">
           <h2>${safeText(config.lessonTitle)}</h2>
         </section>
