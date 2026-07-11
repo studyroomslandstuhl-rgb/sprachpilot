@@ -7,21 +7,9 @@
   --lesson-ink:#20130a;
   --sp-text:#20242b;
   --sp-muted:#5f6670;
-  --sp-shadow:0 12px 34px rgba(0,0,0,.12);
 }
 
 *{box-sizing:border-box;margin:0;padding:0}
-
-#accountStrip,
-.account-strip{
-  display:none!important;
-  height:0!important;
-  min-height:0!important;
-  margin:0!important;
-  padding:0!important;
-  overflow:hidden!important;
-  border:0!important;
-}
 
 body{
   min-height:100vh;
@@ -36,110 +24,6 @@ body{
   max-width:1180px;
   margin:0 auto;
   padding:24px;
-}
-
-.sp-lesson-header{
-  background:var(--lesson-main);
-  border:0;
-  border-radius:0 0 26px 26px;
-  box-shadow:0 10px 28px rgba(0,0,0,.16);
-  padding:20px 24px 18px;
-  margin:0 calc(50% - 50vw) 22px;
-  color:#fff;
-}
-
-.sp-header-main{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:22px;
-  flex-wrap:wrap;
-}
-
-.sp-brand{
-  display:flex;
-  align-items:center;
-  gap:18px;
-  text-decoration:none;
-  color:#fff;
-  min-width:0;
-}
-
-.sp-logo{
-  width:66px;
-  height:66px;
-  border-radius:16px;
-  background:rgba(255,255,255,.94);
-  color:var(--lesson-dark);
-  display:grid;
-  place-items:center;
-  font-size:28px;
-  font-weight:900;
-  box-shadow:0 8px 18px rgba(0,0,0,.16);
-  flex:0 0 auto;
-}
-
-.sp-title h1{
-  font-size:32px;
-  line-height:1.05;
-  font-weight:900;
-}
-
-.sp-subtitle{
-  color:rgba(255,255,255,.92);
-  font-size:16px;
-  font-weight:900;
-  margin-top:6px;
-}
-
-.sp-account{
-  display:flex;
-  flex-wrap:wrap;
-  justify-content:flex-end;
-  gap:10px;
-  align-items:center;
-  max-width:620px;
-}
-
-.sp-pill,
-.sp-link,
-.sp-back{
-  border:2px solid rgba(255,255,255,.82);
-  background:rgba(255,255,255,.92);
-  color:var(--lesson-dark);
-  border-radius:14px;
-  padding:10px 14px;
-  min-height:44px;
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-  font-size:15px;
-  font-weight:900;
-  text-decoration:none;
-  font-family:inherit;
-}
-
-.sp-pill{
-  background:rgba(255,255,255,.78);
-  min-width:210px;
-}
-
-.sp-link{
-  cursor:pointer;
-}
-
-.sp-link:hover,
-.sp-back:hover{
-  transform:translateY(-1px);
-  box-shadow:0 6px 14px rgba(0,0,0,.13);
-}
-
-.sp-nav{
-  display:flex;
-  flex-wrap:wrap;
-  gap:10px;
-  margin-top:20px;
 }
 
 .lesson-title-card{
@@ -310,12 +194,7 @@ body{
 
 @media(max-width:760px){
   .sp-page{padding:14px}
-  .sp-lesson-header{padding:18px}
-  .sp-header-main{flex-direction:column}
-  .sp-account{justify-content:flex-start;max-width:none}
-  .sp-pill{min-width:0}
-  .sp-title h1{font-size:28px}
-  .sp-logo{width:62px;height:62px;font-size:24px}
+  .lesson-title-card h2{font-size:26px}
   .theme-grid{grid-template-columns:1fr}
 }
 
