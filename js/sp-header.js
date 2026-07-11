@@ -31,6 +31,7 @@ function setColor(name,value){
 
 function lessonHref(lessonNumber){return `/wortschatz/A1-Lektion-${lessonNumber}/`}
 function themeHref(lessonNumber,themeNumber){return `/wortschatz/A1-Lektion-${lessonNumber}/Thema-${themeNumber}/`}
+function themeOverviewHref(lessonNumber,themeNumber){return `/wortschatz/A1-Lektion-${lessonNumber}/Thema-${themeNumber}/uebersicht.html`}
 
 export function detectSpHeaderContext(pathname=window.location.pathname){
   const path=String(pathname||"/").replace(/\/index\.html$/i,"/");
@@ -49,7 +50,7 @@ export function detectSpHeaderContext(pathname=window.location.pathname){
         ? `A1 Lektion ${lessonNumber} · Thema ${themeNumber}`
         : lesson.subtitle;
     const backHref=level==="lesson" ? "/wortschatz/" : (level==="theme" ? lessonHref(lessonNumber) : themeHref(lessonNumber,themeNumber));
-    const overviewHref=themeNumber ? themeHref(lessonNumber,themeNumber) : lessonHref(lessonNumber);
+    const overviewHref=themeNumber ? themeOverviewHref(lessonNumber,themeNumber) : lessonHref(lessonNumber);
     const navItems=level==="lesson"
       ? [{label:"← Zurück",href:backHref}]
       : [
@@ -89,12 +90,45 @@ export function renderSpHeader(options={}){
   const dash=context.dashboardHref||((typeof dashboardHref==="function") ? dashboardHref() : "/student-dashboard/index.html");
   const nav=(context.navItems||[]).map(navItem).join("");
 
-  return `<header class="sp-header ${safeText(context.variant?`sp-header--${context.variant}`:"")}"><div class="sp-header__main"><a class="sp-header__brand" href="${safeText(homeHref)}"><span class="sp-header__logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></span><span class="sp-header__title"><h1>${safeText(title)}</h1>${subtitle?`<span class="sp-header__subtitle">${safeText(subtitle)}</span>`:""}</span></a><div class="sp-header__account"><span class="sp-header__pill">${safeText(account)}</span><a class="sp-header__button" href="${safeText(dash)}">Dashboard</a><a class="sp-header__button" href="/profile/index.html">Profil</a><button class="sp-header__button" type="button" data-sp-logout>Abmelden</button></div></div>${nav?`<nav class="sp-header__nav">${nav}</nav>`:""}</header>`;
+  return `
+    <header class="sp-header ${safeText(context.variant?`sp-header--${context.variant}`:"")}">
+      <div class="sp-header__main">
+        <a class="sp-header__brand" href="${safeText(homeHref)}">
+          <span class="sp-header__logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></span>
+          <span class="sp-header__title">
+            <h1>${safeText(title)}</h1>
+            ${subtitle?`<span class="sp-header__subtitle">${safeText(subtitle)}</span>`:""}
+          </span>
+        </a>
+        <div class="sp-header__account">
+          <span class="sp-header__pill">${safeText(account)}</span>
+          <a class="sp-header__button" href="${safeText(dash)}">Dashboard</a>
+          <a class="sp-header__button" href="/profile/index.html">Profil</a>
+          <button class="sp-header__button" type="button" data-sp-logout>Abmelden</button>
+        </div>
+      </div>
+      ${nav?`<nav class="sp-header__nav">${nav}</nav>`:""}
+    </header>
+  `;
 }
 
 export function bindSpHeader(root=document){
-  root.querySelectorAll("[data-sp-logout]").forEach(button=>{if(button.dataset.spBound)return;button.dataset.spBound="1";button.addEventListener("click",()=>logout())});
-  root.querySelectorAll('[data-sp-action="reset-progress"]').forEach(button=>{if(button.dataset.spBound)return;button.dataset.spBound="1";button.addEventListener("click",()=>{if(typeof window.resetThemeProgress==="function")window.resetThemeProgress();else window.dispatchEvent(new CustomEvent("sp:reset-theme-progress"))})});
+  root.querySelectorAll("[data-sp-logout]").forEach(button=>{
+    if(button.dataset.spBound) return;
+    button.dataset.spBound="1";
+    button.addEventListener("click",()=>logout());
+  });
+  root.querySelectorAll('[data-sp-action="reset-progress"]').forEach(button=>{
+    if(button.dataset.spBound) return;
+    button.dataset.spBound="1";
+    button.addEventListener("click",()=>{
+      if(typeof window.resetThemeProgress==="function"){
+        window.resetThemeProgress();
+      }else{
+        window.dispatchEvent(new CustomEvent("sp:reset-theme-progress"));
+      }
+    });
+  });
 }
 
 function ensureHeaderCss(){
@@ -105,22 +139,59 @@ function ensureHeaderCss(){
   document.head.appendChild(link);
 }
 
-function hideOldAccountStrip(){document.querySelectorAll("#accountStrip,.account-strip").forEach(el=>{el.remove()})}
-function removeExtraSharedHeaders(){[...document.querySelectorAll(".sp-header")].slice(1).forEach(el=>el.remove())}
-function removeOldHeaders(){document.querySelectorAll(".topbar,#spHeader").forEach(el=>{if(!el.classList.contains("sp-header"))el.remove()});document.querySelectorAll(".hero").forEach(hero=>{if(!hero.textContent.trim()&&!hero.querySelector("img,video,canvas,.sp-header"))hero.remove()})}
+function hideOldAccountStrip(){
+  document.querySelectorAll("#accountStrip,.account-strip").forEach(el=>{
+    el.innerHTML="";
+    el.style.display="none";
+    el.style.height="0";
+    el.style.minHeight="0";
+    el.style.overflow="hidden";
+  });
+}
+
+function removeExtraSharedHeaders(){
+  const headers=[...document.querySelectorAll(".sp-header")];
+  headers.slice(1).forEach(el=>el.remove());
+}
+
+function removeOldHeaders(){
+  document.querySelectorAll(".topbar,#spHeader").forEach(el=>{
+    if(!el.classList.contains("sp-header")) el.remove();
+  });
+  document.querySelectorAll(".hero").forEach(hero=>{
+    const shared=hero.querySelector(":scope > .sp-header");
+    if(shared && document.querySelector("body > .sp-header, .container > .sp-header, .sp-page > .sp-header")) shared.remove();
+  });
+}
 
 function replaceOldHeader(){
   hideOldAccountStrip();
   removeExtraSharedHeaders();
   const existing=document.querySelector(".sp-header");
-  if(existing){removeOldHeaders();bindSpHeader(document);return true}
+  if(existing){
+    removeOldHeaders();
+    bindSpHeader(document);
+    return true;
+  }
   const html=renderSpHeader();
   const explicit=document.getElementById("spHeader");
-  if(explicit){explicit.outerHTML=html;bindSpHeader(document);return true}
+  if(explicit){
+    explicit.outerHTML=html;
+    bindSpHeader(document);
+    return true;
+  }
   const topbar=document.querySelector(".topbar");
-  if(topbar){topbar.outerHTML=html;bindSpHeader(document);return true}
+  if(topbar){
+    topbar.outerHTML=html;
+    bindSpHeader(document);
+    return true;
+  }
   const hero=document.querySelector(".hero");
-  if(hero){hero.outerHTML=html;bindSpHeader(document);return true}
+  if(hero){
+    hero.innerHTML=html;
+    bindSpHeader(hero);
+    return true;
+  }
   return false;
 }
 
@@ -128,11 +199,27 @@ export function installSpHeader(){
   ensureHeaderCss();
   hideOldAccountStrip();
   const run=()=>replaceOldHeader();
-  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",run,{once:true});else run();
+  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",run,{once:true});
+  else run();
   window.addEventListener("load",run,{once:true});
-  setTimeout(run,100);setTimeout(run,500);setTimeout(run,1200);setTimeout(run,2500);
-  if(!window.SP_HEADER_OBSERVER){window.SP_HEADER_OBSERVER=new MutationObserver(()=>run());const startObserver=()=>document.body&&window.SP_HEADER_OBSERVER.observe(document.body,{childList:true,subtree:true});if(document.body)startObserver();else document.addEventListener("DOMContentLoaded",startObserver,{once:true})}
+  setTimeout(run,100);
+  setTimeout(run,500);
+  setTimeout(run,1200);
+  setTimeout(run,2500);
+  if(!window.SP_HEADER_OBSERVER){
+    window.SP_HEADER_OBSERVER=new MutationObserver(()=>run());
+    const startObserver=()=>document.body&&window.SP_HEADER_OBSERVER.observe(document.body,{childList:true,subtree:true});
+    if(document.body) startObserver();
+    else document.addEventListener("DOMContentLoaded",startObserver,{once:true});
+  }
 }
 
-export function renderAutoSpHeader(target=document.getElementById("spHeader")){if(!target)return;target.outerHTML=renderSpHeader();bindSpHeader(document)}
-if(document.currentScript?.hasAttribute("data-sp-auto-header"))installSpHeader();
+export function renderAutoSpHeader(target=document.getElementById("spHeader")){
+  if(!target) return;
+  target.outerHTML=renderSpHeader();
+  bindSpHeader(document);
+}
+
+if(document.currentScript?.hasAttribute("data-sp-auto-header")){
+  installSpHeader();
+}
