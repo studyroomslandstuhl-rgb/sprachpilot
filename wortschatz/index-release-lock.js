@@ -48,7 +48,7 @@
       a.dataset.releaseOpen=open?'1':'0';
       if(open){a.setAttribute('href','./'+lesson+'/')}else{a.removeAttribute('href')}
       a.onclick=function(e){if(!open){e.preventDefault();alert('Diese Lektion ist für deinen Kurs noch nicht freigeschaltet.')}};
-      a.style.display=open?'':'none';
+      a.style.display='';
       if(open)count++;
       old.replaceWith(a);
     });
