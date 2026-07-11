@@ -5,6 +5,7 @@
   const PAYLOAD={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:1,title:'A1 Lektion 6 · Thema 1 Wetter',topicId:TOPIC_ID};
   const IMG={wetter:'wetter.webp',sonne:'sonne.webp',regen:'regen.webp',wind:'wind.webp',wolke:'wolke.webp',schnee:'schnee.webp',waerme:'warm.webp',warm:'warm.webp',kaelte:'kalt.webp',kalt:'kalt.webp',hitze:'heiss.webp',heiss:'heiss.webp',grad:'grad.webp',unter_null:'eis.webp',gewitter:'gewitter.webp',blitz:'blitz.webp',eis:'eis.webp',donner:'donner.webp',hagel:'hagel.webp',nebel:'nebel.webp',sturm:'sturm.webp'};
   const AUDIO_FILES={regen:'a1-l6-t1-sound-regen.mp3',wind:'a1-l6-t1-sound-wind.mp3',schnee:'a1-l6-t1-sound-schnee.mp3',gewitter:'a1-l6-t1-sound-gewitter.mp3',blitz:'a1-l6-t1-sound-blitz.mp3',eis:'a1-l6-t1-sound-eis.mp3',donner:'a1-l6-t1-sound-donner.mp3',hagel:'a1-l6-t1-sound-hagel.mp3'};
+  const TASK_NAMES={'karteikarten.html':'Karteikarten','artikel.html':'Artikel','hoeren-schreiben.html':'Hören/Schreiben','hoeren-bild.html':'Hören/Karte','nomen-satz-a.html':'Nomen → Satz','nomen-satz-b.html':'Satz hören → Nomen','geraeusche.html':'Geräusche','geraeusche-satz.html':'Geräusch → Satz','wetter-saetze.html':'Sätze schreiben','hoeren.html':'Hören','pruefung.html':'Prüfung'};
   function url(file){return /^https?:\/\//i.test(String(file||''))?file:CDN+file}
   function audioUrl(file){return /^https?:\/\//i.test(String(file||''))?file:AUDIO+file}
   function allWords(){try{return BASE_WORDS.concat(EXTRA_WORDS)}catch(e){return[]}}
@@ -19,7 +20,7 @@
     });
   }
   patchContent();
-  const oldBookOn=window.bookOn||(()=>true), oldExtraOn=window.extraOn||(()=>false);
+  const oldBookOn=window.bookOn||(()=>true), oldExtraOn=window.extraOn||(()=>false), oldTaskTotals=window.taskTotals;
   window.bookOn=bookOn=function(){try{return oldBookOn()}catch(e){return true}};
   window.extraOn=extraOn=function(){try{return oldExtraOn()}catch(e){return localStorage.getItem('SP_L6_T1_EXTRA_WEATHER')==='1'}};
   window.words=words=function(){patchContent();return (bookOn()?BASE_WORDS:[]).concat(extraOn()?EXTRA_WORDS:[])};
@@ -28,6 +29,7 @@
   window.soundWords=soundWords=function(){return words().filter(w=>w.sound)};
   window.cardItems=cardItems=function(){return words().flatMap(w=>[{mode:'noun',w},{mode:'sentence',w}])};
   window.sentenceItems=sentenceItems=function(){return nouns().filter(w=>w.sentence).map(w=>({w,sol:sentenceSolutions(w)}))};
+  window.taskTotals=taskTotals=function(){return (oldTaskTotals?oldTaskTotals():[]).map(t=>TASK_NAMES[t[0]]?[t[0],t[1],TASK_NAMES[t[0]]]:t)};
   window.listenItems=listenItems=function(){
     const data=[
       ['a1-l6-t1-hoeren-01.mp3','Wie ist das Wetter am Montagvormittag in Berlin?','sonnig',['sonnig','windig','verschneit'],'Guten Morgen. Hier ist der Wetterbericht für Berlin. Am Montagvormittag scheint die Sonne. Es ist warm.'],
@@ -52,7 +54,7 @@
   function syncTask(file,st){
     if(!file||!st)return;
     const done=Array.isArray(st.done)?st.done.length:0,total=Number(st.total||0)||0,percent=total?Math.round(done/total*100):0;
-    const payload={...PAYLOAD,file,taskTitle:file.replace(/\.html$/,''),percent,done,total,completed:percent>=100};
+    const payload={...PAYLOAD,file,taskTitle:TASK_NAMES[file]||file.replace(/\.html$/,''),percent,done,total,completed:percent>=100};
     try{
       if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload);
       else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:'recordTaskProgress',payload});import('/js/progress.js?v=restore-20260710').catch(()=>{})}
