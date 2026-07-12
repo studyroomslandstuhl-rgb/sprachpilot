@@ -20,8 +20,16 @@ if(PERFORMANCE_SYNC_OFF){
   window.SP_NO_FIREBASE_SYNC=true;
   window.SP_PERFORMANCE_MODE=true;
 }
-if(SP_USER){installSpHeader()}
-window.addEventListener("SP_PROFILE_SYNCED",()=>{try{installSpHeader()}catch(e){}});
+function shouldInstallGlobalHeader(){
+  return !document.querySelector(".topbar") && !document.querySelector("header.topbar");
+}
+function installHeaderOnce(){
+  if(!SP_USER)return;
+  if(!shouldInstallGlobalHeader())return;
+  try{installSpHeader()}catch(e){}
+}
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",installHeaderOnce);else installHeaderOnce();
+window.addEventListener("SP_PROFILE_SYNCED",()=>setTimeout(installHeaderOnce,0));
 import("/js/microphone-fallback.js?v=1").catch(()=>{});
 import("/js/back-button-fix.js?v=1").catch(()=>{});
 import("/js/release-helper.js?v=10").catch(()=>{});
