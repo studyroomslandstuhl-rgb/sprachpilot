@@ -31,7 +31,21 @@ function installHeaderOnce(){
   if(!shouldInstallGlobalHeader())return;
   try{installSpHeader()}catch(e){}
 }
+function normalizeExamIcons(){
+  document.querySelectorAll(".exam-icon").forEach(el=>{el.textContent="⭐"});
+  document.querySelectorAll("a,button,.module,.task-card").forEach(el=>{
+    const text=String(el.textContent||"");
+    const href=String(el.getAttribute?.("href")||"");
+    if(!/Prüfung|Pruefung/i.test(text)&&!/pruefung|exam/i.test(href))return;
+    const icon=el.querySelector?.(".icon,.big-icon");
+    if(icon)icon.textContent="⭐";
+  });
+}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",installHeaderOnce);else installHeaderOnce();
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",normalizeExamIcons);else normalizeExamIcons();
+setTimeout(normalizeExamIcons,200);
+setTimeout(normalizeExamIcons,1200);
+try{new MutationObserver(()=>normalizeExamIcons()).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
 window.addEventListener("SP_PROFILE_SYNCED",()=>setTimeout(installHeaderOnce,0));
 import("/js/microphone-fallback.js?v=1").catch(()=>{});
 import("/js/back-button-fix.js?v=1").catch(()=>{});
