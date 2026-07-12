@@ -27,4 +27,3 @@ function l6t1InstallCleanCss(){
 }
 l6t1CleanWords();
 l6t1InstallCleanCss();
-setTimeout(()=>{try{l6t1CleanWords();if(document.getElementById('wordList')&&typeof renderOverview==='function')renderOverview(document.getElementById('wordList'));if(document.getElementById('taskGrid')&&typeof renderMenu==='function')renderMenu();}catch(e){}},100);
