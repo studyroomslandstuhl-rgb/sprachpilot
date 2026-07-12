@@ -44,12 +44,4 @@
     if(!target)return;
     target.innerHTML=unique(BASE_WORDS).map(w=>`<div class="word-row"><div class="word-placeholder"><img class="weather-img" src="${w.image||CDN+w.id+'.webp'}" alt=""></div><div><b>${w.full||w.word}</b><br><span class="small">${w.sentence||''}</span><span class="tag">${w.type||''}</span></div></div>`).join('');
   };
-  function rerender(){
-    ensureAdded();
-    try{const wordList=document.getElementById('wordList');if(wordList)renderOverview(wordList)}catch(e){}
-    try{if(document.getElementById('taskGrid')&&typeof renderMenu==='function')renderMenu()}catch(e){}
-  }
-  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',rerender);else rerender();
-  setTimeout(rerender,100);
-  setTimeout(rerender,700);
 })();
