@@ -29,7 +29,7 @@ import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
 if(FULL_FIREBASE){
   if(!LIGHT_FIREBASE_PAGE)setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).catch(()=>{})},1500);
-  setTimeout(()=>{import("/js/scoring.js?v=7").catch(()=>{})},300);
+  setTimeout(()=>{import("/js/scoring.js?v=10").catch(()=>{})},300);
 }
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){setTimeout(()=>import("/wortschatz/index-release-lock.js?v=12").catch(()=>{}),900)}
 if(IS_VERBEN_EXERCISE){
