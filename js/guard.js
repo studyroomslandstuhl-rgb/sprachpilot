@@ -31,14 +31,14 @@ function installHeaderOnce(){
   if(!shouldInstallGlobalHeader())return;
   try{installSpHeader()}catch(e){}
 }
+function setStar(el){if(el&&el.textContent!=="⭐")el.textContent="⭐"}
 function normalizeExamIcons(){
-  document.querySelectorAll(".exam-icon").forEach(el=>{el.textContent="⭐"});
+  document.querySelectorAll(".exam-icon").forEach(setStar);
   document.querySelectorAll("a,button,.module,.task-card").forEach(el=>{
     const text=String(el.textContent||"");
     const href=String(el.getAttribute?.("href")||"");
     if(!/Prüfung|Pruefung/i.test(text)&&!/pruefung|exam/i.test(href))return;
-    const icon=el.querySelector?.(".icon,.big-icon");
-    if(icon)icon.textContent="⭐";
+    setStar(el.querySelector?.(".icon,.big-icon"));
   });
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",installHeaderOnce);else installHeaderOnce();
