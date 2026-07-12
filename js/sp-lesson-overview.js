@@ -162,6 +162,7 @@ export async function renderLessonOverview(config){
   }
 
   removeForeignHeaders();
+  draw({}, {}, false);
 
   const [releaseResult,progressResult]=await Promise.allSettled([
     loadCourseRelease(profile),
