@@ -13,7 +13,7 @@ const IS_FRAGEN_EXERCISE=path.includes("/fragen-A1/")||path.includes("/fragen/")
 const IS_VERBEN_EXERCISE=path.includes("/verben-A1/");
 const LIGHT_FIREBASE_PAGE=IS_WORTSCHATZ_EXERCISE||IS_FRAGEN_EXERCISE||IS_VERBEN_EXERCISE;
 const NO_FIREBASE_SYNC=qs.has("nofirebase")||localStorage.getItem("SP_NO_FIREBASE_SYNC")==="1";
-const PERFORMANCE_SYNC_OFF=NO_FIREBASE_SYNC||LIGHT_FIREBASE_PAGE;
+const PERFORMANCE_SYNC_OFF=NO_FIREBASE_SYNC;
 const FULL_FIREBASE=!PERFORMANCE_SYNC_OFF;
 if(PERFORMANCE_SYNC_OFF){
   window.spCanWriteFirebaseProgress=()=>false;
@@ -28,8 +28,8 @@ import("/js/release-helper.js?v=10").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
 if(FULL_FIREBASE){
-  setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).catch(()=>{})},1500);
-  setTimeout(()=>{import("/js/scoring.js?v=6").catch(()=>{})},1800);
+  if(!LIGHT_FIREBASE_PAGE)setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).catch(()=>{})},1500);
+  setTimeout(()=>{import("/js/scoring.js?v=7").catch(()=>{})},300);
 }
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){setTimeout(()=>import("/wortschatz/index-release-lock.js?v=12").catch(()=>{}),900)}
 if(IS_VERBEN_EXERCISE){
