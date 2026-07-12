@@ -24,6 +24,7 @@ function patch(){
   const later=()=>{
     if(typeof window.complete==="function"&&!window.complete.__spScoringV9){const old=window.complete;window.complete=function(area,file,nextFile){const out=old.apply(this,arguments);if(String(file||"").includes("pruefung"))awardExam({percent:100});else awardTask(file);return out};window.complete.__spScoringV9=true;}
     if(typeof window.done==="function"&&!window.done.__spScoringV9){const old=window.done;window.done=function(file,total){const out=old.apply(this,arguments);awardTask(file,{payload:{total:Number(total||100),done:Number(total||100)}});return out};window.done.__spScoringV9=true;}
+    if(typeof window.finishTask==="function"&&!window.finishTask.__spScoringV9){const old=window.finishTask;window.finishTask=function(file){const out=old.apply(this,arguments);if(String(file||"").includes("pruefung"))awardExam({percent:100});else awardTask(file);return out};window.finishTask.__spScoringV9=true;}
     if(typeof window.saveExamResult==="function"&&!window.saveExamResult.__spScoringV9){const old=window.saveExamResult;window.saveExamResult=function(result){const out=old.apply(this,arguments);awardExam(result||{});return out};window.saveExamResult.__spScoringV9=true;}
     drainQueues();
   };
