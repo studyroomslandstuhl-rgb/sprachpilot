@@ -38,7 +38,7 @@ import("/js/back-button-fix.js?v=1").catch(()=>{});
 import("/js/release-helper.js?v=10").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(NEEDS_EXAM_UNLOCK_FIX&&!PERFORMANCE_SYNC_OFF){
-  setTimeout(()=>import("/js/exam-unlock-fix.js?v=1").catch(()=>{}),120);
+  setTimeout(()=>import("/js/exam-unlock-fix.js?v=2").catch(()=>{}),120);
 }
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
 if(FULL_FIREBASE){
