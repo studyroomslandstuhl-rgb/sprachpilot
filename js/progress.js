@@ -2,7 +2,7 @@ import { db, doc, getDoc, setDoc, serverTimestamp, collection, query, where, get
 import { getActiveProfile } from "./auth.js";
 
 const MODULE_KEYS=["fragen","wortschatz","verben","grammatik"];
-const RULES={taskPoints(run){run=Number(run)||1;if(run===1)return 5;if(run===2)return 10;if(run===3)return 15;return 1},examMax(run){run=Number(run)||1;if(run===1)return 100;if(run===2)return 200;if(run===3)return 300;return 1},examEarned(run,percent){run=Number(run)||1;percent=clamp(percent);if(run>=4)return percent>=100?1:0;return Math.round(this.examMax(run)*percent/100)}};
+const RULES={taskPoints(run){run=Number(run)||1;if(run===1)return 5;if(run===2)return 10;if(run===3)return 15;return 0},examMax(run){run=Number(run)||1;if(run===1)return 100;if(run===2)return 200;if(run===3)return 300;return 0},examEarned(run,percent){run=Number(run)||1;percent=clamp(percent);if(run>=4)return 0;return Math.round(this.examMax(run)*percent/100)}};
 const TECH=new Set(["state","progress","stars","activeVerbs","learnedVerbs","known","unknown","unsure","updatedAt","lastActive","lastLogin","lastPage","lastAction","totals","current","profile","metadata"]);
 function now(){return new Date().toISOString()}
 function cleanId(s){return String(s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"item"}
