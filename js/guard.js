@@ -9,6 +9,7 @@ const qs=new URLSearchParams(location.search);
 if(qs.has("nofirebase"))localStorage.setItem("SP_NO_FIREBASE_SYNC","1");
 if(qs.has("firebase"))localStorage.removeItem("SP_NO_FIREBASE_SYNC");
 const IS_WORTSCHATZ_EXERCISE=/\/wortschatz\/A\d-Lektion-\d+\/Thema-\d+\//.test(path);
+const IS_WORTSCHATZ_LESSON_OVERVIEW=/\/wortschatz\/A\d-Lektion-\d+\/?(?:index\.html)?$/i.test(path);
 const IS_FRAGEN_EXERCISE=path.includes("/fragen-A1/")||path.includes("/fragen/");
 const IS_VERBEN_EXERCISE=path.includes("/verben-A1/");
 const NEEDS_EXAM_UNLOCK_FIX=/\/wortschatz\/A1-Lektion-[345]\/Thema-\d+\//.test(path);
@@ -22,6 +23,7 @@ if(PERFORMANCE_SYNC_OFF){
   window.SP_PERFORMANCE_MODE=true;
 }
 function shouldInstallGlobalHeader(){
+  if(IS_WORTSCHATZ_LESSON_OVERVIEW)return false;
   return !document.querySelector(".topbar") && !document.querySelector("header.topbar");
 }
 function installHeaderOnce(){
