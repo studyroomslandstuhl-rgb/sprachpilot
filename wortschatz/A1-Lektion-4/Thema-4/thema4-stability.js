@@ -1,4 +1,5 @@
 (function(){
+  try{import('/js/scoring.js?v=10').catch(function(){});}catch(e){}
   function safeArr(x){return Array.isArray(x)?x:[]}
   function saveLocal(key,val){try{localStorage.setItem(key,JSON.stringify(val))}catch(e){}}
   function fixExamHistory(){
