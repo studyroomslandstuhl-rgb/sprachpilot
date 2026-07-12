@@ -1,9 +1,9 @@
-import { recordTaskProgress, recordExamResult, recordThemeReset } from "/js/progress.js?v=9";
+import { recordTaskProgress, recordExamResult, recordThemeReset } from "/js/progress.js?v=10";
 
 const RULES={
-  taskPoints(run){run=Number(run)||1;if(run===1)return 5;if(run===2)return 10;if(run===3)return 15;return 1},
-  examMax(run){run=Number(run)||1;if(run===1)return 100;if(run===2)return 200;if(run===3)return 300;return 1},
-  examEarned(run,percent){run=Number(run)||1;percent=Math.max(0,Math.min(100,Math.round(Number(percent)||0)));if(run>=4)return percent>=100?1:0;return Math.round(this.examMax(run)*percent/100)}
+  taskPoints(run){run=Number(run)||1;if(run===1)return 5;if(run===2)return 10;if(run===3)return 15;return 0},
+  examMax(run){run=Number(run)||1;if(run===1)return 100;if(run===2)return 200;if(run===3)return 300;return 0},
+  examEarned(run,percent){run=Number(run)||1;percent=Math.max(0,Math.min(100,Math.round(Number(percent)||0)));if(run>=4)return 0;return Math.round(this.examMax(run)*percent/100)}
 };
 function cleanId(s){return String(s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"item"}
 function scopeInfo(){
