@@ -19,6 +19,7 @@
 </div>
 
 <script src="app.js?v=15"></script>
+<script src="l3t2-task-fix.js?v=2"></script>
 <script>
 
 function ensureTaskHelpers(){
@@ -80,10 +81,6 @@ function ensureTaskHelpers(){
     window.spMarkWrong = function(file,total){
       let st=spLoadTaskState(file,total);
       st.tries=(st.tries||0)+1;
-      if(st.tries>=2 && st.current!==null){
-        st.queue.push(st.current);
-        st.current=null;
-      }
       spSaveTaskState(file,st);
       return st.tries;
     }
@@ -116,25 +113,6 @@ function ensureTaskHelpers(){
         <div class="combo-plus">+</div>
         <div class="combo-part"><img src="${prod.image||''}" onerror="fixImg(this)" alt=""></div>
       </div>`;
-    }
-  }
-  if(typeof acceptableQuestion !== 'function'){
-    window.acceptableQuestion = function(ans,c){
-      let a=simple(ans);
-      let verb=c.isPlural?'kosten':'kostet';
-      let wrong=c.isPlural?'kostet':'kosten';
-      let starts=['was '+verb,'wie viel '+verb,'wieviel '+verb].map(simple);
-      if(!starts.some(st=>a.startsWith(st))) return false;
-      if(a.includes(simple(' '+wrong+' '))) return false;
-      return true;
-    }
-  }
-  if(typeof acceptableAnswer !== 'function'){
-    window.acceptableAnswer = function(ans,c){
-      let a=simple(ans);
-      let verb=c.isPlural?'kosten':'kostet';
-      let starts=[simple(c.text+' '+verb), simple('das '+verb), simple('das macht'), simple('es '+verb)];
-      return starts.some(st=>a.startsWith(st));
     }
   }
   return true;
@@ -187,7 +165,7 @@ document.addEventListener('DOMContentLoaded', function(){
     }else{
       let tries=spMarkWrong(FILE,COMBOS.length);
       fb.innerHTML=spFeedbackForTry(tries,c.text,'Menge, Verpackung und Produkt');
-      if(tries>=2) setTimeout(show,1200);
+      if(ans)ans.focus();
     }
   }
 
