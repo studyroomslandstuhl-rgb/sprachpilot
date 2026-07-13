@@ -1,6 +1,7 @@
 // Zentrale Speicherlogik für Verben A1.
 // Lokal ist die sofortige Wahrheit; Firebase kann später synchronisieren, darf lokale Fortschritte aber nicht zurücksetzen.
 (function(){
+  window.__SP_VERB_STATE_LOADED=false;
   function readJsonValue(v,f){try{return JSON.parse(v||'')||f}catch(e){return f}}
   function readJsonKey(k,f){return readJsonValue(localStorage.getItem(k),f)}
   function normId(s){return String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
@@ -81,8 +82,8 @@
   function writeLocal(st=state){const text=JSON.stringify(st||{});try{localStorage.setItem(canonicalKey(),text)}catch(e){}try{localStorage.setItem('SP_VERBS_LAST_STATE',text)}catch(e){}try{localStorage.setItem('SP_VERBS_BACKUP_STATE',text)}catch(e){}try{sessionStorage.setItem('SP_VERBS_SESSION_BACKUP',text)}catch(e){}try{localStorage.setItem('SP_STUDENT_ID',canonicalStudentId())}catch(e){}}
   function installFastImages(){try{window.preloadActiveImages=function(){};window.loadImageBlobUrl=function(){return Promise.reject(new Error('disabled'))}}catch(e){}}
   if(typeof firebaseStudentId==='function')firebaseStudentId=canonicalStudentId;if(typeof storageKey==='function')storageKey=canonicalKey;
-  loadState=async function(){const local=readLocalMerged();if(isState(local))state=mergeStates(state||{},local);try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();writeLocal(state);installFastImages()};
-  saveState=function(){try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();state.localUpdatedAt=Date.now();writeLocal(state)};
-  sendProgress=function(){};window.flushVerbProgress=function(){writeLocal(state);return Promise.resolve(true)};window.spVerbStorageSchedule=function(){writeLocal(state)};window.spVerbStorageFlush=window.flushVerbProgress;window.spVerbCloudSync={id:canonicalStudentId,ids:idCandidates,flush:window.flushVerbProgress,status:function(){return {status:'local-stable',id:canonicalStudentId(),manual:!!(state&&state.manualVerbSelection),active:state&&state.active?state.active:[],taskDoneSets:state&&state.taskDoneSets?state.taskDoneSets:{},time:new Date().toISOString()}},debug:function(){alert(JSON.stringify(this.status(),null,2))}};
+  loadState=async function(){const local=readLocalMerged();if(isState(local))state=mergeStates(state||{},local);try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();window.__SP_VERB_STATE_LOADED=true;writeLocal(state);installFastImages();try{if(typeof window.spSyncVerbRelease==='function')window.spSyncVerbRelease()}catch(e){}};
+  saveState=function(){window.__SP_VERB_STATE_LOADED=true;try{if(typeof migrateState==='function')migrateState()}catch(e){}normalizeState();state.localUpdatedAt=Date.now();writeLocal(state)};
+  sendProgress=function(){};window.flushVerbProgress=function(){window.__SP_VERB_STATE_LOADED=true;writeLocal(state);return Promise.resolve(true)};window.spVerbStorageSchedule=function(){window.__SP_VERB_STATE_LOADED=true;writeLocal(state)};window.spVerbStorageFlush=window.flushVerbProgress;window.spVerbCloudSync={id:canonicalStudentId,ids:idCandidates,flush:window.flushVerbProgress,status:function(){return {status:'local-stable',loaded:window.__SP_VERB_STATE_LOADED===true,id:canonicalStudentId(),manual:!!(state&&state.manualVerbSelection),active:state&&state.active?state.active:[],taskDoneSets:state&&state.taskDoneSets?state.taskDoneSets:{},time:new Date().toISOString()}},debug:function(){alert(JSON.stringify(this.status(),null,2))}};
   installFastImages();
 })();
