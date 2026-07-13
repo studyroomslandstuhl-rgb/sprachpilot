@@ -41,14 +41,14 @@ const oldWordsPost=window.words;
 window.words=words=function(){l6t2AddPostWords();const list=typeof oldWordsPost==='function'?oldWordsPost():WORDS;const seen=new Set();return list.filter(w=>w&&w.id&&w.id!=='schlecht'&&!seen.has(w.id)&&seen.add(w.id))};
 
 const POSTCARD_IMAGE_GAPS=[
-  {id:'deutschland',a:'Deutschland'},
-  {id:'wetterbericht',a:'Wetterbericht'},
-  {id:'sueden',a:'Süden'},
-  {id:'angenehm',a:'angenehm'},
-  {id:'temperatur',a:'Temperatur'},
-  {id:'plus',a:'plus'},
-  {id:'radio',a:'Radio'},
-  {id:'internet',a:'Internet'}
+  {id:'deutschland',file:'deutschland.webp',a:'Deutschland'},
+  {id:'wetterbericht',file:'wetterbericht.webp',a:'Wetterbericht'},
+  {id:'sueden',file:'sueden.webp',a:'Süden'},
+  {id:'angenehm',file:'angenehm.webp',a:'angenehm'},
+  {id:'temperatur',file:'temperatur.webp',a:'Temperatur'},
+  {id:'plus',file:'plus.webp',a:'plus'},
+  {id:'ueberall',file:'ueberall.webp',a:'überall'},
+  {id:'bleiben',file:'bleiben.webp',a:'bleiben'}
 ];
 const POSTCARD_GRAMMAR_GAPS=[
   {a:'in Japan'},
