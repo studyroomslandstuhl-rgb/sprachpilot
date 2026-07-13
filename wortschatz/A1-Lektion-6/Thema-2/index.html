@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 6 · Thema 2</title><link rel="stylesheet" href="style.css?v=5"></head><body><div class="container"><header class="topbar"></header><section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Himmelsrichtungen, Länder, Jahreszeiten, Wetterbericht-Wörter und Zeitpräpositionen sicher benutzen.</p></div></section><section id="taskGrid"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2exam2"></script><script src="app.js?v=5"></script><script src="l6t2-postkarte.js?v=8"></script><script src="l6t2-extra-tasks.js?v=11"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 6 · Thema 2</title><link rel="stylesheet" href="style.css?v=5"></head><body><div class="container"><header class="topbar"></header><section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Himmelsrichtungen, Länder, Jahreszeiten, Wetterbericht-Wörter und Zeitpräpositionen sicher benutzen.</p></div></section><section id="taskGrid"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=theme-overview-guardfix"></script><script src="app.js?v=5"></script><script src="l6t2-postkarte.js?v=8"></script><script src="l6t2-extra-tasks.js?v=12"></script><script>
 const L6T2_EXAM_TOTAL=20;
 const L6T2_EXAM_SCORE_KEY='SP_L6_T2_EXAM_CURRENT_SCORE';
 const L6T2_EXAM_PERCENT_KEY='SP_L6_T2_EXAM_CURRENT_PERCENT';
@@ -12,13 +12,13 @@ function applyCurrentExamPercent(value){
 }
 async function repairCurrentExamDisplay(){
   const localPercent=Number(localStorage.getItem(L6T2_EXAM_PERCENT_KEY));
-  if(Number.isFinite(localPercent)&&localPercent>=0&&localPercent<=100){applyCurrentExamPercent(localPercent);renderMenu();return}
+  if(Number.isFinite(localPercent)&&localPercent>=0&&localPercent<=100){applyCurrentExamPercent(localPercent);safeRenderL6T2Menu();return}
   try{
-    const api=window.SPProgress&&SPProgress.loadCurrentStudentProgress?window.SPProgress:await import('/js/progress.js?v=l6t2exam-current1');
+    const api=window.SPProgress&&SPProgress.loadCurrentStudentProgress?window.SPProgress:await import('/js/progress.js?v=l6t2exam-current2');
     const data=await api.loadCurrentStudentProgress();
     const topic=data&&data.wortschatz&&data.wortschatz['wortschatz-a1-lektion-6-thema-2'];
     const remotePercent=Number(topic&&topic.exam&&topic.exam.lastPercent);
-    if(Number.isFinite(remotePercent)&&remotePercent>=0&&remotePercent<=100){applyCurrentExamPercent(remotePercent);renderMenu()}
+    if(Number.isFinite(remotePercent)&&remotePercent>=0&&remotePercent<=100){applyCurrentExamPercent(remotePercent);safeRenderL6T2Menu()}
   }catch(e){}
 }
 function resetThemeProgress(){
@@ -29,5 +29,19 @@ function resetThemeProgress(){
   try{const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2'};if(window.SPProgress&&typeof SPProgress.recordThemeReset==='function')SPProgress.recordThemeReset(payload);else import('/js/progress.js?v=reset-l6t2').then(m=>m.recordThemeReset&&m.recordThemeReset(payload)).catch(()=>{})}catch(e){}
   location.reload();
 }
-header('Himmelsrichtungen · Länder · Jahreszeiten',true);const backLink=document.querySelector('.nav a.btn.secondary');if(backLink)backLink.href='../';renderMenu();repairCurrentExamDisplay();
+function l6t2FallbackMenu(){
+  const grid=document.getElementById('taskGrid');
+  if(!grid)return;
+  const tasks=typeof l6t2AllTasks==='function'?l6t2AllTasks():(window.TASKS||[]);
+  grid.innerHTML='<div class="grid">'+tasks.map((t,i)=>'<a class="module" href="'+t[0]+'"><div class="num">'+(i+1)+'. '+t[2]+'</div><div class="big-icon">'+((window.L6T2_TASK_ICONS&&L6T2_TASK_ICONS[t[0]])||TASK_ICONS?.[t[0]]||'▶')+'</div><p class="small">Himmelsrichtungen, Länder, Jahreszeiten und Präpositionen üben.</p><div class="start">Starten</div></a>').join('')+'</div>';
+}
+function safeRenderL6T2Menu(){
+  try{renderMenu();}
+  catch(e){console.error('L6T2 menu failed',e);l6t2FallbackMenu();}
+}
+try{header('Himmelsrichtungen · Länder · Jahreszeiten',true)}catch(e){}
+const backLink=document.querySelector('.nav a.btn.secondary');if(backLink)backLink.href='../';
+safeRenderL6T2Menu();
+setTimeout(safeRenderL6T2Menu,80);
+setTimeout(repairCurrentExamDisplay,250);
 </script></body></html>
