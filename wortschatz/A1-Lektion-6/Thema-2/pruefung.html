@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=4"><style>
 .exam-image-box{width:min(330px,100%);height:250px;margin:16px auto;border:2px solid var(--lesson-line);border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}.exam-image-box img{width:100%;height:100%;object-fit:contain;display:block}.exam-cue{margin:14px 0;padding:12px;border-radius:16px;background:#fff8dc;border:1px solid #facc15;font-weight:900;color:#7a5400}.exam-input-wrap{max-width:720px;margin:14px auto}.exam-progress-label{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.exam-stars{font-size:36px;letter-spacing:5px;margin:12px 0}.exam-feedback-list{display:grid;gap:12px;margin-top:20px;text-align:left}.exam-feedback-row{padding:14px;border:2px solid #fecaca;border-radius:16px;background:#fff7f7}.exam-feedback-row h3{margin:0 0 8px;color:#991b1b}.exam-feedback-row p{margin:5px 0}.exam-feedback-thumb{width:86px;height:86px;object-fit:contain;border:1px solid #ddd;border-radius:12px;background:#fff;float:right;margin:0 0 8px 12px}.exam-answer-wrong{color:#b91c1c;font-weight:800}.exam-answer-right{color:#166534;font-weight:800}.exam-all-right{padding:16px;border:2px solid #86efac;border-radius:16px;background:#f0fdf4;color:#166534;font-weight:900;margin-top:18px}
-</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2exam4"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=8"></script><script src="l6t2-extra-tasks.js?v=10"></script><script>
+</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2exam5"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=8"></script><script src="l6t2-extra-tasks.js?v=10"></script><script>
 header('Prüfung');
 const FILE='pruefung.html';
 const TOTAL=20;
@@ -34,14 +34,14 @@ function takeUnused(pool,used){const available=shuffled(pool.filter(w=>!used.has
 function countryPrep(w){if(w.id==='usa')return'in den';return w.article?'in der':'in'}
 function prepOptions(answer){if(answer==='in')return['in','in der','in den','im'];if(answer==='in der')return['in','in der','in den','im'];if(answer==='in den')return['in','in der','in den','im'];if(answer==='Im')return['Am','Um','Im','In der'];if(answer==='Am')return['Um','In','Am','Im'];return['am','im','um','in']}
 function contextPool(){return[
-  {id:'plus',p:'Es sind ___ zwanzig Grad. Es ist warm.',a:'plus',opts:['minus','plus','leicht','Mitte']},
-  {id:'minus',p:'Es sind ___ fünf Grad. Es ist sehr kalt.',a:'minus',opts:['plus','minus','überall','angenehm']},
-  {id:'leicht',p:'Es regnet ein bisschen. Es regnet ___.',a:'leicht',opts:['angenehm','überall','leicht','dunkel']},
-  {id:'ueberall',p:'Im ganzen Land scheint die Sonne. Die Sonne scheint ___.',a:'überall',opts:['leicht','angenehm','überall','in der Mitte']},
-  {id:'bleiben',p:'Das Wetter verändert sich nicht. Es ___ gleich.',a:'bleibt',opts:['bleibt','lebt','steigt','scheint']},
-  {id:'angenehm',p:'Das Wetter ist nicht zu heiß und nicht zu kalt. Es ist ___.',a:'angenehm',opts:['breit','angenehm','geschlossen','minus']},
-  {id:'mitte',p:'Der Punkt liegt nicht links und nicht rechts. Er liegt in der ___.',a:'Mitte',opts:['Temperatur','Mitte','Schweiz','Jahreszeit']},
-  {id:'temperatur',p:'Sie zeigt, wie warm oder kalt es ist: die ___.',a:'Temperatur',opts:['Temperatur','Mitte','Richtung','Postkarte']}
+  {id:'plus',p:'Es sind ___ zwanzig Grad. Es ist warm.',a:'plus',opts:['minus','plus','leicht','überall']},
+  {id:'minus',p:'Es sind ___ fünf Grad. Es ist kalt.',a:'minus',opts:['plus','minus','leicht','angenehm']},
+  {id:'leicht',p:'Es regnet ___.',a:'leicht',opts:['leicht','überall','angenehm','minus']},
+  {id:'ueberall',p:'___ scheint die Sonne.',a:'überall',opts:['überall','leicht','angenehm','Mitte']},
+  {id:'bleiben',p:'Die Temperaturen ___ bei plus zehn Grad.',a:'bleiben',opts:['bleiben','leben','scheinen','sind']},
+  {id:'angenehm',p:'Das Wetter ist ___.',a:'angenehm',opts:['angenehm','leicht','überall','minus']},
+  {id:'mitte',p:'Der Punkt ist in der ___.',a:'Mitte',opts:['Mitte','Temperatur','Schweiz','Ukraine']},
+  {id:'temperatur',p:'Die ___ ist plus zehn Grad.',a:'Temperatur',opts:['Temperatur','Mitte','Wetterbericht','Radio']}
 ]}
 function sentencePool(){return[
   {id:'schweiz',p:'Wir ________________________________.',cue:'Schweiz – drei Wochen – sein',a:'Wir sind drei Wochen in der Schweiz.',answers:['Wir sind drei Wochen in der Schweiz.','sind drei Wochen in der Schweiz.']},
@@ -75,7 +75,7 @@ function build(){
   prepQuestions.push({t:'mc',kind:'Präposition',targetId:'10-uhr-time',p:'Der Wetterbericht beginnt ___ 10 Uhr.',a:'um',opts:prepOptions('um')});
 
   const conjugationCountry=takeUnused(countries,used);
-  const conjugation={t:'mc',kind:'Konjugation',targetId:conjugationCountry.id,p:`Sara ___ in ${conjugationCountry.article?countryPrep(conjugationCountry)+' ':''}${conjugationCountry.word}.`.replace('in in der ','in der ').replace('in in den ','in den '),a:'lebt',opts:['lebe','lebt','leben','seid']};
+  const conjugation={t:'mc',kind:'Konjugation',targetId:conjugationCountry.id,p:`Sara ___ in ${conjugationCountry.article?countryPrep(conjugationCountry)+' ':''}${conjugationCountry.word}.`.replace('in in der ','in der ').replace('in in den ','in den '),a:'lebt',opts:['lebe','lebt','leben','bleibt']};
 
   const sentenceCandidates=sentencePool().filter(x=>!used.has(x.id));
   const sentence=one(sentenceCandidates.length?sentenceCandidates:sentencePool());used.add(sentence.id);
