@@ -1,4 +1,5 @@
 import "/js/sp-assets.js?v=3";
+import "/js/sp-image-guard.js?v=1";
 import "/js/session-restore.js?v=1";
 import { requireLogin, logout } from "/js/auth.js";
 import { installSpHeader } from "/js/sp-header.js";
