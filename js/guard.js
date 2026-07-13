@@ -12,7 +12,7 @@ const IS_WORTSCHATZ_EXERCISE=/\/wortschatz\/A\d-Lektion-\d+\/Thema-\d+\//.test(p
 const IS_WORTSCHATZ_LESSON_OVERVIEW=/\/wortschatz\/A\d-Lektion-\d+\/?(?:index\.html)?$/i.test(path);
 const IS_FRAGEN_EXERCISE=path.includes("/fragen-A1/")||path.includes("/fragen/");
 const IS_VERBEN_EXERCISE=path.includes("/verben-A1/");
-const NEEDS_EXAM_UNLOCK_FIX=/\/wortschatz\/A1-Lektion-[345]\/Thema-\d+\//.test(path);
+const NEEDS_EXAM_UNLOCK_FIX=IS_WORTSCHATZ_EXERCISE;
 const LIGHT_FIREBASE_PAGE=IS_WORTSCHATZ_EXERCISE||IS_FRAGEN_EXERCISE||IS_VERBEN_EXERCISE;
 const NO_FIREBASE_SYNC=qs.has("nofirebase")||localStorage.getItem("SP_NO_FIREBASE_SYNC")==="1";
 const PERFORMANCE_SYNC_OFF=NO_FIREBASE_SYNC;
@@ -55,7 +55,7 @@ if(LIGHT_FIREBASE_PAGE){
   import("/js/sp-progress-standard.js?v=3").catch(()=>{});
 }
 if(NEEDS_EXAM_UNLOCK_FIX&&!PERFORMANCE_SYNC_OFF){
-  setTimeout(()=>import("/js/exam-unlock-fix.js?v=2").catch(()=>{}),120);
+  setTimeout(()=>import("/js/exam-unlock-fix.js?v=3").catch(()=>{}),120);
 }
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
 if(FULL_FIREBASE){
