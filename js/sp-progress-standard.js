@@ -1,11 +1,17 @@
 (function(){
-  if(window.__SP_PROGRESS_STANDARD_V2)return;
-  window.__SP_PROGRESS_STANDARD_V2=true;
+  if(window.__SP_PROGRESS_STANDARD_V3)return;
+  window.__SP_PROGRESS_STANDARD_V3=true;
+
+  let refreshRunning=false;
+  let refreshQueued=false;
+  let percentCache=new Map();
+  let percentCacheAt=0;
 
   function cleanId(value){return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'item'}
   function clamp(value){const n=Number(value);return Number.isFinite(n)?Math.max(0,Math.min(100,Math.round(n))):0}
   function readJson(key,fallback=null){try{return JSON.parse(localStorage.getItem(key)||'null')??fallback}catch(e){return fallback}}
   function writeJson(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch(e){}}
+  function clearPercentCache(){percentCache.clear();percentCacheAt=Date.now()}
   function fileName(file){const raw=String(file||location.pathname.split('/').pop()||'').split('?')[0].split('#')[0];return raw||'index.html'}
   function pathInfo(){
     const path=String(location.pathname||'');
@@ -51,7 +57,15 @@
     }
     return best;
   }
-  function standardPercent(file,total){return Math.max(directPercent(file,total),legacyPercent(file,total))}
+  function standardPercent(file,total){
+    const now=Date.now();
+    if(now-percentCacheAt>500){percentCache.clear();percentCacheAt=now}
+    const key=fileName(file)+'|'+String(total||'');
+    if(percentCache.has(key))return percentCache.get(key);
+    const value=Math.max(directPercent(file,total),legacyPercent(file,total));
+    percentCache.set(key,value);
+    return value;
+  }
   function payload(file,percent,total,done){const info=pathInfo();const f=fileName(file);return {...info,file:f,taskKey:f,taskTitle:f.replace(/\.html$/i,'').replace(/-/g,' '),percent:clamp(percent),completed:clamp(percent)>=100,total:Number(total||100),done:Number(done||0)}}
   function queueFirebase(file,percent,total,done){
     if(clamp(percent)<=0)return;
@@ -68,15 +82,16 @@
     const old=readJson(stateKey(f),{});
     const oldPct=percentFromState(old,total);
     const merged={...(old||{}),...(state||{}),total:Math.max(Number(old&&old.total||0),Number(total||0))||total};
-    if(pct>=oldPct){writeJson(stateKey(f),merged);queueFirebase(f,pct,merged.total,Array.isArray(merged.done)?merged.done.length:Number(merged.done||0));refreshVisibleProgress()}
+    if(pct>=oldPct){writeJson(stateKey(f),merged);clearPercentCache();queueFirebase(f,pct,merged.total,Array.isArray(merged.done)?merged.done.length:Number(merged.done||0));scheduleRefresh()}
   }
   function markComplete(file,total){
     const f=fileName(file);
     total=Math.max(1,Math.round(Number(total)||Number((readJson(stateKey(f),{})||{}).total)||100));
     const state={total,queue:[],done:doneArray(total),current:null,tries:0,completed:true,percent:100,updatedAt:new Date().toISOString()};
     writeJson(stateKey(f),state);
+    clearPercentCache();
     queueFirebase(f,100,total,total);
-    refreshVisibleProgress();
+    scheduleRefresh();
     return state;
   }
   function guessTotal(file,total){
@@ -90,15 +105,18 @@
     const total=guessTotal(file);
     const pct=standardPercent(file,total);
     if(pct<=0)return;
+    const width=pct+'%';
     const bar=card.querySelector('.bar');
-    if(bar)bar.style.width=pct+'%';
+    if(bar&&bar.style.width!==width)bar.style.width=width;
     const smalls=Array.from(card.querySelectorAll('.small'));
     const percentSmall=smalls.find(el=>/%|offen|gesperrt|richtig|übrig/i.test(String(el.textContent||'')));
-    if(percentSmall)percentSmall.textContent=pct+'%';
+    if(percentSmall&&percentSmall.textContent!==width)percentSmall.textContent=width;
     const start=card.querySelector('.start');
-    if(start&&pct>=100&&!/Prüfung gesperrt|gesperrt/i.test(start.textContent||''))start.textContent='Fertig';
+    if(start&&pct>=100&&!/Prüfung gesperrt|gesperrt/i.test(start.textContent||'')&&start.textContent!=='Fertig')start.textContent='Fertig';
   }
   function refreshVisibleProgress(){
+    if(refreshRunning)return;
+    refreshRunning=true;
     try{
       document.querySelectorAll('a.module[href],button.module[data-file],.task-card[href]').forEach(card=>{
         const href=card.getAttribute('href')||card.getAttribute('data-file')||'';
@@ -107,7 +125,13 @@
         if(!/\.html$/i.test(file))return;
         updateCard(card,file);
       });
-    }catch(e){}
+    }catch(e){}finally{refreshRunning=false}
+  }
+  function scheduleRefresh(){
+    if(refreshQueued)return;
+    refreshQueued=true;
+    const run=()=>{refreshQueued=false;refreshVisibleProgress()};
+    if(typeof requestAnimationFrame==='function')requestAnimationFrame(run);else setTimeout(run,50);
   }
   function patchFunction(name,wrapper){
     const fn=window[name];
@@ -123,12 +147,12 @@
     patchFunction('done',old=>function(file,total){markComplete(file,guessTotal(file,total));return old.apply(this,arguments)});
     patchFunction('markTaskDone',old=>function(file,total){markComplete(file,guessTotal(file,total));return old.apply(this,arguments)});
     patchFunction('saveTask',old=>function(file,state){saveState(file,state);return old.apply(this,arguments)});
-    patchFunction('resetOneTask',old=>function(file){try{localStorage.removeItem(stateKey(file))}catch(e){}return old.apply(this,arguments)});
-    refreshVisibleProgress();
+    patchFunction('resetOneTask',old=>function(file){try{localStorage.removeItem(stateKey(file));clearPercentCache()}catch(e){}return old.apply(this,arguments)});
+    scheduleRefresh();
   }
-  window.SPProgressStandard={taskPercent:standardPercent,markComplete,saveState,stateKey,pathInfo,refreshVisibleProgress};
+  window.SPProgressStandard={taskPercent:standardPercent,markComplete,saveState,stateKey,pathInfo,refreshVisibleProgress,scheduleRefresh};
   patch();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',patch);else setTimeout(patch,0);
-  setTimeout(patch,250);setTimeout(patch,1000);setTimeout(patch,2200);setTimeout(refreshVisibleProgress,3200);
-  try{new MutationObserver(()=>setTimeout(refreshVisibleProgress,0)).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
+  setTimeout(patch,250);setTimeout(patch,1000);setTimeout(patch,2200);setTimeout(scheduleRefresh,3200);
+  try{new MutationObserver(scheduleRefresh).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
 })();
