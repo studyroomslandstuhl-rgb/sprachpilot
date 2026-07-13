@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=4"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2help1"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=6"></script><script src="l6t2-extra-tasks.js?v=6"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=4"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2cards1"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=7"></script><script src="l6t2-extra-tasks.js?v=8"></script><script>
 header('Prüfung');const FILE='pruefung.html';let q=[],i=0,score=0;
 function build(){q=[
 {t:'write',p:'Schreiben Sie: der Norden',a:'der Norden'},
@@ -6,10 +6,10 @@ function build(){q=[
 {t:'mc',p:'Der Wind kommt ___ Westen.',a:'aus dem',opts:['im','aus dem','in der']},
 {t:'write',p:'Schreiben Sie: der Winter',a:'der Winter'},
 {t:'mc',p:'___ Sommer ist es heiß.',a:'Im',opts:['Im','In','Aus']},
-{t:'mc',p:'Ich wohne ___ Deutschland.',a:'in',opts:['in','in der','im']},
-{t:'mc',p:'Ich wohne ___ USA.',a:'in den',opts:['in','in der','in den']},
+{t:'mc',p:'Ich lebe ___ Deutschland.',a:'in',opts:['in','in der','im']},
+{t:'mc',p:'Ich lebe ___ USA.',a:'in den',opts:['in','in der','in den']},
 {t:'write',p:'Schreiben Sie: die Schweiz',a:'die Schweiz'},
-{t:'mc',p:'Ich wohne ___ Ukraine.',a:'in der',opts:['in','in der','in den']},
+{t:'mc',p:'Ich lebe ___ Ukraine.',a:'in der',opts:['in','in der','in den']},
 {t:'write',p:'Bauen Sie den Satz: Im / Herbst / regnet / es oft.',a:'Im Herbst regnet es oft.'}
 ]}
 function locked(){area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p class="small">Bearbeiten Sie zuerst alle Aufgaben zu 100%.</p><div class="actions"><a class="btn secondary" href="index.html">Zum Thema</a></div></div>'}
