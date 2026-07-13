@@ -1,41 +1,12 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Präpositionen · Drag & Drop</title><link rel="stylesheet" href="style.css?v=2"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="app.js?v=4"></script><script src="l6t2-extra-tasks.js?v=4"></script><script>
-header('Präpositionen · Drag & Drop');
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Präpositionen zuordnen</title><link rel="stylesheet" href="style.css?v=3"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="app.js?v=4"></script><script src="l6t2-extra-tasks.js?v=5"></script><script>
+header('Präpositionen zuordnen');
 const FILE='praepositionen-drag.html';
-const GROUPS=[
- {key:'Im',label:'im',help:'Himmelsrichtung oder Jahreszeit'},
- {key:'in',label:'in',help:'Land ohne Artikel'},
- {key:'Am',label:'am',help:'Tag oder Tageszeit'},
- {key:'Um',label:'um',help:'Uhrzeit'},
- {key:'von … bis …',label:'von … bis …',help:'Zeitraum'}
-];
-const ITEMS=PREP_DRAG_ITEMS;
+const GROUPS=['in','in der','in den','am','um','im'];
+const ITEMS=shuffle(PREP_DRAG_ITEMS);
 let selected=null;
-function show(){
- if(loadTask(FILE,ITEMS.length).done.length>=ITEMS.length){complete(area,FILE,'fehler-finden.html');return}
- area.innerHTML=`${progress(FILE,ITEMS.length)}${instruction('Tippen Sie zuerst auf einen Satz und danach auf die passende Präposition.')}<div id="chips" class="drag-bank"></div><div class="drop-grid">${GROUPS.map(g=>`<div class="dropzone" data-a="${g.key}"><h2>${g.label}</h2><div class="small">${g.help}</div></div>`).join('')}</div><div class="actions"><button class="btn" onclick="control()">Kontrollieren</button><button class="btn secondary" onclick="clearSelection()">Auswahl lösen</button></div><div id="fb" class="feedback"></div>`;
- chips.innerHTML=ITEMS.map((x,i)=>`<span class="chip" data-id="${i}">${x.sentence}</span>`).join('');
- bind();
-}
+function show(){if(loadTask(FILE,ITEMS.length).done.length>=ITEMS.length){complete(area,FILE,'fehler-finden.html');return}area.innerHTML=`${progress(FILE,ITEMS.length)}${instruction('Ordnen Sie die Wörter der richtigen Präposition zu.')}<div id="chips" class="drag-bank">${ITEMS.map((x,i)=>`<span class="chip" data-id="${i}">${x.word}</span>`).join('')}</div><div class="drop-grid">${GROUPS.map(g=>`<div class="dropzone" data-a="${g}"><h2>${g}</h2></div>`).join('')}</div><div class="actions"><button class="btn" onclick="control()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;bind()}
 function clearSelection(){document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));selected=null}
-function cleanChip(chip){chip.classList.remove('selected','no');let n=chip.nextElementSibling;while(n&&n.classList&&n.classList.contains('correction')){const next=n.nextElementSibling;n.remove();n=next}}
-function moveChip(chip,zone){if(!chip||!zone)return;cleanChip(chip);zone.appendChild(chip);selected=null;bind()}
-function bind(){
- document.querySelectorAll('.chip').forEach(c=>c.onclick=e=>{e.stopPropagation();if(c.classList.contains('ok'))return;clearSelection();selected=c;c.classList.add('selected')});
- document.querySelectorAll('.dropzone').forEach(z=>z.onclick=e=>{if(e.target.closest('.chip'))return;if(selected)moveChip(selected,z)});
-}
-function control(){
- document.querySelectorAll('.correction').forEach(x=>x.remove());
- let ok=0;
- document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected','ok','no'));
- document.querySelectorAll('.dropzone').forEach(z=>z.querySelectorAll('.chip').forEach(c=>{
-   const x=ITEMS[Number(c.dataset.id)];
-   if(x&&z.dataset.a===x.a){c.classList.add('ok');ok++}
-   else if(x){c.classList.add('no');const note=document.createElement('span');note.className='correction';note.textContent='richtig: '+x.a;c.after(note)}
- }));
- bind();
- const unassigned=document.querySelectorAll('#chips .chip').length;
- if(ok===ITEMS.length){markTaskDone(FILE,ITEMS.length);complete(area,FILE,'fehler-finden.html');return}
- fb.innerHTML=`<div class="no">${unassigned?unassigned+' Sätze sind noch nicht zugeordnet. ':''}Korrigieren Sie die roten Sätze.</div>`;
-}
+function bind(){document.querySelectorAll('.chip').forEach(c=>c.onclick=e=>{e.stopPropagation();clearSelection();selected=c;c.classList.add('selected')});document.querySelectorAll('.dropzone').forEach(z=>z.onclick=e=>{if(e.target.closest('.chip')||!selected)return;selected.classList.remove('selected','no');z.appendChild(selected);selected=null;bind()})}
+function control(){document.querySelectorAll('.correction').forEach(x=>x.remove());let ok=0;document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected','ok','no'));document.querySelectorAll('.dropzone').forEach(z=>z.querySelectorAll('.chip').forEach(c=>{const x=ITEMS[Number(c.dataset.id)];if(x&&z.dataset.a===x.a){c.classList.add('ok');ok++}else if(x){c.classList.add('no');const note=document.createElement('span');note.className='correction';note.textContent='richtig: '+x.a;c.after(note)}}));bind();const unassigned=document.querySelectorAll('#chips .chip').length;if(ok===ITEMS.length){markTaskDone(FILE,ITEMS.length);complete(area,FILE,'fehler-finden.html');return}fb.innerHTML=`<div class="no">${unassigned?unassigned+' Wörter sind noch nicht zugeordnet. ':''}Korrigieren Sie die roten Wörter.</div>`}
 show();
 </script></body></html>
