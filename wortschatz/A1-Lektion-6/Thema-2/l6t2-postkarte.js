@@ -9,13 +9,35 @@ const L6T2_POST_WORDS=[
   {id:'minus',group:'Postkarte/Wetterbericht',type:'word',article:'',word:'minus',full:'minus',image:'minus.webp',sentence:'Es sind minus zwei Grad.',tr:{en:'minus',ru:'минус',uk:'мінус',tr:'eksi',ar:'ناقص',ja:'マイナス',ro:'minus',pl:'minus',ku:'kêm'}},
   {id:'radio',group:'Postkarte/Wetterbericht',type:'noun',article:'das',word:'Radio',full:'das Radio',image:'radio.webp',sentence:'Ich höre den Wetterbericht im Radio.',tr:{en:'radio',ru:'радио',uk:'радіо',tr:'radyo',ar:'الراديو',ja:'ラジオ',ro:'radio',pl:'radio',ku:'radyo'}},
   {id:'internet',group:'Postkarte/Wetterbericht',type:'noun',article:'das',word:'Internet',full:'das Internet',image:'internet.webp',sentence:'Ich lese den Wetterbericht im Internet.',tr:{en:'internet',ru:'интернет',uk:'інтернет',tr:'internet',ar:'الإنترنت',ja:'インターネット',ro:'internet',pl:'internet',ku:'înternet'}},
-  {id:'schlecht',group:'Postkarte/Wetterbericht',type:'adjective',article:'',word:'schlecht',full:'schlecht',image:'schlecht.webp',sentence:'Das Wetter ist schlecht.',tr:{en:'bad',ru:'плохой',uk:'поганий',tr:'kötü',ar:'سيئ',ja:'悪い',ro:'rău',pl:'zły',ku:'xerab'}},
   {id:'angenehm',group:'Postkarte/Wetterbericht',type:'adjective',article:'',word:'angenehm',full:'angenehm',image:'angenehm.webp',sentence:'Das Wetter ist angenehm.',tr:{en:'pleasant',ru:'приятный',uk:'приємний',tr:'hoş',ar:'ممتع',ja:'快適な',ro:'plăcut',pl:'przyjemny',ku:'xweş'}}
 ];
-function l6t2AddPostWords(){L6T2_POST_WORDS.forEach(w=>{const e=WORDS.find(x=>x.id===w.id);if(e)Object.assign(e,w);else WORDS.push(w)})}
+function l6t2RemoveSchlecht(){let i;while((i=WORDS.findIndex(w=>w&&w.id==='schlecht'))>=0)WORDS.splice(i,1)}
+function l6t2AddPostWords(){l6t2RemoveSchlecht();L6T2_POST_WORDS.forEach(w=>{const e=WORDS.find(x=>x.id===w.id);if(e)Object.assign(e,w);else WORDS.push(w)})}
 l6t2AddPostWords();
+function l6t2MigrateRemovedSchlecht(){
+  try{
+    const marker=CFG.key+'_removed_schlecht_v1';
+    if(localStorage.getItem(marker)==='1')return;
+    const removedIndex=WORDS.findIndex(w=>w.id==='angenehm');
+    const newTotal=WORDS.length,oldTotal=newTotal+1;
+    const files=['karteikarten.html','bild-wort.html','hoeren-bild.html','hoeren-schreiben.html'];
+    const mapIndex=i=>i===removedIndex?null:(i>removedIndex?i-1:i);
+    files.forEach(file=>{
+      const key=CFG.key+'_'+file;
+      const st=JSON.parse(localStorage.getItem(key)||'null');
+      if(!st||st.total!==oldTotal)return;
+      const mapList=list=>[...new Set((Array.isArray(list)?list:[]).map(mapIndex).filter(i=>Number.isInteger(i)&&i>=0&&i<newTotal))];
+      const done=mapList(st.done),queue=mapList(st.queue).filter(i=>!done.includes(i));
+      const mappedCurrent=Number.isInteger(st.current)?mapIndex(st.current):null;
+      const current=Number.isInteger(mappedCurrent)&&mappedCurrent>=0&&mappedCurrent<newTotal&&!done.includes(mappedCurrent)?mappedCurrent:null;
+      localStorage.setItem(key,JSON.stringify({total:newTotal,done,queue:queue.filter(i=>i!==current),current,tries:Number(st.tries||0),hadWrong:!!st.hadWrong}));
+    });
+    localStorage.setItem(marker,'1');
+  }catch(e){}
+}
+l6t2MigrateRemovedSchlecht();
 const oldWordsPost=window.words;
-window.words=words=function(){l6t2AddPostWords();const list=typeof oldWordsPost==='function'?oldWordsPost():WORDS;const seen=new Set();return list.filter(w=>w&&w.id&&!seen.has(w.id)&&seen.add(w.id))};
+window.words=words=function(){l6t2AddPostWords();const list=typeof oldWordsPost==='function'?oldWordsPost():WORDS;const seen=new Set();return list.filter(w=>w&&w.id&&w.id!=='schlecht'&&!seen.has(w.id)&&seen.add(w.id))};
 
 const POSTCARD_IMAGE_GAPS=[
   {id:'deutschland',a:'Deutschland'},
@@ -36,4 +58,4 @@ const POSTCARD_GRAMMAR_GAPS=[
   {a:'im Norden'}
 ];
 const oldRenderOverviewPost=window.renderOverview;
-window.renderOverview=renderOverview=function(target){l6t2AddPostWords();if(typeof oldRenderOverviewPost==='function')oldRenderOverviewPost(target);else if(target)target.innerHTML='';if(target&&!document.getElementById('postcard-rule-box')){target.innerHTML+=`<section class="type-block" id="postcard-rule-box"><div class="type-title">Postkarte: Wetter und Land</div><div class="grammar-rule">Neue Wörter: der Wetterbericht · die Mitte · überall · die Temperatur · leicht · bleiben · plus · minus · das Radio · das Internet · schlecht · angenehm</div><div class="grammar-rule">Beispiel: Ich bin in Deutschland. Das Wetter ist angenehm. Die Temperatur bleibt bei plus zwölf Grad.</div></section>`}}
+window.renderOverview=renderOverview=function(target){l6t2AddPostWords();if(typeof oldRenderOverviewPost==='function')oldRenderOverviewPost(target);else if(target)target.innerHTML='';if(target&&!document.getElementById('postcard-rule-box')){target.innerHTML+=`<section class="type-block" id="postcard-rule-box"><div class="type-title">Postkarte: Wetter und Land</div><div class="grammar-rule">Neue Wörter: der Wetterbericht · die Mitte · überall · die Temperatur · leicht · bleiben · plus · minus · das Radio · das Internet · angenehm</div><div class="grammar-rule">Beispiel: Ich bin in Deutschland. Das Wetter ist angenehm. Die Temperatur bleibt bei plus zwölf Grad.</div></section>`}}
