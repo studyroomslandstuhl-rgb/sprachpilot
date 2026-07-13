@@ -1,0 +1,75 @@
+const CFG={sub:'A1 Lektion 6 · Thema 2',key:'SP_L6_T2_V1'};
+const CDN='https://sprachpilot.b-cdn.net/';
+const WORDS=[
+{id:'norden',group:'Himmelsrichtungen',type:'noun',article:'der',word:'Norden',full:'der Norden',image:'norden.webp',sentence:'Im Norden ist es kalt.',tr:{en:'north',ru:'север',uk:'північ',tr:'kuzey',ar:'الشمال',ja:'北',ro:'nord',pl:'północ',ku:'bakur'}},
+{id:'sueden',group:'Himmelsrichtungen',type:'noun',article:'der',word:'Süden',full:'der Süden',image:'sueden.webp',sentence:'Im Süden ist es warm.',tr:{en:'south',ru:'юг',uk:'південь',tr:'güney',ar:'الجنوب',ja:'南',ro:'sud',pl:'południe',ku:'başûr'}},
+{id:'osten',group:'Himmelsrichtungen',type:'noun',article:'der',word:'Osten',full:'der Osten',image:'osten.webp',sentence:'Im Osten scheint die Sonne.',tr:{en:'east',ru:'восток',uk:'схід',tr:'doğu',ar:'الشرق',ja:'東',ro:'est',pl:'wschód',ku:'rojhilat'}},
+{id:'westen',group:'Himmelsrichtungen',type:'noun',article:'der',word:'Westen',full:'der Westen',image:'westen.webp',sentence:'Der Wind kommt aus dem Westen.',tr:{en:'west',ru:'запад',uk:'захід',tr:'batı',ar:'الغرب',ja:'西',ro:'vest',pl:'zachód',ku:'rojava'}},
+{id:'fruehling',group:'Jahreszeiten',type:'noun',article:'der',word:'Frühling',full:'der Frühling',image:'fruehling.webp',sentence:'Im Frühling ist es warm.',tr:{en:'spring',ru:'весна',uk:'весна',tr:'ilkbahar',ar:'الربيع',ja:'春',ro:'primăvară',pl:'wiosna',ku:'bihar'}},
+{id:'sommer',group:'Jahreszeiten',type:'noun',article:'der',word:'Sommer',full:'der Sommer',image:'sommer.webp',sentence:'Im Sommer ist es heiß.',tr:{en:'summer',ru:'лето',uk:'літо',tr:'yaz',ar:'الصيف',ja:'夏',ro:'vară',pl:'lato',ku:'havîn'}},
+{id:'herbst',group:'Jahreszeiten',type:'noun',article:'der',word:'Herbst',full:'der Herbst',image:'herbst.jpg',sentence:'Im Herbst regnet es oft.',tr:{en:'autumn',ru:'осень',uk:'осінь',tr:'sonbahar',ar:'الخريف',ja:'秋',ro:'toamnă',pl:'jesień',ku:'payîz'}},
+{id:'winter',group:'Jahreszeiten',type:'noun',article:'der',word:'Winter',full:'der Winter',image:'winter.webp',sentence:'Im Winter schneit es.',tr:{en:'winter',ru:'зима',uk:'зима',tr:'kış',ar:'الشتاء',ja:'冬',ro:'iarnă',pl:'zima',ku:'zivistan'}},
+{id:'deutschland',group:'Länder',type:'country',article:'',word:'Deutschland',full:'Deutschland',image:'deutschland.webp',sentence:'Ich wohne in Deutschland.',from:'Ich komme aus Deutschland.',tr:{en:'Germany',ru:'Германия',uk:'Німеччина',tr:'Almanya',ar:'ألمانيا',ja:'ドイツ',ro:'Germania',pl:'Niemcy',ku:'Almanya'}},
+{id:'oesterreich',group:'Länder',type:'country',article:'',word:'Österreich',full:'Österreich',image:'oesterreich.webp',sentence:'Ich wohne in Österreich.',from:'Ich komme aus Österreich.',tr:{en:'Austria',ru:'Австрия',uk:'Австрія',tr:'Avusturya',ar:'النمسا',ja:'オーストリア',ro:'Austria',pl:'Austria',ku:'Awistirya'}},
+{id:'schweiz',group:'Länder',type:'country',article:'die',word:'Schweiz',full:'die Schweiz',image:'schweiz.webp',sentence:'Ich wohne in der Schweiz.',from:'Ich komme aus der Schweiz.',tr:{en:'Switzerland',ru:'Швейцария',uk:'Швейцарія',tr:'İsviçre',ar:'سويسرا',ja:'スイス',ro:'Elveția',pl:'Szwajcaria',ku:'Swîsra'}},
+{id:'tuerkei',group:'Länder',type:'country',article:'die',word:'Türkei',full:'die Türkei',image:'tuerkei.webp',sentence:'Ich wohne in der Türkei.',from:'Ich komme aus der Türkei.',tr:{en:'Turkey',ru:'Турция',uk:'Туреччина',tr:'Türkiye',ar:'تركيا',ja:'トルコ',ro:'Turcia',pl:'Turcja',ku:'Tirkiye'}},
+{id:'ukraine',group:'Länder',type:'country',article:'die',word:'Ukraine',full:'die Ukraine',image:'ukraine.webp',sentence:'Ich wohne in der Ukraine.',from:'Ich komme aus der Ukraine.',tr:{en:'Ukraine',ru:'Украина',uk:'Україна',tr:'Ukrayna',ar:'أوكرانيا',ja:'ウクライナ',ro:'Ucraina',pl:'Ukraina',ku:'Ukrayna'}},
+{id:'spanien',group:'Länder',type:'country',article:'',word:'Spanien',full:'Spanien',image:'spanien.webp',sentence:'Ich wohne in Spanien.',from:'Ich komme aus Spanien.',tr:{en:'Spain',ru:'Испания',uk:'Іспанія',tr:'İspanya',ar:'إسبانيا',ja:'スペイン',ro:'Spania',pl:'Hiszpania',ku:'Spanya'}}
+];
+const GRAMMAR=[
+{rule:'Himmelsrichtungen: im + Richtung',prompt:'___ Norden ist es kalt.',a:'Im',opts:['Im','In','Aus'],tip:'im Norden / im Süden / im Osten / im Westen'},
+{rule:'Wind: aus dem + Richtung',prompt:'Der Wind kommt ___ Westen.',a:'aus dem',opts:['im','aus dem','in der'],tip:'Der Wind kommt aus dem Westen.'},
+{rule:'Jahreszeiten: im + Jahreszeit',prompt:'___ Winter schneit es.',a:'Im',opts:['Im','In','Aus'],tip:'im Frühling, im Sommer, im Herbst, im Winter'},
+{rule:'Länder ohne Artikel: in + Land',prompt:'Ich wohne ___ Deutschland.',a:'in',opts:['in','in der','im'],tip:'in Deutschland, in Österreich, in Spanien'},
+{rule:'Länder ohne Artikel: aus + Land',prompt:'Ich komme ___ Österreich.',a:'aus',opts:['aus','aus der','aus dem'],tip:'aus Deutschland, aus Österreich, aus Spanien'},
+{rule:'Länder mit die: in der + Land',prompt:'Ich wohne ___ Schweiz.',a:'in der',opts:['in','in der','im'],tip:'in der Schweiz, in der Türkei, in der Ukraine'},
+{rule:'Länder mit die: aus der + Land',prompt:'Ich komme ___ Türkei.',a:'aus der',opts:['aus','aus der','aus dem'],tip:'aus der Schweiz, aus der Türkei, aus der Ukraine'},
+{rule:'Herkunft: aus + Land',prompt:'Ali kommt ___ Spanien.',a:'aus',opts:['in','aus','im'],tip:'kommen aus + Land'},
+{rule:'Ort: in + Land',prompt:'Maria lebt ___ Ukraine.',a:'in der',opts:['in','in der','aus der'],tip:'leben in der Ukraine'},
+{rule:'Richtung + Wetter',prompt:'___ Süden ist es warm.',a:'Im',opts:['Im','Aus dem','In der'],tip:'im Süden'}
+];
+const SENTENCES=[
+{parts:['Im','Norden','ist','es','kalt.'],sol:'Im Norden ist es kalt.'},
+{parts:['Der','Wind','kommt','aus dem','Westen.'],sol:'Der Wind kommt aus dem Westen.'},
+{parts:['Im','Sommer','ist','es','heiß.'],sol:'Im Sommer ist es heiß.'},
+{parts:['Im','Winter','schneit','es.'],sol:'Im Winter schneit es.'},
+{parts:['Ich','wohne','in','Deutschland.'],sol:'Ich wohne in Deutschland.'},
+{parts:['Ich','komme','aus','Österreich.'],sol:'Ich komme aus Österreich.'},
+{parts:['Ich','wohne','in der','Schweiz.'],sol:'Ich wohne in der Schweiz.'},
+{parts:['Ich','komme','aus der','Türkei.'],sol:'Ich komme aus der Türkei.'},
+{parts:['Ich','wohne','in der','Ukraine.'],sol:'Ich wohne in der Ukraine.'},
+{parts:['Im','Herbst','regnet','es oft.'],sol:'Im Herbst regnet es oft.'}
+];
+const TASKS=[['karteikarten.html',WORDS.length,'Karteikarten'],['bild-wort.html',WORDS.length,'Bild → Wort'],['hoeren-schreiben.html',WORDS.length,'Hören/Schreiben'],['praepositionen.html',GRAMMAR.length,'Präpositionen'],['saetze-bauen.html',SENTENCES.length,'Sätze bauen'],['pruefung.html',10,'Prüfung']];
+const TASK_ICONS={'karteikarten.html':'🃏','bild-wort.html':'🖼️','hoeren-schreiben.html':'🎧','praepositionen.html':'📍','saetze-bauen.html':'🧩','pruefung.html':'★'};
+const LANGS={en:'Englisch',ru:'Russisch',tr:'Türkisch',uk:'Ukrainisch',ar:'Arabisch',ja:'Japanisch',ro:'Rumänisch',pl:'Polnisch',ku:'Kurdisch'};
+function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')}catch(e){return null}}
+function langKey(){const m=String(profile()?.muttersprache||profile()?.motherLanguage||'').toLowerCase();if(['uk','ua'].includes(m)||m.includes('ukrain'))return'uk';if(m.includes('russ'))return'ru';if(m.includes('türk')||m.includes('turk'))return'tr';if(m.includes('arab'))return'ar';if(m.includes('japan'))return'ja';if(m.includes('rumän')||m.includes('ruman'))return'ro';if(m.includes('pol'))return'pl';if(m.includes('kurd'))return'ku';return'en'}
+function tr(w){const k=langKey(),t=w.tr||{};return t[k]||t.en||'—'}
+function full(w){return w.full||((w.article?`${w.article} `:'')+w.word)}
+function img(w){return CDN+(w.image||w.id+'.webp')}
+function visual(w){return `<div class="task-img-box"><img src="${img(w)}" alt="${full(w)}" onerror="this.parentElement.textContent='${full(w)}'"></div>`}
+function miniVisual(w){return `<img src="${img(w)}" alt="${full(w)}" onerror="this.replaceWith(document.createTextNode('${full(w)}'))">`}
+function words(){return WORDS}
+function simple(x){return String(x||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:]/g,'').replace(/\s+/g,' ')}
+function exact(value,solutions){const a=simple(value);return (Array.isArray(solutions)?solutions:[solutions]).some(s=>simple(s)===a)}
+function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function say(t){if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=.86;speechSynthesis.speak(u)}
+function isTeacher(){return localStorage.getItem('SP_LOGIN_ROLE')==='teacher'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}
+function taskKey(file){return CFG.key+'_'+file}
+function loadTask(file,total){try{const st=JSON.parse(localStorage.getItem(taskKey(file))||'null');if(st&&st.total===total&&Array.isArray(st.done)&&Array.isArray(st.queue))return st}catch(e){}return{total,done:[],queue:[...Array(total).keys()].sort(()=>Math.random()-.5),current:null,tries:0,hadWrong:false}}
+function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(st));syncTask(file,st)}
+function spNextIndex(file,total){let st=loadTask(file,total);if(st.current===null||st.current===undefined){if(!st.queue.length&&st.done.length<total)st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=st.queue.shift();st.tries=0;st.hadWrong=false;saveTask(file,st)}return st.current}
+function spMarkRight(file,total){let st=loadTask(file,total),c=st.current;if(c!==null&&c!==undefined){if(st.hadWrong||st.tries>0){if(!st.done.includes(c)&&!st.queue.includes(c))st.queue.push(c)}else if(!st.done.includes(c))st.done.push(c)}st.current=null;st.tries=0;st.hadWrong=false;saveTask(file,st)}
+function spMarkWrong(file,total){let st=loadTask(file,total);st.tries=(st.tries||0)+1;st.hadWrong=true;saveTask(file,st);return st.tries}
+function pctFor(file,total){return total?Math.round((loadTask(file,total).done.length||0)/total*100)||0:0}
+function progress(file,total){const d=loadTask(file,total).done.length,p=pctFor(file,total);return `<div class="small">${d} richtig · ${total-d} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
+function help3(t,a,b,sol){if(t===1)return `<div class="no">${a}</div>`;if(t===2)return `<div class="hint">${b}</div>`;return `<div class="no">Lösung: ${sol}</div>`}
+function instruction(txt){return `<div class="task-instruction">${txt}</div>`}
+function complete(area,file,next='index.html'){area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${next}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div></div>`}
+function markTaskDone(file,total){saveTask(file,{total,done:[...Array(total).keys()],queue:[],current:null,tries:0,hadWrong:false})}
+function syncTask(file,st){try{const done=st.done?.length||0,total=st.total||0,percent=total?Math.round(done/total*100):0;const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',file,taskTitle:(TASKS.find(t=>t[0]===file)||[])[2]||file,percent,done,total,completed:percent>=100};if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload)}catch(e){}}
+function header(title,showReset=false){const h=document.querySelector('.topbar');if(!h)return;const p=profile(),name=`${p?.vorname||p?.firstName||''} ${p?.nachname||p?.lastName||''}`.trim()||'Schüler/in',dashboard=localStorage.getItem('SP_LOGIN_ROLE')==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';h.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${title} · ${CFG.sub}</div></div></a><div class="account-tools"><span class="account-pill">${name}</span><a class="account-link" href="${dashboard}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="index.html">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a>${showReset?'<button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>':''}</nav>`}
+function resetThemeProgress(){if(!confirm('Fortschritte in Thema 2 löschen?'))return;Object.keys(localStorage).filter(k=>k.startsWith(CFG.key)).forEach(k=>localStorage.removeItem(k));location.reload()}
+function renderOverview(target){const groups=[...new Set(WORDS.map(w=>w.group))];target.innerHTML=groups.map(g=>`<section class="type-block"><div class="type-title">${g}</div>${WORDS.filter(w=>w.group===g).map(w=>`<div class="word-row"><div class="word-placeholder">${miniVisual(w)}</div><div><b>${full(w)}</b><br><span class="small">${w.sentence}${w.from?' / '+w.from:''}</span><div class="small">Übersetzung (${LANGS[langKey()]||'EN'}): ${tr(w)}</div><span class="tag">${w.type}</span></div></div>`).join('')}</section>`).join('')+`<section class="type-block"><div class="type-title">Grammatik: Präpositionen</div><div class="grammar-rule">Himmelsrichtungen: <b>im Norden</b>, <b>im Süden</b>, <b>im Osten</b>, <b>im Westen</b></div><div class="grammar-rule">Wind: <b>aus dem Norden</b>, <b>aus dem Westen</b></div><div class="grammar-rule">Jahreszeiten: <b>im Frühling</b>, <b>im Sommer</b>, <b>im Herbst</b>, <b>im Winter</b></div><div class="grammar-rule">Länder ohne Artikel: <b>in Deutschland</b>, <b>aus Österreich</b></div><div class="grammar-rule">Länder mit die: <b>in der Schweiz</b>, <b>aus der Türkei</b>, <b>in der Ukraine</b></div></section>`}
+function renderMenu(){const avg=Math.round(TASKS.reduce((s,t)=>s+pctFor(t[0],t[1]),0)/TASKS.length)||0;totalCircle.textContent=avg+'%';totalBar.style.width=avg+'%';totalText.textContent=TASKS.filter(t=>pctFor(t[0],t[1])>=100).length+' / '+TASKS.length+' Aufgaben abgeschlossen';taskGrid.innerHTML=`<div class="grid">${TASKS.map((t,i)=>{const p=pctFor(t[0],t[1]);return `<a class="module" href="${t[0]}"><div class="num">${i+1}. ${t[2]}</div><div class="big-icon">${TASK_ICONS[t[0]]||'▶'}</div><p class="small">Himmelsrichtungen, Länder, Jahreszeiten und Präpositionen üben.</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}).join('')}</div>`}
