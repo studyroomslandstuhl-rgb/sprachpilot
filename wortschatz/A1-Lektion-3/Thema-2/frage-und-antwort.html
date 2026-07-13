@@ -4,6 +4,7 @@ const FILE="frage-und-antwort.html";
 let currentIndex=null;
 let phase="question";
 
+function areaEl(){return document.getElementById("area")}
 function safeSimple(x){
   if(typeof simple==="function")return simple(x);
   return String(x||"").toLowerCase().trim().replace(/[.,!?€]/g,"").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/\s+/g," ");
@@ -27,6 +28,7 @@ function strictAcceptablePriceSentence(ans,price){
   return strictPriceVariants(price).some(v=>a.includes(v));
 }
 function acceptableQuestion(ans,c){
+  if(!c)return false;
   let a=norm(ans);
   let verb=c.isPlural?'kosten':'kostet';
   let wrong=c.isPlural?'kostet':'kosten';
@@ -36,6 +38,7 @@ function acceptableQuestion(ans,c){
   return true;
 }
 function acceptableAnswer(ans,c){
+  if(!c)return false;
   let a=norm(ans);
   if(strictAcceptablePriceSentence(ans,c.price))return true;
   let verb=c.isPlural?'kosten':'kostet';
@@ -46,7 +49,8 @@ function acceptableAnswer(ans,c){
   return starts.some(st=>a.startsWith(st))&&pvars.some(v=>a.includes(v));
 }
 function ensureState(){
-  if(typeof COMBOS==="undefined"||!Array.isArray(COMBOS)||COMBOS.length===0){area.innerHTML='<div class="feedback">Fehler: Die Aufgaben wurden nicht geladen.</div>';return false}
+  const target=areaEl();
+  if(typeof COMBOS==="undefined"||!Array.isArray(COMBOS)||COMBOS.length===0){if(target)target.innerHTML='<div class="feedback">Fehler: Die Aufgaben wurden nicht geladen.</div>';return false}
   if(typeof spTaskStateKey!=="function")window.spTaskStateKey=file=>"SP_TASK_STATE_"+file;
   if(typeof spLoadTaskState!=="function")window.spLoadTaskState=function(file,total){try{const saved=JSON.parse(localStorage.getItem(spTaskStateKey(file))||"null");if(saved&&saved.total===total&&Array.isArray(saved.queue)&&Array.isArray(saved.done))return saved}catch(e){}const queue=[...Array(total).keys()].sort(()=>Math.random()-0.5);return{total,queue,done:[],current:null,tries:0}};
   if(typeof spSaveTaskState!=="function")window.spSaveTaskState=function(file,state){localStorage.setItem(spTaskStateKey(file),JSON.stringify(state))};
@@ -60,7 +64,7 @@ function ensureState(){
   if(typeof fixImg!=="function")window.fixImg=img=>img.classList.add("missing");
   return true;
 }
-function currentCombo(){return COMBOS[currentIndex]}
+function currentCombo(){return Array.isArray(COMBOS)&&COMBOS[currentIndex]?COMBOS[currentIndex]:null}
 function showWriteBox(){
   const box=document.getElementById("writeBox");
   if(box)box.classList.remove("hidden");
@@ -94,19 +98,25 @@ function showHelp(html){
   if(fb)fb.innerHTML=`<div class="helped">${html}</div>`;
   showWriteBox();
 }
+function resetBrokenCurrent(){
+  try{const st=spLoadTaskState(FILE,COMBOS.length);st.current=null;spSaveTaskState(FILE,st)}catch(e){}
+}
 function show(){
   if(!ensureState())return;
+  const target=areaEl();
+  if(!target)return;
   const state=spLoadTaskState(FILE,COMBOS.length);
-  if(state.done.length>=COMBOS.length){if(typeof complete==="function")complete(area,FILE,"index.html");else area.innerHTML='<div class="question">Fertig!</div>';return}
+  if(state.done.length>=COMBOS.length){if(typeof complete==="function")complete(target,FILE,"index.html");else target.innerHTML='<div class="question">Fertig!</div>';return}
   currentIndex=spNextIndex(FILE,COMBOS.length);
-  if(currentIndex===undefined||currentIndex===null||!COMBOS[currentIndex]){localStorage.removeItem(spTaskStateKey(FILE));currentIndex=spNextIndex(FILE,COMBOS.length)}
+  if(currentIndex===undefined||currentIndex===null||!COMBOS[currentIndex]){resetBrokenCurrent();currentIndex=spNextIndex(FILE,COMBOS.length)}
   const c=currentCombo();
+  if(!c){target.innerHTML='<div class="feedback">Aufgabe konnte nicht geladen werden. Bitte neu laden.</div>';return}
   if(phase==="question"){
-    area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">1. Frage nach dem Preis.</div><div class="hint">Sprich die Frage. Wenn das Mikrofon nicht funktioniert, kannst du schreiben.</div>${comboImages(c)}<div class="actions"><button id="speakBtn" class="btn mic-btn">🎤 Frage sprechen</button><button id="writeBtn" class="btn secondary">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="writeBox" class="hidden"><input id="answerInput" placeholder="Schreibe hier deine Frage."><button id="checkBtn" class="btn">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+    target.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">1. Frage nach dem Preis.</div><div class="hint">Sprich die Frage. Wenn das Mikrofon nicht funktioniert, kannst du schreiben.</div>${comboImages(c)}<div class="actions"><button id="speakBtn" class="btn mic-btn">🎤 Frage sprechen</button><button id="writeBtn" class="btn secondary">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="writeBox" class="hidden"><input id="answerInput" placeholder="Schreibe hier deine Frage."><button id="checkBtn" class="btn">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
     document.getElementById("speakBtn").onclick=function(){listenGerman(text=>checkQuestion(text),this)};
     document.getElementById("writeBtn").onclick=showWriteBox;
   }else{
-    area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">2. Antworte auf deine Frage.</div><div class="hint">Sprich die Antwort. Wenn das Mikrofon nicht funktioniert, kannst du schreiben.</div>${comboImages(c)}<div class="big">${c.price}</div><div class="actions"><button id="speakBtn" class="btn mic-btn">🎤 Antwort sprechen</button><button id="writeBtn" class="btn secondary">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="writeBox" class="hidden"><input id="answerInput" placeholder="Schreibe hier deine Antwort."><button id="checkBtn" class="btn">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
+    target.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">2. Antworte auf deine Frage.</div><div class="hint">Sprich die Antwort. Wenn das Mikrofon nicht funktioniert, kannst du schreiben.</div>${comboImages(c)}<div class="big">${c.price}</div><div class="actions"><button id="speakBtn" class="btn mic-btn">🎤 Antwort sprechen</button><button id="writeBtn" class="btn secondary">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="writeBox" class="hidden"><input id="answerInput" placeholder="Schreibe hier deine Antwort."><button id="checkBtn" class="btn">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
     document.getElementById("speakBtn").onclick=function(){listenGerman(text=>checkAnswer(text),this)};
     document.getElementById("writeBtn").onclick=showWriteBox;
   }
@@ -114,20 +124,22 @@ function show(){
 function checkQuestion(text){
   try{
     const c=currentCombo();
+    if(!c){resetBrokenCurrent();show();return}
     if(acceptableQuestion(text,c)){phase="answer";show();return}
     const tries=spMarkWrong(FILE,COMBOS.length);
-    showHelp(spFeedbackForTry(tries,c.question,"Fragewort, Preis-Frage und kostet/kosten"));
+    showHelp(window.spFeedbackForTry(tries,c.question,"Fragewort, Preis-Frage und kostet/kosten"));
     phase="question";
-  }catch(e){micFallback("Die Eingabe konnte nicht geprüft werden. Bitte schreibe noch einmal.")}
+  }catch(e){console.warn('frage-und-antwort checkQuestion failed',e);micFallback("Die Eingabe konnte nicht geprüft werden. Bitte schreibe noch einmal.")}
 }
 function checkAnswer(text){
   try{
     const c=currentCombo();
+    if(!c){resetBrokenCurrent();show();return}
     if(acceptableAnswer(text,c)){spMarkRight(FILE,COMBOS.length);phase="question";show();return}
     const tries=spMarkWrong(FILE,COMBOS.length);
-    showHelp(spFeedbackForTry(tries,c.answer,"Antwortsatz und Preis"));
+    showHelp(window.spFeedbackForTry(tries,c.answer,"Antwortsatz und Preis"));
     phase="answer";
-  }catch(e){micFallback("Die Eingabe konnte nicht geprüft werden. Bitte schreibe noch einmal.")}
+  }catch(e){console.warn('frage-und-antwort checkAnswer failed',e);micFallback("Die Eingabe konnte nicht geprüft werden. Bitte schreibe noch einmal.")}
 }
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",show);else show();
 </script></body></html>
