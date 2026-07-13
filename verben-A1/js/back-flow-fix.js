@@ -9,6 +9,18 @@
     b.addEventListener('click',function(e){e.preventDefault();e.stopPropagation();fn()},true);
     return b;
   }
+  function makeResetBtn(){
+    const b=document.createElement('button');
+    b.type='button';
+    b.className='btn danger-btn sp-reset-verbs-progress';
+    b.textContent='Fortschritte löschen';
+    b.addEventListener('click',function(e){
+      e.preventDefault();e.stopPropagation();
+      if(typeof window.spResetVerbenProgress==='function')window.spResetVerbenProgress();
+      else if(typeof resetCurrentPackage==='function')resetCurrentPackage();
+    },true);
+    return b;
+  }
   function viewParam(){try{return new URLSearchParams(location.search||'').get('view')||''}catch(e){return''}}
   function setOverviewUrl(replace=true){
     const next=BASE+'?view=aufgaben';
@@ -75,11 +87,13 @@
         const t=String(el.textContent||'').replace(/\s+/g,' ').trim();
         if(t.includes('Zurück')){el.classList.add('sp-nav-back');return}
         if(t==='Übersicht'){el.classList.add('sp-overview-link');el.onclick=null;el.setAttribute('type','button');return}
+        if(t==='Fortschritte löschen'||el.classList.contains('sp-reset-verbs-progress')){el.classList.add('sp-reset-verbs-progress','danger-btn');return}
         el.remove();
       });
       if(!n.querySelector('.sp-nav-back'))n.prepend(makeBtn('← Zurück',()=>{if(typeof spGoBack==='function')spGoBack()}));
       let overview=n.querySelector('.sp-overview-link');
       if(!overview){overview=makeBtn('Übersicht',()=>{if(typeof goOverviewView==='function')goOverviewView();else if(typeof renderVerbOverview==='function')renderVerbOverview()});overview.classList.add('sp-overview-link');n.appendChild(overview)}
+      if(!n.querySelector('.sp-reset-verbs-progress'))n.appendChild(makeResetBtn());
     }catch(e){}
   }
   function maybeFinishScreen(){
@@ -113,6 +127,7 @@
     const el=e.target&&e.target.closest?e.target.closest('a,button'):null;if(!el)return;
     if(el.classList&&el.classList.contains('sp-nav-back')){e.preventDefault();e.stopPropagation();if(typeof spGoBack==='function')spGoBack();return}
     if(el.classList&&el.classList.contains('sp-overview-link')){e.preventDefault();e.stopPropagation();if(typeof goOverviewView==='function')goOverviewView();else if(typeof renderVerbOverview==='function')renderVerbOverview();return}
+    if(el.classList&&el.classList.contains('sp-reset-verbs-progress')){e.preventDefault();e.stopPropagation();if(typeof window.spResetVerbenProgress==='function')window.spResetVerbenProgress();else if(typeof resetCurrentPackage==='function')resetCurrentPackage();return}
   },true);
   document.addEventListener('DOMContentLoaded',function(){setTimeout(simplifyHeader,80);setTimeout(simplifyHeader,400);setTimeout(function(){if(viewParam()==='aufgaben'&&typeof window.renderTaskOverview==='function')window.renderTaskOverview()},140)},{once:true});
   try{new MutationObserver(simplifyHeader).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
