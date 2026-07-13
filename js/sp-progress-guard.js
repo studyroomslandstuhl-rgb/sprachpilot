@@ -3,7 +3,7 @@
 (function(){
   try{import('/js/sp-assets.js?v=3').catch(function(){});}catch(e){}
   try{import('/js/topbar-standard.js?v=7').catch(function(){});}catch(e){}
-  try{import('/js/sp-progress-standard.js?v=2').catch(function(){});}catch(e){}
+  try{import('/js/sp-progress-standard.js?v=3').catch(function(){});}catch(e){}
   try{import('/js/scoring.js?v=10').catch(function(){});}catch(e){}
   function readProfile(){
     try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"{}") }catch(e){return {}}
