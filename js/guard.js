@@ -52,7 +52,7 @@ import("/js/back-button-fix.js?v=1").catch(()=>{});
 import("/js/release-helper.js?v=10").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(LIGHT_FIREBASE_PAGE){
-  import("/js/sp-progress-standard.js?v=1").catch(()=>{});
+  import("/js/sp-progress-standard.js?v=2").catch(()=>{});
 }
 if(NEEDS_EXAM_UNLOCK_FIX&&!PERFORMANCE_SYNC_OFF){
   setTimeout(()=>import("/js/exam-unlock-fix.js?v=2").catch(()=>{}),120);
