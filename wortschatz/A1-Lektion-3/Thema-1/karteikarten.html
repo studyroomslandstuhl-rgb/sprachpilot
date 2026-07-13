@@ -46,11 +46,11 @@ if(requireLogin()){
 import("/js/back-button-fix.js?v=1").catch(()=>{});
 </script>
 <script src="/js/sp-microphone.js?v=1"></script>
-<script src="app.js?v=41"></script>
+<script src="app.js?v=42"></script>
 <script type="module" src="/js/scoring.js?v=6"></script>
 <script>
 const FILE = "karteikarten.html";
-const CARD_WORDS = (typeof singularWords === "function" ? singularWords() : activeWords());
+const CARD_WORDS = activeWords();
 let Q = queueFor(FILE, CARD_WORDS);
 let revealed = false;
 let solved = false;
