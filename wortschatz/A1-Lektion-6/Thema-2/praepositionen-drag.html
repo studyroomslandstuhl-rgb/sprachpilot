@@ -1,5 +1,41 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Präpositionen · Drag & Drop</title><link rel="stylesheet" href="style.css?v=1"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="app.js?v=2"></script><script src="l6t2-extra-tasks.js?v=2"></script><script>
-header('Präpositionen · Drag & Drop');const FILE='praepositionen-drag.html';let items=PREP_DRAG_ITEMS,i=0,current=null;
-function show(){items=PREP_DRAG_ITEMS;if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'fehler-finden.html');return}i=spNextIndex(FILE,items.length);current=items[i];const opts=shuffle(current.opts);area.innerHTML=`${progress(FILE,items.length)}${instruction('Ziehen Sie die passende Präposition in die Lücke.')}<div class="question">${current.sentence.replace('___','<span class="drop-zone" id="gap" ondragover="event.preventDefault();this.classList.add(\'active\')" ondragleave="this.classList.remove(\'active\')" ondrop="dropPrep(event)">___</span>')}</div><div>${opts.map(o=>`<span class="drag-token" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${encodeURIComponent(o)}')">${o}</span>`).join('')}</div><div class="example-box"><b>Präpositionen:</b> am · um · im · in · in der · aus · aus dem · aus der</div><div id="fb" class="feedback"></div>`}
-function dropPrep(ev){ev.preventDefault();gap.classList.remove('active');const val=decodeURIComponent(ev.dataTransfer.getData('text/plain')||'');gap.textContent=val;if(val===current.a){fb.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,items.length);setTimeout(show,700)}else{const t=spMarkWrong(FILE,items.length);fb.innerHTML=help3(t,'Noch nicht richtig.','Tipp: '+current.tip,current.a)}}
-show();</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Präpositionen · Drag & Drop</title><link rel="stylesheet" href="style.css?v=2"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="app.js?v=3"></script><script src="l6t2-extra-tasks.js?v=3"></script><script>
+header('Präpositionen · Drag & Drop');
+const FILE='praepositionen-drag.html';
+const GROUPS=[
+ {key:'Im',label:'im',help:'Himmelsrichtung oder Jahreszeit'},
+ {key:'in',label:'in',help:'Land ohne Artikel'},
+ {key:'Am',label:'am',help:'Tag oder Tageszeit'},
+ {key:'Um',label:'um',help:'Uhrzeit'},
+ {key:'von … bis …',label:'von … bis …',help:'Zeitraum'}
+];
+const ITEMS=PREP_DRAG_ITEMS;
+let selected=null;
+function show(){
+ if(loadTask(FILE,ITEMS.length).done.length>=ITEMS.length){complete(area,FILE,'fehler-finden.html');return}
+ area.innerHTML=`${progress(FILE,ITEMS.length)}${instruction('Tippen Sie zuerst auf einen Satz und danach auf die passende Präposition.')}<div id="chips" class="drag-bank"></div><div class="drop-grid">${GROUPS.map(g=>`<div class="dropzone" data-a="${g.key}"><h2>${g.label}</h2><div class="small">${g.help}</div></div>`).join('')}</div><div class="actions"><button class="btn" onclick="control()">Kontrollieren</button><button class="btn secondary" onclick="clearSelection()">Auswahl lösen</button></div><div id="fb" class="feedback"></div>`;
+ chips.innerHTML=ITEMS.map((x,i)=>`<span class="chip" data-id="${i}">${x.sentence}</span>`).join('');
+ bind();
+}
+function clearSelection(){document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));selected=null}
+function cleanChip(chip){chip.classList.remove('selected','no');let n=chip.nextElementSibling;while(n&&n.classList&&n.classList.contains('correction')){const next=n.nextElementSibling;n.remove();n=next}}
+function moveChip(chip,zone){if(!chip||!zone)return;cleanChip(chip);zone.appendChild(chip);selected=null;bind()}
+function bind(){
+ document.querySelectorAll('.chip').forEach(c=>c.onclick=e=>{e.stopPropagation();if(c.classList.contains('ok'))return;clearSelection();selected=c;c.classList.add('selected')});
+ document.querySelectorAll('.dropzone').forEach(z=>z.onclick=e=>{if(e.target.closest('.chip'))return;if(selected)moveChip(selected,z)});
+}
+function control(){
+ document.querySelectorAll('.correction').forEach(x=>x.remove());
+ let ok=0;
+ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected','ok','no'));
+ document.querySelectorAll('.dropzone').forEach(z=>z.querySelectorAll('.chip').forEach(c=>{
+   const x=ITEMS[Number(c.dataset.id)];
+   if(x&&z.dataset.a===x.a){c.classList.add('ok');ok++}
+   else if(x){c.classList.add('no');const note=document.createElement('span');note.className='correction';note.textContent='richtig: '+x.a;c.after(note)}
+ }));
+ bind();
+ const unassigned=document.querySelectorAll('#chips .chip').length;
+ if(ok===ITEMS.length){markTaskDone(FILE,ITEMS.length);complete(area,FILE,'fehler-finden.html');return}
+ fb.innerHTML=`<div class="no">${unassigned?unassigned+' Sätze sind noch nicht zugeordnet. ':''}Korrigieren Sie die roten Sätze.</div>`;
+}
+show();
+</script></body></html>
