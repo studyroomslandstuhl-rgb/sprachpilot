@@ -1,5 +1,5 @@
 import "/js/sp-assets.js?v=3";
-import "/js/sp-image-guard.js?v=2";
+import "/js/sp-image-guard.js?v=3";
 import "/js/session-restore.js?v=1";
 import { requireLogin, logout } from "/js/auth.js";
 import { installSpHeader } from "/js/sp-header.js";
@@ -14,7 +14,8 @@ const IS_WORTSCHATZ_LESSON_OVERVIEW=/\/wortschatz\/A\d-Lektion-\d+\/?(?:index\.h
 const IS_FRAGEN_EXERCISE=path.includes("/fragen-A1/")||path.includes("/fragen/");
 const IS_VERBEN_EXERCISE=path.includes("/verben-A1/");
 const IS_L3T1=path.includes("/wortschatz/A1-Lektion-3/Thema-1/");
-const NEEDS_EXAM_UNLOCK_FIX=IS_WORTSCHATZ_EXERCISE&&!IS_L3T1;
+const IS_L6T2=path.includes("/wortschatz/A1-Lektion-6/Thema-2/");
+const NEEDS_EXAM_UNLOCK_FIX=IS_WORTSCHATZ_EXERCISE&&!IS_L3T1&&!IS_L6T2;
 const USES_STANDARD_PROGRESS=(IS_WORTSCHATZ_EXERCISE&&!IS_L3T1)||IS_FRAGEN_EXERCISE;
 const LIGHT_FIREBASE_PAGE=IS_WORTSCHATZ_EXERCISE||IS_FRAGEN_EXERCISE||IS_VERBEN_EXERCISE;
 const NO_FIREBASE_SYNC=qs.has("nofirebase")||localStorage.getItem("SP_NO_FIREBASE_SYNC")==="1";
