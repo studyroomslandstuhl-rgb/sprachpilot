@@ -1,11 +1,18 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frage & Antwort</title><link rel="stylesheet" href="style.css?v=qa4"></head><body><div id="accountStrip" class="account-strip"></div><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"><div class="question">Aufgabe wird geladen …</div></section><footer>© SprachPilot</footer></div><script src="app.js?v=16"></script><script src="l3t2-task-fix.js?v=3"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frage & Antwort</title><link rel="stylesheet" href="style.css?v=qa5"></head><body><div id="accountStrip" class="account-strip"></div><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"><div class="question">Aufgabe wird geladen …</div></section><footer>© SprachPilot</footer></div><script src="app.js?v=16"></script><script src="l3t2-task-fix.js?v=3"></script><script>
 header("Frage & Antwort");
 const FILE="frage-und-antwort.html";
 let currentIndex=null;
 let phase="question";
 function areaEl(){return document.getElementById("area")}
 function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
-function qaNorm(x){return String(x||"").toLowerCase().trim().replace(/[.,!?€]/g," ").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/\s+/g," ").trim()}
+function qaNorm(x){
+  return String(x||"").toLowerCase().trim()
+    .replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss")
+    .replace(/\bkilogramm\b/g,"kilo").replace(/\bkg\b/g,"kilo")
+    .replace(/\bgramm\b/g,"gramm").replace(/\bgr\b/g,"gramm").replace(/\bg\b/g,"gramm")
+    .replace(/\bliter\b/g,"liter").replace(/\bl\b/g,"liter")
+    .replace(/[.,!?€]/g," ").replace(/\s+/g," ").trim()
+}
 function priceParts(price){
   const p=String(price||"").replace("€","").trim();
   const parts=p.split(",");
