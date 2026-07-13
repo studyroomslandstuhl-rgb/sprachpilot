@@ -1,16 +1,16 @@
 const L6T2_EXTRA_TASKS=[
   ['kategorien-drag.html',words().length,'Kategorien · Drag & Drop'],
-  ['praepositionen-drag.html',14,'Präpositionen · Drag & Drop'],
-  ['fehler-finden.html',14,'Fehler finden']
+  ['praepositionen-drag.html',13,'Präpositionen · Drag & Drop'],
+  ['fehler-finden.html',13,'Fehler finden']
 ];
 const L6T2_ALL_TASKS=[
   ['karteikarten.html',words().length,'Karteikarten'],
   ['bild-wort.html',words().length,'Bild → Wort'],
   ['hoeren-schreiben.html',words().length,'Hören/Schreiben'],
   ['kategorien-drag.html',words().length,'Kategorien · Drag & Drop'],
-  ['praepositionen.html',14,'Präpositionen'],
-  ['praepositionen-drag.html',14,'Präpositionen · Drag & Drop'],
-  ['fehler-finden.html',14,'Fehler finden'],
+  ['praepositionen.html',13,'Präpositionen'],
+  ['praepositionen-drag.html',13,'Präpositionen · Drag & Drop'],
+  ['fehler-finden.html',13,'Fehler finden'],
   ['saetze-bauen.html',SENTENCES.length,'Sätze bauen'],
   ['pruefung.html',10,'Prüfung']
 ];
@@ -22,7 +22,6 @@ const PREP_ONLY_ITEMS=[
   {rule:'Jahreszeiten: im + Jahreszeit',prompt:'___ Frühling ist es warm.',a:'Im',opts:['Im','In','Um','Am'],tip:'im Frühling'},
   {rule:'Jahreszeiten: im + Jahreszeit',prompt:'___ Sommer ist es heiß.',a:'Im',opts:['Im','In','Um','Am'],tip:'im Sommer'},
   {rule:'Jahreszeiten: im + Jahreszeit',prompt:'___ Winter schneit es.',a:'Im',opts:['Im','In','Um','Am'],tip:'im Winter'},
-  {rule:'Monate: im + Monat',prompt:'___ Juli ist es warm.',a:'Im',opts:['Im','In','Um','Am'],tip:'im Juli'},
   {rule:'Länder: in + Land',prompt:'Ich wohne ___ Deutschland.',a:'in',opts:['in','im','um','am'],tip:'in Deutschland'},
   {rule:'Länder: in + Land',prompt:'Ich wohne ___ Österreich.',a:'in',opts:['in','im','um','am'],tip:'in Österreich'},
   {rule:'Länder: in + Land',prompt:'Ich wohne ___ Spanien.',a:'in',opts:['in','im','um','am'],tip:'in Spanien'},
@@ -39,7 +38,6 @@ const PREP_ERROR_ITEMS=[
   {wrong:'In Frühling ist es warm.',right:'Im Frühling ist es warm.',a:'im',tip:'Jahreszeiten: im Frühling'},
   {wrong:'Am Sommer ist es heiß.',right:'Im Sommer ist es heiß.',a:'im',tip:'Jahreszeiten: im Sommer'},
   {wrong:'Um Winter schneit es.',right:'Im Winter schneit es.',a:'im',tip:'Jahreszeiten: im Winter'},
-  {wrong:'Am Juli ist es warm.',right:'Im Juli ist es warm.',a:'im',tip:'Monate: im Juli'},
   {wrong:'Ich wohne im Deutschland.',right:'Ich wohne in Deutschland.',a:'in',tip:'Länder: in Deutschland'},
   {wrong:'Ich wohne am Österreich.',right:'Ich wohne in Österreich.',a:'in',tip:'Länder: in Österreich'},
   {wrong:'Ich wohne um Spanien.',right:'Ich wohne in Spanien.',a:'in',tip:'Länder: in Spanien'},
@@ -50,4 +48,5 @@ const PREP_ERROR_ITEMS=[
 ];
 function l6t2AllTasks(){return L6T2_ALL_TASKS}
 function renderMenu(){const tasks=l6t2AllTasks();const avg=Math.round(tasks.reduce((s,t)=>s+pctFor(t[0],t[1]),0)/tasks.length)||0;totalCircle.textContent=avg+'%';totalBar.style.width=avg+'%';totalText.textContent=tasks.filter(t=>pctFor(t[0],t[1])>=100).length+' / '+tasks.length+' Aufgaben abgeschlossen';taskGrid.innerHTML=`<div class="grid">${tasks.map((t,i)=>{const p=pctFor(t[0],t[1]);return `<a class="module" href="${t[0]}"><div class="num">${i+1}. ${t[2]}</div><div class="big-icon">${L6T2_TASK_ICONS[t[0]]||'▶'}</div><p class="small">Kategorien und Präpositionen üben: im · in · um · am · von … bis …</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}).join('')}</div>`}
+function renderOverview(target){const groups=[...new Set(WORDS.map(w=>w.group))];target.innerHTML=groups.map(g=>`<section class="type-block"><div class="type-title">${g}</div>${WORDS.filter(w=>w.group===g).map(w=>`<div class="word-row"><div class="word-placeholder">${miniVisual(w)}</div><div><b>${full(w)}</b><br><span class="small">${w.sentence}${w.from?' / '+w.from:''}</span><div class="small">Übersetzung (${LANGS[langKey()]||'EN'}): ${tr(w)}</div><span class="tag">${w.type}</span></div></div>`).join('')}</section>`).join('')+`<section class="type-block"><div class="type-title">Grammatik: Präpositionen</div><div class="grammar-rule"><b>im</b>: im Norden, im Süden, im Frühling, im Sommer, im Winter</div><div class="grammar-rule"><b>in</b>: in Deutschland, in Österreich, in Spanien</div><div class="grammar-rule"><b>am</b>: am Montag, am Morgen</div><div class="grammar-rule"><b>um</b>: um acht Uhr, um zehn Uhr</div><div class="grammar-rule"><b>von … bis …</b>: von neun bis zwölf Uhr</div></section>`}
 (function(){const s=document.createElement('style');s.textContent='.drag-token{display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--lesson-main-dark);background:#fff;border-radius:999px;padding:10px 16px;margin:6px;font-weight:900;cursor:grab;color:var(--lesson-main-dark)}.drop-zone{min-height:62px;border:3px dashed var(--lesson-line);border-radius:18px;padding:14px;margin:10px 0;background:#fffafd;font-weight:900}.drop-zone.active{background:var(--lesson-soft);border-color:var(--lesson-main-dark)}.drop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.drop-title{font-weight:900;color:var(--lesson-main-dark);margin-bottom:8px}.error-sentence{font-size:24px;font-weight:900;background:#fff1f2;border:2px solid #fecdd3;border-radius:18px;padding:16px;margin:16px 0;color:#9f1239}';document.head.appendChild(s)})();
