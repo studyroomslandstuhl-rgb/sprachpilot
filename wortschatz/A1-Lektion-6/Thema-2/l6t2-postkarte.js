@@ -1,0 +1,36 @@
+const L6T2_POST_WORDS=[
+  {id:'wetterbericht',group:'Postkarte/Wetterbericht',type:'noun',article:'der',word:'Wetterbericht',full:'der Wetterbericht',image:'wetterbericht.webp',sentence:'Der Wetterbericht ist im Radio.',tr:{en:'weather report',ru:'прогноз погоды',uk:'прогноз погоди',tr:'hava durumu raporu',ar:'تقرير الطقس',ja:'天気予報',ro:'buletin meteo',pl:'prognoza pogody',ku:'rapora hewayê'}},
+  {id:'mitte',group:'Postkarte/Wetterbericht',type:'noun',article:'die',word:'Mitte',full:'die Mitte',image:'mitte.webp',sentence:'In der Mitte ist es angenehm.',tr:{en:'middle',ru:'середина',uk:'середина',tr:'orta',ar:'الوسط',ja:'中央',ro:'mijloc',pl:'środek',ku:'navîn'}},
+  {id:'ueberall',group:'Postkarte/Wetterbericht',type:'adverb',article:'',word:'überall',full:'überall',image:'wetter.webp',sentence:'Überall ist das Wetter schön.',tr:{en:'everywhere',ru:'везде',uk:'усюди',tr:'her yerde',ar:'في كل مكان',ja:'どこでも',ro:'peste tot',pl:'wszędzie',ku:'li her derê'}},
+  {id:'temperatur',group:'Postkarte/Wetterbericht',type:'noun',article:'die',word:'Temperatur',full:'die Temperatur',image:'grad.webp',sentence:'Die Temperatur ist angenehm.',tr:{en:'temperature',ru:'температура',uk:'температура',tr:'sıcaklık',ar:'درجة الحرارة',ja:'気温',ro:'temperatură',pl:'temperatura',ku:'pileya germê'}},
+  {id:'leicht',group:'Postkarte/Wetterbericht',type:'adjective',article:'',word:'leicht',full:'leicht',image:'wind.webp',sentence:'Es ist leicht windig.',tr:{en:'light/slight',ru:'лёгкий',uk:'легкий',tr:'hafif',ar:'خفيف',ja:'軽い',ro:'ușor',pl:'lekki',ku:'sivik'}},
+  {id:'bleiben',group:'Postkarte/Wetterbericht',type:'verb',article:'',word:'bleiben',full:'bleiben',image:'wetter.webp',sentence:'Die Temperaturen bleiben angenehm.',tr:{en:'to stay',ru:'оставаться',uk:'залишатися',tr:'kalmak',ar:'يبقى',ja:'残る',ro:'a rămâne',pl:'zostawać',ku:'man'}},
+  {id:'plus',group:'Postkarte/Wetterbericht',type:'word',article:'',word:'plus',full:'plus',image:'grad.webp',sentence:'Es sind plus zehn Grad.',tr:{en:'plus',ru:'плюс',uk:'плюс',tr:'artı',ar:'زائد',ja:'プラス',ro:'plus',pl:'plus',ku:'zêde'}},
+  {id:'minus',group:'Postkarte/Wetterbericht',type:'word',article:'',word:'minus',full:'minus',image:'unternull.webp',sentence:'Es sind minus zwei Grad.',tr:{en:'minus',ru:'минус',uk:'мінус',tr:'eksi',ar:'ناقص',ja:'マイナス',ro:'minus',pl:'minus',ku:'kêm'}},
+  {id:'radio',group:'Postkarte/Wetterbericht',type:'noun',article:'das',word:'Radio',full:'das Radio',image:'radio.webp',sentence:'Ich höre den Wetterbericht im Radio.',tr:{en:'radio',ru:'радио',uk:'радіо',tr:'radyo',ar:'الراديو',ja:'ラジオ',ro:'radio',pl:'radio',ku:'radyo'}},
+  {id:'internet',group:'Postkarte/Wetterbericht',type:'noun',article:'das',word:'Internet',full:'das Internet',image:'internet.webp',sentence:'Ich lese den Wetterbericht im Internet.',tr:{en:'internet',ru:'интернет',uk:'інтернет',tr:'internet',ar:'الإنترنت',ja:'インターネット',ro:'internet',pl:'internet',ku:'înternet'}},
+  {id:'schlecht',group:'Postkarte/Wetterbericht',type:'adjective',article:'',word:'schlecht',full:'schlecht',image:'regen.webp',sentence:'Das Wetter ist schlecht.',tr:{en:'bad',ru:'плохой',uk:'поганий',tr:'kötü',ar:'سيئ',ja:'悪い',ro:'rău',pl:'zły',ku:'xerab'}},
+  {id:'angenehm',group:'Postkarte/Wetterbericht',type:'adjective',article:'',word:'angenehm',full:'angenehm',image:'sonne.webp',sentence:'Das Wetter ist angenehm.',tr:{en:'pleasant',ru:'приятный',uk:'приємний',tr:'hoş',ar:'ممتع',ja:'快適な',ro:'plăcut',pl:'przyjemny',ku:'xweş'}}
+];
+function l6t2AddPostWords(){L6T2_POST_WORDS.forEach(w=>{const e=WORDS.find(x=>x.id===w.id);if(e)Object.assign(e,w);else WORDS.push(w)})}
+l6t2AddPostWords();
+const oldWordsPost=window.words;
+window.words=words=function(){l6t2AddPostWords();const list=typeof oldWordsPost==='function'?oldWordsPost():WORDS;const seen=new Set();return list.filter(w=>w&&w.id&&!seen.has(w.id)&&seen.add(w.id))};
+const POSTCARD_ITEMS=[
+  {blank:'Liebe Anna, ich bin jetzt in Deutschland. Der ___ sagt: Im Süden ist es warm.',a:'Wetterbericht',opts:['Wetterbericht','Radio','Internet','Mitte'],full:'Liebe Anna, ich bin jetzt in Deutschland. Der Wetterbericht sagt: Im Süden ist es warm.'},
+  {blank:'In der ___ von Deutschland ist das Wetter angenehm.',a:'Mitte',opts:['Mitte','Temperatur','Radio','Sommer'],full:'In der Mitte von Deutschland ist das Wetter angenehm.'},
+  {blank:'Die ___ bleibt bei plus zehn Grad.',a:'Temperatur',opts:['Temperatur','Mitte','Internet','Wetterbericht'],full:'Die Temperatur bleibt bei plus zehn Grad.'},
+  {blank:'Am Morgen ist es ___ windig.',a:'leicht',opts:['leicht','schlecht','angenehm','minus'],full:'Am Morgen ist es leicht windig.'},
+  {blank:'Die Temperaturen ___ angenehm.',a:'bleiben',opts:['bleiben','plus','leicht','überall'],full:'Die Temperaturen bleiben angenehm.'},
+  {blank:'Heute sind es ___ zwölf Grad.',a:'plus',opts:['plus','minus','um','am'],full:'Heute sind es plus zwölf Grad.'},
+  {blank:'Am Abend sind es ___ zwei Grad.',a:'minus',opts:['minus','plus','im','in'],full:'Am Abend sind es minus zwei Grad.'},
+  {blank:'Ich höre den Wetterbericht im ___.',a:'Radio',opts:['Radio','Internet','Mitte','Wetterbericht'],full:'Ich höre den Wetterbericht im Radio.'},
+  {blank:'Ich lese den Wetterbericht im ___.',a:'Internet',opts:['Internet','Radio','Sommer','Norden'],full:'Ich lese den Wetterbericht im Internet.'},
+  {blank:'Gestern war das Wetter ___. Heute ist es besser.',a:'schlecht',opts:['schlecht','angenehm','leicht','überall'],full:'Gestern war das Wetter schlecht. Heute ist es besser.'},
+  {blank:'Heute ist das Wetter sehr ___.',a:'angenehm',opts:['angenehm','schlecht','minus','leicht'],full:'Heute ist das Wetter sehr angenehm.'},
+  {blank:'___ in der Stadt scheint die Sonne.',a:'Überall',opts:['Überall','Plus','Minus','Leicht'],full:'Überall in der Stadt scheint die Sonne.'}
+];
+const POSTCARD_WORD_BANK=['Wetterbericht','Mitte','Temperatur','leicht','bleiben','plus','minus','Radio','Internet','schlecht','angenehm','Überall'];
+const oldRenderOverviewPost=window.renderOverview;
+window.renderOverview=renderOverview=function(target){l6t2AddPostWords();if(typeof oldRenderOverviewPost==='function')oldRenderOverviewPost(target);else if(target)target.innerHTML='';if(target&&!document.getElementById('postcard-rule-box')){target.innerHTML+=`<section class="type-block" id="postcard-rule-box"><div class="type-title">Postkarte: Wetter und Land</div><div class="grammar-rule">Neue Wörter: der Wetterbericht · die Mitte · überall · die Temperatur · leicht · bleiben · plus · minus · das Radio · das Internet · schlecht · angenehm</div><div class="grammar-rule">Beispiel: Ich bin in Deutschland. Das Wetter ist angenehm. Die Temperatur bleibt bei plus zwölf Grad.</div></section>`}}
+(function(){const s=document.createElement('style');s.textContent='.postcard-box{background:#fffaf0;border:2px solid #f0c36b;border-radius:22px;padding:18px;margin:14px 0;line-height:1.9;font-size:20px}.word-bank{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.word-chip{display:inline-flex;border:2px solid var(--lesson-line);border-radius:999px;background:#fff;padding:8px 12px;font-weight:900;color:var(--lesson-main-dark)}';document.head.appendChild(s)})();
