@@ -40,7 +40,7 @@ if(typeof window.pct==="function"&&!window.pct.__spExamUnlock){const old=window.
 if(typeof window.taskPercent==="function"&&!window.taskPercent.__spExamUnlock){const old=window.taskPercent;window.taskPercent=function(file){const p=Number(old.apply(this,arguments)||0);return done(file)?Math.max(p,100):p};window.taskPercent.__spExamUnlock=true}
 if(typeof window.examUnlocked==="function"&&!window.examUnlocked.__spExamUnlock){const old=window.examUnlocked;window.examUnlocked=function(){return localStorage.getItem(unlockKey())==="1"||old.apply(this,arguments)};window.examUnlocked.__spExamUnlock=true}
 if(typeof window.isExamUnlocked==="function"&&!window.isExamUnlocked.__spExamUnlock){const old=window.isExamUnlocked;window.isExamUnlocked=function(){return localStorage.getItem(unlockKey())==="1"||old.apply(this,arguments)};window.isExamUnlocked.__spExamUnlock=true}
-if(typeof window.spL3ExamUnlocked==="function"&&!window.spL3ExamUnlocked.__spExamUnlock){const old=window.spL3ExamUnlocked;window.spL3ExamUnlocked=function(){return localStorage.getItem(unlockKey())==="1"||old.apply(this,arguments)};window.spL3ExamUnlocked=true}}
+if(typeof window.spL3ExamUnlocked==="function"&&!window.spL3ExamUnlocked.__spExamUnlock){const old=window.spL3ExamUnlocked;window.spL3ExamUnlocked=function(){return localStorage.getItem(unlockKey())==="1"||old.apply(this,arguments)};window.spL3ExamUnlocked.__spExamUnlock=true}}
 function unlockVisibleExamCard(){
   if(!MATCH||localStorage.getItem(unlockKey())!=="1")return;
   const href="pruefung.html";
