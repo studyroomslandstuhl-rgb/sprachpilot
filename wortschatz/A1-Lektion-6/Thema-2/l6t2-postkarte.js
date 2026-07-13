@@ -12,7 +12,8 @@ const L6T2_POST_WORDS=[
   {id:'angenehm',group:'Postkarte/Wetterbericht',type:'adjective',article:'',word:'angenehm',full:'angenehm',image:'angenehm.webp',sentence:'Das Wetter ist angenehm.',tr:{en:'pleasant',ru:'приятный',uk:'приємний',tr:'hoş',ar:'ممتع',ja:'快適な',ro:'plăcut',pl:'przyjemny',ku:'xweş'}}
 ];
 function l6t2RemoveSchlecht(){let i;while((i=WORDS.findIndex(w=>w&&w.id==='schlecht'))>=0)WORDS.splice(i,1)}
-function l6t2AddPostWords(){l6t2RemoveSchlecht();L6T2_POST_WORDS.forEach(w=>{const e=WORDS.find(x=>x.id===w.id);if(e)Object.assign(e,w);else WORDS.push(w)})}
+function l6t2ApplyCountryUsage(){WORDS.filter(w=>w&&w.group==='Länder').forEach(w=>{w.sentence=String(w.sentence||'').replace(/\bwohne\b/g,'lebe').replace(/\bwohnt\b/g,'lebt').replace(/\bwohnen\b/g,'leben')})}
+function l6t2AddPostWords(){l6t2RemoveSchlecht();l6t2ApplyCountryUsage();L6T2_POST_WORDS.forEach(w=>{const e=WORDS.find(x=>x.id===w.id);if(e)Object.assign(e,w);else WORDS.push(w)})}
 l6t2AddPostWords();
 function l6t2MigrateRemovedSchlecht(){
   try{
@@ -58,4 +59,4 @@ const POSTCARD_GRAMMAR_GAPS=[
   {a:'im Norden'}
 ];
 const oldRenderOverviewPost=window.renderOverview;
-window.renderOverview=renderOverview=function(target){l6t2AddPostWords();if(typeof oldRenderOverviewPost==='function')oldRenderOverviewPost(target);else if(target)target.innerHTML='';if(target&&!document.getElementById('postcard-rule-box')){target.innerHTML+=`<section class="type-block" id="postcard-rule-box"><div class="type-title">Postkarte: Wetter und Land</div><div class="grammar-rule">Neue Wörter: der Wetterbericht · die Mitte · überall · die Temperatur · leicht · bleiben · plus · minus · das Radio · das Internet · angenehm</div><div class="grammar-rule">Beispiel: Ich bin in Deutschland. Das Wetter ist angenehm. Es sind plus zwölf Grad.</div></section>`}}
+window.renderOverview=renderOverview=function(target){l6t2AddPostWords();if(typeof oldRenderOverviewPost==='function')oldRenderOverviewPost(target);else if(target)target.innerHTML='';if(target&&!document.getElementById('postcard-rule-box')){target.innerHTML+=`<section class="type-block" id="postcard-rule-box"><div class="type-title">Postkarte: Wetter und Land</div><div class="grammar-rule">Neue Wörter: der Wetterbericht · die Mitte · überall · die Temperatur · leicht · bleiben · plus · minus · das Radio · das Internet · angenehm</div><div class="grammar-rule">Beispiel: Ich lebe in Deutschland. Das Wetter ist angenehm. Es sind plus zwölf Grad.</div></section>`}}
