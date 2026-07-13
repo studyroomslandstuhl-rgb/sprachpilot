@@ -48,7 +48,7 @@ const SENTENCES=[
 {parts:['Im','Herbst','regnet','es oft.'],sol:'Im Herbst regnet es oft.'}
 ];
 const TASKS=[['karteikarten.html',WORDS.length,'Karteikarten'],['bild-wort.html',WORDS.length,'Bild → Wort'],['hoeren-schreiben.html',WORDS.length,'Hören/Schreiben'],['praepositionen.html',GRAMMAR.length,'Präpositionen'],['saetze-bauen.html',SENTENCES.length,'Sätze bauen'],['pruefung.html',10,'Prüfung']];
-const TASK_ICONS={'karteikarten.html':'🃏','bild-wort.html':'🖼️','hoeren-schreiben.html':'🎧','praepositionen.html':'📍','saetze-bauen.html':'🧩','pruefung.html':'★'};
+const TASK_ICONS={'karteikarten.html':'🃏','bild-wort.html':'🖼️','hoeren-schreiben.html':'🎧','praepositionen.html':'📍','saetze-bauen.html':'🧩','pruefung.html':'⭐'};
 const LANGS={en:'Englisch',ru:'Russisch',tr:'Türkisch',uk:'Ukrainisch',ar:'Arabisch',ja:'Japanisch',ro:'Rumänisch',pl:'Polnisch',ku:'Kurdisch'};
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')}catch(e){return null}}
 function langKey(){const m=String(profile()?.muttersprache||profile()?.motherLanguage||'').toLowerCase();if(['uk','ua'].includes(m)||m.includes('ukrain'))return'uk';if(m.includes('russ'))return'ru';if(m.includes('türk')||m.includes('turk'))return'tr';if(m.includes('arab'))return'ar';if(m.includes('japan'))return'ja';if(m.includes('rumän')||m.includes('ruman'))return'ro';if(m.includes('pol'))return'pl';if(m.includes('kurd'))return'ku';return'en'}
@@ -64,8 +64,28 @@ function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
 function say(t){if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=.86;speechSynthesis.speak(u)}
 function isTeacher(){return localStorage.getItem('SP_LOGIN_ROLE')==='teacher'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}
 function taskKey(file){return CFG.key+'_'+file}
-function loadTask(file,total){try{const st=JSON.parse(localStorage.getItem(taskKey(file))||'null');if(st&&st.total===total&&Array.isArray(st.done)&&Array.isArray(st.queue))return st}catch(e){}return{total,done:[],queue:[...Array(total).keys()].sort(()=>Math.random()-.5),current:null,tries:0,hadWrong:false}}
-function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(st));syncTask(file,st)}
+function normalizeTaskState(st,total){
+  st=st&&typeof st==='object'?st:{};
+  const done=[...new Set((Array.isArray(st.done)?st.done:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<total))];
+  const current=Number.isInteger(st.current)&&st.current>=0&&st.current<total&&!done.includes(st.current)?st.current:null;
+  let queue=Array.isArray(st.queue)?st.queue.filter(i=>Number.isInteger(i)&&i>=0&&i<total&&!done.includes(i)&&i!==current):[];
+  const used=new Set([...(done||[]),...(current===null?[]:[current]),...queue]);
+  const missing=[...Array(total).keys()].filter(i=>!used.has(i)).sort(()=>Math.random()-.5);
+  queue=[...new Set([...queue,...missing])];
+  return {total,done,queue,current,tries:Number(st.tries||0),hadWrong:!!st.hadWrong};
+}
+function loadTask(file,total){
+  try{
+    const raw=JSON.parse(localStorage.getItem(taskKey(file))||'null');
+    if(raw&&Array.isArray(raw.done)&&Array.isArray(raw.queue)){
+      const st=normalizeTaskState(raw,total);
+      if(raw.total!==total||st.done.length!==(raw.done||[]).length||st.queue.length!==(raw.queue||[]).length)localStorage.setItem(taskKey(file),JSON.stringify(st));
+      return st;
+    }
+  }catch(e){}
+  return{total,done:[],queue:[...Array(total).keys()].sort(()=>Math.random()-.5),current:null,tries:0,hadWrong:false}
+}
+function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(normalizeTaskState(st,st.total||0)));syncTask(file,loadTask(file,st.total||0))}
 function spNextIndex(file,total){let st=loadTask(file,total);if(st.current===null||st.current===undefined){if(!st.queue.length&&st.done.length<total)st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=st.queue.shift();st.tries=0;st.hadWrong=false;saveTask(file,st)}return st.current}
 function spMarkRight(file,total){let st=loadTask(file,total),c=st.current;if(c!==null&&c!==undefined){if(st.hadWrong||st.tries>0){if(!st.done.includes(c)&&!st.queue.includes(c))st.queue.push(c)}else if(!st.done.includes(c))st.done.push(c)}st.current=null;st.tries=0;st.hadWrong=false;saveTask(file,st)}
 function spMarkWrong(file,total){let st=loadTask(file,total);st.tries=(st.tries||0)+1;st.hadWrong=true;saveTask(file,st);return st.tries}
