@@ -62,26 +62,26 @@ const PREP_DRAG_ITEMS=[
 ];
 
 const PREP_ERROR_ITEMS=[
-  {tokens:['Ich','wohne','im','Japan.'],wrongIndex:2,right:'Ich wohne in Japan.',hint:'Japan ist ein Land ohne Artikel.'},
-  {tokens:['In','Herbst','regnet','es','oft.'],wrongIndex:0,right:'Im Herbst regnet es oft.',hint:'Vor einer Jahreszeit steht im.'},
-  {tokens:['Ich','leben','in','Deutschland.'],wrongIndex:1,right:'Ich lebe in Deutschland.',hint:'Das Subjekt ist ich.'},
-  {tokens:['Am','zehn','Uhr','beginnt','der','Kurs.'],wrongIndex:0,right:'Um zehn Uhr beginnt der Kurs.',hint:'Vor einer Uhrzeit steht um.'},
-  {tokens:['Im','Süden','ist','es','heis.'],wrongIndex:4,right:'Im Süden ist es heiß.',hint:'Achten Sie auf die Schreibweise mit ß.'},
-  {tokens:['Die','Temperaturen','bleibt','angenehm.'],wrongIndex:2,right:'Die Temperaturen bleiben angenehm.',hint:'Das Subjekt steht im Plural.'},
-  {tokens:['Ich','komme','aus','die','Türkei.'],wrongIndex:3,right:'Ich komme aus der Türkei.',hint:'Nach aus steht hier der Dativ.'},
-  {tokens:['Wir','wohnen','in','den','Schweiz.'],wrongIndex:3,right:'Wir wohnen in der Schweiz.',hint:'Die Schweiz hat den Artikel die.'},
-  {tokens:['Um','Montag','habe','ich','Deutschkurs.'],wrongIndex:0,right:'Am Montag habe ich Deutschkurs.',hint:'Vor einem Wochentag steht am.'},
-  {tokens:['In','der','USA','wohnt','meine','Tante.'],wrongIndex:1,right:'In den USA wohnt meine Tante.',hint:'Die USA stehen im Plural.'},
-  {tokens:['Der','Wind','kommen','aus','dem','Westen.'],wrongIndex:2,right:'Der Wind kommt aus dem Westen.',hint:'Das Subjekt der Wind steht im Singular.'},
-  {tokens:['Im','Winter','schneien','es.'],wrongIndex:2,right:'Im Winter schneit es.',hint:'Das Verb zu es steht im Singular.'},
-  {tokens:['Ich','wohne','in','der','Deutschland.'],wrongIndex:3,right:'Ich wohne in Deutschland.',hint:'Deutschland steht ohne Artikel.'},
-  {tokens:['Die','Temperatur','sind','plus','zehn','Grad.'],wrongIndex:2,right:'Die Temperatur ist plus zehn Grad.',hint:'Die Temperatur steht im Singular.'},
-  {tokens:['Ich','wohne','in','Rumanien.'],wrongIndex:3,right:'Ich wohne in Rumänien.',hint:'Achten Sie auf den Umlaut.'},
-  {tokens:['Im','Norden','scheinen','die','Sonne.'],wrongIndex:2,right:'Im Norden scheint die Sonne.',hint:'Die Sonne steht im Singular.'},
-  {tokens:['Heute','ist','das','Wetter','angenehme.'],wrongIndex:4,right:'Heute ist das Wetter angenehm.',hint:'Nach ist bleibt das Adjektiv ohne Endung.'},
-  {tokens:['Ich','komme','aus','den','Ukraine.'],wrongIndex:3,right:'Ich komme aus der Ukraine.',hint:'Die Ukraine hat den Artikel die.'},
-  {tokens:['Im','Frühling','ist','die','Tage','länger.'],wrongIndex:2,right:'Im Frühling sind die Tage länger.',hint:'Die Tage stehen im Plural.'},
-  {tokens:['Im','Osten','scheint','der','Sonne.'],wrongIndex:3,right:'Im Osten scheint die Sonne.',hint:'Sonne hat den Artikel die.'}
+  {tokens:['Ich','wohne','im','Japan.'],wrongIndex:2,answer:'in',errorType:'Präposition'},
+  {tokens:['In','Herbst','regnet','es','oft.'],wrongIndex:0,answer:'Im',errorType:'Präposition'},
+  {tokens:['Ich','leben','in','Deutschland.'],wrongIndex:1,answer:'lebe',errorType:'Konjugation'},
+  {tokens:['Am','zehn','Uhr','beginnt','der','Kurs.'],wrongIndex:0,answer:'Um',errorType:'Präposition'},
+  {tokens:['Im','Süden','ist','es','heis.'],wrongIndex:4,answer:'heiß',errorType:'Rechtschreibung'},
+  {tokens:['Die','Temperaturen','bleibt','angenehm.'],wrongIndex:2,answer:'bleiben',errorType:'Konjugation'},
+  {tokens:['Ich','komme','aus','die','Türkei.'],wrongIndex:3,answer:'der',errorType:'Artikel'},
+  {tokens:['Wir','wohnen','in','den','Schweiz.'],wrongIndex:3,answer:'der',errorType:'Artikel'},
+  {tokens:['Um','Montag','habe','ich','Deutschkurs.'],wrongIndex:0,answer:'Am',errorType:'Präposition'},
+  {tokens:['In','der','USA','wohnt','meine','Tante.'],wrongIndex:1,answer:'den',errorType:'Artikel'},
+  {tokens:['Der','Wind','kommen','aus','dem','Westen.'],wrongIndex:2,answer:'kommt',errorType:'Konjugation'},
+  {tokens:['Im','Winter','schneien','es.'],wrongIndex:2,answer:'schneit',errorType:'Konjugation'},
+  {tokens:['Ich','wohne','im','Deutschland.'],wrongIndex:2,answer:'in',errorType:'Präposition'},
+  {tokens:['Die','Temperatur','sind','plus','zehn','Grad.'],wrongIndex:2,answer:'ist',errorType:'Konjugation'},
+  {tokens:['Ich','wohne','in','Rumanien.'],wrongIndex:3,answer:'Rumänien',errorType:'Rechtschreibung'},
+  {tokens:['Im','Norden','scheinen','die','Sonne.'],wrongIndex:2,answer:'scheint',errorType:'Konjugation'},
+  {tokens:['Heute','ist','das','Wetter','angenehme.'],wrongIndex:4,answer:'angenehm',errorType:'Adjektivendung'},
+  {tokens:['Ich','komme','aus','den','Ukraine.'],wrongIndex:3,answer:'der',errorType:'Artikel'},
+  {tokens:['Im','Frühling','ist','die','Tage','länger.'],wrongIndex:2,answer:'sind',errorType:'Konjugation'},
+  {tokens:['Im','Osten','scheint','der','Sonne.'],wrongIndex:3,answer:'die',errorType:'Artikel'}
 ];
 
 const L6T2_ALL_TASKS=[
