@@ -1,20 +1,22 @@
 const L6T2_EXTRA_TASKS=[
   ['kategorien-drag.html',words().length,'Kategorien · Drag & Drop'],
   ['praepositionen-drag.html',13,'Präpositionen · Drag & Drop'],
-  ['fehler-finden.html',13,'Fehler finden']
+  ['fehler-finden.html',13,'Fehler finden'],
+  ['postkarte.html',(typeof POSTCARD_ITEMS!=='undefined'?POSTCARD_ITEMS.length:12),'Postkarte fertig schreiben']
 ];
 const L6T2_ALL_TASKS=[
   ['karteikarten.html',words().length,'Karteikarten'],
-  ['bild-wort.html',words().length,'Bild → Wort'],
+  ['bild-wort.html',words().filter(w=>['Himmelsrichtungen','Jahreszeiten','Länder'].includes(w.group)).length,'Bild → Wort'],
   ['hoeren-schreiben.html',words().length,'Hören/Schreiben'],
-  ['kategorien-drag.html',words().length,'Kategorien · Drag & Drop'],
+  ['kategorien-drag.html',words().filter(w=>['Himmelsrichtungen','Jahreszeiten','Länder'].includes(w.group)).length,'Kategorien · Drag & Drop'],
   ['praepositionen.html',13,'Präpositionen'],
   ['praepositionen-drag.html',13,'Präpositionen · Drag & Drop'],
   ['fehler-finden.html',13,'Fehler finden'],
+  ['postkarte.html',(typeof POSTCARD_ITEMS!=='undefined'?POSTCARD_ITEMS.length:12),'Postkarte fertig schreiben'],
   ['saetze-bauen.html',SENTENCES.length,'Sätze bauen'],
   ['pruefung.html',10,'Prüfung']
 ];
-const L6T2_TASK_ICONS={'karteikarten.html':'🃏','bild-wort.html':'🖼️','hoeren-schreiben.html':'🎧','kategorien-drag.html':'🧺','praepositionen.html':'📍','praepositionen-drag.html':'🧲','fehler-finden.html':'🛠️','saetze-bauen.html':'🧩','pruefung.html':'★'};
+const L6T2_TASK_ICONS={'karteikarten.html':'🃏','bild-wort.html':'🖼️','hoeren-schreiben.html':'🎧','kategorien-drag.html':'🧺','praepositionen.html':'📍','praepositionen-drag.html':'🧲','fehler-finden.html':'🛠️','postkarte.html':'✉️','saetze-bauen.html':'🧩','pruefung.html':'★'};
 const PREP_ONLY_ITEMS=[
   {rule:'Himmelsrichtungen: im + Richtung',prompt:'___ Norden ist es kalt.',a:'Im',opts:['Im','In','Um','Am'],tip:'im Norden'},
   {rule:'Himmelsrichtungen: im + Richtung',prompt:'___ Süden ist es warm.',a:'Im',opts:['Im','In','Um','Am'],tip:'im Süden'},
@@ -47,6 +49,6 @@ const PREP_ERROR_ITEMS=[
   {wrong:'Der Kurs geht um neun bis zwölf Uhr.',right:'Der Kurs geht von neun bis zwölf Uhr.',a:'von … bis …',tip:'Zeitraum: von neun bis zwölf Uhr'}
 ];
 function l6t2AllTasks(){return L6T2_ALL_TASKS}
-function renderMenu(){const tasks=l6t2AllTasks();const avg=Math.round(tasks.reduce((s,t)=>s+pctFor(t[0],t[1]),0)/tasks.length)||0;totalCircle.textContent=avg+'%';totalBar.style.width=avg+'%';totalText.textContent=tasks.filter(t=>pctFor(t[0],t[1])>=100).length+' / '+tasks.length+' Aufgaben abgeschlossen';taskGrid.innerHTML=`<div class="grid">${tasks.map((t,i)=>{const p=pctFor(t[0],t[1]);return `<a class="module" href="${t[0]}"><div class="num">${i+1}. ${t[2]}</div><div class="big-icon">${L6T2_TASK_ICONS[t[0]]||'▶'}</div><p class="small">Kategorien und Präpositionen üben: im · in · um · am · von … bis …</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}).join('')}</div>`}
+function renderMenu(){const tasks=l6t2AllTasks();const avg=Math.round(tasks.reduce((s,t)=>s+pctFor(t[0],t[1]),0)/tasks.length)||0;totalCircle.textContent=avg+'%';totalBar.style.width=avg+'%';totalText.textContent=tasks.filter(t=>pctFor(t[0],t[1])>=100).length+' / '+tasks.length+' Aufgaben abgeschlossen';taskGrid.innerHTML=`<div class="grid">${tasks.map((t,i)=>{const p=pctFor(t[0],t[1]);return `<a class="module" href="${t[0]}"><div class="num">${i+1}. ${t[2]}</div><div class="big-icon">${L6T2_TASK_ICONS[t[0]]||'▶'}</div><p class="small">Wortschatz, Kategorien, Präpositionen und Postkarte üben.</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}).join('')}</div>`}
 function renderOverview(target){const groups=[...new Set(WORDS.map(w=>w.group))];target.innerHTML=groups.map(g=>`<section class="type-block"><div class="type-title">${g}</div>${WORDS.filter(w=>w.group===g).map(w=>`<div class="word-row"><div class="word-placeholder">${miniVisual(w)}</div><div><b>${full(w)}</b><br><span class="small">${w.sentence}${w.from?' / '+w.from:''}</span><div class="small">Übersetzung (${LANGS[langKey()]||'EN'}): ${tr(w)}</div><span class="tag">${w.type}</span></div></div>`).join('')}</section>`).join('')+`<section class="type-block"><div class="type-title">Grammatik: Präpositionen</div><div class="grammar-rule"><b>im</b>: im Norden, im Süden, im Frühling, im Sommer, im Winter</div><div class="grammar-rule"><b>in</b>: in Deutschland, in Österreich, in Spanien</div><div class="grammar-rule"><b>am</b>: am Montag, am Morgen</div><div class="grammar-rule"><b>um</b>: um acht Uhr, um zehn Uhr</div><div class="grammar-rule"><b>von … bis …</b>: von neun bis zwölf Uhr</div></section>`}
 (function(){const s=document.createElement('style');s.textContent='.drag-token{display:inline-flex;align-items:center;justify-content:center;border:2px solid var(--lesson-main-dark);background:#fff;border-radius:999px;padding:10px 16px;margin:6px;font-weight:900;cursor:grab;color:var(--lesson-main-dark)}.drop-zone{min-height:62px;border:3px dashed var(--lesson-line);border-radius:18px;padding:14px;margin:10px 0;background:#fffafd;font-weight:900}.drop-zone.active{background:var(--lesson-soft);border-color:var(--lesson-main-dark)}.drop-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(210px,1fr));gap:12px}.drop-title{font-weight:900;color:var(--lesson-main-dark);margin-bottom:8px}.error-sentence{font-size:24px;font-weight:900;background:#fff1f2;border:2px solid #fecdd3;border-radius:18px;padding:16px;margin:16px 0;color:#9f1239}';document.head.appendChild(s)})();
