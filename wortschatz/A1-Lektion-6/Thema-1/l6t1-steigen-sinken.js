@@ -2,7 +2,8 @@
   const CDN='https://sprachpilot.b-cdn.net/';
   const ADDED=[
     {id:'steigen',group:'Im Buch',type:'verb',article:'',word:'steigen',full:'steigen',sentence:'Die Temperatur steigt.',symbol:'📈',image:CDN+'steigen.webp',tr:{en:'to rise',ru:'повышаться',tr:'yükselmek',uk:'підвищуватися',ar:'يرتفع',ja:'上がる',ro:'a crește',pl:'rosnąć',ku:'bilind bûn'}},
-    {id:'sinken',group:'Im Buch',type:'verb',article:'',word:'sinken',full:'sinken',sentence:'Die Temperatur sinkt.',symbol:'📉',image:CDN+'sinken.webp',tr:{en:'to fall',ru:'понижаться',tr:'düşmek',uk:'знижуватися',ar:'ينخفض',ja:'下がる',ro:'a scădea',pl:'spadać',ku:'daketin'}}
+    {id:'sinken',group:'Im Buch',type:'verb',article:'',word:'sinken',full:'sinken',sentence:'Die Temperatur sinkt.',symbol:'📉',image:CDN+'sinken.webp',tr:{en:'to fall',ru:'понижаться',tr:'düşmek',uk:'знижуватися',ar:'ينخفض',ja:'下がる',ro:'a scădea',pl:'spadać',ku:'daketin'}},
+    {id:'bleiben',group:'Im Buch',type:'verb',article:'',word:'bleiben',full:'bleiben',sentence:'Auch morgen bleibt es warm.',symbol:'⏸️',tr:{en:'to remain',ru:'оставаться',tr:'kalmak',uk:'залишатися',ar:'يبقى',ja:'とどまる',ro:'a rămâne',pl:'zostać',ku:'mayîn'}}
   ];
   function ensureAdded(){
     try{
