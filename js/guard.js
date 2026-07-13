@@ -12,6 +12,7 @@ const IS_WORTSCHATZ_EXERCISE=/\/wortschatz\/A\d-Lektion-\d+\/Thema-\d+\//.test(p
 const IS_WORTSCHATZ_LESSON_OVERVIEW=/\/wortschatz\/A\d-Lektion-\d+\/?(?:index\.html)?$/i.test(path);
 const IS_FRAGEN_EXERCISE=path.includes("/fragen-A1/")||path.includes("/fragen/");
 const IS_VERBEN_EXERCISE=path.includes("/verben-A1/");
+const IS_L3T1=path.includes("/wortschatz/A1-Lektion-3/Thema-1/");
 const NEEDS_EXAM_UNLOCK_FIX=IS_WORTSCHATZ_EXERCISE;
 const USES_STANDARD_PROGRESS=IS_WORTSCHATZ_EXERCISE||IS_FRAGEN_EXERCISE;
 const LIGHT_FIREBASE_PAGE=USES_STANDARD_PROGRESS||IS_VERBEN_EXERCISE;
@@ -52,6 +53,9 @@ import("/js/microphone-fallback.js?v=1").catch(()=>{});
 import("/js/back-button-fix.js?v=1").catch(()=>{});
 import("/js/release-helper.js?v=10").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
+if(IS_L3T1){
+  import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-image-fix.js?v=1").catch(()=>{});
+}
 if(USES_STANDARD_PROGRESS){
   import("/js/sp-progress-standard.js?v=3").catch(()=>{});
 }
