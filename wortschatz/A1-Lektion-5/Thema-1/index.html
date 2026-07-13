@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 5 · Thema 1</title><link rel="stylesheet" href="style.css?v=8"><style>#taskGrid .module{display:flex!important;visibility:visible!important;opacity:1!important}#taskGrid .module>*{visibility:visible!important;opacity:1!important}.sp-empty-card{display:none!important}</style></head><body><div class="container"><header class="topbar"></header><section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div class="progress-main"><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Alltag, Verben, Sätze, Fragen und Prüfung üben.</p><div id="topicExamSummary"></div></div></section><section class="grid" id="taskGrid"><div class="card sp-empty-card">Aufgaben werden geladen …</div></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="../data/wortschatz.js?v=6"></script><script>window.SP_L5_THEME={id:'Thema-1',title:'Alltag und trennbare Verben',sub:'A1 Lektion 5 · Thema 1',key:'SP_L5_T1_V1'};</script><script src="app.js?v=13"></script><script src="l5-theme1-assets.js?v=3"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 5 · Thema 1</title><link rel="stylesheet" href="style.css?v=9"><style>#taskGrid .module{display:flex!important;visibility:visible!important;opacity:1!important}#taskGrid .module>*{visibility:visible!important;opacity:1!important}.sp-empty-card{display:none!important}.module.exam-locked{opacity:.55;background:#eef2f7!important;border-style:dashed!important;pointer-events:none}.module.exam-locked .start{background:#eef2f7!important;color:#64748b!important}</style></head><body><div class="container"><header class="topbar"></header><section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div class="progress-main"><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Alltag, Verben, Sätze, Fragen und Prüfung üben.</p><div id="topicExamSummary"></div></div></section><section class="grid" id="taskGrid"><div class="card sp-empty-card">Aufgaben werden geladen …</div></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="../data/wortschatz.js?v=6"></script><script>window.SP_L5_THEME={id:'Thema-1',title:'Alltag und trennbare Verben',sub:'A1 Lektion 5 · Thema 1',key:'SP_L5_T1_V1'};</script><script src="app.js?v=13"></script><script src="l5-theme1-assets.js?v=3"></script><script>
 (function(){
   const TASKS=[
     ['karteikarten.html',()=>WORDS.length,'Karteikarten','🃏','Wörter lernen.'],
@@ -12,21 +12,25 @@
     ['ja-nein-fragen.html',()=>5,'Ja-/Nein-Fragen','💬','Bilde Frage und Antwort.'],
     ['verb-passt.html',()=>8,'Mini-Situationen','🧠','Lies die Situation und wähle den passenden Satz.']
   ];
-  const EXAM=['pruefung.html',()=>20,'Prüfung','★','Teste dein Wissen. Aktuell frei zugänglich.'];
+  const EXAM=['pruefung.html',()=>20,'Prüfung','★','Teste dein Wissen.'];
   function safePct(file,total){try{return pctFor(file,total)}catch(e){return 0}}
+  function examUnlocked(){return TASKS.length>0&&TASKS.every(t=>safePct(t[0],Number(t[1]())||0)>=100)}
   function taskCard(t,n){
     const total=Number(t[1]())||0;
     const p=safePct(t[0],total);
     return `<a class="module" href="${t[0]}"><div class="num">${n}. ${t[2]}</div><div class="icon ${t[0]==='pruefung.html'?'exam-icon':''}">${t[3]}</div><p>${t[4]}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`;
   }
+  function lockedExamCard(n){return `<div class="module exam-locked"><div class="num">${n}. Prüfung</div><div class="icon exam-icon">★</div><p>Prüfung wird freigeschaltet, wenn alle Aufgaben 100% erreicht haben.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">gesperrt</div><div class="start">Prüfung gesperrt</div></div>`}
+  function examCard(n){const p=safePct(EXAM[0],Number(EXAM[1]())||0);return `<a class="module" href="${EXAM[0]}"><div class="num">${n}. ${EXAM[2]}</div><div class="icon exam-icon">★</div><p>${EXAM[4]}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}
   function renderMenu(){
     try{header(CFG.title,true)}catch(e){}
     const grid=document.getElementById('taskGrid');
     if(!grid)return;
     let n=1;
-    const all=[...TASKS,EXAM];
-    grid.innerHTML=TASKS.map(t=>taskCard(t,n++)).join('')+taskCard(EXAM,n);
-    const avg=Math.round(all.reduce((s,t)=>s+safePct(t[0],Number(t[1]())||0),0)/all.length)||0;
+    const unlocked=examUnlocked();
+    grid.innerHTML=TASKS.map(t=>taskCard(t,n++)).join('')+(unlocked?examCard(n):lockedExamCard(n));
+    const all=unlocked?[...TASKS,EXAM]:TASKS;
+    const avg=Math.round(all.reduce((s,t)=>s+safePct(t[0],Number(t[1]())||0),0)/Math.max(1,all.length))||0;
     const done=all.filter(t=>safePct(t[0],Number(t[1]())||0)>=100).length;
     const circle=document.getElementById('totalCircle');
     const totalBar=document.getElementById('totalBar');
