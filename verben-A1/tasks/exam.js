@@ -43,11 +43,27 @@ function checkVerbExamAnswer(){
     ex.current+=1;ex.currentTry=0;ex.hadWrong=false;saveState();setTimeout(renderVerbExam,600);return;
   }
   ex.currentTry+=1;ex.hadWrong=true;saveState();
-  $("fb").innerHTML=`<div class='no'>${safeText(standardFeedback(ex.currentTry,sol,"Antwort und Schreibweise"))}</div>`;
+  $("fb").innerHTML=`<div class="no">${safeText(standardFeedback(ex.currentTry,sol,"Antwort und Schreibweise"))}</div>`;
+}
+function archivePassedVerbPackage(score,right,total){
+  const completed=currentPracticeVerbs().slice();
+  if(!completed.length)return 0;
+  const archived=typeof markCurrentPackageLearned==='function'&&markCurrentPackageLearned();
+  if(archived&&Array.isArray(state.archivedPackages)&&state.archivedPackages.length){
+    const last=state.archivedPackages[state.archivedPackages.length-1];
+    last.examScore=score;last.examRight=right;last.examTotal=total;last.completedAt=new Date().toISOString();
+    saveState();
+  }
+  return completed.length;
 }
 function renderVerbExamResult(){
   const ex=state.exam||{};const total=(ex.items||[]).length||1;const right=(ex.answers||[]).filter(a=>a.good).length;const score=Math.round(right*100/total);
   ex.score=score;ex.stars=score===100?3:score>=70?2:score>=50?1:0;ex.passed=score===100;state.exam=ex;state.phase="home";saveState();
   const stars="⭐".repeat(ex.stars)+"☆".repeat(3-ex.stars);
-  $("app").innerHTML=`<h2>Prüfung beendet</h2><div class="assessment-card"><div class="german-word">${score}%</div><div class="stars">${stars}</div><p>${right}/${total} richtig</p></div>${score===100?"<div class='ok'>Super. Jetzt kannst du neue Verben einschätzen.</div><button class='success' onclick='handleAssessmentClick()'>Neue Verben einschätzen</button>":"<div class='no'>Du brauchst 100%, damit neue Verben freigeschaltet werden.</div><button class='warning' onclick='startVerbExam()'>Prüfung wiederholen</button>"}<button class="secondary" onclick="renderHome()">Zur Übersicht</button>`;
+  if(score===100){
+    const completed=archivePassedVerbPackage(score,right,total);
+    $("app").innerHTML=`<section class="card completion-card"><div class="finish-icon">✓</div><h2>Prüfung bestanden</h2><div class="assessment-card"><div class="german-word">${score}%</div><div class="stars">${stars}</div><p>${right}/${total} richtig</p></div><p class="small">${completed} Verben wurden als gelernt gespeichert. Du kannst jetzt das nächste Paket beginnen.</p><div class="grid verb-start-grid"><a class="module task-card verb-action-card" href="/verben-A1/?view=assessment"><div class="verb-action-visual"><span class="verb-action-symbol">?</span></div><div class="num">Neue Verben einschätzen</div><p>Neue Wörter prüfen und ein neues Paket bilden.</p><div class="start">Starten</div></a><a class="module task-card verb-action-card" href="/verben-A1/?view=chooser"><div class="verb-action-visual"><span class="verb-action-symbol">✓</span></div><div class="num">Verben auswählen</div><p>Bis zu 20 neue freigegebene Verben selbst auswählen.</p><div class="start">Auswählen</div></a></div><div class="actions"><button class="secondary" onclick="renderHome()">Zur Verben-Seite</button></div></section>`;
+    return;
+  }
+  $("app").innerHTML=`<h2>Prüfung beendet</h2><div class="assessment-card"><div class="german-word">${score}%</div><div class="stars">${stars}</div><p>${right}/${total} richtig</p></div><div class='no'>Du brauchst 100%, damit neue Verben freigeschaltet werden.</div><button class='warning' onclick='startVerbExam()'>Prüfung wiederholen</button><button class="secondary" onclick="renderHome()">Zur Übersicht</button>`;
 }
