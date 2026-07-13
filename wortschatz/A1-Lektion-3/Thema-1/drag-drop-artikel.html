@@ -42,11 +42,11 @@
 </section>
 <footer>© SprachPilot</footer>
 </div>
-<script src="app.js?v=artikelfix-final"></script>
+<script src="app.js?v=42"></script>
 <script>
 if(typeof header==="function"){header("Artikel zuordnen");}
 
-const pool=(typeof singularWords==="function"?singularWords().filter(w=>w.article!=="der/das"):WORDS.filter(w=>w.article!=="der/das")).slice(0,20);
+const pool=(typeof activeWords==="function"?activeWords():WORDS).filter(w=>w.article!=="der/das").slice(0,20);
 let selected=null;
 
 function setProgress(ok){
