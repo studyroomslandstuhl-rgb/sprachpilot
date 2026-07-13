@@ -3,17 +3,17 @@ const L6T2_CATEGORY_WORDS=()=>words().filter(w=>L6T2_CATEGORY_GROUPS.includes(w.
 const L6T2_PREP_OPTIONS=['in','in der','in den','im','um','am'];
 
 const PREP_ONLY_ITEMS=[
-  {prompt:'Ich wohne ___ Deutschland.',a:'in',hint:'Länder ohne Artikel stehen mit in.'},
+  {prompt:'Ich lebe ___ Deutschland.',a:'in',hint:'Länder ohne Artikel stehen mit in.'},
   {prompt:'Wir leben ___ Japan.',a:'in',hint:'Länder ohne Artikel stehen mit in.'},
-  {prompt:'Ali wohnt ___ Vietnam.',a:'in',hint:'Länder ohne Artikel stehen mit in.'},
+  {prompt:'Ali lebt ___ Vietnam.',a:'in',hint:'Länder ohne Artikel stehen mit in.'},
   {prompt:'Meine Freundin lebt ___ Polen.',a:'in',hint:'Länder ohne Artikel stehen mit in.'},
-  {prompt:'Sara wohnt ___ Bulgarien.',a:'in',hint:'Länder ohne Artikel stehen mit in.'},
+  {prompt:'Sara lebt ___ Bulgarien.',a:'in',hint:'Länder ohne Artikel stehen mit in.'},
   {prompt:'Paul lebt ___ Frankreich.',a:'in',hint:'Länder ohne Artikel stehen mit in.'},
-  {prompt:'Meine Familie wohnt ___ Rumänien.',a:'in',hint:'Länder ohne Artikel stehen mit in.'},
-  {prompt:'Ich bin ___ Schweiz.',a:'in der',hint:'Länder mit dem Artikel die stehen mit in der.'},
-  {prompt:'Wir wohnen ___ Türkei.',a:'in der',hint:'Länder mit dem Artikel die stehen mit in der.'},
+  {prompt:'Meine Familie lebt ___ Rumänien.',a:'in',hint:'Länder ohne Artikel stehen mit in.'},
+  {prompt:'Ich lebe ___ Schweiz.',a:'in der',hint:'Länder mit dem Artikel die stehen mit in der.'},
+  {prompt:'Wir leben ___ Türkei.',a:'in der',hint:'Länder mit dem Artikel die stehen mit in der.'},
   {prompt:'Oksana lebt ___ Ukraine.',a:'in der',hint:'Länder mit dem Artikel die stehen mit in der.'},
-  {prompt:'Meine Tante wohnt ___ USA.',a:'in den',hint:'Die USA stehen im Plural: in den USA.'},
+  {prompt:'Meine Tante lebt ___ USA.',a:'in den',hint:'Die USA stehen im Plural: in den USA.'},
   {prompt:'___ Norden ist es kalt.',a:'im',hint:'Himmelsrichtungen stehen mit im.'},
   {prompt:'___ Süden ist es warm.',a:'im',hint:'Himmelsrichtungen stehen mit im.'},
   {prompt:'___ Frühling scheint oft die Sonne.',a:'im',hint:'Jahreszeiten stehen mit im.'},
@@ -62,21 +62,21 @@ const PREP_DRAG_ITEMS=[
 ];
 
 const PREP_ERROR_ITEMS=[
-  {tokens:['Ich','wohne','im','Japan.'],wrongIndex:2,answer:'in',errorType:'Präposition'},
+  {tokens:['Ich','lebe','im','Japan.'],wrongIndex:2,answer:'in',errorType:'Präposition'},
   {tokens:['In','Herbst','regnet','es','oft.'],wrongIndex:0,answer:'Im',errorType:'Präposition'},
   {tokens:['Ich','leben','in','Deutschland.'],wrongIndex:1,answer:'lebe',errorType:'Konjugation'},
   {tokens:['Am','zehn','Uhr','beginnt','der','Kurs.'],wrongIndex:0,answer:'Um',errorType:'Präposition'},
   {tokens:['Im','Süden','ist','es','heis.'],wrongIndex:4,answer:'heiß',errorType:'Rechtschreibung'},
   {tokens:['Die','Temperaturen','bleibt','angenehm.'],wrongIndex:2,answer:'bleiben',errorType:'Konjugation'},
   {tokens:['Ich','komme','aus','die','Türkei.'],wrongIndex:3,answer:'der',errorType:'Artikel'},
-  {tokens:['Wir','wohnen','in','den','Schweiz.'],wrongIndex:3,answer:'der',errorType:'Artikel'},
+  {tokens:['Wir','leben','in','den','Schweiz.'],wrongIndex:3,answer:'der',errorType:'Artikel'},
   {tokens:['Um','Montag','habe','ich','Deutschkurs.'],wrongIndex:0,answer:'Am',errorType:'Präposition'},
-  {tokens:['In','der','USA','wohnt','meine','Tante.'],wrongIndex:1,answer:'den',errorType:'Artikel'},
+  {tokens:['In','der','USA','lebt','meine','Tante.'],wrongIndex:1,answer:'den',errorType:'Artikel'},
   {tokens:['Der','Wind','kommen','aus','dem','Westen.'],wrongIndex:2,answer:'kommt',errorType:'Konjugation'},
   {tokens:['Im','Winter','schneien','es.'],wrongIndex:2,answer:'schneit',errorType:'Konjugation'},
-  {tokens:['Ich','wohne','im','Deutschland.'],wrongIndex:2,answer:'in',errorType:'Präposition'},
+  {tokens:['Ich','lebe','im','Deutschland.'],wrongIndex:2,answer:'in',errorType:'Präposition'},
   {tokens:['Die','Temperatur','sind','plus','zehn','Grad.'],wrongIndex:2,answer:'ist',errorType:'Konjugation'},
-  {tokens:['Ich','wohne','in','Rumanien.'],wrongIndex:3,answer:'Rumänien',errorType:'Rechtschreibung'},
+  {tokens:['Ich','lebe','in','Rumanien.'],wrongIndex:3,answer:'Rumänien',errorType:'Rechtschreibung'},
   {tokens:['Im','Norden','scheinen','die','Sonne.'],wrongIndex:2,answer:'scheint',errorType:'Konjugation'},
   {tokens:['Heute','ist','das','Wetter','angenehme.'],wrongIndex:4,answer:'angenehm',errorType:'Adjektivendung'},
   {tokens:['Ich','komme','aus','den','Ukraine.'],wrongIndex:3,answer:'der',errorType:'Artikel'},
@@ -85,7 +85,7 @@ const PREP_ERROR_ITEMS=[
 ];
 
 const L6T2_ALL_TASKS=[
-  ['karteikarten.html',words().length,'Karteikarten'],
+  ['karteikarten.html',words().length*2,'Karteikarten'],
   ['bild-wort.html',words().length,'Bild → Wort'],
   ['hoeren-bild.html',words().length,'Hören → Bild'],
   ['kategorien-drag.html',L6T2_CATEGORY_WORDS().length,'Kategorien · 2 Teile'],
