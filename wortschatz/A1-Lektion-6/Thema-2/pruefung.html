@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=2"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="app.js?v=4"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=3"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2tasks1"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=4"></script><script src="l6t2-extra-tasks.js?v=5"></script><script>
 header('Prüfung');const FILE='pruefung.html';let q=[],i=0,score=0;
 function build(){q=[
 {t:'write',p:'Schreiben Sie: der Norden',a:'der Norden'},
@@ -7,12 +7,14 @@ function build(){q=[
 {t:'write',p:'Schreiben Sie: der Winter',a:'der Winter'},
 {t:'mc',p:'___ Sommer ist es heiß.',a:'Im',opts:['Im','In','Aus']},
 {t:'mc',p:'Ich wohne ___ Deutschland.',a:'in',opts:['in','in der','im']},
-{t:'mc',p:'Ich komme ___ Türkei.',a:'aus der',opts:['aus','aus der','aus dem']},
+{t:'mc',p:'Ich wohne ___ USA.',a:'in den',opts:['in','in der','in den']},
 {t:'write',p:'Schreiben Sie: die Schweiz',a:'die Schweiz'},
-{t:'mc',p:'Ich wohne ___ Ukraine.',a:'in der',opts:['in','in der','aus der']},
+{t:'mc',p:'Ich wohne ___ Ukraine.',a:'in der',opts:['in','in der','in den']},
 {t:'write',p:'Bauen Sie den Satz: Im / Herbst / regnet / es oft.',a:'Im Herbst regnet es oft.'}
 ]}
-function show(){if(!q.length)build();if(i>=q.length){done();return}const it=q[i];area.innerHTML=`<div class="small">Aufgabe ${i+1} / ${q.length}</div><div class="question">${it.p}</div>${it.t==='mc'?`<div class="choice-grid">${shuffle(it.opts).map(o=>`<button class="choice" onclick="check('${encodeURIComponent(o)}')">${o}</button>`).join('')}</div>`:`<input id="ans" placeholder="Antwort"><div class="actions"><button class="btn" onclick="check(ans.value)">Weiter</button></div>`}<div id="fb" class="feedback"></div>`}
+function locked(){area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p class="small">Bearbeiten Sie zuerst alle Aufgaben zu 100%.</p><div class="actions"><a class="btn secondary" href="index.html">Zum Thema</a></div></div>'}
+function show(){if(!l6t2ExamUnlocked()){locked();return}if(!q.length)build();if(i>=q.length){done();return}const it=q[i];area.innerHTML=`<div class="small">Aufgabe ${i+1} / ${q.length}</div><div class="question">${it.p}</div>${it.t==='mc'?`<div class="choice-grid">${shuffle(it.opts).map(o=>`<button class="choice" onclick="check('${encodeURIComponent(o)}')">${o}</button>`).join('')}</div>`:`<input id="ans" placeholder="Antwort"><div class="actions"><button class="btn" onclick="check(ans.value)">Weiter</button></div>`}<div id="fb" class="feedback"></div>`}
 function check(v){const it=q[i],val=decodeURIComponent(v);if(exact(val,it.a))score++;i++;show()}
-function done(){const percent=Math.round(score/q.length*100);const existing=loadTask(FILE,10);if(percent>=100){markTaskDone(FILE,10)}else if(existing.done.length<10){saveTask(FILE,{total:10,done:[],queue:Array.from({length:10},(_,idx)=>idx),current:null,tries:0,hadWrong:false})}try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',percent,scorePercent:percent,stars:percent>=100?3:percent>=70?2:percent>=50?1:0})}catch(e){}area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div><div class="actions"><a class="btn" href="index.html">Zum Thema</a></div></div>`}
-show();</script></body></html>
+function done(){const percent=Math.round(score/q.length*100);const existing=loadTask(FILE,10);if(percent>=100)markTaskDone(FILE,10);else if(existing.done.length<10)saveTask(FILE,{total:10,done:[],queue:Array.from({length:10},(_,idx)=>idx),current:null,tries:0,hadWrong:false});try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',percent,scorePercent:percent,stars:percent>=100?3:percent>=70?2:percent>=50?1:0})}catch(e){}area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div><div class="actions"><a class="btn" href="index.html">Zum Thema</a></div></div>`}
+show();
+</script></body></html>
