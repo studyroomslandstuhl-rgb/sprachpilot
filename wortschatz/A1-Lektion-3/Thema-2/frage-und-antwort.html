@@ -1,145 +1,97 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frage & Antwort</title><link rel="stylesheet" href="style.css?v=qa2"></head><body><div id="accountStrip" class="account-strip"></div><script type="module" src="/js/guard.js"></script><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"><div class="question">Aufgabe wird geladen …</div></section><footer>© SprachPilot</footer></div><script src="app.js?v=16"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frage & Antwort</title><link rel="stylesheet" href="style.css?v=qa3"></head><body><div id="accountStrip" class="account-strip"></div><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"><div class="question">Aufgabe wird geladen …</div></section><footer>© SprachPilot</footer></div><script src="app.js?v=16"></script><script src="l3t2-task-fix.js?v=3"></script><script>
 header("Frage & Antwort");
 const FILE="frage-und-antwort.html";
 let currentIndex=null;
 let phase="question";
-
 function areaEl(){return document.getElementById("area")}
-function safeSimple(x){
-  if(typeof simple==="function")return simple(x);
-  return String(x||"").toLowerCase().trim().replace(/[.,!?€]/g,"").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/\s+/g," ");
+function esc(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function qaNorm(x){return String(x||"").toLowerCase().trim().replace(/[.,!?€]/g," ").replace(/ä/g,"ae").replace(/ö/g,"oe").replace(/ü/g,"ue").replace(/ß/g,"ss").replace(/\s+/g," ").trim()}
+function priceParts(price){
+  const p=String(price||"").replace("€","").trim();
+  const parts=p.split(",");
+  return {euro:parseInt(parts[0]||"0",10),cent:parseInt((parts[1]||"00").padEnd(2,"0"),10),raw:p};
 }
-function norm(x){return safeSimple(x)}
-function strictPriceVariants(price){
-  let p=String(price||'').replace('€','').trim();
-  let parts=p.split(',');
-  let euro=parts[0]||'0';
-  let cent=parts[1]||'00';
-  let compact=euro+','+cent;
-  let euroNum=parseInt(euro,10);
-  let centNum=parseInt(cent,10);
-  let out=[compact+' Euro',euro+' Euro '+cent,euro+' Euro '+cent+' Cent',euro+' '+cent,compact];
-  if(euroNum===0){out.push(centNum+' Cent');out.push('null Euro '+cent)}
-  return out.map(norm);
-}
-function strictAcceptablePriceSentence(ans,price){
-  let a=norm(ans);
-  if(!a.startsWith('das kostet')&&!a.startsWith('das macht'))return false;
-  return strictPriceVariants(price).some(v=>a.includes(v));
-}
-function acceptableQuestion(ans,c){
-  if(!c)return false;
-  let a=norm(ans);
-  let verb=c.isPlural?'kosten':'kostet';
-  let wrong=c.isPlural?'kostet':'kosten';
-  let starts=['was '+verb,'wie viel '+verb,'wieviel '+verb].map(norm);
-  if(!starts.some(st=>a.startsWith(st)))return false;
-  if(a.includes(norm(' '+wrong+' ')))return false;
-  return true;
-}
-function acceptableAnswer(ans,c){
-  if(!c)return false;
-  let a=norm(ans);
-  if(strictAcceptablePriceSentence(ans,c.price))return true;
-  let verb=c.isPlural?'kosten':'kostet';
-  let wrong=c.isPlural?'kostet':'kosten';
-  if(a.includes(norm(' '+wrong+' ')))return false;
-  let pvars=strictPriceVariants(c.price);
-  let starts=[norm(c.text+' '+verb),norm('Das '+verb),norm('Es '+verb)];
-  return starts.some(st=>a.startsWith(st))&&pvars.some(v=>a.includes(v));
-}
-function ensureState(){
-  const target=areaEl();
-  if(typeof COMBOS==="undefined"||!Array.isArray(COMBOS)||COMBOS.length===0){if(target)target.innerHTML='<div class="feedback">Fehler: Die Aufgaben wurden nicht geladen.</div>';return false}
-  if(typeof spTaskStateKey!=="function")window.spTaskStateKey=file=>"SP_TASK_STATE_"+file;
-  if(typeof spLoadTaskState!=="function")window.spLoadTaskState=function(file,total){try{const saved=JSON.parse(localStorage.getItem(spTaskStateKey(file))||"null");if(saved&&saved.total===total&&Array.isArray(saved.queue)&&Array.isArray(saved.done))return saved}catch(e){}const queue=[...Array(total).keys()].sort(()=>Math.random()-0.5);return{total,queue,done:[],current:null,tries:0}};
-  if(typeof spSaveTaskState!=="function")window.spSaveTaskState=function(file,state){localStorage.setItem(spTaskStateKey(file),JSON.stringify(state))};
-  if(typeof spNextIndex!=="function")window.spNextIndex=function(file,total){const state=spLoadTaskState(file,total);if(state.current===null||state.current===undefined){if(!state.queue.length&&state.done.length<total){state.queue=[...Array(total).keys()].filter(i=>!state.done.includes(i)).sort(()=>Math.random()-0.5)}state.current=state.queue.shift();state.tries=0;spSaveTaskState(file,state)}return state.current};
-  if(typeof spProgressHtml!=="function")window.spProgressHtml=function(file,total){const state=spLoadTaskState(file,total);const done=state.done.length;const left=total-done;const percent=Math.round(done/total*100)||0;return `<div class="small">${done} richtig · ${left} übrig · ${percent}%</div><div class="progress"><div class="bar" style="width:${percent}%"></div></div>`};
-  if(typeof spMarkRight!=="function")window.spMarkRight=function(file,total){const state=spLoadTaskState(file,total);if(state.current!==null&&!state.done.includes(state.current))state.done.push(state.current);state.current=null;state.tries=0;spSaveTaskState(file,state);return state.done.length>=total};
-  window.spMarkWrong=function(file,total){const state=spLoadTaskState(file,total);state.tries=(state.tries||0)+1;spSaveTaskState(file,state);return state.tries};
-  window.spFeedbackForTry=function(tries,solution,type){if(tries===1)return `<b>Hilfe 1:</b> Prüfe ${type||"Form und Schreibweise"}.`;if(tries===2)return `<b>Hilfe 2:</b> Frage: <b>Was kostet …?</b> oder <b>Wie viel kostet/kosten …?</b> Antwort: <b>… kostet/kosten … Euro/Cent.</b>`;return `<b>Hilfe 3:</b> Richtige Lösung:<br><b>${solution}</b>`};
-  if(typeof byId!=="function")window.byId=(list,id)=>list.find(x=>x.id===id)||{};
-  if(typeof comboImages!=="function")window.comboImages=function(c){const cont=byId(WORDS,c.container);const prod=byId(PRODUCTS,c.product);const amount=c.amount?`<div class="amount-badge">${c.amount}</div>`:"";return `<div class="combo-images"><div class="combo-part">${amount}<img src="${cont.image||""}" onerror="fixImg(this)" alt=""></div><div class="combo-plus">+</div><div class="combo-part"><img src="${prod.image||""}" onerror="fixImg(this)" alt=""></div></div>`};
-  if(typeof fixImg!=="function")window.fixImg=img=>img.classList.add("missing");
-  return true;
-}
-function currentCombo(){return Array.isArray(COMBOS)&&COMBOS[currentIndex]?COMBOS[currentIndex]:null}
-function showWriteBox(){
-  const box=document.getElementById("writeBox");
-  if(box)box.classList.remove("hidden");
-  const input=document.getElementById("answerInput");
-  const checkBtn=document.getElementById("checkBtn");
-  if(checkBtn)checkBtn.onclick=function(){if(phase==="question")checkQuestion(input?input.value:'');else checkAnswer(input?input.value:'')};
-  if(input)setTimeout(()=>input.focus(),20);
-}
-function micFallback(message){
-  const status=document.getElementById("micStatus");
-  if(status)status.textContent=message||"Mikrofon funktioniert hier nicht. Bitte schreibe.";
-  showWriteBox();
-}
-function listenGerman(callback,button){
-  if(window.spStartMicSafe)return window.spStartMicSafe(button,function(text){callback(text)});
-  const SpeechRecognition=window.SpeechRecognition||window.webkitSpeechRecognition;
-  if(!SpeechRecognition){micFallback("Mikrofon wird hier nicht unterstützt. Bitte schreibe.");return}
-  let rec;
-  try{rec=new SpeechRecognition()}catch(e){micFallback();return}
-  rec.lang="de-DE";rec.interimResults=false;rec.continuous=false;
-  if(button)button.classList.add("active");
-  const status=document.getElementById("micStatus");
-  if(status)status.textContent="Ich höre zu …";
-  rec.onresult=e=>{const text=e.results&&e.results[0]&&e.results[0][0]?e.results[0][0].transcript:"";if(text){if(status)status.textContent="Gehört: "+text;callback(text)}else micFallback("Ich konnte nichts erkennen. Bitte schreibe.")};
-  rec.onerror=()=>micFallback("Mikrofon hat nicht funktioniert. Bitte schreibe.");
-  rec.onend=()=>{if(button)button.classList.remove("active")};
-  try{rec.start()}catch(e){micFallback()}
-}
-function showHelp(html){
-  const fb=document.getElementById("fb");
-  if(fb)fb.innerHTML=`<div class="helped">${html}</div>`;
-  showWriteBox();
-}
-function resetBrokenCurrent(){
-  try{const st=spLoadTaskState(FILE,COMBOS.length);st.current=null;spSaveTaskState(FILE,st)}catch(e){}
-}
-function show(){
-  if(!ensureState())return;
-  const target=areaEl();
-  if(!target)return;
-  const state=spLoadTaskState(FILE,COMBOS.length);
-  if(state.done.length>=COMBOS.length){if(typeof complete==="function")complete(target,FILE,"index.html");else target.innerHTML='<div class="question">Fertig!</div>';return}
-  currentIndex=spNextIndex(FILE,COMBOS.length);
-  if(currentIndex===undefined||currentIndex===null||!COMBOS[currentIndex]){resetBrokenCurrent();currentIndex=spNextIndex(FILE,COMBOS.length)}
-  const c=currentCombo();
-  if(!c){target.innerHTML='<div class="feedback">Aufgabe konnte nicht geladen werden. Bitte neu laden.</div>';return}
-  if(phase==="question"){
-    target.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">1. Frage nach dem Preis.</div><div class="hint">Sprich die Frage. Wenn das Mikrofon nicht funktioniert, kannst du schreiben.</div>${comboImages(c)}<div class="actions"><button id="speakBtn" class="btn mic-btn">🎤 Frage sprechen</button><button id="writeBtn" class="btn secondary">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="writeBox" class="hidden"><input id="answerInput" placeholder="Schreibe hier deine Frage."><button id="checkBtn" class="btn">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
-    document.getElementById("speakBtn").onclick=function(){listenGerman(text=>checkQuestion(text),this)};
-    document.getElementById("writeBtn").onclick=showWriteBox;
-  }else{
-    target.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">2. Antworte auf deine Frage.</div><div class="hint">Sprich die Antwort. Wenn das Mikrofon nicht funktioniert, kannst du schreiben.</div>${comboImages(c)}<div class="big">${c.price}</div><div class="actions"><button id="speakBtn" class="btn mic-btn">🎤 Antwort sprechen</button><button id="writeBtn" class="btn secondary">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="writeBox" class="hidden"><input id="answerInput" placeholder="Schreibe hier deine Antwort."><button id="checkBtn" class="btn">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
-    document.getElementById("speakBtn").onclick=function(){listenGerman(text=>checkAnswer(text),this)};
-    document.getElementById("writeBtn").onclick=showWriteBox;
+function priceVariants(price){
+  const p=priceParts(price);
+  const out=[p.raw,"das kostet "+p.raw,"das macht "+p.raw];
+  if(p.euro===0){out.push(p.cent+" cent","das kostet "+p.cent+" cent","das macht "+p.cent+" cent");}
+  else{
+    const euroText=p.euro===1?"ein euro":p.euro+" euro";
+    out.push(euroText+" "+p.cent+" cent",p.euro+" euro "+p.cent+" cent",p.euro+" euro "+p.cent,"das kostet "+euroText+" "+p.cent+" cent","das macht "+euroText+" "+p.cent+" cent");
   }
+  return out.map(qaNorm);
 }
-function checkQuestion(text){
-  try{
-    const c=currentCombo();
-    if(!c){resetBrokenCurrent();show();return}
-    if(acceptableQuestion(text,c)){phase="answer";show();return}
+function acceptsQuestion(txt,c){
+  const a=qaNorm(txt);
+  const verb=c.isPlural?"kosten":"kostet";
+  const wrong=c.isPlural?"kostet":"kosten";
+  if(a.includes(" "+wrong+" ")||a.endsWith(" "+wrong))return false;
+  const starts=["was "+verb,"wie viel "+verb,"wieviel "+verb].map(qaNorm);
+  return starts.some(s=>a.startsWith(s));
+}
+function acceptsAnswer(txt,c){
+  const a=qaNorm(txt);
+  const verb=c.isPlural?"kosten":"kostet";
+  const wrong=c.isPlural?"kostet":"kosten";
+  if(a.includes(" "+wrong+" ")||a.endsWith(" "+wrong))return false;
+  const hasPrice=priceVariants(c.price).some(v=>a.includes(v));
+  if(!hasPrice)return false;
+  const starts=[qaNorm(c.text+" "+verb),qaNorm("das "+verb),qaNorm("es "+verb)];
+  return starts.some(s=>a.startsWith(s))||a.startsWith("das kostet")||a.startsWith("das macht");
+}
+function byIdSafe(list,id){return (list||[]).find(x=>x.id===id)||{}}
+function images(c){
+  const cont=byIdSafe(WORDS,c.container);
+  const prod=byIdSafe(PRODUCTS,c.product);
+  const amount=c.amount?`<div class="amount-badge">${esc(c.amount)}</div>`:"";
+  return `<div class="combo-images"><div class="combo-part">${amount}<img src="${esc(cont.image)}" onerror="fixImg(this)" alt=""></div><div class="combo-plus">+</div><div class="combo-part"><img src="${esc(prod.image)}" onerror="fixImg(this)" alt=""></div></div>`;
+}
+function currentCombo(){return COMBOS[currentIndex]||null}
+function ensureIndex(){
+  if(spLoadTaskState(FILE,COMBOS.length).done.length>=COMBOS.length)return false;
+  currentIndex=spNextIndex(FILE,COMBOS.length);
+  if(currentIndex===undefined||currentIndex===null||!COMBOS[currentIndex]){
+    const st=spLoadTaskState(FILE,COMBOS.length);st.current=null;spSaveTaskState(FILE,st);currentIndex=spNextIndex(FILE,COMBOS.length);
+  }
+  return currentIndex!==undefined&&currentIndex!==null&&!!COMBOS[currentIndex];
+}
+function render(){
+  const area=areaEl();
+  if(!Array.isArray(COMBOS)||!COMBOS.length){area.innerHTML='<div class="feedback">Fehler: Aufgabe konnte nicht geladen werden.</div>';return}
+  if(spLoadTaskState(FILE,COMBOS.length).done.length>=COMBOS.length){complete(area,FILE,"index.html");return}
+  if(!ensureIndex()){area.innerHTML='<div class="feedback">Aufgabe konnte nicht geladen werden. Bitte neu laden.</div>';return}
+  const c=currentCombo();
+  const title=phase==="question"?"1. Frage nach dem Preis.":"2. Antworte auf die Frage.";
+  const placeholder=phase==="question"?"z. B. Was kostet eine Flasche Wasser?":"z. B. Eine Flasche Wasser kostet 79 Cent.";
+  const micLabel=phase==="question"?"🎤 Frage sprechen":"🎤 Antwort sprechen";
+  const extra=phase==="answer"?`<div class="big">${esc(c.price)}</div>`:"";
+  area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">${title}</div><div class="hint">Schreibe oder sprich. Kontrolliert wird erst, wenn du auf <b>Kontrollieren</b> klickst.</div>${images(c)}${extra}<div class="actions"><button id="micBtn" class="btn mic-btn">${micLabel}</button></div><div id="micStatus" class="mic-status"></div><input id="answerInput" placeholder="${placeholder}" autocomplete="off"><button id="checkBtn" class="btn">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+  document.getElementById("micBtn").onclick=function(){startMic(this,function(text){const input=document.getElementById("answerInput");if(input)input.value=text;});};
+  document.getElementById("checkBtn").onclick=check;
+  document.getElementById("answerInput").addEventListener("keydown",e=>{if(e.key==="Enter")check()});
+}
+function showFeedback(html){const fb=document.getElementById("fb");if(fb)fb.innerHTML=html}
+function check(){
+  const input=document.getElementById("answerInput");
+  const txt=input?input.value:"";
+  const c=currentCombo();
+  if(!c){render();return}
+  if(phase==="question"){
+    if(acceptsQuestion(txt,c)){phase="answer";render();return}
     const tries=spMarkWrong(FILE,COMBOS.length);
-    showHelp(window.spFeedbackForTry(tries,c.question,"Fragewort, Preis-Frage und kostet/kosten"));
+    showFeedback(spFeedbackForTry(tries,c.question,"Fragewort und kostet/kosten"));
+    if(input)input.focus();
+    return;
+  }
+  if(acceptsAnswer(txt,c)){
+    spMarkRight(FILE,COMBOS.length);
     phase="question";
-  }catch(e){console.warn('frage-und-antwort checkQuestion failed',e);micFallback("Die Eingabe konnte nicht geprüft werden. Bitte schreibe noch einmal.")}
+    render();
+    return;
+  }
+  const tries=spMarkWrong(FILE,COMBOS.length);
+  showFeedback(spFeedbackForTry(tries,c.answer,"Antwortsatz, Preis und kostet/kosten"));
+  if(input)input.focus();
 }
-function checkAnswer(text){
-  try{
-    const c=currentCombo();
-    if(!c){resetBrokenCurrent();show();return}
-    if(acceptableAnswer(text,c)){spMarkRight(FILE,COMBOS.length);phase="question";show();return}
-    const tries=spMarkWrong(FILE,COMBOS.length);
-    showHelp(window.spFeedbackForTry(tries,c.answer,"Antwortsatz und Preis"));
-    phase="answer";
-  }catch(e){console.warn('frage-und-antwort checkAnswer failed',e);micFallback("Die Eingabe konnte nicht geprüft werden. Bitte schreibe noch einmal.")}
-}
-if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",show);else show();
-</script></body></html>
+render();
+</script><script type="module" src="/js/guard.js"></script></body></html>
