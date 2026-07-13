@@ -37,6 +37,7 @@ function renderL3Header(config={}){
     </div>
     <nav class="nav sp-page-nav">
       <a class="btn secondary" href="${backHref}">← Zurück</a>
+      ${config.overviewHref?`<a class="btn secondary" href="${spSafe(config.overviewHref)}">Übersicht</a>`:""}
       ${config.resetButton?`<button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>`:""}
     </nav>`;
   spCleanThemeStart();
