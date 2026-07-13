@@ -1,21 +1,20 @@
 (function(){
-  if(window.__SP_L3T1_STABILITY_V1)return;
-  window.__SP_L3T1_STABILITY_V1=true;
+  if(window.__SP_L3T1_STABILITY_V2)return;
+  window.__SP_L3T1_STABILITY_V2=true;
 
-  function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'null')??fallback}catch(e){return fallback}}
   function writeJson(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch(e){}}
+  function getTasks(){try{return typeof TASKS!=='undefined'&&Array.isArray(TASKS)?TASKS:[]}catch(e){return[]}}
   function run(){
     try{
-      if(typeof window.activeWords!=='function'||typeof window.load!=='function'||typeof window.save!=='function')return false;
-      const words=window.activeWords();
+      if(typeof activeWords!=='function'||typeof load!=='function'||typeof save!=='function')return false;
+      const words=activeWords();
       if(!Array.isArray(words)||!words.length)return false;
       const ids=new Set(words.map(w=>w&&w.id).filter(Boolean));
       const total=words.length;
-      const state=window.load()||{};
+      const state=load()||{};
       state.tasks=state.tasks&&typeof state.tasks==='object'?state.tasks:{};
       state.doneTasks=state.doneTasks&&typeof state.doneTasks==='object'?state.doneTasks:{};
-      const taskDefs=Array.isArray(window.TASKS)?window.TASKS:[];
-      const vocabFiles=taskDefs.filter(t=>t&&t.type==='vocab'&&t.file).map(t=>t.file);
+      const vocabFiles=getTasks().filter(t=>t&&t.type==='vocab'&&t.file).map(t=>t.file);
       let allVocabDone=vocabFiles.length>0;
 
       vocabFiles.forEach(file=>{
@@ -25,7 +24,7 @@
         state.tasks[file]=task;
         const complete=task.done.length>=total;
         if(!complete){delete state.doneTasks[file];allVocabDone=false}
-        const standard={
+        writeJson('SP_TASK_STATE_'+file,{
           total,
           queue:[],
           done:task.done.slice(),
@@ -33,8 +32,7 @@
           tries:0,
           completed:complete,
           percent:total?Math.round(task.done.length/total*100):0
-        };
-        writeJson('SP_TASK_STATE_'+file,standard);
+        });
       });
 
       if(!allVocabDone){
@@ -42,8 +40,8 @@
         localStorage.removeItem('SP_EXAM_UNLOCKED_L3_T1');
         localStorage.removeItem('SP_TASK_STATE_pruefung.html');
       }
-      window.save(state);
-      window.singularWords=function(){return window.activeWords()};
+      save(state);
+      window.singularWords=function(){return activeWords()};
       return true;
     }catch(e){console.warn('L3T1 Stabilisierung fehlgeschlagen',e);return false}
   }
