@@ -54,8 +54,8 @@ const POSTCARD_GRAMMAR_GAPS=[
   {a:'Im Frühling'},
   {a:'Am Morgen'},
   {a:'am Abend'},
-  {a:'bei plus fünfzehn Grad'},
+  {a:'plus fünfzehn Grad'},
   {a:'im Norden'}
 ];
 const oldRenderOverviewPost=window.renderOverview;
-window.renderOverview=renderOverview=function(target){l6t2AddPostWords();if(typeof oldRenderOverviewPost==='function')oldRenderOverviewPost(target);else if(target)target.innerHTML='';if(target&&!document.getElementById('postcard-rule-box')){target.innerHTML+=`<section class="type-block" id="postcard-rule-box"><div class="type-title">Postkarte: Wetter und Land</div><div class="grammar-rule">Neue Wörter: der Wetterbericht · die Mitte · überall · die Temperatur · leicht · bleiben · plus · minus · das Radio · das Internet · angenehm</div><div class="grammar-rule">Beispiel: Ich bin in Deutschland. Das Wetter ist angenehm. Die Temperatur bleibt bei plus zwölf Grad.</div></section>`}}
+window.renderOverview=renderOverview=function(target){l6t2AddPostWords();if(typeof oldRenderOverviewPost==='function')oldRenderOverviewPost(target);else if(target)target.innerHTML='';if(target&&!document.getElementById('postcard-rule-box')){target.innerHTML+=`<section class="type-block" id="postcard-rule-box"><div class="type-title">Postkarte: Wetter und Land</div><div class="grammar-rule">Neue Wörter: der Wetterbericht · die Mitte · überall · die Temperatur · leicht · bleiben · plus · minus · das Radio · das Internet · angenehm</div><div class="grammar-rule">Beispiel: Ich bin in Deutschland. Das Wetter ist angenehm. Es sind plus zwölf Grad.</div></section>`}}
