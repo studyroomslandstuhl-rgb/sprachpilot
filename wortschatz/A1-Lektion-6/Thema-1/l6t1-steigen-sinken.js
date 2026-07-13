@@ -45,4 +45,29 @@
     if(!target)return;
     target.innerHTML=unique(BASE_WORDS).map(w=>`<div class="word-row"><div class="word-placeholder"><img class="weather-img" src="${w.image||CDN+w.id+'.webp'}" alt=""></div><div><b>${w.full||w.word}</b><br><span class="small">${w.sentence||''}</span><span class="tag">${w.type||''}</span></div></div>`).join('');
   };
+
+  function repairTaskState(file,total){
+    const max=Math.max(0,Math.floor(Number(total)||0));
+    if(!max||typeof taskKey!=='function')return;
+    try{
+      const key=taskKey(file);
+      const state=JSON.parse(localStorage.getItem(key)||'null');
+      if(!state||Number(state.total)!==max||!Array.isArray(state.done))return;
+      const done=[...new Set(state.done.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<max))];
+      const doneSet=new Set(done);
+      const queue=[...new Set((Array.isArray(state.queue)?state.queue:[]).map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<max&&!doneSet.has(n)))];
+      let current=Number(state.current);
+      if(!Number.isInteger(current)||current<0||current>=max||doneSet.has(current))current=null;
+      const changed=done.length!==state.done.length||queue.length!==(Array.isArray(state.queue)?state.queue.length:0)||current!==state.current;
+      if(changed)localStorage.setItem(key,JSON.stringify({...state,total:max,done,queue,current}));
+    }catch(e){}
+  }
+  const previousPctFor=window.pctFor;
+  if(typeof previousPctFor==='function'){
+    window.pctFor=pctFor=function(file,total){
+      repairTaskState(file,total);
+      const value=Number(previousPctFor(file,total));
+      return Math.max(0,Math.min(100,Number.isFinite(value)?Math.round(value):0));
+    };
+  }
 })();
