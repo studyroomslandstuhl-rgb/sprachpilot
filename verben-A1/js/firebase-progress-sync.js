@@ -1,0 +1,133 @@
+// Verben A1: robuster Firebase-Speicher fuer Pakete und Aufgaben.
+// Diese Datei bleibt bewusst nur im Verben-Modul und nutzt nicht sp-progress-standard.
+(function(){
+  if(window.__SP_VERB_FIREBASE_PROGRESS_SYNC)return;
+  window.__SP_VERB_FIREBASE_PROGRESS_SYNC=true;
+
+  let firebaseMod=null;
+  let saveTimer=null;
+  let loadingRemote=false;
+  let lastSavedText='';
+
+  function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'null')||fallback}catch(e){return fallback}}
+  function normId(s){return String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+  function uniq(list){return [...new Set((list||[]).filter(Boolean).map(String))]}
+  function profileData(){try{return typeof profile!=='undefined'&&profile?profile:(readJson('SP_USER_PROFILE',null)||readJson('SP_STUDENT_PROFILE',{})||{})}catch(e){return readJson('SP_USER_PROFILE',{})||{}}}
+  function courseOf(p=profileData()){return String(p.courseDocId||p.courseCode||p.kurs||p.kursnummer||p.course||localStorage.getItem('SP_COURSE_CODE')||'').trim()}
+  function emailOf(p=profileData()){return String(p.email||'').trim().toLowerCase()}
+  function fallbackId(p=profileData()){const c=normId(courseOf(p)||'kurs'),e=normId(emailOf(p)||p.vorname||p.firstName||p.name||'student');return c&&e?c+'_'+e:''}
+  function idCandidates(){const p=profileData();return uniq([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem('SP_STUDENT_ID'),fallbackId(p)]).filter(id=>id&&id!=='guest')}
+  function studentId(){return idCandidates()[0]||fallbackId()||''}
+  function isTeacherPreview(){const p=profileData();const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||p.role||'').toLowerCase();return role==='teacher'||role==='lehrer'||p.teacherPreview===true||p.isTeacher===true||sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}
+  function canSync(){return !!studentId()&&!isTeacherPreview()&&!window.SP_NO_FIREBASE_SYNC&&!window.SP_PERFORMANCE_MODE}
+  async function firebase(){
+    if(firebaseMod)return firebaseMod;
+    firebaseMod=await import('/js/firebase.js?v=verbs-progress-1');
+    try{if(firebaseMod.authReady)await Promise.race([firebaseMod.authReady,new Promise(resolve=>setTimeout(resolve,2500))])}catch(e){}
+    return firebaseMod;
+  }
+  function union(){return uniq([].concat(...Array.from(arguments).map(a=>Array.isArray(a)?a:[])))}
+  function obj(a,b){return {...(a&&typeof a==='object'&&!Array.isArray(a)?a:{}),...(b&&typeof b==='object'&&!Array.isArray(b)?b:{})}}
+  function objectOfArrays(a,b){const out={};[a,b].forEach(src=>{Object.keys(src||{}).forEach(k=>{const list=Array.isArray(src[k])?src[k]:Object.values(src[k]||{});out[k]=union(out[k],list)})});return out}
+  function nestedBool(a,b){const out={};[a,b].forEach(src=>{Object.keys(src||{}).forEach(v=>{out[v]=out[v]||{};Object.keys(src[v]||{}).forEach(k=>{out[v][k]=!!(out[v][k]||src[v][k])})})});return out}
+  function nestedNumber(a,b){const out={};[a,b].forEach(src=>{Object.keys(src||{}).forEach(v=>{out[v]=out[v]||{};Object.keys(src[v]||{}).forEach(k=>{out[v][k]=Math.max(Number(out[v][k]||0),Number(src[v][k]||0))})})});return out}
+  function queueMerge(a,b){const out={};[a,b].forEach(src=>{Object.keys(src||{}).forEach(k=>{out[k]=out[k]||[];const seen=new Set(out[k].map(x=>x&&x.v?x.v+':'+(x.slot||0):JSON.stringify(x)));const list=Array.isArray(src[k])?src[k]:Object.values(src[k]||{});list.forEach(x=>{if(!x)return;const item=typeof x==='object'?x:{v:String(x),slot:0};const id=(item.v||'')+':'+(item.slot||0);if(item.v&&!seen.has(id)){seen.add(id);out[k].push(item)}})})});return out}
+  function betterExam(a,b){a=a||{};b=b||{};const as=Number(a.score||0),bs=Number(b.score||0);if((b.passed&&!a.passed)||bs>as)return obj(a,b);return obj(b,a)}
+  function mergeVerbStates(local,remote){
+    local=local||{};remote=remote||{};
+    const out={...remote,...local};
+    ['known','learned','assessed','assessmentBatch','currentPackageVerbs','unsure','unknown','active','practicePool','memoryDone','openCards','archivedPackages'].forEach(k=>out[k]=union(remote[k],local[k]));
+    ['weak','alertsShown','taskRewardsShown'].forEach(k=>out[k]=obj(remote[k],local[k]));
+    out.skillDone=nestedBool(remote.skillDone,local.skillDone);
+    out.skillAttempts=nestedNumber(remote.skillAttempts,local.skillAttempts);
+    out.skillSuccess=nestedNumber(remote.skillSuccess,local.skillSuccess);
+    out.taskDoneSets=objectOfArrays(remote.taskDoneSets,local.taskDoneSets);
+    out.taskErrorSets=objectOfArrays(remote.taskErrorSets,local.taskErrorSets);
+    out.taskQueues=queueMerge(remote.taskQueues,local.taskQueues);
+    out.exam=betterExam(remote.exam,local.exam);
+    out.manualVerbSelection=!!(remote.manualVerbSelection||local.manualVerbSelection);
+    out.firebaseUpdatedAt=Math.max(Number(remote.firebaseUpdatedAt||0),Number(local.firebaseUpdatedAt||0));
+    return out;
+  }
+  function compactState(src){
+    const s=src||{};
+    const keep=['phase','known','learned','unsure','unknown','active','practicePool','archivedPackages','assessmentBatch','assessed','currentPackageVerbs','weak','skillDone','skillAttempts','skillSuccess','taskQueues','taskDoneSets','taskErrorSets','alertsShown','taskRewardsShown','packageNo','assessmentStart','assessmentTries','revealed','exam','manualVerbSelection','localUpdatedAt','firebaseUpdatedAt'];
+    const out={};keep.forEach(k=>{if(s[k]!==undefined)out[k]=s[k]});return out;
+  }
+  async function readRemote(){
+    if(!canSync())return null;
+    const mod=await firebase();
+    let merged=null;
+    for(const id of idCandidates()){
+      try{
+        const snap=await mod.getDoc(mod.doc(mod.db,'progress',id));
+        if(!snap.exists())continue;
+        const data=snap.data()||{};
+        const remote=data.verbenA1&&data.verbenA1.state;
+        if(remote)merged=mergeVerbStates(merged||{},remote);
+      }catch(e){}
+    }
+    return merged;
+  }
+  async function writeRemoteNow(){
+    if(!canSync()||loadingRemote||typeof state==='undefined'||!state)return;
+    const mod=await firebase();
+    const id=studentId();
+    if(!id)return;
+    const p=profileData();
+    const snapshot=compactState(state);
+    snapshot.firebaseUpdatedAt=Date.now();
+    const text=JSON.stringify(snapshot);
+    if(text===lastSavedText)return;
+    lastSavedText=text;
+    await mod.setDoc(mod.doc(mod.db,'progress',id),{
+      studentId:id,
+      userId:id,
+      docId:id,
+      canonicalStudentId:id,
+      aliasIds:idCandidates(),
+      kurs:p.kurs||p.kursnummer||p.courseCode||'',
+      kursnummer:p.kursnummer||p.kurs||p.courseCode||'',
+      courseCode:p.courseCode||p.kurs||p.kursnummer||'',
+      email:p.email||'',
+      muttersprache:p.muttersprache||p.motherLanguage||'',
+      lastPage:location.pathname,
+      lastActive:mod.serverTimestamp(),
+      updatedAt:mod.serverTimestamp(),
+      verbenA1:{state:snapshot,updatedAt:mod.serverTimestamp(),updatedAtMs:Date.now()}
+    },{merge:true});
+    try{localStorage.setItem('SP_VERBS_FIREBASE_SYNC_AT',String(Date.now()))}catch(e){}
+  }
+  function scheduleRemoteSave(){
+    if(!canSync())return;
+    clearTimeout(saveTimer);
+    saveTimer=setTimeout(()=>writeRemoteNow().catch(e=>console.warn('Verben Firebase speichern fehlgeschlagen',e)),700);
+  }
+
+  const oldLoadState=window.loadState||loadState;
+  const oldSaveState=window.saveState||saveState;
+  window.loadState=loadState=async function(){
+    if(typeof oldLoadState==='function')await oldLoadState();
+    if(!canSync())return;
+    loadingRemote=true;
+    try{
+      const remote=await readRemote();
+      if(remote){
+        state=mergeVerbStates(state||{},remote);
+        try{if(typeof migrateState==='function')migrateState()}catch(e){}
+        window.__SP_VERB_STATE_LOADED=true;
+        if(typeof oldSaveState==='function')oldSaveState();
+      }
+    }catch(e){console.warn('Verben Firebase laden fehlgeschlagen',e)}
+    finally{loadingRemote=false; scheduleRemoteSave();}
+  };
+  window.saveState=saveState=function(){
+    if(typeof oldSaveState==='function')oldSaveState();
+    scheduleRemoteSave();
+  };
+  const oldFlush=window.flushVerbProgress;
+  window.flushVerbProgress=function(){
+    try{if(typeof oldFlush==='function')oldFlush()}catch(e){}
+    return writeRemoteNow().catch(e=>console.warn('Verben Firebase Direkt-Speichern fehlgeschlagen',e));
+  };
+})();
