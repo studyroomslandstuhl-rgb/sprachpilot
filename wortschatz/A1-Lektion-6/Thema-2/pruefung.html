@@ -1,20 +1,63 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=4"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2mix2"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=7"></script><script src="l6t2-extra-tasks.js?v=9"></script><script>
-header('Prüfung');const FILE='pruefung.html';let q=[],i=0,score=0;
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=4"><style>.exam-image-box{width:min(330px,100%);height:250px;margin:16px auto;border:2px solid var(--lesson-line);border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}.exam-image-box img{width:100%;height:100%;object-fit:contain;display:block}.exam-cue{margin:14px 0;padding:12px;border-radius:16px;background:#fff8dc;border:1px solid #facc15;font-weight:900;color:#7a5400}.exam-input-wrap{max-width:720px;margin:14px auto}.exam-progress-label{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.exam-stars{font-size:36px;letter-spacing:5px;margin:12px 0}</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2exam1"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=8"></script><script src="l6t2-extra-tasks.js?v=10"></script><script>
+header('Prüfung');
+const FILE='pruefung.html';
+const TOTAL=20;
+const BUNNY='https://sprachpilot.b-cdn.net/';
+const EXAM_VERSION_KEY=CFG.key+'_exam_pattern_v2';
+if(localStorage.getItem(EXAM_VERSION_KEY)!=='1'){
+  localStorage.removeItem(taskKey(FILE));
+  localStorage.removeItem('SP_TASK_STATE_'+FILE);
+  localStorage.removeItem('SP_TASK_STATE_pruefung');
+  localStorage.setItem(EXAM_VERSION_KEY,'1');
+}
+let q=[],i=0,score=0,answered=false;
 function build(){q=[
-{t:'write',p:'Schreiben Sie: der Norden',a:'der Norden'},
-{t:'mc',p:'___ Süden ist es warm.',a:'Im',opts:['Im','In','Aus']},
-{t:'mc',p:'Der Wind kommt ___ Westen.',a:'aus dem',opts:['im','aus dem','in der']},
-{t:'write',p:'Schreiben Sie: der Winter',a:'der Winter'},
-{t:'mc',p:'___ Sommer ist es heiß.',a:'Im',opts:['Im','In','Aus']},
-{t:'mc',p:'Ich lebe ___ Deutschland.',a:'in',opts:['in','in der','im']},
-{t:'mc',p:'Ich lebe ___ USA.',a:'in den',opts:['in','in der','in den']},
-{t:'write',p:'Schreiben Sie: die Schweiz',a:'die Schweiz'},
-{t:'mc',p:'Ich lebe ___ Ukraine.',a:'in der',opts:['in','in der','in den']},
-{t:'write',p:'Bauen Sie den Satz: Im / Herbst / regnet / es oft.',a:'Im Herbst regnet es oft.'}
+  {t:'image-mc',image:'westen.webp',p:'Welches Wort passt zum Bild?',a:'der Westen',opts:['der Norden','der Süden','der Osten','der Westen']},
+  {t:'image-mc',image:'spanien.webp',p:'Welches Land sehen Sie?',a:'Spanien',opts:['Frankreich','Spanien','Polen','Bulgarien']},
+  {t:'image-write',image:'norden.webp',p:'Schreiben Sie das Wort mit Artikel.',a:'der Norden'},
+  {t:'image-write',image:'herbst.webp',p:'Schreiben Sie das Wort mit Artikel.',a:'der Herbst'},
+  {t:'image-write',image:'temperatur.webp',p:'Schreiben Sie das Wort mit Artikel.',a:'die Temperatur'},
+  {t:'image-write',image:'wetterbericht.webp',p:'Schreiben Sie das Wort mit Artikel.',a:'der Wetterbericht'},
+  {t:'image-write',image:'rumaenien.webp',p:'Schreiben Sie den Namen des Landes.',a:'Rumänien'},
+  {t:'image-write',image:'ueberall.webp',p:'Schreiben Sie das passende Wort.',a:'überall'},
+  {t:'mc',p:'Es sind ___ zwanzig Grad. Es ist warm.',a:'plus',opts:['minus','plus','leicht','Mitte']},
+  {t:'mc',p:'Es regnet ein bisschen. Es regnet ___.',a:'leicht',opts:['angenehm','überall','leicht','dunkel']},
+  {t:'mc',p:'Das Wetter verändert sich nicht. Es ___ gleich.',a:'bleibt',opts:['bleibt','lebt','steigt','scheint']},
+  {t:'mc',p:'Das Wetter ist nicht zu heiß und nicht zu kalt. Es ist ___.',a:'angenehm',opts:['breit','angenehm','geschlossen','minus']},
+  {t:'mc',p:'Ich lebe ___ Schweiz.',a:'in der',opts:['in','in der','in den','im']},
+  {t:'mc',p:'Meine Tante lebt ___ USA.',a:'in den',opts:['in','in der','in den','im']},
+  {t:'mc',p:'___ Süden ist es warm.',a:'Im',opts:['Am','Um','Im','In der']},
+  {t:'mc',p:'Der Kurs beginnt ___ 10 Uhr.',a:'um',opts:['am','im','um','in']},
+  {t:'mc',p:'___ Montag beginnt der Deutschkurs.',a:'Am',opts:['Um','In','Am','Im']},
+  {t:'mc',p:'Meine Freundin lebt ___ Japan.',a:'in',opts:['in','in der','in den','im']},
+  {t:'mc',p:'Sara ___ in Bulgarien.',a:'lebt',opts:['lebe','lebt','leben','seid']},
+  {t:'sentence',p:'Wir ________________________________.',cue:'Ukraine – zwei Wochen – sein',a:'Wir sind zwei Wochen in der Ukraine.'}
 ]}
 function locked(){area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p class="small">Bearbeiten Sie zuerst alle Aufgaben zu 100%.</p><div class="actions"><a class="btn secondary" href="index.html">Zum Thema</a></div></div>'}
-function show(){if(!l6t2ExamUnlocked()){locked();return}if(!q.length)build();if(i>=q.length){done();return}const it=q[i];area.innerHTML=`<div class="small">Aufgabe ${i+1} / ${q.length}</div><div class="question">${it.p}</div>${it.t==='mc'?`<div class="choice-grid">${shuffle(it.opts).map(o=>`<button class="choice" onclick="check('${encodeURIComponent(o)}')">${o}</button>`).join('')}</div>`:`<input id="ans" placeholder="Antwort"><div class="actions"><button class="btn" onclick="check(ans.value)">Weiter</button></div>`}<div id="fb" class="feedback"></div>`}
-function check(v){const it=q[i],val=decodeURIComponent(v);if(exact(val,it.a))score++;i++;show()}
-function done(){const percent=Math.round(score/q.length*100);const existing=loadTask(FILE,10);if(percent>=100)markTaskDone(FILE,10);else if(existing.done.length<10)saveTask(FILE,{total:10,done:[],queue:Array.from({length:10},(_,idx)=>idx),current:null,tries:0,hadWrong:false});try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',percent,scorePercent:percent,stars:percent>=100?3:percent>=70?2:percent>=50?1:0})}catch(e){}area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div><div class="actions"><a class="btn" href="index.html">Zum Thema</a></div></div>`}
+function imageHtml(it){if(!it.image)return'';return `<div class="exam-image-box"><img src="${BUNNY+it.image}" alt="Prüfungsbild" loading="eager" onerror="this.parentElement.textContent='Bild fehlt: ${it.image}'"></div>`}
+function show(){
+  if(!l6t2ExamUnlocked()){locked();return}
+  if(!q.length)build();
+  if(i>=q.length){done();return}
+  answered=false;
+  const it=q[i],pct=Math.round(i/q.length*100);
+  const choices=it.t==='mc'||it.t==='image-mc'?`<div class="choice-grid">${shuffle(it.opts).map(o=>`<button class="choice" onclick="pick('${encodeURIComponent(o)}')">${o}</button>`).join('')}</div>`:'';
+  const writing=it.t==='image-write'||it.t==='sentence'?`<div class="exam-input-wrap"><input id="ans" autocomplete="off" placeholder="Antwort schreiben"><div class="actions"><button class="btn" onclick="submitWritten()">Weiter</button></div></div>`:'';
+  const cue=it.cue?`<div class="exam-cue">(${it.cue})</div>`:'';
+  area.innerHTML=`<div class="exam-progress-label"><span class="small">Aufgabe ${i+1} / ${q.length}</span><span class="small">${pct}% bearbeitet</span></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div>${imageHtml(it)}<div class="question">${it.p}</div>${cue}${choices}${writing}<div id="fb" class="feedback" aria-live="polite"></div>`;
+  const input=document.getElementById('ans');if(input){input.focus();input.addEventListener('keydown',e=>{if(e.key==='Enter')submitWritten()})}
+}
+function pick(raw){submitAnswer(decodeURIComponent(raw))}
+function submitWritten(){const input=document.getElementById('ans');if(!input||!input.value.trim()){document.getElementById('fb').innerHTML='<div class="no">Bitte schreiben Sie eine Antwort.</div>';return}submitAnswer(input.value)}
+function submitAnswer(value){if(answered)return;answered=true;const it=q[i];if(exact(value,it.a))score++;i++;show()}
+function done(){
+  const percent=Math.round(score/q.length*100);
+  const stars=percent>=100?3:percent>=70?2:percent>=50?1:0;
+  const existing=loadTask(FILE,TOTAL),best=Math.max(existing.done.length,score);
+  saveTask(FILE,{total:TOTAL,done:[...Array(best).keys()],queue:[...Array(TOTAL).keys()].slice(best),current:null,tries:0,hadWrong:false});
+  try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',percent,scorePercent:percent,stars})}catch(e){}
+  area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="exam-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div><div class="actions"><button class="btn" onclick="restart()">Prüfung wiederholen</button><a class="btn secondary" href="index.html">Zum Thema</a></div></div>`
+}
+function restart(){q=[];i=0;score=0;answered=false;show()}
 show();
 </script></body></html>
