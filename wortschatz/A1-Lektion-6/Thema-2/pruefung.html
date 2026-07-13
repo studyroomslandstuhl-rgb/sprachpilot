@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=4"><style>.exam-image-box{width:min(330px,100%);height:250px;margin:16px auto;border:2px solid var(--lesson-line);border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}.exam-image-box img{width:100%;height:100%;object-fit:contain;display:block}.exam-cue{margin:14px 0;padding:12px;border-radius:16px;background:#fff8dc;border:1px solid #facc15;font-weight:900;color:#7a5400}.exam-input-wrap{max-width:720px;margin:14px auto}.exam-progress-label{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.exam-stars{font-size:36px;letter-spacing:5px;margin:12px 0}</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2exam2"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=8"></script><script src="l6t2-extra-tasks.js?v=10"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=4"><style>.exam-image-box{width:min(330px,100%);height:250px;margin:16px auto;border:2px solid var(--lesson-line);border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}.exam-image-box img{width:100%;height:100%;object-fit:contain;display:block}.exam-cue{margin:14px 0;padding:12px;border-radius:16px;background:#fff8dc;border:1px solid #facc15;font-weight:900;color:#7a5400}.exam-input-wrap{max-width:720px;margin:14px auto}.exam-progress-label{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.exam-stars{font-size:36px;letter-spacing:5px;margin:12px 0}</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2exam3"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=8"></script><script src="l6t2-extra-tasks.js?v=10"></script><script>
 header('Prüfung');
 const FILE='pruefung.html';
 const TOTAL=20;
@@ -44,7 +44,7 @@ function build(){q=[
   {t:'mc',p:'___ Montag beginnt der Deutschkurs.',a:'Am',opts:['Um','In','Am','Im']},
   {t:'mc',p:'Meine Freundin lebt ___ Japan.',a:'in',opts:['in','in der','in den','im']},
   {t:'mc',p:'Sara ___ in Bulgarien.',a:'lebt',opts:['lebe','lebt','leben','seid']},
-  {t:'sentence',p:'Wir ________________________________.',cue:'Ukraine – zwei Wochen – sein',a:'Wir sind zwei Wochen in der Ukraine.'}
+  {t:'sentence',p:'Wir ________________________________.',cue:'Ukraine – zwei Wochen – sein',a:'Wir sind zwei Wochen in der Ukraine.',answers:['Wir sind zwei Wochen in der Ukraine.','sind zwei Wochen in der Ukraine.']}
 ]}
 function locked(){area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p class="small">Bearbeiten Sie zuerst alle Aufgaben zu 100%.</p><div class="actions"><a class="btn secondary" href="index.html">Zum Thema</a></div></div>'}
 function imageHtml(it){if(!it.image)return'';return `<div class="exam-image-box"><img src="${BUNNY+it.image}" alt="Prüfungsbild" loading="eager" onerror="this.parentElement.textContent='Bild fehlt: ${it.image}'"></div>`}
@@ -62,7 +62,8 @@ function show(){
 }
 function pick(raw){submitAnswer(decodeURIComponent(raw))}
 function submitWritten(){const input=document.getElementById('ans');if(!input||!input.value.trim()){document.getElementById('fb').innerHTML='<div class="no">Bitte schreiben Sie eine Antwort.</div>';return}submitAnswer(input.value)}
-function submitAnswer(value){if(answered)return;answered=true;const it=q[i];if(exact(value,it.a))score++;i++;show()}
+function isCorrectAnswer(it,value){const answers=Array.isArray(it.answers)&&it.answers.length?it.answers:[it.a];return answers.some(answer=>exact(value,answer))}
+function submitAnswer(value){if(answered)return;answered=true;const it=q[i];if(isCorrectAnswer(it,value))score++;i++;show()}
 function done(){
   const percent=writeCurrentExamState(score);
   const stars=percent>=100?3:percent>=70?2:percent>=50?1:0;
