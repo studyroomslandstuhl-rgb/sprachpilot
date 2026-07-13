@@ -1,39 +1,95 @@
 (function(){
-if(!document.currentScript)return;
-var rel=null,loaded=false;
-function j(k){try{return JSON.parse(localStorage.getItem(k)||'null')||{}}catch(e){return {}}}
-function dbx(){try{if(typeof db!='undefined'&&db)return db}catch(e){}return window.db||null}
-function st(){try{return typeof state!='undefined'&&state}catch(e){return null}}
-function p(){try{if(typeof profile!='undefined'&&profile)return profile}catch(e){}return window.profile||j('SP_USER_PROFILE')||j('SP_STUDENT_PROFILE')||{}}
-function teacher(){var r=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase(),x=p();return r==='teacher'||r==='lehrer'||x.role==='teacher'||x.teacherPreview===true||x.isTeacher===true||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}
-function has(d){return !!(d&&(d.enabledWords||d.releases||d.enabledModules||d.settings||d.defaultLocked!==undefined||d.releaseMode||d.verbenA1AssessmentEnabled!==undefined))}
-function local(){var x=p();if(has(x.assignments))return x.assignments;var r=j('SP_COURSE_RELEASES');return has(r)?r:{}}
-function releaseKnown(){return teacher()||has(data())}
-function saveRel(d){try{localStorage.setItem('SP_COURSE_RELEASES',JSON.stringify(d||{}));var x=p();x.assignments=d||{};localStorage.setItem('SP_USER_PROFILE',JSON.stringify(x));localStorage.setItem('SP_STUDENT_PROFILE',JSON.stringify(x))}catch(e){}}
-function get(o,a){var c=o;for(var i=0;i<a.length;i++){if(!c||typeof c!=='object'||!(a[i] in c))return undefined;c=c[a[i]]}return c}
-function all(){return (window.ALL_VERBS||[]).map(function(x){return x&&x.v}).filter(Boolean)}
-function uniq(a){return Array.from(new Set((a||[]).filter(Boolean)))}
-function codes(){var x=p(),r=[x.kurs,x.kursnummer,x.courseCode,x.courseDocId,x.courseId,x.courseName,x.name,x.code,x.id,localStorage.getItem('SP_COURSE_CODE')].map(function(v){return String(v||'').trim()}).filter(Boolean),o=[];r.forEach(function(v){o.push(v,v.toUpperCase(),v.toLowerCase(),v.replace(/\s+/g,''),v.toLowerCase().replace(/\s+/g,''))});return uniq(o)}
-async function doc(db,id){try{var s=await db.collection('courses').doc(String(id)).get();return s.exists?Object.assign({id:s.id},s.data()||{}):null}catch(e){return null}}
-async function qry(db,f,v){try{var s=await db.collection('courses').where(f,'==',String(v)).limit(1).get();return s&&!s.empty?Object.assign({id:s.docs[0].id},s.docs[0].data()||{}):null}catch(e){return null}}
-async function load(){if(teacher()){rel={releaseMode:'all',defaultLocked:false};loaded=true;return rel}var dbase=dbx(),fallback=local();if(!dbase){rel=fallback;loaded=true;return rel}var c=codes();for(var i=0;i<c.length;i++){var d=await doc(dbase,c[i]);if(has(d)){rel=d;loaded=true;saveRel(d);return d}}var f=['courseCode','kurs','kursnummer','courseDocId','courseId','id','name','courseName','code'];for(var a=0;a<f.length;a++)for(var b=0;b<c.length;b++){var q=await qry(dbase,f[a],c[b]);if(has(q)){rel=q;loaded=true;saveRel(q);return q}}rel=fallback;loaded=true;return rel}
-function data(){return teacher()?{releaseMode:'all',defaultLocked:false}:(has(rel)?rel:local())}
-function val(d,v){var ew=d.enabledWords;if(Array.isArray(ew)&&(ew.includes(v)||ew.includes('verben-A1/'+v)||ew.includes('Verben A1/'+v)))return true;var pth=[['enabledWords',v],['enabledWords','verben-A1/'+v],['enabledWords','Verben A1/'+v],['releases','verben-A1','words',v],['releases','Verben A1','words',v]];for(var i=0;i<pth.length;i++){var x=get(d,pth[i]);if(x!==undefined)return x===true}return undefined}
-function controls(d){var ew=d.enabledWords||{},n=all();if(Array.isArray(ew)&&ew.length)return true;if(Object.keys(ew).some(function(k){return k.indexOf('verben-A1/')>=0||k.indexOf('Verben A1/')>=0||n.indexOf(k)>=0}))return true;return !!(get(d,['releases','verben-A1','words'])||get(d,['releases','Verben A1','words']))}
-function modOpen(d){var v=[get(d,['enabledModules','Verben A1']),get(d,['enabledModules','verben-A1']),get(d,['releases','Verben A1','enabled']),get(d,['releases','verben-A1','enabled'])];if(v.some(function(x){return x===false}))return false;return true}
-function released(){var n=all(),d=data();if(teacher())return n;if(!has(d)||!modOpen(d))return [];var c=controls(d);if(c)return n.filter(function(v){return val(d,v)===true});if(d.releaseMode==='all'||d.releaseMode==='open'||d.defaultLocked===false)return n.filter(function(v){return val(d,v)!==false});return []}
-function assess(){var d=data();if(!has(d))return true;var v=[get(d,['settings','verben-A1','assessmentEnabled']),get(d,['settings','Verben A1','assessmentEnabled']),d.verbenA1AssessmentEnabled,get(d,['releases','verben-A1','assessmentEnabled']),get(d,['releases','Verben A1','assessmentEnabled'])];for(var i=0;i<v.length;i++)if(v[i]!==undefined)return v[i]!==false;return true}
-function target(){return releaseKnown()?Math.min(20,released().length):20}
-function filt(a){if(!releaseKnown())return a||[];var s=new Set(released());return (a||[]).filter(function(v){return s.has(v)})}
-function resetQueues(S){S.practicePool=[];S.taskQueues={};S.taskDoneSets={};S.currentTask=null;S.memoryCards=[];S.memoryDone=[];S.openCards=[];S.first=null;S.lock=false;S.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0}}
-function seedOff(S){if(!releaseKnown()||assess())return;var l=released().slice(0,20);if(!l.length)return;S.currentPackageVerbs=l.slice();S.assessmentBatch=l.slice();S.assessed=l.slice();S.known=filt(S.known||[]);S.learned=filt(S.learned||[]);S.unsure=l.filter(function(v){return !(S.known||[]).includes(v)&&!(S.learned||[]).includes(v)});S.unknown=[];S.active=S.unsure.length?S.unsure.slice():l.slice();S.currentVerb=''}
-function sync(){var S=st();if(!S||teacher()||!releaseKnown())return false;var list=released();if(!list.length)return false;var A=new Set(list),fp=JSON.stringify({v:Array.from(A),a:assess()}),old=S._releaseFingerprint||'',before='';try{before=JSON.stringify(S)}catch(e){};['known','unsure','unknown','active','learned','practicePool','assessmentBatch','assessed','currentPackageVerbs'].forEach(function(k){if(Array.isArray(S[k]))S[k]=S[k].filter(function(v){return A.has(v)})});Object.keys(S.taskQueues||{}).forEach(function(k){S.taskQueues[k]=(S.taskQueues[k]||[]).filter(function(x){return x&&A.has(x.v)})});Object.keys(S.taskDoneSets||{}).forEach(function(k){S.taskDoneSets[k]=(S.taskDoneSets[k]||[]).filter(function(x){return A.has(String(x).split(':')[0])})});['skillDone','skillAttempts','skillSuccess','weak'].forEach(function(k){Object.keys(S[k]||{}).forEach(function(v){if(!A.has(v))delete S[k][v]})});if(S.currentVerb&&!A.has(S.currentVerb))S.currentVerb='';if(S.currentTask&&S.currentTask.v&&!A.has(S.currentTask.v))S.currentTask=null;if(S.exam&&Array.isArray(S.exam.items))S.exam.items=S.exam.items.filter(function(x){return x&&(!x.v||A.has(x.v))});if(old&&old!==fp)resetQueues(S);S._releaseFingerprint=fp;seedOff(S);try{if(typeof normalizeVerbStatusLists==='function')normalizeVerbStatusLists()}catch(e){}var after='';try{after=JSON.stringify(S)}catch(e){}if(before!==after)try{if(typeof saveState==='function')saveState()}catch(e){}return before!==after}
-function bridgeHomeNeeded(){if(!releaseKnown())return false;var S=st();if(!S||typeof currentPracticeVerbs!=='function')return false;var rels=released(),pc=currentPracticeVerbs().length,t=target();return (rels.length===0&&has(data()))||pc===0||(pc<20&&t&&pc>=t)||(!assess()&&pc>0&&pc<20)}
-function bridgeHome(){if(!releaseKnown())return false;var app=document.getElementById('app');if(!app)return false;try{if(typeof clearVerbHash==='function')clearVerbHash(true)}catch(e){}try{app.classList.remove('card')}catch(e){}var S=st();if(S){S.phase='home';S.currentTask=null}sync();var rels=released(),pc=typeof currentPracticeVerbs==='function'?currentPracticeVerbs().length:0,t=target();if(!rels.length){app.innerHTML=(typeof statusBox==='function'?statusBox():'')+'<section class="card"><h2>Keine Verben freigegeben</h2><p class="small">Für deinen Kurs sind aktuell keine Verben A1 freigeschaltet.</p></section>';return true}if(!pc){app.innerHTML=(typeof statusBox==='function'?statusBox():'')+'<section class="card"><h2>Keine aktiven Übungsverben</h2><p class="small">Alle aktuell freigegebenen Verben sind erledigt oder es gibt kein aktives Paket.</p></section>';return true}if(pc<20&&t&&pc>=t){var h=(typeof statusBox==='function'?statusBox():'')+'<section class="card"><div class="grid task-grid">';if(typeof taskCard==='function'&&typeof examCard==='function')h+=taskCard('karteikarte','🃏','flashcards',1)+taskCard('memory','🧠','memory',2)+taskCard('bild_verb','🖼️','quiz',3)+taskCard('verb_bild','🔁','verbToImage',4)+taskCard('schreiben','✍️','writeVerb',5)+taskCard('hoeren_schreiben','👂','hearWrite',6)+taskCard('hoeren_sprechen','🎤','hearSpeak',7)+taskCard('bild_sprechen','🗣️','imageSpeak',8)+taskCard('satz_puzzle','🧩','sentencePuzzle',9)+taskCard('konjugieren','🔤','conjugationTask',10)+examCard();app.innerHTML=h+'</div></section>';return true}return false}
-function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]})}
-function chooserList(){if(releaseKnown())return released().slice().sort(function(a,b){return a.localeCompare(b,'de')});return []}
-function patchManualChooser(){if(typeof window.renderVerbChooser==='function'&&!window.renderVerbChooser.__releasedGermanOnly){window.renderVerbChooser=function(){try{if(typeof clearVerbHash==='function')clearVerbHash(true);var app=document.getElementById('app');if(!app)return;var allowed=chooserList(),A=new Set(allowed),S=st()||{},selected=new Set(uniq([].concat(S.active||[],S.currentPackageVerbs||[],S.assessmentBatch||[])).filter(function(v){return A.has(v)}).slice(0,20));app.classList.add('card');app.innerHTML='<section class="card"><h2>Verben wählen</h2><p class="small">Wähle bis zu 20 freigegebene deutsche Verben zum Üben.</p><div class="actions"><input id="manualVerbSearch" oninput="spFilterManualVerbs()" placeholder="Verb suchen" style="max-width:320px"><span class="badge"><span id="manualVerbCount">'+selected.size+'</span>/20 gewählt</span></div>'+(allowed.length?'<div class="verb-choice-grid" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;margin-top:14px">'+allowed.map(function(v){return '<button type="button" class="btn secondary '+(selected.has(v)?'selected':'')+'" data-verb-choice="'+esc(v)+'" onclick="spToggleManualVerb(this.getAttribute(\'data-verb-choice\'))" style="text-align:left;white-space:normal"><b>'+esc(v)+'</b></button>'}).join('')+'</div>':'<div class="empty">Die Kursfreigabe ist auf diesem Gerät noch nicht geladen. Öffne einmal das Dashboard und danach wieder Verben.</div>')+'<div class="actions" style="margin-top:16px"><button class="btn green" onclick="spSaveManualVerbs()">Auswahl speichern</button><button class="btn secondary" onclick="renderHome()">Zurück</button></div></section>'}catch(e){console.warn(e)}};window.renderVerbChooser.__releasedGermanOnly=true}if(typeof window.spSaveManualVerbs==='function'&&!window.spSaveManualVerbs.__releasedOnly){var oldSave=window.spSaveManualVerbs;window.spSaveManualVerbs=function(){if(releaseKnown()){var A=new Set(released());document.querySelectorAll('[data-verb-choice].selected').forEach(function(el){if(!A.has(el.getAttribute('data-verb-choice')))el.classList.remove('selected')})}return oldSave.apply(this,arguments)};window.spSaveManualVerbs.__releasedOnly=true}}
-function patch(){if(typeof window.unusedVerbs==='function'&&!window.unusedVerbs.__rb){var u=window.unusedVerbs;window.unusedVerbs=function(){return assess()?filt(u()):[]};window.unusedVerbs.__rb=true}if(typeof window.currentPracticeVerbs==='function'&&!window.currentPracticeVerbs.__rb){var cp=window.currentPracticeVerbs;window.currentPracticeVerbs=function(){return releaseKnown()?filt(cp()):cp()};window.currentPracticeVerbs.__rb=true}if(typeof window.currentPackageAllVerbs==='function'&&!window.currentPackageAllVerbs.__rb){var ca=window.currentPackageAllVerbs;window.currentPackageAllVerbs=function(){return releaseKnown()?filt(ca()):ca()};window.currentPackageAllVerbs.__rb=true}if(typeof window.verbsByStatus==='function'&&!window.verbsByStatus.__rb){var vb=window.verbsByStatus;window.verbsByStatus=function(){if(!releaseKnown())return vb();sync();var a=released(),A=new Set(a),S=st(),learned=new Set([].concat(S.learned||[],S.known||[]).filter(function(v){return A.has(v)})),active=uniq([].concat(S.active||[],S.unsure||[],S.unknown||[])).filter(function(v){return A.has(v)&&!learned.has(v)}),AS=new Set(active);return {active:active,learned:Array.from(learned),new:a.filter(function(v){return !learned.has(v)&&!AS.has(v)})}};window.verbsByStatus.__rb=true}if(typeof window.handleAssessmentClick==='function'&&!window.handleAssessmentClick.__rb){var h=window.handleAssessmentClick;window.handleAssessmentClick=function(){var run=function(){sync();if(releaseKnown()&&!assess()){seedOff(st());if(typeof renderHome==='function')renderHome();return}return h.apply(this,arguments)}.bind(this);if(!loaded&&window.spVerbReleaseReady)return window.spVerbReleaseReady.then(run);return run()};window.handleAssessmentClick.__rb=true}if(typeof window.renderHome==='function'&&!window.renderHome.__rb){var r=window.renderHome;window.renderHome=function(){var args=arguments,ctx=this;if(!loaded&&window.spVerbReleaseReady){var app=document.getElementById('app');if(app)app.innerHTML='<section class="card"><h2>Verben werden geladen …</h2><p class="small">Die aktuelle Kursfreigabe wird geprüft.</p></section>';return window.spVerbReleaseReady.then(function(){sync();patchManualChooser();if(bridgeHomeNeeded())return bridgeHome();return r.apply(ctx,args)})}sync();patchManualChooser();if(bridgeHomeNeeded())return bridgeHome();return r.apply(ctx,args)};window.renderHome.__rb=true}patchManualChooser()}
-function after(){patch();patchManualChooser();sync();try{if(typeof renderHome==='function'&&st()&&state.phase==='home')renderHome()}catch(e){}}
-rel=local();window.spReleasedVerbList=released;window.spStrictReleasedVerbList=released;window.spVerbAssessmentEnabled=assess;window.spVerbPracticeTargetCount=target;window.spSyncVerbRelease=sync;window.spVerbReleaseDebug=function(){return {loaded:loaded,releaseKnown:releaseKnown(),teacher:teacher(),codes:codes(),released:released(),target:target(),assessmentEnabled:assess(),data:data(),state:st()?{active:state.active,currentPackageVerbs:state.currentPackageVerbs,phase:state.phase,releaseFingerprint:state._releaseFingerprint}:null}};window.spVerbReleaseReady=load().then(function(){after();return data()}).catch(function(){loaded=true;after();return data()});patch();document.addEventListener('DOMContentLoaded',after);setTimeout(after,250);setTimeout(after,1000);setTimeout(after,3000);
+  if(window.__SP_VERB_RELEASE_BRIDGE_V2)return;
+  window.__SP_VERB_RELEASE_BRIDGE_V2=true;
+
+  let remoteData=null;
+  let loaded=false;
+  let loadPromise=null;
+
+  function readJson(key,fallback={}){try{return JSON.parse(localStorage.getItem(key)||'null')||fallback}catch(e){return fallback}}
+  function profileData(){try{return typeof profile!=='undefined'&&profile?profile:(readJson('SP_USER_PROFILE',null)||readJson('SP_STUDENT_PROFILE',{}))}catch(e){return readJson('SP_USER_PROFILE',{})}}
+  function stateData(){try{return typeof state!=='undefined'?state:null}catch(e){return null}}
+  function isTeacher(){const p=profileData();const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||p.role||'').toLowerCase();return role==='teacher'||role==='lehrer'||p.teacherPreview===true||p.isTeacher===true||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}
+  function hasReleaseData(d){return !!(d&&(d.enabledWords||d.releases||d.enabledModules||d.settings||d.defaultLocked!==undefined||d.releaseMode||d.verbenA1AssessmentEnabled!==undefined))}
+  function localReleaseData(){const p=profileData();if(hasReleaseData(p.assignments))return p.assignments;const cached=readJson('SP_COURSE_RELEASES',{});return hasReleaseData(cached)?cached:{}}
+  function releaseData(){if(isTeacher())return{releaseMode:'all',defaultLocked:false};return hasReleaseData(remoteData)?remoteData:localReleaseData()}
+  function get(obj,path){let cur=obj;for(const part of path){if(!cur||typeof cur!=='object'||!(part in cur))return undefined;cur=cur[part]}return cur}
+  function uniq(list){return [...new Set((list||[]).filter(Boolean).map(String))]}
+  function allVerbs(){return uniq((window.ALL_VERBS||[]).map(x=>x&&x.v).filter(Boolean))}
+  function courseCodes(){const p=profileData();const raw=[p.kurs,p.kursnummer,p.courseCode,p.courseDocId,p.courseId,p.courseName,p.name,p.code,p.id,localStorage.getItem('SP_COURSE_CODE')].map(v=>String(v||'').trim()).filter(Boolean);const out=[];raw.forEach(v=>out.push(v,v.toUpperCase(),v.toLowerCase(),v.replace(/\s+/g,''),v.toLowerCase().replace(/\s+/g,'')));return uniq(out)}
+  function saveReleaseData(data){try{localStorage.setItem('SP_COURSE_RELEASES',JSON.stringify(data||{}));const p=profileData();p.assignments=data||{};localStorage.setItem('SP_USER_PROFILE',JSON.stringify(p));localStorage.setItem('SP_STUDENT_PROFILE',JSON.stringify(p))}catch(e){}}
+  function database(){try{if(typeof db!=='undefined'&&db)return db}catch(e){}return window.db||null}
+  async function readDoc(store,id){try{const snap=await store.collection('courses').doc(String(id)).get();return snap.exists?Object.assign({id:snap.id},snap.data()||{}):null}catch(e){return null}}
+  async function readQuery(store,field,value){try{const snap=await store.collection('courses').where(field,'==',String(value)).limit(1).get();return snap&&!snap.empty?Object.assign({id:snap.docs[0].id},snap.docs[0].data()||{}):null}catch(e){return null}}
+  async function loadReleaseData(){
+    if(loaded)return releaseData();
+    if(loadPromise)return loadPromise;
+    loadPromise=(async()=>{
+      if(isTeacher()){remoteData={releaseMode:'all',defaultLocked:false};loaded=true;return remoteData}
+      const fallback=localReleaseData();
+      const store=database();
+      if(!store){remoteData=fallback;loaded=true;return remoteData}
+      const codes=courseCodes();
+      for(const code of codes){const found=await readDoc(store,code);if(hasReleaseData(found)){remoteData=found;saveReleaseData(found);loaded=true;return found}}
+      const fields=['courseCode','kurs','kursnummer','courseDocId','courseId','id','name','courseName','code'];
+      for(const field of fields){for(const code of codes){const found=await readQuery(store,field,code);if(hasReleaseData(found)){remoteData=found;saveReleaseData(found);loaded=true;return found}}}
+      remoteData=fallback;loaded=true;return remoteData;
+    })();
+    return loadPromise;
+  }
+  function explicitWordValue(data,verb){const words=data&&data.enabledWords;if(Array.isArray(words))return words.includes(verb)||words.includes('verben-A1/'+verb)||words.includes('Verben A1/'+verb);const paths=[['enabledWords',verb],['enabledWords','verben-A1/'+verb],['enabledWords','Verben A1/'+verb],['releases','verben-A1','words',verb],['releases','Verben A1','words',verb]];for(const path of paths){const value=get(data,path);if(value!==undefined)return value===true}return undefined}
+  function releaseControlsWords(data){const words=data&&data.enabledWords||{};const names=new Set(allVerbs());if(Array.isArray(words)&&words.length)return true;if(Object.keys(words).some(k=>k.includes('verben-A1/')||k.includes('Verben A1/')||names.has(k)))return true;return !!(get(data,['releases','verben-A1','words'])||get(data,['releases','Verben A1','words']))}
+  function moduleOpen(data){const values=[get(data,['enabledModules','Verben A1']),get(data,['enabledModules','verben-A1']),get(data,['releases','Verben A1','enabled']),get(data,['releases','verben-A1','enabled'])];return !values.some(v=>v===false)}
+  function releasedVerbs(){const all=allVerbs();if(isTeacher())return all;const data=releaseData();if(!hasReleaseData(data))return all;if(!moduleOpen(data))return[];if(releaseControlsWords(data))return all.filter(v=>explicitWordValue(data,v)===true);if(data.releaseMode==='all'||data.releaseMode==='open'||data.defaultLocked===false)return all.filter(v=>explicitWordValue(data,v)!==false);return all}
+  function assessmentEnabled(){const data=releaseData();if(!hasReleaseData(data))return true;const values=[get(data,['settings','verben-A1','assessmentEnabled']),get(data,['settings','Verben A1','assessmentEnabled']),data.verbenA1AssessmentEnabled,get(data,['releases','verben-A1','assessmentEnabled']),get(data,['releases','Verben A1','assessmentEnabled'])];for(const value of values)if(value!==undefined)return value!==false;return true}
+  function defaultExam(){return{passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0,hadWrong:false}}
+  function packageSignature(S){return uniq([...(S.active||[]),...(S.currentPackageVerbs||[]),...(S.assessmentBatch||[])]).sort().join('|')}
+  function filterArray(list,allowed){return uniq(list).filter(v=>allowed.has(v))}
+  function syncState(){
+    const S=stateData();
+    if(!S||isTeacher()||!hasReleaseData(releaseData()))return false;
+    const allowedList=releasedVerbs();
+    const allowed=new Set(allowedList);
+    const beforePackage=packageSignature(S);
+    let before='';try{before=JSON.stringify(S)}catch(e){}
+    ['known','learned','unsure','unknown','active','practicePool','assessmentBatch','assessed','currentPackageVerbs'].forEach(key=>{S[key]=filterArray(S[key]||[],allowed)});
+    const mastered=new Set([...(S.known||[]),...(S.learned||[])]);
+    S.active=filterArray([...(S.active||[]),...(S.unsure||[]),...(S.unknown||[]),...(S.currentPackageVerbs||[]),...(S.assessmentBatch||[])],allowed).filter(v=>!mastered.has(v)).slice(0,20);
+    S.unsure=filterArray(S.unsure||[],allowed).filter(v=>S.active.includes(v));
+    S.unknown=filterArray(S.unknown||[],allowed).filter(v=>S.active.includes(v)&&!S.unsure.includes(v));
+    S.currentPackageVerbs=S.active.slice();
+    S.assessmentBatch=S.active.slice();
+    S.practicePool=filterArray(S.practicePool||[],allowed).filter(v=>S.active.includes(v));
+    Object.keys(S.taskDoneSets||{}).forEach(key=>{const raw=Array.isArray(S.taskDoneSets[key])?S.taskDoneSets[key]:Object.values(S.taskDoneSets[key]||{});S.taskDoneSets[key]=raw.filter(x=>S.active.includes(String(x||'').split(':')[0]))});
+    Object.keys(S.taskQueues||{}).forEach(key=>{const raw=Array.isArray(S.taskQueues[key])?S.taskQueues[key]:Object.values(S.taskQueues[key]||{});S.taskQueues[key]=raw.filter(x=>x&&S.active.includes(x.v))});
+    ['skillDone','skillAttempts','skillSuccess','weak'].forEach(key=>{Object.keys(S[key]||{}).forEach(v=>{if(!allowed.has(v))delete S[key][v]})});
+    if(S.currentVerb&&!S.active.includes(S.currentVerb))S.currentVerb='';
+    if(S.currentTask&&S.currentTask.v&&!S.active.includes(S.currentTask.v))S.currentTask=null;
+    const afterPackage=packageSignature(S);
+    if(beforePackage&&beforePackage!==afterPackage){S.exam=defaultExam();S.currentTask=null;S.memoryCards=[];S.memoryDone=[];S.openCards=[];S.first=null;S.lock=false}
+    if(S.exam&&Array.isArray(S.exam.items))S.exam.items=S.exam.items.filter(item=>item&&(!item.v||S.active.includes(item.v)));
+    S._releaseFingerprint=JSON.stringify({verbs:allowedList.slice().sort(),assessment:assessmentEnabled()});
+    let after='';try{after=JSON.stringify(S)}catch(e){}
+    const changed=before!==after;
+    if(changed&&typeof saveState==='function')saveState();
+    return changed;
+  }
+  function install(){
+    window.spReleasedVerbList=releasedVerbs;
+    window.spStrictReleasedVerbList=releasedVerbs;
+    window.releasedAssessmentVerbs=releasedVerbs;
+    window.spVerbAssessmentEnabled=assessmentEnabled;
+    window.spVerbPracticeTargetCount=()=>Math.min(20,releasedVerbs().length||20);
+    window.spSyncVerbRelease=syncState;
+    window.spVerbReleaseDebug=()=>({loaded,teacher:isTeacher(),codes:courseCodes(),released:releasedVerbs(),assessmentEnabled:assessmentEnabled(),data:releaseData(),state:stateData()?{active:state.active,currentPackageVerbs:state.currentPackageVerbs,phase:state.phase,releaseFingerprint:state._releaseFingerprint}:null});
+    syncState();
+  }
+  function refreshVisibleHome(){try{const S=stateData();if(!S)return;if(S.phase==='taskOverview'&&typeof renderTaskOverview==='function')renderTaskOverview();else if(S.phase==='home'&&typeof renderVerbIndexPage==='function')renderVerbIndexPage()}catch(e){}}
+
+  install();
+  window.spVerbReleaseReady=loadReleaseData().then(data=>{install();refreshVisibleHome();return data}).catch(()=>{loaded=true;install();return releaseData()});
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',install);else setTimeout(install,0);
+  setTimeout(install,300);
+  setTimeout(install,1200);
+  setTimeout(install,3000);
 })();
