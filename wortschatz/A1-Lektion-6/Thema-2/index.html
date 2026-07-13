@@ -29,11 +29,16 @@ function resetThemeProgress(){
   try{const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2'};if(window.SPProgress&&typeof SPProgress.recordThemeReset==='function')SPProgress.recordThemeReset(payload);else import('/js/progress.js?v=reset-l6t2').then(m=>m.recordThemeReset&&m.recordThemeReset(payload)).catch(()=>{})}catch(e){}
   location.reload();
 }
+function l6t2IconFor(file){
+  try{if(typeof L6T2_TASK_ICONS!=='undefined'&&L6T2_TASK_ICONS[file])return L6T2_TASK_ICONS[file]}catch(e){}
+  try{if(typeof TASK_ICONS!=='undefined'&&TASK_ICONS[file])return TASK_ICONS[file]}catch(e){}
+  return '▶';
+}
 function l6t2FallbackMenu(){
   const grid=document.getElementById('taskGrid');
   if(!grid)return;
-  const tasks=typeof l6t2AllTasks==='function'?l6t2AllTasks():(window.TASKS||[]);
-  grid.innerHTML='<div class="grid">'+tasks.map((t,i)=>'<a class="module" href="'+t[0]+'"><div class="num">'+(i+1)+'. '+t[2]+'</div><div class="big-icon">'+((window.L6T2_TASK_ICONS&&L6T2_TASK_ICONS[t[0]])||TASK_ICONS?.[t[0]]||'▶')+'</div><p class="small">Himmelsrichtungen, Länder, Jahreszeiten und Präpositionen üben.</p><div class="start">Starten</div></a>').join('')+'</div>';
+  const tasks=typeof l6t2AllTasks==='function'?l6t2AllTasks():(typeof TASKS!=='undefined'?TASKS:[]);
+  grid.innerHTML='<div class="grid">'+tasks.map((t,i)=>'<a class="module" href="'+t[0]+'"><div class="num">'+(i+1)+'. '+t[2]+'</div><div class="big-icon">'+l6t2IconFor(t[0])+'</div><p class="small">Himmelsrichtungen, Länder, Jahreszeiten und Präpositionen üben.</p><div class="start">Starten</div></a>').join('')+'</div>';
 }
 function safeRenderL6T2Menu(){
   try{renderMenu();}
