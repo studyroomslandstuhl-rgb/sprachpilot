@@ -1,20 +1,60 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 6 · Thema 2</title><link rel="stylesheet" href="style.css?v=5"></head><body><div class="container"><header class="topbar"></header><section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Himmelsrichtungen, Länder, Jahreszeiten, Wetterbericht-Wörter und Zeitpräpositionen sicher benutzen.</p></div></section><section id="taskGrid"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=theme-overview-guardfix"></script><script src="app.js?v=5"></script><script src="l6t2-postkarte.js?v=8"></script><script src="l6t2-extra-tasks.js?v=12"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 6 · Thema 2</title><link rel="stylesheet" href="style.css?v=6"></head><body><div class="container"><header class="topbar"></header><section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Himmelsrichtungen, Länder, Jahreszeiten, Wetterbericht-Wörter und Zeitpräpositionen sicher benutzen.</p></div></section><section id="taskGrid"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-menu-repair1"></script><script src="app.js?v=6"></script><script src="l6t2-postkarte.js?v=9"></script><script src="l6t2-extra-tasks.js?v=13"></script><script>
+const L6T2_FALLBACK_TASKS=[
+  ['karteikarten.html','Karteikarten','🃏'],
+  ['bild-wort.html','Bild → Wort','🖼️'],
+  ['hoeren-bild.html','Hören → Bild','🎧'],
+  ['kategorien-drag.html','Kategorien · 2 Teile','🧺'],
+  ['praepositionen.html','Richtige Präposition','📍'],
+  ['praepositionen-bild.html','Bild → Präposition','🖼️'],
+  ['praepositionen-drag.html','Präpositionen zuordnen · 2 Teile','🧲'],
+  ['fehler-finden.html','Fehler finden und korrigieren','🛠️'],
+  ['postkarte.html','Postkarten ergänzen','✉️'],
+  ['saetze-bauen.html','Sätze bauen','🧩'],
+  ['pruefung.html','Prüfung','⭐']
+];
+window.totalCircle=document.getElementById('totalCircle');
+window.totalBar=document.getElementById('totalBar');
+window.totalText=document.getElementById('totalText');
+window.taskGrid=document.getElementById('taskGrid');
+function l6t2FallbackMenu(){
+  const grid=document.getElementById('taskGrid');
+  if(!grid)return;
+  grid.innerHTML='<div class="grid">'+L6T2_FALLBACK_TASKS.map((t,i)=>{
+    let p=0;
+    try{
+      const fullTasks=typeof l6t2AllTasks==='function'?l6t2AllTasks():[];
+      const found=fullTasks.find(x=>x[0]===t[0]);
+      if(found&&typeof pctFor==='function')p=pctFor(found[0],found[1]);
+    }catch(e){}
+    return '<a class="module" href="'+t[0]+'"><div class="num">'+(i+1)+'. '+t[1]+'</div><div class="big-icon">'+t[2]+'</div><p class="small">Himmelsrichtungen, Länder, Jahreszeiten und Präpositionen üben.</p><div class="progress"><div class="bar" style="width:'+p+'%"></div></div><div class="small">'+p+'%</div><div class="start">'+(p>=100?'Fertig':'Starten')+'</div></a>';
+  }).join('')+'</div>';
+}
+function safeRenderL6T2Menu(){
+  l6t2FallbackMenu();
+  try{if(typeof renderMenu==='function')renderMenu()}catch(e){console.error('L6T2-Menü konnte nicht vollständig geladen werden',e)}
+}
 const L6T2_EXAM_TOTAL=20;
 const L6T2_EXAM_SCORE_KEY='SP_L6_T2_EXAM_CURRENT_SCORE';
 const L6T2_EXAM_PERCENT_KEY='SP_L6_T2_EXAM_CURRENT_PERCENT';
 function applyCurrentExamPercent(value){
-  const percent=Math.max(0,Math.min(100,Math.round(Number(value)||0)));
-  const score=Math.max(0,Math.min(L6T2_EXAM_TOTAL,Math.round(percent/100*L6T2_EXAM_TOTAL)));
-  const state={total:L6T2_EXAM_TOTAL,done:[...Array(score).keys()],queue:[...Array(L6T2_EXAM_TOTAL-score).keys()].map(n=>n+score),current:null,tries:0,hadWrong:false,currentExamPercent:percent};
-  localStorage.setItem(taskKey('pruefung.html'),JSON.stringify(state));
-  localStorage.setItem(L6T2_EXAM_SCORE_KEY,String(score));
-  localStorage.setItem(L6T2_EXAM_PERCENT_KEY,String(percent));
+  try{
+    if(typeof taskKey!=='function')return;
+    const percent=Math.max(0,Math.min(100,Math.round(Number(value)||0)));
+    const score=Math.max(0,Math.min(L6T2_EXAM_TOTAL,Math.round(percent/100*L6T2_EXAM_TOTAL)));
+    const state={total:L6T2_EXAM_TOTAL,done:[...Array(score).keys()],queue:[...Array(L6T2_EXAM_TOTAL-score).keys()].map(n=>n+score),current:null,tries:0,hadWrong:false,currentExamPercent:percent};
+    localStorage.setItem(taskKey('pruefung.html'),JSON.stringify(state));
+    localStorage.setItem(L6T2_EXAM_SCORE_KEY,String(score));
+    localStorage.setItem(L6T2_EXAM_PERCENT_KEY,String(percent));
+  }catch(e){}
 }
 async function repairCurrentExamDisplay(){
-  const localPercent=Number(localStorage.getItem(L6T2_EXAM_PERCENT_KEY));
-  if(Number.isFinite(localPercent)&&localPercent>=0&&localPercent<=100){applyCurrentExamPercent(localPercent);safeRenderL6T2Menu();return}
+  const raw=localStorage.getItem(L6T2_EXAM_PERCENT_KEY);
+  if(raw!==null&&raw!==''){
+    const localPercent=Number(raw);
+    if(Number.isFinite(localPercent)&&localPercent>=0&&localPercent<=100){applyCurrentExamPercent(localPercent);safeRenderL6T2Menu();return}
+  }
   try{
-    const api=window.SPProgress&&SPProgress.loadCurrentStudentProgress?window.SPProgress:await import('/js/progress.js?v=l6t2exam-current2');
+    const api=window.SPProgress&&SPProgress.loadCurrentStudentProgress?window.SPProgress:await import('/js/progress.js?v=l6t2exam-current3');
     const data=await api.loadCurrentStudentProgress();
     const topic=data&&data.wortschatz&&data.wortschatz['wortschatz-a1-lektion-6-thema-2'];
     const remotePercent=Number(topic&&topic.exam&&topic.exam.lastPercent);
@@ -23,30 +63,20 @@ async function repairCurrentExamDisplay(){
 }
 function resetThemeProgress(){
   if(!confirm('Fortschritte in Thema 2 löschen?'))return;
-  const tasks=(typeof l6t2AllTasks==='function'?l6t2AllTasks():TASKS).map(t=>t[0]);
+  const tasks=(typeof l6t2AllTasks==='function'?l6t2AllTasks():L6T2_FALLBACK_TASKS).map(t=>t[0]);
   const taskNames=new Set(tasks.flatMap(file=>{const base=String(file||'').replace(/\.html$/i,'');const slug=base.toLowerCase().replace(/[^a-z0-9]+/g,'-');return[file,base,slug]}));
-  Object.keys(localStorage).forEach(key=>{if(key.startsWith(CFG.key)||key.startsWith('SP_L6_T2_'))localStorage.removeItem(key);if(key.startsWith('SP_TASK_STATE_')){const name=key.replace(/^SP_TASK_STATE_/,'');if(taskNames.has(name))localStorage.removeItem(key)}});
+  Object.keys(localStorage).forEach(key=>{
+    try{if(typeof CFG!=='undefined'&&key.startsWith(CFG.key))localStorage.removeItem(key)}catch(e){}
+    if(key.startsWith('SP_L6_T2_'))localStorage.removeItem(key);
+    if(key.startsWith('SP_TASK_STATE_')){const name=key.replace(/^SP_TASK_STATE_/,'');if(taskNames.has(name))localStorage.removeItem(key)}
+  });
   try{const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2'};if(window.SPProgress&&typeof SPProgress.recordThemeReset==='function')SPProgress.recordThemeReset(payload);else import('/js/progress.js?v=reset-l6t2').then(m=>m.recordThemeReset&&m.recordThemeReset(payload)).catch(()=>{})}catch(e){}
   location.reload();
 }
-function l6t2IconFor(file){
-  try{if(typeof L6T2_TASK_ICONS!=='undefined'&&L6T2_TASK_ICONS[file])return L6T2_TASK_ICONS[file]}catch(e){}
-  try{if(typeof TASK_ICONS!=='undefined'&&TASK_ICONS[file])return TASK_ICONS[file]}catch(e){}
-  return '▶';
-}
-function l6t2FallbackMenu(){
-  const grid=document.getElementById('taskGrid');
-  if(!grid)return;
-  const tasks=typeof l6t2AllTasks==='function'?l6t2AllTasks():(typeof TASKS!=='undefined'?TASKS:[]);
-  grid.innerHTML='<div class="grid">'+tasks.map((t,i)=>'<a class="module" href="'+t[0]+'"><div class="num">'+(i+1)+'. '+t[2]+'</div><div class="big-icon">'+l6t2IconFor(t[0])+'</div><p class="small">Himmelsrichtungen, Länder, Jahreszeiten und Präpositionen üben.</p><div class="start">Starten</div></a>').join('')+'</div>';
-}
-function safeRenderL6T2Menu(){
-  try{renderMenu();}
-  catch(e){console.error('L6T2 menu failed',e);l6t2FallbackMenu();}
-}
-try{header('Himmelsrichtungen · Länder · Jahreszeiten',true)}catch(e){}
+l6t2FallbackMenu();
+try{if(typeof header==='function')header('Himmelsrichtungen · Länder · Jahreszeiten',true)}catch(e){}
 const backLink=document.querySelector('.nav a.btn.secondary');if(backLink)backLink.href='../';
 safeRenderL6T2Menu();
-setTimeout(safeRenderL6T2Menu,80);
-setTimeout(repairCurrentExamDisplay,250);
+setTimeout(safeRenderL6T2Menu,100);
+setTimeout(repairCurrentExamDisplay,300);
 </script></body></html>
