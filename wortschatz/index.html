@@ -5,28 +5,57 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SprachPilot - Wortschatz</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}:root{--sp-blue:#47ABC6;--sp-blue-dark:#2F7F96;--sp-baby:#84E3FF;--sp-light:#EAFBFF;--sp-soft:#F6FDFF;--sp-accent:#7E2D00;--sp-dark:#123047;--sp-muted:#5F7180;--sp-line:#D9EEF7;--sp-white:#FFFFFF;--sp-green:#2E9E4F;--sp-red:#E74C3C;--sp-shadow:0 14px 34px rgba(18,48,71,.12)}body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#E8FBFF 0,#F6FDFF 46%,#FFFFFF 100%);color:var(--sp-dark);padding:18px}.container{max-width:1000px;margin:0 auto}.hero{background:white;border-radius:28px;padding:28px 22px;box-shadow:var(--sp-shadow);border:1px solid var(--sp-line);text-align:center;margin-bottom:18px}.logo{width:96px;height:96px;margin:0 auto 14px;border-radius:26px;background:white;display:flex;align-items:center;justify-content:center;box-shadow:0 10px 24px rgba(18,48,71,.10);border:3px solid var(--sp-line)}.logo img{width:84px;height:84px;object-fit:contain;border-radius:20px}h1{font-size:38px;color:var(--sp-dark);margin-bottom:8px}.subtitle{font-size:18px;color:var(--sp-muted);line-height:1.4}.back-wrap{text-align:center;margin-bottom:18px}.back{display:inline-block;text-decoration:none;background:#EFFAFF;color:var(--sp-dark);font-weight:800;padding:13px 18px;border-radius:15px;border:1px solid var(--sp-line)}.card{background:white;border-radius:24px;padding:22px;box-shadow:var(--sp-shadow);border:1px solid var(--sp-line);margin-bottom:18px}.level-title{font-size:30px;font-weight:900;color:var(--sp-blue-dark);margin-bottom:6px}.book-title{color:var(--sp-muted);font-size:16px;margin-bottom:18px}.lessons{display:grid;grid-template-columns:repeat(auto-fit,minmax(145px,1fr));gap:12px}.lesson-btn{display:block;text-decoration:none;text-align:center;border-radius:16px;padding:16px 12px;font-size:17px;font-weight:900;background:linear-gradient(135deg,var(--sp-blue),var(--sp-blue-dark));color:white;box-shadow:0 8px 18px rgba(18,48,71,.15);transition:.2s}.lesson-btn:hover{transform:translateY(-3px);box-shadow:0 12px 24px rgba(18,48,71,.18)}footer{text-align:center;color:var(--sp-muted);margin-top:24px;font-size:14px}.lesson-btn.locked{display:none}.lesson-btn.open{background:linear-gradient(135deg,var(--sp-blue),var(--sp-baby))!important;color:var(--sp-dark)!important}.lesson-btn.open::after{content:"Offen";display:block;margin-top:6px;font-size:12px;color:#24576A}.assignment-status{background:#E8F9F0;border-left:5px solid var(--sp-green);padding:12px;border-radius:12px;margin-bottom:14px;font-weight:700}.assignment-status.no{background:#FFE1E1;border-left-color:var(--sp-red)}@media(max-width:650px){body{padding:12px}h1{font-size:32px}.hero{padding:24px 16px}.lessons{grid-template-columns:repeat(2,1fr)}}
+*{box-sizing:border-box;margin:0;padding:0}:root{--sp-blue:#47ABC6;--sp-blue-dark:#2F7F96;--sp-baby:#84E3FF;--sp-light:#EAFBFF;--sp-soft:#F6FDFF;--sp-dark:#123047;--sp-muted:#5F7180;--sp-line:#D9EEF7;--sp-white:#FFFFFF;--sp-green:#2E9E4F;--sp-red:#E74C3C;--sp-shadow:0 12px 28px rgba(18,48,71,.10)}body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#E8FBFF 0,#F6FDFF 54%,#FFFFFF 100%);color:var(--sp-dark);padding:18px;overflow-x:hidden}.page{max-width:1120px;margin:0 auto}.topbar{width:100%;background:linear-gradient(135deg,var(--sp-blue),var(--sp-blue-dark));border-radius:22px;padding:18px 20px;box-shadow:var(--sp-shadow);display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px}.brand{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--sp-white);min-width:0}.logo{width:58px;height:58px;flex:0 0 58px;border-radius:16px;background:white;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.65)}.logo img{width:48px;height:48px;object-fit:contain;border-radius:12px}.brand-text{min-width:0}.brand-text h1{font-size:32px;line-height:1.05;color:var(--sp-white);font-weight:900;letter-spacing:0}.brand-text p{font-size:16px;color:#EAFBFF;margin-top:3px}.account-tools{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}.account-pill,.account-link{border:2px solid rgba(255,255,255,.65);background:rgba(255,255,255,.92);color:#064961;border-radius:16px;padding:11px 15px;font-size:16px;font-weight:900;line-height:1;text-decoration:none;white-space:nowrap}.account-pill{max-width:330px;overflow:hidden;text-overflow:ellipsis}.account-btn{font:inherit;cursor:pointer}.back-wrap{text-align:center;margin:14px 0 18px}.back{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:#EFFAFF;color:var(--sp-dark);font-weight:900;padding:12px 18px;border-radius:14px;border:1px solid var(--sp-line);min-height:46px}.card{background:white;border-radius:22px;padding:20px;box-shadow:var(--sp-shadow);border:1px solid var(--sp-line);margin-bottom:18px}.status{background:#E8F9F0;border-left:5px solid var(--sp-green);padding:12px 14px;border-radius:12px;margin-bottom:18px;font-weight:800;line-height:1.35}.status.no{background:#FFEDED;border-left-color:var(--sp-red)}.level-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin-bottom:14px}.level-title{font-size:30px;font-weight:900;color:var(--sp-blue-dark);line-height:1}.book-title{color:var(--sp-muted);font-size:16px}.lessons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;min-height:96px}.lesson-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;text-align:center;border-radius:16px;min-height:96px;padding:16px 12px;font-size:19px;font-weight:900;background:linear-gradient(135deg,var(--sp-blue),var(--sp-baby));color:var(--sp-dark);box-shadow:0 8px 18px rgba(18,48,71,.13);transition:transform .18s ease,box-shadow .18s ease}.lesson-btn:hover{transform:translateY(-3px);box-shadow:0 12px 24px rgba(18,48,71,.18)}.lesson-btn span{display:block;margin-top:8px;font-size:13px;color:#24576A;font-weight:900}.empty{grid-column:1/-1;min-height:96px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--sp-line);border-radius:16px;color:var(--sp-muted);font-weight:800;background:#F7FDFF}.skeleton{position:relative;overflow:hidden;color:transparent;background:#EAF6FA;box-shadow:none}.skeleton:after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);animation:shine 1.2s infinite}@keyframes shine{to{transform:translateX(100%)}}footer{text-align:center;color:var(--sp-muted);margin-top:24px;font-size:14px}@media(max-width:900px){.topbar{align-items:flex-start;flex-direction:column}.account-tools{justify-content:flex-start}.lessons{grid-template-columns:repeat(2,minmax(0,1fr))}.brand-text h1{font-size:28px}}@media(max-width:520px){body{padding:10px}.topbar{border-radius:18px;padding:14px}.logo{width:50px;height:50px;flex-basis:50px}.logo img{width:42px;height:42px}.brand-text h1{font-size:25px}.brand-text p{font-size:14px}.account-pill,.account-link{width:100%;text-align:center}.lessons{grid-template-columns:1fr}.card{padding:16px}.level-head{display:block}.book-title{margin-top:6px}}
 </style>
 </head>
 <body>
-<div id="accountStrip" class="account-strip"></div>
-<script type="module" src="/js/guard.js"></script>
-<div class="container">
-<section class="hero"><a class="logo" href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></a><h1>Wortschatz</h1><p class="subtitle">Schritte Plus Neu - A1, A2 und B1</p></section>
+<div id="accountStrip" class="account-strip" hidden></div>
+<div class="page">
+<header class="topbar">
+  <a class="brand" href="/index.html">
+    <span class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></span>
+    <span class="brand-text"><h1>SprachPilot</h1><p>Wortschatz</p></span>
+  </a>
+  <nav class="account-tools" aria-label="Konto">
+    <span class="account-pill" id="accountPill">Profil wird geladen</span>
+    <a class="account-link" href="/student-dashboard/index.html">Dashboard</a>
+    <a class="account-link" href="/profile/index.html">Profil</a>
+    <button class="account-link account-btn" type="button" id="logoutBtn">Abmelden</button>
+  </nav>
+</header>
 <div class="back-wrap"><a class="back" href="../index.html">← Zur Startseite</a></div>
-<section class="card"><div class="level-title">A1</div><div class="book-title">Schritte Plus Neu A1</div><div class="lessons" id="a1Lessons"></div></section>
-<section class="card"><div class="level-title">A2</div><div class="book-title">Schritte Plus Neu A2</div><div class="lessons" id="a2Lessons"></div></section>
-<section class="card"><div class="level-title">B1</div><div class="book-title">Schritte Plus Neu B1</div><div class="lessons" id="b1Lessons"></div></section>
+<section class="card">
+  <div id="assignmentStatus" class="status">Freigaben werden geprüft.</div>
+  <div class="level-head"><div><div class="level-title">A1</div><div class="book-title">Schritte Plus Neu A1</div></div></div>
+  <div class="lessons" id="a1Lessons" aria-live="polite"></div>
+</section>
+<section class="card">
+  <div class="level-head"><div><div class="level-title">A2</div><div class="book-title">Schritte Plus Neu A2</div></div></div>
+  <div class="lessons" id="a2Lessons" aria-live="polite"></div>
+</section>
+<section class="card">
+  <div class="level-head"><div><div class="level-title">B1</div><div class="book-title">Schritte Plus Neu B1</div></div></div>
+  <div class="lessons" id="b1Lessons" aria-live="polite"></div>
+</section>
 <footer>© SprachPilot</footer>
 </div>
+<script type="module" src="/js/guard.js"></script>
 <script type="module">
 import { loadCourseRelease } from "/js/course-releases.js?v=release-core-20260701b";
-function getProfile(){try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||localStorage.getItem("SP_STUDENT_PROFILE")||"null")}catch(e){return null}}
+import { logout, dashboardHref } from "/js/auth.js?v=20260709-login-fix";
+const LEVELS={A1:"a1Lessons",A2:"a2Lessons",B1:"b1Lessons"};
+function safe(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
+function readJson(key,fallback={}){try{return JSON.parse(localStorage.getItem(key)||"null")||fallback}catch(e){return fallback}}
+function profile(){return readJson("SP_USER_PROFILE",readJson("SP_STUDENT_PROFILE",null))}
+function fullName(p){return [p?.vorname||p?.firstName||p?.name,p?.nachname||p?.lastName].filter(Boolean).join(" ").trim()||p?.email||"Schüler/in"}
+function courseId(p){return p?.kurs||p?.kursnummer||p?.courseCode||""}
 function get(obj,path){let cur=obj;for(const p of path){if(!cur||typeof cur!=="object"||!(p in cur))return undefined;cur=cur[p]}return cur}
 function trueVal(data,paths){return paths.some(p=>get(data,p)===true)}
 function falseVal(data,paths){return paths.some(p=>get(data,p)===false)}
-function setStatus(text,bad=false){let box=document.getElementById("assignmentStatus");if(!box){box=document.createElement("div");box.id="assignmentStatus";document.querySelector(".card")?.prepend(box)}box.className="assignment-status"+(bad?" no":"");box.innerHTML=text}
+function hasReleaseData(data){return !!(data&&typeof data==="object"&&(data.enabledModules||data.enabledLessons||data.enabledThemes||data.enabledTasks||data.releases||data.releaseMode||data.defaultLocked!==undefined))}
+function moduleOpen(data){if(!hasReleaseData(data))return false;if(data.releaseMode==="all"||data.releaseMode==="open"||data.defaultLocked===false)return true;return trueVal(data,[["enabledModules","Wortschatz"],["enabledModules","wortschatz"],["releases","Wortschatz","enabled"],["releases","wortschatz","enabled"]])}
 function lessonReleased(data,lesson){
+  if(!hasReleaseData(data))return false;
   const lPaths=[["enabledLessons",lesson],["enabledLessons","Wortschatz/"+lesson],["enabledLessons","wortschatz/"+lesson],["releases","Wortschatz","lessons",lesson,"enabled"],["releases","wortschatz","lessons",lesson,"enabled"]];
   const moduleOff=falseVal(data,[["enabledModules","Wortschatz"],["enabledModules","wortschatz"],["releases","Wortschatz","enabled"],["releases","wortschatz","enabled"]]);
   if(moduleOff||falseVal(data,lPaths))return false;
@@ -36,11 +65,39 @@ function lessonReleased(data,lesson){
   if(Object.keys(data.enabledTasks||{}).some(k=>data.enabledTasks[k]===true&&prefixes.some(p=>String(k).startsWith(p))))return true;
   const rel=data.releases?.Wortschatz||data.releases?.wortschatz||{};
   const themes=rel.lessons?.[lesson]?.themes||{};
-  return Object.values(themes).some(t=>t&&t.enabled===true)||Object.values(themes).some(t=>t&&t.tasks&&Object.values(t.tasks).some(v=>v===true));
+  if(Object.values(themes).some(t=>t&&t.enabled===true))return true;
+  if(Object.values(themes).some(t=>t&&t.tasks&&Object.values(t.tasks).some(v=>v===true)))return true;
+  return moduleOpen(data)&&data.defaultLocked===false;
 }
-function renderLevel(level,target,data){const box=document.getElementById(target);box.innerHTML="";for(let i=1;i<=14;i++){const lesson=`${level}-Lektion-${i}`;if(!lessonReleased(data,lesson))continue;const a=document.createElement("a");a.className="lesson-btn open";a.dataset.lesson=lesson;a.href=`./${lesson}/`;a.textContent=`Lektion ${i}`;box.appendChild(a)}}
-async function applyAssignments(){const profile=getProfile();if(!profile){setStatus("Bitte zuerst einloggen. Danach siehst du deine freigeschalteten Lektionen.",true);return}const courseId=profile.kurs||profile.kursnummer||profile.courseCode||"";const data=await loadCourseRelease(profile).catch(()=>({}));renderLevel("A1","a1Lessons",data);renderLevel("A2","a2Lessons",data);renderLevel("B1","b1Lessons",data);const count=document.querySelectorAll(".lesson-btn.open").length;if(count){setStatus(`Eingeloggt: <strong>${profile.vorname||""} ${profile.nachname||""}</strong> · Kurs: <strong>${courseId}</strong><br>Freigeschaltet: <strong>${count}</strong> Lektion(en)`) }else{setStatus(`Für deinen Kurs <strong>${courseId}</strong> ist noch keine Wortschatz-Lektion freigeschaltet.`,true)}}
-applyAssignments();
+function setAccount(){
+  const p=profile();
+  const pill=document.getElementById("accountPill");
+  if(pill) pill.textContent=p ? `${fullName(p)}${courseId(p)?" · "+courseId(p):""}` : "Nicht eingeloggt";
+  const dash=document.querySelector('.account-link[href*="dashboard"]');
+  if(dash) dash.href=dashboardHref();
+}
+function setStatus(text,bad=false){const box=document.getElementById("assignmentStatus");box.className="status"+(bad?" no":"");box.innerHTML=text}
+function renderSkeleton(){Object.values(LEVELS).forEach(id=>{const box=document.getElementById(id);box.innerHTML="";for(let i=0;i<4;i++){const el=document.createElement("div");el.className="lesson-btn skeleton";el.textContent="Lektion";box.appendChild(el)}})}
+function renderLevel(level,target,data){const box=document.getElementById(target);box.innerHTML="";for(let i=1;i<=14;i++){const lesson=`${level}-Lektion-${i}`;if(!lessonReleased(data,lesson))continue;const a=document.createElement("a");a.className="lesson-btn";a.dataset.lesson=lesson;a.href=`./${lesson}/`;a.innerHTML=`Lektion ${i}<span>Offen</span>`;box.appendChild(a)}if(!box.children.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="Noch nicht freigeschaltet";box.appendChild(empty)}}
+function render(data,source="cache"){
+  Object.entries(LEVELS).forEach(([level,target])=>renderLevel(level,target,data||{}));
+  const p=profile();
+  const count=document.querySelectorAll(".lesson-btn:not(.skeleton)").length;
+  if(!p){setStatus("Bitte zuerst einloggen. Danach siehst du deine freigeschalteten Lektionen.",true);return}
+  if(count){setStatus(`Eingeloggt: <strong>${safe(fullName(p))}</strong> · Kurs: <strong>${safe(courseId(p))}</strong><br>Freigeschaltet: <strong>${count}</strong> Lektion(en)`)}
+  else setStatus(`Für deinen Kurs <strong>${safe(courseId(p))}</strong> ist noch keine Wortschatz-Lektion freigeschaltet.`,true)
+}
+async function start(){
+  setAccount();
+  document.getElementById("logoutBtn")?.addEventListener("click",()=>logout());
+  const p=profile();
+  const cached=p?.assignments||readJson("SP_COURSE_RELEASES",null);
+  if(hasReleaseData(cached))render(cached,"cache");else renderSkeleton();
+  if(!p){setStatus("Bitte zuerst einloggen. Danach siehst du deine freigeschalteten Lektionen.",true);return}
+  const data=await loadCourseRelease(p).catch(()=>cached||{});
+  if(hasReleaseData(data))render(data,"cloud");else render(cached||{},"fallback");
+}
+start();
 </script>
 <script defer src="../js/performance-boot.js?v=20260709b"></script>
 </body>
