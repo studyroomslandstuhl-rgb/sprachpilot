@@ -1,8 +1,10 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=4"><style>.exam-image-box{width:min(330px,100%);height:250px;margin:16px auto;border:2px solid var(--lesson-line);border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}.exam-image-box img{width:100%;height:100%;object-fit:contain;display:block}.exam-cue{margin:14px 0;padding:12px;border-radius:16px;background:#fff8dc;border:1px solid #facc15;font-weight:900;color:#7a5400}.exam-input-wrap{max-width:720px;margin:14px auto}.exam-progress-label{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.exam-stars{font-size:36px;letter-spacing:5px;margin:12px 0}</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2exam1"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=8"></script><script src="l6t2-extra-tasks.js?v=10"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=4"><style>.exam-image-box{width:min(330px,100%);height:250px;margin:16px auto;border:2px solid var(--lesson-line);border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}.exam-image-box img{width:100%;height:100%;object-fit:contain;display:block}.exam-cue{margin:14px 0;padding:12px;border-radius:16px;background:#fff8dc;border:1px solid #facc15;font-weight:900;color:#7a5400}.exam-input-wrap{max-width:720px;margin:14px auto}.exam-progress-label{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.exam-stars{font-size:36px;letter-spacing:5px;margin:12px 0}</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2exam2"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=8"></script><script src="l6t2-extra-tasks.js?v=10"></script><script>
 header('Prüfung');
 const FILE='pruefung.html';
 const TOTAL=20;
 const BUNNY='https://sprachpilot.b-cdn.net/';
+const CURRENT_SCORE_KEY='SP_L6_T2_EXAM_CURRENT_SCORE';
+const CURRENT_PERCENT_KEY='SP_L6_T2_EXAM_CURRENT_PERCENT';
 const EXAM_VERSION_KEY=CFG.key+'_exam_pattern_v2';
 if(localStorage.getItem(EXAM_VERSION_KEY)!=='1'){
   localStorage.removeItem(taskKey(FILE));
@@ -10,6 +12,17 @@ if(localStorage.getItem(EXAM_VERSION_KEY)!=='1'){
   localStorage.removeItem('SP_TASK_STATE_pruefung');
   localStorage.setItem(EXAM_VERSION_KEY,'1');
 }
+function writeCurrentExamState(correct){
+  const count=Math.max(0,Math.min(TOTAL,Math.round(Number(correct)||0)));
+  const percent=Math.round(count/TOTAL*100);
+  const state={total:TOTAL,done:[...Array(count).keys()],queue:[...Array(TOTAL-count).keys()].map(n=>n+count),current:null,tries:0,hadWrong:false,currentExamPercent:percent};
+  localStorage.setItem(taskKey(FILE),JSON.stringify(state));
+  localStorage.setItem(CURRENT_SCORE_KEY,String(count));
+  localStorage.setItem(CURRENT_PERCENT_KEY,String(percent));
+  return percent;
+}
+const storedScore=Number(localStorage.getItem(CURRENT_SCORE_KEY));
+if(Number.isFinite(storedScore)&&storedScore>=0&&storedScore<=TOTAL)writeCurrentExamState(storedScore);
 let q=[],i=0,score=0,answered=false;
 function build(){q=[
   {t:'image-mc',image:'westen.webp',p:'Welches Wort passt zum Bild?',a:'der Westen',opts:['der Norden','der Süden','der Osten','der Westen']},
@@ -51,10 +64,12 @@ function pick(raw){submitAnswer(decodeURIComponent(raw))}
 function submitWritten(){const input=document.getElementById('ans');if(!input||!input.value.trim()){document.getElementById('fb').innerHTML='<div class="no">Bitte schreiben Sie eine Antwort.</div>';return}submitAnswer(input.value)}
 function submitAnswer(value){if(answered)return;answered=true;const it=q[i];if(exact(value,it.a))score++;i++;show()}
 function done(){
-  const percent=Math.round(score/q.length*100);
+  const percent=writeCurrentExamState(score);
   const stars=percent>=100?3:percent>=70?2:percent>=50?1:0;
-  const existing=loadTask(FILE,TOTAL),best=Math.max(existing.done.length,score);
-  saveTask(FILE,{total:TOTAL,done:[...Array(best).keys()],queue:[...Array(TOTAL).keys()].slice(best),current:null,tries:0,hadWrong:false});
+  try{
+    const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',file:FILE,taskTitle:'Prüfung',percent,done:score,total:TOTAL,completed:percent>=100,allowDecrease:true};
+    if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload);
+  }catch(e){}
   try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',percent,scorePercent:percent,stars})}catch(e){}
   area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="exam-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div><div class="actions"><button class="btn" onclick="restart()">Prüfung wiederholen</button><a class="btn secondary" href="index.html">Zum Thema</a></div></div>`
 }
