@@ -3,6 +3,7 @@
   window.__SP_VERB_PACKAGE_PROGRESS_V2=true;
 
   function uniq(list){return [...new Set((list||[]).filter(Boolean))]}
+  function skills(){try{return typeof VERB_SKILLS!=='undefined'&&Array.isArray(VERB_SKILLS)?VERB_SKILLS:[]}catch(e){return[]}}
   function activeVerbs(){try{return typeof currentPracticeVerbs==='function'?uniq(currentPracticeVerbs()).slice(0,20):[]}catch(e){return[]}}
   function skillName(skill){try{return typeof skillKey==='function'?skillKey(skill):skill}catch(e){return skill}}
   function doneKey(skill){try{return typeof taskDoneSetKey==='function'?taskDoneSetKey(skill):'done_'+skillName(skill)}catch(e){return'done_'+skillName(skill)}}
@@ -21,15 +22,13 @@
   }
   function migrateLegacyProgress(){
     try{
-      if(typeof state==='undefined'||!state||!Array.isArray(window.VERB_SKILLS)&&typeof VERB_SKILLS==='undefined')return false;
-      const skills=typeof VERB_SKILLS!=='undefined'?VERB_SKILLS:window.VERB_SKILLS;
+      if(typeof state==='undefined'||!state||!skills().length)return false;
       const active=activeVerbs();
       state.taskDoneSets=state.taskDoneSets&&typeof state.taskDoneSets==='object'&&!Array.isArray(state.taskDoneSets)?state.taskDoneSets:{};
       let changed=false;
-      skills.forEach(skill=>{
+      skills().forEach(skill=>{
         const key=doneKey(skill);
-        const existing=doneVerbs(skill,active);
-        const completed=new Set(existing);
+        const completed=new Set(doneVerbs(skill,active));
         active.forEach(v=>{if(legacyDone(skill,v))completed.add(v)});
         const next=[...completed].map((v,i)=>v+':'+i);
         const old=Array.isArray(state.taskDoneSets[key])?state.taskDoneSets[key]:Object.values(state.taskDoneSets[key]||{});
@@ -43,29 +42,50 @@
     }catch(e){console.warn('Verben-Fortschrittsmigration fehlgeschlagen',e);return false}
   }
   function canonicalVerbPercent(verb){
-    const skills=typeof VERB_SKILLS!=='undefined'?VERB_SKILLS:[];
-    if(!skills.length)return 0;
-    const done=skills.filter(skill=>doneVerbs(skill,[verb]).includes(verb)).length;
-    return Math.round(done*100/skills.length);
+    const list=skills();
+    if(!list.length)return 0;
+    const done=list.filter(skill=>doneVerbs(skill,[verb]).includes(verb)).length;
+    return Math.round(done*100/list.length);
   }
   function canonicalOverall(){
     migrateLegacyProgress();
-    const skills=typeof VERB_SKILLS!=='undefined'?VERB_SKILLS:[];
-    const active=activeVerbs();
-    const total=skills.length*active.length;
+    const list=skills(),active=activeVerbs();
+    const total=list.length*active.length;
     if(!total)return 0;
     let done=0;
-    skills.forEach(skill=>{done+=doneVerbs(skill,active).length});
+    list.forEach(skill=>{done+=doneVerbs(skill,active).length});
     return Math.max(0,Math.min(100,Math.round(done*100/total)));
   }
   function canonicalTasksDone(){
     migrateLegacyProgress();
-    const skills=typeof VERB_SKILLS!=='undefined'?VERB_SKILLS:[];
-    const active=activeVerbs();
-    return active.length>0&&skills.length>0&&skills.every(skill=>doneVerbs(skill,active).length===active.length);
+    const list=skills(),active=activeVerbs();
+    return active.length>0&&list.length>0&&list.every(skill=>doneVerbs(skill,active).length===active.length);
   }
   function canonicalExamPassed(){
-    try{return !!(state&&state.exam&&(state.exam.passed===true||Number(state.exam.score||0)>=100)&&Number(state.exam.score||100)>=100)}catch(e){return false}
+    try{return !!(state&&state.exam&&Number(state.exam.score||0)>=100)}catch(e){return false}
+  }
+  function remainingReleasedVerbs(){
+    try{
+      const released=typeof window.spReleasedVerbList==='function'?window.spReleasedVerbList():(typeof releasedVerbList==='function'?releasedVerbList():[]);
+      const mastered=typeof spMasteredVerbSet==='function'?spMasteredVerbSet():new Set([...(state.known||[]),...(state.learned||[])]);
+      const active=new Set(activeVerbs());
+      return uniq(released).filter(v=>!mastered.has(v)&&!active.has(v));
+    }catch(e){return[]}
+  }
+  function startPackageWithoutAssessment(){
+    try{
+      if(typeof window.spVerbAssessmentEnabled!=='function'||window.spVerbAssessmentEnabled()!==false)return false;
+      if(activeVerbs().length){if(typeof goTaskOverview==='function')goTaskOverview();return true}
+      const next=remainingReleasedVerbs().slice(0,20);
+      if(!next.length){if(typeof renderAllVerbsCompletedPage==='function')renderAllVerbsCompletedPage();return true}
+      state.active=next.slice();state.unknown=next.slice();state.unsure=[];state.currentPackageVerbs=next.slice();state.assessmentBatch=next.slice();state.practicePool=next.slice();state.assessed=uniq([...(state.assessed||[]),...next]);state.phase='taskOverview';
+      if(typeof resetPackageTasks==='function')resetPackageTasks();
+      state.active=next.slice();state.unknown=next.slice();state.currentPackageVerbs=next.slice();state.assessmentBatch=next.slice();state.practicePool=next.slice();state.phase='taskOverview';
+      if(typeof saveState==='function')saveState();
+      if(typeof spSyncDashboardSummary==='function')spSyncDashboardSummary();
+      if(typeof goTaskOverview==='function')goTaskOverview();
+      return true;
+    }catch(e){console.warn('Verben-Paket ohne Einschätzung konnte nicht gestartet werden',e);return false}
   }
   function wrapRenderer(name){
     const old=window[name];
@@ -74,15 +94,24 @@
     wrapped.__spPackageV2=true;
     window[name]=wrapped;
   }
+  function wrapAssessment(){
+    const old=window.handleAssessmentClick;
+    if(typeof old!=='function'||old.__spPackageV2)return;
+    const wrapped=function(){if(startPackageWithoutAssessment())return;return old.apply(this,arguments)};
+    wrapped.__spPackageV2=true;
+    window.handleAssessmentClick=wrapped;
+  }
   function install(){
     window.spMigrateVerbPackageProgress=migrateLegacyProgress;
     window.verbPercent=canonicalVerbPercent;
     window.overall=canonicalOverall;
     window.allPracticeTasksDone=canonicalTasksDone;
     window.packageExamPassed=canonicalExamPassed;
+    window.spStartVerbPackageWithoutAssessment=startPackageWithoutAssessment;
     wrapRenderer('renderTaskOverview');
     wrapRenderer('renderVerbIndexPage');
     wrapRenderer('renderVerbOverview');
+    wrapAssessment();
     migrateLegacyProgress();
   }
 
