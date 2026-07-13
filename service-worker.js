@@ -1,4 +1,4 @@
-const CACHE_VERSION="sprachpilot-static-v20260714-l6t2-repeat-1";
+const CACHE_VERSION="sprachpilot-static-v20260714-l6t2-repeat-button-2";
 
 self.addEventListener("install",event=>{
   self.skipWaiting();
