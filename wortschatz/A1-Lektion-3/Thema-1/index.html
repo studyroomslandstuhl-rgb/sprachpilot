@@ -7,6 +7,7 @@
 <link rel="stylesheet" href="../shared/lektion3-standard.css?v=l3design1">
 </head>
 <body>
+<script type="module" src="/js/guard.js"></script>
 <div class="container">
   <header class="topbar"></header>
   <div id="progressArea"></div>
@@ -29,7 +30,45 @@
 <script src="../shared/lektion3-standard.js?v=l3design1"></script>
 <script src="translations.js?v=40"></script>
 <script src="app.js?v=41"></script>
+<script src="../shared/lektion3-fix.js?v=4"></script>
 <script>
+(function(){
+  const oldTaskPercent=taskPercent;
+  function modernPercent(file,total){
+    try{
+      const st=JSON.parse(localStorage.getItem('SP_TASK_STATE_'+file)||'null');
+      if(st&&Array.isArray(st.done)&&Number(st.total||total)>0){
+        return Math.round(st.done.length/Number(st.total||total)*100)||0;
+      }
+    }catch(e){}
+    return 0;
+  }
+  function totalFor(file){
+    try{
+      if(file==='pruefung.html')return activeWords().length;
+      return activeWords().length||WORDS.length||1;
+    }catch(e){return WORDS.length||1}
+  }
+  taskPercent=function(file){
+    const old=oldTaskPercent(file)||0;
+    const modern=modernPercent(file,totalFor(file));
+    return Math.max(old,modern);
+  };
+  const oldFinishTask=finishTask;
+  finishTask=function(file){
+    const total=totalFor(file);
+    try{
+      const done=[...Array(total).keys()];
+      localStorage.setItem('SP_TASK_STATE_'+file,JSON.stringify({total,queue:[],done,current:null,tries:0}));
+    }catch(e){}
+    const out=oldFinishTask(file);
+    try{
+      if(typeof window.spL3RecordTaskDone==='function')window.spL3RecordTaskDone(file);
+      else{window.SP_L3_TASK_DONE_QUEUE=window.SP_L3_TASK_DONE_QUEUE||[];window.SP_L3_TASK_DONE_QUEUE.push(file);}
+    }catch(e){}
+    return out;
+  };
+})();
 renderL3Header({title:"Lebensmittel & Getränke",subtitle:"A1 Lektion 3 · Thema 1",backHref:"../index.html",resetButton:true});
 const vocabP=typePercent('vocab');
 const gramP=typePercent('grammar');
