@@ -24,20 +24,27 @@ const PREP_ONLY_ITEMS=[
 ];
 
 const PREP_IMAGE_ITEMS=[
-  {id:'deutschland',a:'in',hint:'Land ohne Artikel'},
-  {id:'japan',a:'in',hint:'Land ohne Artikel'},
-  {id:'vietnam',a:'in',hint:'Land ohne Artikel'},
-  {id:'polen',a:'in',hint:'Land ohne Artikel'},
-  {id:'frankreich',a:'in',hint:'Land ohne Artikel'},
-  {id:'rumaenien',a:'in',hint:'Land ohne Artikel'},
-  {id:'schweiz',a:'in der',hint:'Land mit dem Artikel die'},
-  {id:'tuerkei',a:'in der',hint:'Land mit dem Artikel die'},
-  {id:'ukraine',a:'in der',hint:'Land mit dem Artikel die'},
-  {id:'usa',a:'in den',hint:'Land im Plural'},
   {id:'norden',a:'im',hint:'Himmelsrichtung'},
+  {id:'japan',a:'in',hint:'Land ohne Artikel'},
+  {id:'sommer',a:'im',hint:'Jahreszeit'},
+  {id:'schweiz',a:'in der',hint:'Land mit dem Artikel die'},
+  {id:'osten',a:'im',hint:'Himmelsrichtung'},
+  {id:'deutschland',a:'in',hint:'Land ohne Artikel'},
+  {id:'winter',a:'im',hint:'Jahreszeit'},
+  {id:'usa',a:'in den',hint:'Land im Plural'},
   {id:'sueden',a:'im',hint:'Himmelsrichtung'},
+  {id:'vietnam',a:'in',hint:'Land ohne Artikel'},
   {id:'fruehling',a:'im',hint:'Jahreszeit'},
-  {id:'herbst',a:'im',hint:'Jahreszeit'}
+  {id:'tuerkei',a:'in der',hint:'Land mit dem Artikel die'},
+  {id:'westen',a:'im',hint:'Himmelsrichtung'},
+  {id:'polen',a:'in',hint:'Land ohne Artikel'},
+  {id:'herbst',a:'im',hint:'Jahreszeit'},
+  {id:'ukraine',a:'in der',hint:'Land mit dem Artikel die'},
+  {id:'oesterreich',a:'in',hint:'Land ohne Artikel'},
+  {id:'bulgarien',a:'in',hint:'Land ohne Artikel'},
+  {id:'spanien',a:'in',hint:'Land ohne Artikel'},
+  {id:'frankreich',a:'in',hint:'Land ohne Artikel'},
+  {id:'rumaenien',a:'in',hint:'Land ohne Artikel'}
 ];
 
 const PREP_DRAG_ITEMS=[
@@ -85,13 +92,13 @@ const PREP_ERROR_ITEMS=[
 ];
 
 const L6T2_ALL_TASKS=[
-  ['karteikarten.html',words().length*2,'Karteikarten'],
+  ['karteikarten.html',words().length,'Karteikarten'],
   ['bild-wort.html',words().length,'Bild → Wort'],
   ['hoeren-bild.html',words().length,'Hören → Bild'],
   ['kategorien-drag.html',L6T2_CATEGORY_WORDS().length,'Kategorien · 2 Teile'],
   ['praepositionen.html',PREP_ONLY_ITEMS.length,'Richtige Präposition'],
   ['praepositionen-bild.html',PREP_IMAGE_ITEMS.length,'Bild → Präposition'],
-  ['praepositionen-drag.html',PREP_DRAG_ITEMS.length,'Präpositionen zuordnen'],
+  ['praepositionen-drag.html',PREP_DRAG_ITEMS.length,'Präpositionen zuordnen · 2 Teile'],
   ['fehler-finden.html',PREP_ERROR_ITEMS.length,'Fehler finden und korrigieren'],
   ['postkarte.html',2,'Postkarten ergänzen'],
   ['saetze-bauen.html',SENTENCES.length,'Sätze bauen'],
