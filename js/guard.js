@@ -67,7 +67,7 @@ if(IS_VERBEN_EXERCISE){
   import("/verben-A1/js/release-bridge.js?v=9").catch(()=>{});
   if(!PERFORMANCE_SYNC_OFF){
     import("/verben-A1/js/scoring-bridge.js?v=6").catch(()=>{});
-    window.addEventListener("load",()=>setTimeout(()=>{let s=document.createElement("script");s.src="/verben-A1/js/cloud-progress-sync.js?v=6";document.body.appendChild(s);s=document.createElement("script");s.src="/verben-A1/js/verb-overview-dedupe.js?v=1";document.body.appendChild(s)},2500));
+    window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/verben-A1/js/verb-overview-dedupe.js?v=1";document.body.appendChild(s)},2500));
   }
 }
 if(!PERFORMANCE_SYNC_OFF&&IS_FRAGEN_EXERCISE){
