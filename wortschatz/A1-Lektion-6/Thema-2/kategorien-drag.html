@@ -1,6 +1,35 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kategorien · Drag & Drop</title><link rel="stylesheet" href="style.css?v=1"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="app.js?v=2"></script><script src="l6t2-postkarte.js?v=2"></script><script src="l6t2-extra-tasks.js?v=2"></script><script>
-header('Kategorien · Drag & Drop');const FILE='kategorien-drag.html';const cats=['Himmelsrichtungen','Länder','Jahreszeiten'];let items=[],i=0,current=null,dragged='';
-function categoryWords(){return words().filter(w=>cats.includes(w.group))}
-function show(){items=categoryWords();if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'praepositionen.html');return}i=spNextIndex(FILE,items.length);current=items[i];dragged=full(current);area.innerHTML=`${progress(FILE,items.length)}${instruction('Ziehen Sie das Wort in die richtige Kategorie.')}<div class="drag-token" draggable="true" ondragstart="event.dataTransfer.setData('text/plain','${current.id}')">${full(current)}</div><div class="drop-grid">${cats.map(c=>`<div class="drop-zone" ondragover="event.preventDefault();this.classList.add('active')" ondragleave="this.classList.remove('active')" ondrop="dropCat(event,'${c}')"><div class="drop-title">${c}</div><div class="small">Hier ablegen</div></div>`).join('')}</div><div id="fb" class="feedback"></div>`}
-function dropCat(ev,cat){ev.preventDefault();ev.currentTarget.classList.remove('active');if(cat===current.group){fb.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,items.length);setTimeout(show,700)}else{const t=spMarkWrong(FILE,items.length);fb.innerHTML=help3(t,'Noch nicht richtig.','Tipp: Ordnen Sie nach Bedeutung: Richtung, Land oder Jahreszeit.',current.group)}}
-show();</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Kategorien · Drag & Drop</title><link rel="stylesheet" href="style.css?v=2"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="app.js?v=3"></script><script src="l6t2-postkarte.js?v=3"></script><script src="l6t2-extra-tasks.js?v=3"></script><script>
+header('Kategorien · Drag & Drop');
+const FILE='kategorien-drag.html';
+const GROUPS=['Himmelsrichtungen','Länder','Jahreszeiten'];
+const ITEMS=words().filter(w=>GROUPS.includes(w.group));
+let selected=null;
+function show(){
+ if(loadTask(FILE,ITEMS.length).done.length>=ITEMS.length){complete(area,FILE,'praepositionen.html');return}
+ area.innerHTML=`${progress(FILE,ITEMS.length)}${instruction('Tippen Sie zuerst auf ein Wort und danach auf die richtige Tabelle.')}<div id="chips" class="drag-bank"></div><div class="drop-grid">${GROUPS.map(g=>`<div class="dropzone" data-a="${g}"><h2>${g}</h2></div>`).join('')}</div><div class="actions"><button class="btn" onclick="control()">Kontrollieren</button><button class="btn secondary" onclick="clearSelection()">Auswahl lösen</button></div><div id="fb" class="feedback"></div>`;
+ chips.innerHTML=ITEMS.map((w,i)=>`<span class="chip" data-id="${i}">${full(w)}</span>`).join('');
+ bind();
+}
+function clearSelection(){document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));selected=null}
+function cleanChip(chip){chip.classList.remove('selected','no');let n=chip.nextElementSibling;while(n&&n.classList&&n.classList.contains('correction')){const next=n.nextElementSibling;n.remove();n=next}}
+function moveChip(chip,zone){if(!chip||!zone)return;cleanChip(chip);zone.appendChild(chip);selected=null;bind()}
+function bind(){
+ document.querySelectorAll('.chip').forEach(c=>c.onclick=e=>{e.stopPropagation();if(c.classList.contains('ok'))return;clearSelection();selected=c;c.classList.add('selected')});
+ document.querySelectorAll('.dropzone').forEach(z=>z.onclick=e=>{if(e.target.closest('.chip'))return;if(selected)moveChip(selected,z)});
+}
+function control(){
+ document.querySelectorAll('.correction').forEach(x=>x.remove());
+ let ok=0;
+ document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected','ok','no'));
+ document.querySelectorAll('.dropzone').forEach(z=>z.querySelectorAll('.chip').forEach(c=>{
+   const w=ITEMS[Number(c.dataset.id)];
+   if(w&&z.dataset.a===w.group){c.classList.add('ok');ok++}
+   else if(w){c.classList.add('no');const note=document.createElement('span');note.className='correction';note.textContent='richtig: '+w.group;c.after(note)}
+ }));
+ bind();
+ const unassigned=document.querySelectorAll('#chips .chip').length;
+ if(ok===ITEMS.length){markTaskDone(FILE,ITEMS.length);complete(area,FILE,'praepositionen.html');return}
+ fb.innerHTML=`<div class="no">${unassigned?unassigned+' Wörter sind noch nicht zugeordnet. ':''}Korrigieren Sie die roten Wörter.</div>`;
+}
+show();
+</script></body></html>
