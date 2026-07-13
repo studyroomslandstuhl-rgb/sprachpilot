@@ -12,7 +12,7 @@
     ['ja-nein-fragen.html',()=>5,'Ja-/Nein-Fragen','💬','Bilde Frage und Antwort.'],
     ['verb-passt.html',()=>8,'Mini-Situationen','🧠','Lies die Situation und wähle den passenden Satz.']
   ];
-  const EXAM=['pruefung.html',()=>20,'Prüfung','★','Teste dein Wissen.'];
+  const EXAM=['pruefung.html',()=>20,'Prüfung','⭐','Teste dein Wissen.'];
   function safePct(file,total){try{return pctFor(file,total)}catch(e){return 0}}
   function examUnlocked(){return TASKS.length>0&&TASKS.every(t=>safePct(t[0],Number(t[1]())||0)>=100)}
   function taskCard(t,n){
@@ -20,8 +20,8 @@
     const p=safePct(t[0],total);
     return `<a class="module" href="${t[0]}"><div class="num">${n}. ${t[2]}</div><div class="icon ${t[0]==='pruefung.html'?'exam-icon':''}">${t[3]}</div><p>${t[4]}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`;
   }
-  function lockedExamCard(n){return `<div class="module exam-locked"><div class="num">${n}. Prüfung</div><div class="icon exam-icon">★</div><p>Prüfung wird freigeschaltet, wenn alle Aufgaben 100% erreicht haben.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">gesperrt</div><div class="start">Prüfung gesperrt</div></div>`}
-  function examCard(n){const p=safePct(EXAM[0],Number(EXAM[1]())||0);return `<a class="module" href="${EXAM[0]}"><div class="num">${n}. ${EXAM[2]}</div><div class="icon exam-icon">★</div><p>${EXAM[4]}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}
+  function lockedExamCard(n){return `<div class="module exam-locked"><div class="num">${n}. Prüfung</div><div class="icon exam-icon">⭐</div><p>Prüfung wird freigeschaltet, wenn alle Aufgaben 100% erreicht haben.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">gesperrt</div><div class="start">Prüfung gesperrt</div></div>`}
+  function examCard(n){const p=safePct(EXAM[0],Number(EXAM[1]())||0);return `<a class="module" href="${EXAM[0]}"><div class="num">${n}. ${EXAM[2]}</div><div class="icon exam-icon">⭐</div><p>${EXAM[4]}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}
   function renderMenu(){
     try{header(CFG.title,true)}catch(e){}
     const grid=document.getElementById('taskGrid');
@@ -40,7 +40,5 @@
     if(totalText)totalText.textContent=done+' / '+all.length+' Aufgaben abgeschlossen';
   }
   try{renderMenu()}catch(e){console.error(e);const grid=document.getElementById('taskGrid');if(grid)grid.innerHTML='<div class="card"><b>Fehler beim Laden.</b><br>Bitte Seite neu laden.</div>'}
-  window.addEventListener('load',()=>setTimeout(renderMenu,120));
-  setTimeout(renderMenu,600);
 })();
 </script></body></html>
