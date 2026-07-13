@@ -1,4 +1,4 @@
-const CACHE_VERSION="sprachpilot-static-v20260709-reset-1";
+const CACHE_VERSION="sprachpilot-static-v20260713-l3t2-task-unblock-1";
 
 self.addEventListener("install",event=>{
   self.skipWaiting();
