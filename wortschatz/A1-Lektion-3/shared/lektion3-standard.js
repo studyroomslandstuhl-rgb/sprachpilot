@@ -11,10 +11,7 @@ function spLogout(){
   location.href="/index.html";
 }
 function spIsThemeStartPage(){return /\/Thema-\d+\/?(?:index\.html)?$/.test(location.pathname)}
-function spCleanThemeStart(){
-  if(!spIsThemeStartPage()) return;
-  document.querySelector('.progress-card')?.remove();
-}
+function spCleanThemeStart(){return}
 function renderL3Header(config={}){
   const header=document.querySelector(".topbar");
   if(!header) return;
@@ -40,8 +37,6 @@ function renderL3Header(config={}){
       ${config.overviewHref?`<a class="btn secondary" href="${spSafe(config.overviewHref)}">Übersicht</a>`:""}
       ${config.resetButton?`<button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>`:""}
     </nav>`;
-  spCleanThemeStart();
-  setTimeout(spCleanThemeStart,0);
 }
 function moduleCard({href,num,title,desc,words=[],progress=null,status="Starten",icon=""}){
   const wordHtml=words.length?`<div class="word-list">${words.map(w=>`<span class="word">${spSafe(w)}</span>`).join("")}</div>`:"";
