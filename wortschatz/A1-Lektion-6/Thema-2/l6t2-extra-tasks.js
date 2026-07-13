@@ -6,7 +6,7 @@ const L6T2_EXTRA_TASKS=[
 ];
 const L6T2_ALL_TASKS=[
   ['karteikarten.html',words().length,'Karteikarten'],
-  ['bild-wort.html',words().filter(w=>['Himmelsrichtungen','Jahreszeiten','Länder'].includes(w.group)).length,'Bild → Wort'],
+  ['bild-wort.html',words().length,'Bild → Wort'],
   ['hoeren-schreiben.html',words().length,'Hören/Schreiben'],
   ['kategorien-drag.html',words().filter(w=>['Himmelsrichtungen','Jahreszeiten','Länder'].includes(w.group)).length,'Kategorien · Drag & Drop'],
   ['praepositionen.html',13,'Präpositionen'],
@@ -16,7 +16,7 @@ const L6T2_ALL_TASKS=[
   ['saetze-bauen.html',SENTENCES.length,'Sätze bauen'],
   ['pruefung.html',10,'Prüfung']
 ];
-const L6T2_TASK_ICONS={'karteikarten.html':'🃏','bild-wort.html':'🖼️','hoeren-schreiben.html':'🎧','kategorien-drag.html':'🧺','praepositionen.html':'📍','praepositionen-drag.html':'🧲','fehler-finden.html':'🛠️','postkarte.html':'✉️','saetze-bauen.html':'🧩','pruefung.html':'★'};
+const L6T2_TASK_ICONS={'karteikarten.html':'🃏','bild-wort.html':'🖼️','hoeren-schreiben.html':'🎧','kategorien-drag.html':'🧺','praepositionen.html':'📍','praepositionen-drag.html':'🧲','fehler-finden.html':'🛠️','postkarte.html':'✉️','saetze-bauen.html':'🧩','pruefung.html':'⭐'};
 const PREP_ONLY_ITEMS=[
   {rule:'Himmelsrichtungen: im + Richtung',prompt:'___ Norden ist es kalt.',a:'Im',opts:['Im','In','Um','Am'],tip:'im Norden'},
   {rule:'Himmelsrichtungen: im + Richtung',prompt:'___ Süden ist es warm.',a:'Im',opts:['Im','In','Um','Am'],tip:'im Süden'},
