@@ -1,10 +1,57 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten</title><link rel="stylesheet" href="style.css?v=4"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2help2"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=6"></script><script src="l6t2-images.js?v=1"></script><script>
-header('Karteikarten');const FILE='karteikarten.html';let items=words(),i=0;
-function show(){items=words();if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'bild-wort.html');return}i=spNextIndex(FILE,items.length);const w=items[i];area.innerHTML=`${progress(FILE,items.length)}${instruction('Schreiben oder sprechen Sie das Wort. Nomen mit Artikel, Länder so wie in der Übersicht.')}<div class="small">${w.group}</div>${visual(w)}<div class="hint">Übersetzung: <b>${tr(w)}</b></div><div class="actions"><button id="micBtn" class="btn" onclick="speakAns()">Sprechen</button><button class="btn secondary" onclick="document.getElementById('box').style.display='block'">Schreiben</button><button class="btn secondary" onclick="reveal()">Hilfe</button></div><div id="micStatus" class="small"></div><div id="box" style="display:none"><input id="ans" placeholder="Antwort schreiben"><button class="btn" onclick="check(document.getElementById('ans').value)">Kontrollieren</button></div><div id="fb" class="feedback"></div>`}
-function solution(w){return full(w)}
-function reveal(){const w=items[i],t=spMarkWrong(FILE,items.length);fb.innerHTML=help3(t,'Versuchen Sie es zuerst selbst.','Tipp: Nutzen Sie die Übersetzung und achten Sie bei Nomen auf den Artikel.',solution(w))}
-function startMic(btn,callback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition,status=document.getElementById('micStatus');if(!SR){if(status)status.textContent='Mikrofon wird hier nicht unterstützt. Bitte schreiben.';document.getElementById('box').style.display='block';return}const rec=new SR();rec.lang='de-DE';rec.onresult=e=>callback(e.results[0][0].transcript);rec.onerror=()=>{if(status)status.textContent='Mikrofon hat nicht funktioniert. Bitte schreiben.'};rec.onend=()=>{if(btn)btn.classList.remove('active')};if(btn)btn.classList.add('active');if(status)status.textContent='Ich höre zu …';rec.start()}
-function speakAns(){startMic(document.getElementById('micBtn'),txt=>{document.getElementById('box').style.display='block';document.getElementById('ans').value=txt;check(txt)})}
-function check(v){const w=items[i],sol=solution(w);if(exact(v,sol)){fb.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,items.length);setTimeout(show,700)}else{const t=spMarkWrong(FILE,items.length);fb.innerHTML=help3(t,'Noch nicht richtig.','Tipp: Schreiben Sie das ganze Wort. Bei Nomen mit Artikel.',sol)}}
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten</title><link rel="stylesheet" href="style.css?v=4"><style>
+.flip-wrap{width:min(390px,100%);margin:18px auto;perspective:1100px}.flip-card{position:relative;width:100%;height:330px;transform-style:preserve-3d;transition:transform .55s ease;cursor:pointer;touch-action:manipulation}.flip-card.flipped{transform:rotateY(180deg)}.flip-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;border:3px solid var(--lesson-line);border-radius:26px;background:#fff;box-shadow:0 12px 28px rgba(0,0,0,.1);backface-visibility:hidden;-webkit-backface-visibility:hidden;text-align:center}.flip-front .task-img-box{margin:0 auto 6px}.flip-back{transform:rotateY(180deg);background:var(--lesson-soft)}.flip-word{font-size:30px;font-weight:900;color:var(--lesson-main-dark);line-height:1.35}.flip-note{font-size:14px;color:#667085}.card-mode-marker{display:inline-flex;border-radius:999px;padding:8px 14px;background:var(--lesson-soft);border:2px solid var(--lesson-line);font-weight:900;color:var(--lesson-main-dark);margin:8px 0}.card-actions{justify-content:center}.card-answer-box{max-width:620px;margin:14px auto 0}.card-answer-box .btn{margin-top:10px}@media(max-width:600px){.flip-card{height:300px}.flip-word{font-size:24px}.flip-face{padding:14px}}
+</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2cards1"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=6"></script><script src="l6t2-images.js?v=1"></script><script src="l6t2-extra-tasks.js?v=8"></script><script>
+header('Karteikarten');
+const FILE='karteikarten.html';
+let items=[],i=0,revealed=false,solved=false;
+function cardItems(){return words().flatMap(w=>[{mode:'word',w},{mode:'sentence',w}])}
+function countrySentence(w){let s=String(w.sentence||'');if(w.group==='Länder')s=s.replace(/\bwohne\b/g,'lebe').replace(/\bwohnt\b/g,'lebt').replace(/\bwohnen\b/g,'leben');return s}
+function solution(it){if(it.mode==='sentence')return countrySentence(it.w);if(it.w.type==='noun'||it.w.article)return full(it.w);return it.w.word}
+function modeLabel(it){if(it.mode==='sentence')return'Satz';if(it.w.type==='country')return it.w.article?'Land mit Artikel':'Land';if(it.w.type==='noun')return'Nomen mit Artikel';if(it.w.type==='verb')return'Verb';return'Wort'}
+function modeTip(it){if(it.mode==='sentence')return'Schreiben Sie den ganzen Beispielsatz.';if(it.w.type==='country')return it.w.article?'Schreiben Sie das Land mit Artikel.':'Schreiben Sie nur den Ländernamen.';if(it.w.type==='noun')return'Nomen brauchen den Artikel.';if(it.w.type==='verb')return'Schreiben Sie das Verb im Infinitiv.';return'Schreiben Sie das Wort vollständig.'}
+function migrateOldProgress(){
+  const wordCount=words().length,total=wordCount*2,key=taskKey(FILE),marker=CFG.key+'_cards_l6t1_style_v1';
+  if(localStorage.getItem(marker)==='1')return;
+  try{
+    const old=JSON.parse(localStorage.getItem(key)||'null');
+    if(old&&Number(old.total)===wordCount){
+      const mapList=list=>[...new Set((Array.isArray(list)?list:[]).filter(n=>Number.isInteger(n)&&n>=0&&n<wordCount).map(n=>n*2))];
+      const done=mapList(old.done),wordQueue=mapList(old.queue).filter(n=>!done.includes(n));
+      const sentenceQueue=[...Array(wordCount).keys()].map(n=>n*2+1);
+      const mappedCurrent=Number.isInteger(old.current)&&old.current>=0&&old.current<wordCount?old.current*2:null;
+      const queue=[...new Set([...wordQueue,...sentenceQueue])].filter(n=>n!==mappedCurrent&&!done.includes(n));
+      localStorage.setItem(key,JSON.stringify({total,done,queue,current:mappedCurrent,tries:Number(old.tries||0),hadWrong:!!old.hadWrong}));
+    }
+  }catch(e){}
+  localStorage.setItem(marker,'1');
+}
+function backHtml(it){return `<div class="flip-word">${solution(it)}</div><div class="flip-note">${it.mode==='sentence'?'Beispielsatz':'Lösung'}</div>`}
+function show(){
+  items=cardItems();migrateOldProgress();
+  if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'bild-wort.html');return}
+  i=spNextIndex(FILE,items.length);revealed=false;solved=false;
+  const it=items[i],w=it.w;
+  area.innerHTML=`${progress(FILE,items.length)}${instruction('Drehen Sie die Karte oder schreiben/sprechen Sie die Antwort.')}<div class="small">${w.group}</div><div class="flip-wrap"><div id="fcard" class="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="flip-face flip-front">${visual(w)}<div class="small">Klicken: Karte umdrehen</div></div><div class="flip-face flip-back">${backHtml(it)}</div></div></div><div class="hint">Übersetzung: <b>${tr(w)}</b></div><div class="card-mode-marker">Gefragt: ${modeLabel(it)}</div><div class="actions card-actions"><button id="micBtn" class="btn">Sprechen</button><button id="writeBtn" class="btn secondary">Schreiben</button></div><div id="micStatus" class="small"></div><div id="box" class="card-answer-box" style="display:none"><input id="ans" autocomplete="off" placeholder="Antwort schreiben"><button id="checkBtn" class="btn">Kontrollieren</button></div><div id="fb" class="feedback"></div><div id="after" class="actions card-actions"></div>`;
+  document.getElementById('fcard').addEventListener('click',()=>reveal(true));
+  document.getElementById('fcard').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();reveal(true)}});
+  document.getElementById('micBtn').addEventListener('click',speakAns);
+  document.getElementById('writeBtn').addEventListener('click',writeBox);
+  document.getElementById('checkBtn').addEventListener('click',()=>check(document.getElementById('ans').value));
+  document.getElementById('ans').addEventListener('keydown',e=>{if(e.key==='Enter')check(e.target.value)});
+}
+function writeBox(){document.getElementById('box').style.display='block';document.getElementById('ans').focus()}
+function reveal(help){
+  if(solved)return;
+  document.getElementById('fcard').classList.add('flipped');
+  if(help&&!revealed){revealed=true;const t=spMarkWrong(FILE,items.length);document.getElementById('fb').innerHTML=help3(t,'Die Karte wurde umgedreht. Dieses Element kommt später noch einmal.','Tipp: '+modeTip(items[i]),solution(items[i]));document.getElementById('after').innerHTML='<button class="btn" id="nextHelpBtn">Weiter</button>';document.getElementById('nextHelpBtn').addEventListener('click',nextAfterHelp)}
+}
+function nextAfterHelp(){spMarkRight(FILE,items.length);show()}
+function startMic(btn,callback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition,status=document.getElementById('micStatus');if(!SR){if(status)status.textContent='Mikrofon wird hier nicht unterstützt. Bitte schreiben.';writeBox();return}const rec=new SR();rec.lang='de-DE';rec.onresult=e=>callback(e.results[0][0].transcript);rec.onerror=()=>{if(status)status.textContent='Mikrofon hat nicht funktioniert. Bitte schreiben.'};rec.onend=()=>{btn.classList.remove('active')};btn.classList.add('active');if(status)status.textContent='Ich höre zu …';rec.start()}
+function speakAns(){startMic(document.getElementById('micBtn'),txt=>{writeBox();document.getElementById('ans').value=txt;check(txt)})}
+function check(v){
+  const it=items[i],sol=solution(it);
+  if(exact(v,sol)){solved=true;document.getElementById('fcard').classList.add('flipped');document.getElementById('fb').innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,items.length);document.getElementById('after').innerHTML='<button class="btn" id="nextBtn">Weiter</button>';document.getElementById('nextBtn').addEventListener('click',show);return}
+  const t=spMarkWrong(FILE,items.length);document.getElementById('fb').innerHTML=help3(t,'Noch nicht richtig.','Tipp: '+modeTip(it),sol)
+}
 show();
 </script></body></html>
