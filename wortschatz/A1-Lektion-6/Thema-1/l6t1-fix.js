@@ -1,7 +1,7 @@
 const L6T1_CDN='https://sprachpilot.b-cdn.net/';
-window.L6_BUNNY_IMAGES={wetter:'wetter.webp',sonne:'sonne.webp',regen:'regen.webp',wind:'wind.webp',wolke:'wolke.webp',schnee:'schnee.webp',warm:'warm.webp',kalt:'kalt.webp',heiss:'heiss.webp',grad:'grad.webp',gewitter:'gewitter.webp',blitz:'blitz.webp',eis:'das_eis.webp',donner:'donner.webp',hagel:'hagel.webp',nebel:'nebel.webp',sturm:'sturm.webp'};
+window.L6_BUNNY_IMAGES={wetter:'wetter.webp',sonne:'sonne.webp',regen:'regen.webp',wind:'wind.webp',wolke:'wolke.webp',schnee:'schnee.webp',warm:'warm.webp',kalt:'kalt.webp',heiss:'heiss.webp',grad:'grad.webp',steigen:'steigen.webp',sinken:'sinken.webp',bleiben:'bleiben.webp',gewitter:'gewitter.webp',blitz:'blitz.webp',eis:'das_eis.webp',donner:'donner.webp',hagel:'hagel.webp',nebel:'nebel.webp',sturm:'sturm.webp'};
 const L6T1_MEDIA={
-  wetter:{image:'wetter.webp'},sonne:{image:'sonne.webp'},regen:{image:'regen.webp',sound:'a1-l6-t1-sound-regen.mp3'},wind:{image:'wind.webp',sound:'a1-l6-t1-sound-wind.mp3'},wolke:{image:'wolke.webp'},schnee:{image:'schnee.webp',sound:'a1-l6-t1-sound-schnee.mp3'},warm:{image:'warm.webp'},kalt:{image:'kalt.webp'},heiss:{image:'heiss.webp'},grad:{image:'grad.webp'},
+  wetter:{image:'wetter.webp'},sonne:{image:'sonne.webp'},regen:{image:'regen.webp',sound:'a1-l6-t1-sound-regen.mp3'},wind:{image:'wind.webp',sound:'a1-l6-t1-sound-wind.mp3'},wolke:{image:'wolke.webp'},schnee:{image:'schnee.webp',sound:'a1-l6-t1-sound-schnee.mp3'},warm:{image:'warm.webp'},kalt:{image:'kalt.webp'},heiss:{image:'heiss.webp'},grad:{image:'grad.webp'},steigen:{image:'steigen.webp'},sinken:{image:'sinken.webp'},bleiben:{image:'bleiben.webp'},
   gewitter:{image:'gewitter.webp',sound:'a1-l6-t1-sound-gewitter.mp3'},blitz:{image:'blitz.webp',sound:'a1-l6-t1-sound-blitz.mp3'},eis:{image:'das_eis.webp',sound:'a1-l6-t1-sound-eis.mp3'},donner:{image:'donner.webp',sound:'a1-l6-t1-sound-donner.mp3'},hagel:{image:'hagel.webp',sound:'a1-l6-t1-sound-hagel.mp3'},nebel:{image:'nebel.webp'},sturm:{image:'sturm.webp'}
 };
 const L6T1_LISTENING=[
@@ -19,7 +19,7 @@ const L6T1_LISTENING=[
 function header(){return true}
 function l6Cdn(file){return /^https?:\/\//i.test(String(file||''))?file:L6T1_CDN+file}
 function l6CleanWordLists(){try{[window.BASE_WORDS,window.EXTRA_WORDS].filter(Array.isArray).forEach(list=>{for(let i=list.length-1;i>=0;i--){if(list[i]&&list[i].id==='unter_null')list.splice(i,1)}})}catch(e){}}
-function l6ApplyMedia(){try{l6CleanWordLists();BASE_WORDS.concat(EXTRA_WORDS).forEach(w=>{const m=L6T1_MEDIA[w.id]||{};if(m.image)w.image=l6Cdn(m.image);if(m.sound)w.sound=l6Cdn(m.sound)})}catch(e){}}
+function l6ApplyMedia(){try{l6CleanWordLists();BASE_WORDS.concat(EXTRA_WORDS).forEach(w=>{const m=L6T1_MEDIA[w.id]||{};if(m.image)w.image=l6Cdn(m.image);if(m.sound)w.sound=l6Cdn(m.sound);if(w.id==='blitz')w.tr={...(w.tr||{}),tr:'şimşek'}})}catch(e){}}
 l6ApplyMedia();
 const L6_TIME_WORDS={ein:'1',eins:'1',eine:'1',zwei:'2',drei:'3',vier:'4',fuenf:'5',fünf:'5',sechs:'6',sieben:'7',acht:'8',neun:'9',zehn:'10',elf:'11',zwoelf:'12',zwölf:'12',dreizehn:'13',vierzehn:'14',fuenfzehn:'15',fünfzehn:'15',sechzehn:'16',siebzehn:'17',achtzehn:'18',neunzehn:'19',zwanzig:'20'};
 function l6NormTimeText(s){let x=String(s||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:]/g,' ').replace(/\s+/g,' ').trim();x=x.replace(/um\s+(\d{1,2})(?:\s*[:.]\s*00)?\s*uhr/g,'um $1 uhr');Object.entries(L6_TIME_WORDS).forEach(([w,n])=>{const ww=w.normalize('NFD').replace(/[\u0300-\u036f]/g,'');x=x.replace(new RegExp('um '+ww+' uhr','g'),'um '+n+' uhr')});return x}
