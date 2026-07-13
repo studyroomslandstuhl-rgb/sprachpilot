@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frage & Antwort</title><link rel="stylesheet" href="style.css?v=qa3"></head><body><div id="accountStrip" class="account-strip"></div><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"><div class="question">Aufgabe wird geladen …</div></section><footer>© SprachPilot</footer></div><script src="app.js?v=16"></script><script src="l3t2-task-fix.js?v=3"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Frage & Antwort</title><link rel="stylesheet" href="style.css?v=qa4"></head><body><div id="accountStrip" class="account-strip"></div><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"><div class="question">Aufgabe wird geladen …</div></section><footer>© SprachPilot</footer></div><script src="app.js?v=16"></script><script src="l3t2-task-fix.js?v=3"></script><script>
 header("Frage & Antwort");
 const FILE="frage-und-antwort.html";
 let currentIndex=null;
@@ -11,13 +11,29 @@ function priceParts(price){
   const parts=p.split(",");
   return {euro:parseInt(parts[0]||"0",10),cent:parseInt((parts[1]||"00").padEnd(2,"0"),10),raw:p};
 }
+function numberWord(n){
+  const words={0:"null",1:"eins",2:"zwei",3:"drei",4:"vier",5:"fuenf",6:"sechs",7:"sieben",8:"acht",9:"neun",10:"zehn",11:"elf",12:"zwoelf",13:"dreizehn",14:"vierzehn",15:"fuenfzehn",16:"sechzehn",17:"siebzehn",18:"achtzehn",19:"neunzehn",20:"zwanzig",29:"neunundzwanzig",49:"neunundvierzig",69:"neunundsechzig",79:"neunundsiebzig",89:"neunundachtzig",99:"neunundneunzig"};
+  return words[n]||String(n);
+}
 function priceVariants(price){
   const p=priceParts(price);
-  const out=[p.raw,"das kostet "+p.raw,"das macht "+p.raw];
-  if(p.euro===0){out.push(p.cent+" cent","das kostet "+p.cent+" cent","das macht "+p.cent+" cent");}
+  const out=[p.raw,String(p.euro)+" "+String(p.cent).padStart(2,"0"),String(p.euro)+" "+String(p.cent),"das kostet "+p.raw,"das macht "+p.raw];
+  if(p.euro===0){out.push(p.cent+" cent",numberWord(p.cent)+" cent","das kostet "+p.cent+" cent","das macht "+p.cent+" cent");}
   else{
     const euroText=p.euro===1?"ein euro":p.euro+" euro";
-    out.push(euroText+" "+p.cent+" cent",p.euro+" euro "+p.cent+" cent",p.euro+" euro "+p.cent,"das kostet "+euroText+" "+p.cent+" cent","das macht "+euroText+" "+p.cent+" cent");
+    const euroWord=p.euro===1?"ein euro":numberWord(p.euro)+" euro";
+    const centWord=numberWord(p.cent);
+    out.push(
+      euroText+" "+p.cent+" cent",
+      p.euro+" euro "+p.cent+" cent",
+      p.euro+" euro "+p.cent,
+      euroText+" "+String(p.cent).padStart(2,"0"),
+      euroWord+" "+centWord,
+      euroWord+" "+centWord+" cent",
+      numberWord(p.euro)+" "+centWord,
+      "das kostet "+euroText+" "+p.cent+" cent",
+      "das macht "+euroText+" "+p.cent+" cent"
+    );
   }
   return out.map(qaNorm);
 }
@@ -34,10 +50,11 @@ function acceptsAnswer(txt,c){
   const verb=c.isPlural?"kosten":"kostet";
   const wrong=c.isPlural?"kostet":"kosten";
   if(a.includes(" "+wrong+" ")||a.endsWith(" "+wrong))return false;
-  const hasPrice=priceVariants(c.price).some(v=>a.includes(v));
+  const hasPrice=priceVariants(c.price).some(v=>a===v||a.includes(v));
   if(!hasPrice)return false;
+  if(a.startsWith("das kostet")||a.startsWith("das macht"))return true;
   const starts=[qaNorm(c.text+" "+verb),qaNorm("das "+verb),qaNorm("es "+verb)];
-  return starts.some(s=>a.startsWith(s))||a.startsWith("das kostet")||a.startsWith("das macht");
+  return starts.some(s=>a.startsWith(s))||priceVariants(c.price).some(v=>a===v);
 }
 function byIdSafe(list,id){return (list||[]).find(x=>x.id===id)||{}}
 function images(c){
@@ -62,7 +79,7 @@ function render(){
   if(!ensureIndex()){area.innerHTML='<div class="feedback">Aufgabe konnte nicht geladen werden. Bitte neu laden.</div>';return}
   const c=currentCombo();
   const title=phase==="question"?"1. Frage nach dem Preis.":"2. Antworte auf die Frage.";
-  const placeholder=phase==="question"?"z. B. Was kostet eine Flasche Wasser?":"z. B. Eine Flasche Wasser kostet 79 Cent.";
+  const placeholder=phase==="question"?"z. B. Was kostet eine Flasche Wasser?":"z. B. 4,49 € oder 4 Euro 49";
   const micLabel=phase==="question"?"🎤 Frage sprechen":"🎤 Antwort sprechen";
   const extra=phase==="answer"?`<div class="big">${esc(c.price)}</div>`:"";
   area.innerHTML=`${spProgressHtml(FILE,COMBOS.length)}<div class="question">${title}</div><div class="hint">Schreibe oder sprich. Kontrolliert wird erst, wenn du auf <b>Kontrollieren</b> klickst.</div>${images(c)}${extra}<div class="actions"><button id="micBtn" class="btn mic-btn">${micLabel}</button></div><div id="micStatus" class="mic-status"></div><input id="answerInput" placeholder="${placeholder}" autocomplete="off"><button id="checkBtn" class="btn">Kontrollieren</button><div id="fb" class="feedback"></div>`;
