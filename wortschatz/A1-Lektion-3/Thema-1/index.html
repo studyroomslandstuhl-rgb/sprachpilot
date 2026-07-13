@@ -25,12 +25,16 @@
     <p class="small">Diese Aufgaben bleiben dauerhaft gespeichert.</p>
     <div id="grammar" class="grid"></div>
   </section>
+  <section class="card">
+    <h2 class="section-title">Prüfung</h2>
+    <div id="examBox" class="grid"></div>
+  </section>
   <footer>© SprachPilot</footer>
 </div>
 <script src="../shared/lektion3-standard.js?v=l3design1"></script>
 <script src="translations.js?v=40"></script>
 <script src="app.js?v=41"></script>
-<script src="../shared/lektion3-fix.js?v=4"></script>
+<script src="../shared/lektion3-fix.js?v=5"></script>
 <script>
 (function(){
   const oldTaskPercent=taskPercent;
@@ -59,7 +63,7 @@
     const total=totalFor(file);
     try{
       const done=[...Array(total).keys()];
-      localStorage.setItem('SP_TASK_STATE_'+file,JSON.stringify({total,queue:[],done,current:null,tries:0}));
+      localStorage.setItem('SP_TASK_STATE_'+file,JSON.stringify({total,queue:[],done,current:null,tries:0,completed:true,percent:100}));
     }catch(e){}
     const out=oldFinishTask(file);
     try{
@@ -70,12 +74,6 @@
   };
 })();
 renderL3Header({title:"Lebensmittel & Getränke",subtitle:"A1 Lektion 3 · Thema 1",backHref:"../index.html",resetButton:true});
-const vocabP=typePercent('vocab');
-const gramP=typePercent('grammar');
-const allP=totalPercent();
-progressArea.innerHTML=progressCard({percent:allP,doneText:`Wortschatz ${vocabP}% · Grammatik ${gramP}%`,goal:"Lebensmittel, Getränke, Artikel, Plural und einfache Fragen üben."});
-let b=batchInfo();
-batch.innerHTML=`<p>Gruppe ${b.batch+1}: Wörter ${b.start+1}–${b.end} von ${b.total}</p><p class="small">Die nächste Gruppe wird automatisch freigeschaltet, wenn alle Wortschatzaufgaben fertig sind.</p>`;
 const TASK_ICONS={
   "karteikarten.html":"🃏",
   "bild-wort.html":"🖼️",
@@ -94,9 +92,30 @@ const TASK_ICONS={
   "fragen-ohne-fragewort.html":"❓",
   "fragen-mit-fragewort.html":"💬"
 };
+function released(file){
+  try{return !window.SprachPilotRelease||SprachPilotRelease.taskReleased(file,{module:'wortschatz',lesson:'A1-Lektion-3',theme:'Thema-1'})}catch(e){return true}
+}
+const nonExamTasks=TASKS.filter(t=>t.file!=='pruefung.html'&&released(t.file));
+const vocabTasks=nonExamTasks.filter(t=>t.type==='vocab');
+const grammarTasks=nonExamTasks.filter(t=>t.type==='grammar');
 function taskCard(t,i){let p=taskPercent(t.file);return moduleCard({href:t.file,num:i+1,title:t.name,desc:t.type==='vocab'?"Wortschatz üben":"Grammatik üben",progress:p,status:p>=100?"Fertig":"Starten",icon:TASK_ICONS[t.file]||"▶"})}
-vocab.innerHTML=TASKS.filter(t=>t.type==='vocab').map(taskCard).join('');
-grammar.innerHTML=TASKS.filter(t=>t.type==='grammar').map(taskCard).join('');
+function allNonExamDone(){return nonExamTasks.length>0&&nonExamTasks.every(t=>taskPercent(t.file)>=100)}
+function examCard(num){
+  const p=taskPercent('pruefung.html');
+  if(allNonExamDone())return moduleCard({href:'pruefung.html',num,title:'Prüfung',desc:'Teste dein Wissen.',progress:p,status:p>=100?'Fertig':'Starten',icon:'⭐'});
+  return `<div class="module locked exam-locked" style="opacity:.55;background:#f1f5f9;pointer-events:none"><div class="num">${num}. Prüfung</div><div class="icon exam-icon">⭐</div><p>Prüfung wird erst freigeschaltet, wenn alle anderen freigegebenen Aufgaben 100% erreicht haben.</p><div class="small">Prüfung gesperrt</div><div class="start">Prüfung gesperrt</div></div>`;
+}
+function avg(list){return list.length?Math.round(list.reduce((sum,t)=>sum+taskPercent(t.file),0)/list.length):0}
+const vocabP=avg(vocabTasks);
+const gramP=avg(grammarTasks);
+const allP=avg(nonExamTasks);
+progressArea.innerHTML=progressCard({percent:allP,doneText:`Wortschatz ${vocabP}% · Grammatik ${gramP}%`,goal:"Lebensmittel, Getränke, Artikel, Plural und einfache Fragen üben."});
+let b=batchInfo();
+batch.innerHTML=`<p>Gruppe ${b.batch+1}: Wörter ${b.start+1}–${b.end} von ${b.total}</p><p class="small">Die nächste Gruppe wird automatisch freigeschaltet, wenn alle Wortschatzaufgaben und die Prüfung fertig sind.</p>`;
+vocab.innerHTML=vocabTasks.map(taskCard).join('');
+grammar.innerHTML=grammarTasks.map((t,i)=>taskCard(t,vocabTasks.length+i)).join('');
+examBox.innerHTML=examCard(nonExamTasks.length+1);
+try{if(!allNonExamDone())localStorage.removeItem('SP_EXAM_UNLOCKED_L3_T1')}catch(e){}
 </script>
 </body>
 </html>
