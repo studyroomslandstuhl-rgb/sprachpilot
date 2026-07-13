@@ -4,7 +4,19 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Karteikarten</title>
-<link rel="stylesheet" href="style.css">
+<link rel="stylesheet" href="style.css?v=2">
+<style>
+.flip-wrap{perspective:1000px;max-width:360px;margin:16px auto}
+.flip-card{position:relative;width:100%;min-height:320px;transform-style:preserve-3d;transition:transform .55s ease;cursor:pointer}
+.flip-card.flipped{transform:rotateY(180deg)}
+.flip-face{position:absolute;inset:0;backface-visibility:hidden;border:2px solid #ffd39b;border-radius:24px;background:#fff;padding:18px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:10px;text-align:center}
+.flip-back{transform:rotateY(180deg);background:#fff4e6}
+.flip-word{font-size:30px;font-weight:900;color:#7a3d00;text-align:center}
+.flip-hint{font-size:14px;color:#666;font-weight:800}
+.flip-card .food-img{margin:0 auto;max-width:260px;height:190px}
+.card-mode-marker{display:inline-flex;border-radius:999px;padding:8px 14px;background:#fff4e6;border:2px solid #ffd39b;font-weight:900;color:#7a3d00;margin:8px 0}
+@media(max-width:600px){.flip-card{min-height:290px}.flip-card .food-img{height:160px}.flip-word{font-size:26px}}
+</style>
 </head>
 <body>
 <div id="accountStrip" class="account-strip"></div>
@@ -18,39 +30,84 @@
   <footer>© SprachPilot</footer>
 </div>
 
-<script src="app.js?v=14"></script>
+<script src="app.js?v=15"></script>
 <script src="../shared/lektion3-fix.js?v=2"></script>
+<script src="l3t2-task-fix.js?v=2"></script>
 <script>
 header("Karteikarten");
 const FILE = "karteikarten.html";
 let i = null;
+let revealed = false;
+let solved = false;
+function areaEl(){return document.getElementById("area");}
 function cardLang(){return typeof spL3PreferredLang==='function'?spL3PreferredLang():lang();}
 function translation(w){const l=cardLang();return (w.translations&&(w.translations[l]||w.translations.Russisch||w.translations.Englisch))||w.word;}
 function show(){
-  if(spLoadTaskState(FILE, WORDS.length).done.length >= WORDS.length){complete(area, FILE, "bild-wort.html");return;}
-  i = spNextIndex(FILE, WORDS.length);
-  if(i === undefined || i === null){spResetTask(FILE);i = spNextIndex(FILE, WORDS.length);}
+  const total = WORDS.length;
+  if(spLoadTaskState(FILE, total).done.length >= total){complete(areaEl(), FILE, "bild-wort.html");return;}
+  i = spNextIndex(FILE, total);
+  if(i === undefined || i === null){spResetTask(FILE);i = spNextIndex(FILE, total);}
+  revealed = false;
+  solved = false;
   const w = WORDS[i];
-  area.innerHTML = `${spProgressHtml(FILE, WORDS.length)}
-    <div class="question">Sage das deutsche Wort mit Artikel.</div>
+  areaEl().innerHTML = `${spProgressHtml(FILE, total)}
+    <div class="question">Drehe die Karte oder schreibe/sprich die Antwort.</div>
     <div class="hint">Muttersprache: <b>${translation(w)}</b></div>
-    <img class="food-img" src="${w.image}" onerror="fixImg(this)" alt="">
+    <div class="flip-wrap">
+      <div id="fcard" class="flip-card" onclick="reveal(true)">
+        <div class="flip-face flip-front">
+          <img class="food-img" src="${w.image}" onerror="fixImg(this)" alt="">
+          <div class="flip-hint">Klicken: Karte umdrehen</div>
+        </div>
+        <div class="flip-face flip-back">
+          <div class="flip-word">${full(w)}</div>
+          <div class="flip-hint">Artikel und Wort</div>
+        </div>
+      </div>
+    </div>
+    <div class="card-mode-marker">Gefragt: Nomen mit Artikel</div>
     <div class="actions">
       <button id="micBtn" class="btn mic-btn" onclick="say()">🎤 Sprechen</button>
-      <button class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button>
-      <button class="btn secondary" onclick="flip()">Karte umdrehen</button>
+      <button class="btn secondary" onclick="writeBox()">Schreiben</button>
     </div>
     <div id="micStatus" class="mic-status"></div>
     <div id="box" class="hidden">
       <input id="ans" placeholder="z. B. die Flasche">
-      <button class="btn" onclick="check(ans.value)">Kontrollieren</button>
+      <button class="btn" onclick="check(document.getElementById('ans').value)">Kontrollieren</button>
     </div>
-    <div id="fb" class="feedback"></div>`;
+    <div id="fb" class="feedback"></div>
+    <div id="after" class="actions"></div>`;
 }
-function writeBox(){box.classList.remove("hidden");}
-function flip(){const w=WORDS[i];const tries=spMarkWrong(FILE,WORDS.length);fb.innerHTML=feedbackForCard(tries,full(w),"Artikel und Wort");box.classList.remove("hidden");ans.value=full(w);}
-function say(){startMic(micBtn,txt=>{writeBox();ans.value=txt;check(txt);});}
-function check(txt){const w=WORDS[i];if(simple(txt)===simple(full(w))){fb.textContent="Richtig!";spMarkRight(FILE,WORDS.length);setTimeout(show,700);}else{const tries=spMarkWrong(FILE,WORDS.length);fb.innerHTML=feedbackForCard(tries,full(w),"Artikel und Wort");}}
+function writeBox(){document.getElementById("box")?.classList.remove("hidden");}
+function reveal(help){
+  if(solved)return;
+  document.getElementById("fcard")?.classList.add("flipped");
+  if(help && !revealed){
+    revealed = true;
+    const w = WORDS[i];
+    const tries = spMarkWrong(FILE, WORDS.length);
+    document.getElementById("fb").innerHTML = tries < 3 ? "Die Karte wurde umgedreht. Dieses Wort kommt später noch einmal." : "Lösung: " + full(w);
+    document.getElementById("after").innerHTML = '<button class="btn" onclick="nextAfterHelp()">Weiter</button>';
+  }
+}
+function nextAfterHelp(){spMarkRight(FILE, WORDS.length);show();}
+function say(){
+  const btn=document.getElementById("micBtn");
+  startMic(btn,txt=>{writeBox();const ans=document.getElementById("ans");if(ans)ans.value=txt;check(txt);});
+}
+function check(txt){
+  const w=WORDS[i];
+  if(simple(txt)===simple(full(w))){
+    solved=true;
+    document.getElementById("fcard")?.classList.add("flipped");
+    document.getElementById("fb").innerHTML='<div class="ok">Richtig!</div>';
+    spMarkRight(FILE, WORDS.length);
+    document.getElementById("after").innerHTML='<button class="btn" onclick="show()">Weiter</button>';
+  }else{
+    const tries=spMarkWrong(FILE, WORDS.length);
+    document.getElementById("fb").innerHTML=feedbackForCard(tries,full(w),"Artikel und Wort");
+  }
+}
 function feedbackForCard(tries,solution,type){if(tries===1)return "Da ist noch ein Fehler.";if(tries===2)return "Tipp: Prüfe "+type+".";return "Lösung: "+solution;}
 show();
 </script>
