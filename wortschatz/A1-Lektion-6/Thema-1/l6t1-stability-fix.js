@@ -20,8 +20,8 @@
     const p=readProfile();
     const name=[p.vorname||p.firstName||p.name||'',p.nachname||p.lastName||''].filter(Boolean).join(' ').trim()||'Schueler/in';
     const course=p.kurs||p.kursnummer||p.courseCode||'';
-    h.className='topbar';
-    h.style.display='';h.style.height='';h.style.minHeight='';h.style.margin='';h.style.padding='';h.style.overflow='';
+    h.className=h.id==='spHeader'?'sp-l6-header':'topbar';
+    h.style.cssText='display:block!important;height:auto!important;min-height:0!important;margin:0 0 18px 0!important;padding:0!important;overflow:visible!important';
     h.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title||'Aufgabe')} · A1 Lektion 6 · Thema 1</div></div></a><div class="account-tools"><span class="account-pill">${esc(name)}${course?' · '+esc(course):''}</span><a class="account-link" href="${dashHref()}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><button class="account-link account-btn" onclick="spL6T1Logout()">Abmelden</button></div></div><nav class="nav"><a class="btn secondary" href="index.html">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a>${showReset?'<button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>':''}</nav>`;
   };
 
@@ -56,7 +56,7 @@
       if(window.SPProgress&&typeof SPProgress.recordTaskProgress==='function'){SPProgress.recordTaskProgress(payload);return;}
       window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];
       window.SP_PROGRESS_QUEUE.push({method:'recordTaskProgress',payload});
-      import('/js/progress.js?v=l6t1-stability-1').catch(()=>{});
+      import('/js/progress.js?v=l6t1-stability-2').catch(()=>{});
     }catch(e){}
   }
 
