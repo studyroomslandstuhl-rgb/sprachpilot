@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 6 · Thema 2</title><link rel="stylesheet" href="style.css?v=7"></head><body><div class="container"><header class="topbar"></header><section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Himmelsrichtungen, Länder, Jahreszeiten, Wetterbericht-Wörter und Zeitpräpositionen sicher benutzen.</p></div></section><section id="taskGrid"><div class="grid" id="staticTaskGrid">
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 6 · Thema 2</title><link rel="stylesheet" href="style.css?v=8"></head><body><div class="container"><header class="topbar"></header><section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Himmelsrichtungen, Länder, Jahreszeiten, Wetterbericht-Wörter und Zeitpräpositionen sicher benutzen.</p></div></section><section id="taskGrid"><div class="grid" id="staticTaskGrid">
 <a class="module" data-file="karteikarten.html" href="karteikarten.html"><div class="num">1. Karteikarten</div><div class="big-icon">🃏</div><p class="small">Wörter und Bilder lernen.</p><div class="progress"><div class="bar"></div></div><div class="small task-percent">0%</div><div class="start">Starten</div></a>
 <a class="module" data-file="bild-wort.html" href="bild-wort.html"><div class="num">2. Bild → Wort</div><div class="big-icon">🖼️</div><p class="small">Das passende Wort zum Bild finden.</p><div class="progress"><div class="bar"></div></div><div class="small task-percent">0%</div><div class="start">Starten</div></a>
 <a class="module" data-file="hoeren-bild.html" href="hoeren-bild.html"><div class="num">3. Hören → Bild</div><div class="big-icon">🎧</div><p class="small">Wort hören und das richtige Bild wählen.</p><div class="progress"><div class="bar"></div></div><div class="small task-percent">0%</div><div class="start">Starten</div></a>
@@ -10,8 +10,51 @@
 <a class="module" data-file="postkarte.html" href="postkarte.html"><div class="num">9. Postkarten ergänzen</div><div class="big-icon">✉️</div><p class="small">Wetterwörter und Grammatik in Postkarten ergänzen.</p><div class="progress"><div class="bar"></div></div><div class="small task-percent">0%</div><div class="start">Starten</div></a>
 <a class="module" data-file="saetze-bauen.html" href="saetze-bauen.html"><div class="num">10. Sätze bauen</div><div class="big-icon">🧩</div><p class="small">Wörter in die richtige Reihenfolge bringen.</p><div class="progress"><div class="bar"></div></div><div class="small task-percent">0%</div><div class="start">Starten</div></a>
 <a class="module" id="examCard" data-file="pruefung.html" href="pruefung.html"><div class="num">11. Prüfung</div><div class="big-icon">⭐</div><p class="small">Wortschatz und Grammatik prüfen.</p><div class="progress"><div class="bar"></div></div><div class="small task-percent">0%</div><div class="start">Starten</div></a>
-</div></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-menu-static1"></script><script src="app.js?v=7"></script><script src="l6t2-postkarte.js?v=10"></script><script src="l6t2-extra-tasks.js?v=14"></script><script>
+</div></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-resetfix1"></script><script src="app.js?v=8"></script><script src="l6t2-postkarte.js?v=11"></script><script src="l6t2-extra-tasks.js?v=15"></script><script>
+const L6T2_FILES=['karteikarten.html','bild-wort.html','hoeren-bild.html','kategorien-drag.html','praepositionen.html','praepositionen-bild.html','praepositionen-drag.html','fehler-finden.html','postkarte.html','saetze-bauen.html','pruefung.html'];
 window.totalCircle=document.getElementById('totalCircle');window.totalBar=document.getElementById('totalBar');window.totalText=document.getElementById('totalText');window.taskGrid=document.getElementById('taskGrid');
+function l6t2Aliases(){
+  const set=new Set();
+  L6T2_FILES.forEach(file=>{
+    const base=file.replace(/\.html$/i,'');
+    const slug=base.toLowerCase().replace(/[^a-z0-9]+/g,'-');
+    [file,base,slug].forEach(name=>{set.add('SP_TASK_STATE_'+name);set.add('SP_TASK_PROGRESS_'+name)});
+  });
+  return set;
+}
+function clearL6T2LocalProgress(){
+  const aliases=l6t2Aliases();
+  Object.keys(localStorage).forEach(key=>{
+    const lower=String(key).toLowerCase();
+    const isThemeKey=key.startsWith('SP_L6_T2_V1')||key.startsWith('SP_L6_T2_')||key==='SP_EXAM_UNLOCKED_L6_T2';
+    const isNamedAlias=aliases.has(key);
+    const isLegacyThemeKey=(lower.includes('l6_t2')||lower.includes('l6-t2')||lower.includes('lektion-6-thema-2'))&&!lower.startsWith('sp_score_run_');
+    if(isThemeKey||isNamedAlias||isLegacyThemeKey)localStorage.removeItem(key);
+  });
+  try{if(typeof taskKey==='function')L6T2_FILES.forEach(file=>localStorage.removeItem(taskKey(file)))}catch(e){}
+}
+function paintL6T2Zero(){
+  document.querySelectorAll('#staticTaskGrid .module').forEach(card=>{
+    const bar=card.querySelector('.bar');if(bar)bar.style.width='0%';
+    const label=card.querySelector('.task-percent');if(label)label.textContent='0%';
+    const start=card.querySelector('.start');if(start)start.textContent=card.id==='examCard'?'Gesperrt':'Starten';
+  });
+  totalCircle.textContent='0%';totalBar.style.width='0%';totalText.textContent='0 / 11 Aufgaben abgeschlossen';
+  const exam=document.getElementById('examCard');if(exam){exam.removeAttribute('href');exam.classList.add('locked','exam-locked');const text=exam.querySelector('.small:not(.task-percent)');if(text)text.textContent='Die Prüfung wird erst geöffnet, wenn alle vorherigen Aufgaben 100% erreicht haben.'}
+}
+async function resetThemeProgress(){
+  if(!confirm('Wirklich alle Fortschritte in Thema 2 löschen?'))return;
+  clearL6T2LocalProgress();
+  paintL6T2Zero();
+  try{
+    const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2'};
+    const action=window.SPProgress&&typeof SPProgress.recordThemeReset==='function'?SPProgress.recordThemeReset(payload):import('/js/progress.js?v=l6t2-resetfix1').then(m=>m.recordThemeReset&&m.recordThemeReset(payload));
+    await Promise.race([Promise.resolve(action),new Promise(resolve=>setTimeout(resolve,1200))]);
+  }catch(e){}
+  clearL6T2LocalProgress();
+  location.replace('index.html?v=l6t2-resetfix1&r='+Date.now());
+}
+window.resetThemeProgress=resetThemeProgress;
 function updateStaticMenu(){
   try{
     const tasks=typeof l6t2AllTasks==='function'?l6t2AllTasks():[];
