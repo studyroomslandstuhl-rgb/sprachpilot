@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Preis sprechen</title><link rel="stylesheet" href="style.css"></head><body>
 <div id="accountStrip" class="account-strip"></div>
-<script type="module" src="/js/guard.js"></script><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=14"></script><script src="../shared/lektion3-fix.js?v=2"></script><script>
+<script type="module" src="/js/guard.js"></script><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=14"></script><script src="../shared/lektion3-fix.js?v=2"></script><script src="l3t2-task-fix.js?v=1"></script><script>
 
 header("Preis sprechen");
 const FILE='preis-sprechen.html'; let i=0;
@@ -9,10 +9,15 @@ function show(){
   i=spNextIndex(FILE,PRICE_TASKS.length);
   if(i===undefined || i===null){localStorage.removeItem(spTaskStateKey(FILE)); i=spNextIndex(FILE,PRICE_TASKS.length)}
   let t=PRICE_TASKS[i];
-  area.innerHTML=`${spProgressHtml(FILE,PRICE_TASKS.length)}<div class="question">Lies den Preis laut.</div><div class="big">${t.price}</div><button id="micBtn" class="btn mic-btn" onclick="say()">🎤 Mikrofon an</button><button class="btn secondary" onclick="manualOk()">Ich habe gelesen</button><div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
+  area.innerHTML=`${spProgressHtml(FILE,PRICE_TASKS.length)}<div class="question">Lies den Preis laut.</div><div class="big">${t.price}</div><button id="micBtn" class="btn mic-btn" onclick="say()">🎤 Mikrofon an</button><button class="btn secondary" onclick="showWriteBox()">Mikrofon geht nicht</button><div id="micStatus" class="mic-status"></div><div id="writeBox" class="hidden"><input id="ans" placeholder="Preis schreiben"><button class="btn" onclick="checkText(ans.value)">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
 }
-function say(){startMic(micBtn,(txt)=>{fb.textContent='Aufgenommen.';spMarkRight(FILE,PRICE_TASKS.length);setTimeout(show,700)})}
-function manualOk(){spMarkRight(FILE,PRICE_TASKS.length);show()}
+function showWriteBox(){const box=document.getElementById('writeBox');if(box)box.classList.remove('hidden');const input=document.getElementById('ans');if(input)setTimeout(()=>input.focus(),20)}
+function checkText(txt){
+  let t=PRICE_TASKS[i];
+  if(spL3AcceptPrice(txt,t.price)){fb.textContent='Richtig!';spMarkRight(FILE,PRICE_TASKS.length);setTimeout(show,700)}
+  else{let tries=spMarkWrong(FILE,PRICE_TASKS.length);fb.innerHTML=spFeedbackForTry(tries,t.price,'Preis laut lesen');showWriteBox()}
+}
+function say(){startMic(micBtn,(txt)=>checkText(txt))}
 show();
 
 </script></body></html>
