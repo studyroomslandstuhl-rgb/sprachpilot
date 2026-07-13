@@ -25,12 +25,40 @@ function standardPercent(file,total){
 function pageTaskFiles(){
   const files=[];
   try{if(Array.isArray(window.TASKS))window.TASKS.forEach(t=>files.push(String((Array.isArray(t)?t[0]:t&&t.file)||"")))}catch(e){}
+  try{if(typeof window.taskTotals==="function")window.taskTotals().forEach(t=>files.push(String((Array.isArray(t)?t[0]:t&&t.file)||"")))}catch(e){}
   try{document.querySelectorAll('a.module[href],a.task-card[href]').forEach(a=>files.push(String(a.getAttribute('href')||'').split('/').pop()))}catch(e){}
   return [...new Set(files.map(f=>String(f||'').split('?')[0].split('#')[0]).filter(f=>/\.html$/i.test(f)&&!/^(index|statistik|uebersicht|übersicht|pruefung)\.html$/i.test(f)))];
 }
 function releasedFiles(files){
   try{if(window.SprachPilotRelease&&typeof window.SprachPilotRelease.taskReleased==="function")return files.filter(f=>window.SprachPilotRelease.taskReleased(f))}catch(e){}
   return files;
+}
+function seedLocalCompletion(file,total){total=Number(total||100)||100;const st={total,done:[...Array(total).keys()],queue:[],current:null,tries:0,hadWrong:false,completed:true,percent:100};currentStateKeys(file).forEach(k=>writeJson(k,st));writeJson("SP_TASK_STATE_"+file,st)}
+function patchPercentReaders(files={}){Object.assign(window.__SP_EXAM_UNLOCK_FILES,files);const done=file=>localStorage.getItem(unlockKey())==="1"||!!window.__SP_EXAM_UNLOCK_FILES[String(file||"")];
+if(typeof window.pctFor==="function"&&!window.pctFor.__spExamUnlock){const old=window.pctFor;window.pctFor=function(file,total){const p=Number(old.apply(this,arguments)||0);return done(file)?Math.max(p,100):p};window.pctFor.__spExamUnlock=true}
+if(typeof window.pct==="function"&&!window.pct.__spExamUnlock){const old=window.pct;window.pct=function(file,total){const p=Number(old.apply(this,arguments)||0);return done(file)?Math.max(p,100):p};window.pct.__spExamUnlock=true}
+if(typeof window.taskPercent==="function"&&!window.taskPercent.__spExamUnlock){const old=window.taskPercent;window.taskPercent=function(file){const p=Number(old.apply(this,arguments)||0);return done(file)?Math.max(p,100):p};window.taskPercent.__spExamUnlock=true}
+if(typeof window.examUnlocked==="function"&&!window.examUnlocked.__spExamUnlock){const old=window.examUnlocked;window.examUnlocked=function(){return localStorage.getItem(unlockKey())==="1"||old.apply(this,arguments)};window.examUnlocked.__spExamUnlock=true}
+if(typeof window.isExamUnlocked==="function"&&!window.isExamUnlocked.__spExamUnlock){const old=window.isExamUnlocked;window.isExamUnlocked=function(){return localStorage.getItem(unlockKey())==="1"||old.apply(this,arguments)};window.isExamUnlocked.__spExamUnlock=true}
+if(typeof window.spL3ExamUnlocked==="function"&&!window.spL3ExamUnlocked.__spExamUnlock){const old=window.spL3ExamUnlocked;window.spL3ExamUnlocked=function(){return localStorage.getItem(unlockKey())==="1"||old.apply(this,arguments)};window.spL3ExamUnlocked=true}}
+function unlockVisibleExamCard(){
+  if(!MATCH||localStorage.getItem(unlockKey())!=="1")return;
+  const href="pruefung.html";
+  document.querySelectorAll('.exam-locked,.disabled-card,.module.locked,.module').forEach(el=>{
+    const text=String(el.textContent||'');
+    const isExam=/Prüfung|Pruefung/i.test(text)||el.querySelector('.exam-icon');
+    if(!isExam)return;
+    if(el.tagName&&el.tagName.toLowerCase()==='a'){
+      el.setAttribute('href',href);el.removeAttribute('aria-disabled');el.style.pointerEvents='auto';
+    }else{
+      el.style.pointerEvents='auto';el.setAttribute('role','link');el.tabIndex=0;el.onclick=function(){location.href=href};
+    }
+    el.classList.remove('locked','exam-locked','disabled-card');
+    el.style.opacity='';el.style.background='';
+    const small=el.querySelector('.small');if(small&&/gesperrt/i.test(small.textContent||''))small.textContent='offen';
+    const start=el.querySelector('.start');if(start&&/gesperrt/i.test(start.textContent||''))start.textContent='Starten';
+    const icon=el.querySelector('.icon,.big-icon,.exam-icon');if(icon)icon.textContent='⭐';
+  });
 }
 function unlockFromStandardTasks(){
   if(!MATCH)return false;
@@ -42,22 +70,14 @@ function unlockFromStandardTasks(){
   localStorage.setItem(unlockKey(),"1");
   Object.entries(done).forEach(([file,info])=>seedLocalCompletion(file,info.total));
   patchPercentReaders(done);
+  unlockVisibleExamCard();
   return true;
 }
-function seedLocalCompletion(file,total){total=Number(total||100)||100;const st={total,done:[...Array(total).keys()],queue:[],current:null,tries:0,hadWrong:false,completed:true,percent:100};currentStateKeys(file).forEach(k=>writeJson(k,st));writeJson("SP_TASK_STATE_"+file,st)}
-function patchPercentReaders(files={}){Object.assign(window.__SP_EXAM_UNLOCK_FILES,files);const done=file=>localStorage.getItem(unlockKey())==="1"||!!window.__SP_EXAM_UNLOCK_FILES[String(file||"")];
-if(typeof window.pctFor==="function"&&!window.pctFor.__spExamUnlock){const old=window.pctFor;window.pctFor=function(file,total){const p=Number(old.apply(this,arguments)||0);return done(file)?Math.max(p,100):p};window.pctFor.__spExamUnlock=true}
-if(typeof window.pct==="function"&&!window.pct.__spExamUnlock){const old=window.pct;window.pct=function(file,total){const p=Number(old.apply(this,arguments)||0);return done(file)?Math.max(p,100):p};window.pct.__spExamUnlock=true}
-if(typeof window.taskPercent==="function"&&!window.taskPercent.__spExamUnlock){const old=window.taskPercent;window.taskPercent=function(file){const p=Number(old.apply(this,arguments)||0);return done(file)?Math.max(p,100):p};window.taskPercent.__spExamUnlock=true}
-if(typeof window.examUnlocked==="function"&&!window.examUnlocked.__spExamUnlock){const old=window.examUnlocked;window.examUnlocked=function(){return localStorage.getItem(unlockKey())==="1"||old.apply(this,arguments)};window.examUnlocked.__spExamUnlock=true}
-if(typeof window.isExamUnlocked==="function"&&!window.isExamUnlocked.__spExamUnlock){const old=window.isExamUnlocked;window.isExamUnlocked=function(){return localStorage.getItem(unlockKey())==="1"||old.apply(this,arguments)};window.isExamUnlocked.__spExamUnlock=true}
-if(typeof window.spL3ExamUnlocked==="function"&&!window.spL3ExamUnlocked.__spExamUnlock){const old=window.spL3ExamUnlocked;window.spL3ExamUnlocked=function(){return localStorage.getItem(unlockKey())==="1"||old.apply(this,arguments)};window.spL3ExamUnlocked.__spExamUnlock=true}
-if(typeof window.unlocked==="function"&&!window.unlocked.__spExamUnlock){const old=window.unlocked;window.unlocked=function(){return localStorage.getItem(unlockKey())==="1"||old.apply(this,arguments)};window.unlocked.__spExamUnlock=true}}
-function unlockFromTopic(topic){if(!topicAllowsExam(topic))return false;const files=completeFilesFromTopic(topic);localStorage.setItem(unlockKey(),"1");Object.entries(files).forEach(([file,info])=>seedLocalCompletion(file,info.total));patchPercentReaders(files);return true}
-function rerenderOrReload(){try{if(typeof window.renderPage==="function")window.renderPage()}catch(e){}try{if(typeof window.renderMenu==="function")window.renderMenu()}catch(e){}try{if(typeof window.render==="function")window.render()}catch(e){}try{if(typeof window.show==="function")window.show()}catch(e){}try{if(typeof window.start==="function")window.start()}catch(e){}if(IS_EXAM&&sessionStorage.getItem(STORE_PREFIX+PATH)!=="1"){sessionStorage.setItem(STORE_PREFIX+PATH,"1");setTimeout(()=>location.reload(),150)}}
+function unlockFromTopic(topic){if(!topicAllowsExam(topic))return false;const files=completeFilesFromTopic(topic);localStorage.setItem(unlockKey(),"1");Object.entries(files).forEach(([file,info])=>seedLocalCompletion(file,info.total));patchPercentReaders(files);unlockVisibleExamCard();return true}
+function rerenderOrReload(){try{if(typeof window.renderPage==="function")window.renderPage()}catch(e){}try{if(typeof window.renderMenu==="function")window.renderMenu()}catch(e){}try{if(typeof window.render==="function")window.render()}catch(e){}unlockVisibleExamCard();if(IS_EXAM&&sessionStorage.getItem(STORE_PREFIX+PATH)!=="1"){sessionStorage.setItem(STORE_PREFIX+PATH,"1");setTimeout(()=>location.reload(),150)}}
 function runLocal(){if(!MATCH)return false;if(unlockFromStandardTasks()){rerenderOrReload();return true}for(const t of localTopics()){if(unlockFromTopic(t)){rerenderOrReload();return true}}return false}
 async function run(){if(!MATCH)return;if(runLocal())return;try{const mod=await import('/js/progress.js?v=10');const progress=await mod.loadCurrentStudentProgress();const found=findTopic(progress);if(found&&unlockFromTopic(found.t))rerenderOrReload()}catch(e){console.warn('Pruefungsfreigabe konnte nicht geprueft werden',e)}}
-function patchFromLocalFlag(){if(MATCH&&localStorage.getItem(unlockKey())==="1")patchPercentReaders({})}
+function patchFromLocalFlag(){if(MATCH&&localStorage.getItem(unlockKey())==="1"){patchPercentReaders({});unlockVisibleExamCard()}}
 patchFromLocalFlag();
 setTimeout(patchFromLocalFlag,250);
 setTimeout(patchFromLocalFlag,900);
@@ -65,3 +85,4 @@ setTimeout(run,80);
 setTimeout(run,600);
 setTimeout(run,1600);
 setTimeout(run,3000);
+try{new MutationObserver(()=>{patchFromLocalFlag()}).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
