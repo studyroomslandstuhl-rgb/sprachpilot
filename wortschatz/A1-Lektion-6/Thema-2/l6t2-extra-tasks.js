@@ -102,7 +102,7 @@ const L6T2_ALL_TASKS=[
   ['fehler-finden.html',PREP_ERROR_ITEMS.length,'Fehler finden und korrigieren'],
   ['postkarte.html',2,'Postkarten ergänzen'],
   ['saetze-bauen.html',SENTENCES.length,'Sätze bauen'],
-  ['pruefung.html',10,'Prüfung']
+  ['pruefung.html',20,'Prüfung']
 ];
 const L6T2_TASK_ICONS={'karteikarten.html':'🃏','bild-wort.html':'🖼️','hoeren-bild.html':'🎧','kategorien-drag.html':'🧺','praepositionen.html':'📍','praepositionen-bild.html':'🖼️','praepositionen-drag.html':'🧲','fehler-finden.html':'🛠️','postkarte.html':'✉️','saetze-bauen.html':'🧩','pruefung.html':'⭐'};
 function l6t2AllTasks(){return L6T2_ALL_TASKS}
