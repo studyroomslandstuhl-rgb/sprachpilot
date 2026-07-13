@@ -46,7 +46,11 @@ function checkVerbExamAnswer(){
   $("fb").innerHTML=`<div class="no">${safeText(standardFeedback(ex.currentTry,sol,"Antwort und Schreibweise"))}</div>`;
 }
 function archivePassedVerbPackage(score,right,total){
-  const completed=currentPracticeVerbs().slice();
+  const before=typeof currentPackageAllVerbs==='function'?currentPackageAllVerbs().slice():currentPracticeVerbs().slice();
+  const completed=before.length?before:currentPracticeVerbs().slice();
+  if(typeof window.spCompletePassedVerbPackageIfNeeded==='function'){
+    if(window.spCompletePassedVerbPackageIfNeeded('exam-result'))return completed.length;
+  }
   if(!completed.length)return 0;
   const archived=typeof markCurrentPackageLearned==='function'&&markCurrentPackageLearned();
   if(archived&&Array.isArray(state.archivedPackages)&&state.archivedPackages.length){
@@ -54,6 +58,7 @@ function archivePassedVerbPackage(score,right,total){
     last.examScore=score;last.examRight=right;last.examTotal=total;last.completedAt=new Date().toISOString();
     saveState();
   }
+  try{if(typeof window.flushVerbProgress==='function')window.flushVerbProgress()}catch(e){}
   return completed.length;
 }
 function renderVerbExamResult(){
