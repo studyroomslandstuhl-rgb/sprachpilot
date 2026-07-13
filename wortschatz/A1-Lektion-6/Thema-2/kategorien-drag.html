@@ -2,12 +2,17 @@
 header('Kategorien · 2 Teile');
 const FILE='kategorien-drag.html';
 const GROUPS=L6T2_CATEGORY_GROUPS;
-const ALL=shuffle(L6T2_CATEGORY_WORDS());
+const SOURCE=L6T2_CATEGORY_WORDS();
+const ORDER_KEY=CFG.key+'_kategorien_order';
+let order=[];try{order=JSON.parse(localStorage.getItem(ORDER_KEY)||'[]')}catch(e){}
+const sourceIds=SOURCE.map(w=>w.id);
+if(order.length!==sourceIds.length||order.some(id=>!sourceIds.includes(id))){order=shuffle(sourceIds);localStorage.setItem(ORDER_KEY,JSON.stringify(order))}
+const ALL=order.map(id=>SOURCE.find(w=>w.id===id)).filter(Boolean);
 const cut=Math.ceil(ALL.length/2);
 const PARTS=[ALL.slice(0,cut),ALL.slice(cut)];
 let part=loadTask(FILE,ALL.length).done.length>=cut?1:0,selected=null;
 function currentItems(){return PARTS[part]}
-function show(){if(loadTask(FILE,ALL.length).done.length>=ALL.length){complete(area,FILE,'praepositionen.html');return}const items=currentItems();area.innerHTML=`${progress(FILE,ALL.length)}${instruction('Ordnen Sie die Wörter zu.')}<div class="part-label">Teil ${part+1} von 2</div><div id="chips" class="drag-bank">${shuffle(items).map(w=>`<span class="chip" data-id="${w.id}">${full(w)}</span>`).join('')}</div><div class="drop-grid">${GROUPS.map(g=>`<div class="dropzone" data-a="${g}"><h2>${g}</h2></div>`).join('')}</div><div class="actions"><button class="btn" onclick="control()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;bind()}
+function show(){if(loadTask(FILE,ALL.length).done.length>=ALL.length){complete(area,FILE,'praepositionen.html');return}const items=currentItems();area.innerHTML=`${progress(FILE,ALL.length)}${instruction('Ordnen Sie die Wörter zu.')}<div class="part-label">Teil ${part+1} von 2</div><div id="chips" class="drag-bank">${items.map(w=>`<span class="chip" data-id="${w.id}">${full(w)}</span>`).join('')}</div><div class="drop-grid">${GROUPS.map(g=>`<div class="dropzone" data-a="${g}"><h2>${g}</h2></div>`).join('')}</div><div class="actions"><button class="btn" onclick="control()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;bind()}
 function clearSelection(){document.querySelectorAll('.chip').forEach(x=>x.classList.remove('selected'));selected=null}
 function bind(){document.querySelectorAll('.chip').forEach(c=>c.onclick=e=>{e.stopPropagation();clearSelection();selected=c;c.classList.add('selected')});document.querySelectorAll('.dropzone').forEach(z=>z.onclick=e=>{if(e.target.closest('.chip')||!selected)return;selected.classList.remove('selected','no');z.appendChild(selected);selected=null;bind()})}
 function control(){document.querySelectorAll('.correction').forEach(x=>x.remove());let ok=0;const items=currentItems();document.querySelectorAll('.chip').forEach(c=>c.classList.remove('selected','ok','no'));document.querySelectorAll('.dropzone').forEach(z=>z.querySelectorAll('.chip').forEach(c=>{const w=items.find(x=>x.id===c.dataset.id);if(w&&z.dataset.a===w.group){c.classList.add('ok');ok++}else if(w){c.classList.add('no');const note=document.createElement('span');note.className='correction';note.textContent='richtig: '+w.group;c.after(note)}}));bind();const unassigned=document.querySelectorAll('#chips .chip').length;if(ok===items.length){if(part===0){saveTask(FILE,{total:ALL.length,done:[...Array(cut).keys()],queue:[...Array(ALL.length-cut).keys()].map(x=>x+cut),current:null,tries:0,hadWrong:false});part=1;selected=null;show()}else{markTaskDone(FILE,ALL.length);complete(area,FILE,'praepositionen.html')}return}fb.innerHTML=`<div class="no">${unassigned?unassigned+' Wörter sind noch nicht zugeordnet. ':''}Korrigieren Sie die roten Wörter.</div>`}
