@@ -9,6 +9,7 @@
   function readJson(key,fallback={}){try{return JSON.parse(localStorage.getItem(key)||'null')||fallback}catch(e){return fallback}}
   function profileData(){try{return typeof profile!=='undefined'&&profile?profile:(readJson('SP_USER_PROFILE',null)||readJson('SP_STUDENT_PROFILE',{}))}catch(e){return readJson('SP_USER_PROFILE',{})}}
   function stateData(){try{return typeof state!=='undefined'?state:null}catch(e){return null}}
+  function stateRestored(){try{return window.__SP_VERB_STATE_LOADED===true}catch(e){return false}}
   function isTeacher(){const p=profileData();const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||p.role||'').toLowerCase();return role==='teacher'||role==='lehrer'||p.teacherPreview===true||p.isTeacher===true||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}
   function hasReleaseData(d){return !!(d&&(d.enabledWords||d.releases||d.enabledModules||d.settings||d.defaultLocked!==undefined||d.releaseMode||d.verbenA1AssessmentEnabled!==undefined))}
   function localReleaseData(){const p=profileData();if(hasReleaseData(p.assignments))return p.assignments;const cached=readJson('SP_COURSE_RELEASES',{});return hasReleaseData(cached)?cached:{}}
@@ -47,7 +48,7 @@
   function filterArray(list,allowed){return uniq(list).filter(v=>allowed.has(v))}
   function syncState(){
     const S=stateData();
-    if(!S||isTeacher()||!hasReleaseData(releaseData()))return false;
+    if(!S||!stateRestored()||isTeacher()||!hasReleaseData(releaseData()))return false;
     const allowedList=releasedVerbs();
     const allowed=new Set(allowedList);
     const beforePackage=packageSignature(S);
@@ -81,10 +82,10 @@
     window.spVerbAssessmentEnabled=assessmentEnabled;
     window.spVerbPracticeTargetCount=()=>Math.min(20,releasedVerbs().length);
     window.spSyncVerbRelease=syncState;
-    window.spVerbReleaseDebug=()=>({loaded,teacher:isTeacher(),codes:courseCodes(),released:releasedVerbs(),assessmentEnabled:assessmentEnabled(),data:releaseData(),state:stateData()?{active:state.active,currentPackageVerbs:state.currentPackageVerbs,phase:state.phase,releaseFingerprint:state._releaseFingerprint}:null});
+    window.spVerbReleaseDebug=()=>({loaded,storageLoaded:stateRestored(),teacher:isTeacher(),codes:courseCodes(),released:releasedVerbs(),assessmentEnabled:assessmentEnabled(),data:releaseData(),state:stateData()?{active:state.active,currentPackageVerbs:state.currentPackageVerbs,phase:state.phase,releaseFingerprint:state._releaseFingerprint}:null});
     syncState();
   }
-  function refreshVisibleHome(){try{const S=stateData();if(!S)return;if(S.phase==='taskOverview'&&typeof renderTaskOverview==='function')renderTaskOverview();else if(S.phase==='home'&&typeof renderVerbIndexPage==='function')renderVerbIndexPage()}catch(e){}}
+  function refreshVisibleHome(){try{const S=stateData();if(!S||!stateRestored())return;if(S.phase==='taskOverview'&&typeof renderTaskOverview==='function')renderTaskOverview();else if(S.phase==='home'&&typeof renderVerbIndexPage==='function')renderVerbIndexPage()}catch(e){}}
 
   install();
   window.spVerbReleaseReady=loadReleaseData().then(data=>{install();refreshVisibleHome();return data}).catch(()=>{loaded=true;install();return releaseData()});
