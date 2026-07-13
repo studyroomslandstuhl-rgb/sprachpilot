@@ -78,7 +78,7 @@ function setAccount(){
 }
 function setStatus(text,bad=false){const box=document.getElementById("assignmentStatus");box.className="status"+(bad?" no":"");box.innerHTML=text}
 function renderSkeleton(){Object.values(LEVELS).forEach(id=>{const box=document.getElementById(id);box.innerHTML="";for(let i=0;i<4;i++){const el=document.createElement("div");el.className="lesson-btn skeleton";el.textContent="Lektion";box.appendChild(el)}})}
-function renderLevel(level,target,data){const box=document.getElementById(target);box.innerHTML="";for(let i=1;i<=14;i++){const lesson=`${level}-Lektion-${i}`;if(!lessonReleased(data,lesson))continue;const a=document.createElement("a");a.className="lesson-btn";a.dataset.lesson=lesson;a.href=`./${lesson}/`;a.innerHTML=`Lektion ${i}<span>Offen</span>`;box.appendChild(a)}if(!box.children.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="Noch nicht freigeschaltet";box.appendChild(empty)}}
+function renderLevel(level,target,data){const box=document.getElementById(target);box.innerHTML="";for(let i=1;i<=14;i++){const lesson=`${level}-Lektion-${i}`;if(!lessonReleased(data,lesson))continue;const a=document.createElement("a");a.className="lesson-btn";a.href=`./${lesson}/`;a.innerHTML=`Lektion ${i}<span>Offen</span>`;box.appendChild(a)}if(!box.children.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="Noch nicht freigeschaltet";box.appendChild(empty)}}
 function render(data,source="cache"){
   Object.entries(LEVELS).forEach(([level,target])=>renderLevel(level,target,data||{}));
   const p=profile();
