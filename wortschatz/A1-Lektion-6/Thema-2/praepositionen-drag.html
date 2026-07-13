@@ -1,6 +1,8 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Präpositionen zuordnen · 2 Teile</title><link rel="stylesheet" href="style.css?v=4"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2mix2"></script><script src="app.js?v=4"></script><script src="l6t2-extra-tasks.js?v=9"></script><script>
 header('Präpositionen zuordnen · 2 Teile');
 const FILE='praepositionen-drag.html';
+const STRUCTURE_KEY=CFG.key+'_praep_drag_split_v2';
+if(localStorage.getItem(STRUCTURE_KEY)!=='1'){localStorage.removeItem(taskKey(FILE));localStorage.setItem(STRUCTURE_KEY,'1')}
 const GROUPS=['in','in der','in den','am','um','im'];
 const ORDER_KEY=CFG.key+'_praep_drag_order_v2';
 let order=[];try{order=JSON.parse(localStorage.getItem(ORDER_KEY)||'[]')}catch(e){}
