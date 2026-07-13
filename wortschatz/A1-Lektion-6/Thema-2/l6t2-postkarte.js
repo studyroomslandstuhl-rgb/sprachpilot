@@ -16,21 +16,24 @@ function l6t2AddPostWords(){L6T2_POST_WORDS.forEach(w=>{const e=WORDS.find(x=>x.
 l6t2AddPostWords();
 const oldWordsPost=window.words;
 window.words=words=function(){l6t2AddPostWords();const list=typeof oldWordsPost==='function'?oldWordsPost():WORDS;const seen=new Set();return list.filter(w=>w&&w.id&&!seen.has(w.id)&&seen.add(w.id))};
-const POSTCARD_ITEMS=[
-  {blank:'Liebe Anna, ich bin jetzt in Deutschland. Der ___ sagt: Im Süden ist es warm.',a:'Wetterbericht',opts:['Wetterbericht','Radio','Internet','Mitte'],full:'Liebe Anna, ich bin jetzt in Deutschland. Der Wetterbericht sagt: Im Süden ist es warm.'},
-  {blank:'In der ___ von Deutschland ist das Wetter angenehm.',a:'Mitte',opts:['Mitte','Temperatur','Radio','Sommer'],full:'In der Mitte von Deutschland ist das Wetter angenehm.'},
-  {blank:'Die ___ bleibt bei plus zehn Grad.',a:'Temperatur',opts:['Temperatur','Mitte','Internet','Wetterbericht'],full:'Die Temperatur bleibt bei plus zehn Grad.'},
-  {blank:'Am Morgen ist es ___ windig.',a:'leicht',opts:['leicht','schlecht','angenehm','minus'],full:'Am Morgen ist es leicht windig.'},
-  {blank:'Die Temperaturen ___ angenehm.',a:'bleiben',opts:['bleiben','plus','leicht','überall'],full:'Die Temperaturen bleiben angenehm.'},
-  {blank:'Heute sind es ___ zwölf Grad.',a:'plus',opts:['plus','minus','um','am'],full:'Heute sind es plus zwölf Grad.'},
-  {blank:'Am Abend sind es ___ zwei Grad.',a:'minus',opts:['minus','plus','im','in'],full:'Am Abend sind es minus zwei Grad.'},
-  {blank:'Ich höre den Wetterbericht im ___.',a:'Radio',opts:['Radio','Internet','Mitte','Wetterbericht'],full:'Ich höre den Wetterbericht im Radio.'},
-  {blank:'Ich lese den Wetterbericht im ___.',a:'Internet',opts:['Internet','Radio','Sommer','Norden'],full:'Ich lese den Wetterbericht im Internet.'},
-  {blank:'Gestern war das Wetter ___. Heute ist es besser.',a:'schlecht',opts:['schlecht','angenehm','leicht','überall'],full:'Gestern war das Wetter schlecht. Heute ist es besser.'},
-  {blank:'Heute ist das Wetter sehr ___.',a:'angenehm',opts:['angenehm','schlecht','minus','leicht'],full:'Heute ist das Wetter sehr angenehm.'},
-  {blank:'___ in der Stadt scheint die Sonne.',a:'Überall',opts:['Überall','Plus','Minus','Leicht'],full:'Überall in der Stadt scheint die Sonne.'}
+
+const POSTCARD_IMAGE_GAPS=[
+  {id:'deutschland',a:'Deutschland'},
+  {id:'wetterbericht',a:'Wetterbericht'},
+  {id:'sueden',a:'Süden'},
+  {id:'angenehm',a:'angenehm'},
+  {id:'temperatur',a:'Temperatur'},
+  {id:'plus',a:'plus'},
+  {id:'radio',a:'Radio'},
+  {id:'internet',a:'Internet'}
 ];
-const POSTCARD_WORD_BANK=['Wetterbericht','Mitte','Temperatur','leicht','bleiben','plus','minus','Radio','Internet','schlecht','angenehm','Überall'];
+const POSTCARD_GRAMMAR_GAPS=[
+  {a:'in Japan'},
+  {a:'Im Frühling'},
+  {a:'Am Morgen'},
+  {a:'am Abend'},
+  {a:'bei plus fünfzehn Grad'},
+  {a:'im Norden'}
+];
 const oldRenderOverviewPost=window.renderOverview;
 window.renderOverview=renderOverview=function(target){l6t2AddPostWords();if(typeof oldRenderOverviewPost==='function')oldRenderOverviewPost(target);else if(target)target.innerHTML='';if(target&&!document.getElementById('postcard-rule-box')){target.innerHTML+=`<section class="type-block" id="postcard-rule-box"><div class="type-title">Postkarte: Wetter und Land</div><div class="grammar-rule">Neue Wörter: der Wetterbericht · die Mitte · überall · die Temperatur · leicht · bleiben · plus · minus · das Radio · das Internet · schlecht · angenehm</div><div class="grammar-rule">Beispiel: Ich bin in Deutschland. Das Wetter ist angenehm. Die Temperatur bleibt bei plus zwölf Grad.</div></section>`}}
-(function(){const s=document.createElement('style');s.textContent='.postcard-box{background:#fffaf0;border:2px solid #f0c36b;border-radius:22px;padding:18px;margin:14px 0;line-height:1.9;font-size:20px}.word-bank{display:flex;flex-wrap:wrap;gap:8px;margin:12px 0}.word-chip{display:inline-flex;border:2px solid var(--lesson-line);border-radius:999px;background:#fff;padding:8px 12px;font-weight:900;color:var(--lesson-main-dark)}';document.head.appendChild(s)})();
