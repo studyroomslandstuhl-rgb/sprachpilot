@@ -15,7 +15,7 @@
   function releaseData(){if(isTeacher())return{releaseMode:'all',defaultLocked:false};return hasReleaseData(remoteData)?remoteData:localReleaseData()}
   function get(obj,path){let cur=obj;for(const part of path){if(!cur||typeof cur!=='object'||!(part in cur))return undefined;cur=cur[part]}return cur}
   function uniq(list){return [...new Set((list||[]).filter(Boolean).map(String))]}
-  function allVerbs(){return uniq((window.ALL_VERBS||[]).map(x=>x&&x.v).filter(Boolean))}
+  function allVerbs(){let source=[];try{source=typeof ALL_VERBS!=='undefined'?ALL_VERBS:(window.ALL_VERBS||[])}catch(e){source=window.ALL_VERBS||[]}return uniq(source.map(x=>x&&x.v).filter(Boolean))}
   function courseCodes(){const p=profileData();const raw=[p.kurs,p.kursnummer,p.courseCode,p.courseDocId,p.courseId,p.courseName,p.name,p.code,p.id,localStorage.getItem('SP_COURSE_CODE')].map(v=>String(v||'').trim()).filter(Boolean);const out=[];raw.forEach(v=>out.push(v,v.toUpperCase(),v.toLowerCase(),v.replace(/\s+/g,''),v.toLowerCase().replace(/\s+/g,'')));return uniq(out)}
   function saveReleaseData(data){try{localStorage.setItem('SP_COURSE_RELEASES',JSON.stringify(data||{}));const p=profileData();p.assignments=data||{};localStorage.setItem('SP_USER_PROFILE',JSON.stringify(p));localStorage.setItem('SP_STUDENT_PROFILE',JSON.stringify(p))}catch(e){}}
   function database(){try{if(typeof db!=='undefined'&&db)return db}catch(e){}return window.db||null}
@@ -79,7 +79,7 @@
     window.spStrictReleasedVerbList=releasedVerbs;
     window.releasedAssessmentVerbs=releasedVerbs;
     window.spVerbAssessmentEnabled=assessmentEnabled;
-    window.spVerbPracticeTargetCount=()=>Math.min(20,releasedVerbs().length||20);
+    window.spVerbPracticeTargetCount=()=>Math.min(20,releasedVerbs().length);
     window.spSyncVerbRelease=syncState;
     window.spVerbReleaseDebug=()=>({loaded,teacher:isTeacher(),codes:courseCodes(),released:releasedVerbs(),assessmentEnabled:assessmentEnabled(),data:releaseData(),state:stateData()?{active:state.active,currentPackageVerbs:state.currentPackageVerbs,phase:state.phase,releaseFingerprint:state._releaseFingerprint}:null});
     syncState();
