@@ -51,12 +51,12 @@ const POSTCARD_IMAGE_GAPS=[
   {id:'bleiben',file:'bleiben.webp',a:'bleiben'}
 ];
 const POSTCARD_GRAMMAR_GAPS=[
-  {a:'in Japan'},
-  {a:'Im Frühling'},
-  {a:'Am Morgen'},
-  {a:'am Abend'},
-  {a:'plus fünfzehn Grad'},
-  {a:'im Norden'}
+  {prefix:'Wir',cue:'Schweiz – drei Wochen – sein',a:'sind drei Wochen in der Schweiz'},
+  {prefix:'Am Morgen',cue:'Sonne – scheinen',a:'scheint die Sonne'},
+  {prefix:'Am Abend',cue:'Temperaturen – sinken',a:'sinken die Temperaturen'},
+  {prefix:'Im Norden',cue:'kalt – sein – es',a:'ist es kalt'},
+  {prefix:'Im Süden',cue:'warm – bleiben – es',a:'bleibt es warm'},
+  {prefix:'Am Montag',cue:'10 Uhr – Zug – fahren',a:'fährt der Zug um 10 Uhr'}
 ];
 const oldRenderOverviewPost=window.renderOverview;
 window.renderOverview=renderOverview=function(target){l6t2AddPostWords();if(typeof oldRenderOverviewPost==='function')oldRenderOverviewPost(target);else if(target)target.innerHTML='';if(target&&!document.getElementById('postcard-rule-box')){target.innerHTML+=`<section class="type-block" id="postcard-rule-box"><div class="type-title">Postkarte: Wetter und Land</div><div class="grammar-rule">Neue Wörter: der Wetterbericht · die Mitte · überall · die Temperatur · leicht · bleiben · plus · minus · das Radio · das Internet · angenehm</div><div class="grammar-rule">Beispiel: Ich lebe in Deutschland. Das Wetter ist angenehm. Es sind plus zwölf Grad.</div></section>`}}
