@@ -1,1 +1,43 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 5 · Thema 1</title><link rel="stylesheet" href="style.css?v=7"></head><body><div class="container"><header class="topbar"></header><section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div class="progress-main"><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Alltag, Verben, Sätze, Fragen und Prüfung üben.</p><div id="topicExamSummary"></div></div></section><section class="grid" id="taskGrid"><div class="card">Aufgaben werden geladen …</div></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="../data/wortschatz.js?v=6"></script><script>window.SP_L5_THEME={id:'Thema-1',title:'Alltag und trennbare Verben',sub:'A1 Lektion 5 · Thema 1',key:'SP_L5_T1_V1'};</script><script src="app.js?v=11"></script><script src="l5-theme1-assets.js?v=2"></script><script>try{header(CFG.title,true);const grid=document.getElementById('taskGrid');const circle=document.getElementById('totalCircle');const totalBar=document.getElementById('totalBar');const totalText=document.getElementById('totalText');const imageCount=WORDS.filter(w=>hasGoodImage(w)).length;const verbCount=WORDS.filter(w=>w.type==='verb').length;const tasks=[['karteikarten.html',WORDS.length,'Karteikarten','🃏','Wörter lernen.'],['bild-wort.html',imageCount,'Bild → Wort','🖼️','Schreibe das Wort.'],['wort-bild.html',imageCount,'Wort → Bild','🔁','Wähle das Bild.'],['hoeren-schreiben.html',WORDS.length,'Hören → Schreiben','🎧','Höre und schreibe.'],['trennbare-verben.html',verbCount,'Trennbare Verben erkennen','🧲','Ordne die Verben zu.'],['trennbare-verben-im-satz.html',12,'Sätze bauen','✍️','Ergänze passende Verben im Satz.'],['marias-tag.html',11,'Marias Tag','🧩','Schreib Sätze in der richtigen Reihenfolge.'],['was-machst-du-gern.html',4,'Was machst du gern?','😊','Bilde Frage und Antwort.'],['ja-nein-fragen.html',5,'Ja-/Nein-Fragen','💬','Bilde Frage und Antwort.'],['verb-passt.html',8,'Mini-Situationen','🧠','Lies die Situation und wähle den passenden Satz.']];function card(t,n){const p=pctFor(t[0],t[1]);return`<a class="module" href="${t[0]}"><div class="num">${n}. ${t[2]}</div><div class="icon">${t[3]}</div><p>${t[4]}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}function exam(n){const p=pctFor('pruefung.html',20);return`<a class="module" href="pruefung.html"><div class="num">${n}. Prüfung</div><div class="icon exam-icon">★</div><p>Teste dein Wissen. Aktuell frei zugänglich.</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}let n=1;grid.innerHTML=tasks.map(t=>card(t,n++)).join('');grid.innerHTML+=exam(n);const allTasks=[...tasks,['pruefung.html',20]];const avg=Math.round(allTasks.reduce((s,t)=>s+pctFor(t[0],t[1]),0)/allTasks.length)||0;const done=allTasks.filter(t=>pctFor(t[0],t[1])>=100).length;circle.textContent=avg+'%';totalBar.style.width=avg+'%';totalText.textContent=done+' / '+allTasks.length+' Aufgaben abgeschlossen';setTimeout(()=>{const s=document.createElement('script');s.src='points-hook.js?v=4';document.body.appendChild(s)},1400)}catch(e){console.error(e);const grid=document.getElementById('taskGrid');if(grid)grid.innerHTML='<div class="card"><b>Fehler beim Laden.</b><br>Bitte Seite neu laden. Wenn der Fehler bleibt, Cache löschen.</div>'}</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Lektion 5 · Thema 1</title><link rel="stylesheet" href="style.css?v=8"><style>#taskGrid .module{display:flex!important;visibility:visible!important;opacity:1!important}#taskGrid .module>*{visibility:visible!important;opacity:1!important}.sp-empty-card{display:none!important}</style></head><body><div class="container"><header class="topbar"></header><section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div class="progress-main"><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Alltag, Verben, Sätze, Fragen und Prüfung üben.</p><div id="topicExamSummary"></div></div></section><section class="grid" id="taskGrid"><div class="card sp-empty-card">Aufgaben werden geladen …</div></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="../data/wortschatz.js?v=6"></script><script>window.SP_L5_THEME={id:'Thema-1',title:'Alltag und trennbare Verben',sub:'A1 Lektion 5 · Thema 1',key:'SP_L5_T1_V1'};</script><script src="app.js?v=13"></script><script src="l5-theme1-assets.js?v=3"></script><script>
+(function(){
+  const TASKS=[
+    ['karteikarten.html',()=>WORDS.length,'Karteikarten','🃏','Wörter lernen.'],
+    ['bild-wort.html',()=>WORDS.filter(w=>hasGoodImage(w)).length,'Bild → Wort','🖼️','Schreibe das Wort.'],
+    ['wort-bild.html',()=>WORDS.filter(w=>hasGoodImage(w)).length,'Wort → Bild','🔁','Wähle das Bild.'],
+    ['hoeren-schreiben.html',()=>WORDS.length,'Hören → Schreiben','🎧','Höre und schreibe.'],
+    ['trennbare-verben.html',()=>WORDS.filter(w=>w.type==='verb').length,'Trennbare Verben erkennen','🧲','Ordne die Verben zu.'],
+    ['trennbare-verben-im-satz.html',()=>12,'Sätze bauen','✍️','Ergänze passende Verben im Satz.'],
+    ['marias-tag.html',()=>11,'Marias Tag','🧩','Schreibe Sätze in der richtigen Reihenfolge.'],
+    ['was-machst-du-gern.html',()=>4,'Was machst du gern?','😊','Bilde Frage und Antwort.'],
+    ['ja-nein-fragen.html',()=>5,'Ja-/Nein-Fragen','💬','Bilde Frage und Antwort.'],
+    ['verb-passt.html',()=>8,'Mini-Situationen','🧠','Lies die Situation und wähle den passenden Satz.']
+  ];
+  const EXAM=['pruefung.html',()=>20,'Prüfung','★','Teste dein Wissen. Aktuell frei zugänglich.'];
+  function safePct(file,total){try{return pctFor(file,total)}catch(e){return 0}}
+  function taskCard(t,n){
+    const total=Number(t[1]())||0;
+    const p=safePct(t[0],total);
+    return `<a class="module" href="${t[0]}"><div class="num">${n}. ${t[2]}</div><div class="icon ${t[0]==='pruefung.html'?'exam-icon':''}">${t[3]}</div><p>${t[4]}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`;
+  }
+  function renderMenu(){
+    try{header(CFG.title,true)}catch(e){}
+    const grid=document.getElementById('taskGrid');
+    if(!grid)return;
+    let n=1;
+    const all=[...TASKS,EXAM];
+    grid.innerHTML=TASKS.map(t=>taskCard(t,n++)).join('')+taskCard(EXAM,n);
+    const avg=Math.round(all.reduce((s,t)=>s+safePct(t[0],Number(t[1]())||0),0)/all.length)||0;
+    const done=all.filter(t=>safePct(t[0],Number(t[1]())||0)>=100).length;
+    const circle=document.getElementById('totalCircle');
+    const totalBar=document.getElementById('totalBar');
+    const totalText=document.getElementById('totalText');
+    if(circle)circle.textContent=avg+'%';
+    if(totalBar)totalBar.style.width=avg+'%';
+    if(totalText)totalText.textContent=done+' / '+all.length+' Aufgaben abgeschlossen';
+  }
+  try{renderMenu()}catch(e){console.error(e);const grid=document.getElementById('taskGrid');if(grid)grid.innerHTML='<div class="card"><b>Fehler beim Laden.</b><br>Bitte Seite neu laden.</div>'}
+  window.addEventListener('load',()=>setTimeout(renderMenu,120));
+  setTimeout(renderMenu,600);
+  setTimeout(()=>{const s=document.createElement('script');s.src='points-hook.js?v=6';document.body.appendChild(s)},1400);
+})();
+</script></body></html>
