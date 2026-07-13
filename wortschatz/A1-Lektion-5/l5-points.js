@@ -27,7 +27,23 @@
   function sigKey(file){return `SP_L5_POINTS_SIG_${topicId()}_${file}`}
   function shouldQueue(file,st){const pct=percent(st),total=totalCount(st);if(!total||pct<=0)return false;const s=sig(file,st),k=sigKey(file);const old=sessionStorage.getItem(k)||localStorage.getItem(k)||'';if(old===s)return false;try{sessionStorage.setItem(k,s);localStorage.setItem(k,s)}catch(e){}return true}
   function queue(method,p){pending.set(method+':'+p.file, {method,payload:p});clearTimeout(syncTimer);syncTimer=setTimeout(flush,2400)}
-  function flush(){if(!pending.size)return;loadProgress();const items=[...pending.values()];pending.clear();const run=()=>{if(!window.SPProgress){setTimeout(run,300);return}items.forEach(item=>{try{const fn=window.SPProgress[item.method];if(typeof fn==='function')fn(item.payload)}catch(e){console.warn('SPProgress',e)}})};run()}
+  function flush(){
+    if(!pending.size)return;
+    loadProgress();
+    const items=[...pending.values()];
+    pending.clear();
+    let attempts=0;
+    const run=()=>{
+      if(window.SPProgress){
+        items.forEach(item=>{try{const fn=window.SPProgress[item.method];if(typeof fn==='function')fn(item.payload)}catch(e){console.warn('SPProgress',e)}});
+        return;
+      }
+      attempts++;
+      if(attempts>=20){console.warn('SPProgress nicht verfügbar; L5-Synchronisierung wird für diese Runde beendet.');return}
+      setTimeout(run,300);
+    };
+    run();
+  }
   function syncTask(file,st){if(!shouldQueue(file,st))return;const pct=percent(st),total=totalCount(st),done=doneCount(st);queue('recordTaskProgress',payload(file,pct,total,done))}
   function syncExam(file,st){if(!shouldQueue(file,st))return;const total=totalCount(st),done=doneCount(st);const pct=percent(st);const p=payload(file,pct,total,done);p.scorePercent=pct;p.score=pct;p.stars=pct>=100?3:pct>=70?2:pct>=50?1:0;queue('recordExamResult',p);queue('recordTaskProgress',p)}
   function syncFile(file,st){if(!st)return;if(file==='pruefung.html')syncExam(file,st);else syncTask(file,st)}
