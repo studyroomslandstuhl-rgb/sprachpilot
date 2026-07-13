@@ -1,4 +1,4 @@
-const CACHE_VERSION="sprachpilot-static-v20260714-theme-overview-renderfix";
+const CACHE_VERSION="sprachpilot-static-v20260714-l6t2-menu-restore";
 
 self.addEventListener("install",event=>{
   self.skipWaiting();
