@@ -1,4 +1,4 @@
-const CACHE_VERSION="sprachpilot-static-v20260714-l4t3-overview-loadfix";
+const CACHE_VERSION="sprachpilot-static-v20260714-theme-overview-guardfix";
 
 self.addEventListener("install",event=>{
   self.skipWaiting();
