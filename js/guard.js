@@ -54,7 +54,7 @@ import("/js/back-button-fix.js?v=1").catch(()=>{});
 import("/js/release-helper.js?v=10").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(IS_L3T1){
-  import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-image-fix.js?v=1").catch(()=>{});
+  import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-image-fix.js?v=2").catch(()=>{});
 }
 if(USES_STANDARD_PROGRESS){
   import("/js/sp-progress-standard.js?v=3").catch(()=>{});
