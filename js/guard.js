@@ -60,7 +60,7 @@ if(USES_STANDARD_PROGRESS){
   import("/js/sp-progress-standard.js?v=3").catch(()=>{});
 }
 if(NEEDS_EXAM_UNLOCK_FIX&&!PERFORMANCE_SYNC_OFF){
-  setTimeout(()=>import("/js/exam-unlock-fix.js?v=3").catch(()=>{}),120);
+  setTimeout(()=>import("/js/exam-unlock-fix.js?v=4").catch(()=>{}),120);
 }
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
 if(FULL_FIREBASE){
