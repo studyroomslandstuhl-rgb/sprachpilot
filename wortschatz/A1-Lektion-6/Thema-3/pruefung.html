@@ -1,0 +1,18 @@
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=1"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="app.js?v=1"></script><script>
+header('Prüfung');const FILE='pruefung.html';let q=[],i=0,score=0;
+function build(){q=[
+{p:'Artikel: ___ Speisekarte',a:'die',opts:['der','die','das']},
+{p:'Ich esse ___ Hamburger.',a:'den',opts:['der','den','die']},
+{p:'Ich nehme ___ Salat.',a:'einen',opts:['ein','einen','eine']},
+{p:'Ich trinke ___ Cola.',a:'meine',opts:['mein','meinen','meine']},
+{p:'Kompositum: Apfel + Saft = ?',a:'der Apfelsaft',opts:['der Apfelsaft','die Apfelsaft','das Apfelsaft']},
+{p:'Artikel: ___ Käsebrot',a:'das',opts:['der','die','das']},
+{p:'Satz: Der Mann isst den Hamburger. Was ist das Objekt?',a:'den Hamburger',opts:['Der Mann','isst','den Hamburger']},
+{p:'Nominativ oder Akkusativ: den Salat',a:'Akkusativ',opts:['Nominativ','Akkusativ','Verb']},
+{p:'Picknick: Mila bringt einen Salat mit. Richtig?',a:'Richtig',opts:['Richtig','Falsch','Keine Information']},
+{p:'Fehler: Ich esse der Hamburger. Richtige Form?',a:'den',opts:['der','den','das']}
+]}
+function show(){if(!q.length)build();if(i>=q.length){done();return}const it=q[i];area.innerHTML=`<div class="small">Aufgabe ${i+1} / ${q.length}</div><div class="question">${it.p}</div><div class="choice-grid">${shuffle(it.opts).map(o=>`<button class="choice" onclick="check('${encodeURIComponent(o)}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`}
+function check(raw){const it=q[i],val=decodeURIComponent(raw);if(exact(val,it.a))score++;i++;show()}
+function done(){const percent=Math.round(score/q.length*100);markTaskDone(FILE,10);try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:3,topicId:'wortschatz-a1-lektion-6-thema-3',title:'A1 Lektion 6 · Thema 3',percent,scorePercent:percent,stars:percent>=100?3:percent>=70?2:percent>=50?1:0})}catch(e){}area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div><div class="actions"><a class="btn" href="index.html">Zum Thema</a></div></div>`}
+show();</script></body></html>
