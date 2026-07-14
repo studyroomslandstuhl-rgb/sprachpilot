@@ -32,13 +32,19 @@
   <script src="/verben-A1/data/verb-additions-20260714.js?v=1"></script>
   <script src="/verben-A1/data/verb-additions-20260714-sentences.js?v=1"></script>
   <script>
-    window.VERBEN_TEST_SOURCE={
-      verbs:typeof ALL_VERBS!=='undefined'?ALL_VERBS:[],
-      translations:typeof VERB_TRANSLATIONS!=='undefined'?VERB_TRANSLATIONS:{},
-      sentences:typeof VERB_SENTENCES!=='undefined'?VERB_SENTENCES:{},
-      irregular:typeof IRREGULAR_VERB_FORMS!=='undefined'?IRREGULAR_VERB_FORMS:{}
-    };
+    (function(){
+      const baseTranslations=typeof VERB_TRANSLATIONS!=='undefined'?VERB_TRANSLATIONS:{};
+      const extraTranslations=window.VERB_TRANSLATIONS||{};
+      const translations={};
+      [...new Set([...Object.keys(baseTranslations),...Object.keys(extraTranslations)])].forEach(lang=>{translations[lang]={...(baseTranslations[lang]||{}),...(extraTranslations[lang]||{})}});
+      window.VERBEN_TEST_SOURCE={
+        verbs:window.ALL_VERBS||(typeof ALL_VERBS!=='undefined'?ALL_VERBS:[]),
+        translations,
+        sentences:{...(typeof VERB_SENTENCES!=='undefined'?VERB_SENTENCES:{}),...(window.VERB_SENTENCES||{})},
+        irregular:{...(typeof IRREGULAR_VERB_FORMS!=='undefined'?IRREGULAR_VERB_FORMS:{}),...(window.IRREGULAR_VERB_FORMS||{})}
+      };
+    })();
   </script>
-  <script type="module" src="boot.js?v=4"></script>
+  <script type="module" src="boot.js?v=5"></script>
 </body>
 </html>
