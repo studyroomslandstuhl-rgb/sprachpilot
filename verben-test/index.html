@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>Verben Test · SprachPilot</title>
+  <link rel="preconnect" href="https://sprachpilot.b-cdn.net" crossorigin>
+  <link rel="dns-prefetch" href="//sprachpilot.b-cdn.net">
+  <link rel="stylesheet" href="styles.css?v=1">
+</head>
+<body>
+  <div class="shell">
+    <header class="topbar" id="topbar"></header>
+    <main id="app"><section class="card loading">Verben Test wird geladen …</section></main>
+    <footer>© SprachPilot</footer>
+  </div>
+
+  <!-- Nur der aktuelle Verben-Katalog wird wiederverwendet. Alte Verben-Status-, Punkte- und Navigationssysteme werden nicht geladen. -->
+  <script src="/verben-A1/data/verbs.js?v=12"></script>
+  <script src="/verben-A1/data/translations.js?v=12"></script>
+  <script src="/verben-A1/data/verb-additions-steigen-sinken.js?v=1"></script>
+  <script src="/verben-A1/data/sentences.js?v=13"></script>
+  <script src="/verben-A1/data/grammar.js?v=12"></script>
+  <script src="/verben-A1/data/verbs-extra.js?v=1"></script>
+  <script src="/verben-A1/data/translation-deduplicate.js?v=5"></script>
+  <script src="/verben-A1/data/a1-verb-expansion.js?v=2"></script>
+  <script src="/verben-A1/data/verb-default-locks.js?v=4"></script>
+  <script src="/verben-A1/data/verb-sentence-conjugation-fix.js?v=2"></script>
+  <script src="/verben-A1/data/verb-translation-fix.js?v=2"></script>
+  <script src="/verben-A1/data/verb-additions-passen-luegen-erzaehlen.js?v=3"></script>
+  <script src="/verben-A1/data/verb-additions-20260714-translations.js?v=1"></script>
+  <script src="/verben-A1/data/verb-additions-20260714.js?v=1"></script>
+  <script src="/verben-A1/data/verb-additions-20260714-sentences.js?v=1"></script>
+  <script>
+    window.VERBEN_TEST_SOURCE={
+      verbs:typeof ALL_VERBS!=='undefined'?ALL_VERBS:[],
+      translations:typeof VERB_TRANSLATIONS!=='undefined'?VERB_TRANSLATIONS:{},
+      sentences:typeof VERB_SENTENCES!=='undefined'?VERB_SENTENCES:{},
+      irregular:typeof IRREGULAR_VERB_FORMS!=='undefined'?IRREGULAR_VERB_FORMS:{}
+    };
+  </script>
+  <script type="module" src="app.js?v=1"></script>
+</body>
+</html>
