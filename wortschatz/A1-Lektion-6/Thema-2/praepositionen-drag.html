@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Präpositionen zuordnen · 2 Teile</title><link rel="stylesheet" href="style.css?v=10"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-runtime1"></script><script src="app.js?v=10"></script><script src="l6t2-extra-tasks.js?v=18"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Präpositionen zuordnen · 2 Teile</title><link rel="stylesheet" href="style.css?v=10"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-runtime2"></script><script src="app.js?v=10"></script><script src="l6t2-extra-tasks.js?v=19"></script><script>
 const area=document.getElementById('area');header('Präpositionen zuordnen · 2 Teile');
 const FILE='praepositionen-drag.html';
 const STRUCTURE_KEY=CFG.key+'_praep_drag_split_v2';
@@ -13,7 +13,7 @@ const PARTS=[ALL.slice(0,cut),ALL.slice(cut)];
 let part=loadTask(FILE,ALL.length).done.length>=cut?1:0,selected=null;
 function currentItems(){return PARTS[part]}
 function show(){
-  if(loadTask(FILE,ALL.length).done.length>=ALL.length){complete(area,FILE,'fehler-finden.html?v=l6t2-runtime1');return}
+  if(loadTask(FILE,ALL.length).done.length>=ALL.length){complete(area,FILE,'fehler-finden.html?v=l6t2-runtime2');return}
   const items=currentItems();selected=null;
   area.innerHTML=`${progress(FILE,ALL.length)}${instruction('Ordnen Sie die Wörter der richtigen Präposition zu.')}<div class="part-label">Teil ${part+1} von 2</div><div id="chips" class="drag-bank">${items.map(x=>`<span class="chip" data-id="${x.sourceIndex}">${x.word}</span>`).join('')}</div><div class="drop-grid">${GROUPS.map(g=>`<div class="dropzone" data-a="${g}"><h2>${g}</h2></div>`).join('')}</div><div class="actions"><button class="btn" onclick="control()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`;
   bind();
@@ -33,7 +33,7 @@ function control(){
   const items=currentItems();
   if(ok===items.length){
     if(part===0){saveTask(FILE,{total:ALL.length,done:[...Array(cut).keys()],queue:[...Array(ALL.length-cut).keys()].map(n=>n+cut),current:null,tries:0,hadWrong:false});part=1;show();return}
-    markTaskDone(FILE,ALL.length);complete(area,FILE,'fehler-finden.html?v=l6t2-runtime1');return;
+    markTaskDone(FILE,ALL.length);complete(area,FILE,'fehler-finden.html?v=l6t2-runtime2');return;
   }
   const t=spMarkWrong(FILE,ALL.length);
   if(t>=3)wrong.forEach(({c,x})=>{const note=document.createElement('span');note.className='correction';note.textContent='richtig: '+x.a;c.after(note)});
