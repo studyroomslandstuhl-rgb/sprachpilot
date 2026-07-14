@@ -8,11 +8,11 @@
 <link rel="stylesheet" href="/css/sp-lesson-overview.css">
 </head>
 <body>
-<script type="module" src="/js/guard.js"></script>
+<script type="module" src="/js/guard.js?v=l5-stable-1"></script>
 <div id="lessonOverview"></div>
 
 <script type="module">
-import { renderLessonOverview } from "/js/sp-lesson-overview.js";
+import { renderLessonOverview } from "/js/sp-lesson-overview.js?v=l5-stable-1";
 
 renderLessonOverview({
   module: "wortschatz",
@@ -21,6 +21,7 @@ renderLessonOverview({
   lessonTitle: "Lektion 5: Mein Tag",
   subtitle: "Wortschatz · A1 Lektion 5 · Mein Tag",
   backHref: "../index.html",
+  loadTimeoutMs: 3000,
 
   color: {
     main: "#2f95ad",
