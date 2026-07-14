@@ -1,17 +1,18 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bild → Präposition</title><link rel="stylesheet" href="style.css?v=4"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2mix2"></script><script src="app.js?v=4"></script><script src="l6t2-postkarte.js?v=7"></script><script src="l6t2-images.js?v=2"></script><script src="l6t2-extra-tasks.js?v=9"></script><script>
-header('Bild → Präposition');
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bild → Präposition</title><link rel="stylesheet" href="style.css?v=10"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-open2"></script><script src="app.js?v=10"></script><script src="l6t2-postkarte.js?v=12"></script><script src="l6t2-images.js?v=3"></script><script src="l6t2-extra-tasks.js?v=17"></script><script>
+const area=document.getElementById('area');header('Bild → Präposition');
 const FILE='praepositionen-bild.html';let items=PREP_IMAGE_ITEMS,i=0;
 function show(){
   items=PREP_IMAGE_ITEMS;
-  if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'praepositionen-drag.html');return}
+  if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'praepositionen-drag.html?v=l6t2-open2');return}
   i=spNextIndex(FILE,items.length);
   const it=items[i],w=words().find(x=>x.id===it.id),options=shuffle(L6T2_PREP_OPTIONS);
-  area.innerHTML=`${progress(FILE,items.length)}${instruction('Sehen Sie das Bild. Wählen Sie die richtige Präposition.')}<div class="small">Frage ${loadTask(FILE,items.length).done.length+1} von ${items.length}</div>${visual(w)}<div class="choice-grid">${options.map(o=>`<button class="choice" onclick="check(this,'${encodeURIComponent(o)}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`
+  area.innerHTML=`${progress(FILE,items.length)}${instruction('Sehen Sie das Bild. Wählen Sie die richtige Präposition.')}<div class="small">Frage ${loadTask(FILE,items.length).done.length+1} von ${items.length}</div>${visual(w)}<div class="choice-grid">${options.map(o=>`<button class="choice" onclick="check(this,'${encodeURIComponent(o)}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`;
+  if(window.l6t2ConnectImages)l6t2ConnectImages();
 }
 function check(btn,raw){
-  const val=decodeURIComponent(raw),it=items[i],w=words().find(x=>x.id===it.id);
-  if(val===it.a){btn.classList.add('ok');fb.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,items.length);setTimeout(show,700);return}
-  btn.classList.add('no');const t=spMarkWrong(FILE,items.length);fb.innerHTML=help3(t,'Noch nicht richtig.','Tipp: '+it.hint,it.a+' '+w.word)
+  const val=decodeURIComponent(raw),it=items[i],w=words().find(x=>x.id===it.id),feedback=document.getElementById('fb');
+  if(val===it.a){btn.classList.add('ok');feedback.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,items.length);setTimeout(show,700);return}
+  btn.classList.add('no');const t=spMarkWrong(FILE,items.length);feedback.innerHTML=help3(t,'Noch nicht richtig.','Tipp: '+it.hint,it.a+' '+w.word);
 }
 show();
 </script></body></html>
