@@ -142,14 +142,14 @@ export async function renderLessonOverview(config){
     });
   }
 
-  function draw(releaseData={},progress={},ready=false){
+  function draw(releaseData={},progress={},releaseReady=false,progressReady=false){
     removeForeignHeaders();
     const cards=(config.themes||[]).map(theme=>{
-      const open=ready ? themeOpen(releaseData,config.module||"wortschatz",config.lessonId,theme.id) : true;
-      const topic=findTopicProgress(progress,config,theme);
-      const started=ready ? themeStarted(topic,theme) : false;
-      const allComplete=ready ? themeAllComplete(topic,theme) : false;
-      const repeats=ready ? repeatCount(topic,allComplete) : 0;
+      const open=releaseReady ? themeOpen(releaseData,config.module||"wortschatz",config.lessonId,theme.id) : true;
+      const topic=progressReady ? findTopicProgress(progress,config,theme) : {};
+      const started=progressReady ? themeStarted(topic,theme) : false;
+      const allComplete=progressReady ? themeAllComplete(topic,theme) : false;
+      const repeats=progressReady ? repeatCount(topic,allComplete) : 0;
       const status=getThemeStatus({isReleased:open,started,allComplete,repeats});
       return renderThemeCard(theme,status);
     }).join("");
@@ -169,7 +169,7 @@ export async function renderLessonOverview(config){
   }
 
   removeForeignHeaders();
-  draw({}, {}, false);
+  draw({}, {}, false, false);
 
   const timeoutMs=Number(config.loadTimeoutMs||3500);
   const [releaseResult,progressResult]=await Promise.allSettled([
@@ -181,6 +181,7 @@ export async function renderLessonOverview(config){
   draw(
     releaseResult.status==="fulfilled"?releaseResult.value:{},
     progressResult.status==="fulfilled"?progressResult.value:{},
-    true
+    releaseResult.status==="fulfilled",
+    progressResult.status==="fulfilled"
   );
 }
