@@ -1,9 +1,9 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fehler finden und korrigieren</title><link rel="stylesheet" href="style.css?v=4"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2help2"></script><script src="app.js?v=4"></script><script src="l6t2-extra-tasks.js?v=7"></script><script>
-header('Fehler finden und korrigieren');
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Fehler finden und korrigieren</title><link rel="stylesheet" href="style.css?v=10"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-open2"></script><script src="app.js?v=10"></script><script src="l6t2-extra-tasks.js?v=17"></script><script>
+const area=document.getElementById('area');header('Fehler finden und korrigieren');
 const FILE='fehler-finden.html';
 let items=PREP_ERROR_ITEMS,i=0,current=null,selected=-1;
 function show(){
-  if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'postkarte.html');return}
+  if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'postkarte.html?v=l6t2-open2');return}
   i=spNextIndex(FILE,items.length);current=items[i];selected=-1;
   area.innerHTML=`${progress(FILE,items.length)}${instruction('Finde den Fehler und korrigiere.')}<p class="error-click-sentence" id="errorSentence">${current.tokens.map((t,n)=>`<span class="error-word" data-index="${n}" tabindex="0">${t}</span>`).join(' ')}</p><div id="correctionBox" class="hidden"><input id="ans" autocomplete="off" placeholder="Schreibe nur das richtige Wort."><div class="actions"><button class="btn" id="checkBtn">Kontrollieren</button></div></div><div id="fb" class="feedback"></div>`;
   bindWords();
