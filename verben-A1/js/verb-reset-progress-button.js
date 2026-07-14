@@ -5,14 +5,16 @@
   function resetVerbenProgress(){
     if(!confirm('Möchtest du wirklich alle Verben-Fortschritte löschen? Deine Punkte bleiben erhalten.'))return;
     try{
+      const resetAt=typeof window.spAllowVerbProgressReset==='function'?window.spAllowVerbProgressReset():Date.now();
       if(typeof resetAllVerbProgressKeepPoints==='function')resetAllVerbProgressKeepPoints();
       else if(typeof state!=='undefined'&&state){
         state.phase='home';state.index=0;
         state.known=[];state.learned=[];state.unsure=[];state.unknown=[];state.active=[];state.practicePool=[];state.archivedPackages=[];state.assessmentBatch=[];state.assessed=[];state.currentPackageVerbs=[];
         state.weak={};state.currentGame='';state.currentVerb='';state.currentTask=null;state.memoryCards=[];state.memoryDone=[];state.first=null;state.openCards=[];state.lock=false;
-        state.skillDone={};state.skillAttempts={};state.skillSuccess={};state.taskQueues={};state.taskDoneSets={};state.packageNo=1;state.assessmentStart=0;state.assessmentTries=0;state.revealed=false;
+        state.skillDone={};state.skillAttempts={};state.skillSuccess={};state.taskQueues={};state.taskDoneSets={};state.taskErrorSets={};state.packageNo=1;state.assessmentStart=0;state.assessmentTries=0;state.revealed=false;
         state.exam={passed:false,score:0,stars:0,answers:[],current:0,items:[],awaiting:false,currentTry:0,hadWrong:false};
       }
+      if(typeof state!=='undefined'&&state)state.explicitResetAt=resetAt;
       if(typeof saveState==='function')saveState();
       if(typeof spSyncDashboardSummary==='function')spSyncDashboardSummary();
       if(typeof window.flushVerbProgress==='function')window.flushVerbProgress();
