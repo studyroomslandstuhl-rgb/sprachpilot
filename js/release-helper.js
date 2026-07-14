@@ -5,8 +5,55 @@ function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')
 function courseCode(){const p=profile();return String(p.kurs||p.kursnummer||p.courseCode||localStorage.getItem('SP_COURSE_CODE')||'').trim()}
 function cachedData(){const p=profile();return p.assignments||safeJson(localStorage.getItem('SP_COURSE_RELEASES'),{})||{}}
 function localData(){return remoteData||cachedData()||{}}
-async function readCourseByCode(code){try{const mod=await import('/js/firebase.js?v=6');if(mod.authReady)await mod.authReady;for(const c of [code,code.toUpperCase(),code.toLowerCase()].filter((v,i,a)=>v&&a.indexOf(v)===i)){const snap=await mod.getDoc(mod.doc(mod.db,'courses',String(c)));if(snap.exists())return snap.data()||{}}for(const field of ['courseCode','kurs','kursnummer','name','courseName','code']){try{const q=mod.query(mod.collection(mod.db,'courses'),mod.where(field,'==',String(code)),mod.limit(1));const s=await mod.getDocs(q);if(s&&!s.empty)return s.docs[0].data()||{}}catch(e){}}}catch(e){console.warn('Freigaben konnten nicht aktualisiert werden',e)}return null}
-async function refresh(){const code=courseCode();const last=Number(localStorage.getItem('SP_RELEASE_SYNC_AT')||0);if(remoteData)return remoteData;if(Date.now()-last<5*60*1000&&Object.keys(cachedData()||{}).length)return cachedData();if(refreshPromise)return refreshPromise;refreshPromise=(async()=>{if(!code)return null;const data=await readCourseByCode(code);if(data){remoteData=data;localStorage.setItem('SP_COURSE_RELEASES',JSON.stringify(data));localStorage.setItem('SP_RELEASE_SYNC_AT',String(Date.now()));const p=profile();p.assignments=data;localStorage.setItem('SP_USER_PROFILE',JSON.stringify(p));return data}return null})();return refreshPromise}
+function hasData(data){return !!(data&&typeof data==='object'&&Object.keys(data).length)}
+function timeout(promise,ms){return Promise.race([Promise.resolve(promise),new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),ms))])}
+async function readCourseByCode(code){
+  try{
+    const mod=await timeout(import('/js/firebase.js?v=7'),1800);
+    if(mod.authReady)try{await timeout(mod.authReady,1500)}catch(e){}
+    const deadline=Date.now()+3500;
+    const variants=[code,code.toUpperCase(),code.toLowerCase()].filter((v,i,a)=>v&&a.indexOf(v)===i);
+    for(const c of variants){
+      if(Date.now()>deadline)break;
+      try{const snap=await timeout(mod.getDoc(mod.doc(mod.db,'courses',String(c))),1000);if(snap.exists())return snap.data()||{}}catch(e){}
+    }
+    for(const field of ['courseCode','kurs','kursnummer','name','courseName','code']){
+      if(Date.now()>deadline)break;
+      try{const q=mod.query(mod.collection(mod.db,'courses'),mod.where(field,'==',String(code)),mod.limit(1));const s=await timeout(mod.getDocs(q),1000);if(s&&!s.empty)return s.docs[0].data()||{}}catch(e){}
+    }
+  }catch(e){console.warn('Freigaben konnten nicht aktualisiert werden',e)}
+  return null;
+}
+function remember(data){
+  if(!data)return null;
+  remoteData=data;
+  try{
+    localStorage.setItem('SP_COURSE_RELEASES',JSON.stringify(data));
+    localStorage.setItem('SP_RELEASE_SYNC_AT',String(Date.now()));
+    const p=profile();p.assignments=data;localStorage.setItem('SP_USER_PROFILE',JSON.stringify(p));
+  }catch(e){}
+  return data;
+}
+async function refresh(){
+  const code=courseCode(),cached=cachedData(),last=Number(localStorage.getItem('SP_RELEASE_SYNC_AT')||0);
+  if(remoteData)return remoteData;
+  if(hasData(cached)){
+    if(Date.now()-last>=5*60*1000&&!refreshPromise&&code){
+      refreshPromise=readCourseByCode(code).then(data=>{
+        if(data){remember(data);setTimeout(()=>{try{applyLessonButtons(data);blockCurrentIfNeeded(data)}catch(e){}},0)}
+        return data||cached;
+      }).finally(()=>{refreshPromise=null});
+    }
+    return cached;
+  }
+  if(refreshPromise)return refreshPromise;
+  refreshPromise=(async()=>{
+    if(!code)return null;
+    const data=await readCourseByCode(code);
+    return data?remember(data):null;
+  })().finally(()=>{refreshPromise=null});
+  return refreshPromise;
+}
 function val(obj,path){let cur=obj;for(const p of path){if(!cur||typeof cur!=='object'||!(p in cur))return undefined;cur=cur[p]}return cur}
 function locked(data){return !data||data.defaultLocked!==false&&data.releaseMode!=='open'&&data.releaseMode!=='all'}
 function ctxFromPath(){const p=location.pathname;let m=p.match(/\/wortschatz\/(A\d-Lektion-\d+)\/(Thema-\d+)\/(.*)$/i);if(m)return{module:'wortschatz',lesson:m[1],theme:m[2],file:(m[3]||'index.html').split('/').pop()||'index.html',kind:'task'};m=p.match(/\/wortschatz\/(A\d-Lektion-\d+)\/?(?:index\.html)?$/i);if(m)return{module:'wortschatz',lesson:m[1],theme:'',file:'index.html',kind:'lesson'};if(/\/wortschatz\/?(?:index\.html)?$/i.test(p))return{module:'wortschatz',lesson:'',theme:'',file:'index.html',kind:'module'};return{module:'',lesson:'',theme:'',file:p.split('/').pop()||'index.html',kind:''}}
