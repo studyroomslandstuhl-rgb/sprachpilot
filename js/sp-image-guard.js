@@ -1,5 +1,6 @@
 (function(){
   if(location.pathname.includes('/wortschatz/A1-Lektion-6/Thema-2/'))return;
+  if(location.pathname.includes('/wortschatz/A1-Lektion-5/'))return;
   if(window.__SP_IMAGE_GUARD__)return;
   window.__SP_IMAGE_GUARD__=true;
 
