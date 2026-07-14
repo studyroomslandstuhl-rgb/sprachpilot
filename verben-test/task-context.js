@@ -10,18 +10,10 @@ renderWriting=function(task,verb){
   bindTextAnswer(task.id,verb,'Nutze die Bedeutung oder den Satz und schreibe den deutschen Infinitiv.');
 };
 examQuestionFor=function(verb,index){
-  const type=['image-write','meaning-write','sentence-choice','conjugation'][index%4];
+  const type=['image-write','translation-write','sentence-choice','conjugation'][index%4];
   if(type==='image-write')return{verb,type,prompt:'Welches Verb passt zum Bild?',answer:verb};
-  if(type==='meaning-write'){const prompt=infinitivePrompt(verb);return{verb,type,prompt:prompt.label,answer:verb}}
+  if(type==='translation-write'){const prompt=infinitivePrompt(verb);return{verb,type,prompt:prompt.label,answer:verb}}
   if(type==='sentence-choice')return{verb,type,prompt:sentenceGap(verb),answer:verb,options:shuffle([verb,...distractors(verb)],hash(verb+'exam'))};
   return{verb,type,prompt:`Ich __________. (${verb})`,answer:ichForm(verb)};
-};
-const oldRenderExam=renderExam;
-renderExam=function(){
-  oldRenderExam();
-  const run=activePackage()?.examRun,q=run?.questions?.[run.index];
-  if(q?.type==='meaning-write'&&!document.getElementById('examInput')){
-    const input=document.querySelector('.answer-input');if(input)input.id='examInput';
-  }
 };
 window.VERBEN_TEST_CONTEXT={usableTranslation,infinitivePrompt};
