@@ -1,6 +1,6 @@
 function primaryOwnerId(){
-  const direct=profile?.docId||profile?.studentId||profile?.userId||profile?.uid||profile?.id||'';
-  if(direct)return slug(direct,'-');
+  const direct=String(profile?.docId||profile?.studentId||profile?.userId||profile?.uid||profile?.id||'').trim();
+  if(direct)return direct.replaceAll('/','-');
   return legacyOwnerId();
 }
 function legacyOwnerId(){
@@ -51,7 +51,7 @@ function mergeStates(local,remote){
 loadLocal=function(){
   const candidates=candidateLocalKeys().map(readLocalCandidate).filter(Boolean);
   if(!candidates.length)return normalizeState(defaultState());
-  return candidates.reduce((best,item)=>compareRank(item,best)>0?item:best,candidates[0]);
+  return normalizeState(candidates.reduce((best,item)=>compareRank(item,best)>0?item:best,candidates[0]));
 };
 persistLocal=function(){
   state=normalizeState(state);state.revision++;state.updatedAt=now();if(state.activePackage)state.activePackage.revision=(state.activePackage.revision||0)+1;
@@ -64,7 +64,7 @@ saveRemote=async function(){
   if(isTeacher()||!profile||window.SP_NO_FIREBASE_SYNC)return;
   const tools=await firebaseTools(),id=ownerId();if(!id||id==='guest')return;
   const snapshot=clone(state);
-  await tools.setDoc(tools.doc(tools.db,'progress',id),{studentId:id,userId:id,docId:id,courseCode:profile.courseCode||profile.kurs||profile.kursnummer||'',email:profile.email||'',verbenTestV1:{state:snapshot,revision:snapshot.revision,updatedAtMs:now()},lastPage:location.pathname,lastActive:tools.serverTimestamp(),updatedAt:tools.serverTimestamp()},{merge:true});
+  await tools.setDoc(tools.doc(tools.db,'progress',id),{courseCode:profile.courseCode||profile.kurs||profile.kursnummer||'',email:profile.email||'',verbenTestV1:{state:snapshot,revision:snapshot.revision,updatedAtMs:now()},lastPage:location.pathname,lastActive:tools.serverTimestamp(),updatedAt:tools.serverTimestamp()},{merge:true});
 };
 restoreRemoteIfNeeded=async function(){
   if(remoteLoaded||isTeacher()||!profile||window.SP_NO_FIREBASE_SYNC)return;remoteLoaded=true;
