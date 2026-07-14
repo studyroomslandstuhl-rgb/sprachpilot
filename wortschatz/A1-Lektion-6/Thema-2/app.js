@@ -47,63 +47,101 @@ const SENTENCES=[
 {parts:['Ich','wohne','in der','Ukraine.'],sol:'Ich wohne in der Ukraine.'},
 {parts:['Im','Herbst','regnet','es oft.'],sol:'Im Herbst regnet es oft.'}
 ];
-const TASKS=[['karteikarten.html',WORDS.length,'Karteikarten'],['bild-wort.html',WORDS.length,'Bild → Wort'],['hoeren-schreiben.html',WORDS.length,'Hören/Schreiben'],['praepositionen.html',GRAMMAR.length,'Präpositionen'],['saetze-bauen.html',SENTENCES.length,'Sätze bauen'],['pruefung.html',10,'Prüfung']];
-const TASK_ICONS={'karteikarten.html':'🃏','bild-wort.html':'🖼️','hoeren-schreiben.html':'🎧','praepositionen.html':'📍','saetze-bauen.html':'🧩','pruefung.html':'⭐'};
+const TASKS=[
+['karteikarten.html',WORDS.length,'Karteikarten'],
+['bild-wort.html',WORDS.length,'Bild → Wort'],
+['hoeren-bild.html',WORDS.length,'Hören → Bild'],
+['kategorien-drag.html',WORDS.filter(w=>['Himmelsrichtungen','Länder','Jahreszeiten'].includes(w.group)).length,'Kategorien · 2 Teile'],
+['praepositionen.html',18,'Richtige Präposition'],
+['praepositionen-bild.html',21,'Bild → Präposition'],
+['praepositionen-drag.html',18,'Präpositionen zuordnen · 2 Teile'],
+['fehler-finden.html',20,'Fehler finden und korrigieren'],
+['postkarte.html',2,'Postkarten ergänzen'],
+['saetze-bauen.html',SENTENCES.length,'Sätze bauen'],
+['pruefung.html',20,'Prüfung']
+];
+const TASK_ICONS={'karteikarten.html':'🃏','bild-wort.html':'🖼️','hoeren-bild.html':'🎧','kategorien-drag.html':'🧺','praepositionen.html':'📍','praepositionen-bild.html':'🖼️','praepositionen-drag.html':'🧲','fehler-finden.html':'🛠️','postkarte.html':'✉️','saetze-bauen.html':'🧩','pruefung.html':'⭐'};
 const LANGS={en:'Englisch',ru:'Russisch',tr:'Türkisch',uk:'Ukrainisch',ar:'Arabisch',ja:'Japanisch',ro:'Rumänisch',pl:'Polnisch',ku:'Kurdisch'};
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')}catch(e){return null}}
 function langKey(){const m=String(profile()?.muttersprache||profile()?.motherLanguage||'').toLowerCase();if(['uk','ua'].includes(m)||m.includes('ukrain'))return'uk';if(m.includes('russ'))return'ru';if(m.includes('türk')||m.includes('turk'))return'tr';if(m.includes('arab'))return'ar';if(m.includes('japan'))return'ja';if(m.includes('rumän')||m.includes('ruman'))return'ro';if(m.includes('pol'))return'pl';if(m.includes('kurd'))return'ku';return'en'}
 function tr(w){const k=langKey(),t=w.tr||{};return t[k]||t.en||'—'}
 function full(w){return w.full||((w.article?`${w.article} `:'')+w.word)}
-function img(w){return CDN+String(w?.id||'').toLowerCase()+'.webp'}
-function visual(w){return `<div class="task-img-box"><img src="${img(w)}" alt="${full(w)}" onerror="this.parentElement.textContent='${full(w)}'"></div>`}
-function miniVisual(w){return `<img src="${img(w)}" alt="${full(w)}" onerror="this.replaceWith(document.createTextNode('${full(w)}'))">`}
+function img(w){return CDN+String(w?.image||w?.id+'.webp').split('/').pop()}
+function visual(w){return `<div class="task-img-box"><img src="${img(w)}" alt="${full(w)}" loading="eager" decoding="async" onerror="this.parentElement.textContent='${full(w)}'"></div>`}
+function miniVisual(w){return `<img src="${img(w)}" alt="${full(w)}" loading="lazy" decoding="async" onerror="this.replaceWith(document.createTextNode('${full(w)}'))">`}
 function words(){return WORDS}
 function simple(x){return String(x||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:]/g,'').replace(/\s+/g,' ')}
 function exact(value,solutions){const a=simple(value);return (Array.isArray(solutions)?solutions:[solutions]).some(s=>simple(s)===a)}
-function shuffle(a){return [...a].sort(()=>Math.random()-.5)}
+function shuffle(a){const out=[...(a||[])];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out}
 function say(t){if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=.86;speechSynthesis.speak(u)}
 function isTeacher(){return localStorage.getItem('SP_LOGIN_ROLE')==='teacher'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}
 function taskKey(file){return CFG.key+'_'+file}
+const TASK_STATE_CACHE=new Map();
+const TASK_RAW_CACHE=new Map();
+const TASK_SYNC_TIMERS=new Map();
+const TASK_PENDING_SYNC=new Map();
+function copyTaskState(st){return{total:st.total,done:[...(st.done||[])],queue:[...(st.queue||[])],current:st.current,tries:Number(st.tries||0),hadWrong:!!st.hadWrong}}
 function normalizeTaskState(st,total){
+  total=Math.max(0,Number(total)||0);
   st=st&&typeof st==='object'?st:{};
   const done=[...new Set((Array.isArray(st.done)?st.done:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<total))];
   const current=Number.isInteger(st.current)&&st.current>=0&&st.current<total&&!done.includes(st.current)?st.current:null;
-  let queue=Array.isArray(st.queue)?st.queue.filter(i=>Number.isInteger(i)&&i>=0&&i<total&&!done.includes(i)&&i!==current):[];
-  const used=new Set([...(done||[]),...(current===null?[]:[current]),...queue]);
-  const missing=[...Array(total).keys()].filter(i=>!used.has(i)).sort(()=>Math.random()-.5);
-  queue=[...new Set([...queue,...missing])];
-  return {total,done,queue,current,tries:Number(st.tries||0),hadWrong:!!st.hadWrong};
+  const rawQueue=Array.isArray(st.queue)?st.queue:[];
+  let queue=rawQueue.filter(i=>Number.isInteger(i)&&i>=0&&i<total&&!done.includes(i)&&i!==current);
+  const used=new Set([...done,...(current===null?[]:[current]),...queue]);
+  queue=[...new Set([...queue,...shuffle([...Array(total).keys()].filter(i=>!used.has(i)))])];
+  return{total,done,queue,current,tries:Number(st.tries||0),hadWrong:!!st.hadWrong};
 }
-function loadTask(file,total){
-  try{
-    const raw=JSON.parse(localStorage.getItem(taskKey(file))||'null');
-    if(raw&&Array.isArray(raw.done)&&Array.isArray(raw.queue)){
-      const st=normalizeTaskState(raw,total);
-      if(raw.total!==total||st.done.length!==(raw.done||[]).length||st.queue.length!==(raw.queue||[]).length)localStorage.setItem(taskKey(file),JSON.stringify(st));
-      return st;
-    }
-  }catch(e){}
-  return{total,done:[],queue:[...Array(total).keys()].sort(()=>Math.random()-.5),current:null,tries:0,hadWrong:false}
+function readTaskState(file,total){
+  const cacheId=taskKey(file)+'|'+total;
+  if(TASK_STATE_CACHE.has(cacheId))return copyTaskState(TASK_STATE_CACHE.get(cacheId));
+  let state=null,rawText='';
+  try{rawText=localStorage.getItem(taskKey(file))||'';state=rawText?JSON.parse(rawText):null}catch(e){}
+  const normalized=normalizeTaskState(state,total);
+  const text=JSON.stringify(normalized);
+  TASK_STATE_CACHE.set(cacheId,normalized);TASK_RAW_CACHE.set(cacheId,text);
+  if(rawText&&rawText!==text){try{localStorage.setItem(taskKey(file),text)}catch(e){}}
+  return copyTaskState(normalized);
 }
-function saveTask(file,st){localStorage.setItem(taskKey(file),JSON.stringify(normalizeTaskState(st,st.total||0)));syncTask(file,loadTask(file,st.total||0))}
-function spNextIndex(file,total){let st=loadTask(file,total);if(st.current===null||st.current===undefined){if(!st.queue.length&&st.done.length<total)st.queue=[...Array(total).keys()].filter(i=>!st.done.includes(i)).sort(()=>Math.random()-.5);st.current=st.queue.shift();st.tries=0;st.hadWrong=false;saveTask(file,st)}return st.current}
-function spMarkRight(file,total){let st=loadTask(file,total),c=st.current;if(c!==null&&c!==undefined){if(st.hadWrong||st.tries>0){if(!st.done.includes(c)&&!st.queue.includes(c))st.queue.push(c)}else if(!st.done.includes(c))st.done.push(c)}st.current=null;st.tries=0;st.hadWrong=false;saveTask(file,st)}
-function spMarkWrong(file,total){let st=loadTask(file,total);st.tries=(st.tries||0)+1;st.hadWrong=true;saveTask(file,st);return st.tries}
-function pctFor(file,total){return total?Math.round((loadTask(file,total).done.length||0)/total*100)||0:0}
-function progress(file,total){const d=loadTask(file,total).done.length,p=pctFor(file,total);return `<div class="small">${d} richtig · ${total-d} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
+function loadTask(file,total){return readTaskState(file,total)}
+function scheduleTaskSync(file,st){
+  TASK_PENDING_SYNC.set(file,copyTaskState(st));
+  clearTimeout(TASK_SYNC_TIMERS.get(file));
+  const run=()=>{TASK_SYNC_TIMERS.delete(file);const pending=TASK_PENDING_SYNC.get(file);TASK_PENDING_SYNC.delete(file);if(pending)syncTask(file,pending)};
+  const timer=setTimeout(()=>{if('requestIdleCallback'in window)requestIdleCallback(run,{timeout:900});else run()},450);
+  TASK_SYNC_TIMERS.set(file,timer);
+}
+function saveTask(file,st,shouldSync=true){
+  const total=Math.max(0,Number(st?.total)||0),cacheId=taskKey(file)+'|'+total;
+  const previous=TASK_STATE_CACHE.get(cacheId),normalized=normalizeTaskState(st,total),text=JSON.stringify(normalized);
+  const changed=TASK_RAW_CACHE.get(cacheId)!==text;
+  TASK_STATE_CACHE.set(cacheId,normalized);TASK_RAW_CACHE.set(cacheId,text);
+  if(changed){try{localStorage.setItem(taskKey(file),text)}catch(e){}}
+  const progressChanged=!previous||previous.done.length!==normalized.done.length;
+  if(shouldSync&&progressChanged)scheduleTaskSync(file,normalized);
+  return copyTaskState(normalized);
+}
+function spNextIndex(file,total){let st=loadTask(file,total);if(st.current===null||st.current===undefined){if(!st.queue.length&&st.done.length<total)st.queue=shuffle([...Array(total).keys()].filter(i=>!st.done.includes(i)));st.current=st.queue.shift();st.tries=0;st.hadWrong=false;st=saveTask(file,st,false)}return st.current}
+function spMarkRight(file,total){let st=loadTask(file,total),c=st.current;if(c!==null&&c!==undefined){if(st.hadWrong||st.tries>0){if(!st.done.includes(c)&&!st.queue.includes(c))st.queue.push(c)}else if(!st.done.includes(c))st.done.push(c)}st.current=null;st.tries=0;st.hadWrong=false;saveTask(file,st,true)}
+function spMarkWrong(file,total){let st=loadTask(file,total);st.tries=(st.tries||0)+1;st.hadWrong=true;saveTask(file,st,false);return st.tries}
+function pctFor(file,total){if(!total)return 0;const st=loadTask(file,total);return Math.round(st.done.length/total*100)||0}
+function progress(file,total){const st=loadTask(file,total),d=st.done.length,p=total?Math.round(d/total*100)||0:0;return `<div class="small">${d} richtig · ${total-d} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
 function help3(t,a,b,sol){if(t===1)return `<div class="no">${a}</div>`;if(t===2)return `<div class="hint">${b}</div>`;return `<div class="no">Lösung: ${sol}</div>`}
 function instruction(txt){return `<div class="task-instruction">${txt}</div>`}
 function complete(area,file,next='index.html'){area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${next}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div></div>`}
-function markTaskDone(file,total){saveTask(file,{total,done:[...Array(total).keys()],queue:[],current:null,tries:0,hadWrong:false})}
-function repeatScope(){return 'wortschatz-a1-lektion-6-thema-2'}
-function currentRepeatRun(){return Math.max(1,Math.round(Number(localStorage.getItem('SP_SCORE_RUN_'+repeatScope())||1)||1))}
+function markTaskDone(file,total){saveTask(file,{total,done:[...Array(total).keys()],queue:[],current:null,tries:0,hadWrong:false},true)}
+function repeatScope(){return'wortschatz-a1-lektion-6-thema-2'}
+function currentRepeatRun(){return Math.max(1,Math.round(Number(localStorage.getItem('SP_SCORE_RUN_'+repeatScope())||1)||1)}
 function taskPointsForRun(){const run=currentRepeatRun();if(run===1)return 5;if(run===2)return 10;if(run===3)return 15;return 0}
 function topicComplete(){return TASKS.length>0&&TASKS.every(t=>pctFor(t[0],t[1])>=100)}
-function repeatBannerHtml(){if(!topicComplete())return '';const run=currentRepeatRun();if(run>=3)return `<section class="card repeat-card done"><h2>Du bist fertig!</h2><p class="small">Du hast dieses Thema dreimal vollständig geschafft. Fortschritte löschen bleibt weiterhin möglich.</p></section>`;const nextPoints=run===1?10:15;return `<section class="card repeat-card"><h2>Wiederhole alle Aufgaben und bekomme mehr Punkte!</h2><p class="small">Nächste Runde: ${nextPoints} Punkte pro Aufgabe.</p><div class="actions"><button class="btn" onclick="startRepeatRound()">Wiederholen</button></div></section>`}
-function resetLocalTopicTasks(){TASKS.forEach(t=>localStorage.removeItem(taskKey(t[0])));localStorage.removeItem('SP_L6_T2_EXAM_CURRENT_SCORE');localStorage.removeItem('SP_L6_T2_EXAM_CURRENT_PERCENT')}
+function repeatBannerHtml(){if(!topicComplete())return'';const run=currentRepeatRun();if(run>=3)return`<section class="card repeat-card done"><h2>Du bist fertig!</h2><p class="small">Du hast dieses Thema dreimal vollständig geschafft. Fortschritte löschen bleibt weiterhin möglich.</p></section>`;const nextPoints=run===1?10:15;return`<section class="card repeat-card"><h2>Wiederhole alle Aufgaben und bekomme mehr Punkte!</h2><p class="small">Nächste Runde: ${nextPoints} Punkte pro Aufgabe.</p><div class="actions"><button class="btn" onclick="startRepeatRound()">Wiederholen</button></div></section>`}
+function clearTaskCaches(){TASK_STATE_CACHE.clear();TASK_RAW_CACHE.clear();TASK_PENDING_SYNC.clear();TASK_SYNC_TIMERS.forEach(clearTimeout);TASK_SYNC_TIMERS.clear()}
+function resetLocalTopicTasks(){TASKS.forEach(t=>localStorage.removeItem(taskKey(t[0])));localStorage.removeItem('SP_L6_T2_EXAM_CURRENT_SCORE');localStorage.removeItem('SP_L6_T2_EXAM_CURRENT_PERCENT');clearTaskCaches()}
 function startRepeatRound(){if(!topicComplete())return;const run=currentRepeatRun();if(run>=3)return;if(!confirm('Alle Aufgaben in diesem Thema auf 0 setzen und die nächste Wiederholungsrunde starten?'))return;try{if(window.SPProgress&&SPProgress.recordThemeReset)SPProgress.recordThemeReset({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:repeatScope(),title:'A1 Lektion 6 · Thema 2'});else import('/js/progress.js?v=l6t2-repeat').then(m=>m.recordThemeReset&&m.recordThemeReset({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:repeatScope(),title:'A1 Lektion 6 · Thema 2'})).catch(()=>{})}catch(e){localStorage.setItem('SP_SCORE_RUN_'+repeatScope(),String(run+1))}resetLocalTopicTasks();setTimeout(()=>location.reload(),80)}
 function syncTask(file,st){try{const done=st.done?.length||0,total=st.total||0,percent=total?Math.round(done/total*100):0;const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:repeatScope(),title:'A1 Lektion 6 · Thema 2',file,taskTitle:(TASKS.find(t=>t[0]===file)||[])[2]||file,percent,done,total,completed:percent>=100,run:currentRepeatRun(),pointsPerTask:taskPointsForRun()};if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload)}catch(e){}}
 function header(title,showReset=false){const h=document.querySelector('.topbar');if(!h)return;const p=profile(),name=`${p?.vorname||p?.firstName||''} ${p?.nachname||p?.lastName||''}`.trim()||'Schüler/in',dashboard=localStorage.getItem('SP_LOGIN_ROLE')==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';h.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${title} · ${CFG.sub}</div></div></a><div class="account-tools"><span class="account-pill">${name}</span><a class="account-link" href="${dashboard}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="index.html">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a>${showReset?'<button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>':''}</nav>`}
-function resetThemeProgress(){if(!confirm('Fortschritte in Thema 2 löschen?'))return;Object.keys(localStorage).filter(k=>k.startsWith(CFG.key)).forEach(k=>localStorage.removeItem(k));localStorage.removeItem('SP_L6_T2_EXAM_CURRENT_SCORE');localStorage.removeItem('SP_L6_T2_EXAM_CURRENT_PERCENT');location.reload()}
+function resetThemeProgress(){if(!confirm('Fortschritte in Thema 2 löschen?'))return;Object.keys(localStorage).filter(k=>k.startsWith(CFG.key)).forEach(k=>localStorage.removeItem(k));localStorage.removeItem('SP_L6_T2_EXAM_CURRENT_SCORE');localStorage.removeItem('SP_L6_T2_EXAM_CURRENT_PERCENT');clearTaskCaches();location.reload()}
 function renderOverview(target){const groups=[...new Set(WORDS.map(w=>w.group))];target.innerHTML=groups.map(g=>`<section class="type-block"><div class="type-title">${g}</div>${WORDS.filter(w=>w.group===g).map(w=>`<div class="word-row"><div class="word-placeholder">${miniVisual(w)}</div><div><b>${full(w)}</b><br><span class="small">${w.sentence}${w.from?' / '+w.from:''}</span><div class="small">Übersetzung (${LANGS[langKey()]||'EN'}): ${tr(w)}</div><span class="tag">${w.type}</span></div></div>`).join('')}</section>`).join('')+`<section class="type-block"><div class="type-title">Grammatik: Präpositionen</div><div class="grammar-rule">Himmelsrichtungen: <b>im Norden</b>, <b>im Süden</b>, <b>im Osten</b>, <b>im Westen</b></div><div class="grammar-rule">Wind: <b>aus dem Norden</b>, <b>aus dem Westen</b></div><div class="grammar-rule">Jahreszeiten: <b>im Frühling</b>, <b>im Sommer</b>, <b>im Herbst</b>, <b>im Winter</b></div><div class="grammar-rule">Länder ohne Artikel: <b>in Deutschland</b>, <b>aus Österreich</b></div><div class="grammar-rule">Länder mit die: <b>in der Schweiz</b>, <b>aus der Türkei</b>, <b>in der Ukraine</b></div><div class="grammar-rule">Länder im Plural: <b>in den USA</b>, <b>aus den USA</b></div></section>`}
-function renderMenu(){const avg=Math.round(TASKS.reduce((s,t)=>s+pctFor(t[0],t[1]),0)/TASKS.length)||0;totalCircle.textContent=avg+'%';totalBar.style.width=avg+'%';totalText.textContent=TASKS.filter(t=>pctFor(t[0],t[1])>=100).length+' / '+TASKS.length+' Aufgaben abgeschlossen';taskGrid.innerHTML=repeatBannerHtml()+`<div class="grid">${TASKS.map((t,i)=>{const p=pctFor(t[0],t[1]);return `<a class="module" href="${t[0]}"><div class="num">${i+1}. ${t[2]}</div><div class="big-icon">${TASK_ICONS[t[0]]||'▶'}</div><p class="small">Himmelsrichtungen, Länder, Jahreszeiten und Präpositionen üben.</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}% · Runde ${currentRepeatRun()} · ${taskPointsForRun()} Punkte</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}).join('')}</div>`}
+function renderMenu(){const rows=TASKS.map(t=>({task:t,p:pctFor(t[0],t[1])})),avg=Math.round(rows.reduce((s,r)=>s+r.p,0)/rows.length)||0;totalCircle.textContent=avg+'%';totalBar.style.width=avg+'%';totalText.textContent=rows.filter(r=>r.p>=100).length+' / '+rows.length+' Aufgaben abgeschlossen';taskGrid.innerHTML=repeatBannerHtml()+`<div class="grid">${rows.map((row,i)=>{const t=row.task,p=row.p;return`<a class="module" href="${t[0]}"><div class="num">${i+1}. ${t[2]}</div><div class="big-icon">${TASK_ICONS[t[0]]||'▶'}</div><p class="small">Himmelsrichtungen, Länder, Jahreszeiten und Präpositionen üben.</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}% · Runde ${currentRepeatRun()} · ${taskPointsForRun()} Punkte</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}).join('')}</div>`}
+window.addEventListener('storage',e=>{if(e.key&&e.key.startsWith(CFG.key)){TASK_STATE_CACHE.clear();TASK_RAW_CACHE.clear()}});
+window.addEventListener('pagehide',()=>{TASK_PENDING_SYNC.forEach((st,file)=>syncTask(file,st));TASK_PENDING_SYNC.clear()});
