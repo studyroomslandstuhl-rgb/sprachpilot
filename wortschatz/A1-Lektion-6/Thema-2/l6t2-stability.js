@@ -25,7 +25,7 @@
   function pointsPerTask(){const r=topicRun();return r===1?5:r===2?10:r===3?15:0}
   function taskTitle(file){const row=taskRows().find(t=>t[0]===file);return row?row[2]:file.replace(/\.html$/,'').replace(/-/g,' ')}
   function totalFor(file){
-    if(WORD_TASKS.has(file)){try{const n=Number(typeof words==='function'&&words().length);if(n>0)return n}catch(e){}return 32}
+    if(WORD_TASKS.has(file))return 32;
     const row=taskRows().find(t=>t[0]===file);
     return row&&Number(row[1])>0?Number(row[1]):Number(FIXED_TOTALS[file]||0)
   }
