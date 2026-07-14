@@ -6,7 +6,7 @@
   <title>Verben A1 · SprachPilot</title>
   <script>
     (function(){
-      var resetKey='SP_VERBEN_CACHE_RESET_20260714_2';
+      var resetKey='SP_VERBEN_CACHE_RESET_20260714_3';
       try{
         if(!sessionStorage.getItem(resetKey)){
           sessionStorage.setItem(resetKey,'1');
@@ -20,7 +20,7 @@
       if(!h)return;
       var taskMap={
         'karteikarte':'karteikarte','memory':'memory','bild-verb':'bild-verb','bild_verb':'bild-verb','verb-bild':'verb-bild','verb_bild':'verb-bild','schreiben':'schreiben',
-        'hoeren-schreiben':'hoeren-schreiben','hoeren_schreiben':'hoeren-schreiben','hoeren-sprechen':'hoeren-sprechen','hoeren_sprechen':'hoeren-sprechen',
+        'hoeren-schreiben':'hoeren-schreiben','hoeren_schreiben':'hoeren-schreiben','hoeren-sprechen':'hoeren-sprechen','hoeren_spprechen':'hoeren-sprechen',
         'bild-sprechen':'bild-sprechen','bild_sprechen':'bild-sprechen','satz-puzzle':'satz-puzzle','satz_puzzle':'satz-puzzle','konjugieren':'konjugieren','pruefung':'pruefung'
       };
       var viewMap={'aufgaben':'aufgaben','taskOverview':'aufgaben','task-overview':'aufgaben','tasks':'aufgaben','chooser':'chooser','assessment':'assessment','overview':'overview'};
@@ -38,7 +38,7 @@
 </head>
 <body>
   <div id="accountStrip" class="account-strip"></div>
-  <script type="module" src="/js/guard.js?v=verbs-stable-4"></script>
+  <script type="module" src="/js/guard.js?v=verbs-storage-stable-1"></script>
 
   <div class="container">
     <header id="spHeader" class="topbar"></header>
@@ -55,8 +55,8 @@
   <script defer src="data/grammar.js?v=12"></script>
   <script defer src="js/state.js?v=20"></script>
   <script defer src="js/progress.js?v=22"></script>
-  <script defer src="js/cloud-progress-sync.js?v=15"></script>
-  <script defer src="js/firebase-progress-sync.js?v=1"></script>
+  <script defer src="js/cloud-progress-sync.js?v=16"></script>
+  <script defer src="js/firebase-progress-sync.js?v=2"></script>
   <script defer src="js/profile-sync-bridge.js?v=1"></script>
   <script defer src="js/menu.js?v=12"></script>
   <script defer src="tasks/assessment.js?v=18"></script>
@@ -81,8 +81,8 @@
   <script defer src="data/verb-additions-20260714.js?v=1"></script>
   <script defer src="data/verb-additions-20260714-sentences.js?v=1"></script>
   <script defer src="dashboard/student-dashboard.js?v=12"></script>
-  <script defer src="js/app.js?v=113"></script>
-  <script defer src="js/package-progress-v2.js?v=3"></script>
+  <script defer src="js/app.js?v=114"></script>
+  <script defer src="js/package-progress-v2.js?v=4"></script>
   <script defer src="js/verb-selected-bunny.js?v=2"></script>
   <script defer src="js/back-flow-fix.js?v=12"></script>
   <script defer src="js/verb-reset-progress-button.js?v=1"></script>
