@@ -24,24 +24,32 @@
 
   function esc(s){return String(s||'').replace(/[&<>"']/g,function(m){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]});}
   function bare(v){return String(v||'').replace(/^sich\s+/i,'');}
-  function meta(v){return (window.VERB_META&&window.VERB_META[v])||{level:(window.VERB_LEVELS&&window.VERB_LEVELS[v])||'A1',type:'normal'};}
-  function allVerbNames(){return [...new Set((window.ALL_VERBS||[]).map(x=>bare(x.v)).filter(Boolean))].sort(function(a,b){return a.localeCompare(b,'de',{sensitivity:'base'})});}
-  function inList(v,list){return list.indexOf(v)>=0 || list.indexOf('sich '+v)>=0}
-  function isModal(v){return inList(v,MODAL_VERBS)||((window.SP_MODAL_VERBS||[]).indexOf(v)>=0)||meta(v).modal||meta(v).type==='modal';}
-  function isReflexive(v){return inList(v,REFLEXIVE_VERBS)||((window.SP_REFLEXIVE_VERBS||[]).indexOf(v)>=0)||meta(v).reflexive||String(meta(v).type||'').includes('reflexive');}
-  function isSeparable(v){return inList(v,SEPARABLE_VERBS)||((window.SP_SEPARABLE_VERBS||[]).indexOf(v)>=0)||meta(v).separable||String(meta(v).type||'').includes('separable');}
-  function isInseparablePrefix(v){return !isSeparable(v)&&(inList(v,INSEPARABLE_PREFIX_VERBS)||((window.SP_INSEPARABLE_PREFIX_VERBS||[]).indexOf(v)>=0)||meta(v).inseparablePrefix||String(meta(v).type||'').includes('inseparable')||INSEPARABLE_PREFIX_RE.test(v));}
-  function levelOf(v){return meta(v).level||((window.VERB_LEVELS&&window.VERB_LEVELS[v])||'A1');}
+  function meta(v){
+    const exact=window.VERB_META&&window.VERB_META[v];
+    const plain=window.VERB_META&&window.VERB_META[bare(v)];
+    return exact||plain||{level:(window.VERB_LEVELS&&(window.VERB_LEVELS[v]||window.VERB_LEVELS[bare(v)]))||'A1',type:'normal'};
+  }
+  function allVerbNames(){return [...new Set((window.ALL_VERBS||[]).map(x=>x&&x.v).filter(Boolean))].sort(function(a,b){return a.localeCompare(b,'de',{sensitivity:'base'})});}
+  function inList(v,list){const b=bare(v);return list.indexOf(v)>=0||list.indexOf(b)>=0||list.indexOf('sich '+b)>=0}
+  function isModal(v){return inList(v,MODAL_VERBS)||((window.SP_MODAL_VERBS||[]).indexOf(v)>=0)||((window.SP_MODAL_VERBS||[]).indexOf(bare(v))>=0)||meta(v).modal||meta(v).type==='modal';}
+  function isReflexive(v){return /^sich\s+/i.test(v)||inList(v,REFLEXIVE_VERBS)||((window.SP_REFLEXIVE_VERBS||[]).indexOf(v)>=0)||((window.SP_REFLEXIVE_VERBS||[]).indexOf(bare(v))>=0)||meta(v).reflexive||String(meta(v).type||'').includes('reflexive');}
+  function isSeparable(v){return inList(v,SEPARABLE_VERBS)||((window.SP_SEPARABLE_VERBS||[]).indexOf(v)>=0)||((window.SP_SEPARABLE_VERBS||[]).indexOf(bare(v))>=0)||meta(v).separable||String(meta(v).type||'').includes('separable');}
+  function isInseparablePrefix(v){const b=bare(v);return !isSeparable(v)&&(inList(v,INSEPARABLE_PREFIX_VERBS)||((window.SP_INSEPARABLE_PREFIX_VERBS||[]).indexOf(v)>=0)||((window.SP_INSEPARABLE_PREFIX_VERBS||[]).indexOf(b)>=0)||meta(v).inseparablePrefix||String(meta(v).type||'').includes('inseparable')||INSEPARABLE_PREFIX_RE.test(b));}
+  function levelOf(v){return meta(v).level||((window.VERB_LEVELS&&(window.VERB_LEVELS[v]||window.VERB_LEVELS[bare(v)]))||'A1');}
   function strongGroup(v){
+    const b=bare(v);
     if(inList(v,STRONG_A_UMLAUT))return 'a → ä';
     if(inList(v,STRONG_E_I))return 'e → i';
     if(inList(v,STRONG_E_IE))return 'e → ie';
     if(inList(v,STRONG_SPECIAL))return 'spezial';
-    if((window.SP_IRREGULAR_VERBS||[]).indexOf(v)>=0||meta(v).irregular||meta(v).strong||(typeof STRONG_IRREGULAR_VERBS!=='undefined'&&STRONG_IRREGULAR_VERBS.has(v)))return 'spezial';
+    if((window.SP_IRREGULAR_VERBS||[]).indexOf(v)>=0||(window.SP_IRREGULAR_VERBS||[]).indexOf(b)>=0||meta(v).irregular||meta(v).strong||(typeof STRONG_IRREGULAR_VERBS!=='undefined'&&(STRONG_IRREGULAR_VERBS.has(v)||STRONG_IRREGULAR_VERBS.has(b))))return 'spezial';
     return '';
   }
   function isStrong(v){return !isModal(v)&&!!strongGroup(v);}
-  function sentence(v){return (window.VERB_SENTENCES&&window.VERB_SENTENCES[v])||(typeof window.sentenceForVerb==='function'?window.sentenceForVerb(v):'');}
+  function sentence(v){
+    const b=bare(v);
+    return (window.VERB_SENTENCES&&(window.VERB_SENTENCES[v]||window.VERB_SENTENCES[b]))||(typeof window.sentenceForVerb==='function'?window.sentenceForVerb(v):'');
+  }
   function displayVerb(v){return isReflexive(v)&&!/^sich\s+/i.test(v)?'sich '+v:v;}
   function tags(v){
     const out=[levelOf(v)];
