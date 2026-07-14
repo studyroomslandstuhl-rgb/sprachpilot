@@ -1,4 +1,8 @@
 (function(){
+  if(location.pathname.includes('/wortschatz/A1-Lektion-5/')){
+    window.__SP_PROGRESS_STANDARD_V3=true;
+    return;
+  }
   if(window.__SP_PROGRESS_STANDARD_V3)return;
   window.__SP_PROGRESS_STANDARD_V3=true;
 
