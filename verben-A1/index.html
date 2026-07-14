@@ -6,7 +6,7 @@
   <title>Verben A1 · SprachPilot</title>
   <script>
     (function(){
-      var resetKey='SP_VERBEN_CACHE_RESET_20260714_5';
+      var resetKey='SP_VERBEN_CACHE_RESET_20260714_6';
       try{
         if(!sessionStorage.getItem(resetKey)){
           sessionStorage.setItem(resetKey,'1');
@@ -38,7 +38,7 @@
 </head>
 <body>
   <div id="accountStrip" class="account-strip"></div>
-  <script type="module" src="/js/guard.js?v=verbs-storage-stable-3"></script>
+  <script type="module" src="/js/guard.js?v=verbs-storage-stable-4"></script>
 
   <div class="container">
     <header id="spHeader" class="topbar"></header>
@@ -57,6 +57,7 @@
   <script defer src="js/progress.js?v=22"></script>
   <script defer src="js/cloud-progress-sync.js?v=18"></script>
   <script defer src="js/firebase-progress-sync.js?v=4"></script>
+  <script defer src="js/persistence-guard.js?v=1"></script>
   <script defer src="js/profile-sync-bridge.js?v=1"></script>
   <script defer src="js/menu.js?v=12"></script>
   <script defer src="tasks/assessment.js?v=18"></script>
@@ -85,7 +86,7 @@
   <script defer src="js/package-progress-v2.js?v=4"></script>
   <script defer src="js/verb-selected-bunny.js?v=2"></script>
   <script defer src="js/back-flow-fix.js?v=12"></script>
-  <script defer src="js/verb-reset-progress-button.js?v=1"></script>
+  <script defer src="js/verb-reset-progress-button.js?v=2"></script>
   <script defer src="../js/performance-boot.js?v=20260709d"></script>
 </body>
 </html>
