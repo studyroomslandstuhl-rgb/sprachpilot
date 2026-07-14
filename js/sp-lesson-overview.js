@@ -16,6 +16,13 @@ function percent(v){
   return Number.isFinite(n)?Math.max(0,Math.min(100,Math.round(n))):0;
 }
 
+function withTimeout(promise,ms,label){
+  return Promise.race([
+    Promise.resolve(promise),
+    new Promise((_,reject)=>setTimeout(()=>reject(new Error(label||"Zeitüberschreitung")),ms))
+  ]);
+}
+
 function progressKeys(config,theme){
   const lessonNumber=String(config.lessonNumber||config.lessonId||"").replace(/^.*?(\d+)$/,"$1");
   const themeNumber=String(theme.number||theme.id||"").replace(/^.*?(\d+)$/,"$1");
@@ -164,9 +171,10 @@ export async function renderLessonOverview(config){
   removeForeignHeaders();
   draw({}, {}, false);
 
+  const timeoutMs=Number(config.loadTimeoutMs||3500);
   const [releaseResult,progressResult]=await Promise.allSettled([
-    loadCourseRelease(profile),
-    loadCurrentStudentProgress()
+    withTimeout(loadCourseRelease(profile),timeoutMs,"Lektionsfreigaben: Zeitüberschreitung"),
+    withTimeout(loadCurrentStudentProgress(),timeoutMs,"Fortschritt: Zeitüberschreitung")
   ]);
   if(releaseResult.status==="rejected")console.warn("Lektionsfreigaben konnten nicht geladen werden:",releaseResult.reason);
   if(progressResult.status==="rejected")console.warn("Fortschritt konnte nicht geladen werden:",progressResult.reason);
