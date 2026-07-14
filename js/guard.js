@@ -66,7 +66,7 @@ if(!IS_L3T1&&!IS_L5){
 window.addEventListener("SP_PROFILE_SYNCED",()=>setTimeout(installHeaderOnce,0));
 import("/js/microphone-fallback.js?v=1").catch(()=>{});
 import("/js/back-button-fix.js?v=1").catch(()=>{});
-import("/js/release-helper.js?v=10").catch(()=>{});
+import("/js/release-helper.js?v=11").catch(()=>{});
 import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(IS_L3T1){
   import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-stability.js?v=3").catch(()=>{});
