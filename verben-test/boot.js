@@ -1,0 +1,5 @@
+import { getActiveProfile, getActiveRole, dashboardHref } from '/js/auth.js?v=verben-test-1';
+import { loadCourseRelease, moduleOpen } from '/js/course-releases.js?v=verben-test-1';
+window.VT_DEPS={getActiveProfile,getActiveRole,dashboardHref,loadCourseRelease,moduleOpen};
+function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=()=>reject(new Error('Datei konnte nicht geladen werden: '+src));document.body.appendChild(s)})}
+try{for(const src of ['./core.js?v=1','./views.js?v=1','./tasks.js?v=1'])await load(src);if(typeof window.VT_START==='function')window.VT_START();else throw new Error('Startfunktion fehlt.')}catch(e){const app=document.getElementById('app');if(app)app.innerHTML='<section class="card error-box"><h2>Verben Test konnte nicht geladen werden</h2><p>'+String(e.message||e)+'</p><button onclick="location.reload()">Neu laden</button></section>'}
