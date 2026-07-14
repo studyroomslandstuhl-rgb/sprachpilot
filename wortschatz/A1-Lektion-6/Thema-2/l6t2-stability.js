@@ -31,24 +31,77 @@
   function stateKey(file){try{if(typeof window.taskKey==='function')return window.taskKey(file)}catch(e){}return KEY_PREFIX+file}
   function allDone(total){return Array.from({length:total},(_,i)=>i)}
   function clearCaches(){try{if(typeof window.clearTaskCaches==='function')window.clearTaskCaches()}catch(e){}}
-  function readState(file){try{return JSON.parse(localStorage.getItem(stateKey(file))||'null')}catch(e){return null}}
-  function writeState(file,state){try{localStorage.setItem(stateKey(file),JSON.stringify(state));clearCaches()}catch(e){}}
-
+  function readJson(key){try{return JSON.parse(localStorage.getItem(key)||'null')}catch(e){return null}}
+  function readState(file){return readJson(stateKey(file))}
+  function writeState(file,state){try{localStorage.setItem(stateKey(file),JSON.stringify(state));clearCaches();window.dispatchEvent(new CustomEvent('SP_L6T2_PROGRESS_CHANGED',{detail:{file,state}}))}catch(e){}}
+  function baseName(file){return file.replace(/\.html$/i,'')}
+  function legacyKeys(file){
+    const base=baseName(file);
+    return [
+      stateKey(file),
+      'SP_TASK_STATE_'+file,'SP_TASK_STATE_'+base,
+      'SP_TASK_'+file,'SP_TASK_'+base,
+      'SP_L6_T2_'+file,'SP_L6_T2_'+base,
+      'SP_L6T2_'+file,'SP_L6T2_'+base,
+      'SP_L6_T2_V1:'+file,'SP_L6_T2_V1:'+base,
+      'SP_L6_T2_V1|'+file,'SP_L6_T2_V1|'+base,
+      'SP_L6_T2_TASK_'+file,'SP_L6_T2_TASK_'+base
+    ];
+  }
+  function isTaskStateKey(key,file){
+    const k=String(key||'').toLowerCase(),base=baseName(file).toLowerCase();
+    if(!k.includes(base))return false;
+    return k.includes('sp_task_state')||k.includes('sp_task_')||k.includes('sp_l6_t2')||k.includes('sp_l6t2')||(k.includes('lektion-6')&&k.includes('thema-2'));
+  }
+  function candidateEntries(file){
+    const keys=new Set(legacyKeys(file));
+    try{Object.keys(localStorage).forEach(key=>{if(isTaskStateKey(key,file))keys.add(key)})}catch(e){}
+    return [...keys].map(key=>({key,value:readJson(key)})).filter(x=>x.value&&typeof x.value==='object');
+  }
+  function unwrapState(raw){
+    if(!raw||typeof raw!=='object')return null;
+    if(raw.state&&typeof raw.state==='object')return raw.state;
+    if(raw.taskState&&typeof raw.taskState==='object')return raw.taskState;
+    if(raw.progress&&typeof raw.progress==='object')return raw.progress;
+    return raw;
+  }
+  function snapshot(raw,total){
+    const st=unwrapState(raw);
+    if(!st)return null;
+    const oldTotal=Math.max(0,Number(st.total||st.count||st.itemsTotal||0)||0);
+    let rawDone=Array.isArray(st.done)?st.done:Array.isArray(st.completed)?st.completed:Array.isArray(st.completedItems)?st.completedItems:[];
+    rawDone=[...new Set(rawDone.map(Number).filter(Number.isInteger))];
+    const numericDone=Math.max(0,Number(Array.isArray(st.done)?0:st.done||st.doneCount||st.completedCount||0)||0);
+    const doneCount=Math.max(rawDone.length,numericDone);
+    let percent=Number(st.percent??st.progressPercent??st.percentage);
+    if(!Number.isFinite(percent))percent=oldTotal?doneCount/oldTotal*100:0;
+    const complete=st.completed===true||st.isComplete===true||percent>=99.5||(oldTotal>0&&doneCount>=oldTotal);
+    percent=Math.max(0,Math.min(100,complete?100:percent));
+    let done=rawDone.filter(i=>i>=0&&i<total);
+    const target=Math.max(done.length,Math.min(total,complete?total:Math.round(total*percent/100)));
+    if(done.length<target){for(const n of allDone(total)){if(!done.includes(n))done.push(n);if(done.length>=target)break}}
+    done=[...new Set(done)].sort((a,b)=>a-b);
+    const current=Number.isInteger(st.current)&&st.current>=0&&st.current<total&&!done.includes(st.current)?st.current:null;
+    const queue=(Array.isArray(st.queue)?st.queue:[]).map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<total&&!done.includes(i)&&i!==current);
+    return{percent,complete,done,current,queue,tries:Number(st.tries||0),hadWrong:!!st.hadWrong};
+  }
   function repairState(file,total){
     if(!total)return null;
-    const old=readState(file);
-    if(!old||typeof old!=='object')return null;
-    const oldTotal=Math.max(0,Number(old.total)||0);
-    const oldDone=[...new Set((Array.isArray(old.done)?old.done:[]).filter(Number.isInteger))];
-    const wasComplete=old.completed===true||(oldTotal>0&&oldDone.length>=oldTotal);
-    let done=wasComplete?allDone(total):oldDone.filter(i=>i>=0&&i<total);
-    const current=Number.isInteger(old.current)&&old.current>=0&&old.current<total&&!done.includes(old.current)?old.current:null;
-    let queue=(Array.isArray(old.queue)?old.queue:[]).filter(i=>Number.isInteger(i)&&i>=0&&i<total&&!done.includes(i)&&i!==current);
+    const entries=candidateEntries(file),shots=entries.map(x=>snapshot(x.value,total)).filter(Boolean);
+    if(!shots.length)return null;
+    const complete=shots.some(s=>s.complete);
+    const strongest=shots.slice().sort((a,b)=>b.percent-a.percent||b.done.length-a.done.length)[0];
+    let done=complete?allDone(total):[...new Set(shots.flatMap(s=>s.done))].filter(i=>i>=0&&i<total).sort((a,b)=>a-b);
+    const bestPercent=Math.max(...shots.map(s=>s.percent),0);
+    const target=Math.min(total,complete?total:Math.round(total*bestPercent/100));
+    if(done.length<target){for(const n of allDone(total)){if(!done.includes(n))done.push(n);if(done.length>=target)break}}
+    const current=complete?null:(strongest.current!==null&&!done.includes(strongest.current)?strongest.current:null);
+    let queue=complete?[]:strongest.queue.filter(i=>!done.includes(i)&&i!==current);
     const used=new Set([...done,...queue,...(current===null?[]:[current])]);
-    queue=[...new Set([...queue,...allDone(total).filter(i=>!used.has(i))])];
-    const next={total,done,queue,current,tries:Number(old.tries||0),hadWrong:!!old.hadWrong};
-    if(wasComplete){next.current=null;next.queue=[];next.tries=0;next.hadWrong=false}
-    if(JSON.stringify(old)!==JSON.stringify(next))writeState(file,next);
+    if(!complete)queue=[...new Set([...queue,...allDone(total).filter(i=>!used.has(i))])];
+    const next={total,done,queue,current,tries:complete?0:strongest.tries,hadWrong:complete?false:strongest.hadWrong};
+    const canonical=readState(file);
+    if(JSON.stringify(canonical)!==JSON.stringify(next))writeState(file,next);
     return next;
   }
 
@@ -72,15 +125,22 @@
 
   function ensureHeader(){
     const h=document.querySelector('header.topbar,.topbar');
-    if(!h||String(h.textContent||'').trim())return;
-    const p=profile();
-    const name=[p.vorname||p.firstName||'',p.nachname||p.lastName||''].filter(Boolean).join(' ').trim()||'Schüler/in';
-    const role=String(localStorage.getItem('SP_LOGIN_ROLE')||'').toLowerCase();
-    const dashboard=role==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';
-    const file=fileName(),isIndex=file==='index.html'||file==='';
-    const title=isIndex?'Himmelsrichtungen · Länder · Jahreszeiten':document.title;
-    const back=isIndex?'../':'index.html?v='+BUILD;
-    h.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 6 · Thema 2</div></div></a><div class="account-tools"><span class="account-pill">${name}</span><a class="account-link" href="${dashboard}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="${back}">← Zurück</a><a class="btn secondary" href="uebersicht.html?v=${BUILD}">Übersicht</a>${isIndex?'<button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>':''}</nav>`;
+    if(!h)return;
+    if(!String(h.textContent||'').trim()){
+      const p=profile();
+      const name=[p.vorname||p.firstName||'',p.nachname||p.lastName||''].filter(Boolean).join(' ').trim()||'Schüler/in';
+      const role=String(localStorage.getItem('SP_LOGIN_ROLE')||'').toLowerCase();
+      const dashboard=role==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';
+      const file=fileName(),isIndex=file==='index.html'||file==='';
+      const title=isIndex?'Himmelsrichtungen · Länder · Jahreszeiten':document.title;
+      const back=isIndex?'../':'index.html?v='+BUILD;
+      h.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${title} · A1 Lektion 6 · Thema 2</div></div></a><div class="account-tools"><span class="account-pill">${name}</span><a class="account-link" href="${dashboard}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="${back}">← Zurück</a><a class="btn secondary" href="uebersicht.html?v=${BUILD}">Übersicht</a>${isIndex?'<button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>':''}</nav>`;
+    }
+    h.querySelectorAll('a').forEach(a=>{
+      const text=String(a.textContent||'').trim(),href=String(a.getAttribute('href')||'');
+      if(/Übersicht/i.test(text))a.href='uebersicht.html?v='+BUILD;
+      if(/Zurück/i.test(text)&&fileName()!=='index.html'&&(href==='index.html'||href.startsWith('index.html?')))a.href='index.html?v='+BUILD;
+    });
   }
 
   function ensureTask10(){
@@ -92,13 +152,24 @@
     grid.insertBefore(card,exam||null);
   }
 
+  function stableFinishLinks(){
+    document.querySelectorAll('.finish-box a').forEach(a=>{const href=String(a.getAttribute('href')||'');if(href==='index.html'||href.startsWith('index.html?'))a.href='index.html?v='+BUILD});
+  }
+  function clearLegacyProgress(){
+    const remove=new Set(['SP_L6_T2_EXAM_CURRENT_SCORE','SP_L6_T2_EXAM_CURRENT_PERCENT','SP_EXAM_UNLOCKED_L6_T2']);
+    TASK_FILES.forEach(file=>legacyKeys(file).forEach(key=>remove.add(key)));
+    try{Object.keys(localStorage).forEach(key=>{if(TASK_FILES.some(file=>isTaskStateKey(key,file)))remove.add(key)})}catch(e){}
+    remove.forEach(key=>{try{localStorage.removeItem(key)}catch(e){}});
+    clearCaches();
+  }
+
   function patchFunctions(){
     if(typeof window.complete==='function'&&!window.complete.__l6t2Stable){
       const old=window.complete;
       window.complete=function(area,file,next){
         const total=totalFor(file);
-        try{const st=readState(file);if(st&&Array.isArray(st.done)&&st.done.length>=total)forceComplete(file,total)}catch(e){}
-        return old.apply(this,arguments);
+        try{const st=repairState(file,total)||readState(file);if(st&&Array.isArray(st.done)&&st.done.length>=total)forceComplete(file,total)}catch(e){}
+        const out=old.apply(this,arguments);stableFinishLinks();return out;
       };
       window.complete.__l6t2Stable=true;
     }
@@ -112,21 +183,30 @@
       window.saveTask=function(file,state){const out=old.apply(this,arguments);const total=Number(state&&state.total)||totalFor(file);const done=Array.isArray(state&&state.done)?state.done.length:Number(state&&state.done||0);if(file!=='pruefung.html'&&total>0&&done>=total)forceComplete(file,total);return out};
       window.saveTask.__l6t2Stable=true;
     }
+    if(typeof window.resetLocalTopicTasks==='function'&&!window.resetLocalTopicTasks.__l6t2Stable){
+      const old=window.resetLocalTopicTasks;
+      window.resetLocalTopicTasks=function(){const out=old.apply(this,arguments);clearLegacyProgress();return out};
+      window.resetLocalTopicTasks.__l6t2Stable=true;
+    }
   }
 
   function repairAll(){
     TASK_FILES.forEach(file=>repairState(file,totalFor(file)));
     ensureTask10();
     ensureHeader();
+    stableFinishLinks();
     patchFunctions();
   }
 
+  window.l6t2RepairProgress=repairAll;
+  window.l6t2ClearLegacyProgress=clearLegacyProgress;
   ensureHeader();
   repairAll();
   document.addEventListener('DOMContentLoaded',repairAll);
   window.addEventListener('pageshow',repairAll);
+  window.addEventListener('focus',repairAll);
   setTimeout(repairAll,100);
   setTimeout(repairAll,500);
   setTimeout(repairAll,1400);
-  try{new MutationObserver(()=>{ensureHeader();ensureTask10();const file=fileName();if(file!=='index.html'&&file!=='pruefung.html'){const box=document.querySelector('.finish-box');if(box&&/Geschafft|abgeschlossen/i.test(box.textContent||''))forceComplete(file,totalFor(file))}}).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
+  try{new MutationObserver(()=>{ensureHeader();ensureTask10();stableFinishLinks();const file=fileName();if(file!=='index.html'&&file!=='pruefung.html'){const box=document.querySelector('.finish-box');if(box&&/Geschafft|abgeschlossen/i.test(box.textContent||''))forceComplete(file,totalFor(file))}}).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
 })();
