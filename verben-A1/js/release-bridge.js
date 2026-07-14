@@ -75,6 +75,7 @@
     if(changed&&typeof saveState==='function')saveState();
     return changed;
   }
+  function currentTaskParam(){try{const raw=new URLSearchParams(location.search||'').get('task')||'';const map={'bild-verb':'bild_verb','verb-bild':'verb_bild','hoeren-schreiben':'hoeren_schreiben','hoeren-sprechen':'hoeren_sprechen','bild-sprechen':'bild_sprechen','satz-puzzle':'satz_puzzle'};return map[raw]||raw}catch(e){return''}}
   function install(){
     window.spReleasedVerbList=releasedVerbs;
     window.spStrictReleasedVerbList=releasedVerbs;
@@ -85,7 +86,19 @@
     window.spVerbReleaseDebug=()=>({loaded,storageLoaded:stateRestored(),teacher:isTeacher(),codes:courseCodes(),released:releasedVerbs(),assessmentEnabled:assessmentEnabled(),data:releaseData(),state:stateData()?{active:state.active,currentPackageVerbs:state.currentPackageVerbs,phase:state.phase,releaseFingerprint:state._releaseFingerprint}:null});
     syncState();
   }
-  function refreshVisibleHome(){try{const S=stateData();if(!S||!stateRestored())return;if(S.phase==='taskOverview'&&typeof renderTaskOverview==='function')renderTaskOverview();else if(S.phase==='home'&&typeof renderVerbIndexPage==='function')renderVerbIndexPage()}catch(e){}}
+  function refreshVisibleHome(){
+    try{
+      const task=currentTaskParam();
+      if(task){
+        if(typeof window.routeVerbenHash==='function')window.routeVerbenHash();
+        else if(typeof openVerbTask==='function')openVerbTask(task);
+        return;
+      }
+      const S=stateData();if(!S||!stateRestored())return;
+      if(S.phase==='taskOverview'&&typeof renderTaskOverview==='function')renderTaskOverview();
+      else if(S.phase==='home'&&typeof renderVerbIndexPage==='function')renderVerbIndexPage();
+    }catch(e){}
+  }
 
   install();
   window.spVerbReleaseReady=loadReleaseData().then(data=>{install();refreshVisibleHome();return data}).catch(()=>{loaded=true;install();return releaseData()});
