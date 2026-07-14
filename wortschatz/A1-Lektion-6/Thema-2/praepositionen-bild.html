@@ -1,9 +1,9 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bild → Präposition</title><link rel="stylesheet" href="style.css?v=10"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-runtime1"></script><script src="app.js?v=10"></script><script src="l6t2-postkarte.js?v=12"></script><script src="l6t2-images.js?v=3"></script><script src="l6t2-extra-tasks.js?v=18"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bild → Präposition</title><link rel="stylesheet" href="style.css?v=10"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-runtime2"></script><script src="app.js?v=10"></script><script src="l6t2-postkarte.js?v=12"></script><script src="l6t2-images.js?v=3"></script><script src="l6t2-extra-tasks.js?v=19"></script><script>
 const area=document.getElementById('area');header('Bild → Präposition');
 const FILE='praepositionen-bild.html';let items=PREP_IMAGE_ITEMS,i=0;
 function show(){
   items=PREP_IMAGE_ITEMS;
-  if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'praepositionen-drag.html?v=l6t2-runtime1');return}
+  if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'praepositionen-drag.html?v=l6t2-runtime2');return}
   i=spNextIndex(FILE,items.length);
   const it=items[i],w=words().find(x=>x.id===it.id),options=shuffle(L6T2_PREP_OPTIONS);
   area.innerHTML=`${progress(FILE,items.length)}${instruction('Sehen Sie das Bild. Wählen Sie die richtige Präposition.')}<div class="small">Frage ${loadTask(FILE,items.length).done.length+1} von ${items.length}</div>${visual(w)}<div class="choice-grid">${options.map(o=>`<button class="choice" onclick="check(this,'${encodeURIComponent(o)}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`;
