@@ -32,6 +32,17 @@
   function nestedBool(a,b){const out={};[a,b].forEach(src=>{Object.keys(src||{}).forEach(v=>{out[v]=out[v]||{};Object.keys(src[v]||{}).forEach(k=>{out[v][k]=!!(out[v][k]||src[v][k])})})});return out}
   function nestedNumber(a,b){const out={};[a,b].forEach(src=>{Object.keys(src||{}).forEach(v=>{out[v]=out[v]||{};Object.keys(src[v]||{}).forEach(k=>{out[v][k]=Math.max(Number(out[v][k]||0),Number(src[v][k]||0))})})});return out}
   function queueMerge(a,b){const out={};[a,b].forEach(src=>{Object.keys(src||{}).forEach(k=>{out[k]=out[k]||[];const seen=new Set(out[k].map(x=>x&&x.v?x.v:JSON.stringify(x)));const list=Array.isArray(src[k])?src[k]:Object.values(src[k]||{});list.forEach(x=>{if(!x)return;const item=typeof x==='object'?x:{v:String(x),slot:0};if(item.v&&!seen.has(item.v)){seen.add(item.v);out[k].push(item)}})})});return out}
+  function mergeArchives(a,b){
+    const out=[],seen=new Set();
+    [a,b].forEach(list=>(Array.isArray(list)?list:[]).forEach(item=>{
+      if(!item||typeof item!=='object')return;
+      const verbs=Array.isArray(item.verbs)?item.verbs:(Array.isArray(item.practiced)?item.practiced:[]);
+      const id=JSON.stringify([item.completedAt||item.date||'',Number(item.examScore||0),verbs]);
+      if(seen.has(id))return;
+      seen.add(id);out.push(item);
+    }));
+    return out;
+  }
   function betterExam(a,b){a=a||{};b=b||{};const as=Number(a.score||0),bs=Number(b.score||0);if((b.passed&&!a.passed)||bs>as)return obj(a,b);return obj(b,a)}
   function stateStamp(s){return Math.max(Number(s&&s.localUpdatedAt||0),Number(s&&s.firebaseUpdatedAt||0),Number(s&&s.updatedAtMs||0))}
   function packageOf(s){
@@ -69,7 +80,7 @@
     out.known=union(remote.known,remote.learned,local.known,local.learned);
     out.learned=out.known.slice();
     out.assessed=union(remote.assessed,local.assessed);
-    out.archivedPackages=union(remote.archivedPackages,local.archivedPackages);
+    out.archivedPackages=mergeArchives(remote.archivedPackages,local.archivedPackages);
     out.weak=obj(remote.weak,local.weak);
     out.alertsShown=obj(remote.alertsShown,local.alertsShown);
     out.taskRewardsShown=obj(remote.taskRewardsShown,local.taskRewardsShown);
@@ -132,7 +143,6 @@
     snapshot.ownerId=id;
     const text=JSON.stringify(snapshot);
     if(text===lastSavedText)return;
-    lastSavedText=text;
     await Promise.race([
       mod.setDoc(mod.doc(mod.db,'progress',id),{
         studentId:id,userId:id,docId:id,canonicalStudentId:id,aliasIds:idCandidates(),
@@ -142,6 +152,7 @@
       },{merge:true}),
       new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),3000))
     ]);
+    lastSavedText=text;
     try{localStorage.setItem('SP_VERBS_FIREBASE_SYNC_AT',String(Date.now()))}catch(e){}
   }
   function scheduleRemoteSave(){
