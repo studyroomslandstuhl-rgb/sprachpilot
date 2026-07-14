@@ -1,6 +1,6 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=10"><style>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=12"><style>
 .exam-image-box{width:min(330px,100%);height:250px;margin:16px auto;border:2px solid var(--lesson-line);border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}.exam-image-box img{width:100%;height:100%;object-fit:contain;display:block}.exam-cue{margin:14px 0;padding:12px;border-radius:16px;background:#fff8dc;border:1px solid #facc15;font-weight:900;color:#7a5400}.exam-input-wrap{max-width:720px;margin:14px auto}.exam-progress-label{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.exam-stars{font-size:36px;letter-spacing:5px;margin:12px 0}.exam-feedback-list{display:grid;gap:12px;margin-top:20px;text-align:left}.exam-feedback-row{padding:14px;border:2px solid #fecaca;border-radius:16px;background:#fff7f7}.exam-feedback-row h3{margin:0 0 8px;color:#991b1b}.exam-feedback-row p{margin:5px 0}.exam-feedback-thumb{width:86px;height:86px;object-fit:contain;border:1px solid #ddd;border-radius:12px;background:#fff;float:right;margin:0 0 8px 12px}.exam-answer-wrong{color:#b91c1c;font-weight:800}.exam-answer-right{color:#166534;font-weight:800}.exam-all-right{padding:16px;border:2px solid #86efac;border-radius:16px;background:#f0fdf4;color:#166534;font-weight:900;margin-top:18px}
-</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-runtime3"></script><script src="app.js?v=10"></script><script src="l6t2-postkarte.js?v=12"></script><script>
+</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-stable1"></script><script src="app.js?v=14"></script><script src="l6t2-postkarte.js?v=15"></script><script src="l6t2-stability.js?v=1"></script><script>
 const area=document.getElementById('area');header('Prüfung');
 const FILE='pruefung.html';
 const TOTAL=20;
@@ -8,80 +8,60 @@ const BUNNY='https://sprachpilot.b-cdn.net/';
 const CURRENT_SCORE_KEY='SP_L6_T2_EXAM_CURRENT_SCORE';
 const CURRENT_PERCENT_KEY='SP_L6_T2_EXAM_CURRENT_PERCENT';
 const EXAM_VERSION_KEY=CFG.key+'_exam_pattern_v3';
-if(localStorage.getItem(EXAM_VERSION_KEY)!=='1'){
-  localStorage.removeItem(taskKey(FILE));
-  localStorage.removeItem('SP_TASK_STATE_'+FILE);
-  localStorage.removeItem('SP_TASK_STATE_pruefung');
-  localStorage.setItem(EXAM_VERSION_KEY,'1');
-}
+if(localStorage.getItem(EXAM_VERSION_KEY)!=='1')localStorage.setItem(EXAM_VERSION_KEY,'1');
 function examTaskTotals(){const all=words();return[['karteikarten.html',all.length],['bild-wort.html',all.length],['hoeren-bild.html',all.length],['kategorien-drag.html',all.filter(w=>['Himmelsrichtungen','Länder','Jahreszeiten'].includes(w.group)).length],['praepositionen.html',18],['praepositionen-bild.html',21],['praepositionen-drag.html',18],['fehler-finden.html',20],['postkarte.html',2],['saetze-bauen.html',SENTENCES.length]]}
-function localExamUnlocked(){return examTaskTotals().every(t=>pctFor(t[0],t[1])>=100)}
-function writeCurrentExamState(correct){
-  const count=Math.max(0,Math.min(TOTAL,Math.round(Number(correct)||0)));
-  const percent=Math.round(count/TOTAL*100);
-  const state={total:TOTAL,done:[...Array(count).keys()],queue:[...Array(TOTAL-count).keys()].map(n=>n+count),current:null,tries:0,hadWrong:false,currentExamPercent:percent};
-  localStorage.setItem(taskKey(FILE),JSON.stringify(state));
-  localStorage.setItem(CURRENT_SCORE_KEY,String(count));
-  localStorage.setItem(CURRENT_PERCENT_KEY,String(percent));
-  return percent;
-}
+function localExamUnlocked(){try{if(typeof l6t2RepairProgress==='function')l6t2RepairProgress()}catch(e){}return examTaskTotals().every(t=>pctFor(t[0],t[1])>=100)}
+function writeCurrentExamState(correct){const count=Math.max(0,Math.min(TOTAL,Math.round(Number(correct)||0)));const percent=Math.round(count/TOTAL*100);const state={total:TOTAL,done:[...Array(count).keys()],queue:[...Array(TOTAL-count).keys()].map(n=>n+count),current:null,tries:0,hadWrong:false,currentExamPercent:percent};localStorage.setItem(taskKey(FILE),JSON.stringify(state));localStorage.setItem(CURRENT_SCORE_KEY,String(count));localStorage.setItem(CURRENT_PERCENT_KEY,String(percent));return percent}
 const storedScore=Number(localStorage.getItem(CURRENT_SCORE_KEY));
 if(Number.isFinite(storedScore)&&storedScore>=0&&storedScore<=TOTAL)writeCurrentExamState(storedScore);
 let q=[],i=0,score=0,answered=false,details=[];
 function one(list){return list[Math.floor(Math.random()*list.length)]}
 function shuffled(list){return shuffle([...list])}
-function answerForWord(w){return w.type==='country'?(w.article?full(w):w.word):(w.article?full(w):w.word)}
+function answerForWord(w){return w.article?full(w):w.word}
 function promptForWord(w){if(w.type==='country')return w.article?'Schreiben Sie das Land mit Artikel.':'Schreiben Sie den Namen des Landes.';if(w.article)return'Schreiben Sie das Wort mit Artikel.';return'Schreiben Sie das passende Wort.'}
 function takeUnused(pool,used){const available=shuffled(pool.filter(w=>!used.has(w.id)));const w=available[0]||one(pool);if(w)used.add(w.id);return w}
 function countryPrep(w){if(w.id==='usa')return'in den';return w.article?'in der':'in'}
-function prepOptions(answer){if(answer==='in')return['in','in der','in den','im'];if(answer==='in der')return['in','in der','in den','im'];if(answer==='in den')return['in','in der','in den','im'];if(answer==='Im')return['Am','Um','Im','In der'];if(answer==='Am')return['Um','In','Am','Im'];return['am','im','um','in']}
+function prepOptions(answer){if(['in','in der','in den'].includes(answer))return['in','in der','in den','im'];if(answer==='Im')return['Am','Um','Im','In der'];if(answer==='Am')return['Um','In','Am','Im'];return['am','im','um','in']}
 function contextPool(){return[
-  {id:'plus',p:'Es sind ___ zwanzig Grad. Es ist warm.',a:'plus',opts:['minus','plus','leicht','überall']},
-  {id:'minus',p:'Es sind ___ fünf Grad. Es ist kalt.',a:'minus',opts:['plus','minus','leicht','angenehm']},
-  {id:'leicht',p:'Es regnet ___.',a:'leicht',opts:['leicht','überall','angenehm','minus']},
-  {id:'ueberall',p:'___ scheint die Sonne.',a:'überall',opts:['überall','leicht','angenehm','Mitte']},
-  {id:'bleiben',p:'Die Temperaturen ___ bei plus zehn Grad.',a:'bleiben',opts:['bleiben','leben','scheinen','sind']},
-  {id:'angenehm',p:'Das Wetter ist ___.',a:'angenehm',opts:['angenehm','leicht','überall','minus']},
-  {id:'mitte',p:'Der Punkt ist in der ___.',a:'Mitte',opts:['Mitte','Temperatur','Schweiz','Ukraine']},
-  {id:'temperatur',p:'Die ___ ist plus zehn Grad.',a:'Temperatur',opts:['Temperatur','Mitte','Wetterbericht','Radio']}
+{id:'plus',p:'Es sind ___ zwanzig Grad. Es ist warm.',a:'plus',opts:['minus','plus','leicht','überall']},
+{id:'minus',p:'Es sind ___ fünf Grad. Es ist kalt.',a:'minus',opts:['plus','minus','leicht','angenehm']},
+{id:'leicht',p:'Es regnet ___.',a:'leicht',opts:['leicht','überall','angenehm','minus']},
+{id:'ueberall',p:'___ scheint die Sonne.',a:'überall',opts:['überall','leicht','angenehm','Mitte']},
+{id:'bleiben',p:'Die Temperaturen ___ bei plus zehn Grad.',a:'bleiben',opts:['bleiben','leben','scheinen','sind']},
+{id:'angenehm',p:'Das Wetter ist ___.',a:'angenehm',opts:['angenehm','leicht','überall','minus']},
+{id:'mitte',p:'Der Punkt ist in der ___.',a:'Mitte',opts:['Mitte','Temperatur','Schweiz','Ukraine']},
+{id:'temperatur',p:'Die ___ ist plus zehn Grad.',a:'Temperatur',opts:['Temperatur','Mitte','Wetterbericht','Radio']}
 ]}
 function sentencePool(){return[
-  {id:'schweiz',p:'Wir ________________________________.',cue:'Schweiz – drei Wochen – sein',a:'Wir sind drei Wochen in der Schweiz.',answers:['Wir sind drei Wochen in der Schweiz.','sind drei Wochen in der Schweiz.']},
-  {id:'ukraine',p:'Wir ________________________________.',cue:'Ukraine – zwei Wochen – sein',a:'Wir sind zwei Wochen in der Ukraine.',answers:['Wir sind zwei Wochen in der Ukraine.','sind zwei Wochen in der Ukraine.']},
-  {id:'deutschland',p:'Wir ________________________________.',cue:'Deutschland – vier Wochen – sein',a:'Wir sind vier Wochen in Deutschland.',answers:['Wir sind vier Wochen in Deutschland.','sind vier Wochen in Deutschland.']},
-  {id:'winter',p:'Im Winter __________________________.',cue:'es – oft – schneien',a:'Im Winter schneit es oft.',answers:['Im Winter schneit es oft.','schneit es oft.']},
-  {id:'herbst',p:'Im Herbst __________________________.',cue:'es – oft – regnen',a:'Im Herbst regnet es oft.',answers:['Im Herbst regnet es oft.','regnet es oft.']},
-  {id:'norden',p:'Im Norden __________________________.',cue:'kalt – sein – es',a:'Im Norden ist es kalt.',answers:['Im Norden ist es kalt.','ist es kalt.']},
-  {id:'sueden',p:'Im Süden ___________________________.',cue:'warm – bleiben – es',a:'Im Süden bleibt es warm.',answers:['Im Süden bleibt es warm.','bleibt es warm.']}
+{id:'schweiz',p:'Wir ________________________________.',cue:'Schweiz – drei Wochen – sein',a:'Wir sind drei Wochen in der Schweiz.',answers:['Wir sind drei Wochen in der Schweiz.','sind drei Wochen in der Schweiz.']},
+{id:'ukraine',p:'Wir ________________________________.',cue:'Ukraine – zwei Wochen – sein',a:'Wir sind zwei Wochen in der Ukraine.',answers:['Wir sind zwei Wochen in der Ukraine.','sind zwei Wochen in der Ukraine.']},
+{id:'deutschland',p:'Wir ________________________________.',cue:'Deutschland – vier Wochen – sein',a:'Wir sind vier Wochen in Deutschland.',answers:['Wir sind vier Wochen in Deutschland.','sind vier Wochen in Deutschland.']},
+{id:'winter',p:'Im Winter __________________________.',cue:'es – oft – schneien',a:'Im Winter schneit es oft.',answers:['Im Winter schneit es oft.','schneit es oft.']},
+{id:'herbst',p:'Im Herbst __________________________.',cue:'es – oft – regnen',a:'Im Herbst regnet es oft.',answers:['Im Herbst regnet es oft.','regnet es oft.']},
+{id:'norden',p:'Im Norden __________________________.',cue:'kalt – sein – es',a:'Im Norden ist es kalt.',answers:['Im Norden ist es kalt.','ist es kalt.']},
+{id:'sueden',p:'Im Süden ___________________________.',cue:'warm – bleiben – es',a:'Im Süden bleibt es warm.',answers:['Im Süden bleibt es warm.','bleibt es warm.']}
 ]}
 function build(){
   const all=words(),used=new Set();
-  const countries=all.filter(w=>w.group==='Länder');
-  const directions=all.filter(w=>w.group==='Himmelsrichtungen');
-  const seasons=all.filter(w=>w.group==='Jahreszeiten');
-  const post=all.filter(w=>w.group==='Postkarte/Wetterbericht');
+  const countries=all.filter(w=>w.group==='Länder'),directions=all.filter(w=>w.group==='Himmelsrichtungen'),seasons=all.filter(w=>w.group==='Jahreszeiten'),post=all.filter(w=>w.group==='Postkarte/Wetterbericht');
   const contexts=shuffled(contextPool()).slice(0,4).map(x=>{used.add(x.id);return{t:'mc',kind:'Wortschatz im Kontext',...x}});
-  const noArticle=countries.filter(w=>!w.article&&w.id!=='usa');
-  const withDie=countries.filter(w=>w.article&&w.id!=='usa');
-  const prepCountryWords=[takeUnused(noArticle,used),takeUnused(withDie,used),takeUnused(countries.filter(w=>w.id==='usa'),used)].filter(Boolean);
+  const prepCountryWords=[takeUnused(countries.filter(w=>!w.article&&w.id!=='usa'),used),takeUnused(countries.filter(w=>w.article&&w.id!=='usa'),used),takeUnused(countries.filter(w=>w.id==='usa'),used)].filter(Boolean);
   const weatherPlace=takeUnused(shuffled([...directions,...seasons]),used);
-  const prepQuestions=prepCountryWords.map((w,n)=>{const subjects=['Ich lebe','Meine Freundin lebt','Meine Tante lebt'];const a=countryPrep(w);return{t:'mc',kind:'Präposition',targetId:w.id,p:`${subjects[n%subjects.length]} ___ ${w.word}.`,a,opts:prepOptions(a)}});
+  const prepQuestions=prepCountryWords.map((w,n)=>{const subjects=['Ich lebe','Meine Freundin lebt','Meine Tante lebt'],a=countryPrep(w);return{t:'mc',kind:'Präposition',targetId:w.id,p:`${subjects[n%subjects.length]} ___ ${w.word}.`,a,opts:prepOptions(a)}});
   if(weatherPlace)prepQuestions.push({t:'mc',kind:'Präposition',targetId:weatherPlace.id,p:`___ ${weatherPlace.word} ${weatherPlace.group==='Jahreszeiten'?'ist das Wetter oft anders.':'ist es heute kalt.'}`,a:'Im',opts:prepOptions('Im')});
   prepQuestions.push({t:'mc',kind:'Präposition',targetId:'montag-time',p:'___ Montag beginnt der Deutschkurs.',a:'Am',opts:prepOptions('Am')});
   prepQuestions.push({t:'mc',kind:'Präposition',targetId:'10-uhr-time',p:'Der Wetterbericht beginnt ___ 10 Uhr.',a:'um',opts:prepOptions('um')});
   const conjugationCountry=takeUnused(countries,used);
   const conjugation={t:'mc',kind:'Konjugation',targetId:conjugationCountry.id,p:`Sara ___ in ${conjugationCountry.article?countryPrep(conjugationCountry)+' ':''}${conjugationCountry.word}.`.replace('in in der ','in der ').replace('in in den ','in den '),a:'lebt',opts:['lebe','lebt','leben','bleibt']};
-  const sentenceCandidates=sentencePool().filter(x=>!used.has(x.id));
-  const sentence=one(sentenceCandidates.length?sentenceCandidates:sentencePool());used.add(sentence.id);
-  const imageMcA=takeUnused(shuffled([...directions,...seasons]),used);
-  const sameGroup=all.filter(w=>w.group===imageMcA.group);
+  const sentenceCandidates=sentencePool().filter(x=>!used.has(x.id)),sentence=one(sentenceCandidates.length?sentenceCandidates:sentencePool());used.add(sentence.id);
+  const imageMcA=takeUnused(shuffled([...directions,...seasons]),used),sameGroup=all.filter(w=>w.group===imageMcA.group);
   const imageMc1={t:'image-mc',kind:'Bild → Wort wählen',image:imageMcA.image,p:'Welches Wort passt zum Bild?',a:answerForWord(imageMcA),opts:shuffled([imageMcA,...shuffled(sameGroup.filter(w=>w.id!==imageMcA.id)).slice(0,3)]).map(answerForWord),targetId:imageMcA.id};
   const imageMcB=takeUnused(countries,used);
   const imageMc2={t:'image-mc',kind:'Bild → Wort wählen',image:imageMcB.image,p:'Welches Land sehen Sie?',a:answerForWord(imageMcB),opts:shuffled([imageMcB,...shuffled(countries.filter(w=>w.id!==imageMcB.id)).slice(0,3)]).map(answerForWord),targetId:imageMcB.id};
   const imageWrites=shuffled([...post,...countries,...directions,...seasons]).filter(w=>!used.has(w.id)).slice(0,6).map(w=>({t:'image-write',kind:'Bild → Wort schreiben',image:w.image,p:promptForWord(w),a:answerForWord(w),targetId:w.id}));
-  q=[imageMc1,imageMc2,...imageWrites,...contexts,...prepQuestions.slice(0,6),conjugation,{t:'sentence',kind:'Wortstellung und Grammatik',...sentence}];
+  q=[imageMc1,imageMc2,...imageWrites,...contexts,...prepQuestions.slice(0,6),conjugation,{t:'sentence',kind:'Wortstellung und Grammatik',...sentence}].slice(0,TOTAL);
 }
-function locked(){area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p class="small">Bearbeiten Sie zuerst alle Aufgaben zu 100%.</p><div class="actions"><a class="btn secondary" href="index.html?v=l6t2-runtime3">Zum Thema</a></div></div>'}
+function locked(){area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p class="small">Bearbeiten Sie zuerst alle Aufgaben 1–10 zu 100%.</p><div class="actions"><a class="btn secondary" href="index.html?v=l6t2-stable1">Zum Thema</a></div></div>'}
 function imageHtml(it){if(!it.image)return'';return `<div class="exam-image-box"><img src="${BUNNY+it.image}" alt="Prüfungsbild" loading="eager" onerror="this.parentElement.textContent='Bild fehlt: ${it.image}'"></div>`}
 function show(){if(!localExamUnlocked()){locked();return}if(!q.length)build();if(i>=q.length){done();return}answered=false;const it=q[i],pct=Math.round(i/q.length*100);const choices=it.t==='mc'||it.t==='image-mc'?`<div class="choice-grid">${shuffled(it.opts).map(o=>`<button class="choice" onclick="pick('${encodeURIComponent(o)}')">${o}</button>`).join('')}</div>`:'';const writing=it.t==='image-write'||it.t==='sentence'?`<div class="exam-input-wrap"><input id="ans" autocomplete="off" placeholder="Antwort schreiben"><div class="actions"><button class="btn" onclick="submitWritten()">Weiter</button></div></div>`:'';const cue=it.cue?`<div class="exam-cue">(${it.cue})</div>`:'';area.innerHTML=`<div class="exam-progress-label"><span class="small">Aufgabe ${i+1} / ${q.length}</span><span class="small">${pct}% bearbeitet</span></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div>${imageHtml(it)}<div class="question">${it.p}</div>${cue}${choices}${writing}<div id="fb" class="feedback" aria-live="polite"></div>`;const input=document.getElementById('ans');if(input){input.focus();input.addEventListener('keydown',e=>{if(e.key==='Enter')submitWritten()})}}
 function pick(raw){submitAnswer(decodeURIComponent(raw))}
@@ -90,7 +70,7 @@ function isCorrectAnswer(it,value){const answers=Array.isArray(it.answers)&&it.a
 function submitAnswer(value){if(answered)return;answered=true;const it=q[i],correct=isCorrectAnswer(it,value);if(correct)score++;details.push({number:i+1,correct,kind:it.kind||it.t,prompt:it.p,cue:it.cue||'',image:it.image||'',answer:String(value||''),solution:it.a});i++;show()}
 function esc(value){return String(value||'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
 function feedbackHtml(){const wrong=details.filter(d=>!d.correct);if(!wrong.length)return'<div class="exam-all-right">Alle 20 Aufgaben sind richtig.</div>';return `<div class="exam-feedback-list"><h2>Fehlerauswertung</h2>${wrong.map(d=>`<div class="exam-feedback-row">${d.image?`<img class="exam-feedback-thumb" src="${BUNNY+esc(d.image)}" alt="">`:''}<h3>Aufgabe ${d.number}: ${esc(d.kind)}</h3><p><b>Aufgabe:</b> ${esc(d.prompt)} ${d.cue?`<span class="exam-cue-inline">(${esc(d.cue)})</span>`:''}</p><p class="exam-answer-wrong">Deine Antwort: ${esc(d.answer)||'—'}</p><p class="exam-answer-right">Richtig: ${esc(d.solution)}</p></div>`).join('')}</div>`}
-function done(){const percent=writeCurrentExamState(score);const stars=percent>=100?3:percent>=70?2:percent>=50?1:0;try{const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',file:FILE,taskTitle:'Prüfung',percent,done:score,total:TOTAL,completed:percent>=100,allowDecrease:true};if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload)}catch(e){}try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',percent,scorePercent:percent,stars})}catch(e){}area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="exam-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div>${feedbackHtml()}<div class="actions"><button class="btn" onclick="restart()">Neue zufällige Prüfung</button><a class="btn secondary" href="index.html?v=l6t2-runtime3">Zum Thema</a></div></div>`}
+function done(){const percent=writeCurrentExamState(score),stars=percent>=100?3:percent>=70?2:percent>=50?1:0;try{const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',file:FILE,taskTitle:'Prüfung',percent,done:score,total:TOTAL,completed:percent>=100,allowDecrease:true};if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload)}catch(e){}try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',percent,scorePercent:percent,stars})}catch(e){}area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="exam-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div>${feedbackHtml()}<div class="actions"><button class="btn" onclick="restart()">Neue zufällige Prüfung</button><a class="btn secondary" href="index.html?v=l6t2-stable1">Zum Thema</a></div></div>`}
 function restart(){q=[];i=0;score=0;answered=false;details=[];show()}
 show();
 </script></body></html>
