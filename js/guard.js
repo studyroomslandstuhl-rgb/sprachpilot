@@ -75,6 +75,9 @@ if(IS_L3T1){
 if(IS_L3T2){
   import("/wortschatz/A1-Lektion-3/Thema-2/l3t2-task-fix.js?v=3").catch(()=>{});
 }
+if(IS_L6T2){
+  import("/wortschatz/A1-Lektion-6/Thema-2/l6t2-stability.js?v=1").catch(()=>{});
+}
 if(USES_STANDARD_PROGRESS){
   import("/js/sp-progress-standard.js?v=4").catch(()=>{});
 }
