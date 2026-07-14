@@ -89,7 +89,7 @@ if(FULL_FIREBASE){
 }
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){setTimeout(()=>import("/wortschatz/index-release-lock.js?v=12").catch(()=>{}),900)}
 if(IS_VERBEN_EXERCISE){
-  import("/verben-A1/js/release-bridge.js?v=10").catch(()=>{});
+  import("/verben-A1/js/release-bridge.js?v=11").catch(()=>{});
   if(!PERFORMANCE_SYNC_OFF){
     import("/verben-A1/js/scoring-bridge.js?v=6").catch(()=>{});
     window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/verben-A1/js/verb-overview-dedupe.js?v=1";document.body.appendChild(s)},2500));
