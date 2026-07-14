@@ -1,18 +1,12 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bild → Präposition</title><link rel="stylesheet" href="style.css?v=10"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-runtime2"></script><script src="app.js?v=10"></script><script src="l6t2-postkarte.js?v=12"></script><script src="l6t2-images.js?v=3"></script><script src="l6t2-extra-tasks.js?v=19"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Bild → Präposition</title><link rel="stylesheet" href="style.css?v=10"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-runtime3"></script><script src="app.js?v=10"></script><script src="l6t2-postkarte.js?v=12"></script><script src="l6t2-images.js?v=3"></script><script>
 const area=document.getElementById('area');header('Bild → Präposition');
-const FILE='praepositionen-bild.html';let items=PREP_IMAGE_ITEMS,i=0;
-function show(){
-  items=PREP_IMAGE_ITEMS;
-  if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'praepositionen-drag.html?v=l6t2-runtime2');return}
-  i=spNextIndex(FILE,items.length);
-  const it=items[i],w=words().find(x=>x.id===it.id),options=shuffle(L6T2_PREP_OPTIONS);
-  area.innerHTML=`${progress(FILE,items.length)}${instruction('Sehen Sie das Bild. Wählen Sie die richtige Präposition.')}<div class="small">Frage ${loadTask(FILE,items.length).done.length+1} von ${items.length}</div>${visual(w)}<div class="choice-grid">${options.map(o=>`<button class="choice" onclick="check(this,'${encodeURIComponent(o)}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`;
-  if(window.l6t2ConnectImages)l6t2ConnectImages();
-}
-function check(btn,raw){
-  const val=decodeURIComponent(raw),it=items[i],w=words().find(x=>x.id===it.id),feedback=document.getElementById('fb');
-  if(val===it.a){btn.classList.add('ok');feedback.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,items.length);setTimeout(show,700);return}
-  btn.classList.add('no');const t=spMarkWrong(FILE,items.length);feedback.innerHTML=help3(t,'Noch nicht richtig.','Tipp: '+it.hint,it.a+' '+w.word);
-}
+const FILE='praepositionen-bild.html';
+const OPTIONS=['in','in der','in den','im','um','am'];
+const items=[
+{id:'norden',a:'im',hint:'Himmelsrichtung'},{id:'japan',a:'in',hint:'Land ohne Artikel'},{id:'sommer',a:'im',hint:'Jahreszeit'},{id:'schweiz',a:'in der',hint:'Land mit dem Artikel die'},{id:'osten',a:'im',hint:'Himmelsrichtung'},{id:'deutschland',a:'in',hint:'Land ohne Artikel'},{id:'winter',a:'im',hint:'Jahreszeit'},{id:'usa',a:'in den',hint:'Land im Plural'},{id:'sueden',a:'im',hint:'Himmelsrichtung'},{id:'vietnam',a:'in',hint:'Land ohne Artikel'},{id:'fruehling',a:'im',hint:'Jahreszeit'},{id:'tuerkei',a:'in der',hint:'Land mit dem Artikel die'},{id:'westen',a:'im',hint:'Himmelsrichtung'},{id:'polen',a:'in',hint:'Land ohne Artikel'},{id:'herbst',a:'im',hint:'Jahreszeit'},{id:'ukraine',a:'in der',hint:'Land mit dem Artikel die'},{id:'oesterreich',a:'in',hint:'Land ohne Artikel'},{id:'bulgarien',a:'in',hint:'Land ohne Artikel'},{id:'spanien',a:'in',hint:'Land ohne Artikel'},{id:'frankreich',a:'in',hint:'Land ohne Artikel'},{id:'rumaenien',a:'in',hint:'Land ohne Artikel'}
+];
+let i=0;
+function show(){if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'praepositionen-drag.html?v=l6t2-runtime3');return}i=spNextIndex(FILE,items.length);const it=items[i],w=words().find(x=>x.id===it.id);if(!w){area.innerHTML='<div class="no">Bilddaten konnten nicht geladen werden. Bitte Seite neu laden.</div>';return}const options=shuffle(OPTIONS);area.innerHTML=`${progress(FILE,items.length)}${instruction('Sehen Sie das Bild. Wählen Sie die richtige Präposition.')}<div class="small">Frage ${loadTask(FILE,items.length).done.length+1} von ${items.length}</div>${visual(w)}<div class="choice-grid">${options.map(o=>`<button class="choice" onclick="check(this,'${encodeURIComponent(o)}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`;if(window.l6t2ConnectImages)l6t2ConnectImages()}
+function check(btn,raw){const val=decodeURIComponent(raw),it=items[i],w=words().find(x=>x.id===it.id),feedback=document.getElementById('fb');if(val===it.a){btn.classList.add('ok');feedback.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,items.length);setTimeout(show,700);return}btn.classList.add('no');const t=spMarkWrong(FILE,items.length);feedback.innerHTML=help3(t,'Noch nicht richtig.','Tipp: '+it.hint,it.a+' '+w.word)}
 show();
 </script></body></html>
