@@ -5,6 +5,9 @@ function runIntegrityChecks(){
   if(new Set(taskIds).size!==taskIds.length)errors.push('Aufgaben-IDs sind nicht eindeutig.');
   if(!catalog.length)errors.push('Der Verben-Katalog ist leer.');
   if(new Set(catalog.map(item=>item.verb)).size!==catalog.length)errors.push('Der Verben-Katalog enthält doppelte Einträge.');
+  if(window.VERBEN_TEST_SCORING?.module!=='verbenTest')errors.push('Verben Test verwendet nicht das getrennte Punktekonto.');
+  if(Number(window.VERBEN_TEST_SCORING?.taskPoints)!==5)errors.push('Eine Aufgabe muss genau 5 Punkte geben.');
+  if(Number(window.VERBEN_TEST_SCORING?.examMax)!==100)errors.push('Die Prüfung darf maximal 100 Punkte geben.');
   const exactImages={
     'sich vorstellen':'sich_vorstellen.webp','sich kämmen':'sich_kaemmen.webp','sich rasieren':'sich_rasieren.webp','sich schminken':'sich_schminken.webp',
     'sich bewegen':'sich_bewegen.webp','wandern':'wandern.webp','meinen':'meinen.webp','grillen':'grillen.webp','wecken':'wecken.webp','üben':'ueben.webp',
