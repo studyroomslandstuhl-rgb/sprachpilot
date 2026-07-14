@@ -1,6 +1,6 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=10"><style>
 .exam-image-box{width:min(330px,100%);height:250px;margin:16px auto;border:2px solid var(--lesson-line);border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}.exam-image-box img{width:100%;height:100%;object-fit:contain;display:block}.exam-cue{margin:14px 0;padding:12px;border-radius:16px;background:#fff8dc;border:1px solid #facc15;font-weight:900;color:#7a5400}.exam-input-wrap{max-width:720px;margin:14px auto}.exam-progress-label{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.exam-stars{font-size:36px;letter-spacing:5px;margin:12px 0}.exam-feedback-list{display:grid;gap:12px;margin-top:20px;text-align:left}.exam-feedback-row{padding:14px;border:2px solid #fecaca;border-radius:16px;background:#fff7f7}.exam-feedback-row h3{margin:0 0 8px;color:#991b1b}.exam-feedback-row p{margin:5px 0}.exam-feedback-thumb{width:86px;height:86px;object-fit:contain;border:1px solid #ddd;border-radius:12px;background:#fff;float:right;margin:0 0 8px 12px}.exam-answer-wrong{color:#b91c1c;font-weight:800}.exam-answer-right{color:#166534;font-weight:800}.exam-all-right{padding:16px;border:2px solid #86efac;border-radius:16px;background:#f0fdf4;color:#166534;font-weight:900;margin-top:18px}
-</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-runtime1"></script><script src="app.js?v=10"></script><script src="l6t2-postkarte.js?v=12"></script><script src="l6t2-extra-tasks.js?v=18"></script><script>
+</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-runtime2"></script><script src="app.js?v=10"></script><script src="l6t2-postkarte.js?v=12"></script><script src="l6t2-extra-tasks.js?v=19"></script><script>
 const area=document.getElementById('area');header('Prüfung');
 const FILE='pruefung.html';
 const TOTAL=20;
@@ -85,7 +85,7 @@ function build(){
   const imageWrites=writePreferred.slice(0,6).map(w=>{used.add(w.id);return{t:'image-write',kind:'Bild → Wort schreiben',image:w.image,p:promptForWord(w),a:answerForWord(w),targetId:w.id}});
   q=[imageMc1,imageMc2,...imageWrites,...contexts,...prepQuestions.slice(0,6),conjugation,sentenceQuestion];
 }
-function locked(){area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p class="small">Bearbeiten Sie zuerst alle Aufgaben zu 100%.</p><div class="actions"><a class="btn secondary" href="index.html?v=l6t2-runtime1">Zum Thema</a></div></div>'}
+function locked(){area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p class="small">Bearbeiten Sie zuerst alle Aufgaben zu 100%.</p><div class="actions"><a class="btn secondary" href="index.html?v=l6t2-runtime2">Zum Thema</a></div></div>'}
 function imageHtml(it){if(!it.image)return'';return `<div class="exam-image-box"><img src="${BUNNY+it.image}" alt="Prüfungsbild" loading="eager" onerror="this.parentElement.textContent='Bild fehlt: ${it.image}'"></div>`}
 function show(){
   if(!l6t2ExamUnlocked()){locked();return}
@@ -124,7 +124,7 @@ function done(){
     if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload);
   }catch(e){}
   try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',percent,scorePercent:percent,stars})}catch(e){}
-  area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="exam-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div>${feedbackHtml()}<div class="actions"><button class="btn" onclick="restart()">Neue zufällige Prüfung</button><a class="btn secondary" href="index.html?v=l6t2-runtime1">Zum Thema</a></div></div>`;
+  area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="exam-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div>${feedbackHtml()}<div class="actions"><button class="btn" onclick="restart()">Neue zufällige Prüfung</button><a class="btn secondary" href="index.html?v=l6t2-runtime2">Zum Thema</a></div></div>`;
 }
 function restart(){q=[];i=0;score=0;answered=false;details=[];show()}
 show();
