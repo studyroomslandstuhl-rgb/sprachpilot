@@ -11,12 +11,13 @@ function currentTaskVerb(taskId){return ensureTaskRuntime(taskId)?.current||null
 function taskFeedback(tries,solution,hint='Achte auf das Verb und die Schreibweise.'){if(tries===1)return'<div class="no">Noch nicht richtig.</div>';if(tries===2)return`<div class="hint">Tipp: ${esc(hint)}</div>`;return `<div class="no">Lösung: ${esc(solution)}</div><div class="actions"><button class="secondary" id="repeatLaterBtn">Später noch einmal</button></div>`}
 function wrongTask(taskId,solution,hint){const rt=ensureTaskRuntime(taskId);rt.tries=(rt.tries||0)+1;persistLocal();const fb=document.getElementById('feedback');if(fb)fb.innerHTML=taskFeedback(rt.tries,solution,hint);if(rt.tries>=3)document.getElementById('repeatLaterBtn')?.addEventListener('click',()=>{rt.queue.push(rt.current);rt.current=null;rt.tries=0;persistLocal();renderTask(taskId)})}
 function correctTask(taskId){
-  const pkg=activePackage(),rt=ensureTaskRuntime(taskId),verb=rt.current;pkg.taskProgress[taskId]=uniq([...pkg.taskProgress[taskId],verb]);rt.current=null;rt.tries=0;persistLocal();
+  const pkg=activePackage(),rt=ensureTaskRuntime(taskId),verb=rt.current;if(!verb)return;
+  pkg.taskProgress[taskId]=uniq([...pkg.taskProgress[taskId],verb]);rt.current=null;rt.tries=0;persistLocal();
   const fb=document.getElementById('feedback');if(fb)fb.innerHTML='<div class="ok">Richtig!</div>';
   const task=TASKS.find(t=>t.id===taskId);if(taskPercent(taskId)>=100)syncTaskPoints(task);setTimeout(()=>renderTask(taskId),450);
 }
 function taskShell(task,body){const pct=taskPercent(task.id);app.innerHTML=`<section class="card"><div class="task-head"><div><h2>${task.icon} ${esc(task.title)}</h2><div class="small">${taskDoneList(task.id).length} / ${packageVerbs().length} Verben · ${pct}%</div></div><button class="secondary" data-route="home">Zur Aufgabenübersicht</button></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div>${body}<div class="feedback" id="feedback"></div></section>`;bindRouteButtons()}
-function completedTaskPage(task){taskShell(task,`<div class="finish"><h2>Aufgabe geschafft</h2><p>Alle ${packageVerbs().length} Paketverben wurden richtig bearbeitet.</p><div class="stars">★★★★★</div><p><b>5 Punkte</b></p><button data-route="home">Zur Aufgabenübersicht</button></div>`);bindRouteButtons();syncTaskPoints(task)}
+function completedTaskPage(task){taskShell(task,`<div class="finish"><h2>Aufgabe geschafft</h2><p>Alle ${packageVerbs().length} Paketverben wurden richtig bearbeitet.</p><div class="stars">★★★★★</div><p><b>5 Punkte</b></p><button data-route="home">Zur Aufgabenübersicht</button></div>`);syncTaskPoints(task)}
 function renderTask(taskId){
   if(!activePackage()){goHome();return}
   if(taskId==='pruefung'){renderExam();return}
@@ -44,7 +45,19 @@ function speak(text){if(!('speechSynthesis'in window))return;window.speechSynthe
 function renderListeningWriting(task,verb){taskShell(task,`<div class="question">Höre das Verb.</div><div class="actions"><button id="listenBtn">🔊 Anhören</button></div><input class="answer-input" id="answerInput" autocomplete="off" placeholder="Verb schreiben"><div class="actions"><button id="checkAnswer">Kontrollieren</button></div>`);document.getElementById('listenBtn').addEventListener('click',()=>speak(verb));bindTextAnswer(task.id,verb,'Höre das Verb noch einmal.')}
 function startRecognition(callback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){document.getElementById('speechStatus').textContent='Spracherkennung wird hier nicht unterstützt. Nutze das Textfeld.';return}const rec=new SR();rec.lang='de-DE';rec.interimResults=false;rec.maxAlternatives=1;document.getElementById('speechStatus').textContent='Ich höre zu …';rec.onresult=e=>callback(e.results[0][0].transcript);rec.onerror=()=>{document.getElementById('speechStatus').textContent='Mikrofon hat nicht funktioniert. Nutze das Textfeld.'};rec.start()}
 function renderSpeaking(task,verb,listenFirst){taskShell(task,`${listenFirst?'<div class="question">Höre und sprich das Verb.</div>':imageBox(verb)+'<div class="question">Sprich das Verb zum Bild.</div>'}<div class="actions">${listenFirst?'<button id="listenBtn">🔊 Anhören</button>':''}<button id="micBtn">🎤 Sprechen</button></div><div class="small" id="speechStatus" style="text-align:center"></div><input class="answer-input" id="answerInput" autocomplete="off" placeholder="Alternativ hier schreiben"><div class="actions"><button id="checkAnswer">Kontrollieren</button></div>`);document.getElementById('listenBtn')?.addEventListener('click',()=>speak(verb));document.getElementById('micBtn').addEventListener('click',()=>startRecognition(text=>{document.getElementById('answerInput').value=text;if(exact(text,verb))correctTask(task.id);else wrongTask(task.id,verb,'Sprich den vollständigen Infinitiv.')}));bindTextAnswer(task.id,verb,'Sprich oder schreibe den vollständigen Infinitiv.')}
-function renderPuzzle(task,verb){const sentence=sentenceFor(verb),parts=shuffle(sentence.replace(/([.!?])/g,' $1').split(/\s+/).filter(Boolean),hash(activePackage().id+task.id+verb));let built=[];const draw=()=>{taskShell(task,`${imageBox(verb)}<div class="question">Baue den Beispielsatz.</div><div class="puzzle-built" id="puzzleBuilt">${built.map((w,i)=>`<button class="word-chip" data-built="${i}">${esc(w)}</button>`).join('')||'<span class="small">Tippe die Wörter in der richtigen Reihenfolge an.</span>'}</div><div class="puzzle-bank" id="puzzleBank">${parts.map((w,i)=>built.includes(`§${i}`)?'':`<button class="word-chip" data-part="${i}">${esc(w)}</button>`).join('')}</div><div class="actions"><button id="checkPuzzle">Kontrollieren</button><button class="secondary" id="resetPuzzle">Neu</button></div>`);document.querySelectorAll('[data-part]').forEach(btn=>btn.addEventListener('click',()=>{const i=Number(btn.dataset.part);built.push(`§${i}`);draw()}));document.querySelectorAll('[data-built]').forEach(btn=>btn.addEventListener('click',()=>{built.splice(Number(btn.dataset.built),1);draw()}));document.getElementById('resetPuzzle').addEventListener('click',()=>{built=[];draw()});document.getElementById('checkPuzzle').addEventListener('click',()=>{const value=built.map(token=>parts[Number(token.slice(1))]).join(' ').replace(/\s+([.!?])/g,'$1');if(exact(value,sentence))correctTask(task.id);else wrongTask(task.id,sentence,'Achte auf Verbposition, Großschreibung und Satzzeichen.')})};draw()}
+function renderPuzzle(task,verb){
+  const sentence=sentenceFor(verb),parts=shuffle(sentence.replace(/([.!?])/g,' $1').split(/\s+/).filter(Boolean),hash(activePackage().id+task.id+verb));
+  let built=[];
+  const tokenWord=token=>parts[Number(String(token).slice(1))]||'';
+  const draw=()=>{
+    taskShell(task,`${imageBox(verb)}<div class="question">Baue den Beispielsatz.</div><div class="puzzle-built" id="puzzleBuilt">${built.map((token,i)=>`<button class="word-chip" data-built="${i}">${esc(tokenWord(token))}</button>`).join('')||'<span class="small">Tippe die Wörter in der richtigen Reihenfolge an.</span>'}</div><div class="puzzle-bank" id="puzzleBank">${parts.map((word,i)=>built.includes(`§${i}`)?'':`<button class="word-chip" data-part="${i}">${esc(word)}</button>`).join('')}</div><div class="actions"><button id="checkPuzzle">Kontrollieren</button><button class="secondary" id="resetPuzzle">Neu</button></div>`);
+    document.querySelectorAll('[data-part]').forEach(btn=>btn.addEventListener('click',()=>{built.push(`§${Number(btn.dataset.part)}`);draw()}));
+    document.querySelectorAll('[data-built]').forEach(btn=>btn.addEventListener('click',()=>{built.splice(Number(btn.dataset.built),1);draw()}));
+    document.getElementById('resetPuzzle').addEventListener('click',()=>{built=[];draw()});
+    document.getElementById('checkPuzzle').addEventListener('click',()=>{const value=built.map(tokenWord).join(' ').replace(/\s+([.!?])/g,'$1');if(exact(value,sentence))correctTask(task.id);else wrongTask(task.id,sentence,'Achte auf Verbposition, Großschreibung und Satzzeichen.')});
+  };
+  draw();
+}
 function renderConjugation(task,verb){const answer=ichForm(verb);taskShell(task,`<div class="question">${esc(verb)}</div><p style="text-align:center"><b>Ich __________.</b></p><input class="answer-input" id="answerInput" autocomplete="off" placeholder="Ich-Form ohne „Ich“"><div class="actions"><button id="checkAnswer">Kontrollieren</button></div><p class="small" style="text-align:center">Bei trennbaren und reflexiven Verben bitte die vollständige Form schreiben.</p>`);bindTextAnswer(task.id,answer,'Bilde die Ich-Form. Bei reflexiven Verben gehört „mich“ dazu.')}
 
 function renderMemory(task){
@@ -53,14 +66,20 @@ function renderMemory(task){
   const batch=remaining.slice(0,Math.min(5,remaining.length));
   if(!memoryUi||memoryUi.task!==task.id||memoryUi.batch.join('|')!==batch.join('|')){
     const cards=shuffle(batch.flatMap(v=>[{key:v+'|image',verb:v,type:'image'},{key:v+'|word',verb:v,type:'word'}]),hash(activePackage().id+task.id+taskDoneList(task.id).length));
-    memoryUi={task:task.id,batch, cards, open:[],matched:[]};
+    memoryUi={task:task.id,batch,cards,open:[],matched:[]};
   }
   taskShell(task,`<div class="question">Finde Bild und Verb.</div><div class="memory-grid">${memoryUi.cards.map(card=>`<button class="memory-card ${memoryUi.open.includes(card.key)?'':'hidden-face'} ${memoryUi.matched.includes(card.verb)?'matched':''}" data-memory-key="${esc(card.key)}" ${memoryUi.matched.includes(card.verb)?'disabled':''}>${card.type==='image'?imageHtml(card.verb):`<span class="word">${esc(card.verb)}</span>`}</button>`).join('')}</div>`);
   document.querySelectorAll('[data-memory-key]').forEach(btn=>btn.addEventListener('click',()=>memoryClick(btn.dataset.memoryKey,task)));
 }
 function memoryClick(key,task){
-  if(memoryUi.open.includes(key)||memoryUi.open.length>=2)return;memoryUi.open.push(key);renderMemory(task);
-  if(memoryUi.open.length===2){const [a,b]=memoryUi.open.map(k=>memoryUi.cards.find(c=>c.key===k));if(a.verb===b.verb&&a.type!==b.type){memoryUi.matched.push(a.verb);const pkg=activePackage();pkg.taskProgress[task.id]=uniq([...pkg.taskProgress[task.id],a.verb]);persistLocal();memoryUi.open=[];if(taskPercent(task.id)>=100)syncTaskPoints(task);setTimeout(()=>renderMemory(task),350)}else{setTimeout(()=>{memoryUi.open=[];renderMemory(task)},700)}}
+  if(memoryUi.open.includes(key)||memoryUi.open.length>=2)return;
+  memoryUi.open.push(key);renderMemory(task);
+  if(memoryUi.open.length===2){
+    const [a,b]=memoryUi.open.map(k=>memoryUi.cards.find(c=>c.key===k));
+    if(a.verb===b.verb&&a.type!==b.type){
+      memoryUi.matched.push(a.verb);const pkg=activePackage();pkg.taskProgress[task.id]=uniq([...pkg.taskProgress[task.id],a.verb]);persistLocal();memoryUi.open=[];if(taskPercent(task.id)>=100)syncTaskPoints(task);setTimeout(()=>renderMemory(task),350);
+    }else setTimeout(()=>{memoryUi.open=[];renderMemory(task)},700);
+  }
 }
 
 function examQuestionFor(verb,index){const type=['image-write','translation-write','sentence-choice','conjugation'][index%4];if(type==='image-write')return{verb,type,prompt:'Welches Verb passt zum Bild?',answer:verb};if(type==='translation-write')return{verb,type,prompt:`Schreibe das deutsche Verb: ${translationFor(verb)}`,answer:verb};if(type==='sentence-choice')return{verb,type,prompt:sentenceGap(verb),answer:verb,options:shuffle([verb,...distractors(verb)],hash(verb+'exam'))};return{verb,type,prompt:`Ich __________. (${verb})`,answer:ichForm(verb)}}
@@ -73,12 +92,17 @@ function renderExam(){
   else if(q.type==='translation-write'||q.type==='conjugation')body=`<input class="answer-input" id="examInput" autocomplete="off" placeholder="Antwort schreiben"><div class="actions"><button id="examNext">Weiter</button></div>`;
   else body=`<div class="choices">${q.options.map(v=>`<button class="choice" data-exam-choice="${esc(v)}">${esc(v)}</button>`).join('')}</div>`;
   app.innerHTML=`<section class="card"><div class="task-head"><div><h2>⭐ Prüfung</h2><div class="small">Aufgabe ${run.index+1} / ${run.questions.length} · bisher bestes Ergebnis ${pkg.examBest}%</div></div><button class="secondary" data-route="home">Prüfung pausieren</button></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div><div class="question">${esc(q.prompt)}</div>${body}</section>`;
-  const submit=value=>submitExamAnswer(q,value);document.getElementById('examNext')?.addEventListener('click',()=>{const input=document.getElementById('examInput');if(input.value.trim())submit(input.value)});document.getElementById('examInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim())submit(e.target.value)});document.querySelectorAll('[data-exam-choice]').forEach(btn=>btn.addEventListener('click',()=>submit(btn.dataset.examChoice)));bindRouteButtons();document.getElementById('examInput')?.focus();
+  const submit=value=>submitExamAnswer(q,value);
+  document.getElementById('examNext')?.addEventListener('click',()=>{const input=document.getElementById('examInput');if(input.value.trim())submit(input.value)});
+  document.getElementById('examInput')?.addEventListener('keydown',e=>{if(e.key==='Enter'&&e.target.value.trim())submit(e.target.value)});
+  document.querySelectorAll('[data-exam-choice]').forEach(btn=>btn.addEventListener('click',()=>submit(btn.dataset.examChoice)));
+  bindRouteButtons();document.getElementById('examInput')?.focus();
 }
 function submitExamAnswer(q,value){const run=activePackage().examRun,correct=exact(value,q.answer);if(correct)run.score++;run.answers.push({number:run.index+1,verb:q.verb,type:q.type,prompt:q.prompt,userAnswer:String(value),correctAnswer:q.answer,correct});run.index++;persistLocal();renderExam()}
 function renderExamResult(){
   const pkg=activePackage(),run=pkg.examRun,total=run.questions.length,percent=Math.round(run.score/total*100);pkg.examAttempts++;pkg.examBest=Math.max(pkg.examBest,percent);const wrong=run.answers.filter(a=>!a.correct);pkg.examRun=null;persistLocal();syncExam(percent);
-  app.innerHTML=`<section class="card finish"><h2>Prüfung fertig</h2><div class="stars">${'★'.repeat(percent>=100?3:percent>=70?2:percent>=50?1:0)}${'☆'.repeat(3-(percent>=100?3:percent>=70?2:percent>=50?1:0))}</div><p><b>${run.score} / ${total} = ${percent}%</b></p><p>Bestes Ergebnis: <b>${pkg.examBest}/100 Punkte</b></p>${wrong.length?`<div class="exam-review"><h3>Was war falsch?</h3>${wrong.map(a=>`<div class="review-row"><b>Aufgabe ${a.number}: ${esc(a.prompt)}</b><div class="wrong">Deine Antwort: ${esc(a.userAnswer)||'—'}</div><div class="right">Richtig: ${esc(a.correctAnswer)}</div></div>`).join('')}</div>`:'<div class="feedback"><div class="ok">Alle Antworten waren richtig.</div></div>'}<div class="actions"><button id="repeatExam">Neue zufällige Prüfung</button><button class="secondary" data-route="home">Zur Aufgabenübersicht</button></div></section>`;
+  const stars=percent>=100?3:percent>=70?2:percent>=50?1:0;
+  app.innerHTML=`<section class="card finish"><h2>Prüfung fertig</h2><div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><p><b>${run.score} / ${total} = ${percent}%</b></p><p>Bestes Ergebnis: <b>${pkg.examBest}/100 Punkte</b></p>${wrong.length?`<div class="exam-review"><h3>Was war falsch?</h3>${wrong.map(a=>`<div class="review-row"><b>Aufgabe ${a.number}: ${esc(a.prompt)}</b><div class="wrong">Deine Antwort: ${esc(a.userAnswer)||'—'}</div><div class="right">Richtig: ${esc(a.correctAnswer)}</div></div>`).join('')}</div>`:'<div class="feedback"><div class="ok">Alle Antworten waren richtig.</div></div>'}<div class="actions"><button id="repeatExam">Neue zufällige Prüfung</button><button class="secondary" data-route="home">Zur Aufgabenübersicht</button></div></section>`;
   document.getElementById('repeatExam').addEventListener('click',()=>{startExam();renderExam()});bindRouteButtons();
 }
 
@@ -92,7 +116,6 @@ async function init(){
   state=loadLocal();renderRoute();restoreRemoteIfNeeded();
 }
 
-document.addEventListener('click',e=>{const button=e.target.closest('[data-route="home"]');if(button){e.preventDefault();navigate({})}},true);
 window.addEventListener('popstate',renderRoute);
 window.addEventListener('pagehide',()=>{try{if(state){const text=JSON.stringify(normalizeState(state));localStorage.setItem(storageKey(),text);localStorage.setItem(backupKey(),text)}}catch(e){}});
 window.VT_START=()=>init().catch(e=>errorPage(e?.message||String(e)));
