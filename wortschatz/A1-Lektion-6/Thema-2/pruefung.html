@@ -1,19 +1,21 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=10"><style>
 .exam-image-box{width:min(330px,100%);height:250px;margin:16px auto;border:2px solid var(--lesson-line);border-radius:22px;background:#fff;display:flex;align-items:center;justify-content:center;overflow:hidden}.exam-image-box img{width:100%;height:100%;object-fit:contain;display:block}.exam-cue{margin:14px 0;padding:12px;border-radius:16px;background:#fff8dc;border:1px solid #facc15;font-weight:900;color:#7a5400}.exam-input-wrap{max-width:720px;margin:14px auto}.exam-progress-label{display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap}.exam-stars{font-size:36px;letter-spacing:5px;margin:12px 0}.exam-feedback-list{display:grid;gap:12px;margin-top:20px;text-align:left}.exam-feedback-row{padding:14px;border:2px solid #fecaca;border-radius:16px;background:#fff7f7}.exam-feedback-row h3{margin:0 0 8px;color:#991b1b}.exam-feedback-row p{margin:5px 0}.exam-feedback-thumb{width:86px;height:86px;object-fit:contain;border:1px solid #ddd;border-radius:12px;background:#fff;float:right;margin:0 0 8px 12px}.exam-answer-wrong{color:#b91c1c;font-weight:800}.exam-answer-right{color:#166534;font-weight:800}.exam-all-right{padding:16px;border:2px solid #86efac;border-radius:16px;background:#f0fdf4;color:#166534;font-weight:900;margin-top:18px}
-</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-runtime2"></script><script src="app.js?v=10"></script><script src="l6t2-postkarte.js?v=12"></script><script src="l6t2-extra-tasks.js?v=19"></script><script>
+</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-runtime3"></script><script src="app.js?v=10"></script><script src="l6t2-postkarte.js?v=12"></script><script>
 const area=document.getElementById('area');header('Prüfung');
 const FILE='pruefung.html';
 const TOTAL=20;
 const BUNNY='https://sprachpilot.b-cdn.net/';
 const CURRENT_SCORE_KEY='SP_L6_T2_EXAM_CURRENT_SCORE';
 const CURRENT_PERCENT_KEY='SP_L6_T2_EXAM_CURRENT_PERCENT';
-const EXAM_VERSION_KEY=CFG.key+'_exam_pattern_v2';
+const EXAM_VERSION_KEY=CFG.key+'_exam_pattern_v3';
 if(localStorage.getItem(EXAM_VERSION_KEY)!=='1'){
   localStorage.removeItem(taskKey(FILE));
   localStorage.removeItem('SP_TASK_STATE_'+FILE);
   localStorage.removeItem('SP_TASK_STATE_pruefung');
   localStorage.setItem(EXAM_VERSION_KEY,'1');
 }
+function examTaskTotals(){const all=words();return[['karteikarten.html',all.length],['bild-wort.html',all.length],['hoeren-bild.html',all.length],['kategorien-drag.html',all.filter(w=>['Himmelsrichtungen','Länder','Jahreszeiten'].includes(w.group)).length],['praepositionen.html',18],['praepositionen-bild.html',21],['praepositionen-drag.html',18],['fehler-finden.html',20],['postkarte.html',2],['saetze-bauen.html',SENTENCES.length]]}
+function localExamUnlocked(){return examTaskTotals().every(t=>pctFor(t[0],t[1])>=100)}
 function writeCurrentExamState(correct){
   const count=Math.max(0,Math.min(TOTAL,Math.round(Number(correct)||0)));
   const percent=Math.round(count/TOTAL*100);
@@ -63,69 +65,32 @@ function build(){
   const withDie=countries.filter(w=>w.article&&w.id!=='usa');
   const prepCountryWords=[takeUnused(noArticle,used),takeUnused(withDie,used),takeUnused(countries.filter(w=>w.id==='usa'),used)].filter(Boolean);
   const weatherPlace=takeUnused(shuffled([...directions,...seasons]),used);
-  const prepQuestions=prepCountryWords.map((w,n)=>{
-    const subjects=['Ich lebe','Meine Freundin lebt','Meine Tante lebt'];
-    const a=countryPrep(w);
-    return{t:'mc',kind:'Präposition',targetId:w.id,p:`${subjects[n%subjects.length]} ___ ${w.word}.`,a,opts:prepOptions(a)};
-  });
-  if(weatherPlace){prepQuestions.push({t:'mc',kind:'Präposition',targetId:weatherPlace.id,p:`___ ${weatherPlace.word} ${weatherPlace.group==='Jahreszeiten'?'ist das Wetter oft anders.':'ist es heute kalt.'}`,a:'Im',opts:prepOptions('Im')})}
+  const prepQuestions=prepCountryWords.map((w,n)=>{const subjects=['Ich lebe','Meine Freundin lebt','Meine Tante lebt'];const a=countryPrep(w);return{t:'mc',kind:'Präposition',targetId:w.id,p:`${subjects[n%subjects.length]} ___ ${w.word}.`,a,opts:prepOptions(a)}});
+  if(weatherPlace)prepQuestions.push({t:'mc',kind:'Präposition',targetId:weatherPlace.id,p:`___ ${weatherPlace.word} ${weatherPlace.group==='Jahreszeiten'?'ist das Wetter oft anders.':'ist es heute kalt.'}`,a:'Im',opts:prepOptions('Im')});
   prepQuestions.push({t:'mc',kind:'Präposition',targetId:'montag-time',p:'___ Montag beginnt der Deutschkurs.',a:'Am',opts:prepOptions('Am')});
   prepQuestions.push({t:'mc',kind:'Präposition',targetId:'10-uhr-time',p:'Der Wetterbericht beginnt ___ 10 Uhr.',a:'um',opts:prepOptions('um')});
   const conjugationCountry=takeUnused(countries,used);
   const conjugation={t:'mc',kind:'Konjugation',targetId:conjugationCountry.id,p:`Sara ___ in ${conjugationCountry.article?countryPrep(conjugationCountry)+' ':''}${conjugationCountry.word}.`.replace('in in der ','in der ').replace('in in den ','in den '),a:'lebt',opts:['lebe','lebt','leben','bleibt']};
   const sentenceCandidates=sentencePool().filter(x=>!used.has(x.id));
   const sentence=one(sentenceCandidates.length?sentenceCandidates:sentencePool());used.add(sentence.id);
-  const sentenceQuestion={t:'sentence',kind:'Wortstellung und Grammatik',...sentence};
   const imageMcA=takeUnused(shuffled([...directions,...seasons]),used);
   const sameGroup=all.filter(w=>w.group===imageMcA.group);
   const imageMc1={t:'image-mc',kind:'Bild → Wort wählen',image:imageMcA.image,p:'Welches Wort passt zum Bild?',a:answerForWord(imageMcA),opts:shuffled([imageMcA,...shuffled(sameGroup.filter(w=>w.id!==imageMcA.id)).slice(0,3)]).map(answerForWord),targetId:imageMcA.id};
   const imageMcB=takeUnused(countries,used);
   const imageMc2={t:'image-mc',kind:'Bild → Wort wählen',image:imageMcB.image,p:'Welches Land sehen Sie?',a:answerForWord(imageMcB),opts:shuffled([imageMcB,...shuffled(countries.filter(w=>w.id!==imageMcB.id)).slice(0,3)]).map(answerForWord),targetId:imageMcB.id};
-  const writePreferred=shuffled([...post,...countries,...directions,...seasons]).filter(w=>!used.has(w.id));
-  const imageWrites=writePreferred.slice(0,6).map(w=>{used.add(w.id);return{t:'image-write',kind:'Bild → Wort schreiben',image:w.image,p:promptForWord(w),a:answerForWord(w),targetId:w.id}});
-  q=[imageMc1,imageMc2,...imageWrites,...contexts,...prepQuestions.slice(0,6),conjugation,sentenceQuestion];
+  const imageWrites=shuffled([...post,...countries,...directions,...seasons]).filter(w=>!used.has(w.id)).slice(0,6).map(w=>({t:'image-write',kind:'Bild → Wort schreiben',image:w.image,p:promptForWord(w),a:answerForWord(w),targetId:w.id}));
+  q=[imageMc1,imageMc2,...imageWrites,...contexts,...prepQuestions.slice(0,6),conjugation,{t:'sentence',kind:'Wortstellung und Grammatik',...sentence}];
 }
-function locked(){area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p class="small">Bearbeiten Sie zuerst alle Aufgaben zu 100%.</p><div class="actions"><a class="btn secondary" href="index.html?v=l6t2-runtime2">Zum Thema</a></div></div>'}
+function locked(){area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p class="small">Bearbeiten Sie zuerst alle Aufgaben zu 100%.</p><div class="actions"><a class="btn secondary" href="index.html?v=l6t2-runtime3">Zum Thema</a></div></div>'}
 function imageHtml(it){if(!it.image)return'';return `<div class="exam-image-box"><img src="${BUNNY+it.image}" alt="Prüfungsbild" loading="eager" onerror="this.parentElement.textContent='Bild fehlt: ${it.image}'"></div>`}
-function show(){
-  if(!l6t2ExamUnlocked()){locked();return}
-  if(!q.length)build();
-  if(i>=q.length){done();return}
-  answered=false;
-  const it=q[i],pct=Math.round(i/q.length*100);
-  const choices=it.t==='mc'||it.t==='image-mc'?`<div class="choice-grid">${shuffled(it.opts).map(o=>`<button class="choice" onclick="pick('${encodeURIComponent(o)}')">${o}</button>`).join('')}</div>`:'';
-  const writing=it.t==='image-write'||it.t==='sentence'?`<div class="exam-input-wrap"><input id="ans" autocomplete="off" placeholder="Antwort schreiben"><div class="actions"><button class="btn" onclick="submitWritten()">Weiter</button></div></div>`:'';
-  const cue=it.cue?`<div class="exam-cue">(${it.cue})</div>`:'';
-  area.innerHTML=`<div class="exam-progress-label"><span class="small">Aufgabe ${i+1} / ${q.length}</span><span class="small">${pct}% bearbeitet</span></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div>${imageHtml(it)}<div class="question">${it.p}</div>${cue}${choices}${writing}<div id="fb" class="feedback" aria-live="polite"></div>`;
-  const input=document.getElementById('ans');if(input){input.focus();input.addEventListener('keydown',e=>{if(e.key==='Enter')submitWritten()})}
-}
+function show(){if(!localExamUnlocked()){locked();return}if(!q.length)build();if(i>=q.length){done();return}answered=false;const it=q[i],pct=Math.round(i/q.length*100);const choices=it.t==='mc'||it.t==='image-mc'?`<div class="choice-grid">${shuffled(it.opts).map(o=>`<button class="choice" onclick="pick('${encodeURIComponent(o)}')">${o}</button>`).join('')}</div>`:'';const writing=it.t==='image-write'||it.t==='sentence'?`<div class="exam-input-wrap"><input id="ans" autocomplete="off" placeholder="Antwort schreiben"><div class="actions"><button class="btn" onclick="submitWritten()">Weiter</button></div></div>`:'';const cue=it.cue?`<div class="exam-cue">(${it.cue})</div>`:'';area.innerHTML=`<div class="exam-progress-label"><span class="small">Aufgabe ${i+1} / ${q.length}</span><span class="small">${pct}% bearbeitet</span></div><div class="progress"><div class="bar" style="width:${pct}%"></div></div>${imageHtml(it)}<div class="question">${it.p}</div>${cue}${choices}${writing}<div id="fb" class="feedback" aria-live="polite"></div>`;const input=document.getElementById('ans');if(input){input.focus();input.addEventListener('keydown',e=>{if(e.key==='Enter')submitWritten()})}}
 function pick(raw){submitAnswer(decodeURIComponent(raw))}
 function submitWritten(){const input=document.getElementById('ans');if(!input||!input.value.trim()){document.getElementById('fb').innerHTML='<div class="no">Bitte schreiben Sie eine Antwort.</div>';return}submitAnswer(input.value)}
 function isCorrectAnswer(it,value){const answers=Array.isArray(it.answers)&&it.answers.length?it.answers:[it.a];return answers.some(answer=>exact(value,answer))}
-function submitAnswer(value){
-  if(answered)return;
-  answered=true;
-  const it=q[i],correct=isCorrectAnswer(it,value);
-  if(correct)score++;
-  details.push({number:i+1,correct,kind:it.kind||it.t,prompt:it.p,cue:it.cue||'',image:it.image||'',answer:String(value||''),solution:it.a});
-  i++;show();
-}
+function submitAnswer(value){if(answered)return;answered=true;const it=q[i],correct=isCorrectAnswer(it,value);if(correct)score++;details.push({number:i+1,correct,kind:it.kind||it.t,prompt:it.p,cue:it.cue||'',image:it.image||'',answer:String(value||''),solution:it.a});i++;show()}
 function esc(value){return String(value||'').replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]))}
-function feedbackHtml(){
-  const wrong=details.filter(d=>!d.correct);
-  if(!wrong.length)return'<div class="exam-all-right">Alle 20 Aufgaben sind richtig.</div>';
-  return `<div class="exam-feedback-list"><h2>Fehlerauswertung</h2>${wrong.map(d=>`<div class="exam-feedback-row">${d.image?`<img class="exam-feedback-thumb" src="${BUNNY+esc(d.image)}" alt="">`:''}<h3>Aufgabe ${d.number}: ${esc(d.kind)}</h3><p><b>Aufgabe:</b> ${esc(d.prompt)} ${d.cue?`<span class="exam-cue-inline">(${esc(d.cue)})</span>`:''}</p><p class="exam-answer-wrong">Deine Antwort: ${esc(d.answer)||'—'}</p><p class="exam-answer-right">Richtig: ${esc(d.solution)}</p></div>`).join('')}</div>`;
-}
-function done(){
-  const percent=writeCurrentExamState(score);
-  const stars=percent>=100?3:percent>=70?2:percent>=50?1:0;
-  try{
-    const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',file:FILE,taskTitle:'Prüfung',percent,done:score,total:TOTAL,completed:percent>=100,allowDecrease:true};
-    if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload);
-  }catch(e){}
-  try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',percent,scorePercent:percent,stars})}catch(e){}
-  area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="exam-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div>${feedbackHtml()}<div class="actions"><button class="btn" onclick="restart()">Neue zufällige Prüfung</button><a class="btn secondary" href="index.html?v=l6t2-runtime2">Zum Thema</a></div></div>`;
-}
+function feedbackHtml(){const wrong=details.filter(d=>!d.correct);if(!wrong.length)return'<div class="exam-all-right">Alle 20 Aufgaben sind richtig.</div>';return `<div class="exam-feedback-list"><h2>Fehlerauswertung</h2>${wrong.map(d=>`<div class="exam-feedback-row">${d.image?`<img class="exam-feedback-thumb" src="${BUNNY+esc(d.image)}" alt="">`:''}<h3>Aufgabe ${d.number}: ${esc(d.kind)}</h3><p><b>Aufgabe:</b> ${esc(d.prompt)} ${d.cue?`<span class="exam-cue-inline">(${esc(d.cue)})</span>`:''}</p><p class="exam-answer-wrong">Deine Antwort: ${esc(d.answer)||'—'}</p><p class="exam-answer-right">Richtig: ${esc(d.solution)}</p></div>`).join('')}</div>`}
+function done(){const percent=writeCurrentExamState(score);const stars=percent>=100?3:percent>=70?2:percent>=50?1:0;try{const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',file:FILE,taskTitle:'Prüfung',percent,done:score,total:TOTAL,completed:percent>=100,allowDecrease:true};if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload)}catch(e){}try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:'wortschatz-a1-lektion-6-thema-2',title:'A1 Lektion 6 · Thema 2',percent,scorePercent:percent,stars})}catch(e){}area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="exam-stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div>${feedbackHtml()}<div class="actions"><button class="btn" onclick="restart()">Neue zufällige Prüfung</button><a class="btn secondary" href="index.html?v=l6t2-runtime3">Zum Thema</a></div></div>`}
 function restart(){q=[];i=0;score=0;answered=false;details=[];show()}
 show();
 </script></body></html>
