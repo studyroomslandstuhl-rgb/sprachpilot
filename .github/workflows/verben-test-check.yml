@@ -51,8 +51,8 @@ jobs:
           grep -q 'usableTranslation' verben-test/task-context.js
       - name: Course release integration
         run: |
-          grep -q "moduleOpen(assignments,\"Verben Test\")" index.html
-          grep -q "title:\"Verben Test\"" teacher/verben-test-release.js
+          grep -q 'moduleOpen(assignments,"Verben Test")' index.html
+          grep -q "title:'Verben Test'" teacher/verben-test-release.js
           grep -q 'verben-test-release.js?v=1' teacher/index.html
           grep -q 'low==="verben-test"' js/course-releases.js
       - name: Exact Bunny image mappings
