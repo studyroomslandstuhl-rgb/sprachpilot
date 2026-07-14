@@ -47,11 +47,12 @@ const SENTENCES=[
 {parts:['Ich','wohne','in der','Ukraine.'],sol:'Ich wohne in der Ukraine.'},
 {parts:['Im','Herbst','regnet','es oft.'],sol:'Im Herbst regnet es oft.'}
 ];
+const L6T2_WORD_TOTAL=32;
 const TASKS=[
-['karteikarten.html',WORDS.length,'Karteikarten'],
-['bild-wort.html',WORDS.length,'Bild → Wort'],
-['hoeren-bild.html',WORDS.length,'Hören → Bild'],
-['kategorien-drag.html',WORDS.filter(w=>['Himmelsrichtungen','Länder','Jahreszeiten'].includes(w.group)).length,'Kategorien · 2 Teile'],
+['karteikarten.html',L6T2_WORD_TOTAL,'Karteikarten'],
+['bild-wort.html',L6T2_WORD_TOTAL,'Bild → Wort'],
+['hoeren-bild.html',L6T2_WORD_TOTAL,'Hören → Bild'],
+['kategorien-drag.html',21,'Kategorien · 2 Teile'],
 ['praepositionen.html',18,'Richtige Präposition'],
 ['praepositionen-bild.html',21,'Bild → Präposition'],
 ['praepositionen-drag.html',18,'Präpositionen zuordnen · 2 Teile'],
@@ -71,7 +72,7 @@ function visual(w){return `<div class="task-img-box"><img src="${img(w)}" alt="$
 function miniVisual(w){return `<img src="${img(w)}" alt="${full(w)}" loading="lazy" decoding="async" onerror="this.replaceWith(document.createTextNode('${full(w)}'))">`}
 function words(){return WORDS}
 function simple(x){return String(x||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:]/g,'').replace(/\s+/g,' ')}
-function exact(value,solutions){const a=simple(value);return (Array.isArray(solutions)?solutions:[solutions]).some(s=>simple(s)===a)}
+function exact(value,solutions){const a=simple(value);return(Array.isArray(solutions)?solutions:[solutions]).some(s=>simple(s)===a)}
 function shuffle(a){const out=[...(a||[])];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out}
 function say(t){if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang='de-DE';u.rate=.86;speechSynthesis.speak(u)}
 function isTeacher(){return localStorage.getItem('SP_LOGIN_ROLE')==='teacher'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}
@@ -99,7 +100,8 @@ function readTaskState(file,total){
   try{rawText=localStorage.getItem(taskKey(file))||'';state=rawText?JSON.parse(rawText):null}catch(e){}
   const normalized=normalizeTaskState(state,total);
   const text=JSON.stringify(normalized);
-  TASK_STATE_CACHE.set(cacheId,normalized);TASK_RAW_CACHE.set(cacheId,text);
+  TASK_STATE_CACHE.set(cacheId,normalized);
+  TASK_RAW_CACHE.set(cacheId,text);
   if(rawText&&rawText!==text){try{localStorage.setItem(taskKey(file),text)}catch(e){}}
   return copyTaskState(normalized);
 }
@@ -115,7 +117,8 @@ function saveTask(file,st,shouldSync=true){
   const total=Math.max(0,Number(st?.total)||0),cacheId=taskKey(file)+'|'+total;
   const previous=TASK_STATE_CACHE.get(cacheId),normalized=normalizeTaskState(st,total),text=JSON.stringify(normalized);
   const changed=TASK_RAW_CACHE.get(cacheId)!==text;
-  TASK_STATE_CACHE.set(cacheId,normalized);TASK_RAW_CACHE.set(cacheId,text);
+  TASK_STATE_CACHE.set(cacheId,normalized);
+  TASK_RAW_CACHE.set(cacheId,text);
   if(changed){try{localStorage.setItem(taskKey(file),text)}catch(e){}}
   const progressChanged=!previous||previous.done.length!==normalized.done.length;
   if(shouldSync&&progressChanged)scheduleTaskSync(file,normalized);
@@ -128,17 +131,20 @@ function pctFor(file,total){if(!total)return 0;const st=loadTask(file,total);ret
 function progress(file,total){const st=loadTask(file,total),d=st.done.length,p=total?Math.round(d/total*100)||0:0;return `<div class="small">${d} richtig · ${total-d} übrig · ${p}%</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
 function help3(t,a,b,sol){if(t===1)return `<div class="no">${a}</div>`;if(t===2)return `<div class="hint">${b}</div>`;return `<div class="no">Lösung: ${sol}</div>`}
 function instruction(txt){return `<div class="task-instruction">${txt}</div>`}
-function complete(area,file,next='index.html'){area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${next}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div></div>`}
+function complete(area,file,next='index.html'){
+  try{const task=TASKS.find(t=>t[0]===file);if(task){const st=loadTask(file,task[1]);if(st.done.length>=task[1])syncTask(file,st)}}catch(e){}
+  area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="${next}">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div></div>`;
+}
 function markTaskDone(file,total){saveTask(file,{total,done:[...Array(total).keys()],queue:[],current:null,tries:0,hadWrong:false},true)}
 function repeatScope(){return'wortschatz-a1-lektion-6-thema-2'}
-function currentRepeatRun(){return Math.max(1,Math.round(Number(localStorage.getItem('SP_SCORE_RUN_'+repeatScope())||1)||1)}
+function currentRepeatRun(){return Math.max(1,Math.round(Number(localStorage.getItem('SP_SCORE_RUN_'+repeatScope())||1)||1))}
 function taskPointsForRun(){const run=currentRepeatRun();if(run===1)return 5;if(run===2)return 10;if(run===3)return 15;return 0}
 function topicComplete(){return TASKS.length>0&&TASKS.every(t=>pctFor(t[0],t[1])>=100)}
 function repeatBannerHtml(){if(!topicComplete())return'';const run=currentRepeatRun();if(run>=3)return`<section class="card repeat-card done"><h2>Du bist fertig!</h2><p class="small">Du hast dieses Thema dreimal vollständig geschafft. Fortschritte löschen bleibt weiterhin möglich.</p></section>`;const nextPoints=run===1?10:15;return`<section class="card repeat-card"><h2>Wiederhole alle Aufgaben und bekomme mehr Punkte!</h2><p class="small">Nächste Runde: ${nextPoints} Punkte pro Aufgabe.</p><div class="actions"><button class="btn" onclick="startRepeatRound()">Wiederholen</button></div></section>`}
 function clearTaskCaches(){TASK_STATE_CACHE.clear();TASK_RAW_CACHE.clear();TASK_PENDING_SYNC.clear();TASK_SYNC_TIMERS.forEach(clearTimeout);TASK_SYNC_TIMERS.clear()}
 function resetLocalTopicTasks(){TASKS.forEach(t=>localStorage.removeItem(taskKey(t[0])));localStorage.removeItem('SP_L6_T2_EXAM_CURRENT_SCORE');localStorage.removeItem('SP_L6_T2_EXAM_CURRENT_PERCENT');clearTaskCaches()}
-function startRepeatRound(){if(!topicComplete())return;const run=currentRepeatRun();if(run>=3)return;if(!confirm('Alle Aufgaben in diesem Thema auf 0 setzen und die nächste Wiederholungsrunde starten?'))return;try{if(window.SPProgress&&SPProgress.recordThemeReset)SPProgress.recordThemeReset({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:repeatScope(),title:'A1 Lektion 6 · Thema 2'});else import('/js/progress.js?v=l6t2-repeat').then(m=>m.recordThemeReset&&m.recordThemeReset({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:repeatScope(),title:'A1 Lektion 6 · Thema 2'})).catch(()=>{})}catch(e){localStorage.setItem('SP_SCORE_RUN_'+repeatScope(),String(run+1))}resetLocalTopicTasks();setTimeout(()=>location.reload(),80)}
-function syncTask(file,st){try{const done=st.done?.length||0,total=st.total||0,percent=total?Math.round(done/total*100):0;const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:repeatScope(),title:'A1 Lektion 6 · Thema 2',file,taskTitle:(TASKS.find(t=>t[0]===file)||[])[2]||file,percent,done,total,completed:percent>=100,run:currentRepeatRun(),pointsPerTask:taskPointsForRun()};if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload)}catch(e){}}
+function startRepeatRound(){if(!topicComplete())return;const run=currentRepeatRun();if(run>=3)return;if(!confirm('Alle Aufgaben in diesem Thema auf 0 setzen und die nächste Wiederholungsrunde starten?'))return;try{const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:repeatScope(),title:'A1 Lektion 6 · Thema 2'};if(window.SPProgress&&SPProgress.recordThemeReset)SPProgress.recordThemeReset(payload);else import('/js/progress.js?v=l6t2-repeat2').then(m=>m.recordThemeReset&&m.recordThemeReset(payload)).catch(()=>{})}catch(e){localStorage.setItem('SP_SCORE_RUN_'+repeatScope(),String(run+1))}resetLocalTopicTasks();setTimeout(()=>location.reload(),80)}
+function syncTask(file,st){try{const done=st.done?.length||0,total=st.total||0,percent=total?Math.round(done/total*100):0;const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:repeatScope(),title:'A1 Lektion 6 · Thema 2',file,taskTitle:(TASKS.find(t=>t[0]===file)||[])[2]||file,percent,done,total,completed:percent>=100,allowDecrease:true,run:currentRepeatRun(),pointsPerTask:taskPointsForRun()};if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload)}catch(e){}}
 function header(title,showReset=false){const h=document.querySelector('.topbar');if(!h)return;const p=profile(),name=`${p?.vorname||p?.firstName||''} ${p?.nachname||p?.lastName||''}`.trim()||'Schüler/in',dashboard=localStorage.getItem('SP_LOGIN_ROLE')==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';h.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${title} · ${CFG.sub}</div></div></a><div class="account-tools"><span class="account-pill">${name}</span><a class="account-link" href="${dashboard}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="index.html">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a>${showReset?'<button class="btn danger-btn" onclick="resetThemeProgress()">Fortschritte löschen</button>':''}</nav>`}
 function resetThemeProgress(){if(!confirm('Fortschritte in Thema 2 löschen?'))return;Object.keys(localStorage).filter(k=>k.startsWith(CFG.key)).forEach(k=>localStorage.removeItem(k));localStorage.removeItem('SP_L6_T2_EXAM_CURRENT_SCORE');localStorage.removeItem('SP_L6_T2_EXAM_CURRENT_PERCENT');clearTaskCaches();location.reload()}
 function renderOverview(target){const groups=[...new Set(WORDS.map(w=>w.group))];target.innerHTML=groups.map(g=>`<section class="type-block"><div class="type-title">${g}</div>${WORDS.filter(w=>w.group===g).map(w=>`<div class="word-row"><div class="word-placeholder">${miniVisual(w)}</div><div><b>${full(w)}</b><br><span class="small">${w.sentence}${w.from?' / '+w.from:''}</span><div class="small">Übersetzung (${LANGS[langKey()]||'EN'}): ${tr(w)}</div><span class="tag">${w.type}</span></div></div>`).join('')}</section>`).join('')+`<section class="type-block"><div class="type-title">Grammatik: Präpositionen</div><div class="grammar-rule">Himmelsrichtungen: <b>im Norden</b>, <b>im Süden</b>, <b>im Osten</b>, <b>im Westen</b></div><div class="grammar-rule">Wind: <b>aus dem Norden</b>, <b>aus dem Westen</b></div><div class="grammar-rule">Jahreszeiten: <b>im Frühling</b>, <b>im Sommer</b>, <b>im Herbst</b>, <b>im Winter</b></div><div class="grammar-rule">Länder ohne Artikel: <b>in Deutschland</b>, <b>aus Österreich</b></div><div class="grammar-rule">Länder mit die: <b>in der Schweiz</b>, <b>aus der Türkei</b>, <b>in der Ukraine</b></div><div class="grammar-rule">Länder im Plural: <b>in den USA</b>, <b>aus den USA</b></div></section>`}
