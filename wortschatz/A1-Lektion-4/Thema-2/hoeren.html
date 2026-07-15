@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Hören</title>
-<link rel="stylesheet" href="style.css?v=241">
-<link rel="stylesheet" href="../shared/lektion4-standard.css?v=241">
+<link rel="stylesheet" href="style.css?v=244">
+<link rel="stylesheet" href="../shared/lektion4-standard.css?v=244">
 <style>
 .click-card{cursor:pointer;pointer-events:auto;transition:transform .15s,border-color .15s,background .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 @media(hover:hover){.click-card:hover{transform:scale(1.03);border-color:#f7c600}}
@@ -26,142 +26,36 @@
   <main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main>
   <footer>© SprachPilot</footer>
 </div>
-
-<script type="module" src="/js/progress.js?v=241"></script>
+<script type="module" src="/js/progress.js?v=244"></script>
 <script src="app.js?v=236"></script>
+<script src="../shared/l4-t2-audio.js?v=2"></script>
 <script>
 header("Hören");
-
 const area=document.getElementById("area");
 const FILE="hoeren.html";
 const IMAGE_CDN="https://sprachpilot.b-cdn.net/";
-const AUDIO_CDN="https://sprachpilot.b-cdn.net/audio/";
 let i=0;
 let locked=false;
-let currentAudio=null;
-
-function wordGroup(w){
-  return typeof spT2Group==="function"
-    ?spT2Group(w)
-    :(w?.releaseGroup||w?.wordGroup||w?.group||(w?.set==="plus"?"extra":"book"));
-}
-function hasUploadedAudio(w){return !!(w&&w.id&&(wordGroup(w)==="book"||w.category==="Möbel"))}
-function audioUrl(w){return hasUploadedAudio(w)?AUDIO_CDN+encodeURIComponent(w.id)+".mp3":""}
-
-function shuffle(list){
-  const out=list.slice();
-  for(let n=out.length-1;n>0;n--){
-    const j=Math.floor(Math.random()*(n+1));
-    const temp=out[n];out[n]=out[j];out[j]=temp;
-  }
-  return out;
-}
-function optionsFor(w){
-  const others=shuffle(WORDS.filter(x=>x&&x.id&&x.id!==w.id)).slice(0,3);
-  return shuffle([w].concat(others));
-}
-function imageName(value){
-  const raw=String(value||"").split("?")[0].split("#")[0].split("/").pop();
-  return raw.replace(/\.(png|jpe?g|webp|gif|svg)$/i,"");
-}
-function imageUrl(w){
-  const name=imageName((w&&w.id)||(w&&w.image));
-  return name?IMAGE_CDN+encodeURIComponent(name)+".webp":"";
-}
-function imageCard(w){
-  return '<button type="button" class="imgbox click-card" data-id="'+esc(w.id)+'" onclick="choose(this.dataset.id,this)">'+
-    '<img src="'+imageUrl(w)+'" loading="eager" decoding="async" onerror="imageFailed(this)" alt="">'+
-  '</button>';
-}
-function imageFailed(img){
-  if(img)img.outerHTML='<div class="image-fallback">Bild konnte nicht geladen werden.</div>';
-}
-
-function stopAudio(){
-  if(!currentAudio)return;
-  try{currentAudio.pause();currentAudio.currentTime=0}catch(e){}
-  currentAudio=null;
-}
-function setAudioStatus(text,isError=false){
-  const el=document.getElementById("audioStatus");
-  if(!el)return;
-  el.textContent=text||"";
-  el.classList.toggle("error",!!isError);
-}
-function playWord(slow=false){
-  const w=WORDS[i];
-  if(!w)return;
-  if(!hasUploadedAudio(w)){
-    stopAudio();
-    setAudioStatus("");
-    speak(w.full,slow);
-    return;
-  }
-  const src=audioUrl(w);
-  if(!src)return;
-  stopAudio();
-  const audio=new Audio(src);
-  audio.preload="auto";
-  audio.playbackRate=slow?0.75:1;
-  audio.onplay=()=>setAudioStatus(slow?"Langsame Wiedergabe läuft …":"Wiedergabe läuft …");
-  audio.onended=()=>{setAudioStatus("");currentAudio=null};
-  audio.onerror=()=>{setAudioStatus("Audio konnte nicht geladen werden.",true);currentAudio=null};
-  currentAudio=audio;
-  const promise=audio.play();
-  if(promise&&typeof promise.catch==="function"){
-    promise.catch(()=>{setAudioStatus("Audio konnte nicht abgespielt werden.",true);currentAudio=null});
-  }
-}
-
+function shuffle(list){const out=list.slice();for(let n=out.length-1;n>0;n--){const j=Math.floor(Math.random()*(n+1)),temp=out[n];out[n]=out[j];out[j]=temp}return out}
+function optionsFor(w){const others=shuffle(WORDS.filter(x=>x&&x.id&&x.id!==w.id)).slice(0,3);return shuffle([w].concat(others))}
+function imageName(value){const raw=String(value||"").split("?")[0].split("#")[0].split("/").pop();return raw.replace(/\.(png|jpe?g|webp|gif|svg)$/i,"")}
+function imageUrl(w){const name=imageName((w&&w.id)||(w&&w.image));return name?IMAGE_CDN+encodeURIComponent(name)+".webp":""}
+function imageCard(w){return '<button type="button" class="imgbox click-card" data-id="'+esc(w.id)+'" onclick="choose(this.dataset.id,this)"><img src="'+imageUrl(w)+'" loading="eager" decoding="async" onerror="imageFailed(this)" alt=""></button>'}
+function imageFailed(img){if(img)img.outerHTML='<div class="image-fallback">Bild konnte nicht geladen werden.</div>'}
+function playWord(slow=false){const w=WORDS[i];if(!w)return;if(L4T2Audio.has(w)){L4T2Audio.play(w,slow,"audioStatus");return}L4T2Audio.stop();speak(w.full,slow)}
 function show(){
-  stopAudio();
-  locked=false;
-
-  if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){
-    complete(area,FILE,"artikel-klick.html");
-    return;
-  }
-
-  i=nextIndex(FILE,WORDS.length);
-  const w=WORDS[i];
-  if(!w){
-    area.innerHTML='<div class="no">Die Aufgabe konnte nicht geladen werden.</div><div class="actions"><button type="button" class="btn" onclick="show()">Neu laden</button><a class="btn secondary" href="index.html">Zurück</a></div>';
-    return;
-  }
-
-  const options=optionsFor(w);
-  area.innerHTML=progressHtml(FILE,WORDS.length)+
-    '<div class="question">Höre und wähle das richtige Bild.</div>'+
-    '<div class="actions">'+
-      '<button type="button" class="btn" onclick="playWord(false)">🔊 Hören</button>'+
-      '<button type="button" class="btn secondary" onclick="playWord(true)">Langsam</button>'+
-    '</div>'+
-    '<div id="audioStatus" class="audio-status" aria-live="polite"></div>'+
-    '<div class="imgrow">'+options.map(imageCard).join("")+'</div>'+
-    '<div id="fb" class="feedback" aria-live="polite"></div>';
+ L4T2Audio.stop();locked=false;
+ if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){complete(area,FILE,"artikel-klick.html");return}
+ i=nextIndex(FILE,WORDS.length);const w=WORDS[i];
+ if(!w){area.innerHTML='<div class="no">Die Aufgabe konnte nicht geladen werden.</div><div class="actions"><button type="button" class="btn" onclick="show()">Neu laden</button><a class="btn secondary" href="index.html">Zurück</a></div>';return}
+ const options=optionsFor(w);
+ area.innerHTML=progressHtml(FILE,WORDS.length)+'<div class="question">Höre und wähle das richtige Bild.</div><div class="actions"><button type="button" class="btn" onclick="playWord(false)">🔊 Hören</button><button type="button" class="btn secondary" onclick="playWord(true)">Langsam</button></div><div id="audioStatus" class="audio-status" aria-live="polite"></div><div class="imgrow">'+options.map(imageCard).join("")+'</div><div id="fb" class="feedback" aria-live="polite"></div>';
 }
-
 function choose(id,el){
-  if(locked)return;
-  const w=WORDS[i];
-  const fb=document.getElementById("fb");
-  if(!w||!fb||!el)return;
-
-  if(id===w.id){
-    locked=true;
-    document.querySelectorAll(".click-card").forEach(card=>card.disabled=true);
-    el.classList.add("correct");
-    fb.textContent="Richtig!";
-    markRight(FILE,WORDS.length);
-    setTimeout(show,700);
-  }else{
-    el.classList.add("wrong");
-    el.disabled=true;
-    const tries=markWrong(FILE,WORDS.length);
-    fb.innerHTML=feedbackForTry(tries,w.full,"Hören und Bild");
-  }
+ if(locked)return;const w=WORDS[i],fb=document.getElementById("fb");if(!w||!fb||!el)return;
+ if(id===w.id){locked=true;document.querySelectorAll(".click-card").forEach(card=>card.disabled=true);el.classList.add("correct");fb.textContent="Richtig!";markRight(FILE,WORDS.length);setTimeout(show,700)}
+ else{el.classList.add("wrong");el.disabled=true;const tries=markWrong(FILE,WORDS.length);fb.innerHTML=feedbackForTry(tries,w.full,"Hören und Bild")}
 }
-
 show();
 </script>
 </body>
