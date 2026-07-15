@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung – Thema 2</title><link rel="stylesheet" href="style.css?v=240"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=240">
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung – Thema 2</title><link rel="stylesheet" href="style.css?v=241"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=241">
 <style>
 .exam-option-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}
 .exam-option{border:2px solid #ffe28a;background:#fff9dd;border-radius:16px;padding:12px;font-weight:900;cursor:pointer;text-align:center}
@@ -21,7 +21,7 @@
 .audio-status{min-height:24px;margin:8px 0;text-align:center;font-weight:800;color:#7a5100}
 .audio-status.error{color:#9b1c1c}
 @media(max-width:600px){.exam-option-grid{grid-template-columns:1fr 1fr}.exam-option img{height:115px}.exam-dialog-img{height:190px}}
-</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=240"></script><script src="app.js?v=236"></script><script src="../shared/l4-bunny-direct.js?v=3"></script><script>
+</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=241"></script><script src="app.js?v=236"></script><script src="../shared/l4-bunny-direct.js?v=3"></script><script>
 header("Prüfung");
 const area=document.getElementById("area");
 const FILE="pruefung.html";
@@ -46,8 +46,8 @@ function imageUrl(value){
  const name=imageName(value&&typeof value==="object"?(value.image||value.img||value.id):value);
  return name?BUNNY_CDN+encodeURIComponent(name)+".webp":"";
 }
-function isBookWord(w){return !!(w&&w.id&&groupOf(w)==="book")}
-function audioUrl(w){return isBookWord(w)?AUDIO_CDN+encodeURIComponent(w.id)+".mp3":""}
+function hasUploadedAudio(w){return !!(w&&w.id&&(groupOf(w)==="book"||w.category==="Möbel"))}
+function audioUrl(w){return hasUploadedAudio(w)?AUDIO_CDN+encodeURIComponent(w.id)+".mp3":""}
 function stopExamAudio(){
  if(!currentExamAudio)return;
  try{currentExamAudio.pause();currentExamAudio.currentTime=0}catch(e){}
@@ -114,7 +114,7 @@ function activeVocabularyLabel(){
  return groups.includes("extra")?"Buchwortschatz und Zusatzwortschatz":"nur Buchwortschatz";
 }
 function compatibleWords(type,pool){
- if(type==="listen")return pool.filter(isBookWord);
+ if(type==="listen")return pool.filter(hasUploadedAudio);
  if(type==="category")return pool.filter(w=>w.category);
  if(type==="dialog"){
   const ids=new Set((Array.isArray(DIALOG_TASKS)?DIALOG_TASKS:[]).map(t=>t.id));
