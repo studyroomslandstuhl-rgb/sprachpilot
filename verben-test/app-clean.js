@@ -216,7 +216,7 @@
 
   function header(){
     const dash=DEPS.dashboardHref?DEPS.dashboardHref():('/dashboard.html');
-    topbar.innerHTML=`<div class="topbar-main"><a class="brand" href="/wortschatz/"><img src="/assets/logo.png" alt=""><div><h1>SprachPilot</h1><div class="subtitle">${MODULE_TITLE}</div></div></a><div class="account"><span class="pill">${esc(profileName())} · ${esc(courseCode())}</span><a class="btn secondary" href="${esc(dash)}">Dashboard</a><a class="btn secondary" href="/profil.html">Profil</a><button class="secondary" data-action="logout">Abmelden</button></div></div><nav class="nav"><button class="secondary" data-back>← Zurück</button><button class="secondary" data-go="home">Übersicht</button><button class="danger" data-reset>Fortschritte löschen</button></nav>`;
+    topbar.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><img src="/assets/logo.png" alt=""><div><h1>SprachPilot</h1><div class="subtitle">${MODULE_TITLE}</div></div></a><div class="account"><span class="pill">${esc(profileName())} · ${esc(courseCode())}</span><a class="btn secondary" href="${esc(dash)}">Dashboard</a><a class="btn secondary" href="/profil.html">Profil</a><button class="secondary" data-action="logout">Abmelden</button></div></div><nav class="nav"><button class="secondary" data-back>← Zurück</button><button class="secondary" data-go="home">Übersicht</button><button class="danger" data-reset>Fortschritte löschen</button></nav>`;
   }
   function bindGlobal(){
     document.body.onclick=e=>{
