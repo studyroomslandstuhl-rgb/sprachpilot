@@ -26,7 +26,7 @@ jobs:
           test ! -f verben-test/app-clean.js
           test ! -f verben-test/choose-filter.js
           grep -q 'Verben Test' verben-test/index.html
-          grep -q 'styles.css?v=3' verben-test/index.html
+          grep -q 'styles.css?v=4' verben-test/index.html
           grep -q 'app.js?v=1' verben-test/index.html
           ! grep -qE 'boot\.js|app-clean\.js|choose-filter\.js|state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
       - name: Core rules
