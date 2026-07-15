@@ -14,6 +14,7 @@ Dieses Modul ist ein Testbereich. Es dient dazu, die Verben-Logik sauber und ohn
 - eine Regel fuer Aufgabenfortschritt
 - eine Regel fuer Pruefungsfreigabe
 - eine Regel fuer gelernte Verben und neue Pakete
+- eine Regel fuer den Uebergang von einem 20er-Paket zum naechsten
 
 Damit sollen keine alten Dateien mehr gleichzeitig Fortschritt, Punkte, Pakete oder Pruefungen berechnen.
 
@@ -69,15 +70,59 @@ Diese Datei entscheidet allein ueber:
 - neues Paket
 - lokales Speichern
 - Firebase-Speichern
+- Uebersicht, Verben waehlen und Verben einschaetzen
 
 Wenn spaeter etwas an Verben Test geaendert wird, zuerst diese Datei pruefen. Keine zweite Datei fuer dieselbe Entscheidung anlegen.
+
+## Uebersichtsregel
+
+Die Seite `Uebersicht` zeigt den ganzen Lernvorrat, nicht nur das aktive Paket.
+
+Sie sortiert die Verben in vier Gruppen:
+
+1. Aktuelles Paket
+2. Zum Lernen vorgemerkt
+3. Weitere moegliche Verben
+4. Gelernt
+
+Die Uebersicht nutzt dieselben Daten wie `Ueben`, `Verben einschaetzen` und `Verben waehlen`.
+
+Wichtig: Es darf keine zweite Uebersichtsliste geben, die anders zaehlt als die Paketlogik.
 
 ## Paketregel
 
 - Ein Paket hat maximal 20 Verben.
 - Wenn kein Paket aktiv ist, startet `Ueben` automatisch ein neues Paket aus verfuegbaren Verben.
+- Vorgemerkte Verben aus `Verben einschaetzen -> Lernen` stehen beim naechsten Paket zuerst.
 - Verben, die bereits gelernt sind, werden nicht noch einmal automatisch in ein neues Paket gelegt.
 - Ein neues Paket kommt erst, wenn das aktuelle Paket inklusive Pruefung fertig ist.
+- Solange ein Paket noch nicht fertig ist, duerfen `Verben waehlen` und `Verben einschaetzen` kein neues Paket ueberschreiben.
+
+Der Uebergang ist:
+
+1. Teilnehmende lernen Paket 1 mit bis zu 20 Verben.
+2. Alle Aufgaben werden 100 Prozent.
+3. Die Pruefung wird freigeschaltet.
+4. Die Pruefung wird mit 100 Prozent bestanden.
+5. `finishPackage()` markiert diese Verben als gelernt.
+6. Danach kann Paket 2 gewaehlt, eingeschaetzt oder automatisch mit `Ueben` gestartet werden.
+
+## Einschaetzregel
+
+`Verben einschaetzen` nutzt eine eigene Liste:
+
+`assessableVerbs()`
+
+Dort erscheinen nur Verben, die noch nicht:
+
+- gelernt sind
+- im aktuellen Paket sind
+- schon als `Kann ich schon` markiert wurden
+- schon als `Lernen` vorgemerkt wurden
+
+Wenn ein Verb als `Lernen` markiert wird, wird es in `assessment.unknown` gespeichert und verschwindet aus der Einschaetzkarte. Es steht danach in der Uebersicht unter `Zum Lernen vorgemerkt` und wird beim naechsten Paket bevorzugt.
+
+Wenn ein Verb als `Kann ich schon` markiert wird, wird es als gelernt behandelt und nicht mehr automatisch vorgeschlagen.
 
 ## Aufgabenregel
 
@@ -197,7 +242,8 @@ Wenn dieses Modul geaendert wird:
 7. Pruefung nur ueber `examUnlocked()`, `renderExam()` und `finishExam()` steuern.
 8. Paketabschluss nur ueber `finishPackage()` machen.
 9. Firebase nur ueber `saveRemote()` und `loadRemote()` nutzen.
-10. Nach jeder Aenderung `verben-test-check.yml` passend halten.
+10. Uebersicht, Waehlen und Einschaetzen muessen dieselbe Verben-Sortierung nutzen.
+11. Nach jeder Aenderung `verben-test-check.yml` passend halten.
 
 ## Schutz durch GitHub Actions
 
@@ -207,6 +253,7 @@ Die Datei `.github/workflows/verben-test-check.yml` prueft:
 - `boot.js` laedt `app-clean.js`
 - die alten Verben-Test-Dateien werden nicht mehr erwartet
 - wichtige Regeln wie Paketgroesse, Firebase-Schluessel und Pruefungslogik sind vorhanden
+- die Uebergangsfunktionen `plannedVerbs` und `assessableVerbs` vorhanden sind
 
 Wenn spaeter wieder eine parallele Logik entsteht, soll der Testlauf sichtbar warnen.
 
