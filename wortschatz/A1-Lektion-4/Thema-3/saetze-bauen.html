@@ -1,29 +1,20 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sätze bauen Thema 3</title><link rel="stylesheet" href="style.css?v=310"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=310"></script><script src="l4t3-bunny-images.js?v=1"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sätze bauen Thema 3</title><link rel="stylesheet" href="style.css?v=321"><link rel="stylesheet" href="l4t3-color-mode.css?v=1"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=319"></script><script src="l4t3-color-mode.js?v=1"></script><script src="l4t3-bunny-images.js?v=1"></script><script>
 header('Farben & Adjektive');
-const file='saetze-bauen.html',total=SENTENCES.length;
+const file='saetze-bauen.html';
+let tasks=L4T3ColorMode.activeSentenceTasks();
 let chosen=[];
 function render(){
+  tasks=L4T3ColorMode.activeSentenceTasks();
+  const total=tasks.length;
   let i=nextIndex(file,total);
   if(i===null)return complete(area,file,'schreiben.html');
-  let t=SENTENCES[i];chosen=[];
+  let t=tasks[i];chosen=[];
   area.innerHTML=progressHtml(file,total)+
+  `<div class="small" style="text-align:center">${L4T3ColorMode.label()}</div>`+
   instruction('Baue den Satz. Achte auf „ist“ oder „sind“.')+
-  `${img(t.img,'task-img')}
-   <div class="order-slot" id="slot"></div>
-   <div class="word-bank">${shuffle([...t.words,'ist','sind'].filter((v,i,a)=>a.indexOf(v)===i)).map(w=>`<button class="chip" onclick="addWord('${w.replace(/'/g,"\\'")}')">${w}</button>`).join('')}</div>
-   <div class="actions"><button class="btn" onclick="check()">Kontrollieren</button><button class="btn secondary" onclick="render()">Neu ordnen</button></div>
-   <div id="fb" class="feedback"></div>`;
+  `${img(t.img,'task-img')}<div class="order-slot" id="slot"></div><div class="word-bank">${shuffle([...t.words,'ist','sind'].filter((v,i,a)=>a.indexOf(v)===i)).map(w=>`<button class="chip" onclick="addWord('${w.replace(/'/g,"\\'")}')">${w}</button>`).join('')}</div><div class="actions"><button class="btn" onclick="check()">Kontrollieren</button><button class="btn secondary" onclick="render()">Neu ordnen</button></div><div id="fb" class="feedback"></div>`;
 }
 function addWord(w){chosen.push(w);slot.textContent=chosen.join(' ')}
-function check(){
-  let st=loadTask(file,total),t=SENTENCES[st.current];let ans=chosen.join(' ');
-  if(isExactSentence(ans,t.text,false)){
-    fb.innerHTML='<div class="ok">Richtig!</div>';
-    setTimeout(()=>{markRight(file,total)?complete(area,file,'schreiben.html'):render()},500)
-  }else{
-    let tr=markWrong(file,total,t.text);
-    fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.text,'Wortstellung und ist/sind')+'</div>';
-  }
-}
+function check(){let total=tasks.length,st=loadTask(file,total),t=tasks[st.current],ans=chosen.join(' ');if(isExactSentence(ans,t.text,false)){fb.innerHTML='<div class="ok">Richtig!</div>';setTimeout(()=>{markRight(file,total)?complete(area,file,'schreiben.html'):render()},500)}else{let tr=markWrong(file,total,t.text);fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.text,'Wortstellung und ist/sind')+'</div>'}}
 maybeStart(render,'saetze-bauen.html');
 </script></body></html>
