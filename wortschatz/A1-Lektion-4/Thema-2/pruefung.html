@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung – Thema 2</title><link rel="stylesheet" href="style.css?v=241"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=241">
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung – Thema 2</title><link rel="stylesheet" href="style.css?v=244"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=244">
 <style>
 .exam-option-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}
 .exam-option{border:2px solid #ffe28a;background:#fff9dd;border-radius:16px;padding:12px;font-weight:900;cursor:pointer;text-align:center}
@@ -21,290 +21,49 @@
 .audio-status{min-height:24px;margin:8px 0;text-align:center;font-weight:800;color:#7a5100}
 .audio-status.error{color:#9b1c1c}
 @media(max-width:600px){.exam-option-grid{grid-template-columns:1fr 1fr}.exam-option img{height:115px}.exam-dialog-img{height:190px}}
-</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=241"></script><script src="app.js?v=236"></script><script src="../shared/l4-bunny-direct.js?v=3"></script><script>
+</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=244"></script><script src="app.js?v=236"></script><script src="../shared/l4-bunny-direct.js?v=3"></script><script src="../shared/l4-t2-audio.js?v=2"></script><script>
 header("Prüfung");
 const area=document.getElementById("area");
 const FILE="pruefung.html";
 const MAX_TASKS=20;
 const LAST_SIGNATURE_KEY="SP_L4_T2_LAST_EXAM_SIGNATURE";
 const BUNNY_CDN="https://sprachpilot.b-cdn.net/";
-const AUDIO_CDN="https://sprachpilot.b-cdn.net/audio/";
 const IMAGE_TIMEOUT=7000;
 const TYPE_PLAN=["full","plural","article","imageToWord","listen","dialog","category","wordToImage","full","article","imageToWord","plural","listen","dialog","category","wordToImage","full","article","imageToWord","wordToImage"];
-let items=[],pos=0,score=0,results=[],answered=false,validImageWords=[],currentExamAudio=null;
-
-function shuffle(a){
- const out=[...a];
- for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}
- return out;
-}
-function imageName(value){
- const raw=String(value||"").split("?")[0].split("#")[0].split("/").pop();
- return raw.replace(/\.(png|jpe?g|webp|gif|svg)$/i,"");
-}
-function imageUrl(value){
- const name=imageName(value&&typeof value==="object"?(value.image||value.img||value.id):value);
- return name?BUNNY_CDN+encodeURIComponent(name)+".webp":"";
-}
-function hasUploadedAudio(w){return !!(w&&w.id&&(groupOf(w)==="book"||w.category==="Möbel"))}
-function audioUrl(w){return hasUploadedAudio(w)?AUDIO_CDN+encodeURIComponent(w.id)+".mp3":""}
-function stopExamAudio(){
- if(!currentExamAudio)return;
- try{currentExamAudio.pause();currentExamAudio.currentTime=0}catch(e){}
- currentExamAudio=null;
-}
-function setExamAudioStatus(text,isError=false){
- const el=document.getElementById("audioStatus");
- if(!el)return;
- el.textContent=text||"";
- el.classList.toggle("error",!!isError);
-}
-function playExamAudio(slow=false){
- const it=items[pos],w=it&&it.w;
- const src=audioUrl(w);
- if(!src)return;
- stopExamAudio();
- const audio=new Audio(src);
- audio.preload="auto";
- audio.playbackRate=slow?0.75:1;
- audio.onplay=()=>setExamAudioStatus(slow?"Langsame Wiedergabe läuft …":"Wiedergabe läuft …");
- audio.onended=()=>{setExamAudioStatus("");currentExamAudio=null};
- audio.onerror=()=>{setExamAudioStatus("Audio konnte nicht geladen werden.",true);currentExamAudio=null};
- currentExamAudio=audio;
- const promise=audio.play();
- if(promise&&typeof promise.catch==="function"){
-  promise.catch(()=>{setExamAudioStatus("Audio konnte nicht abgespielt werden.",true);currentExamAudio=null});
- }
-}
-function preloadImage(src){
- return new Promise(resolve=>{
-  if(!src){resolve(false);return}
-  const img=new Image();
-  let settled=false;
-  const done=ok=>{if(settled)return;settled=true;clearTimeout(timer);resolve(ok)};
-  const timer=setTimeout(()=>done(false),IMAGE_TIMEOUT);
-  img.onload=()=>done(img.naturalWidth>0&&img.naturalHeight>0);
-  img.onerror=()=>done(false);
-  img.src=src;
- });
-}
-async function prepareImages(pool){
- const checks=await Promise.all(pool.map(async w=>({w,ok:await preloadImage(imageUrl(w))})));
- validImageWords=checks.filter(x=>x.ok).map(x=>x.w);
- return validImageWords;
-}
-function examImg(w,cls="task-img"){
- const src=imageUrl(w);
- return `<img class="${cls}" src="${src}" data-word-id="${esc(w?.id||"")}" onerror="handleExamImageError(this)" alt="">`;
-}
-function handleExamImageError(img){
- if(!img)return;
- if(img.dataset.retry!=="1"){
-  img.dataset.retry="1";
-  const base=String(img.src||"").split("?")[0];
-  img.src=base+"?retry="+Date.now();
-  return;
- }
- img.outerHTML='<div class="exam-image-error">Das Bild konnte nicht geladen werden. Bitte starte eine neue zufällige Prüfung.</div>';
-}
+let items=[],pos=0,score=0,results=[],answered=false,validImageWords=[];
+function shuffle(a){const out=[...a];for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}return out}
+function imageName(value){const raw=String(value||"").split("?")[0].split("#")[0].split("/").pop();return raw.replace(/\.(png|jpe?g|webp|gif|svg)$/i,"")}
+function imageUrl(value){const name=imageName(value&&typeof value==="object"?(value.image||value.img||value.id):value);return name?BUNNY_CDN+encodeURIComponent(name)+".webp":""}
+function hasUploadedAudio(w){return L4T2Audio.has(w)}
+function stopExamAudio(){L4T2Audio.stop()}
+function playExamAudio(slow=false){const it=items[pos],w=it&&it.w;if(w)L4T2Audio.play(w,slow,"audioStatus")}
+function preloadImage(src){return new Promise(resolve=>{if(!src){resolve(false);return}const img=new Image();let settled=false;const done=ok=>{if(settled)return;settled=true;clearTimeout(timer);resolve(ok)};const timer=setTimeout(()=>done(false),IMAGE_TIMEOUT);img.onload=()=>done(img.naturalWidth>0&&img.naturalHeight>0);img.onerror=()=>done(false);img.src=src})}
+async function prepareImages(pool){const checks=await Promise.all(pool.map(async w=>({w,ok:await preloadImage(imageUrl(w))})));validImageWords=checks.filter(x=>x.ok).map(x=>x.w);return validImageWords}
+function examImg(w,cls="task-img"){const src=imageUrl(w);return `<img class="${cls}" src="${src}" data-word-id="${esc(w?.id||"")}" onerror="handleExamImageError(this)" alt="">`}
+function handleExamImageError(img){if(!img)return;if(img.dataset.retry!=="1"){img.dataset.retry="1";const base=String(img.src||"").split("?")[0];img.src=base+"?retry="+Date.now();return}img.outerHTML='<div class="exam-image-error">Das Bild konnte nicht geladen werden. Bitte starte eine neue zufällige Prüfung.</div>'}
 function activeWords(){return (Array.isArray(WORDS)?WORDS:[]).filter(w=>w&&w.id&&w.full)}
 function groupOf(w){return typeof spT2Group==="function"?spT2Group(w):(w.releaseGroup||w.wordGroup||w.group||"book")}
-function activeVocabularyLabel(){
- const groups=[...new Set(activeWords().map(groupOf))];
- return groups.includes("extra")?"Buchwortschatz und Zusatzwortschatz":"nur Buchwortschatz";
-}
-function compatibleWords(type,pool){
- if(type==="listen")return pool.filter(hasUploadedAudio);
- if(type==="category")return pool.filter(w=>w.category);
- if(type==="dialog"){
-  const ids=new Set((Array.isArray(DIALOG_TASKS)?DIALOG_TASKS:[]).map(t=>t.id));
-  return validImageWords.filter(w=>ids.has(w.id));
- }
- if(["full","plural","imageToWord","wordToImage"].includes(type))return validImageWords;
- return pool;
-}
-function pickWord(type,pool,used){
- let candidates=compatibleWords(type,pool);
- if(!candidates.length)return null;
- let fresh=candidates.filter(w=>!used.has(w.id));
- if(!fresh.length)fresh=candidates;
- const w=shuffle(fresh)[0];
- if(w)used.add(w.id);
- return w;
-}
-function makeItemsOnce(){
- const pool=activeWords();
- if(!pool.length)return[];
- const used=new Set();
- return shuffle(TYPE_PLAN).slice(0,MAX_TASKS).map(type=>makeItem(pickWord(type,pool,used),type,pool)).filter(Boolean);
-}
+function activeVocabularyLabel(){const groups=[...new Set(activeWords().map(groupOf))];return groups.includes("extra")?"Buchwortschatz und Zusatzwortschatz":"nur Buchwortschatz"}
+function compatibleWords(type,pool){if(type==="listen")return pool.filter(hasUploadedAudio);if(type==="category")return pool.filter(w=>w.category);if(type==="dialog"){const ids=new Set((Array.isArray(DIALOG_TASKS)?DIALOG_TASKS:[]).map(t=>t.id));return validImageWords.filter(w=>ids.has(w.id))}if(["full","plural","imageToWord","wordToImage"].includes(type))return validImageWords;return pool}
+function pickWord(type,pool,used){let candidates=compatibleWords(type,pool);if(!candidates.length)return null;let fresh=candidates.filter(w=>!used.has(w.id));if(!fresh.length)fresh=candidates;const w=shuffle(fresh)[0];if(w)used.add(w.id);return w}
+function makeItemsOnce(){const pool=activeWords();if(!pool.length)return[];const used=new Set();return shuffle(TYPE_PLAN).slice(0,MAX_TASKS).map(type=>makeItem(pickWord(type,pool,used),type,pool)).filter(Boolean)}
 function examSignature(list){return list.map(x=>x.type+":"+x.w.id).join("|")}
-function makeItems(){
- let next=[],signature="",last=sessionStorage.getItem(LAST_SIGNATURE_KEY)||"";
- for(let i=0;i<8;i++){
-  next=makeItemsOnce();signature=examSignature(next);
-  if(signature!==last)break;
- }
- sessionStorage.setItem(LAST_SIGNATURE_KEY,signature);
- return next;
-}
-
-function makeItem(w,type,pool){
- if(!w)return null;
- if(type==="full")return{type,w,question:"Schreibe das Wort mit Artikel.",answer:w.full,answerDisplay:w.full};
- if(type==="plural")return{type,w,question:`Schreibe den Plural von „${w.full}“.`,answer:w.plural,answerDisplay:w.plural};
- if(type==="article")return{type,w,question:`Wähle den richtigen Artikel: ___ ${w.word}`,answer:w.article,answerDisplay:w.article,options:["der","die","das"]};
- if(type==="imageToWord")return{type,w,question:"Was ist auf dem Bild? Schreibe das Wort mit Artikel.",answer:w.full,answerDisplay:w.full};
- if(type==="listen")return{type,w,question:"Höre und schreibe das Wort mit Artikel.",answer:w.full,answerDisplay:w.full};
- if(type==="category"){
-  const cats=[...new Set(pool.map(x=>x.category).filter(Boolean))];
-  let options=shuffle([w.category,...cats.filter(c=>c!==w.category)]).slice(0,4);
-  if(!options.includes(w.category))options[0]=w.category;
-  return{type,w,question:`Welche Kategorie passt zu „${w.full}“?`,answer:w.category,answerDisplay:w.category,options:shuffle([...new Set(options)])};
- }
- if(type==="dialog"){
-  const t=(Array.isArray(DIALOG_TASKS)?DIALOG_TASKS:[]).find(d=>d.id===w.id)||{answerNoun:w.full,answerPronoun:w.pronoun,adj:"schön",line1:"Ist ___ schön?",line2:"Ja, ___ ist schön."};
-  return{type,w,dialog:t,question:"Sieh das Bild an. Ergänze das Nomen mit Artikel und das passende Pronomen.",answer:t.answerNoun+" / "+t.answerPronoun,answerDisplay:t.answerNoun+" / "+t.answerPronoun};
- }
- if(type==="wordToImage"){
-  let candidates=validImageWords.filter(x=>x.id!==w.id);
-  let options=shuffle([w,...shuffle(candidates).slice(0,3)]);
-  return{type,w,question:`Wähle das passende Bild: ${w.full}`,answer:w.id,answerDisplay:w.full,options:shuffle(options)};
- }
- return{type,w,question:"Schreibe das Wort mit Artikel.",answer:w.full,answerDisplay:w.full};
-}
-
-async function start(){
- stopExamAudio();
- if(!isExamUnlocked()){
-  area.innerHTML=`<div class="question">Prüfung gesperrt</div><div class="no">Die Prüfung wird erst freigeschaltet, wenn alle anderen Aufgaben in Thema 2 bei 100% sind.</div><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div>`;
-  return;
- }
- area.innerHTML='<div class="exam-loading">Prüfungsbilder werden geprüft …</div>';
- const pool=activeWords();
- await prepareImages(pool);
- if(validImageWords.length<4){
-  area.innerHTML=`<div class="question">Prüfung kann nicht gestartet werden</div><div class="exam-image-error">Es konnten nicht genügend Bilder aus dem Bunny Storage geladen werden.</div><div class="actions"><button class="btn" onclick="start()">Noch einmal prüfen</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`;
-  return;
- }
- items=makeItems();pos=0;score=0;results=[];
- if(items.length!==MAX_TASKS){
-  area.innerHTML=`<div class="question">Prüfung kann nicht gestartet werden</div><div class="exam-image-error">Nicht alle ${MAX_TASKS} Aufgaben konnten erstellt werden. Bitte lade die Seite neu.</div><div class="actions"><button class="btn" onclick="start()">Neu versuchen</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`;
-  return;
- }
- show();
-}
-
+function makeItems(){let next=[],signature="",last=sessionStorage.getItem(LAST_SIGNATURE_KEY)||"";for(let i=0;i<8;i++){next=makeItemsOnce();signature=examSignature(next);if(signature!==last)break}sessionStorage.setItem(LAST_SIGNATURE_KEY,signature);return next}
+function makeItem(w,type,pool){if(!w)return null;if(type==="full")return{type,w,question:"Schreibe das Wort mit Artikel.",answer:w.full,answerDisplay:w.full};if(type==="plural")return{type,w,question:`Schreibe den Plural von „${w.full}“.`,answer:w.plural,answerDisplay:w.plural};if(type==="article")return{type,w,question:`Wähle den richtigen Artikel: ___ ${w.word}`,answer:w.article,answerDisplay:w.article,options:["der","die","das"]};if(type==="imageToWord")return{type,w,question:"Was ist auf dem Bild? Schreibe das Wort mit Artikel.",answer:w.full,answerDisplay:w.full};if(type==="listen")return{type,w,question:"Höre und schreibe das Wort mit Artikel.",answer:w.full,answerDisplay:w.full};if(type==="category"){const cats=[...new Set(pool.map(x=>x.category).filter(Boolean))];let options=shuffle([w.category,...cats.filter(c=>c!==w.category)]).slice(0,4);if(!options.includes(w.category))options[0]=w.category;return{type,w,question:`Welche Kategorie passt zu „${w.full}“?`,answer:w.category,answerDisplay:w.category,options:shuffle([...new Set(options)])}}if(type==="dialog"){const t=(Array.isArray(DIALOG_TASKS)?DIALOG_TASKS:[]).find(d=>d.id===w.id)||{answerNoun:w.full,answerPronoun:w.pronoun,adj:"schön",line1:"Ist ___ schön?",line2:"Ja, ___ ist schön."};return{type,w,dialog:t,question:"Sieh das Bild an. Ergänze das Nomen mit Artikel und das passende Pronomen.",answer:t.answerNoun+" / "+t.answerPronoun,answerDisplay:t.answerNoun+" / "+t.answerPronoun}}if(type==="wordToImage"){let candidates=validImageWords.filter(x=>x.id!==w.id);let options=shuffle([w,...shuffle(candidates).slice(0,3)]);return{type,w,question:`Wähle das passende Bild: ${w.full}`,answer:w.id,answerDisplay:w.full,options:shuffle(options)}}return{type,w,question:"Schreibe das Wort mit Artikel.",answer:w.full,answerDisplay:w.full}}
+async function start(){stopExamAudio();if(!isExamUnlocked()){area.innerHTML=`<div class="question">Prüfung gesperrt</div><div class="no">Die Prüfung wird erst freigeschaltet, wenn alle anderen Aufgaben in Thema 2 bei 100% sind.</div><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div>`;return}area.innerHTML='<div class="exam-loading">Prüfungsbilder werden geprüft …</div>';const pool=activeWords();await prepareImages(pool);if(validImageWords.length<4){area.innerHTML=`<div class="question">Prüfung kann nicht gestartet werden</div><div class="exam-image-error">Es konnten nicht genügend Bilder aus dem Bunny Storage geladen werden.</div><div class="actions"><button class="btn" onclick="start()">Noch einmal prüfen</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`;return}items=makeItems();pos=0;score=0;results=[];if(items.length!==MAX_TASKS){area.innerHTML=`<div class="question">Prüfung kann nicht gestartet werden</div><div class="exam-image-error">Nicht alle ${MAX_TASKS} Aufgaben konnten erstellt werden. Bitte lade die Seite neu.</div><div class="actions"><button class="btn" onclick="start()">Neu versuchen</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`;return}show()}
 function n(x){return simple(x)}
-function splitArticle(value){
- const parts=String(value||"").trim().split(/\s+/);
- const article=["der","die","das"].includes(n(parts[0]))?n(parts.shift()):"";
- return{article,word:n(parts.join(" "))};
-}
-function points(user,answer,type){
- const u=n(user),a=n(answer);
- if(u===a)return 10;
- if(type==="dialog"){
-  const up=String(user||"").split("/"),ap=String(answer||"").split("/");
-  return (n(up[0])===n(ap[0])?5:0)+(n(up[1])===n(ap[1])?5:0);
- }
- let p=10;
- if(["full","imageToWord","listen"].includes(type)){
-  const ua=splitArticle(user),aa=splitArticle(answer);
-  if(ua.article!==aa.article)p-=4;
- }
- p-=Math.min(5,Math.abs(u.length-a.length)||1);
- return Math.max(0,p);
-}
-function typeLabel(type){
- return{full:"Wort mit Artikel",plural:"Plural",article:"Artikel",imageToWord:"Bild → Wort",listen:"Hören",dialog:"Dialog mit Bild",category:"Kategorie",wordToImage:"Wort → Bild"}[type]||type;
-}
-function choiceDisplay(it,value){
- if(it.type==="wordToImage")return it.options.find(o=>o.id===value)?.full||value||"-";
- return value||"-";
-}
-function explainError(it,user){
- if(!String(user||"").trim())return"Es wurde keine Antwort eingegeben.";
- if(["full","imageToWord","listen"].includes(it.type)){
-  const u=splitArticle(user),a=splitArticle(it.answer);
-  if(u.word===a.word&&u.article!==a.article)return`Das Nomen ist richtig, aber der Artikel ist falsch. „${it.w.word}“ hat den Artikel „${it.w.article}“.`;
-  if(u.article===a.article&&u.word!==a.word)return`Der Artikel ist richtig, aber das Nomen ist nicht korrekt geschrieben. Richtig ist „${it.answerDisplay}“.`;
-  return`Artikel und Wort müssen zusammen stimmen. Richtig ist „${it.answerDisplay}“.`;
- }
- if(it.type==="plural"){
-  const u=splitArticle(user),a=splitArticle(it.answer);
-  if(u.word===a.word&&u.article!==a.article)return`Der Plural ist richtig, aber im Plural steht der Artikel „die“: „${it.answerDisplay}“.`;
-  return`Der Plural von „${it.w.full}“ lautet „${it.answerDisplay}“. Achte auf die Pluralendung und einen möglichen Umlaut.`;
- }
- if(it.type==="article"){
-  const gender={der:"maskulin",die:"feminin",das:"neutral"}[it.answer]||"";
-  return`„${it.w.word}“ ist ${gender}; deshalb lautet der Artikel „${it.answer}“.`;
- }
- if(it.type==="category")return`„${it.w.full}“ gehört zur Kategorie „${it.answerDisplay}“.`;
- if(it.type==="wordToImage")return`Gesucht war das Bild zu „${it.w.full}“. Ausgewählt wurde „${choiceDisplay(it,user)}“.`;
- if(it.type==="dialog"){
-  const up=String(user||"").split("/"),ap=String(it.answer||"").split("/");
-  const nounOk=n(up[0])===n(ap[0]),pronounOk=n(up[1])===n(ap[1]);
-  if(nounOk&&!pronounOk)return`Das Nomen ist richtig. Das Pronomen richtet sich nach dem Artikel: ${it.w.article} ${it.w.word} → ${it.w.pronoun}.`;
-  if(!nounOk&&pronounOk)return`Das Pronomen ist richtig, aber das Nomen muss mit Artikel geschrieben werden: „${it.dialog.answerNoun}“.`;
-  return`Zum Bild gehört „${it.dialog.answerNoun}“. Das passende Pronomen ist „${it.dialog.answerPronoun}“.`;
- }
- return`Richtig ist „${it.answerDisplay}“.`;
-}
-
-function show(){
- stopExamAudio();
- answered=false;
- if(pos>=items.length){finish();return}
- const it=items[pos],w=it.w;
- let html=`<div class="small">Prüfungsaufgabe ${pos+1} / ${items.length}</div><div class="exam-vocab-note small">Wortauswahl: ${activeVocabularyLabel()}</div><div class="exam-task-label">${esc(it.question)}</div>`;
- if(["full","plural","imageToWord"].includes(it.type)){
-  html+=`${examImg(w,"task-img")}<input id="ans" autocomplete="off" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkText()">Kontrollieren</button>`;
- }else if(it.type==="listen"){
-  html+=`<div class="actions"><button type="button" class="btn" onclick="playExamAudio(false)">🔊 Hören</button><button type="button" class="btn secondary" onclick="playExamAudio(true)">Langsam</button></div><div id="audioStatus" class="audio-status" aria-live="polite"></div><input id="ans" autocomplete="off" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkText()">Kontrollieren</button>`;
- }else if(it.type==="article"||it.type==="category"){
-  html+=`<div class="exam-option-grid">${it.options.map(o=>`<button class="exam-option" onclick="checkChoice('${String(o).replace(/'/g,"\\'")}')">${esc(o)}</button>`).join("")}</div>`;
- }else if(it.type==="wordToImage"){
-  html+=`<div class="exam-option-grid">${it.options.map(o=>`<button class="exam-option" aria-label="Bild auswählen" onclick="checkChoice(\'${o.id}\')">${examImg(o,"exam-option-img")}</button>`).join("")}</div>`;
- }else if(it.type==="dialog"){
-  const t=it.dialog,firstRest=t.line1.replace("Ist ___ ","").replace("?",""),secondParts=t.line2.split("___");
-  html+=`${examImg(w,"exam-dialog-img")}<div class="gap-line dialog-line"><span>Ist</span><input id="noun" class="gap-input" autocomplete="off" placeholder="Nomen mit Artikel"><span>${esc(firstRest)}?</span></div><div class="gap-line dialog-line"><span>${esc(secondParts[0])}</span><input id="pronoun" class="gap-input" autocomplete="off" placeholder="Pronomen"><span>${esc(secondParts[1]||"")}</span></div><button class="btn" onclick="checkDialog()">Kontrollieren</button>`;
- }
- html+=`<div id="fb" class="feedback"></div>`;
- area.innerHTML=html;
-}
-
+function splitArticle(value){const parts=String(value||"").trim().split(/\s+/);const article=["der","die","das"].includes(n(parts[0]))?n(parts.shift()):"";return{article,word:n(parts.join(" "))}}
+function points(user,answer,type){const u=n(user),a=n(answer);if(u===a)return 10;if(type==="dialog"){const up=String(user||"").split("/"),ap=String(answer||"").split("/");return(n(up[0])===n(ap[0])?5:0)+(n(up[1])===n(ap[1])?5:0)}let p=10;if(["full","imageToWord","listen"].includes(type)){const ua=splitArticle(user),aa=splitArticle(answer);if(ua.article!==aa.article)p-=4}p-=Math.min(5,Math.abs(u.length-a.length)||1);return Math.max(0,p)}
+function typeLabel(type){return{full:"Wort mit Artikel",plural:"Plural",article:"Artikel",imageToWord:"Bild → Wort",listen:"Hören",dialog:"Dialog mit Bild",category:"Kategorie",wordToImage:"Wort → Bild"}[type]||type}
+function choiceDisplay(it,value){if(it.type==="wordToImage")return it.options.find(o=>o.id===value)?.full||value||"-";return value||"-"}
+function explainError(it,user){if(!String(user||"").trim())return"Es wurde keine Antwort eingegeben.";if(["full","imageToWord","listen"].includes(it.type)){const u=splitArticle(user),a=splitArticle(it.answer);if(u.word===a.word&&u.article!==a.article)return`Das Nomen ist richtig, aber der Artikel ist falsch. „${it.w.word}“ hat den Artikel „${it.w.article}“.`;if(u.article===a.article&&u.word!==a.word)return`Der Artikel ist richtig, aber das Nomen ist nicht korrekt geschrieben. Richtig ist „${it.answerDisplay}“.`;return`Artikel und Wort müssen zusammen stimmen. Richtig ist „${it.answerDisplay}“.`}if(it.type==="plural"){const u=splitArticle(user),a=splitArticle(it.answer);if(u.word===a.word&&u.article!==a.article)return`Der Plural ist richtig, aber im Plural steht der Artikel „die“: „${it.answerDisplay}“.`;return`Der Plural von „${it.w.full}“ lautet „${it.answerDisplay}“. Achte auf die Pluralendung und einen möglichen Umlaut.`}if(it.type==="article"){const gender={der:"maskulin",die:"feminin",das:"neutral"}[it.answer]||"";return`„${it.w.word}“ ist ${gender}; deshalb lautet der Artikel „${it.answer}“.`}if(it.type==="category")return`„${it.w.full}“ gehört zur Kategorie „${it.answerDisplay}“.`;if(it.type==="wordToImage")return`Gesucht war das Bild zu „${it.w.full}“. Ausgewählt wurde „${choiceDisplay(it,user)}“.`;if(it.type==="dialog"){const up=String(user||"").split("/"),ap=String(it.answer||"").split("/");const nounOk=n(up[0])===n(ap[0]),pronounOk=n(up[1])===n(ap[1]);if(nounOk&&!pronounOk)return`Das Nomen ist richtig. Das Pronomen richtet sich nach dem Artikel: ${it.w.article} ${it.w.word} → ${it.w.pronoun}.`;if(!nounOk&&pronounOk)return`Das Pronomen ist richtig, aber das Nomen muss mit Artikel geschrieben werden: „${it.dialog.answerNoun}“.`;return`Zum Bild gehört „${it.dialog.answerNoun}“. Das passende Pronomen ist „${it.dialog.answerPronoun}“.`}return`Richtig ist „${it.answerDisplay}“.`}
+function show(){stopExamAudio();answered=false;if(pos>=items.length){finish();return}const it=items[pos],w=it.w;let html=`<div class="small">Prüfungsaufgabe ${pos+1} / ${items.length}</div><div class="exam-vocab-note small">Wortauswahl: ${activeVocabularyLabel()}</div><div class="exam-task-label">${esc(it.question)}</div>`;if(["full","plural","imageToWord"].includes(it.type)){html+=`${examImg(w,"task-img")}<input id="ans" autocomplete="off" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkText()">Kontrollieren</button>`}else if(it.type==="listen"){html+=`<div class="actions"><button type="button" class="btn" onclick="playExamAudio(false)">🔊 Hören</button><button type="button" class="btn secondary" onclick="playExamAudio(true)">Langsam</button></div><div id="audioStatus" class="audio-status" aria-live="polite"></div><input id="ans" autocomplete="off" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkText()">Kontrollieren</button>`}else if(it.type==="article"||it.type==="category"){html+=`<div class="exam-option-grid">${it.options.map(o=>`<button class="exam-option" onclick="checkChoice('${String(o).replace(/'/g,"\\'")}')">${esc(o)}</button>`).join("")}</div>`}else if(it.type==="wordToImage"){html+=`<div class="exam-option-grid">${it.options.map(o=>`<button class="exam-option" aria-label="Bild auswählen" onclick="checkChoice('${o.id}')">${examImg(o,"exam-option-img")}</button>`).join("")}</div>`}else if(it.type==="dialog"){const t=it.dialog,firstRest=t.line1.replace("Ist ___ ","").replace("?",""),secondParts=t.line2.split("___");html+=`${examImg(w,"exam-dialog-img")}<div class="gap-line dialog-line"><span>Ist</span><input id="noun" class="gap-input" autocomplete="off" placeholder="Nomen mit Artikel"><span>${esc(firstRest)}?</span></div><div class="gap-line dialog-line"><span>${esc(secondParts[0])}</span><input id="pronoun" class="gap-input" autocomplete="off" placeholder="Pronomen"><span>${esc(secondParts[1]||"")}</span></div><button class="btn" onclick="checkDialog()">Kontrollieren</button>`}html+=`<div id="fb" class="feedback"></div>`;area.innerHTML=html}
 function checkText(){grade(document.getElementById("ans").value,items[pos].answer,items[pos].type)}
 function checkChoice(value){grade(value,items[pos].answer,items[pos].type)}
-function checkDialog(){
- const it=items[pos],answer=it.dialog.answerNoun+" / "+it.dialog.answerPronoun;
- const user=(document.getElementById("noun").value||"")+" / "+(document.getElementById("pronoun").value||"");
- grade(user,answer,it.type);
-}
-function grade(user,answer,type){
- if(answered)return;
- answered=true;
- const it=items[pos];
- let p=(n(user)===n(answer))?10:points(user,answer,type);
- if(["article","category","wordToImage"].includes(type))p=(n(user)===n(answer))?10:0;
- score+=p;
- const reason=p===10?"":explainError(it,user);
- results.push({number:pos+1,type,word:it.w.id,wordFull:it.w.full,image:imageUrl(it.w),question:it.question,answer:it.answerDisplay||answer,user,userDisplay:choiceDisplay(it,user),points:p,reason});
- const fb=document.getElementById("fb");
- fb.innerHTML=p===10?`<div class="ok">Richtig! +10 Punkte</div><button class="btn" onclick="next()">Weiter</button>`:`<div class="solution-box"><b>Lösung:</b> ${esc(it.answerDisplay||answer)}<br><b>Deine Antwort:</b> ${esc(choiceDisplay(it,user))}<br><b>Warum?</b> ${esc(reason)}<br><b>Punkte:</b> ${p}/10</div><button class="btn" onclick="next()">Weiter</button>`;
-}
+function checkDialog(){const it=items[pos],answer=it.dialog.answerNoun+" / "+it.dialog.answerPronoun;const user=(document.getElementById("noun").value||"")+" / "+(document.getElementById("pronoun").value||"");grade(user,answer,it.type)}
+function grade(user,answer,type){if(answered)return;answered=true;const it=items[pos];let p=(n(user)===n(answer))?10:points(user,answer,type);if(["article","category","wordToImage"].includes(type))p=(n(user)===n(answer))?10:0;score+=p;const reason=p===10?"":explainError(it,user);results.push({number:pos+1,type,word:it.w.id,wordFull:it.w.full,image:imageUrl(it.w),question:it.question,answer:it.answerDisplay||answer,user,userDisplay:choiceDisplay(it,user),points:p,reason});const fb=document.getElementById("fb");fb.innerHTML=p===10?`<div class="ok">Richtig! +10 Punkte</div><button class="btn" onclick="next()">Weiter</button>`:`<div class="solution-box"><b>Lösung:</b> ${esc(it.answerDisplay||answer)}<br><b>Deine Antwort:</b> ${esc(choiceDisplay(it,user))}<br><b>Warum?</b> ${esc(reason)}<br><b>Punkte:</b> ${p}/10</div><button class="btn" onclick="next()">Weiter</button>`}
 function next(){pos++;show()}
-function reviewHtml(){
- const wrong=results.filter(r=>r.points<10);
- if(!wrong.length)return`<div class="review-all-correct">Alle Aufgaben waren richtig.</div>`;
- return`<section class="exam-review"><h2>Fehlerauswertung</h2>${wrong.map(r=>`<article class="review-item"><div class="review-head">Aufgabe ${r.number} · ${esc(typeLabel(r.type))} · ${r.points}/10 Punkte</div>${r.image?`<img class="review-img" src="${r.image}" onerror="this.remove()" alt="">`:""}<div class="review-line"><b>Aufgabe:</b> ${esc(r.question)}</div><div class="review-line"><b>Deine Antwort:</b> ${esc(r.userDisplay||"-")}</div><div class="review-line"><b>Richtige Lösung:</b> ${esc(r.answer)}</div><div class="review-reason"><b>Warum war es falsch?</b> ${esc(r.reason)}</div></article>`).join("")}</section>`;
-}
-function finish(){
- const max=items.length*10,safeScore=Math.min(score,max),percent=Math.min(100,Math.round(safeScore/max*100)),stars=starsForPercent(percent);
- saveExamResult({score:safeScore,maxScore:max,percent,stars,items:results,vocabulary:activeVocabularyLabel()});
- let st=loadTask(FILE,100);
- st.total=100;st.done=[...Array(percent).keys()];st.queue=[];st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(FILE,st);
- area.innerHTML=`<div class="question">Prüfung beendet</div><div class="exam-score">${percent}%</div><div>${starsHtml(stars)}</div><div class="ok">Punkte: ${safeScore}/${max}</div>${reviewHtml()}<div class="actions"><button class="btn" onclick="start()">Neue zufällige Prüfung</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`;
-}
+function reviewHtml(){const wrong=results.filter(r=>r.points<10);if(!wrong.length)return`<div class="review-all-correct">Alle Aufgaben waren richtig.</div>`;return`<section class="exam-review"><h2>Fehlerauswertung</h2>${wrong.map(r=>`<article class="review-item"><div class="review-head">Aufgabe ${r.number} · ${esc(typeLabel(r.type))} · ${r.points}/10 Punkte</div>${r.image?`<img class="review-img" src="${r.image}" onerror="this.remove()" alt="">`:""}<div class="review-line"><b>Aufgabe:</b> ${esc(r.question)}</div><div class="review-line"><b>Deine Antwort:</b> ${esc(r.userDisplay||"-")}</div><div class="review-line"><b>Richtige Lösung:</b> ${esc(r.answer)}</div><div class="review-reason"><b>Warum war es falsch?</b> ${esc(r.reason)}</div></article>`).join("")}</section>`}
+function finish(){const max=items.length*10,safeScore=Math.min(score,max),percent=Math.min(100,Math.round(safeScore/max*100)),stars=starsForPercent(percent);saveExamResult({score:safeScore,maxScore:max,percent,stars,items:results,vocabulary:activeVocabularyLabel()});let st=loadTask(FILE,100);st.total=100;st.done=[...Array(percent).keys()];st.queue=[];st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(FILE,st);area.innerHTML=`<div class="question">Prüfung beendet</div><div class="exam-score">${percent}%</div><div>${starsHtml(stars)}</div><div class="ok">Punkte: ${safeScore}/${max}</div>${reviewHtml()}<div class="actions"><button class="btn" onclick="start()">Neue zufällige Prüfung</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`}
 start().catch(()=>{area.innerHTML=`<div class="question">Prüfung konnte nicht geladen werden</div><div class="exam-image-error">Bitte lade die Seite neu.</div>`});
 </script></body></html>
