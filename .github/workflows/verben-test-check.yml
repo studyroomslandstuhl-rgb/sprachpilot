@@ -34,9 +34,9 @@ jobs:
           test -f verben-test/choose-filter.js
           grep -q 'Verben Test' verben-test/index.html
           grep -q 'styles.css?v=2' verben-test/index.html
-          grep -q 'boot.js?v=12' verben-test/index.html
+          grep -q 'boot.js?v=13' verben-test/index.html
           grep -q 'choose-filter.js?v=1' verben-test/index.html
-          grep -q './app-clean.js?v=6' verben-test/boot.js
+          grep -q './app-clean.js?v=7' verben-test/boot.js
           grep -q 'safeLoadCourseRelease' verben-test/boot.js
           grep -q 'safeModuleOpen' verben-test/boot.js
           ! grep -qE 'state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
