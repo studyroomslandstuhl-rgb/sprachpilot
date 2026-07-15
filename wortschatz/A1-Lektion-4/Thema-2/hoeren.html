@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Hören</title>
-<link rel="stylesheet" href="style.css?v=240">
-<link rel="stylesheet" href="../shared/lektion4-standard.css?v=240">
+<link rel="stylesheet" href="style.css?v=241">
+<link rel="stylesheet" href="../shared/lektion4-standard.css?v=241">
 <style>
 .click-card{cursor:pointer;pointer-events:auto;transition:transform .15s,border-color .15s,background .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
 @media(hover:hover){.click-card:hover{transform:scale(1.03);border-color:#f7c600}}
@@ -27,7 +27,7 @@
   <footer>© SprachPilot</footer>
 </div>
 
-<script type="module" src="/js/progress.js?v=240"></script>
+<script type="module" src="/js/progress.js?v=241"></script>
 <script src="app.js?v=236"></script>
 <script>
 header("Hören");
@@ -45,8 +45,8 @@ function wordGroup(w){
     ?spT2Group(w)
     :(w?.releaseGroup||w?.wordGroup||w?.group||(w?.set==="plus"?"extra":"book"));
 }
-function isBookWord(w){return !!(w&&w.id&&wordGroup(w)==="book")}
-function audioUrl(w){return isBookWord(w)?AUDIO_CDN+encodeURIComponent(w.id)+".mp3":""}
+function hasUploadedAudio(w){return !!(w&&w.id&&(wordGroup(w)==="book"||w.category==="Möbel"))}
+function audioUrl(w){return hasUploadedAudio(w)?AUDIO_CDN+encodeURIComponent(w.id)+".mp3":""}
 
 function shuffle(list){
   const out=list.slice();
@@ -91,7 +91,7 @@ function setAudioStatus(text,isError=false){
 function playWord(slow=false){
   const w=WORDS[i];
   if(!w)return;
-  if(!isBookWord(w)){
+  if(!hasUploadedAudio(w)){
     stopAudio();
     setAudioStatus("");
     speak(w.full,slow);
