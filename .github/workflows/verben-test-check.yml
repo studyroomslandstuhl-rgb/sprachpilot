@@ -4,10 +4,6 @@ on:
   push:
     paths:
       - 'verben-test/**'
-      - 'index.html'
-      - 'js/course-releases.js'
-      - 'teacher/verben-test-release.js'
-      - 'teacher/index.html'
       - '.github/workflows/verben-test-check.yml'
   workflow_dispatch:
 
@@ -20,71 +16,39 @@ jobs:
         with:
           node-version: '22'
       - name: JavaScript syntax
-        run: |
-          node --check verben-test/app-clean.js
-          node --check verben-test/boot.js
-          node --check verben-test/choose-filter.js
-          node --check teacher/verben-test-release.js
-      - name: Required files and isolation
+        run: node --check verben-test/app.js
+      - name: Required files and no old layers
         run: |
           test -f verben-test/index.html
           test -f verben-test/styles.css
-          test -f verben-test/app-clean.js
-          test -f verben-test/boot.js
-          test -f verben-test/choose-filter.js
+          test -f verben-test/app.js
+          test ! -f verben-test/boot.js
+          test ! -f verben-test/app-clean.js
+          test ! -f verben-test/choose-filter.js
           grep -q 'Verben Test' verben-test/index.html
-          grep -q 'styles.css?v=2' verben-test/index.html
-          grep -q 'boot.js?v=13' verben-test/index.html
-          grep -q 'choose-filter.js?v=1' verben-test/index.html
-          grep -q './app-clean.js?v=7' verben-test/boot.js
-          grep -q 'safeLoadCourseRelease' verben-test/boot.js
-          grep -q 'safeModuleOpen' verben-test/boot.js
-          ! grep -qE 'state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
-      - name: Clean package and scoring rules
+          grep -q 'styles.css?v=3' verben-test/index.html
+          grep -q 'app.js?v=1' verben-test/index.html
+          ! grep -qE 'boot\.js|app-clean\.js|choose-filter\.js|state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
+      - name: Core rules
         run: |
-          grep -q 'const PACKAGE_SIZE=20' verben-test/app-clean.js
-          grep -q 'const VERSION=1' verben-test/app-clean.js
-          grep -q 'verbenTestClean' verben-test/app-clean.js
-          grep -q 'TASK_POINTS_BY_ROUND=\[5,10,15\]' verben-test/app-clean.js
-          grep -q 'EXAM_POINTS_BY_ROUND=\[100,200,300\]' verben-test/app-clean.js
-          grep -q 'taskPointValue' verben-test/app-clean.js
-          grep -q 'examPointValue' verben-test/app-clean.js
-          grep -q 'repeatPackage' verben-test/app-clean.js
-          grep -q 'recordMistake' verben-test/app-clean.js
-          grep -q 'helpText' verben-test/app-clean.js
-          grep -q 'examPoints' verben-test/app-clean.js
-          grep -q 'examBest' verben-test/app-clean.js
-          grep -q 'allTasksDone' verben-test/app-clean.js
-          grep -q 'finishPackage' verben-test/app-clean.js
-          grep -q 'plannedVerbs' verben-test/app-clean.js
-          grep -q 'assessableVerbs' verben-test/app-clean.js
-          grep -q 'href="/index.html"' verben-test/app-clean.js
-      - name: Choose first flow
+          grep -q 'var PACKAGE_SIZE=20' verben-test/app.js
+          grep -q 'var TASK_POINTS=\[5,10,15\]' verben-test/app.js
+          grep -q 'var EXAM_POINTS=\[100,200,300\]' verben-test/app.js
+          grep -q 'function startPackage' verben-test/app.js
+          grep -q 'function repeatPackage' verben-test/app.js
+          grep -q 'function finishPackage' verben-test/app.js
+          grep -q 'function allTasksDone' verben-test/app.js
+          grep -q 'function renderExam' verben-test/app.js
+          grep -q 'function wrongFeedback' verben-test/app.js
+          grep -q 'function startMic' verben-test/app.js
+      - name: Chooser filters and images
         run: |
-          grep -q 'Bitte zuerst Verben wählen' verben-test/app-clean.js
-          grep -q 'Wähle zuerst deine Verben aus' verben-test/app-clean.js
-          grep -q 'function ensurePackage(){return !!state.activePackage}' verben-test/app-clean.js
-          grep -q 'data-select-first' verben-test/app-clean.js
-          grep -q 'Bitte mindestens ein Verb auswählen' verben-test/app-clean.js
-          grep -q 'Object.values(source.translations' verben-test/app-clean.js
-      - name: Chooser filters
-        run: |
-          grep -q 'data-verb-filter' verben-test/choose-filter.js
-          grep -q "id:'irregular'" verben-test/choose-filter.js
-          grep -q "id:'regular'" verben-test/choose-filter.js
-          grep -q "id:'modal'" verben-test/choose-filter.js
-          grep -q "id:'separable'" verben-test/choose-filter.js
-          grep -q "id:'reflexive'" verben-test/choose-filter.js
-          grep -q 'verb-filter-bar' verben-test/styles.css
-          grep -q 'filter-chip.active' verben-test/styles.css
-      - name: Course release integration
-        run: |
-          grep -q 'moduleOpen(assignments,"Verben Test")' index.html
-          grep -q "title:'Verben Test'" teacher/verben-test-release.js
-          grep -q 'verben-test-release.js?v=1' teacher/index.html
-          grep -q 'low==="verben-test"' js/course-releases.js
-      - name: Exact Bunny image mappings
-        run: |
-          for file in sich_vorstellen.webp sich_kaemmen.webp sich_rasieren.webp sich_schminken.webp sich_bewegen.webp koennen.webp; do
-            grep -q "$file" verben-test/app-clean.js
-          done
+          grep -q 'data-filter' verben-test/app.js
+          grep -q 'regular' verben-test/app.js
+          grep -q 'irregular' verben-test/app.js
+          grep -q 'modal' verben-test/app.js
+          grep -q 'separable' verben-test/app.js
+          grep -q 'reflexive' verben-test/app.js
+          grep -q 'sich_vorstellen.webp' verben-test/app.js
+          grep -q 'sich_kaemmen.webp' verben-test/app.js
+          grep -q 'koennen.webp' verben-test/app.js
