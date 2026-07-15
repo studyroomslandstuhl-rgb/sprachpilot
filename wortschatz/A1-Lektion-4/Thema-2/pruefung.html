@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung – Thema 2</title><link rel="stylesheet" href="style.css?v=237"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=237">
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung – Thema 2</title><link rel="stylesheet" href="style.css?v=240"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=240">
 <style>
 .exam-option-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}
 .exam-option{border:2px solid #ffe28a;background:#fff9dd;border-radius:16px;padding:12px;font-weight:900;cursor:pointer;text-align:center}
@@ -18,17 +18,20 @@
 .review-all-correct{margin-top:18px;padding:14px;border-radius:16px;background:#dcfce7;color:#166534;font-weight:900}
 .exam-loading{text-align:center;padding:28px;font-weight:900;color:#7a5100}
 .exam-image-error{padding:14px;border:2px solid #ef4444;border-radius:16px;background:#fff1f2;color:#991b1b;font-weight:900;text-align:center}
+.audio-status{min-height:24px;margin:8px 0;text-align:center;font-weight:800;color:#7a5100}
+.audio-status.error{color:#9b1c1c}
 @media(max-width:600px){.exam-option-grid{grid-template-columns:1fr 1fr}.exam-option img{height:115px}.exam-dialog-img{height:190px}}
-</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=237"></script><script src="app.js?v=235"></script><script src="../shared/l4-bunny-direct.js?v=3"></script><script>
+</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=240"></script><script src="app.js?v=236"></script><script src="../shared/l4-bunny-direct.js?v=3"></script><script>
 header("Prüfung");
 const area=document.getElementById("area");
 const FILE="pruefung.html";
 const MAX_TASKS=20;
 const LAST_SIGNATURE_KEY="SP_L4_T2_LAST_EXAM_SIGNATURE";
 const BUNNY_CDN="https://sprachpilot.b-cdn.net/";
+const AUDIO_CDN="https://sprachpilot.b-cdn.net/audio/";
 const IMAGE_TIMEOUT=7000;
 const TYPE_PLAN=["full","plural","article","imageToWord","listen","dialog","category","wordToImage","full","article","imageToWord","plural","listen","dialog","category","wordToImage","full","article","imageToWord","wordToImage"];
-let items=[],pos=0,score=0,results=[],answered=false,validImageWords=[];
+let items=[],pos=0,score=0,results=[],answered=false,validImageWords=[],currentExamAudio=null;
 
 function shuffle(a){
  const out=[...a];
@@ -42,6 +45,36 @@ function imageName(value){
 function imageUrl(value){
  const name=imageName(value&&typeof value==="object"?(value.image||value.img||value.id):value);
  return name?BUNNY_CDN+encodeURIComponent(name)+".webp":"";
+}
+function isBookWord(w){return !!(w&&w.id&&groupOf(w)==="book")}
+function audioUrl(w){return isBookWord(w)?AUDIO_CDN+encodeURIComponent(w.id)+".mp3":""}
+function stopExamAudio(){
+ if(!currentExamAudio)return;
+ try{currentExamAudio.pause();currentExamAudio.currentTime=0}catch(e){}
+ currentExamAudio=null;
+}
+function setExamAudioStatus(text,isError=false){
+ const el=document.getElementById("audioStatus");
+ if(!el)return;
+ el.textContent=text||"";
+ el.classList.toggle("error",!!isError);
+}
+function playExamAudio(slow=false){
+ const it=items[pos],w=it&&it.w;
+ const src=audioUrl(w);
+ if(!src)return;
+ stopExamAudio();
+ const audio=new Audio(src);
+ audio.preload="auto";
+ audio.playbackRate=slow?0.75:1;
+ audio.onplay=()=>setExamAudioStatus(slow?"Langsame Wiedergabe läuft …":"Wiedergabe läuft …");
+ audio.onended=()=>{setExamAudioStatus("");currentExamAudio=null};
+ audio.onerror=()=>{setExamAudioStatus("Audio konnte nicht geladen werden.",true);currentExamAudio=null};
+ currentExamAudio=audio;
+ const promise=audio.play();
+ if(promise&&typeof promise.catch==="function"){
+  promise.catch(()=>{setExamAudioStatus("Audio konnte nicht abgespielt werden.",true);currentExamAudio=null});
+ }
 }
 function preloadImage(src){
  return new Promise(resolve=>{
@@ -81,6 +114,7 @@ function activeVocabularyLabel(){
  return groups.includes("extra")?"Buchwortschatz und Zusatzwortschatz":"nur Buchwortschatz";
 }
 function compatibleWords(type,pool){
+ if(type==="listen")return pool.filter(isBookWord);
  if(type==="category")return pool.filter(w=>w.category);
  if(type==="dialog"){
   const ids=new Set((Array.isArray(DIALOG_TASKS)?DIALOG_TASKS:[]).map(t=>t.id));
@@ -141,6 +175,7 @@ function makeItem(w,type,pool){
 }
 
 async function start(){
+ stopExamAudio();
  if(!isExamUnlocked()){
   area.innerHTML=`<div class="question">Prüfung gesperrt</div><div class="no">Die Prüfung wird erst freigeschaltet, wenn alle anderen Aufgaben in Thema 2 bei 100% sind.</div><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div>`;
   return;
@@ -218,6 +253,7 @@ function explainError(it,user){
 }
 
 function show(){
+ stopExamAudio();
  answered=false;
  if(pos>=items.length){finish();return}
  const it=items[pos],w=it.w;
@@ -225,11 +261,11 @@ function show(){
  if(["full","plural","imageToWord"].includes(it.type)){
   html+=`${examImg(w,"task-img")}<input id="ans" autocomplete="off" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkText()">Kontrollieren</button>`;
  }else if(it.type==="listen"){
-  html+=`<div class="actions"><button class="btn" onclick="speak('${w.full.replace(/'/g,"\\'")}')">🔊 Hören</button><button class="btn secondary" onclick="speak('${w.full.replace(/'/g,"\\'")}',true)">Langsam</button></div><input id="ans" autocomplete="off" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkText()">Kontrollieren</button>`;
+  html+=`<div class="actions"><button type="button" class="btn" onclick="playExamAudio(false)">🔊 Hören</button><button type="button" class="btn secondary" onclick="playExamAudio(true)">Langsam</button></div><div id="audioStatus" class="audio-status" aria-live="polite"></div><input id="ans" autocomplete="off" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkText()">Kontrollieren</button>`;
  }else if(it.type==="article"||it.type==="category"){
   html+=`<div class="exam-option-grid">${it.options.map(o=>`<button class="exam-option" onclick="checkChoice('${String(o).replace(/'/g,"\\'")}')">${esc(o)}</button>`).join("")}</div>`;
  }else if(it.type==="wordToImage"){
-  html+=`<div class="exam-option-grid">${it.options.map(o=>`<button class="exam-option" aria-label="Bild auswählen" onclick="checkChoice('${o.id}')">${examImg(o,"exam-option-img")}</button>`).join("")}</div>`;
+  html+=`<div class="exam-option-grid">${it.options.map(o=>`<button class="exam-option" aria-label="Bild auswählen" onclick="checkChoice(\'${o.id}\')">${examImg(o,"exam-option-img")}</button>`).join("")}</div>`;
  }else if(it.type==="dialog"){
   const t=it.dialog,firstRest=t.line1.replace("Ist ___ ","").replace("?",""),secondParts=t.line2.split("___");
   html+=`${examImg(w,"exam-dialog-img")}<div class="gap-line dialog-line"><span>Ist</span><input id="noun" class="gap-input" autocomplete="off" placeholder="Nomen mit Artikel"><span>${esc(firstRest)}?</span></div><div class="gap-line dialog-line"><span>${esc(secondParts[0])}</span><input id="pronoun" class="gap-input" autocomplete="off" placeholder="Pronomen"><span>${esc(secondParts[1]||"")}</span></div><button class="btn" onclick="checkDialog()">Kontrollieren</button>`;
