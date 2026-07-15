@@ -18,21 +18,19 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check verben-test/app.js
-          node --check verben-test/l6-card-pattern.js
       - name: Required files and no old layers
         run: |
           test -f verben-test/index.html
           test -f verben-test/styles.css
           test -f verben-test/app.js
-          test -f verben-test/l6-card-pattern.js
+          test ! -f verben-test/l6-card-pattern.js
           test ! -f verben-test/boot.js
           test ! -f verben-test/app-clean.js
           test ! -f verben-test/choose-filter.js
           grep -q 'Verben Test' verben-test/index.html
-          grep -q 'styles.css?v=4' verben-test/index.html
-          grep -q 'app.js?v=2' verben-test/index.html
-          grep -q 'l6-card-pattern.js?v=1' verben-test/index.html
-          ! grep -qE 'boot\.js|app-clean\.js|choose-filter\.js|state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
+          grep -q 'styles.css?v=5' verben-test/index.html
+          grep -q 'app.js?v=3' verben-test/index.html
+          ! grep -qE 'l6-card-pattern|boot\.js|app-clean\.js|choose-filter\.js|state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
       - name: Core rules
         run: |
           grep -q 'var PACKAGE_SIZE=20' verben-test/app.js
@@ -47,11 +45,13 @@ jobs:
           grep -q 'function startMic' verben-test/app.js
       - name: L6T2 flashcard pattern
         run: |
-          grep -q 'flip-wrap' verben-test/l6-card-pattern.js
-          grep -q 'flip-card' verben-test/l6-card-pattern.js
-          grep -q 'flip-back' verben-test/l6-card-pattern.js
-          grep -q 'card-listen-btn' verben-test/l6-card-pattern.js
-          grep -q 'data-speak' verben-test/l6-card-pattern.js
+          grep -q 'function flashcardHtml' verben-test/app.js
+          grep -q 'data-flip-card' verben-test/app.js
+          grep -q 'data-speak' verben-test/app.js
+          grep -q 'flip-wrap' verben-test/styles.css
+          grep -q 'flip-card' verben-test/styles.css
+          grep -q 'flip-back' verben-test/styles.css
+          grep -q 'card-listen-btn' verben-test/styles.css
       - name: Chooser filters and images
         run: |
           grep -q 'data-filter' verben-test/app.js
