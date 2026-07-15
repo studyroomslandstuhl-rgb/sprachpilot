@@ -32,7 +32,7 @@ jobs:
           test -f verben-test/boot.js
           grep -q 'Verben Test' verben-test/index.html
           grep -q 'boot.js?v=11' verben-test/index.html
-          grep -q './app-clean.js?v=3' verben-test/boot.js
+          grep -q './app-clean.js?v=4' verben-test/boot.js
           ! grep -qE 'state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
       - name: Clean package and scoring rules
         run: |
@@ -46,6 +46,13 @@ jobs:
           grep -q 'plannedVerbs' verben-test/app-clean.js
           grep -q 'assessableVerbs' verben-test/app-clean.js
           grep -q 'href="/index.html"' verben-test/app-clean.js
+      - name: Hardened choose and assess flow
+        run: |
+          grep -q 'data-select-first' verben-test/app-clean.js
+          grep -q 'Bitte mindestens ein Verb auswählen' verben-test/app-clean.js
+          grep -q 'closeCompletedPackage' verben-test/app-clean.js
+          grep -q 'state.assessment.unknown=uniq' verben-test/app-clean.js
+          grep -q 'state.assessment.known=uniq' verben-test/app-clean.js
       - name: Course release integration
         run: |
           grep -q 'moduleOpen(assignments,"Verben Test")' index.html
