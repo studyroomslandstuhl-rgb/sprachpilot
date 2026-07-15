@@ -23,6 +23,7 @@ jobs:
         run: |
           node --check verben-test/app-clean.js
           node --check verben-test/boot.js
+          node --check verben-test/choose-filter.js
           node --check teacher/verben-test-release.js
       - name: Required files and isolation
         run: |
@@ -30,8 +31,11 @@ jobs:
           test -f verben-test/styles.css
           test -f verben-test/app-clean.js
           test -f verben-test/boot.js
+          test -f verben-test/choose-filter.js
           grep -q 'Verben Test' verben-test/index.html
+          grep -q 'styles.css?v=2' verben-test/index.html
           grep -q 'boot.js?v=12' verben-test/index.html
+          grep -q 'choose-filter.js?v=1' verben-test/index.html
           grep -q './app-clean.js?v=6' verben-test/boot.js
           grep -q 'safeLoadCourseRelease' verben-test/boot.js
           grep -q 'safeModuleOpen' verben-test/boot.js
@@ -56,6 +60,16 @@ jobs:
           grep -q 'data-select-first' verben-test/app-clean.js
           grep -q 'Bitte mindestens ein Verb auswählen' verben-test/app-clean.js
           grep -q 'Object.values(source.translations' verben-test/app-clean.js
+      - name: Chooser filters
+        run: |
+          grep -q 'data-verb-filter' verben-test/choose-filter.js
+          grep -q "id:'irregular'" verben-test/choose-filter.js
+          grep -q "id:'regular'" verben-test/choose-filter.js
+          grep -q "id:'modal'" verben-test/choose-filter.js
+          grep -q "id:'separable'" verben-test/choose-filter.js
+          grep -q "id:'reflexive'" verben-test/choose-filter.js
+          grep -q 'verb-filter-bar' verben-test/styles.css
+          grep -q 'filter-chip.active' verben-test/styles.css
       - name: Course release integration
         run: |
           grep -q 'moduleOpen(assignments,"Verben Test")' index.html
