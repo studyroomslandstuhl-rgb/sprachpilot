@@ -1,37 +1,33 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten Thema 3</title><link rel="stylesheet" href="style.css?v=321"><link rel="stylesheet" href="l4t3-color-mode.css?v=1"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=319"></script><script src="l4t3-color-mode.js?v=1"></script><script src="l4t3-bunny-images.js?v=1"></script><script>
-header('Farben & Adjektive');
-const file='karteikarten.html';
-let items=L4T3ColorMode.activeCards();
-const total=items.length;
-function showCardImage(w){
-  if(w.type==='color')return L4T3ColorMode.visual(w,'task-img color-card-front');
-  if(w.type==='reaction')return `<div class="smile-card" style="margin:12px auto">${w.emoji}</div>`;
-  return img(w.img||w.id+'.png','task-img');
-}
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten Thema 3</title><link rel="stylesheet" href="style.css?v=322"><link rel="stylesheet" href="l4t3-color-mode.css?v=1"><style>
+.flip-wrap{width:min(430px,100%);margin:18px auto;perspective:1100px}.flip-card{position:relative;width:100%;height:350px;transform-style:preserve-3d;transition:transform .55s ease;cursor:pointer;touch-action:manipulation}.flip-card.flipped{transform:rotateY(180deg)}.flip-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;border:3px solid #ffe28a;border-radius:26px;background:#fff;box-shadow:0 12px 28px rgba(0,0,0,.1);backface-visibility:hidden;-webkit-backface-visibility:hidden;text-align:center}.flip-back{transform:rotateY(180deg);background:#fff9dd}.flip-word{font-size:32px;font-weight:900;color:#6b4700;line-height:1.35}.flip-note{font-size:14px;color:#667085}.card-actions{justify-content:center}.card-answer-box{max-width:620px;margin:14px auto 0}.card-answer-box .btn{margin-top:10px}.card-listen-btn{margin-top:8px;position:relative;z-index:4}.flashcard-front-img{width:min(360px,100%);height:260px;object-fit:contain;margin:0 auto}.flashcard-front-emoji{width:180px;height:180px;margin:0 auto;font-size:92px}.flip-face .color-card-front{width:min(360px,100%);height:250px;margin:0 auto}@media(max-width:600px){.flip-card{height:320px}.flip-word{font-size:26px}.flip-face{padding:14px}.flashcard-front-img{height:230px}.flip-face .color-card-front{height:225px}}
+</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=319"></script><script src="l4t3-color-mode.js?v=2"></script><script src="l4t3-bunny-images.js?v=1"></script><script>
+const area=document.getElementById('area');header('Farben & Adjektive');
+const FILE='karteikarten.html';
+let items=[],i=0,revealed=false,solved=false;
+function cardItems(){return L4T3ColorMode.activeCards()}
+function solution(w){return w.word}
+function frontVisual(w){if(w.type==='color')return L4T3ColorMode.visual(w,'color-card-front');if(w.type==='reaction')return `<div class="smile-card flashcard-front-emoji">${w.emoji}</div>`;return img(w.img||w.id+'.png','flashcard-front-img')}
+function backHtml(w){return `<div class="flip-word">${safe(solution(w))}</div><div class="flip-note">Lösung</div><button type="button" class="btn secondary card-listen-btn" id="cardListenBtn">🔊 Anhören</button>`}
 function render(){
-  items=L4T3ColorMode.activeCards();
-  let i=nextIndex(file,items.length);
-  if(i===null)return complete(area,file,'hoeren.html');
-  let w=items[i];
-  area.innerHTML=progressHtml(file,items.length)+
-  `<div class="small" style="text-align:center">${L4T3ColorMode.label()}</div>
-   <div class="question">Sage das deutsche Wort.</div>
-   <div class="hint">Muttersprache: <b>${safe(translate(w))}</b></div>
-   ${showCardImage(w)}
-   <div class="actions">
-     <button id="micBtn" class="btn mic-btn" onclick="startMic(this,(v)=>{writeBox();answer.value=v;check(v,true)})">🎤 Deutsch sprechen</button>
-     <button class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button>
-     <button class="btn secondary" onclick="turn()">Karte umdrehen</button>
-   </div>
-   <div id="micStatus" class="mic-status"></div>
-   <div id="box" class="hidden">
-     <input id="answer" class="answer-line" placeholder="Schreiben Sie die Antwort hier">
-     <button class="btn" onclick="check(answer.value,false)">Kontrollieren</button>
-   </div>
-   <div id="fb" class="feedback"></div>`;
+ items=cardItems();
+ if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'hoeren.html');return}
+ i=nextIndex(FILE,items.length);revealed=false;solved=false;
+ const w=items[i];
+ if(!w){area.innerHTML='<div class="no">Die Karte konnte nicht geladen werden.</div>';return}
+ area.innerHTML=`${progressHtml(FILE,items.length)}<div class="small" style="text-align:center">${L4T3ColorMode.label()}</div><div class="flip-wrap"><div id="fcard" class="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="flip-face flip-front">${frontVisual(w)}</div><div class="flip-face flip-back">${backHtml(w)}</div></div></div><div class="hint">Übersetzung: <b>${safe(translate(w))}</b></div><div class="actions card-actions"><button id="micBtn" type="button" class="btn mic-btn">Sprechen</button><button id="writeBtn" type="button" class="btn secondary">Schreiben</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="card-answer-box" style="display:none"><input id="ans" autocomplete="off" placeholder="Antwort schreiben"><button id="checkBtn" type="button" class="btn">Kontrollieren</button></div><div id="fb" class="feedback"></div><div id="after" class="actions card-actions"></div>`;
+ const card=document.getElementById('fcard');
+ card.addEventListener('click',()=>reveal(true));
+ card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();reveal(true)}});
+ document.getElementById('cardListenBtn').addEventListener('click',e=>{e.preventDefault();e.stopPropagation();speak(solution(w))});
+ document.getElementById('micBtn').addEventListener('click',speakAnswer);
+ document.getElementById('writeBtn').addEventListener('click',writeBox);
+ document.getElementById('checkBtn').addEventListener('click',()=>check(document.getElementById('ans').value));
+ document.getElementById('ans').addEventListener('keydown',e=>{if(e.key==='Enter')check(e.target.value)});
 }
-function writeBox(){box.classList.remove('hidden');answer.focus()}
-function turn(){let st=loadTask(file,items.length),w=items[st.current];writeBox();answer.value=w.word;markWrong(file,items.length,w.word);fb.innerHTML=`<div class="no">Lösung: ${safe(w.word)}</div>`}
-function check(val,fromSpeech=false){let st=loadTask(file,items.length),w=items[st.current];if(simple(val)===simple(w.word)){fb.innerHTML='<div class="ok">Richtig!</div>';setTimeout(()=>{markRight(file,items.length)?complete(area,file,'hoeren.html'):render()},500)}else{let t=markWrong(file,items.length,w.word);fb.innerHTML='<div class="no">'+feedbackForTry(t,w.word,'das deutsche Wort')+'</div>'}}
-maybeStart(render,'karteikarten.html');
+function writeBox(){const box=document.getElementById('box'),ans=document.getElementById('ans');if(box)box.style.display='block';if(ans)ans.focus()}
+function reveal(help){if(solved)return;const card=document.getElementById('fcard');if(card)card.classList.add('flipped');if(help&&!revealed){revealed=true;markWrong(FILE,items.length);const after=document.getElementById('after');after.innerHTML='<button type="button" class="btn" id="nextHelpBtn">Weiter</button>';document.getElementById('nextHelpBtn').addEventListener('click',nextAfterHelp)}}
+function nextAfterHelp(){markRight(FILE,items.length);render()}
+function speakAnswer(){startMic(document.getElementById('micBtn'),value=>{writeBox();const ans=document.getElementById('ans');ans.value=value;check(value)})}
+function check(value){const w=items[i],feedback=document.getElementById('fb');if(simple(value)===simple(solution(w))){solved=true;document.getElementById('fcard').classList.add('flipped');feedback.innerHTML='<div class="ok">Richtig!</div>';markRight(FILE,items.length);document.getElementById('after').innerHTML='<button type="button" class="btn" id="nextBtn">Weiter</button>';document.getElementById('nextBtn').addEventListener('click',render);return}const tries=markWrong(FILE,items.length,w.word);feedback.innerHTML=tries>=3?`<div class="no">Lösung: ${safe(solution(w))}</div>`:'<div class="no">Noch nicht richtig.</div>'}
+maybeStart(render,FILE);
 </script></body></html>
