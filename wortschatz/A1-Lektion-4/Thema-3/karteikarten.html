@@ -1,17 +1,21 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten Thema 3</title><link rel="stylesheet" href="style.css?v=310"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=310"></script><script src="l4t3-bunny-images.js?v=1"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten Thema 3</title><link rel="stylesheet" href="style.css?v=321"><link rel="stylesheet" href="l4t3-color-mode.css?v=1"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=319"></script><script src="l4t3-color-mode.js?v=1"></script><script src="l4t3-bunny-images.js?v=1"></script><script>
 header('Farben & Adjektive');
-const file='karteikarten.html', total=CARDS.length;
+const file='karteikarten.html';
+let items=L4T3ColorMode.activeCards();
+const total=items.length;
 function showCardImage(w){
-  if(w.type==='color') return colorImg(w,'task-img');
-  if(w.type==='reaction') return `<div class="smile-card" style="margin:12px auto">${w.emoji}</div>`;
+  if(w.type==='color')return L4T3ColorMode.visual(w,'task-img color-card-front');
+  if(w.type==='reaction')return `<div class="smile-card" style="margin:12px auto">${w.emoji}</div>`;
   return img(w.img||w.id+'.png','task-img');
 }
 function render(){
-  let i=nextIndex(file,total);
+  items=L4T3ColorMode.activeCards();
+  let i=nextIndex(file,items.length);
   if(i===null)return complete(area,file,'hoeren.html');
-  let w=CARDS[i];
-  area.innerHTML=progressHtml(file,total)+
-  `<div class="question">Sage das deutsche Wort.</div>
+  let w=items[i];
+  area.innerHTML=progressHtml(file,items.length)+
+  `<div class="small" style="text-align:center">${L4T3ColorMode.label()}</div>
+   <div class="question">Sage das deutsche Wort.</div>
    <div class="hint">Muttersprache: <b>${safe(translate(w))}</b></div>
    ${showCardImage(w)}
    <div class="actions">
@@ -24,28 +28,10 @@ function render(){
      <input id="answer" class="answer-line" placeholder="Schreiben Sie die Antwort hier">
      <button class="btn" onclick="check(answer.value,false)">Kontrollieren</button>
    </div>
-   <div id="fb" class="feedback"></div>`
+   <div id="fb" class="feedback"></div>`;
 }
-function writeBox(){
-  box.classList.remove('hidden');
-  answer.focus();
-}
-function turn(){
-  let st=loadTask(file,total),w=CARDS[st.current];
-  writeBox();
-  answer.value=w.word;
-  let t=markWrong(file,total,w.word);
-  fb.innerHTML=`<div class="no">Lösung: ${safe(w.word)}</div>`;
-}
-function check(val,fromSpeech=false){
-  let st=loadTask(file,total),w=CARDS[st.current];
-  if(simple(val)===simple(w.word)){
-    fb.innerHTML='<div class="ok">Richtig!</div>';
-    setTimeout(()=>{markRight(file,total)?complete(area,file,'hoeren.html'):render()},500)
-  }else{
-    let t=markWrong(file,total,w.word);
-    fb.innerHTML='<div class="no">'+feedbackForTry(t,w.word,'das deutsche Wort')+'</div>';
-  }
-}
+function writeBox(){box.classList.remove('hidden');answer.focus()}
+function turn(){let st=loadTask(file,items.length),w=items[st.current];writeBox();answer.value=w.word;markWrong(file,items.length,w.word);fb.innerHTML=`<div class="no">Lösung: ${safe(w.word)}</div>`}
+function check(val,fromSpeech=false){let st=loadTask(file,items.length),w=items[st.current];if(simple(val)===simple(w.word)){fb.innerHTML='<div class="ok">Richtig!</div>';setTimeout(()=>{markRight(file,items.length)?complete(area,file,'hoeren.html'):render()},500)}else{let t=markWrong(file,items.length,w.word);fb.innerHTML='<div class="no">'+feedbackForTry(t,w.word,'das deutsche Wort')+'</div>'}}
 maybeStart(render,'karteikarten.html');
 </script></body></html>
