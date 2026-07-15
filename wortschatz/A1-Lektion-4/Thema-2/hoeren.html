@@ -4,34 +4,20 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Hören</title>
-<link rel="stylesheet" href="style.css?v=239">
-<link rel="stylesheet" href="../shared/lektion4-standard.css?v=239">
+<link rel="stylesheet" href="style.css?v=240">
+<link rel="stylesheet" href="../shared/lektion4-standard.css?v=240">
 <style>
-.click-card{
-  cursor:pointer;
-  pointer-events:auto;
-  transition:transform .15s,border-color .15s,background .15s;
-  touch-action:manipulation;
-  -webkit-tap-highlight-color:transparent;
-}
-@media (hover:hover){.click-card:hover{transform:scale(1.03);border-color:#f7c600}}
+.click-card{cursor:pointer;pointer-events:auto;transition:transform .15s,border-color .15s,background .15s;touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+@media(hover:hover){.click-card:hover{transform:scale(1.03);border-color:#f7c600}}
 .click-card.wrong{border-color:#e74c3c!important;background:#ffe1e1!important}
 .click-card.correct{border-color:#2e9e4f!important;background:#d9f7e8!important}
 .click-card:disabled{cursor:default;opacity:1}
 .audio-status{min-height:24px;margin:8px 0;text-align:center;font-weight:800;color:#7a5100}
 .audio-status.error{color:#9b1c1c}
-.image-fallback{
-  display:flex;align-items:center;justify-content:center;
-  width:100%;min-height:130px;padding:10px;
-  border-radius:14px;background:#fff9dd;color:#7a5100;
-  font-weight:800;text-align:center
-}
+.image-fallback{display:flex;align-items:center;justify-content:center;width:100%;min-height:130px;padding:10px;border-radius:14px;background:#fff9dd;color:#7a5100;font-weight:800;text-align:center}
 .imgbox.click-card{border:2px solid #ffe28a;background:#fff;border-radius:18px;padding:10px}
 .imgbox.click-card img{display:block;width:100%;height:160px;object-fit:contain}
-@media(max-width:600px){
-  .imgrow{grid-template-columns:1fr 1fr}
-  .imgbox.click-card img{height:125px}
-}
+@media(max-width:600px){.imgrow{grid-template-columns:1fr 1fr}.imgbox.click-card img{height:125px}}
 </style>
 </head>
 <body>
@@ -41,17 +27,27 @@
   <footer>© SprachPilot</footer>
 </div>
 
-<script type="module" src="/js/progress.js?v=239"></script>
+<script type="module" src="/js/progress.js?v=240"></script>
 <script src="app.js?v=236"></script>
 <script>
 header("Hören");
 
 const area=document.getElementById("area");
 const FILE="hoeren.html";
-const SP_BUNNY_CDN="https://sprachpilot.b-cdn.net/";
+const IMAGE_CDN="https://sprachpilot.b-cdn.net/";
+const AUDIO_CDN="https://sprachpilot.b-cdn.net/audio/";
+const AUDIO_WORDS=WORDS.filter(isBookWord);
 let i=0;
 let locked=false;
-let currentUtterance=null;
+let currentAudio=null;
+
+function wordGroup(w){
+  return typeof spT2Group==="function"
+    ?spT2Group(w)
+    :(w?.releaseGroup||w?.wordGroup||w?.group||(w?.set==="plus"?"extra":"book"));
+}
+function isBookWord(w){return !!(w&&w.id&&wordGroup(w)==="book")}
+function audioUrl(w){return isBookWord(w)?AUDIO_CDN+encodeURIComponent(w.id)+".mp3":""}
 
 function shuffle(list){
   const out=list.slice();
@@ -61,103 +57,78 @@ function shuffle(list){
   }
   return out;
 }
-
 function optionsFor(w){
-  const others=shuffle(WORDS.filter(function(x){return x&&x.id&&x.id!==w.id})).slice(0,3);
+  const others=shuffle(WORDS.filter(x=>x&&x.id&&x.id!==w.id)).slice(0,3);
   return shuffle([w].concat(others));
 }
-
 function imageName(value){
   const raw=String(value||"").split("?")[0].split("#")[0].split("/").pop();
   return raw.replace(/\.(png|jpe?g|webp|gif|svg)$/i,"");
 }
-
-function bunnyUrl(w){
+function imageUrl(w){
   const name=imageName((w&&w.id)||(w&&w.image));
-  return name?SP_BUNNY_CDN+encodeURIComponent(name)+".webp":"";
+  return name?IMAGE_CDN+encodeURIComponent(name)+".webp":"";
 }
-
 function imageCard(w){
   return '<button type="button" class="imgbox click-card" data-id="'+esc(w.id)+'" onclick="choose(this.dataset.id,this)">'+
-    '<img src="'+bunnyUrl(w)+'" loading="eager" decoding="async" onerror="imageFailed(this)" alt="">'+
+    '<img src="'+imageUrl(w)+'" loading="eager" decoding="async" onerror="imageFailed(this)" alt="">'+
   '</button>';
 }
-
 function imageFailed(img){
   if(img)img.outerHTML='<div class="image-fallback">Bild konnte nicht geladen werden.</div>';
 }
 
-function setAudioStatus(text,isError){
+function stopAudio(){
+  if(!currentAudio)return;
+  try{currentAudio.pause();currentAudio.currentTime=0}catch(e){}
+  currentAudio=null;
+}
+function setAudioStatus(text,isError=false){
   const el=document.getElementById("audioStatus");
   if(!el)return;
   el.textContent=text||"";
-  if(isError)el.classList.add("error");else el.classList.remove("error");
+  el.classList.toggle("error",!!isError);
 }
-
-function pickGermanVoice(){
-  try{
-    const voices=window.speechSynthesis.getVoices()||[];
-    return voices.find(function(v){return v.lang==="de-DE"&&/google|microsoft|anna|katja|deutsch|german/i.test(v.name||"")})
-      ||voices.find(function(v){return v.lang==="de-DE"})
-      ||voices.find(function(v){return String(v.lang||"").toLowerCase().indexOf("de")===0})
-      ||null;
-  }catch(e){return null}
-}
-
-function playWord(slow){
-  const w=WORDS[i];
-  if(!w||!w.full)return;
-
-  if(!("speechSynthesis" in window)||typeof window.SpeechSynthesisUtterance==="undefined"){
-    setAudioStatus("Die Sprachausgabe wird von diesem Browser nicht unterstützt.",true);
-    return;
-  }
-
-  try{
-    const synth=window.speechSynthesis;
-    synth.cancel();
-
-    const utterance=new SpeechSynthesisUtterance(w.full);
-    utterance.lang="de-DE";
-    utterance.rate=slow?0.68:0.88;
-    utterance.pitch=1;
-    utterance.volume=1;
-
-    const voice=pickGermanVoice();
-    if(voice)utterance.voice=voice;
-
-    utterance.onstart=function(){setAudioStatus(slow?"Langsame Wiedergabe läuft …":"Wiedergabe läuft …",false)};
-    utterance.onend=function(){setAudioStatus("",false);currentUtterance=null};
-    utterance.onerror=function(){setAudioStatus("Bitte tippe noch einmal auf Hören.",true);currentUtterance=null};
-
-    currentUtterance=utterance;
-    if(typeof synth.resume==="function")synth.resume();
-    synth.speak(utterance);
-    setAudioStatus("",false);
-  }catch(e){
-    setAudioStatus("Bitte tippe noch einmal auf Hören.",true);
+function playWord(slow=false){
+  const w=AUDIO_WORDS[i];
+  const src=audioUrl(w);
+  if(!src)return;
+  stopAudio();
+  const audio=new Audio(src);
+  audio.preload="auto";
+  audio.playbackRate=slow?0.75:1;
+  audio.onplay=()=>setAudioStatus(slow?"Langsame Wiedergabe läuft …":"Wiedergabe läuft …");
+  audio.onended=()=>{setAudioStatus("");currentAudio=null};
+  audio.onerror=()=>{setAudioStatus("Audio konnte nicht geladen werden.",true);currentAudio=null};
+  currentAudio=audio;
+  const promise=audio.play();
+  if(promise&&typeof promise.catch==="function"){
+    promise.catch(()=>{setAudioStatus("Audio konnte nicht abgespielt werden.",true);currentAudio=null});
   }
 }
 
 function show(){
-  try{if("speechSynthesis" in window)window.speechSynthesis.cancel()}catch(e){}
-  currentUtterance=null;
+  stopAudio();
   locked=false;
 
-  if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){
+  if(!AUDIO_WORDS.length){
+    area.innerHTML='<div class="no">Für den aktiven Wortschatz sind noch keine Audios verfügbar.</div><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div>';
+    return;
+  }
+  if(loadTask(FILE,AUDIO_WORDS.length).done.length>=AUDIO_WORDS.length){
     complete(area,FILE,"artikel-klick.html");
     return;
   }
 
-  i=nextIndex(FILE,WORDS.length);
-  const w=WORDS[i];
+  i=nextIndex(FILE,AUDIO_WORDS.length);
+  const w=AUDIO_WORDS[i];
   if(!w){
     area.innerHTML='<div class="no">Die Aufgabe konnte nicht geladen werden.</div><div class="actions"><button type="button" class="btn" onclick="show()">Neu laden</button><a class="btn secondary" href="index.html">Zurück</a></div>';
     return;
   }
 
   const options=optionsFor(w);
-  area.innerHTML=progressHtml(FILE,WORDS.length)+
+  area.innerHTML=progressHtml(FILE,AUDIO_WORDS.length)+
     '<div class="question">Höre und wähle das richtige Bild.</div>'+
     '<div class="actions">'+
       '<button type="button" class="btn" onclick="playWord(false)">🔊 Hören</button>'+
@@ -170,31 +141,24 @@ function show(){
 
 function choose(id,el){
   if(locked)return;
-  const w=WORDS[i];
+  const w=AUDIO_WORDS[i];
   const fb=document.getElementById("fb");
   if(!w||!fb||!el)return;
 
   if(id===w.id){
     locked=true;
-    document.querySelectorAll(".click-card").forEach(function(card){card.disabled=true});
+    document.querySelectorAll(".click-card").forEach(card=>card.disabled=true);
     el.classList.add("correct");
     fb.textContent="Richtig!";
-    markRight(FILE,WORDS.length);
+    markRight(FILE,AUDIO_WORDS.length);
     setTimeout(show,700);
   }else{
     el.classList.add("wrong");
     el.disabled=true;
-    const tries=markWrong(FILE,WORDS.length);
+    const tries=markWrong(FILE,AUDIO_WORDS.length);
     fb.innerHTML=feedbackForTry(tries,w.full,"Hören und Bild");
   }
 }
-
-try{
-  if("speechSynthesis" in window){
-    window.speechSynthesis.getVoices();
-    window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.getVoices()};
-  }
-}catch(e){}
 
 show();
 </script>
