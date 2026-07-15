@@ -1,0 +1,14 @@
+.color-mode-card{display:grid;grid-template-columns:1fr auto;gap:18px;align-items:center;background:linear-gradient(135deg,#fffdf2,#fff4bf)}
+.color-mode-buttons{display:flex;gap:10px;flex-wrap:wrap;justify-content:flex-end}
+.color-mode-btn.active{outline:4px solid #2e9e4f;background:#d9f7e8!important;color:#145a32!important;border-color:#2e9e4f!important}
+.color-mode-count{grid-column:1/-1;padding:10px 12px;border-radius:14px;background:#fff;border:1px solid #ffe28a;color:#6b4700}
+.color-visual{display:block;border:3px solid #e5e7eb;border-radius:22px;box-shadow:inset 0 0 0 3px rgba(255,255,255,.45),0 8px 20px rgba(0,0,0,.09)}
+.color-visual.task-img{width:min(420px,100%);max-width:420px;height:250px;margin:18px auto;padding:0;object-fit:initial}
+.color-visual.choice-img{width:100%;height:150px;min-height:150px;margin:0;max-width:none}
+.color-choice-button{min-height:180px;padding:12px}
+.color-card-front{width:min(430px,100%);height:255px;margin:10px auto}
+.exam-color-visual{width:min(430px,100%);height:250px;margin:16px auto}
+.exam-feedback-compact{text-align:left;background:#fff7ed;border:2px solid #fdba74;border-radius:16px;padding:12px 14px;margin-top:12px;line-height:1.45}
+.exam-feedback-compact div+div{margin-top:5px}
+.exam-feedback-compact b{color:#7c2d12}
+@media(max-width:700px){.color-mode-card{grid-template-columns:1fr}.color-mode-buttons{justify-content:center}.color-mode-btn{width:100%}.color-visual.task-img,.exam-color-visual{height:210px}.color-visual.choice-img{height:120px;min-height:120px}.color-choice-button{min-height:150px}}
