@@ -1,25 +1,19 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Farben Thema 3</title><link rel="stylesheet" href="style.css?v=310"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=310"></script><script src="l4t3-bunny-images.js?v=1"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Farben Thema 3</title><link rel="stylesheet" href="style.css?v=321"><link rel="stylesheet" href="l4t3-color-mode.css?v=1"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=319"></script><script src="l4t3-color-mode.js?v=1"></script><script>
 header('Farben & Adjektive');
-const file='farben.html',total=COLORS.length;
+const file='farben.html';
+let colors=L4T3ColorMode.activeColors();
 function render(){
+  colors=L4T3ColorMode.activeColors();
+  const total=colors.length;
   let i=nextIndex(file,total);
   if(i===null)return complete(area,file,'memory.html');
-  let c=COLORS[i],opts=shuffle([c,...shuffle(COLORS.filter(x=>x.id!==c.id)).slice(0,3)]);
+  let c=colors[i],opts=mixWithCorrect(c,colors,4);
   area.innerHTML=progressHtml(file,total)+
+    `<div class="small" style="text-align:center">${L4T3ColorMode.label()}</div>`+
     instruction('Welche Farbe ist das? Wähle das richtige Bild.')+
     `<div class="big">${c.word}</div>`+
-    `<div class="options image-grid-4">${opts.map(o=>`<button class="opt image-only" onclick="check('${o.id}')">${colorImg(o,'choice-img')}</button>`).join('')}</div>
-     <div id="fb" class="feedback"></div>`;
+    `<div class="options image-grid-4">${opts.map(o=>`<button class="opt image-only color-choice-button" onclick="check('${o.id}')">${L4T3ColorMode.visual(o,'choice-img')}</button>`).join('')}</div><div id="fb" class="feedback"></div>`;
 }
-function check(id){
-  let st=loadTask(file,total),c=COLORS[st.current];
-  if(id===c.id){
-    fb.innerHTML='<div class="ok">Richtig!</div>';
-    setTimeout(()=>{markRight(file,total)?complete(area,file,'memory.html'):render()},500)
-  }else{
-    let t=markWrong(file,total,c.word);
-    fb.innerHTML='<div class="no">'+feedbackForTry(t,c.word,'die Farbe')+'</div>'
-  }
-}
+function check(id){let total=colors.length,st=loadTask(file,total),c=colors[st.current];if(id===c.id){fb.innerHTML='<div class="ok">Richtig!</div>';setTimeout(()=>{markRight(file,total)?complete(area,file,'memory.html'):render()},500)}else{let t=markWrong(file,total,c.word);fb.innerHTML='<div class="no">'+feedbackForTry(t,c.word,'die Farbe')+'</div>'}}
 maybeStart(render,'farben.html');
 </script></body></html>
