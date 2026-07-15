@@ -23,6 +23,7 @@ jobs:
           test -f verben-test/index.html
           test -f verben-test/styles.css
           test -f verben-test/app.js
+          test -f verben-test/LOGIK.md
           test ! -f verben-test/l6-card-pattern.js
           test ! -f verben-test/boot.js
           test ! -f verben-test/app-clean.js
@@ -31,27 +32,39 @@ jobs:
           grep -q 'styles.css?v=5' verben-test/index.html
           grep -q 'app.js?v=3' verben-test/index.html
           ! grep -qE 'l6-card-pattern|boot\.js|app-clean\.js|choose-filter\.js|state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
-      - name: Core rules
+      - name: Pattern rules from L5 L6
+        run: |
+          grep -q 'function normalizeTask' verben-test/app.js
+          grep -q 'function nextVerb' verben-test/app.js
+          grep -q 'function markWrong' verben-test/app.js
+          grep -q 'function markRight' verben-test/app.js
+          grep -q 'function help3' verben-test/app.js
+          grep -q 'function renderFlashcards' verben-test/app.js
+          grep -q 'function renderImageToVerb' verben-test/app.js
+          grep -q 'function renderVerbToImage' verben-test/app.js
+          grep -q 'function renderListenWrite' verben-test/app.js
+          grep -q 'function renderSentenceBuild' verben-test/app.js
+          grep -q 'function renderConjugation' verben-test/app.js
+          grep -q 'function allTasksDone' verben-test/app.js
+          grep -q 'function renderExam' verben-test/app.js
+          grep -q 'function finishExam' verben-test/app.js
+          grep -q 'function startMic' verben-test/app.js
+      - name: Points package and exam rules
         run: |
           grep -q 'var PACKAGE_SIZE=20' verben-test/app.js
           grep -q 'var TASK_POINTS=\[5,10,15\]' verben-test/app.js
           grep -q 'var EXAM_POINTS=\[100,200,300\]' verben-test/app.js
-          grep -q 'function startPackage' verben-test/app.js
-          grep -q 'function repeatPackage' verben-test/app.js
-          grep -q 'function finishPackage' verben-test/app.js
-          grep -q 'function allTasksDone' verben-test/app.js
-          grep -q 'function renderExam' verben-test/app.js
-          grep -q 'function wrong' verben-test/app.js
-          grep -q 'function startMic' verben-test/app.js
+          grep -q 'state.learned=uniq(state.learned.concat(learnedNow))' verben-test/app.js
+          grep -q 'if(!allTasksDone())' verben-test/app.js
       - name: L6T2 flashcard pattern
         run: |
-          grep -q 'function flashcardHtml' verben-test/app.js
           grep -q 'data-flip-card' verben-test/app.js
-          grep -q 'data-speak' verben-test/app.js
+          grep -q 'card-listen-btn' verben-test/app.js
+          grep -q 'data-mic' verben-test/app.js
+          grep -q 'data-show-input' verben-test/app.js
           grep -q 'flip-wrap' verben-test/styles.css
           grep -q 'flip-card' verben-test/styles.css
           grep -q 'flip-back' verben-test/styles.css
-          grep -q 'card-listen-btn' verben-test/styles.css
       - name: Chooser filters and images
         run: |
           grep -q 'data-filter' verben-test/app.js
