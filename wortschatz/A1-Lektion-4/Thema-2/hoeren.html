@@ -36,7 +36,6 @@ const area=document.getElementById("area");
 const FILE="hoeren.html";
 const IMAGE_CDN="https://sprachpilot.b-cdn.net/";
 const AUDIO_CDN="https://sprachpilot.b-cdn.net/audio/";
-const AUDIO_WORDS=WORDS.filter(isBookWord);
 let i=0;
 let locked=false;
 let currentAudio=null;
@@ -90,7 +89,14 @@ function setAudioStatus(text,isError=false){
   el.classList.toggle("error",!!isError);
 }
 function playWord(slow=false){
-  const w=AUDIO_WORDS[i];
+  const w=WORDS[i];
+  if(!w)return;
+  if(!isBookWord(w)){
+    stopAudio();
+    setAudioStatus("");
+    speak(w.full,slow);
+    return;
+  }
   const src=audioUrl(w);
   if(!src)return;
   stopAudio();
@@ -111,24 +117,20 @@ function show(){
   stopAudio();
   locked=false;
 
-  if(!AUDIO_WORDS.length){
-    area.innerHTML='<div class="no">Für den aktiven Wortschatz sind noch keine Audios verfügbar.</div><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div>';
-    return;
-  }
-  if(loadTask(FILE,AUDIO_WORDS.length).done.length>=AUDIO_WORDS.length){
+  if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){
     complete(area,FILE,"artikel-klick.html");
     return;
   }
 
-  i=nextIndex(FILE,AUDIO_WORDS.length);
-  const w=AUDIO_WORDS[i];
+  i=nextIndex(FILE,WORDS.length);
+  const w=WORDS[i];
   if(!w){
     area.innerHTML='<div class="no">Die Aufgabe konnte nicht geladen werden.</div><div class="actions"><button type="button" class="btn" onclick="show()">Neu laden</button><a class="btn secondary" href="index.html">Zurück</a></div>';
     return;
   }
 
   const options=optionsFor(w);
-  area.innerHTML=progressHtml(FILE,AUDIO_WORDS.length)+
+  area.innerHTML=progressHtml(FILE,WORDS.length)+
     '<div class="question">Höre und wähle das richtige Bild.</div>'+
     '<div class="actions">'+
       '<button type="button" class="btn" onclick="playWord(false)">🔊 Hören</button>'+
@@ -141,7 +143,7 @@ function show(){
 
 function choose(id,el){
   if(locked)return;
-  const w=AUDIO_WORDS[i];
+  const w=WORDS[i];
   const fb=document.getElementById("fb");
   if(!w||!fb||!el)return;
 
@@ -150,12 +152,12 @@ function choose(id,el){
     document.querySelectorAll(".click-card").forEach(card=>card.disabled=true);
     el.classList.add("correct");
     fb.textContent="Richtig!";
-    markRight(FILE,AUDIO_WORDS.length);
+    markRight(FILE,WORDS.length);
     setTimeout(show,700);
   }else{
     el.classList.add("wrong");
     el.disabled=true;
-    const tries=markWrong(FILE,AUDIO_WORDS.length);
+    const tries=markWrong(FILE,WORDS.length);
     fb.innerHTML=feedbackForTry(tries,w.full,"Hören und Bild");
   }
 }
