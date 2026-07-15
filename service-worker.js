@@ -1,4 +1,4 @@
-const CACHE_VERSION="sprachpilot-static-v20260714-l6t2-menu-restore";
+const CACHE_VERSION="sprachpilot-static-v20260715-verben-ueben-button";
 
 self.addEventListener("install",event=>{
   self.skipWaiting();
