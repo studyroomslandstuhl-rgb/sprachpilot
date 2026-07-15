@@ -1,7 +1,8 @@
 (function(){
   const MODE_KEY='SP_L4_T3_COLOR_MODE_V1';
   const BASE_IDS=['rot','blau','gruen','gelb','orange','weiss','schwarz','grau','braun','rosa','lila','tuerkis'];
-  const COLOR_TASKS=new Set(['karteikarten.html','hoeren.html','farben.html','saetze-bauen.html','schreiben.html']);
+  const COMBINATION_FILE='farben-kombinieren.html';
+  const COLOR_TASKS=new Set(['karteikarten.html','hoeren.html','farben.html',COMBINATION_FILE,'saetze-bauen.html','schreiben.html']);
   const originalTaskKey=window.taskKey;
   const originalGetTotal=window.getTotal;
 
@@ -38,10 +39,28 @@
   }
   function activeWritingTasks(){return mode()==='advanced'?WRITING.slice():WRITING.filter(t=>!usesAdvancedColor(t.text))}
   function activeSentenceTasks(){return mode()==='advanced'?SENTENCES.slice():SENTENCES.filter(t=>!usesAdvancedColor(t.text))}
+  function combinationTasks(){
+    return COLORS.filter(color=>/^(hell|dunkel)/.test(color.id)).map(color=>{
+      const modifier=color.id.startsWith('hell')?'hell':'dunkel';
+      const baseId=color.id.slice(modifier.length);
+      const base=COLORS.find(item=>item.id===baseId&&BASE_IDS.includes(item.id));
+      const modifierItem=ADJECTIVES.find(item=>item.id===modifier);
+      return base&&modifierItem?{id:color.id,answer:color.word,result:color,base,modifier,modifierItem}:null;
+    }).filter(Boolean);
+  }
+  function activeCombinationTasks(){return mode()==='advanced'?combinationTasks():[]}
   function visual(c,cls='task-img'){
     if(!c)return '';
     const border=c.id==='weiss'?'border-color:#94a3b8;':'';
     return `<div class="color-visual ${cls}" style="background:${c.hex};${border}" role="img" aria-label="${safe(c.word)}"></div>`;
+  }
+  function activeTaskFiles(){
+    const files=(typeof TASK_FILES!=='undefined'&&Array.isArray(TASK_FILES))?TASK_FILES.slice():[];
+    if(mode()==='advanced'&&!files.includes(COMBINATION_FILE)){
+      const index=files.indexOf('farben.html');
+      files.splice(index>=0?index+1:files.length,0,COMBINATION_FILE);
+    }
+    return files;
   }
 
   if(typeof originalTaskKey==='function'){
@@ -61,10 +80,13 @@
     if(file==='karteikarten.html')return activeCards().length;
     if(file==='hoeren.html')return activeHearingTasks().length;
     if(file==='farben.html')return activeColors().length;
+    if(file===COMBINATION_FILE)return activeCombinationTasks().length;
     if(file==='saetze-bauen.html')return activeSentenceTasks().length;
     if(file==='schreiben.html')return activeWritingTasks().length;
     return typeof originalGetTotal==='function'?originalGetTotal(file):1;
   };
+  window.taskDoneCount=function(){return activeTaskFiles().filter(file=>pct(file,getTotal(file))>=100).length};
+  window.allPrereqComplete=function(){return activeTaskFiles().every(file=>pct(file,getTotal(file))>=100)};
 
   window.examUnlockKey=function(){return THEME.key+'_EXAM_UNLOCKED_'+mode()};
   window.examUnlocked=function(){
@@ -85,5 +107,5 @@
     return `<section class="card color-mode-card"><div><h2>Farben-Wortschatz</h2><p class="small">Basis = Farben aus dem Buch. Fortgeschritten = Basis plus hell- und dunkel-Farben.</p></div><div class="color-mode-buttons"><button type="button" class="btn color-mode-btn ${current==='basis'?'active':''}" onclick="L4T3ColorMode.setMode('basis')">Farben Basis</button><button type="button" class="btn secondary color-mode-btn ${current==='advanced'?'active':''}" onclick="L4T3ColorMode.setMode('advanced')">Farben Fortgeschritten</button></div><div class="color-mode-count">Aktiv: <b>${label()}</b> · ${activeColors().length} Farben</div></section>`;
   }
 
-  window.L4T3ColorMode={mode,label,setMode,activeColors,activeCards,activeHearingTasks,activeWritingTasks,activeSentenceTasks,usesAdvancedColor,visual,selectorHtml,baseIds:BASE_IDS.slice()};
+  window.L4T3ColorMode={mode,label,setMode,activeColors,activeCards,activeHearingTasks,activeWritingTasks,activeSentenceTasks,activeCombinationTasks,activeTaskFiles,usesAdvancedColor,visual,selectorHtml,baseIds:BASE_IDS.slice(),combinationFile:COMBINATION_FILE};
 })();
