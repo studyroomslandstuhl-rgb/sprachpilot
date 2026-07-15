@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung – Thema 2</title><link rel="stylesheet" href="style.css?v=236"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=236">
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung – Thema 2</title><link rel="stylesheet" href="style.css?v=237"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=237">
 <style>
 .exam-option-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(140px,1fr));gap:10px;margin:14px 0}
 .exam-option{border:2px solid #ffe28a;background:#fff9dd;border-radius:16px;padding:12px;font-weight:900;cursor:pointer;text-align:center}
@@ -16,20 +16,63 @@
 .review-line{margin:6px 0;line-height:1.45}
 .review-reason{margin-top:9px;padding:10px;border-radius:12px;background:#fff4d6;color:#744b00}
 .review-all-correct{margin-top:18px;padding:14px;border-radius:16px;background:#dcfce7;color:#166534;font-weight:900}
+.exam-loading{text-align:center;padding:28px;font-weight:900;color:#7a5100}
+.exam-image-error{padding:14px;border:2px solid #ef4444;border-radius:16px;background:#fff1f2;color:#991b1b;font-weight:900;text-align:center}
 @media(max-width:600px){.exam-option-grid{grid-template-columns:1fr 1fr}.exam-option img{height:115px}.exam-dialog-img{height:190px}}
-</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=236"></script><script src="app.js?v=235"></script><script>
+</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Prüfung wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=237"></script><script src="app.js?v=235"></script><script src="../shared/l4-bunny-direct.js?v=3"></script><script>
 header("Prüfung");
 const area=document.getElementById("area");
 const FILE="pruefung.html";
 const MAX_TASKS=20;
 const LAST_SIGNATURE_KEY="SP_L4_T2_LAST_EXAM_SIGNATURE";
+const BUNNY_CDN="https://sprachpilot.b-cdn.net/";
+const IMAGE_TIMEOUT=7000;
 const TYPE_PLAN=["full","plural","article","imageToWord","listen","dialog","category","wordToImage","full","article","imageToWord","plural","listen","dialog","category","wordToImage","full","article","imageToWord","wordToImage"];
-let items=[],pos=0,score=0,results=[],answered=false;
+let items=[],pos=0,score=0,results=[],answered=false,validImageWords=[];
 
 function shuffle(a){
  const out=[...a];
  for(let i=out.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[out[i],out[j]]=[out[j],out[i]]}
  return out;
+}
+function imageName(value){
+ const raw=String(value||"").split("?")[0].split("#")[0].split("/").pop();
+ return raw.replace(/\.(png|jpe?g|webp|gif|svg)$/i,"");
+}
+function imageUrl(value){
+ const name=imageName(value&&typeof value==="object"?(value.image||value.img||value.id):value);
+ return name?BUNNY_CDN+encodeURIComponent(name)+".webp":"";
+}
+function preloadImage(src){
+ return new Promise(resolve=>{
+  if(!src){resolve(false);return}
+  const img=new Image();
+  let settled=false;
+  const done=ok=>{if(settled)return;settled=true;clearTimeout(timer);resolve(ok)};
+  const timer=setTimeout(()=>done(false),IMAGE_TIMEOUT);
+  img.onload=()=>done(img.naturalWidth>0&&img.naturalHeight>0);
+  img.onerror=()=>done(false);
+  img.src=src;
+ });
+}
+async function prepareImages(pool){
+ const checks=await Promise.all(pool.map(async w=>({w,ok:await preloadImage(imageUrl(w))})));
+ validImageWords=checks.filter(x=>x.ok).map(x=>x.w);
+ return validImageWords;
+}
+function examImg(w,cls="task-img"){
+ const src=imageUrl(w);
+ return `<img class="${cls}" src="${src}" data-word-id="${esc(w?.id||"")}" onerror="handleExamImageError(this)" alt="">`;
+}
+function handleExamImageError(img){
+ if(!img)return;
+ if(img.dataset.retry!=="1"){
+  img.dataset.retry="1";
+  const base=String(img.src||"").split("?")[0];
+  img.src=base+"?retry="+Date.now();
+  return;
+ }
+ img.outerHTML='<div class="exam-image-error">Das Bild konnte nicht geladen werden. Bitte starte eine neue zufällige Prüfung.</div>';
 }
 function activeWords(){return (Array.isArray(WORDS)?WORDS:[]).filter(w=>w&&w.id&&w.full)}
 function groupOf(w){return typeof spT2Group==="function"?spT2Group(w):(w.releaseGroup||w.wordGroup||w.group||"book")}
@@ -41,15 +84,14 @@ function compatibleWords(type,pool){
  if(type==="category")return pool.filter(w=>w.category);
  if(type==="dialog"){
   const ids=new Set((Array.isArray(DIALOG_TASKS)?DIALOG_TASKS:[]).map(t=>t.id));
-  const exact=pool.filter(w=>ids.has(w.id));
-  return exact.length?exact:pool;
+  return validImageWords.filter(w=>ids.has(w.id));
  }
- if(["full","plural","imageToWord","wordToImage"].includes(type))return pool.filter(w=>w.image);
+ if(["full","plural","imageToWord","wordToImage"].includes(type))return validImageWords;
  return pool;
 }
 function pickWord(type,pool,used){
  let candidates=compatibleWords(type,pool);
- if(!candidates.length)candidates=pool;
+ if(!candidates.length)return null;
  let fresh=candidates.filter(w=>!used.has(w.id));
  if(!fresh.length)fresh=candidates;
  const w=shuffle(fresh)[0];
@@ -91,19 +133,31 @@ function makeItem(w,type,pool){
   return{type,w,dialog:t,question:"Sieh das Bild an. Ergänze das Nomen mit Artikel und das passende Pronomen.",answer:t.answerNoun+" / "+t.answerPronoun,answerDisplay:t.answerNoun+" / "+t.answerPronoun};
  }
  if(type==="wordToImage"){
-  let candidates=pool.filter(x=>x.image&&x.id!==w.id);
+  let candidates=validImageWords.filter(x=>x.id!==w.id);
   let options=shuffle([w,...shuffle(candidates).slice(0,3)]);
   return{type,w,question:`Wähle das passende Bild: ${w.full}`,answer:w.id,answerDisplay:w.full,options:shuffle(options)};
  }
  return{type,w,question:"Schreibe das Wort mit Artikel.",answer:w.full,answerDisplay:w.full};
 }
 
-function start(){
+async function start(){
  if(!isExamUnlocked()){
   area.innerHTML=`<div class="question">Prüfung gesperrt</div><div class="no">Die Prüfung wird erst freigeschaltet, wenn alle anderen Aufgaben in Thema 2 bei 100% sind.</div><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div>`;
   return;
  }
- items=makeItems();pos=0;score=0;results=[];show();
+ area.innerHTML='<div class="exam-loading">Prüfungsbilder werden geprüft …</div>';
+ const pool=activeWords();
+ await prepareImages(pool);
+ if(validImageWords.length<4){
+  area.innerHTML=`<div class="question">Prüfung kann nicht gestartet werden</div><div class="exam-image-error">Es konnten nicht genügend Bilder aus dem Bunny Storage geladen werden.</div><div class="actions"><button class="btn" onclick="start()">Noch einmal prüfen</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`;
+  return;
+ }
+ items=makeItems();pos=0;score=0;results=[];
+ if(items.length!==MAX_TASKS){
+  area.innerHTML=`<div class="question">Prüfung kann nicht gestartet werden</div><div class="exam-image-error">Nicht alle ${MAX_TASKS} Aufgaben konnten erstellt werden. Bitte lade die Seite neu.</div><div class="actions"><button class="btn" onclick="start()">Neu versuchen</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`;
+  return;
+ }
+ show();
 }
 
 function n(x){return simple(x)}
@@ -169,16 +223,16 @@ function show(){
  const it=items[pos],w=it.w;
  let html=`<div class="small">Prüfungsaufgabe ${pos+1} / ${items.length}</div><div class="exam-vocab-note small">Wortauswahl: ${activeVocabularyLabel()}</div><div class="exam-task-label">${esc(it.question)}</div>`;
  if(["full","plural","imageToWord"].includes(it.type)){
-  html+=`<img class="task-img" src="${w.image}" onerror="fixImg(this)" alt=""><input id="ans" autocomplete="off" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkText()">Kontrollieren</button>`;
+  html+=`${examImg(w,"task-img")}<input id="ans" autocomplete="off" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkText()">Kontrollieren</button>`;
  }else if(it.type==="listen"){
   html+=`<div class="actions"><button class="btn" onclick="speak('${w.full.replace(/'/g,"\\'")}')">🔊 Hören</button><button class="btn secondary" onclick="speak('${w.full.replace(/'/g,"\\'")}',true)">Langsam</button></div><input id="ans" autocomplete="off" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="checkText()">Kontrollieren</button>`;
  }else if(it.type==="article"||it.type==="category"){
   html+=`<div class="exam-option-grid">${it.options.map(o=>`<button class="exam-option" onclick="checkChoice('${String(o).replace(/'/g,"\\'")}')">${esc(o)}</button>`).join("")}</div>`;
  }else if(it.type==="wordToImage"){
-  html+=`<div class="exam-option-grid">${it.options.map(o=>`<button class="exam-option" aria-label="Bild auswählen" onclick="checkChoice('${o.id}')"><img src="${o.image}" onerror="fixImg(this)" alt=""></button>`).join("")}</div>`;
+  html+=`<div class="exam-option-grid">${it.options.map(o=>`<button class="exam-option" aria-label="Bild auswählen" onclick="checkChoice('${o.id}')">${examImg(o,"exam-option-img")}</button>`).join("")}</div>`;
  }else if(it.type==="dialog"){
   const t=it.dialog,firstRest=t.line1.replace("Ist ___ ","").replace("?",""),secondParts=t.line2.split("___");
-  html+=`<img class="exam-dialog-img" src="${w.image}" onerror="fixImg(this)" alt=""><div class="gap-line dialog-line"><span>Ist</span><input id="noun" class="gap-input" autocomplete="off" placeholder="Nomen mit Artikel"><span>${esc(firstRest)}?</span></div><div class="gap-line dialog-line"><span>${esc(secondParts[0])}</span><input id="pronoun" class="gap-input" autocomplete="off" placeholder="Pronomen"><span>${esc(secondParts[1]||"")}</span></div><button class="btn" onclick="checkDialog()">Kontrollieren</button>`;
+  html+=`${examImg(w,"exam-dialog-img")}<div class="gap-line dialog-line"><span>Ist</span><input id="noun" class="gap-input" autocomplete="off" placeholder="Nomen mit Artikel"><span>${esc(firstRest)}?</span></div><div class="gap-line dialog-line"><span>${esc(secondParts[0])}</span><input id="pronoun" class="gap-input" autocomplete="off" placeholder="Pronomen"><span>${esc(secondParts[1]||"")}</span></div><button class="btn" onclick="checkDialog()">Kontrollieren</button>`;
  }
  html+=`<div id="fb" class="feedback"></div>`;
  area.innerHTML=html;
@@ -199,7 +253,7 @@ function grade(user,answer,type){
  if(["article","category","wordToImage"].includes(type))p=(n(user)===n(answer))?10:0;
  score+=p;
  const reason=p===10?"":explainError(it,user);
- results.push({number:pos+1,type,word:it.w.id,wordFull:it.w.full,image:it.w.image,question:it.question,answer:it.answerDisplay||answer,user,userDisplay:choiceDisplay(it,user),points:p,reason});
+ results.push({number:pos+1,type,word:it.w.id,wordFull:it.w.full,image:imageUrl(it.w),question:it.question,answer:it.answerDisplay||answer,user,userDisplay:choiceDisplay(it,user),points:p,reason});
  const fb=document.getElementById("fb");
  fb.innerHTML=p===10?`<div class="ok">Richtig! +10 Punkte</div><button class="btn" onclick="next()">Weiter</button>`:`<div class="solution-box"><b>Lösung:</b> ${esc(it.answerDisplay||answer)}<br><b>Deine Antwort:</b> ${esc(choiceDisplay(it,user))}<br><b>Warum?</b> ${esc(reason)}<br><b>Punkte:</b> ${p}/10</div><button class="btn" onclick="next()">Weiter</button>`;
 }
@@ -207,7 +261,7 @@ function next(){pos++;show()}
 function reviewHtml(){
  const wrong=results.filter(r=>r.points<10);
  if(!wrong.length)return`<div class="review-all-correct">Alle Aufgaben waren richtig.</div>`;
- return`<section class="exam-review"><h2>Fehlerauswertung</h2>${wrong.map(r=>`<article class="review-item"><div class="review-head">Aufgabe ${r.number} · ${esc(typeLabel(r.type))} · ${r.points}/10 Punkte</div>${r.image?`<img class="review-img" src="${r.image}" onerror="fixImg(this)" alt="">`:""}<div class="review-line"><b>Aufgabe:</b> ${esc(r.question)}</div><div class="review-line"><b>Deine Antwort:</b> ${esc(r.userDisplay||"-")}</div><div class="review-line"><b>Richtige Lösung:</b> ${esc(r.answer)}</div><div class="review-reason"><b>Warum war es falsch?</b> ${esc(r.reason)}</div></article>`).join("")}</section>`;
+ return`<section class="exam-review"><h2>Fehlerauswertung</h2>${wrong.map(r=>`<article class="review-item"><div class="review-head">Aufgabe ${r.number} · ${esc(typeLabel(r.type))} · ${r.points}/10 Punkte</div>${r.image?`<img class="review-img" src="${r.image}" onerror="this.remove()" alt="">`:""}<div class="review-line"><b>Aufgabe:</b> ${esc(r.question)}</div><div class="review-line"><b>Deine Antwort:</b> ${esc(r.userDisplay||"-")}</div><div class="review-line"><b>Richtige Lösung:</b> ${esc(r.answer)}</div><div class="review-reason"><b>Warum war es falsch?</b> ${esc(r.reason)}</div></article>`).join("")}</section>`;
 }
 function finish(){
  const max=items.length*10,safeScore=Math.min(score,max),percent=Math.min(100,Math.round(safeScore/max*100)),stars=starsForPercent(percent);
@@ -216,5 +270,5 @@ function finish(){
  st.total=100;st.done=[...Array(percent).keys()];st.queue=[];st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(FILE,st);
  area.innerHTML=`<div class="question">Prüfung beendet</div><div class="exam-score">${percent}%</div><div>${starsHtml(stars)}</div><div class="ok">Punkte: ${safeScore}/${max}</div>${reviewHtml()}<div class="actions"><button class="btn" onclick="start()">Neue zufällige Prüfung</button><a class="btn secondary" href="index.html">Zum Thema</a></div>`;
 }
-start();
+start().catch(()=>{area.innerHTML=`<div class="question">Prüfung konnte nicht geladen werden</div><div class="exam-image-error">Bitte lade die Seite neu.</div>`});
 </script></body></html>
