@@ -1,3 +1,6 @@
+// Verben Test clean logic.
+// Regeln und Aenderungsschutz stehen in verben-test/LOGIK.md.
+// Keine zweite Speicher-, Punkte-, Paket- oder Pruefungslogik neben dieser Datei anlegen.
 (function(){
   'use strict';
 
