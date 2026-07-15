@@ -4,7 +4,12 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Karteikarten</title>
-<link rel="stylesheet" href="style.css?v=235"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=235">
+<link rel="stylesheet" href="style.css?v=240">
+<link rel="stylesheet" href="../shared/lektion4-standard.css?v=240">
+<style>
+.audio-status{min-height:24px;margin:8px 0;text-align:center;font-weight:800;color:#7a5100}
+.audio-status.error{color:#9b1c1c}
+</style>
 </head>
 <body>
 <div class="container">
@@ -15,81 +20,143 @@
   <footer>© SprachPilot</footer>
 </div>
 
-<script type="module" src="/js/progress.js?v=235"></script><script src="app.js?v=235"></script><script src="../shared/l4-bunny-direct.js?v=2"></script>
+<script type="module" src="/js/progress.js?v=240"></script>
+<script src="app.js?v=236"></script>
+<script src="../shared/l4-bunny-direct.js?v=3"></script>
 <script>
 header("Karteikarten");
 
-const FILE = "karteikarten.html";
-let i = null;
+const area=document.getElementById("area");
+const FILE="karteikarten.html";
+const AUDIO_CDN="https://sprachpilot.b-cdn.net/audio/";
+let i=null;
+let currentAudio=null;
+
+function wordGroup(w){
+  return typeof spT2Group==="function"
+    ?spT2Group(w)
+    :(w?.releaseGroup||w?.wordGroup||w?.group||(w?.set==="plus"?"extra":"book"));
+}
+function hasBookAudio(w){return !!(w&&w.id&&wordGroup(w)==="book")}
+function audioUrl(w){return hasBookAudio(w)?AUDIO_CDN+encodeURIComponent(w.id)+".mp3":""}
+
+function stopAudio(){
+  if(!currentAudio)return;
+  try{currentAudio.pause();currentAudio.currentTime=0}catch(e){}
+  currentAudio=null;
+}
+function setAudioStatus(text,isError=false){
+  const el=document.getElementById("audioStatus");
+  if(!el)return;
+  el.textContent=text||"";
+  el.classList.toggle("error",!!isError);
+}
+function playCardAudio(slow=false){
+  const w=WORDS[i];
+  const src=audioUrl(w);
+  if(!src)return;
+  stopAudio();
+  const audio=new Audio(src);
+  audio.preload="auto";
+  audio.playbackRate=slow?0.75:1;
+  audio.onplay=()=>setAudioStatus(slow?"Langsame Wiedergabe läuft …":"Wiedergabe läuft …");
+  audio.onended=()=>{setAudioStatus("");currentAudio=null};
+  audio.onerror=()=>{setAudioStatus("Audio konnte nicht geladen werden.",true);currentAudio=null};
+  currentAudio=audio;
+  const promise=audio.play();
+  if(promise&&typeof promise.catch==="function"){
+    promise.catch(()=>{setAudioStatus("Audio konnte nicht abgespielt werden.",true);currentAudio=null});
+  }
+}
 
 function show(){
-  if(loadTask(FILE, WORDS.length).done.length >= WORDS.length){
-    complete(area, FILE, "hoeren.html");
+  stopAudio();
+  if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){
+    complete(area,FILE,"hoeren.html");
     return;
   }
 
-  i = nextIndex(FILE, WORDS.length);
-  if(i === undefined || i === null){
+  i=nextIndex(FILE,WORDS.length);
+  if(i===undefined||i===null){
     localStorage.removeItem(taskKey(FILE));
-    i = nextIndex(FILE, WORDS.length);
+    i=nextIndex(FILE,WORDS.length);
   }
 
-  const w = WORDS[i];
+  const w=WORDS[i];
+  if(!w){
+    area.innerHTML='<div class="no">Die Aufgabe konnte nicht geladen werden.</div><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div>';
+    return;
+  }
 
-  area.innerHTML = `${progressHtml(FILE, WORDS.length)}
+  const audioButtons=hasBookAudio(w)
+    ?`<button type="button" class="btn" onclick="playCardAudio(false)">🔊 Hören</button>
+      <button type="button" class="btn secondary" onclick="playCardAudio(true)">Langsam</button>`
+    :"";
+
+  area.innerHTML=`${progressHtml(FILE,WORDS.length)}
     <div class="question">Sage das deutsche Wort mit Artikel.</div>
     <div class="hint">Muttersprache: <b>${translateWord(w)}</b></div>
     <img class="task-img" src="${w.image}" onerror="fixImg(this)" alt="">
     <div class="actions">
-      <button id="micBtn" class="btn mic-btn" onclick="say()">🎤 Sprechen</button>
-      <button class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button>
-      <button class="btn secondary" onclick="flip()">Karte umdrehen</button>
+      ${audioButtons}
+      <button id="micBtn" type="button" class="btn mic-btn" onclick="say()">🎤 Sprechen</button>
+      <button type="button" class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button>
+      <button type="button" class="btn secondary" onclick="flip()">Karte umdrehen</button>
     </div>
+    <div id="audioStatus" class="audio-status" aria-live="polite"></div>
     <div id="micStatus" class="mic-status"></div>
     <div id="box" class="hidden">
-      <input id="ans" placeholder="Schreiben Sie die Antwort hier">
-      <button class="btn" onclick="check(ans.value)">Kontrollieren</button>
+      <input id="ans" autocomplete="off" placeholder="Schreiben Sie die Antwort hier">
+      <button type="button" class="btn" onclick="check(document.getElementById('ans').value)">Kontrollieren</button>
     </div>
     <div id="fb" class="feedback"></div>`;
 }
 
 function writeBox(){
-  box.classList.remove("hidden");
+  const box=document.getElementById("box");
+  if(box)box.classList.remove("hidden");
 }
 
 function flip(){
-  const w = WORDS[i];
-  const tries = markWrong(FILE, WORDS.length);
-  fb.innerHTML = feedbackForCard(tries, full(w), "Artikel und Wort");
+  const w=WORDS[i];
+  const fb=document.getElementById("fb");
+  const box=document.getElementById("box");
+  const ans=document.getElementById("ans");
+  if(!w||!fb||!box||!ans)return;
+  const tries=markWrong(FILE,WORDS.length);
+  fb.innerHTML=feedbackForCard(tries,full(w),"Artikel und Wort");
   box.classList.remove("hidden");
-  ans.value = full(w);
+  ans.value=full(w);
 }
 
 function say(){
-  startMic(micBtn, txt => {
+  const micBtn=document.getElementById("micBtn");
+  startMic(micBtn,txt=>{
     writeBox();
-    ans.value = txt;
+    const ans=document.getElementById("ans");
+    if(ans)ans.value=txt;
     check(txt);
   });
 }
 
 function check(txt){
-  const w = WORDS[i];
-
-  if(simple(txt) === simple(full(w))){
-    fb.textContent = "Richtig!";
-    markRight(FILE, WORDS.length);
-    setTimeout(show, 700);
+  const w=WORDS[i];
+  const fb=document.getElementById("fb");
+  if(!w||!fb)return;
+  if(simple(txt)===simple(full(w))){
+    fb.textContent="Richtig!";
+    markRight(FILE,WORDS.length);
+    setTimeout(show,700);
   }else{
-    const tries = markWrong(FILE, WORDS.length);
-    fb.innerHTML = feedbackForCard(tries, full(w), "Artikel und Wort");
+    const tries=markWrong(FILE,WORDS.length);
+    fb.innerHTML=feedbackForCard(tries,full(w),"Artikel und Wort");
   }
 }
 
-function feedbackForCard(tries, solution, type){
-  if(tries === 1) return "Da ist noch ein Fehler.";
-  if(tries === 2) return "Tipp: Prüfe " + type + ".";
-  return "Lösung: " + solution;
+function feedbackForCard(tries,solution,type){
+  if(tries===1)return"Da ist noch ein Fehler.";
+  if(tries===2)return"Tipp: Prüfe "+type+".";
+  return"Lösung: "+solution;
 }
 
 show();
