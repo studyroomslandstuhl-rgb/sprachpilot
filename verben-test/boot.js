@@ -1,6 +1,6 @@
-import { getActiveProfile, getActiveRole, dashboardHref } from '/js/auth.js?v=verben-test-clean-4';
-import { loadCourseRelease, moduleOpen } from '/js/course-releases.js?v=verben-test-clean-4';
-import { db, doc, getDoc, setDoc } from '/js/firebase.js?v=verben-test-clean-4';
+import { getActiveProfile, getActiveRole, dashboardHref } from '/js/auth.js?v=verben-test-clean-5';
+import { loadCourseRelease, moduleOpen } from '/js/course-releases.js?v=verben-test-clean-5';
+import { db, doc, getDoc, setDoc } from '/js/firebase.js?v=verben-test-clean-5';
 
 window.VT_DEPS={getActiveProfile,getActiveRole,dashboardHref,loadCourseRelease,moduleOpen};
 
@@ -37,7 +37,7 @@ function load(src){
 }
 
 try{
-  await load('./app-clean.js?v=4');
+  await load('./app-clean.js?v=5');
   if(window.VERBEN_TEST&&typeof window.VERBEN_TEST.start==='function'){
     await window.VERBEN_TEST.start();
   }else{
