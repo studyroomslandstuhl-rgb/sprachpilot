@@ -1,7 +1,30 @@
 import { getActiveProfile, getActiveRole, dashboardHref } from '/js/auth.js?v=verben-test-clean-1';
 import { loadCourseRelease, moduleOpen } from '/js/course-releases.js?v=verben-test-clean-1';
+import { db, doc, getDoc, setDoc } from '/js/firebase.js?v=verben-test-clean-1';
 
 window.VT_DEPS={getActiveProfile,getActiveRole,dashboardHref,loadCourseRelease,moduleOpen};
+
+window.firebase={
+  firestore(){
+    return {
+      collection(name){
+        return {
+          doc(id){
+            const ref=doc(db,name,id);
+            return {
+              async get(){
+                return getDoc(ref);
+              },
+              async set(data,options){
+                return setDoc(ref,data,options||{});
+              }
+            };
+          }
+        };
+      }
+    };
+  }
+};
 
 function load(src){
   return new Promise((resolve,reject)=>{
