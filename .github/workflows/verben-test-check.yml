@@ -45,7 +45,14 @@ jobs:
           grep -q 'const PACKAGE_SIZE=20' verben-test/app-clean.js
           grep -q 'const VERSION=1' verben-test/app-clean.js
           grep -q 'verbenTestClean' verben-test/app-clean.js
-          grep -q 'taskPoints\[taskId\]=5' verben-test/app-clean.js
+          grep -q 'TASK_POINTS_BY_ROUND=\[5,10,15\]' verben-test/app-clean.js
+          grep -q 'EXAM_POINTS_BY_ROUND=\[100,200,300\]' verben-test/app-clean.js
+          grep -q 'taskPointValue' verben-test/app-clean.js
+          grep -q 'examPointValue' verben-test/app-clean.js
+          grep -q 'repeatPackage' verben-test/app-clean.js
+          grep -q 'recordMistake' verben-test/app-clean.js
+          grep -q 'helpText' verben-test/app-clean.js
+          grep -q 'examPoints' verben-test/app-clean.js
           grep -q 'examBest' verben-test/app-clean.js
           grep -q 'allTasksDone' verben-test/app-clean.js
           grep -q 'finishPackage' verben-test/app-clean.js
