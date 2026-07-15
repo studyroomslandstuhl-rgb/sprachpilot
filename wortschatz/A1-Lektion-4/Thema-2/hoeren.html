@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Hören</title>
-<link rel="stylesheet" href="style.css?v=238">
-<link rel="stylesheet" href="../shared/lektion4-standard.css?v=238">
+<link rel="stylesheet" href="style.css?v=239">
+<link rel="stylesheet" href="../shared/lektion4-standard.css?v=239">
 <style>
 .click-card{
   cursor:pointer;
@@ -18,7 +18,7 @@
 .click-card.wrong{border-color:#e74c3c!important;background:#ffe1e1!important}
 .click-card.correct{border-color:#2e9e4f!important;background:#d9f7e8!important}
 .click-card:disabled{cursor:default;opacity:1}
-.audio-status{min-height:26px;margin:8px 0;text-align:center;font-weight:800;color:#7a5100}
+.audio-status{min-height:24px;margin:8px 0;text-align:center;font-weight:800;color:#7a5100}
 .audio-status.error{color:#9b1c1c}
 .image-fallback{
   display:flex;align-items:center;justify-content:center;
@@ -41,7 +41,7 @@
   <footer>© SprachPilot</footer>
 </div>
 
-<script type="module" src="/js/progress.js?v=238"></script>
+<script type="module" src="/js/progress.js?v=239"></script>
 <script src="app.js?v=236"></script>
 <script>
 header("Hören");
@@ -51,21 +51,20 @@ const FILE="hoeren.html";
 const SP_BUNNY_CDN="https://sprachpilot.b-cdn.net/";
 let i=0;
 let locked=false;
-let speaking=false;
-let speechToken=0;
+let currentUtterance=null;
 
 function shuffle(list){
-  const out=[...list];
+  const out=list.slice();
   for(let n=out.length-1;n>0;n--){
     const j=Math.floor(Math.random()*(n+1));
-    [out[n],out[j]]=[out[j],out[n]];
+    const temp=out[n];out[n]=out[j];out[j]=temp;
   }
   return out;
 }
 
 function optionsFor(w){
-  const others=shuffle(WORDS.filter(x=>x&&x.id&&x.id!==w.id)).slice(0,3);
-  return shuffle([w,...others]);
+  const others=shuffle(WORDS.filter(function(x){return x&&x.id&&x.id!==w.id})).slice(0,3);
+  return shuffle([w].concat(others));
 }
 
 function imageName(value){
@@ -79,117 +78,70 @@ function bunnyUrl(w){
 }
 
 function imageCard(w){
-  return `<button type="button" class="imgbox click-card" data-id="${esc(w.id)}" onclick="choose(this.dataset.id,this)">
-    <img src="${bunnyUrl(w)}" loading="eager" decoding="async" onerror="imageFailed(this)" alt="">
-  </button>`;
+  return '<button type="button" class="imgbox click-card" data-id="'+esc(w.id)+'" onclick="choose(this.dataset.id,this)">'+
+    '<img src="'+bunnyUrl(w)+'" loading="eager" decoding="async" onerror="imageFailed(this)" alt="">'+
+  '</button>';
 }
 
 function imageFailed(img){
-  if(!img)return;
-  img.outerHTML='<div class="image-fallback">Bild konnte nicht geladen werden.</div>';
+  if(img)img.outerHTML='<div class="image-fallback">Bild konnte nicht geladen werden.</div>';
 }
 
-function feedbackElement(){return document.getElementById("fb")}
-function audioStatus(){return document.getElementById("audioStatus")}
-function audioButtons(){return [...document.querySelectorAll("[data-audio-button]")]}
-
-function setAudioBusy(busy){
-  speaking=busy;
-  audioButtons().forEach(btn=>btn.disabled=busy);
-}
-
-function setAudioStatus(message,isError=false){
-  const el=audioStatus();
+function setAudioStatus(text,isError){
+  const el=document.getElementById("audioStatus");
   if(!el)return;
-  el.textContent=message||"";
-  el.classList.toggle("error",!!isError);
+  el.textContent=text||"";
+  if(isError)el.classList.add("error");else el.classList.remove("error");
 }
 
-function germanVoice(){
-  if(!("speechSynthesis" in window))return null;
-  const voices=window.speechSynthesis.getVoices?.()||[];
-  return voices.find(v=>v.lang==="de-DE"&&/google|microsoft|anna|katja|deutsch|german/i.test(v.name||""))
-    ||voices.find(v=>v.lang==="de-DE")
-    ||voices.find(v=>String(v.lang||"").toLowerCase().startsWith("de"))
-    ||null;
+function pickGermanVoice(){
+  try{
+    const voices=window.speechSynthesis.getVoices()||[];
+    return voices.find(function(v){return v.lang==="de-DE"&&/google|microsoft|anna|katja|deutsch|german/i.test(v.name||"")})
+      ||voices.find(function(v){return v.lang==="de-DE"})
+      ||voices.find(function(v){return String(v.lang||"").toLowerCase().indexOf("de")===0})
+      ||null;
+  }catch(e){return null}
 }
 
-function speakAttempt(text,slow,token,useVoice=true){
-  return new Promise(resolve=>{
-    if(token!==speechToken){resolve(false);return}
-    const synth=window.speechSynthesis;
-    const utterance=new SpeechSynthesisUtterance(text);
-    utterance.lang="de-DE";
-    utterance.rate=slow?0.66:0.88;
-    utterance.pitch=1;
-    utterance.volume=1;
-    if(useVoice){
-      const voice=germanVoice();
-      if(voice)utterance.voice=voice;
-    }
-
-    let started=false;
-    let finished=false;
-    const finish=ok=>{
-      if(finished)return;
-      finished=true;
-      clearTimeout(startTimer);
-      clearTimeout(endTimer);
-      resolve(ok);
-    };
-
-    utterance.onstart=()=>{
-      started=true;
-      setAudioStatus(slow?"Langsame Wiedergabe läuft …":"Wiedergabe läuft …");
-    };
-    utterance.onend=()=>finish(true);
-    utterance.onerror=()=>finish(false);
-
-    const startTimer=setTimeout(()=>{if(!started)finish(false)},1800);
-    const endTimer=setTimeout(()=>finish(started),9000);
-
-    try{
-      synth.cancel();
-      if(typeof synth.resume==="function")synth.resume();
-      setTimeout(()=>{
-        if(token!==speechToken){finish(false);return}
-        try{synth.speak(utterance)}catch(e){finish(false)}
-      },80);
-    }catch(e){finish(false)}
-  });
-}
-
-async function playWord(slow=false){
-  if(speaking)return;
+function playWord(slow){
   const w=WORDS[i];
   if(!w||!w.full)return;
 
-  if(!("speechSynthesis" in window)||typeof SpeechSynthesisUtterance==="undefined"){
-    setAudioStatus("Dieser Browser unterstützt die Sprachausgabe nicht. Bitte Chrome, Edge oder Safari aktualisieren.",true);
+  if(!("speechSynthesis" in window)||typeof window.SpeechSynthesisUtterance==="undefined"){
+    setAudioStatus("Die Sprachausgabe wird von diesem Browser nicht unterstützt.",true);
     return;
   }
 
-  const token=++speechToken;
-  setAudioBusy(true);
-  setAudioStatus("Audio wird vorbereitet …");
-
   try{
-    let ok=await speakAttempt(w.full,slow,token,true);
-    if(!ok&&token===speechToken){
-      await new Promise(resolve=>setTimeout(resolve,120));
-      ok=await speakAttempt(w.full,slow,token,false);
-    }
-    if(token!==speechToken)return;
-    setAudioStatus(ok?"Wiedergabe beendet.":"Audio konnte nicht abgespielt werden. Bitte tippe noch einmal auf „Hören“.",!ok);
-  }finally{
-    if(token===speechToken)setAudioBusy(false);
+    const synth=window.speechSynthesis;
+    synth.cancel();
+
+    const utterance=new SpeechSynthesisUtterance(w.full);
+    utterance.lang="de-DE";
+    utterance.rate=slow?0.68:0.88;
+    utterance.pitch=1;
+    utterance.volume=1;
+
+    const voice=pickGermanVoice();
+    if(voice)utterance.voice=voice;
+
+    utterance.onstart=function(){setAudioStatus(slow?"Langsame Wiedergabe läuft …":"Wiedergabe läuft …",false)};
+    utterance.onend=function(){setAudioStatus("",false);currentUtterance=null};
+    utterance.onerror=function(){setAudioStatus("Bitte tippe noch einmal auf Hören.",true);currentUtterance=null};
+
+    currentUtterance=utterance;
+    if(typeof synth.resume==="function")synth.resume();
+    synth.speak(utterance);
+    setAudioStatus("",false);
+  }catch(e){
+    setAudioStatus("Bitte tippe noch einmal auf Hören.",true);
   }
 }
 
 function show(){
-  speechToken++;
-  speaking=false;
-  try{window.speechSynthesis?.cancel()}catch(e){}
+  try{if("speechSynthesis" in window)window.speechSynthesis.cancel()}catch(e){}
+  currentUtterance=null;
   locked=false;
 
   if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){
@@ -205,26 +157,26 @@ function show(){
   }
 
   const options=optionsFor(w);
-  area.innerHTML=`${progressHtml(FILE,WORDS.length)}
-    <div class="question">Höre und wähle das richtige Bild.</div>
-    <div class="actions">
-      <button type="button" class="btn" data-audio-button onclick="playWord(false)">🔊 Hören</button>
-      <button type="button" class="btn secondary" data-audio-button onclick="playWord(true)">Langsam</button>
-    </div>
-    <div id="audioStatus" class="audio-status" aria-live="polite"></div>
-    <div class="imgrow">${options.map(imageCard).join("")}</div>
-    <div id="fb" class="feedback" aria-live="polite"></div>`;
+  area.innerHTML=progressHtml(FILE,WORDS.length)+
+    '<div class="question">Höre und wähle das richtige Bild.</div>'+
+    '<div class="actions">'+
+      '<button type="button" class="btn" onclick="playWord(false)">🔊 Hören</button>'+
+      '<button type="button" class="btn secondary" onclick="playWord(true)">Langsam</button>'+
+    '</div>'+
+    '<div id="audioStatus" class="audio-status" aria-live="polite"></div>'+
+    '<div class="imgrow">'+options.map(imageCard).join("")+'</div>'+
+    '<div id="fb" class="feedback" aria-live="polite"></div>';
 }
 
 function choose(id,el){
   if(locked)return;
   const w=WORDS[i];
-  const fb=feedbackElement();
+  const fb=document.getElementById("fb");
   if(!w||!fb||!el)return;
 
   if(id===w.id){
     locked=true;
-    document.querySelectorAll(".click-card").forEach(card=>card.disabled=true);
+    document.querySelectorAll(".click-card").forEach(function(card){card.disabled=true});
     el.classList.add("correct");
     fb.textContent="Richtig!";
     markRight(FILE,WORDS.length);
@@ -240,7 +192,7 @@ function choose(id,el){
 try{
   if("speechSynthesis" in window){
     window.speechSynthesis.getVoices();
-    window.speechSynthesis.addEventListener?.("voiceschanged",()=>window.speechSynthesis.getVoices(),{once:true});
+    window.speechSynthesis.onvoiceschanged=function(){window.speechSynthesis.getVoices()};
   }
 }catch(e){}
 
