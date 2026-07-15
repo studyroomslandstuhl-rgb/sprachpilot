@@ -1,141 +1,113 @@
-# Verben Test - saubere Logik
+# Verben Test - Aufgabenlogik
 
 Stand: 2026-07-15
 
-Dieses Modul ist ein Testbereich. Es dient dazu, die Verben-Logik sauber und ohne widersprechende Wege zu pruefen, bevor etwas auf `verben-A1` uebertragen wird.
+`verben-test` ist ein Testbereich. Hier wird die Verben-Logik stabil gemacht, bevor etwas auf echte Teilnehmende in `verben-A1` uebertragen wird.
 
-## Grundregel
+## Analyse der SprachPilot-Muster
 
-Zuerst werden Verben ausgewaehlt. Erst danach kann gespielt werden.
+Die stabilen Aufgaben aus Lektion 5 und Lektion 6 folgen diesem Aufbau:
 
-`Ueben` darf kein Paket automatisch erzeugen. Ohne aktives Paket bleibt `Ueben` gesperrt und die Nutzerin muss zuerst `Verben waehlen` benutzen.
+1. Eine Themen-`app.js` enthaelt Daten, Fortschrittsfunktionen, Hilfe, Header und Pruefungsfreigabe.
+2. Jede Aufgabe nutzt denselben Fortschrittskern.
+3. Jede Aufgabe hat aber ein eigenes Aufgabenmuster, z.B. Karteikarten, Bild-Wort, Hören-Schreiben oder Sätze bauen.
+4. Falsche Antworten gehen nicht automatisch weiter.
+5. Bei Fehlern bleibt die Aufgabe aktiv oder kommt spaeter erneut.
+6. Hilfe ist stufig.
+7. Die Pruefung bleibt gesperrt, bis alle Aufgaben 100 Prozent haben.
 
-## Datenquelle und Bilder
-
-`index.html` laedt den bestehenden Verben-Katalog aus `verben-A1/data/...`.
-
-`app-clean.js` baut daraus den Test-Katalog. Dabei werden Verben aus zwei Quellen zusammengefuehrt:
-
-- `window.VERBEN_TEST_SOURCE.verbs`
-- alle Verb-Schluessel aus `window.VERBEN_TEST_SOURCE.translations`
-
-Bilder werden immer ueber Bunny aus `https://sprachpilot.b-cdn.net/verben-A1/bilder/...` geladen. Wenn ein Bild fehlt, erscheint im Test sichtbar `Bild fehlt`.
+Dieses Muster wurde fuer `verben-test/app.js` uebernommen.
 
 ## Aktuelle Dateien
 
-- `verben-test/index.html` laedt nur Daten und den Einstieg.
-- `verben-test/boot.js` verbindet Auth, Kursfreigabe und Firebase und startet die App.
-- `verben-test/app-clean.js` ist die einzige fachliche Logik fuer Verben Test.
-- `verben-test/choose-filter.js` filtert nur die sichtbare Auswahl in `Verben waehlen`.
+- `verben-test/index.html` laedt nur Daten, CSS und `app.js`.
+- `verben-test/app.js` ist die einzige fachliche Logik.
 - `verben-test/styles.css` ist nur Darstellung.
+- `verben-test/LOGIK.md` dokumentiert diese Regeln.
 
-Die alten Testdateien wurden geloescht und duerfen nicht wieder parallel geladen werden.
+Nicht mehr erlaubt sind parallele Zusatzwege wie `boot.js`, `app-clean.js`, `choose-filter.js`, `l6-card-pattern.js` oder eigene Fortschritts-Patches.
 
 ## Paketregel
 
+- Erst Verben waehlen oder einschaetzen.
+- `Ueben` ist ohne aktives Paket gesperrt.
 - Ein Paket hat maximal 20 Verben.
-- Ein Paket entsteht nur durch `Verben waehlen`.
-- `Ueben`, Aufgaben und Pruefung duerfen kein Paket automatisch erzeugen.
-- Vorgemerkte Verben aus `Verben einschaetzen -> Lernen` stehen beim Waehlen oben.
-- Ein neues Paket kommt erst, wenn das aktuelle Paket inklusive Pruefung fertig ist oder als gelernt abgeschlossen wurde.
-- Solange ein Paket noch nicht fertig ist, duerfen `Verben waehlen` und `Verben einschaetzen` kein neues Paket ueberschreiben.
+- Das aktive Paket wird nicht automatisch ersetzt.
+- Wenn die Pruefung mit 100 Prozent bestanden ist, werden die Verben als gelernt gespeichert und es koennen neue Verben gewaehlt werden.
 
-Der Uebergang ist:
+## Fortschrittskern
 
-1. Teilnehmende waehlen bis zu 20 Verben.
-2. Danach wird gespielt.
-3. Alle Aufgaben werden 100 Prozent.
-4. Die Pruefung wird freigeschaltet.
-5. Die Pruefung wird mit 100 Prozent bestanden.
-6. Danach kann das Paket wiederholt werden oder als gelernt abgeschlossen werden.
-7. Nach Abschluss koennen neue Verben gewaehlt werden.
+Jede Aufgabe speichert pro Paket:
 
-## Wiederholungs- und Punkteregel
+- `done`: richtig erledigte Verben
+- `queue`: Verben, die noch kommen oder wegen Fehler wiederkommen
+- `current`: aktuelles Verb
+- `tries`: Fehlerzaehler fuer die aktuelle Frage
+- `hadWrong`: ob bei diesem Verb ein Fehler passiert ist
+- `pointsGiven`: ob die Punkte fuer diese Aufgabe schon vergeben wurden
 
-Ein Paket hat maximal 3 Runden.
+Eine Aufgabe ist 100 Prozent, wenn alle Verben des Pakets in `done` stehen.
 
-- Runde 1: jede Aufgabe gibt beim ersten 100-Prozent-Abschluss 5 Punkte.
-- Runde 2: jede Aufgabe gibt beim ersten 100-Prozent-Abschluss 10 Punkte.
-- Runde 3: jede Aufgabe gibt beim ersten 100-Prozent-Abschluss 15 Punkte.
-- Pruefung Runde 1: 100 Punkte bei 100 Prozent.
-- Pruefung Runde 2: 200 Punkte bei 100 Prozent.
-- Pruefung Runde 3: 300 Punkte bei 100 Prozent.
+## Fehlerregel
 
-Der Button `Wiederholen` erscheint nur, wenn das ganze Paket inklusive Pruefung 100 Prozent hat und noch nicht Runde 3 erreicht ist.
+- Bei falscher Antwort geht die Aufgabe nicht weiter.
+- Bei richtiger Antwort nach einem Fehler wird das Verb nicht als erledigt gezählt, sondern wieder in die Warteschlange gelegt.
+- Erst eine richtige Antwort ohne Fehler zaehlt als erledigt.
 
-`Wiederholen` setzt nur Aufgaben, Pruefung und Hilfen des aktiven Pakets zurueck. Die ausgewaehlten Verben bleiben gleich. Bereits verdiente Punkte werden in `pointsHistory` gesichert.
-
-Nach Runde 3 erscheint `Du bist fertig!`.
-
-## Aufgabenregel
-
-Die Aufgaben stehen in `TASKS` in `app-clean.js`.
-
-Eine Aufgabe ist genau dann 100 Prozent, wenn alle Verben des aktiven Pakets in dieser Aufgabe erledigt sind.
-
-Der Fortschritt wird gespeichert unter:
-
-`activePackage.taskDone[taskId]`
-
-Keine Aufgabe darf bei falscher Antwort automatisch weitergehen. Weiter geht es nur nach richtiger Antwort oder bei Karteikarten nach `Kann ich`.
+Das entspricht dem Muster aus L5/L6: Fehler fuehren zu Wiederholung, nicht zu Fortschritt.
 
 ## Hilfe-Regel
 
-Jede falsche Antwort erhoeht die Hilfe fuer genau diese Aufgabe und dieses Verb bis maximal Stufe 3:
+Die Hilfe steigt pro Fehler:
 
-1. Bedeutung und Anfangsbuchstabe
-2. Beispielsatz
-3. richtige Form
+1. Bedeutung oder erster Tipp
+2. Beispielsatz oder genauer Tipp
+3. Loesung
 
-Die Hilfe wird in `activePackage.help` gespeichert und beim richtigen Abschluss dieser Verb-Aufgabe wieder geloescht.
+## Aufgabenmuster
 
-## Pruefungsregel
+Aktuell sind eingebaut:
 
-Die Pruefung ist gesperrt, solange nicht alle Aufgaben 100 Prozent haben.
+1. `Karteikarten`: nach L6T2, echte Flip-Karte, Rueckseite mit Verb, Hoeren-Button, Sprechen oder Schreiben.
+2. `Bild -> Verb`: nach L6 Bild-Wort, Bild plus Auswahl.
+3. `Verb -> Bild`: Wort plus Bild-Auswahl.
+4. `Hoeren -> Schreiben`: nach L6 Hoeren-Schreiben, Deutsch hoeren und schreiben.
+5. `Schreiben`: Bild, Uebersetzung, Verb schreiben.
+6. `Saetze bauen`: nach L6 Saetze-bauen, Wortchips in Reihenfolge klicken.
+7. `Konjugieren`: ich-Form schreiben.
+8. `Pruefung`: Stern, gesperrt bis alle Aufgaben 100 Prozent haben.
 
-Ein Paket ist komplett fertig, wenn:
+## Punkte
 
-- alle Aufgaben 100 Prozent haben
-- die Pruefung mindestens einmal mit 100 Prozent bestanden wurde
+- Runde 1: 5 Punkte pro Aufgabe bei erstem 100-Prozent-Abschluss.
+- Runde 2: 10 Punkte pro Aufgabe.
+- Runde 3: 15 Punkte pro Aufgabe.
+- Pruefung: 100/200/300 Punkte je nach Runde bei 100 Prozent.
 
-## Speicherregel
+Im Testbereich wird das lokal gespeichert. Fuer echte TN darf diese Logik erst nach stabiler Pruefung mit Firebase-Migration uebernommen werden.
 
-Es gibt zwei Speicherorte:
+## Pruefung
 
-1. Lokal im Browser: `SP_VERBEN_TEST_CLEAN_V1_<ownerId>`
-2. Firebase: Collection `progress`, Feld `verbenTestClean.state`
+Die Pruefung oeffnet nur, wenn `allTasksDone()` wahr ist.
 
-Speichern passiert zentral ueber:
+Bei 100 Prozent:
 
-- `save()`
-- `saveRemote()`
-- `loadRemote()`
+- Paket-Verben werden in `learned` gespeichert.
+- Aktives Paket wird beendet.
+- Neue Verben koennen gewaehlt werden.
 
-Keine Aufgabe darf direkt eigene Firebase- oder LocalStorage-Wege bauen.
+Bei weniger als 100 Prozent:
 
-## Aenderungsregel fuer spaeter
+- Paket bleibt aktiv.
+- Pruefung kann wiederholt werden.
 
-Wenn dieses Modul geaendert wird:
+## Aenderungsregel
 
-1. Keine zweite Speicherdatei erstellen.
-2. Keine zweite Punkteberechnung erstellen.
-3. Keine zweite Pruefungsfreigabe erstellen.
-4. Keine alten Testdateien wieder in `boot.js` laden.
-5. Neue Aufgaben nur in `TASKS` und in `taskBody()`/`bindTask()` ergaenzen.
-6. Fortschritt nur ueber `markTaskDone()` speichern.
-7. Pruefung nur ueber `examUnlocked()`, `renderExam()` und `finishExam()` steuern.
-8. Paketabschluss nur ueber `finishPackage()` machen.
-9. Wiederholung nur ueber `repeatPackage()` machen.
-10. Firebase nur ueber `saveRemote()` und `loadRemote()` nutzen.
-11. `Ueben` darf ohne vorherige Auswahl kein Paket erzeugen.
-12. Nach jeder Aenderung `verben-test-check.yml` passend halten.
+Wenn spaeter etwas geaendert wird:
 
-## Schutz durch GitHub Actions
-
-`.github/workflows/verben-test-check.yml` prueft, dass die zentrale Datei existiert, keine alten Logiken geladen werden und die Choose-first-, Hilfe-, Punkte- und Wiederholungsregeln vorhanden sind.
-
-## Uebertragung auf Verben A1
-
-Diese Testlogik darf erst auf `verben-A1` uebertragen werden, wenn sie im Testbereich stabil ist.
-
-Vorher braucht es einen Backup- und Migrationsplan fuer echte Fortschritte und echte Punkte.
+1. Keine zweite Aufgabenlogik laden.
+2. Keine zweite Fortschrittsdatei laden.
+3. Keine Pruefungsfreigabe ausserhalb von `allTasksDone()` bauen.
+4. Neue Aufgaben nur ueber `TASKS`, eigenes `render...()` und den gemeinsamen Fortschrittskern ergaenzen.
+5. Falsche Antwort darf nie automatisch als Fortschritt zaehlen.
+6. Nach jeder Aenderung muss `.github/workflows/verben-test-check.yml` weiter gruen sein.
