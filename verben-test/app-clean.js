@@ -138,16 +138,33 @@
     if(!DEPS.moduleOpen)return true;
     return DEPS.moduleOpen(releases,MODULE_TITLE)||DEPS.moduleOpen(releases,'Verben A1')||String(DEPS.getActiveRole?.()||'').toLowerCase()==='teacher';
   }
-  function availableVerbs(){
-    const active=state.activePackage?.verbs||[];
-    const blocked=new Set([...state.learned,...active]);
+  function activeVerbs(){return state.activePackage?.verbs||[];}
+  function learnedSet(){return new Set(state.learned||[]);}
+  function openVerbList(){
+    const blocked=new Set([...state.learned,...activeVerbs()]);
     return catalog.map(v=>v.verb).filter(v=>!blocked.has(v));
   }
+  function plannedVerbs(){
+    const open=new Set(openVerbList());
+    return uniq(state.assessment?.unknown||[]).filter(v=>open.has(v));
+  }
+  function availableVerbs(){
+    const planned=plannedVerbs();
+    const plannedSet=new Set(planned);
+    return uniq([...planned,...openVerbList().filter(v=>!plannedSet.has(v))]);
+  }
+  function assessableVerbs(){
+    const decided=new Set([...state.learned,...activeVerbs(),...(state.assessment?.known||[]),...(state.assessment?.unknown||[])]);
+    return catalog.map(v=>v.verb).filter(v=>!decided.has(v));
+  }
   function startPackage(verbs,source){
-    const selected=uniq(verbs).filter(v=>byVerb.has(v)).slice(0,PACKAGE_SIZE);
+    if(state.activePackage&&!packageComplete()){go('overview');return;}
+    if(state.activePackage&&packageComplete())finishPackage(false);
+    const selected=uniq(verbs).filter(v=>byVerb.has(v)).filter(v=>!learnedSet().has(v)).slice(0,PACKAGE_SIZE);
     if(!selected.length)return;
     const taskDone={};TASK_IDS.forEach(id=>taskDone[id]=[]);
     state.activePackage={id:`pkg_${now()}`,createdAt:now(),source,verbs:selected,taskDone,taskPoints:{},runtime:{},examBest:0,examAttempts:0,examRun:null};
+    state.assessment.unknown=uniq(state.assessment.unknown||[]).filter(v=>!selected.includes(v));
     save();go('overview');
   }
   function ensurePackage(){
@@ -181,13 +198,14 @@
     const done=new Set(pkg.taskDone[taskId]||[]);
     return pkg.verbs.find(v=>!done.has(v))||null;
   }
-  function finishPackage(){
+  function finishPackage(navigate=true){
     const pkg=state.activePackage;
     if(!pkg||!packageComplete())return;
     state.learned=uniq([...state.learned,...pkg.verbs]);
     state.archives=[{...clone(pkg),finishedAt:now()},...state.archives].slice(0,20);
     state.activePackage=null;
-    save();go('home');
+    save();
+    if(navigate)go('home');
   }
   function resetAll(){
     if(!confirm('Verben-Test-Fortschritte wirklich löschen?'))return;
@@ -226,31 +244,47 @@
   }
   function renderHome(){
     const canPractice=!!state.activePackage||availableVerbs().length>0;
-    app.innerHTML=`<section class="card hero"><h2>Was möchtest du machen?</h2><p>Verben werden in Paketen bis 20 Wörter gelernt. Ein neues Paket kommt erst, wenn das aktuelle Paket inklusive Prüfung fertig ist.</p><div class="actions"><button ${canPractice?'':'disabled'} data-start-practice>Üben</button><button class="secondary" data-go="assess">Verben einschätzen</button><button class="secondary" data-go="choose">Verben wählen</button></div></section>${state.activePackage?packageSummary():''}${!state.activePackage?learnedSummary():''}`;
+    app.innerHTML=`<section class="card hero"><h2>Was möchtest du machen?</h2><p>Verben werden in Paketen bis 20 Wörter gelernt. Ein neues Paket kommt erst, wenn das aktuelle Paket inklusive Prüfung fertig ist.</p><div class="actions"><button ${canPractice?'':'disabled'} data-start-practice>${state.activePackage?'Weiter üben':'Üben'}</button><button class="secondary" data-go="assess">Verben einschätzen</button><button class="secondary" data-go="choose">Verben wählen</button></div></section>${state.activePackage?packageSummary():''}${verbOverview()}`;
     const btn=app.querySelector('[data-start-practice]');
     if(btn)btn.onclick=()=>{if(ensurePackage())go('overview');};
   }
-  function learnedSummary(){return `<section class="card"><h2>Gelernte Verben</h2><p><b>${state.learned.length}</b> gelernt · <b>${availableVerbs().length}</b> verfügbar</p></section>`;}
   function packageSummary(){const pkg=state.activePackage;return `<section class="card"><div class="task-head"><div><h2>Aktuelles Paket</h2><p>${pkg.verbs.length} Verben · ${totalPercent()}% · ${testPoints()} Testpunkte</p></div>${packageComplete()?'<button data-finish-package>Neue 20 Verben freischalten</button>':''}</div><div class="package-list">${pkg.verbs.map(v=>`<span class="pill">${esc(v)}</span>`).join('')}</div></section>`;}
+  function verbOverview(){
+    const active=activeVerbs();
+    const planned=plannedVerbs();
+    const plannedSet=new Set(planned);
+    const next=openVerbList().filter(v=>!plannedSet.has(v));
+    const learned=state.learned||[];
+    return `<section class="card"><h2>Übersicht</h2><p><b>${catalog.length}</b> mögliche Verben · <b>${learned.length}</b> gelernt · <b>${openVerbList().length}</b> noch offen</p><div class="stats"><div class="stat"><b>${active.length}</b>Aktuelles Paket</div><div class="stat"><b>${planned.length}</b>Vorgemerkt</div><div class="stat"><b>${next.length}</b>Weitere Verben</div><div class="stat"><b>${learned.length}</b>Gelernt</div></div>${verbGroup('Aktuelles Paket',active,'Kein Paket aktiv.')}${verbGroup('Zum Lernen vorgemerkt',planned,'Noch keine Verben vorgemerkt.')}${verbGroup('Weitere mögliche Verben',next,'Keine weiteren Verben offen.')}${verbGroup('Gelernt',learned,'Noch nichts gelernt.')}</section>`;
+  }
+  function verbGroup(title,list,empty){
+    const shown=(list||[]).slice(0,60);
+    const rest=Math.max(0,(list||[]).length-shown.length);
+    return `<div style="margin-top:16px"><h3>${esc(title)}</h3>${shown.length?`<div class="package-list">${shown.map(v=>`<span class="pill">${esc(v)}</span>`).join('')}${rest?`<span class="pill">+${rest} weitere</span>`:''}</div>`:`<p class="small">${esc(empty)}</p>`}</div>`;
+  }
   function renderOverview(){
     if(!ensurePackage())return renderHome();
     const examLock=!examUnlocked();
     app.innerHTML=`<section class="card"><div class="task-head"><div><h2>Aufgabenübersicht</h2><p>${state.activePackage.verbs.length} Verben · ${totalPercent()}%</p></div>${packageComplete()?'<button data-finish-package>Neue 20 Verben freischalten</button>':''}</div><div class="stats"><div class="stat"><b>${state.activePackage.verbs.length}</b>Verben</div><div class="stat"><b>${TASK_IDS.filter(id=>taskPercent(id)>=100).length}/${TASK_IDS.length}</b>Aufgaben fertig</div><div class="stat"><b>${state.activePackage.examBest}%</b>Prüfung</div><div class="stat"><b>${testPoints()}</b>Testpunkte</div></div></section><section class="grid">${TASKS.map(t=>taskCard(t)).join('')}${examCard(examLock)}</section>`;
-    const finish=app.querySelector('[data-finish-package]');if(finish)finish.onclick=finishPackage;
+    const finish=app.querySelector('[data-finish-package]');if(finish)finish.onclick=()=>finishPackage(true);
   }
   function taskCard(t){const p=taskPercent(t.id);return `<a class="module" href="?view=task&id=${t.id}"><div class="icon">${t.icon}</div><h3>${esc(t.title)}</h3><p>${esc(t.desc)}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><b>${p}%</b></a>`;}
   function examCard(locked){return `<a class="module ${locked?'locked':''}" href="?view=exam"><div class="icon">⭐</div><h3>Prüfung</h3><p>${locked?'Erst alle Aufgaben auf 100% bringen.':'Prüfung machen oder wiederholen.'}</p><div class="progress"><div class="bar" style="width:${state.activePackage.examBest||0}%"></div></div><b>${locked?'gesperrt':state.activePackage.examBest+'%'}</b></a>`;}
   function renderChoose(){
+    if(state.activePackage&&!packageComplete()){app.innerHTML=`<section class="card locked-box"><h2>Erst aktuelles Paket fertig machen</h2><p>Neue Verben können gewählt werden, sobald das aktuelle Paket inklusive Prüfung 100% hat.</p><button data-go="overview">Weiter üben</button></section>`;return;}
+    if(state.activePackage&&packageComplete())finishPackage(false);
     const verbs=availableVerbs();
-    app.innerHTML=`<section class="card"><h2>Verben wählen</h2><p>Wähle bis zu ${PACKAGE_SIZE} Verben für ein Testpaket.</p><input class="search" placeholder="Verb suchen" data-search><div class="verb-list">${verbs.map(v=>verbRow(v)).join('')}</div><div class="actions"><button data-create-choice>Auswahl starten</button></div></section>`;
+    app.innerHTML=`<section class="card"><h2>Verben wählen</h2><p>Wähle bis zu ${PACKAGE_SIZE} Verben für ein Testpaket. Vorgemerkte Verben stehen oben.</p><input class="search" placeholder="Verb suchen" data-search><div class="verb-list">${verbs.map(v=>verbRow(v)).join('')}</div><div class="actions"><button data-create-choice>Auswahl starten</button></div></section>`;
     app.querySelector('[data-search]').oninput=e=>{const q=clean(e.target.value);app.querySelector('.verb-list').innerHTML=verbs.filter(v=>clean(v).includes(q)||clean(byVerb.get(v)?.translation).includes(q)).map(v=>verbRow(v)).join('');};
     app.querySelector('[data-create-choice]').onclick=()=>{const selected=[...app.querySelectorAll('input[data-verb]:checked')].map(i=>i.dataset.verb);startPackage(selected,'choice');};
   }
-  function verbRow(v){const item=byVerb.get(v);return `<label class="verb-row"><input type="checkbox" data-verb="${esc(v)}"><span><b>${esc(v)}</b><span class="translation">${esc(item?.translation)}</span></span></label>`;}
+  function verbRow(v){const item=byVerb.get(v);const planned=plannedVerbs().includes(v);return `<label class="verb-row"><input type="checkbox" data-verb="${esc(v)}" ${planned?'checked':''}><span><b>${esc(v)}</b><span class="translation">${esc(item?.translation)}${planned?' · vorgemerkt':''}</span></span></label>`;}
   function renderAssess(){
-    const verbs=availableVerbs();
+    if(state.activePackage&&!packageComplete()){app.innerHTML=`<section class="card locked-box"><h2>Erst aktuelles Paket fertig machen</h2><p>Weitere Verben können eingeschätzt werden, sobald das aktuelle Paket inklusive Prüfung 100% hat.</p><button data-go="overview">Weiter üben</button></section>`;return;}
+    if(state.activePackage&&packageComplete())finishPackage(false);
+    const verbs=assessableVerbs();
     const first=verbs[0];
-    if(!first){app.innerHTML=`<section class="card finish"><h2>Alle Verben sind gelernt</h2><button data-go="home">Zur Übersicht</button></section>`;return;}
+    if(!first){app.innerHTML=`<section class="card finish"><h2>Alle offenen Verben sind eingeschätzt</h2><p>Du kannst jetzt ein neues Paket wählen oder direkt üben.</p><div class="actions"><button data-start-practice>Üben</button><button class="secondary" data-go="choose">Verben wählen</button></div></section>`;const btn=app.querySelector('[data-start-practice]');if(btn)btn.onclick=()=>{if(ensurePackage())go('overview');};return;}
     const item=byVerb.get(first);
     app.innerHTML=`<section class="card assessment"><div class="image-box"><img src="${esc(item.image)}" alt="${esc(first)}" loading="eager" onerror="this.replaceWith(Object.assign(document.createElement('div'),{className:'image-fallback',textContent:'Bild fehlt'}))"></div><div><h2>Verben einschätzen</h2><div class="question">${esc(first)}</div><p>${esc(item.translation)}</p><div class="actions"><button data-assess="unknown">Lernen</button><button class="secondary" data-assess="known">Kann ich schon</button></div></div></section>`;
     app.querySelectorAll('[data-assess]').forEach(btn=>btn.onclick=()=>{const list=btn.dataset.assess;state.assessment[list]=uniq([...(state.assessment[list]||[]),first]);state.learned=list==='known'?uniq([...state.learned,first]):state.learned;save();renderAssess();});
@@ -322,7 +356,7 @@
     const score=Math.round((right/pkg.verbs.length)*100);
     pkg.examAttempts+=1;pkg.examBest=Math.max(pkg.examBest||0,score);pkg.examRun=null;save();
     app.innerHTML=`<section class="card finish"><div class="stars">⭐</div><h2>${score>=100?'Prüfung bestanden':'Prüfung beendet'}</h2><p>${score}% richtig. Bester Wert: ${pkg.examBest}%.</p><div class="actions"><button data-go="overview">Weiter</button>${score<100?'<button class="secondary" data-go="exam">Prüfung wiederholen</button>':''}${packageComplete()?'<button data-finish-package>Neue 20 Verben freischalten</button>':''}</div></section>`;
-    const finish=app.querySelector('[data-finish-package]');if(finish)finish.onclick=finishPackage;
+    const finish=app.querySelector('[data-finish-package]');if(finish)finish.onclick=()=>finishPackage(true);
   }
 
   async function start(){
