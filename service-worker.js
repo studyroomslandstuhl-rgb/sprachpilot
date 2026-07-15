@@ -1,4 +1,4 @@
-const CACHE_VERSION="sprachpilot-static-v20260715-verben-test-transition";
+const CACHE_VERSION="sprachpilot-static-v20260715-verben-test-open-fix";
 
 self.addEventListener("install",event=>{
   self.skipWaiting();
