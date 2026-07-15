@@ -1,4 +1,4 @@
-const CACHE_VERSION="sprachpilot-static-v20260715-verben-ueben-button";
+const CACHE_VERSION="sprachpilot-static-v20260715-verben-test-clean";
 
 self.addEventListener("install",event=>{
   self.skipWaiting();
