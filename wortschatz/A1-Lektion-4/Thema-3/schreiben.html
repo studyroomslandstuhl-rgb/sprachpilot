@@ -1,30 +1,19 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Schreiben Thema 3</title><link rel="stylesheet" href="style.css?v=310"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=310"></script><script src="l4t3-bunny-images.js?v=1"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Schreiben Thema 3</title><link rel="stylesheet" href="style.css?v=321"><link rel="stylesheet" href="l4t3-color-mode.css?v=1"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=319"></script><script src="l4t3-color-mode.js?v=1"></script><script src="l4t3-bunny-images.js?v=1"></script><script>
 header('Farben & Adjektive');
-const file='schreiben.html',total=WRITING.length;
+const file='schreiben.html';
+let tasks=L4T3ColorMode.activeWritingTasks();
 function render(){
+  tasks=L4T3ColorMode.activeWritingTasks();
+  const total=tasks.length;
   let i=nextIndex(file,total);
   if(i===null)return complete(area,file,'index.html');
-  let t=WRITING[i];
+  let t=tasks[i];
   area.innerHTML=progressHtml(file,total)+
+  `<div class="small" style="text-align:center">${L4T3ColorMode.label()}</div>`+
   instruction('Schreibe einen Satz zu den Bildern.')+
   exampleBox('Der Sessel ist bequem.')+
-  `<div class="imgrow">${t.imgs.map(x=>img(x,'task-img')).join('')}</div>
-   <input id="answer" placeholder="Schreiben Sie die Antwort hier">
-   <div class="actions">
-     <button class="btn mic-btn" onclick="startMic(this,(v)=>{answer.value=v;check(v,true)})">🎤 Deutsch sprechen</button>
-     <button class="btn" onclick="check(answer.value,false)">Kontrollieren</button>
-   </div>
-   <div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
+  `<div class="imgrow">${t.imgs.map(x=>img(x,'task-img')).join('')}</div><input id="answer" placeholder="Schreiben Sie die Antwort hier"><div class="actions"><button class="btn mic-btn" onclick="startMic(this,(v)=>{answer.value=v;check(v,true)})">🎤 Deutsch sprechen</button><button class="btn" onclick="check(answer.value,false)">Kontrollieren</button></div><div id="micStatus" class="mic-status"></div><div id="fb" class="feedback"></div>`;
 }
-function check(val,fromSpeech=false){
-  let st=loadTask(file,total),t=WRITING[st.current];
-  if(exactOrSpeech(val,t.text,fromSpeech)){
-    fb.innerHTML='<div class="ok">Richtig!</div>';
-    setTimeout(()=>{markRight(file,total)?complete(area,file,'index.html'):render()},500)
-  }else{
-    let tr=markWrong(file,total,t.text);
-    fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.text,'Großschreibung, Artikel und Punkt')+'</div>';
-  }
-}
+function check(val,fromSpeech=false){let total=tasks.length,st=loadTask(file,total),t=tasks[st.current];if(exactOrSpeech(val,t.text,fromSpeech)){fb.innerHTML='<div class="ok">Richtig!</div>';setTimeout(()=>{markRight(file,total)?complete(area,file,'index.html'):render()},500)}else{let tr=markWrong(file,total,t.text);fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.text,'Großschreibung, Artikel und Punkt')+'</div>'}}
 maybeStart(render,'schreiben.html');
 </script></body></html>
