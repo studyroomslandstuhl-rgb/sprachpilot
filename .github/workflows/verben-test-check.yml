@@ -31,8 +31,10 @@ jobs:
           test -f verben-test/app-clean.js
           test -f verben-test/boot.js
           grep -q 'Verben Test' verben-test/index.html
-          grep -q 'boot.js?v=11' verben-test/index.html
-          grep -q './app-clean.js?v=5' verben-test/boot.js
+          grep -q 'boot.js?v=12' verben-test/index.html
+          grep -q './app-clean.js?v=6' verben-test/boot.js
+          grep -q 'safeLoadCourseRelease' verben-test/boot.js
+          grep -q 'safeModuleOpen' verben-test/boot.js
           ! grep -qE 'state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
       - name: Clean package and scoring rules
         run: |
