@@ -1,15 +1,24 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Artikel zuordnen</title><link rel="stylesheet" href="style.css?v=235"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=235"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=235"></script><script src="app.js?v=235"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Artikel zuordnen</title><link rel="stylesheet" href="style.css?v=242"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=242"><style>.chip{display:inline-flex;align-items:center;gap:3px}</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=242"></script><script src="app.js?v=236"></script><script src="../shared/l4-t2-audio.js?v=1"></script><script>
 header("Artikel zuordnen");
+const area=document.getElementById("area");
 const FILE="artikel.html";
 let selected=null;
 function show(){
+ L4T2Audio.stop();
  if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){complete(area,FILE,"plural.html");return}
- area.innerHTML=`${progressHtml(FILE,WORDS.length)}<p>Tippe ein Wort an und dann die richtige Tabelle.</p><div id="chips"></div><div class="drop-grid"><div class="dropzone" data-a="der"><h2>der</h2></div><div class="dropzone" data-a="die"><h2>die</h2></div><div class="dropzone" data-a="das"><h2>das</h2></div></div><button class="btn" onclick="control()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
- chips.innerHTML=WORDS.map(w=>`<span class="chip" data-id="${w.id}">${w.word}</span>`).join("");
- document.querySelectorAll(".dropzone").forEach(z=>z.onclick=()=>{if(!selected)return;selected.classList.remove("selected","no");let n=selected.nextElementSibling;if(n&&n.classList.contains("correction"))n.remove();z.appendChild(selected);selected=null;bind()});
+ area.innerHTML=`${progressHtml(FILE,WORDS.length)}<p>Tippe ein Wort an und dann die richtige Tabelle.</p><div id="audioStatus" class="audio-status" aria-live="polite"></div><div id="chips"></div><div class="drop-grid"><div class="dropzone" data-a="der"><h2>der</h2></div><div class="dropzone" data-a="die"><h2>die</h2></div><div class="dropzone" data-a="das"><h2>das</h2></div></div><button type="button" class="btn" onclick="control()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+ const chips=document.getElementById("chips");
+ chips.innerHTML=WORDS.map(w=>`<span class="chip" data-id="${esc(w.id)}"><span>${esc(w.word)}</span>${L4T2Audio.iconButton(w)}</span>`).join("");
+ document.querySelectorAll(".dropzone").forEach(z=>z.onclick=()=>{if(!selected)return;selected.classList.remove("selected","no");const n=selected.nextElementSibling;if(n&&n.classList.contains("correction"))n.remove();z.appendChild(selected);selected=null;bind()});
  bind();
 }
 function bind(){document.querySelectorAll(".chip").forEach(c=>c.onclick=e=>{e.stopPropagation();if(c.classList.contains("ok"))return;document.querySelectorAll(".chip").forEach(x=>x.classList.remove("selected"));selected=c;c.classList.add("selected")})}
-function control(){document.querySelectorAll(".correction").forEach(x=>x.remove());let ok=0;document.querySelectorAll(".dropzone .chip").forEach(c=>{let w=wordById(c.dataset.id),z=c.closest(".dropzone");c.classList.remove("ok","no","selected");if(z.dataset.a===w.article){c.classList.add("ok");ok++}else{c.classList.add("no");let note=document.createElement("span");note.className="correction";note.textContent="richtig: "+w.article;c.after(note)}});bind();if(ok===WORDS.length){let st=loadTask(FILE,WORDS.length);st.done=[...Array(WORDS.length).keys()];st.queue=[];st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(FILE,st);complete(area,FILE,"plural.html")}else{fb.innerHTML=`<div class="no">Korrigiere die roten Wörter.</div>`}}
+function control(){
+ document.querySelectorAll(".correction").forEach(x=>x.remove());let ok=0;
+ document.querySelectorAll(".dropzone .chip").forEach(c=>{const w=wordById(c.dataset.id),z=c.closest(".dropzone");c.classList.remove("ok","no","selected");if(z.dataset.a===w.article){c.classList.add("ok");ok++}else{c.classList.add("no");const note=document.createElement("span");note.className="correction";note.textContent="richtig: "+w.article;c.after(note)}});
+ bind();const fb=document.getElementById("fb");
+ if(ok===WORDS.length){const st=loadTask(FILE,WORDS.length);st.done=[...Array(WORDS.length).keys()];st.queue=[];st.current=null;st.tries=0;st.hadError=false;st.repeatQueued=false;saveTask(FILE,st);complete(area,FILE,"plural.html")}
+ else if(fb){fb.innerHTML='<div class="no">Korrigiere die roten Wörter.</div>'}
+}
 show();
 </script></body></html>
