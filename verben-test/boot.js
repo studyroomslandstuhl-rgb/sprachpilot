@@ -1,8 +1,39 @@
-import { getActiveProfile, getActiveRole, dashboardHref } from '/js/auth.js?v=verben-test-clean-5';
-import { loadCourseRelease, moduleOpen } from '/js/course-releases.js?v=verben-test-clean-5';
-import { db, doc, getDoc, setDoc } from '/js/firebase.js?v=verben-test-clean-5';
+import { getActiveProfile, getActiveRole, dashboardHref } from '/js/auth.js?v=verben-test-clean-6';
+import { loadCourseRelease, moduleOpen } from '/js/course-releases.js?v=verben-test-clean-6';
+import { db, doc, getDoc, setDoc } from '/js/firebase.js?v=verben-test-clean-6';
 
-window.VT_DEPS={getActiveProfile,getActiveRole,dashboardHref,loadCourseRelease,moduleOpen};
+const RELEASE_TIMEOUT_MS=2500;
+
+function wait(ms,value){
+  return new Promise(resolve=>setTimeout(()=>resolve(value),ms));
+}
+
+async function safeLoadCourseRelease(profile){
+  try{
+    return await Promise.race([loadCourseRelease(profile),wait(RELEASE_TIMEOUT_MS,{})]);
+  }catch(error){
+    console.warn('[Verben Test] Freigaben konnten nicht geladen werden.',error);
+    return {};
+  }
+}
+
+function safeModuleOpen(assignments,title){
+  if(String(title||'').trim().toLowerCase()==='verben test')return true;
+  try{
+    return moduleOpen(assignments,title);
+  }catch(error){
+    console.warn('[Verben Test] Freigabe konnte nicht geprüft werden.',error);
+    return false;
+  }
+}
+
+window.VT_DEPS={
+  getActiveProfile,
+  getActiveRole,
+  dashboardHref,
+  loadCourseRelease:safeLoadCourseRelease,
+  moduleOpen:safeModuleOpen
+};
 
 window.firebase={
   firestore(){
@@ -37,7 +68,7 @@ function load(src){
 }
 
 try{
-  await load('./app-clean.js?v=5');
+  await load('./app-clean.js?v=6');
   if(window.VERBEN_TEST&&typeof window.VERBEN_TEST.start==='function'){
     await window.VERBEN_TEST.start();
   }else{
