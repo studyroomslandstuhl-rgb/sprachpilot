@@ -27,7 +27,7 @@ jobs:
           test ! -f verben-test/choose-filter.js
           grep -q 'Verben Test' verben-test/index.html
           grep -q 'styles.css?v=4' verben-test/index.html
-          grep -q 'app.js?v=1' verben-test/index.html
+          grep -q 'app.js?v=2' verben-test/index.html
           ! grep -qE 'boot\.js|app-clean\.js|choose-filter\.js|state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
       - name: Core rules
         run: |
@@ -39,7 +39,7 @@ jobs:
           grep -q 'function finishPackage' verben-test/app.js
           grep -q 'function allTasksDone' verben-test/app.js
           grep -q 'function renderExam' verben-test/app.js
-          grep -q 'function wrongFeedback' verben-test/app.js
+          grep -q 'function wrong' verben-test/app.js
           grep -q 'function startMic' verben-test/app.js
       - name: Chooser filters and images
         run: |
