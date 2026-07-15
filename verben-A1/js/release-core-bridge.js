@@ -3,6 +3,7 @@
 
   function readJson(key){try{return JSON.parse(localStorage.getItem(key)||"null")}catch(e){return null}}
   function profile(){return readJson("SP_USER_PROFILE")||readJson("SP_STUDENT_PROFILE")||{};}
+  function hasReleaseData(data){return !!(data&&typeof data==="object"&&(data.enabledModules||data.enabledWords||data.releases||data.releaseMode||data.defaultLocked!==undefined||data.verbenA1AssessmentEnabled!==undefined))}
   function remember(data){
     try{
       var p=profile();
@@ -18,9 +19,22 @@
       localStorage.setItem("SP_COURSE_RELEASES",JSON.stringify(data||{}));
     }catch(e){}
   }
+  function preferFreshReleaseReader(){
+    try{
+      if(typeof spReleaseData!=="function")return;
+      spReleaseData=function(){
+        var cached=readJson("SP_COURSE_RELEASES")||{};
+        if(hasReleaseData(cached))return cached;
+        var p=profile();
+        if(hasReleaseData(p.assignments))return p.assignments;
+        return {};
+      };
+    }catch(e){}
+  }
   function refresh(){
+    preferFreshReleaseReader();
     try{if(typeof window.spSyncVerbRelease==="function")window.spSyncVerbRelease();}catch(e){}
-    try{if(typeof window.renderHome==="function")window.renderHome();}catch(e){}
+    try{if(typeof window.renderVerbIndexPage==="function")window.renderVerbIndexPage();else if(typeof window.renderHome==="function")window.renderHome();}catch(e){}
   }
 
   var previousReady=window.spVerbReleaseReady||Promise.resolve();
@@ -32,6 +46,10 @@
     })
     .catch(function(err){
       console.error("Zentrale Verben-Freigabe konnte nicht aktualisiert werden",err);
+      preferFreshReleaseReader();
       return previousReady;
     });
+
+  setTimeout(preferFreshReleaseReader,500);
+  setTimeout(preferFreshReleaseReader,1500);
 })();
