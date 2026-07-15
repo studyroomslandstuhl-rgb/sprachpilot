@@ -1,11 +1,15 @@
-import { getActiveProfile, getActiveRole, dashboardHref } from '/js/auth.js?v=verben-test-clean-6';
-import { loadCourseRelease, moduleOpen } from '/js/course-releases.js?v=verben-test-clean-6';
-import { db, doc, getDoc, setDoc } from '/js/firebase.js?v=verben-test-clean-6';
+import { getActiveProfile, getEffectiveProfile, getActiveRole, dashboardHref } from '/js/auth.js?v=verben-test-clean-7';
+import { loadCourseRelease, moduleOpen } from '/js/course-releases.js?v=verben-test-clean-7';
+import { db, doc, getDoc, setDoc } from '/js/firebase.js?v=verben-test-clean-7';
 
 const RELEASE_TIMEOUT_MS=2500;
 
 function wait(ms,value){
   return new Promise(resolve=>setTimeout(()=>resolve(value),ms));
+}
+
+function activeProfile(){
+  return (typeof getEffectiveProfile==='function'&&getEffectiveProfile()) || getActiveProfile();
 }
 
 async function safeLoadCourseRelease(profile){
@@ -28,7 +32,7 @@ function safeModuleOpen(assignments,title){
 }
 
 window.VT_DEPS={
-  getActiveProfile,
+  getActiveProfile:activeProfile,
   getActiveRole,
   dashboardHref,
   loadCourseRelease:safeLoadCourseRelease,
@@ -68,7 +72,7 @@ function load(src){
 }
 
 try{
-  await load('./app-clean.js?v=6');
+  await load('./app-clean.js?v=7');
   if(window.VERBEN_TEST&&typeof window.VERBEN_TEST.start==='function'){
     await window.VERBEN_TEST.start();
   }else{
