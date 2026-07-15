@@ -1,70 +1,30 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dialoge</title><link rel="stylesheet" href="style.css?v=237"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=237">
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Dialoge</title><link rel="stylesheet" href="style.css?v=242"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=242">
 <style>
 .dialog-task-img{display:block;width:min(260px,100%);height:190px;object-fit:contain;margin:14px auto;border:2px solid #ffe28a;border-radius:18px;background:#fff}
 .dialog-line{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap;font-size:28px;font-weight:700}
 .image-fallback{display:flex;align-items:center;justify-content:center;min-height:150px;margin:14px auto;border:2px solid #ffe28a;border-radius:18px;background:#fff9dd;color:#7a5100;font-weight:900;text-align:center}
 @media(max-width:600px){.dialog-line{font-size:21px}.gap-input{width:100%}.dialog-task-img{height:170px}}
-</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=237"></script><script src="app.js?v=236"></script><script>
+</style></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=242"></script><script src="app.js?v=236"></script><script src="../shared/l4-t2-audio.js?v=1"></script><script>
 header("Dialoge");
 const area=document.getElementById("area");
 const FILE="dialoge.html";
 const SP_BUNNY_CDN="https://sprachpilot.b-cdn.net/";
 let i=0;
-
-function imageName(value){
- const raw=String(value||"").split("?")[0].split("#")[0].split("/").pop();
- return raw.replace(/\.(png|jpe?g|webp|gif|svg)$/i,"");
-}
-function bunnyUrl(value){
- const name=imageName(value);
- return name?SP_BUNNY_CDN+encodeURIComponent(name)+".webp":"";
-}
-function wordImage(w){
- const primary=bunnyUrl(w&&w.id);
- const fallback=bunnyUrl(w&&w.image);
- return `<img class="dialog-task-img" src="${primary}" data-fallback="${fallback}" loading="eager" decoding="async" onerror="nextImage(this)" alt="">`;
-}
-function nextImage(img){
- const fallback=img.dataset.fallback||"";
- if(img.dataset.fallbackTried!=="1"&&fallback&&fallback!==img.src){img.dataset.fallbackTried="1";img.src=fallback;return}
- img.outerHTML='<div class="image-fallback">Das Bild konnte nicht geladen werden. Der Dialog kann trotzdem ergänzt werden.</div>';
-}
-
+function imageName(value){const raw=String(value||"").split("?")[0].split("#")[0].split("/").pop();return raw.replace(/\.(png|jpe?g|webp|gif|svg)$/i,"")}
+function bunnyUrl(value){const name=imageName(value);return name?SP_BUNNY_CDN+encodeURIComponent(name)+".webp":""}
+function wordImage(w){const primary=bunnyUrl(w&&w.id),fallback=bunnyUrl(w&&w.image);return `<img class="dialog-task-img" src="${primary}" data-fallback="${fallback}" loading="eager" decoding="async" onerror="nextImage(this)" alt="">`}
+function nextImage(img){const fallback=img.dataset.fallback||"";if(img.dataset.fallbackTried!=="1"&&fallback&&fallback!==img.src){img.dataset.fallbackTried="1";img.src=fallback;return}img.outerHTML='<div class="image-fallback">Das Bild konnte nicht geladen werden. Der Dialog kann trotzdem ergänzt werden.</div>'}
 function show(){
+ L4T2Audio.stop();
  if(!DIALOG_TASKS.length){area.innerHTML='<div class="no">Für diese Wortschatzfreigabe sind keine Dialogaufgaben verfügbar.</div><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div>';return}
  if(loadTask(FILE,DIALOG_TASKS.length).done.length>=DIALOG_TASKS.length){complete(area,FILE,"pruefung.html");return}
- i=nextIndex(FILE,DIALOG_TASKS.length);
- const t=DIALOG_TASKS[i];
- const w=t?wordById(t.id):null;
+ i=nextIndex(FILE,DIALOG_TASKS.length);const t=DIALOG_TASKS[i],w=t?wordById(t.id):null;
  if(!t||!w||!w.id){area.innerHTML='<div class="no">Die Aufgabe konnte nicht geladen werden.</div><div class="actions"><button type="button" class="btn" onclick="show()">Neu laden</button><a class="btn secondary" href="index.html">Zurück</a></div>';return}
- const firstRest=t.line1.replace("Ist ___ ","").replace("?","");
- const secondParts=t.line2.split("___");
- area.innerHTML=`${progressHtml(FILE,DIALOG_TASKS.length)}
-  <div class="question">Schreibe das Wort und das passende Pronomen.</div>
-  <div class="step-note">Erste Lücke: Wort mit Artikel. Zweite Lücke: er / es / sie.</div>
-  ${wordImage(w)}
-  <div class="gap-dialog">
-   <div class="gap-line dialog-line"><span>Ist</span><input id="noun" class="gap-input" autocomplete="off" placeholder="Nomen mit Artikel"><span>${esc(firstRest)}?</span></div>
-   <div class="gap-line dialog-line"><span>${esc(secondParts[0])}</span><input id="pronoun" class="gap-input" autocomplete="off" placeholder="Pronomen"><span>${esc(secondParts[1]||"")}</span></div>
-  </div>
-  <button type="button" class="btn" onclick="check()">Kontrollieren</button>
-  <div id="fb" class="feedback"></div>`;
- const pronoun=document.getElementById("pronoun");
- if(pronoun)pronoun.addEventListener("keydown",e=>{if(e.key==="Enter")check()});
+ const firstRest=t.line1.replace("Ist ___ ","").replace("?",""),secondParts=t.line2.split("___");
+ area.innerHTML=`${progressHtml(FILE,DIALOG_TASKS.length)}<div class="question">Schreibe das Wort und das passende Pronomen.</div><div class="step-note">Erste Lücke: Wort mit Artikel. Zweite Lücke: er / es / sie.</div>${wordImage(w)}${L4T2Audio.buttons(w)}<div id="audioStatus" class="audio-status" aria-live="polite"></div><div class="gap-dialog"><div class="gap-line dialog-line"><span>Ist</span><input id="noun" class="gap-input" autocomplete="off" placeholder="Nomen mit Artikel"><span>${esc(firstRest)}?</span></div><div class="gap-line dialog-line"><span>${esc(secondParts[0])}</span><input id="pronoun" class="gap-input" autocomplete="off" placeholder="Pronomen"><span>${esc(secondParts[1]||"")}</span></div></div><button type="button" class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
+ const pronoun=document.getElementById("pronoun");if(pronoun)pronoun.addEventListener("keydown",e=>{if(e.key==="Enter")check()});
  const noun=document.getElementById("noun");if(noun)noun.focus();
 }
-
-function check(){
- const t=DIALOG_TASKS[i];
- const noun=document.getElementById("noun");
- const pronoun=document.getElementById("pronoun");
- const fb=document.getElementById("fb");
- if(!t||!noun||!pronoun||!fb)return;
- if(okDialog(noun.value,pronoun.value,t)){
-  fb.textContent="Richtig!";markRight(FILE,DIALOG_TASKS.length);setTimeout(show,700);
- }else{
-  const tries=markWrong(FILE,DIALOG_TASKS.length);fb.innerHTML=feedbackForTry(tries,t.answerNoun+" / "+t.answerPronoun,"Nomen mit Artikel und Pronomen");
- }
-}
+function check(){const t=DIALOG_TASKS[i],noun=document.getElementById("noun"),pronoun=document.getElementById("pronoun"),fb=document.getElementById("fb");if(!t||!noun||!pronoun||!fb)return;if(okDialog(noun.value,pronoun.value,t)){fb.textContent="Richtig!";markRight(FILE,DIALOG_TASKS.length);setTimeout(show,700)}else{const tries=markWrong(FILE,DIALOG_TASKS.length);fb.innerHTML=feedbackForTry(tries,t.answerNoun+" / "+t.answerPronoun,"Nomen mit Artikel und Pronomen")}}
 show();
 </script></body></html>
