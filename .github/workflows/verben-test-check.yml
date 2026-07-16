@@ -29,13 +29,14 @@ jobs:
           test ! -f verben-test/app-clean.js
           test ! -f verben-test/choose-filter.js
           grep -q 'Verben Test' verben-test/index.html
-          grep -q 'styles.css?v=6' verben-test/index.html
+          grep -q 'styles.css?v=7' verben-test/index.html
           grep -q 'app.js?v=3' verben-test/index.html
           ! grep -qE 'l6-card-pattern|boot\.js|app-clean\.js|choose-filter\.js|state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
-      - name: L3 design structure
+      - name: L3 structure with blue colors
         run: |
-          grep -q -- '--lesson-main:#f6b46b' verben-test/styles.css
-          grep -q -- '--lesson-main-dark:#8a4f16' verben-test/styles.css
+          grep -q -- '--lesson-main:#48b6d7' verben-test/styles.css
+          grep -q -- '--lesson-main-dark:#12617a' verben-test/styles.css
+          grep -q -- '--lesson-main-light:#c9f1fb' verben-test/styles.css
           grep -q 'grid-template-columns:repeat(4,minmax(0,1fr))' verben-test/styles.css
           grep -q 'min-height:270px' verben-test/styles.css
           grep -q 'translateY(-4px)' verben-test/styles.css
