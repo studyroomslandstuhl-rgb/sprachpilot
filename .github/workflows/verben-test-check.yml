@@ -18,11 +18,13 @@ jobs:
       - name: JavaScript syntax
         run: |
           node --check verben-test/app.js
+          node --check verben-test/ui-fix.js
       - name: Required files and no old layers
         run: |
           test -f verben-test/index.html
           test -f verben-test/styles.css
           test -f verben-test/app.js
+          test -f verben-test/ui-fix.js
           test -f verben-test/LOGIK.md
           test ! -f verben-test/l6-card-pattern.js
           test ! -f verben-test/boot.js
@@ -30,7 +32,8 @@ jobs:
           test ! -f verben-test/choose-filter.js
           grep -q 'Verben Test' verben-test/index.html
           grep -q 'styles.css?v=7' verben-test/index.html
-          grep -q 'app.js?v=6' verben-test/index.html
+          grep -q 'app.js?v=7' verben-test/index.html
+          grep -q 'ui-fix.js?v=1' verben-test/index.html
           ! grep -qE 'l6-card-pattern|boot\.js|app-clean\.js|choose-filter\.js|state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
       - name: L3 structure with blue colors
         run: |
@@ -97,6 +100,9 @@ jobs:
           grep -q 'sich_vorstellen.webp' verben-test/app.js
           grep -q 'sich_kaemmen.webp' verben-test/app.js
           grep -q 'koennen.webp' verben-test/app.js
+          grep -q 'function imageSlug' verben-test/ui-fix.js
+          grep -q "replace(/ö/g,'oe')" verben-test/ui-fix.js
+          grep -q "replace(/ü/g,'ue')" verben-test/ui-fix.js
           grep -q "var BUNNY='https://sprachpilot.b-cdn.net/'" verben-test/app.js
           ! grep -q "sprachpilot.b-cdn.net/verben-A1/bilder" verben-test/app.js
       - name: Visible German text uses umlauts
@@ -114,6 +120,8 @@ jobs:
           grep -q 'function routeFromUrl' verben-test/app.js
           grep -q 'function renderVerbOverview' verben-test/app.js
           grep -q 'function renderTaskOverview' verben-test/app.js
+          grep -q 'TASK_EMOJI' verben-test/ui-fix.js
+          grep -q 'removeActionButtons' verben-test/ui-fix.js
           grep -q 'history.pushState' verben-test/app.js
           grep -q 'popstate' verben-test/app.js
           grep -q 'view=overview' verben-test/app.js
