@@ -9,7 +9,7 @@
   }
 
   function has(w){
-    return !!(w&&w.id&&(groupOf(w)==="book"||w.category==="Möbel"));
+    return !!(w&&(w.audioFile||w.audio||w.audioId||w.id||w.word||w.full));
   }
 
   function germanAscii(value){
@@ -24,22 +24,26 @@
       .replace(new RegExp("^"+separator+"|"+separator+"$","g"),"");
   }
 
+  function stripExtension(value){return String(value||"").replace(/^.*\//,"").replace(/\.mp3$/i,"")}
+
   function candidates(w){
     if(!has(w))return [];
     const raw=[
-      w.id,
+      stripExtension(w.audioFile),
+      stripExtension(w.audio),
+      stripExtension(w.audioId),
+      stripExtension(w.id),
       String(w.word||""),
-      String(w.word||"").toLowerCase(),
       germanAscii(w.word||"").toLowerCase(),
       slug(w.word||"","-"),
+      slug(w.word||"","_"),
       String(w.full||""),
-      String(w.full||"").toLowerCase(),
       germanAscii(w.full||"").toLowerCase(),
       slug(w.full||"","-"),
       slug(w.full||"","_")
     ].filter(Boolean);
     const names=[];
-    raw.forEach(function(name){if(name&&!names.includes(name))names.push(name)});
+    raw.forEach(function(name){name=String(name).trim();if(name&&!names.includes(name))names.push(name)});
     return names.map(function(name){return AUDIO_CDN+encodeURIComponent(name)+".mp3"});
   }
 
@@ -48,6 +52,21 @@
     const el=statusElement(statusId);if(!el)return;
     el.textContent=text||"";
     el.classList.toggle("error",!!isError);
+  }
+
+  function browserSpeak(text,slow,statusId){
+    if(!text||!("speechSynthesis" in window))return false;
+    try{
+      speechSynthesis.cancel();
+      const utterance=new SpeechSynthesisUtterance(String(text));
+      utterance.lang="de-DE";
+      utterance.rate=slow?0.65:0.92;
+      utterance.onstart=function(){setStatus(statusId,slow?"Langsame Wiedergabe läuft …":"Wiedergabe läuft …",false)};
+      utterance.onend=function(){setStatus(statusId,"",false)};
+      utterance.onerror=function(){setStatus(statusId,"Audio konnte nicht geladen werden.",true)};
+      speechSynthesis.speak(utterance);
+      return true;
+    }catch(e){return false}
   }
 
   function getPlayer(){
@@ -66,24 +85,27 @@
 
   function stop(){
     playToken++;
+    try{if("speechSynthesis" in window)speechSynthesis.cancel()}catch(e){}
     const audio=getPlayer();
     try{audio.pause();audio.removeAttribute("src");audio.load()}catch(e){}
   }
 
-  function play(w,slow,statusId){
+  function play(w,slow,statusId,fallbackText){
     const urls=candidates(w);
-    if(!urls.length)return false;
+    if(!urls.length){return browserSpeak(fallbackText,slow,statusId)}
     const token=++playToken;
     const audio=getPlayer();
     let index=0;
 
+    function failed(){
+      if(fallbackText&&browserSpeak(fallbackText,slow,statusId))return;
+      setStatus(statusId,"Audio konnte nicht geladen werden.",true);
+      try{audio.pause();audio.removeAttribute("src");audio.load()}catch(e){}
+    }
+
     function tryNext(){
       if(token!==playToken)return;
-      if(index>=urls.length){
-        setStatus(statusId,"Audio konnte nicht geladen werden.",true);
-        try{audio.pause();audio.removeAttribute("src");audio.load()}catch(e){}
-        return;
-      }
+      if(index>=urls.length){failed();return}
       const src=urls[index++];
       setStatus(statusId,"Audio wird geladen …",false);
       try{
@@ -111,18 +133,19 @@
 
   function safe(value){return String(value||"").replace(/\\/g,"\\\\").replace(/'/g,"\\'")}
   function dataFor(w){
-    return " data-audio-id='"+safe(w.id)+"' data-audio-word='"+safe(w.word||"")+"' data-audio-full='"+safe(w.full||"")+"' data-audio-category='"+safe(w.category||"")+"' data-audio-group='"+safe(groupOf(w))+"'";
+    return " data-audio-id='"+safe(w.id||"")+"' data-audio-word='"+safe(w.word||"")+"' data-audio-full='"+safe(w.full||"")+"' data-audio-file='"+safe(w.audioFile||w.audio||"")+"' data-audio-category='"+safe(w.category||"")+"' data-audio-group='"+safe(groupOf(w))+"'";
   }
   function wordFromButton(btn){
     return {
       id:btn.dataset.audioId||"",
       word:btn.dataset.audioWord||"",
       full:btn.dataset.audioFull||"",
+      audioFile:btn.dataset.audioFile||"",
       category:btn.dataset.audioCategory||"",
       group:btn.dataset.audioGroup||""
     };
   }
-  function playButton(btn,slow,statusId){return play(wordFromButton(btn),!!slow,statusId||"audioStatus")}
+  function playButton(btn,slow,statusId){const w=wordFromButton(btn);return play(w,!!slow,statusId||"audioStatus",w.full||w.word)}
 
   function buttons(w,statusId){
     if(!has(w))return "";
