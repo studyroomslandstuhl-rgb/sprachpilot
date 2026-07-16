@@ -88,6 +88,8 @@ jobs:
           grep -q 'sich_vorstellen.webp' verben-test/app.js
           grep -q 'sich_kaemmen.webp' verben-test/app.js
           grep -q 'koennen.webp' verben-test/app.js
+          grep -q "var BUNNY='https://sprachpilot.b-cdn.net/'" verben-test/app.js
+          ! grep -q "sprachpilot.b-cdn.net/verben-A1/bilder" verben-test/app.js
       - name: Visible German text uses umlauts
         run: |
           grep -q 'Was möchtest du machen' verben-test/app.js
