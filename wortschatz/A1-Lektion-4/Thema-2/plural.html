@@ -1,16 +1,6 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Plural</title><link rel="stylesheet" href="style.css?v=244"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=244"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=244"></script><script src="app.js?v=236"></script><script src="../shared/l4-t2-audio.js?v=2"></script><script>
-header("Plural");
-const area=document.getElementById("area");
-const FILE="plural.html";
-let i=0;
-function show(){
- L4T2Audio.stop();
- if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){complete(area,FILE,"bild-wort.html");return}
- i=nextIndex(FILE,WORDS.length);const w=WORDS[i];
- if(!w){area.innerHTML='<div class="no">Die Aufgabe konnte nicht geladen werden.</div><div class="actions"><a class="btn secondary" href="index.html">Zurück</a></div>';return}
- area.innerHTML=`${progressHtml(FILE,WORDS.length)}<div class="question">Schreibe Pluralformen.</div><div class="big">${esc(w.full)}</div>${L4T2Audio.buttons(w)}<div id="audioStatus" class="audio-status" aria-live="polite"></div><input id="ans" autocomplete="off" placeholder="Schreiben Sie die Pluralform hier"><button type="button" class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`;
- const input=document.getElementById("ans");if(input){input.addEventListener("keydown",e=>{if(e.key==="Enter")check()});input.focus()}
-}
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Plural</title><link rel="stylesheet" href="style.css?v=246"><link rel="stylesheet" href="../shared/lektion4-standard.css?v=246"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script type="module" src="/js/progress.js?v=246"></script><script src="app.js?v=236"></script><script src="../shared/l4-t2-audio.js?v=3"></script><script>
+header("Plural");const area=document.getElementById("area"),FILE="plural.html";let i=0;
+function show(){L4T2Audio.stop();if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){complete(area,FILE,"bild-wort.html");return}i=nextIndex(FILE,WORDS.length);const w=WORDS[i];if(!w){area.innerHTML='<div class="no">Die Aufgabe konnte nicht geladen werden.</div>';return}area.innerHTML=`${progressHtml(FILE,WORDS.length)}<div class="question">Schreibe Pluralformen.</div><div class="big">${esc(w.full)}</div>${L4T2Audio.buttons(w)}<div id="audioStatus" class="audio-status" aria-live="polite"></div><input id="ans" autocomplete="off" placeholder="Schreiben Sie die Pluralform hier"><button type="button" class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`;const input=document.getElementById("ans");if(input){input.addEventListener("keydown",e=>{if(e.key==="Enter")check()});input.focus()}}
 function check(){const w=WORDS[i],input=document.getElementById("ans"),fb=document.getElementById("fb");if(!w||!input||!fb)return;if(simple(input.value)===simple(w.plural)){fb.textContent="Richtig!";markRight(FILE,WORDS.length);setTimeout(show,700)}else{const tries=markWrong(FILE,WORDS.length);fb.innerHTML=feedbackForTry(tries,w.plural,"Pluralform")}}
 show();
 </script></body></html>
