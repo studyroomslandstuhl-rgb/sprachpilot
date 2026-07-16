@@ -1,4 +1,4 @@
-const CACHE_VERSION="sprachpilot-static-v20260716-l4t3-ganz-gut-bunny1";
+const CACHE_VERSION="sprachpilot-static-v20260716-l6t3-revision2";
 
 self.addEventListener("install",event=>{
   self.skipWaiting();
