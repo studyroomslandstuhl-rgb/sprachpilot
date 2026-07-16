@@ -23,6 +23,12 @@
   var PREFIXES=['ab','an','auf','aus','ein','mit','nach','vor','weg','zu','zurueck','zurück','fern'];
   var SPECIAL_IMAGES={'sich vorstellen':'sich_vorstellen.webp','sich kaemmen':'sich_kaemmen.webp','sich kämmen':'sich_kaemmen.webp','sich rasieren':'sich_rasieren.webp','sich schminken':'sich_schminken.webp','koennen':'koennen.webp','können':'koennen.webp','muessen':'muessen.webp','müssen':'muessen.webp','duerfen':'duerfen.webp','dürfen':'duerfen.webp'};
   var SPECIAL_ICH={sein:'bin',haben:'habe',werden:'werde',wissen:'weiß',koennen:'kann','können':'kann',muessen:'muss','müssen':'muss',duerfen:'darf','dürfen':'darf',wollen:'will',sollen:'soll',moegen:'mag','mögen':'mag',sehen:'sehe',lesen:'lese',sprechen:'spreche',essen:'esse',nehmen:'nehme',geben:'gebe',helfen:'helfe',treffen:'treffe',fahren:'fahre',laufen:'laufe',schlafen:'schlafe','aufstehen':'stehe auf','anfangen':'fange an','anrufen':'rufe an','einkaufen':'kaufe ein','fernsehen':'sehe fern','sich vorstellen':'stelle mich vor','sich kaemmen':'kämme mich','sich kämmen':'kämme mich','sich rasieren':'rasiere mich','sich schminken':'schminke mich'};
+  var CONJ_SUBJECTS=[['ich','ich'],['du','du'],['er','er'],['sie','er'],['wir','wir'],['ihr','ihr'],['sie (Plural)','sie','sie'],['Sie','sie','Sie'],['Anna','er'],['Omar','er'],['die Lehrerin','er'],['der Schüler','er']];
+  var SPECIAL_CONJ={
+    sein:{ich:'bin',du:'bist',er:'ist',wir:'sind',ihr:'seid',sie:'sind'},haben:{ich:'habe',du:'hast',er:'hat',wir:'haben',ihr:'habt',sie:'haben'},werden:{ich:'werde',du:'wirst',er:'wird',wir:'werden',ihr:'werdet',sie:'werden'},wissen:{ich:'weiß',du:'weißt',er:'weiß',wir:'wissen',ihr:'wisst',sie:'wissen'},
+    koennen:{ich:'kann',du:'kannst',er:'kann',wir:'können',ihr:'könnt',sie:'können'},'können':{ich:'kann',du:'kannst',er:'kann',wir:'können',ihr:'könnt',sie:'können'},muessen:{ich:'muss',du:'musst',er:'muss',wir:'müssen',ihr:'müsst',sie:'müssen'},'müssen':{ich:'muss',du:'musst',er:'muss',wir:'müssen',ihr:'müsst',sie:'müssen'},duerfen:{ich:'darf',du:'darfst',er:'darf',wir:'dürfen',ihr:'dürft',sie:'dürfen'},'dürfen':{ich:'darf',du:'darfst',er:'darf',wir:'dürfen',ihr:'dürft',sie:'dürfen'},wollen:{ich:'will',du:'willst',er:'will',wir:'wollen',ihr:'wollt',sie:'wollen'},sollen:{ich:'soll',du:'sollst',er:'soll',wir:'sollen',ihr:'sollt',sie:'sollen'},moegen:{ich:'mag',du:'magst',er:'mag',wir:'mögen',ihr:'mögt',sie:'mögen'},'mögen':{ich:'mag',du:'magst',er:'mag',wir:'mögen',ihr:'mögt',sie:'mögen'},
+    essen:{ich:'esse',du:'isst',er:'isst',wir:'essen',ihr:'esst',sie:'essen'},lesen:{ich:'lese',du:'liest',er:'liest',wir:'lesen',ihr:'lest',sie:'lesen'},sehen:{ich:'sehe',du:'siehst',er:'sieht',wir:'sehen',ihr:'seht',sie:'sehen'},sprechen:{ich:'spreche',du:'sprichst',er:'spricht',wir:'sprechen',ihr:'sprecht',sie:'sprechen'},nehmen:{ich:'nehme',du:'nimmst',er:'nimmt',wir:'nehmen',ihr:'nehmt',sie:'nehmen'},geben:{ich:'gebe',du:'gibst',er:'gibt',wir:'geben',ihr:'gebt',sie:'geben'},helfen:{ich:'helfe',du:'hilfst',er:'hilft',wir:'helfen',ihr:'helft',sie:'helfen'},treffen:{ich:'treffe',du:'triffst',er:'trifft',wir:'treffen',ihr:'trefft',sie:'treffen'},fahren:{ich:'fahre',du:'fährst',er:'fährt',wir:'fahren',ihr:'fahrt',sie:'fahren'},laufen:{ich:'laufe',du:'läufst',er:'läuft',wir:'laufen',ihr:'lauft',sie:'laufen'},schlafen:{ich:'schlafe',du:'schläfst',er:'schläft',wir:'schlafen',ihr:'schlaft',sie:'schlafen'}
+  };
 
   var app=document.getElementById('app');
   var topbar=document.getElementById('topbar');
@@ -47,6 +53,10 @@
   function trans(v){var lang=normalizedNativeLang(),d=(typeof VERB_TRANSLATIONS!=='undefined'?VERB_TRANSLATIONS:{});return d[lang]&&d[lang][v]||d.Englisch&&d.Englisch[v]||'';}
   function sentence(v){var d=(typeof VERB_SENTENCES!=='undefined'?VERB_SENTENCES:{});return d[v]||('Ich '+ich(v)+'.');}
   function ich(v){if(SPECIAL_ICH[v])return SPECIAL_ICH[v];if(/eln$/.test(v))return v.slice(0,-3)+'le';if(/ern$/.test(v))return v.slice(0,-3)+'ere';if(/en$/.test(v))return v.slice(0,-2)+'e';return v;}
+  function splitVerb(v){var low=norm(v),prefix=PREFIXES.slice().sort(function(a,b){return b.length-a.length;}).find(function(p){return low.indexOf(norm(p))===0&&low.length>norm(p).length+3;});return prefix?{prefix:v.slice(0,prefix.length),base:v.slice(prefix.length)}:{prefix:'',base:v};}
+  function regularConj(v,person){var stem=String(v||'').replace(/en$/,'').replace(/n$/,''),end={ich:'e',du:'st',er:'t',wir:'en',ihr:'t',sie:'en'}[person]||'t';if(/[td]$/.test(stem)&&/^(du|er|ihr)$/.test(person))end='e'+end;return stem+end;}
+  function conjugateVerb(v,person){var reflexive=norm(v).indexOf('sich ')==0,base=reflexive?String(v).replace(/^sich\s+/i,''):v,parts=splitVerb(base),core=parts.base,form=(SPECIAL_CONJ[core]&&SPECIAL_CONJ[core][person])||regularConj(core,person);if(parts.prefix)form=form+' '+parts.prefix;if(reflexive)form=form+' '+({ich:'mich',du:'dich',er:'sich',wir:'uns',ihr:'euch',sie:'sich'}[person]||'sich');return form;}
+  function conjugationPrompt(v,st){if(!st.conjSubject)st.conjSubject=shuffle(CONJ_SUBJECTS)[0];var s=st.conjSubject,form=conjugateVerb(v,s[1]),answerSubject=s[2]||s[0],full=answerSubject+' '+form;return {subject:s[0],person:s[1],form:form,answers:[form,full].join('||')};}
   function imageName(v){return SPECIAL_IMAGES[v]||SPECIAL_IMAGES[norm(v)]||(slug(v)+'.webp');}
   function img(v){return BUNNY+encodeURIComponent(imageName(v));}
   function answerEq(a,b){return norm(a)===norm(b);}
@@ -90,7 +100,7 @@
     var done=uniq(st.done||[]).filter(function(v){return byVerb[v];});
     var current=st.current&&byVerb[st.current]&&done.indexOf(st.current)<0?st.current:null;
     var queue=uniq(st.queue||[]).filter(function(v){return byVerb[v]&&done.indexOf(v)<0&&v!==current;});
-    return {total:total,done:done,queue:queue,current:current,tries:Number(st.tries||0),hadWrong:!!st.hadWrong,pointsGiven:!!st.pointsGiven};
+    return {total:total,done:done,queue:queue,current:current,tries:Number(st.tries||0),hadWrong:!!st.hadWrong,pointsGiven:!!st.pointsGiven,conjSubject:st.conjSubject||null};
   }
   function loadState(){state=read(key(),null)||defaultState();if(!state||state.version!==VERSION)state=defaultState();state.points=Number(state.points||0);normalizeLists();state.package=normalizePackage(state.package);save();}
   function save(){normalizeLists();write(key(),state);}
@@ -98,7 +108,8 @@
     var p=profile();
     var name=[p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(' ')||p.email||'Teilnehmer';
     var kurs=p.kurs||p.kursnummer||p.courseCode||'test';
-    topbar.innerHTML='<div class="topbar-main"><a class="brand" href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt=""><div><h1>SprachPilot</h1><div class="subtitle">Verben Test</div></div></a><div class="account"><span class="pill">'+esc(name)+' · '+esc(kurs)+'</span><a class="btn secondary" href="/student-dashboard/index.html">Dashboard</a><a class="btn secondary" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="'+routeHref('home')+'" data-go="home">← Zurück</a><a class="btn secondary" href="'+routeHref('overview')+'" data-go="overview">Aufgabenübersicht</a><button class="danger" data-action="reset">Fortschritte löschen</button></nav>';
+    var back=backTarget();
+    topbar.innerHTML='<div class="topbar-main"><a class="brand" href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt=""><div><h1>SprachPilot</h1><div class="subtitle">Verben Test</div></div></a><div class="account"><span class="pill">'+esc(name)+' · '+esc(kurs)+'</span><a class="btn secondary" href="/student-dashboard/index.html">Dashboard</a><a class="btn secondary" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="'+(back?routeHref(back):'/index.html')+'" data-back="'+(back||'')+'">← Zurück</a><a class="btn secondary" href="'+routeHref('overview')+'" data-go="overview">Aufgabenübersicht</a><button class="danger" data-action="reset">Fortschritte löschen</button></nav>';
   }
 
   function openVerbs(){var mastered=masteredSet(),active=activeSet(),batch={};(state.assessmentBatch||[]).forEach(function(v){batch[v]=1;});return catalog.map(function(x){return x.verb;}).filter(function(v){return !mastered[v]&&!active[v]&&!batch[v];});}
@@ -121,6 +132,7 @@
     st.current=st.queue.shift()||null;
     st.tries=0;
     st.hadWrong=false;
+    st.conjSubject=null;
     save();
     return st.current;
   }
@@ -129,7 +141,7 @@
     var st=taskState(id),v=st.current;
     if(!v)return;
     if(st.hadWrong||st.tries>0){if(st.done.indexOf(v)<0&&st.queue.indexOf(v)<0)st.queue.push(v);}else if(st.done.indexOf(v)<0){st.done.push(v);}
-    st.current=null;st.tries=0;st.hadWrong=false;
+    st.current=null;st.tries=0;st.hadWrong=false;st.conjSubject=null;
     if(taskPercent(id)>=100&&!st.pointsGiven){st.pointsGiven=true;state.package.points+=pointForTask();state.points+=pointForTask();}
     save();
   }
@@ -142,6 +154,7 @@
     if(route==='exam')return '/verben-test/?task=pruefung';
     return '/verben-test/?task='+encodeURIComponent(route);
   }
+  function backTarget(){if(view==='task'||view==='exam')return 'overview';if(view==='overview'||view==='choose'||view==='assess')return 'home';return '';}
   function routeFromUrl(){
     var q=new URLSearchParams(location.search||''),task=q.get('task')||'',v=q.get('view')||'';
     if(task==='pruefung')return {view:'exam',params:{}};
@@ -222,11 +235,11 @@
   function renderListenWrite(feedback){var id='hoeren-schreiben',v=currentVerb(id);if(!v)return;var body=instruction('Höre das deutsche Verb und schreibe es richtig.')+'<div class="actions"><button class="secondary" data-speak="'+esc(v)+'">Deutsch hören</button></div><input class="answer-input" data-input placeholder="Antwort schreiben"><div class="actions"><button data-check="'+esc(v)+'">Kontrollieren</button></div>';taskShell(id,body,feedback||'');}
   function renderWrite(feedback){var id='schreiben',v=currentVerb(id);if(!v)return;var b=byVerb[v];var body=instruction('Schreibe das Verb zum Bild.')+imgHtml(v)+'<div class="hint">Übersetzung: <b>'+esc(b.translation||'')+'</b></div><input class="answer-input" data-input placeholder="Verb schreiben"><div class="actions"><button data-check="'+esc(v)+'">Kontrollieren</button></div>';taskShell(id,body,feedback||'');}
   function renderSentenceBuild(feedback){var id='satz-bauen',v=currentVerb(id);if(!v)return;var b=byVerb[v],parts=shuffle(String(b.sentence||('Ich '+b.ich+'.')).split(/\s+/));var body=instruction('Baue den Satz. Klicke die Wörter in der richtigen Reihenfolge.')+'<div class="puzzle-built" data-built></div><div class="puzzle-bank">'+parts.map(function(p){return '<button class="word-chip" data-pick="'+esc(p)+'">'+esc(p)+'</button>';}).join('')+'</div><div class="actions"><button data-sentence-check="'+esc(b.sentence)+'">Kontrollieren</button><button class="secondary" data-task="satz-bauen">Neu</button></div>';taskShell(id,body,feedback||'');}
-  function renderConjugation(feedback){var id='konjugieren',v=currentVerb(id);if(!v)return;var b=byVerb[v];var body=instruction('Schreibe die Form mit ich.')+'<div class="question">ich + '+esc(v)+'</div><input class="answer-input" data-input placeholder="ich ..."><div class="actions"><button data-check="'+esc(b.ich)+'">Kontrollieren</button></div>';taskShell(id,body,feedback||'');}
+  function renderConjugation(feedback){var id='konjugieren',v=currentVerb(id);if(!v)return;var st=taskState(id),c=conjugationPrompt(v,st);save();var body=instruction('Schreibe die passende Verbform.')+'<div class="question">'+esc(c.subject)+' + '+esc(v)+'</div><input class="answer-input" data-input placeholder="Verbform schreiben"><div class="actions"><button data-check="'+esc(c.answers)+'">Kontrollieren</button></div>';taskShell(id,body,feedback||'');}
 
   function wrongFeedback(id,solution){var st=taskState(id),b=byVerb[st.current]||{};var t=markWrong(id);return help3(t,b.translation?'Bedeutung: '+b.translation:'Bitte noch einmal versuchen.',b.sentence?'Beispiel: '+b.sentence:'Achte auf die Schreibweise.',solution);}
   function rightAndNext(id){markRight(id);setTimeout(function(){renderTask(id);},450);}
-  function checkAnswer(id,value,solution){if(answerEq(value,solution)){rightAndNext(id);}else{renderTaskWithFeedback(id,wrongFeedback(id,solution));}}
+  function checkAnswer(id,value,solution){if(String(solution||'').split('||').some(function(s){return answerEq(value,s); })){rightAndNext(id);}else{renderTaskWithFeedback(id,wrongFeedback(id,String(solution||'').split('||')[0]));}}
   function renderTaskWithFeedback(id,feedback){if(id==='karteikarten')return renderFlashcards(feedback);if(id==='bild-verb')return renderImageToVerb(feedback);if(id==='verb-bild')return renderVerbToImage(feedback);if(id==='hoeren-schreiben')return renderListenWrite(feedback);if(id==='schreiben')return renderWrite(feedback);if(id==='satz-bauen')return renderSentenceBuild(feedback);if(id==='konjugieren')return renderConjugation(feedback);}
 
   function renderExam(){if(!state.package){go('choose');return;}if(!allTasksDone()){app.innerHTML='<section class="card locked-box"><h2>Prüfung gesperrt</h2><p>Bearbeite zuerst alle Aufgaben zu 100%.</p><a class="btn" href="'+routeHref('overview')+'" data-go="overview">Zurück</a></section>';return;}var p=state.package;if(!p.exam.run)p.exam.run={index:0,answers:[],verbs:shuffle(p.verbs)};var run=p.exam.run,v=run.verbs[run.index];if(!v)return finishExam();app.innerHTML='<section class="card"><div class="task-head"><div><h2>⭐ Prüfung</h2><p>Frage '+(run.index+1)+' von '+run.verbs.length+'</p></div><a class="btn secondary" href="'+routeHref('overview')+'" data-go="overview">Aufgabenübersicht</a></div>'+imgHtml(v)+'<div class="question">Schreibe das Verb.</div><input class="answer-input" data-input placeholder="Verb schreiben"><div class="actions"><button data-exam-check="'+esc(v)+'">Kontrollieren</button></div><div class="feedback"></div></section>';save();}
@@ -239,8 +252,9 @@
   document.addEventListener('keydown',function(e){if(e.target&&e.target.matches('[data-assessment-input]')&&e.key==='Enter'){checkAssessmentAnswer();return;}var card=e.target.closest&&e.target.closest('[data-flip-card]');if(card&&(e.key==='Enter'||e.key===' ')){e.preventDefault();card.classList.add('flipped');var st=state.package&&taskState('karteikarten');if(st&&!st.hadWrong)markWrong('karteikarten');}});
   document.addEventListener('click',function(e){
     var flip=e.target.closest('[data-flip-card]');if(flip&&!e.target.closest('button')){flip.classList.add('flipped');var st=state.package&&taskState('karteikarten');if(st&&!st.hadWrong)markWrong('karteikarten');return;}
-    var t=e.target.closest('[data-go],[data-action],[data-task],[data-filter],[data-assess],[data-answer],[data-check],[data-speak],[data-mic],[data-show-input],[data-pick],[data-sentence-check],[data-exam-check],[data-assessment-check],[data-assessment-reveal],[data-assessment-mark]');if(!t)return;
+    var t=e.target.closest('[data-go],[data-back],[data-action],[data-task],[data-filter],[data-assess],[data-answer],[data-check],[data-speak],[data-mic],[data-show-input],[data-pick],[data-sentence-check],[data-exam-check],[data-assessment-check],[data-assessment-reveal],[data-assessment-mark]');if(!t)return;
     if(t.dataset.go){e.preventDefault();go(t.dataset.go);return;}
+    if(t.dataset.back!==undefined){if(t.dataset.back){e.preventDefault();go(t.dataset.back);}return;}
     if(t.dataset.filter){filter=t.dataset.filter;renderChoose();return;}
     if(t.dataset.task){e.preventDefault();go('task',{id:t.dataset.task});return;}
     if(t.dataset.assessmentCheck!==undefined){checkAssessmentAnswer();return;}
