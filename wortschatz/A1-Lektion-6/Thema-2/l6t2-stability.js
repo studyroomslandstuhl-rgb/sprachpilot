@@ -1,10 +1,12 @@
 (function(){
-  if(window.__L6T2_STABILITY_V1)return;
-  window.__L6T2_STABILITY_V1=true;
+  if(window.__L6T2_STABILITY_V2)return;
+  window.__L6T2_STABILITY_V2=true;
 
-  const BUILD='l6t2-stable1';
+  const BUILD='l6t2-stable2';
   const TOPIC='wortschatz-a1-lektion-6-thema-2';
   const KEY_PREFIX='SP_L6_T2_V1_';
+  const MIGRATION_KEY='SP_L6T2_PROGRESS_MIGRATED_V2';
+  const RESET_KEY='SP_L6T2_PROGRESS_RESET_AT_V2';
   const FIXED_TOTALS={
     'kategorien-drag.html':21,
     'praepositionen.html':18,
@@ -21,7 +23,7 @@
   function fileName(){return String(location.pathname.split('/').pop()||'index.html').split('?')[0]||'index.html'}
   function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')||{}}catch(e){return{}}}
   function taskRows(){try{return typeof TASKS!=='undefined'&&Array.isArray(TASKS)?TASKS:[]}catch(e){return[]}}
-  function topicRun(){return Math.max(1,Math.round(Number(localStorage.getItem('SP_SCORE_RUN_'+TOPIC)||1)||1))}
+  function topicRun(){return Math.max(1,Math.round(Number(localStorage.getItem('SP_SCORE_RUN_'+TOPIC)||1)||1)}
   function pointsPerTask(){const r=topicRun();return r===1?5:r===2?10:r===3?15:0}
   function taskTitle(file){const row=taskRows().find(t=>t[0]===file);return row?row[2]:file.replace(/\.html$/,'').replace(/-/g,' ')}
   function totalFor(file){
@@ -37,20 +39,28 @@
   function writeState(file,state){try{localStorage.setItem(stateKey(file),JSON.stringify(state));clearCaches();window.dispatchEvent(new CustomEvent('SP_L6T2_PROGRESS_CHANGED',{detail:{file,state}}))}catch(e){}}
   function baseName(file){return file.replace(/\.html$/i,'')}
   function escapeRegExp(value){return value.replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}
-  function legacyKeys(file){
+
+  function scopedLegacyKeys(file){
     const base=baseName(file);
-    return [stateKey(file),'SP_TASK_STATE_'+file,'SP_TASK_STATE_'+base,'SP_TASK_'+file,'SP_TASK_'+base,'SP_L6_T2_'+file,'SP_L6_T2_'+base,'SP_L6T2_'+file,'SP_L6T2_'+base,'SP_L6_T2_V1:'+file,'SP_L6_T2_V1:'+base,'SP_L6_T2_V1|'+file,'SP_L6_T2_V1|'+base,'SP_L6_T2_TASK_'+file,'SP_L6_T2_TASK_'+base]
+    return [
+      'SP_L6_T2_'+file,'SP_L6_T2_'+base,
+      'SP_L6T2_'+file,'SP_L6T2_'+base,
+      'SP_L6_T2_V1:'+file,'SP_L6_T2_V1:'+base,
+      'SP_L6_T2_V1|'+file,'SP_L6_T2_V1|'+base,
+      'SP_L6_T2_TASK_'+file,'SP_L6_T2_TASK_'+base
+    ]
   }
-  function isTaskStateKey(key,file){
+  function isScopedTaskStateKey(key,file){
     const k=String(key||'').toLowerCase(),f=file.toLowerCase(),base=baseName(file).toLowerCase();
     const exactFile=k.includes(f);
     const exactBase=new RegExp('(?:^|[_:|/])'+escapeRegExp(base)+'(?:$|[_:|/])').test(k);
     if(!exactFile&&!exactBase)return false;
-    return k.includes('sp_task_state')||k.includes('sp_task_')||k.includes('sp_l6_t2')||k.includes('sp_l6t2')||(k.includes('lektion-6')&&k.includes('thema-2'))
+    const topicScoped=k.includes('sp_l6_t2')||k.includes('sp_l6t2')||(k.includes('lektion-6')&&k.includes('thema-2'));
+    return topicScoped
   }
-  function candidateEntries(file){
-    const keys=new Set(legacyKeys(file));
-    try{Object.keys(localStorage).forEach(key=>{if(isTaskStateKey(key,file))keys.add(key)})}catch(e){}
+  function scopedLegacyEntries(file){
+    const keys=new Set(scopedLegacyKeys(file));
+    try{Object.keys(localStorage).forEach(key=>{if(isScopedTaskStateKey(key,file)&&key!==stateKey(file))keys.add(key)})}catch(e){}
     return [...keys].map(key=>readJson(key)).filter(value=>value&&typeof value==='object')
   }
   function unwrapState(raw){
@@ -79,9 +89,7 @@
     const queue=(Array.isArray(st.queue)?st.queue:[]).map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<total&&!done.includes(i)&&i!==current);
     return{percent,complete,done,current,queue,tries:Number(st.tries||0),hadWrong:!!st.hadWrong}
   }
-  function repairState(file,total){
-    if(!total)return null;
-    const shots=candidateEntries(file).map(value=>snapshot(value,total)).filter(Boolean);
+  function stateFromShots(shots,total){
     if(!shots.length)return null;
     const complete=shots.some(s=>s.complete),strongest=shots.slice().sort((a,b)=>b.percent-a.percent||b.done.length-a.done.length)[0];
     let done=complete?allDone(total):[...new Set(shots.flatMap(s=>s.done))].filter(i=>i>=0&&i<total).sort((a,b)=>a-b);
@@ -91,8 +99,20 @@
     let queue=complete?[]:strongest.queue.filter(i=>!done.includes(i)&&i!==current);
     const used=new Set([...done,...queue,...(current===null?[]:[current])]);
     if(!complete)queue=[...new Set([...queue,...allDone(total).filter(i=>!used.has(i))])];
-    const next={total,done,queue,current,tries:complete?0:strongest.tries,hadWrong:complete?false:strongest.hadWrong};
-    if(JSON.stringify(readState(file))!==JSON.stringify(next))writeState(file,next);
+    return{total,done,queue,current,tries:complete?0:strongest.tries,hadWrong:complete?false:strongest.hadWrong}
+  }
+  function repairState(file,total,allowLegacyMigration=false){
+    if(!total)return null;
+    const canonical=readState(file);
+    if(canonical&&typeof canonical==='object'){
+      const shot=snapshot(canonical,total),next=shot?stateFromShots([shot],total):null;
+      if(next&&JSON.stringify(canonical)!==JSON.stringify(next))writeState(file,next);
+      return next
+    }
+    if(!allowLegacyMigration||localStorage.getItem(RESET_KEY))return null;
+    const shots=scopedLegacyEntries(file).map(value=>snapshot(value,total)).filter(Boolean);
+    const next=stateFromShots(shots,total);
+    if(next)writeState(file,next);
     return next
   }
   function syncTaskNow(file,state){
@@ -100,7 +120,7 @@
     const total=Number(state.total)||totalFor(file),done=Array.isArray(state.done)?state.done.length:Number(state.done||0),percent=total?Math.round(done/total*100):0;
     const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:2,topicId:TOPIC,title:'A1 Lektion 6 · Thema 2',file,taskTitle:taskTitle(file),percent,done,total,completed:percent>=100,allowDecrease:true,run:topicRun(),pointsPerTask:pointsPerTask()};
     const run=api=>{try{if(api&&typeof api.recordTaskProgress==='function')return api.recordTaskProgress(payload)}catch(e){}};
-    try{if(window.SPProgress&&typeof window.SPProgress.recordTaskProgress==='function')run(window.SPProgress);else import('/js/progress.js?v=l6t2-stable1').then(run).catch(()=>{})}catch(e){}
+    try{if(window.SPProgress&&typeof window.SPProgress.recordTaskProgress==='function')run(window.SPProgress);else import('/js/progress.js?v=l6t2-stable2').then(run).catch(()=>{})}catch(e){}
   }
   function forceComplete(file,total){
     if(!file||file==='pruefung.html'||!total)return;
@@ -122,22 +142,31 @@
     const card=document.createElement('a');card.className='module';card.id='task10Card';card.dataset.file='saetze-bauen.html';card.href='saetze-bauen.html?v='+BUILD;card.innerHTML='<div class="num">10. Sätze bauen</div><div class="big-icon">🧩</div><p class="small">Wörter in die richtige Reihenfolge bringen.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small task-percent">0%</div><div class="start">Starten</div>';grid.insertBefore(card,exam||null)
   }
   function stableFinishLinks(){document.querySelectorAll('.finish-box a').forEach(a=>{const href=String(a.getAttribute('href')||'');if(href==='index.html'||href.startsWith('index.html?'))a.href='index.html?v='+BUILD})}
-  function clearLegacyProgress(){
+  function clearLegacyProgress(markReset=true){
     const remove=new Set(['SP_L6_T2_EXAM_CURRENT_SCORE','SP_L6_T2_EXAM_CURRENT_PERCENT','SP_EXAM_UNLOCKED_L6_T2']);
-    TASK_FILES.forEach(file=>legacyKeys(file).forEach(key=>remove.add(key)));
-    try{Object.keys(localStorage).forEach(key=>{if(TASK_FILES.some(file=>isTaskStateKey(key,file)))remove.add(key)})}catch(e){}
-    remove.forEach(key=>{try{localStorage.removeItem(key)}catch(e){}});clearCaches()
+    TASK_FILES.forEach(file=>{remove.add(stateKey(file));scopedLegacyKeys(file).forEach(key=>remove.add(key))});
+    try{Object.keys(localStorage).forEach(key=>{if(TASK_FILES.some(file=>isScopedTaskStateKey(key,file)))remove.add(key)})}catch(e){}
+    remove.forEach(key=>{try{localStorage.removeItem(key)}catch(e){}});
+    if(markReset){try{localStorage.setItem(RESET_KEY,String(Date.now()));localStorage.setItem(MIGRATION_KEY,'1')}catch(e){}}
+    clearCaches();
+    window.dispatchEvent(new CustomEvent('SP_L6T2_PROGRESS_CHANGED',{detail:{reset:true}}))
   }
   function patchFunctions(){
-    if(typeof complete==='function'&&!complete.__l6t2Stable){const old=complete;window.complete=function(area,file,next){const total=totalFor(file);try{const st=repairState(file,total)||readState(file);if(st&&Array.isArray(st.done)&&st.done.length>=total)forceComplete(file,total)}catch(e){}const out=old.apply(this,arguments);stableFinishLinks();return out};window.complete.__l6t2Stable=true}
-    if(typeof markTaskDone==='function'&&!markTaskDone.__l6t2Stable){const old=markTaskDone;window.markTaskDone=function(file,total){const out=old.apply(this,arguments);forceComplete(file,Number(total)||totalFor(file));return out};window.markTaskDone.__l6t2Stable=true}
-    if(typeof saveTask==='function'&&!saveTask.__l6t2Stable){const old=saveTask;window.saveTask=function(file,state){const out=old.apply(this,arguments),total=Number(state&&state.total)||totalFor(file),done=Array.isArray(state&&state.done)?state.done.length:Number(state&&state.done||0);if(file!=='pruefung.html'&&total>0&&done>=total)forceComplete(file,total);return out};window.saveTask.__l6t2Stable=true}
-    if(typeof resetLocalTopicTasks==='function'&&!resetLocalTopicTasks.__l6t2Stable){const old=resetLocalTopicTasks;window.resetLocalTopicTasks=function(){const out=old.apply(this,arguments);clearLegacyProgress();return out};window.resetLocalTopicTasks.__l6t2Stable=true}
+    if(typeof complete==='function'&&!complete.__l6t2StableV2){const old=complete;window.complete=function(area,file,next){const total=totalFor(file);try{const st=repairState(file,total,false)||readState(file);if(st&&Array.isArray(st.done)&&st.done.length>=total)forceComplete(file,total)}catch(e){}const out=old.apply(this,arguments);stableFinishLinks();return out};window.complete.__l6t2StableV2=true}
+    if(typeof markTaskDone==='function'&&!markTaskDone.__l6t2StableV2){const old=markTaskDone;window.markTaskDone=function(file,total){const out=old.apply(this,arguments);forceComplete(file,Number(total)||totalFor(file));return out};window.markTaskDone.__l6t2StableV2=true}
+    if(typeof saveTask==='function'&&!saveTask.__l6t2StableV2){const old=saveTask;window.saveTask=function(file,state){const out=old.apply(this,arguments),total=Number(state&&state.total)||totalFor(file),done=Array.isArray(state&&state.done)?state.done.length:Number(state&&state.done||0);if(file!=='pruefung.html'&&total>0&&done>=total)forceComplete(file,total);return out};window.saveTask.__l6t2StableV2=true}
+    if(typeof resetLocalTopicTasks==='function'&&!resetLocalTopicTasks.__l6t2StableV2){const old=resetLocalTopicTasks;window.resetLocalTopicTasks=function(){const out=old.apply(this,arguments);clearLegacyProgress(true);return out};window.resetLocalTopicTasks.__l6t2StableV2=true}
   }
-  function repairAll(){TASK_FILES.forEach(file=>repairState(file,totalFor(file)));ensureTask10();ensureHeader();stableFinishLinks();patchFunctions()}
+  function repairAll(){
+    const allowLegacyMigration=!localStorage.getItem(RESET_KEY)&&localStorage.getItem(MIGRATION_KEY)!=='1';
+    TASK_FILES.forEach(file=>repairState(file,totalFor(file),allowLegacyMigration));
+    if(allowLegacyMigration){try{localStorage.setItem(MIGRATION_KEY,'1')}catch(e){}}
+    ensureTask10();ensureHeader();stableFinishLinks();patchFunctions()
+  }
 
   window.l6t2RepairProgress=repairAll;
   window.l6t2ClearLegacyProgress=clearLegacyProgress;
+  window.l6t2ProgressResetKey=RESET_KEY;
   repairAll();
   document.addEventListener('DOMContentLoaded',repairAll);
   window.addEventListener('pageshow',repairAll);
