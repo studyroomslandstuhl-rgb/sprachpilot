@@ -59,10 +59,13 @@
   }
   function loadThemeScore(){
     if(window.L4T3ThemeScore||document.querySelector('script[data-l4t3-theme-score]'))return;
+    if(document.readyState==='loading'){
+      document.write('<script data-l4t3-theme-score="1" src="l4t3-theme-score.js?v=1"><\/script>');
+      return;
+    }
     const script=document.createElement('script');
     script.src='l4t3-theme-score.js?v=1';
     script.dataset.l4t3ThemeScore='1';
-    script.defer=true;
     document.head.appendChild(script);
   }
   loadThemeScore();
