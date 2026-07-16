@@ -4,8 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Karteikarten</title>
-<link rel="stylesheet" href="style.css?v=245">
-<link rel="stylesheet" href="../shared/lektion4-standard.css?v=245">
+<link rel="stylesheet" href="style.css?v=246">
+<link rel="stylesheet" href="../shared/lektion4-standard.css?v=246">
 <style>
 .flip-wrap{width:min(390px,100%);margin:18px auto;perspective:1100px}
 .flip-card{position:relative;width:100%;height:330px;transform-style:preserve-3d;transition:transform .55s ease;cursor:pointer;touch-action:manipulation}
@@ -30,10 +30,10 @@
   <section class="card" id="area"><div class="question">Aufgabe wird geladen …</div></section>
   <footer>© SprachPilot</footer>
 </div>
-<script type="module" src="/js/progress.js?v=245"></script>
+<script type="module" src="/js/progress.js?v=246"></script>
 <script src="app.js?v=236"></script>
 <script src="../shared/l4-bunny-direct.js?v=3"></script>
-<script src="../shared/l4-t2-audio.js?v=2"></script>
+<script src="../shared/l4-t2-audio.js?v=3"></script>
 <script>
 header("Karteikarten");
 const area=document.getElementById("area");
@@ -43,16 +43,7 @@ let i=null,revealed=false,solved=false;
 function backHtml(w){
  return `<div class="flip-word">${esc(full(w))}</div><div class="flip-note">Lösung</div><button type="button" class="btn secondary card-listen-btn" id="cardListenBtn">🔊 Anhören</button>`;
 }
-
-function playBackAudio(w){
- if(L4T2Audio.has(w)){
-  L4T2Audio.play(w,false,"audioStatus");
-  return;
- }
- L4T2Audio.stop();
- speak(full(w));
-}
-
+function playBackAudio(w){L4T2Audio.play(w,false,"audioStatus",full(w))}
 function show(){
  L4T2Audio.stop();
  if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){complete(area,FILE,"hoeren.html");return}
@@ -83,27 +74,11 @@ function show(){
  document.getElementById("checkBtn").addEventListener("click",()=>check(document.getElementById("ans").value));
  document.getElementById("ans").addEventListener("keydown",e=>{if(e.key==="Enter")check(e.target.value)});
 }
-
 function writeBox(){const box=document.getElementById("box"),ans=document.getElementById("ans");if(box)box.style.display="block";if(ans)ans.focus()}
-
-function reveal(help){
- if(solved)return;
- const card=document.getElementById("fcard");if(card)card.classList.add("flipped");
- if(help&&!revealed){revealed=true;markWrong(FILE,WORDS.length);const after=document.getElementById("after");if(after){after.innerHTML='<button type="button" class="btn" id="nextHelpBtn">Weiter</button>';document.getElementById("nextHelpBtn").addEventListener("click",nextAfterHelp)}}
-}
+function reveal(help){if(solved)return;const card=document.getElementById("fcard");if(card)card.classList.add("flipped");if(help&&!revealed){revealed=true;markWrong(FILE,WORDS.length);const after=document.getElementById("after");if(after){after.innerHTML='<button type="button" class="btn" id="nextHelpBtn">Weiter</button>';document.getElementById("nextHelpBtn").addEventListener("click",nextAfterHelp)}}}
 function nextAfterHelp(){markRight(FILE,WORDS.length);show()}
-
-function say(){
- const micBtn=document.getElementById("micBtn");
- startMic(micBtn,txt=>{writeBox();const ans=document.getElementById("ans");if(ans)ans.value=txt;check(txt)});
-}
-
-function check(txt){
- const w=WORDS[i],fb=document.getElementById("fb");if(!w||!fb)return;
- if(simple(txt)===simple(full(w))){solved=true;const card=document.getElementById("fcard");if(card)card.classList.add("flipped");fb.innerHTML='<div class="ok">Richtig!</div>';markRight(FILE,WORDS.length);const after=document.getElementById("after");if(after){after.innerHTML='<button type="button" class="btn" id="nextBtn">Weiter</button>';document.getElementById("nextBtn").addEventListener("click",show)}return}
- const tries=markWrong(FILE,WORDS.length);
- fb.innerHTML=tries>=3?`<div class="no">Lösung: ${esc(full(w))}</div>`:'<div class="no">Noch nicht richtig.</div>';
-}
+function say(){const micBtn=document.getElementById("micBtn");startMic(micBtn,txt=>{writeBox();const ans=document.getElementById("ans");if(ans)ans.value=txt;check(txt)})}
+function check(txt){const w=WORDS[i],fb=document.getElementById("fb");if(!w||!fb)return;if(simple(txt)===simple(full(w))){solved=true;const card=document.getElementById("fcard");if(card)card.classList.add("flipped");fb.innerHTML='<div class="ok">Richtig!</div>';markRight(FILE,WORDS.length);const after=document.getElementById("after");if(after){after.innerHTML='<button type="button" class="btn" id="nextBtn">Weiter</button>';document.getElementById("nextBtn").addEventListener("click",show)}return}const tries=markWrong(FILE,WORDS.length);fb.innerHTML=tries>=3?`<div class="no">Lösung: ${esc(full(w))}</div>`:'<div class="no">Noch nicht richtig.</div>'}
 show();
 </script>
 </body>
