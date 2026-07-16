@@ -33,7 +33,7 @@ jobs:
           grep -q 'Verben Test' verben-test/index.html
           grep -q 'styles.css?v=7' verben-test/index.html
           grep -q 'app.js?v=7' verben-test/index.html
-          grep -q 'ui-fix.js?v=1' verben-test/index.html
+          grep -q 'ui-fix.js?v=2' verben-test/index.html
           ! grep -qE 'l6-card-pattern|boot\.js|app-clean\.js|choose-filter\.js|state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
       - name: L3 structure with blue colors
         run: |
