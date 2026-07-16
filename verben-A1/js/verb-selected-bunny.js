@@ -1,5 +1,6 @@
 (function(){
   const BASE='https://sprachpilot.b-cdn.net/';
+  const NEU='https://sprachpilot.b-cdn.net/Neu/';
   const MAP={
     'anfangen':'https://sprachpilot.b-cdn.net/Neu/anfangen.webp',
     'ausleihen':'https://sprachpilot.b-cdn.net/Neu/ausleihen.webp',
@@ -14,6 +15,17 @@
     'spazieren gehen':'https://sprachpilot.b-cdn.net/Neu/spazierengehen.webp',
     'spazierengehen':'https://sprachpilot.b-cdn.net/Neu/spazierengehen.webp',
     'vereinbaren':'https://sprachpilot.b-cdn.net/Neu/vereinbaren.webp',
+    'klopfen':NEU+'klopfen.webp',
+    'riechen':NEU+'riechen.webp',
+    'stinken':NEU+'stinken.webp',
+    'schauen':NEU+'schauen.webp',
+    'gucken':NEU+'gucken.webp',
+    'würfeln':NEU+'wuerfeln.webp',
+    'wuerfeln':NEU+'wuerfeln.webp',
+    'wandern':NEU+'wandern.webp',
+    'schweigen':NEU+'schweigen.webp',
+    'vernichten':NEU+'vernichten.webp',
+    'erleben':NEU+'erleben.webp',
     'ausfallen':BASE+'ausfallen.webp',
     'aufbacken':BASE+'aufbacken.webp',
     'verschwenden':BASE+'verschwenden.webp',
@@ -48,7 +60,6 @@
     'sich_schminken':BASE+'sich_schminken.webp',
     'sich bewegen':BASE+'sich_bewegen.webp',
     'sich_bewegen':BASE+'sich_bewegen.webp',
-    'wandern':BASE+'wandern.webp',
     'meinen':BASE+'meinen.webp',
     'grillen':BASE+'grillen.webp',
     'wecken':BASE+'wecken.webp',
