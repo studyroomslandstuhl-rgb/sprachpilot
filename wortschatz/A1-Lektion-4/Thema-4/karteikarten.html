@@ -1,40 +1,94 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><!-- SprachPilot Thema 4 V8 Hardfix -->
-<title>Karteikarten</title><link rel="stylesheet" href="../shared/lektion4-standard.css?v=thema4-v8"><link rel="stylesheet" href="style.css?v=thema4-v8"></head><body><div class="container"><header class="topbar"></header><main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main><footer>© SprachPilot</footer></div><script src="../shared/lektion4-standard.js?v=thema4-v8"></script><script src="app.js?v=thema4-content-v3"></script><script src="../shared/l4-bunny-direct.js?v=1"></script><script>renderSprachPilotHeader({title:"Wohnungsanzeigen",subtitle:"A1 Lektion 4 · Thema 4",backHref:"index.html",overviewHref:"uebersicht.html",statsHref:"statistik.html"});
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Karteikarten</title>
+<link rel="stylesheet" href="../shared/lektion4-standard.css?v=thema4-v9">
+<link rel="stylesheet" href="style.css?v=thema4-v9">
+<style>
+.flip-wrap{width:min(390px,100%);margin:18px auto;perspective:1100px}
+.flip-card{position:relative;width:100%;height:330px;transform-style:preserve-3d;transition:transform .55s ease;cursor:pointer;touch-action:manipulation}
+.flip-card.flipped{transform:rotateY(180deg)}
+.flip-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;border:3px solid #ffe28a;border-radius:26px;background:#fff;box-shadow:0 12px 28px rgba(0,0,0,.1);backface-visibility:hidden;-webkit-backface-visibility:hidden;text-align:center}
+.flip-front .task-img{width:100%;height:250px;object-fit:contain;margin:0}
+.flip-back{transform:rotateY(180deg);background:#fff9dd}
+.flip-word{font-size:30px;font-weight:900;color:#7a5100;line-height:1.35}
+.flip-note{font-size:14px;color:#667085}
+.card-actions{justify-content:center}
+.card-answer-box{max-width:620px;margin:14px auto 0}
+.card-answer-box .btn{margin-top:10px}
+.card-listen-btn{position:relative;z-index:5;margin-top:8px}
+.audio-status{min-height:24px;margin:8px 0;text-align:center;font-weight:800;color:#7a5100}
+.audio-status.error{color:#9b1c1c}
+@media(max-width:600px){.flip-card{height:300px}.flip-word{font-size:24px}.flip-face{padding:14px}.flip-front .task-img{height:220px}}
+</style>
+</head>
+<body>
+<div class="container">
+<header class="topbar"></header>
+<main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main>
+<footer>© SprachPilot</footer>
+</div>
+<script src="../shared/lektion4-standard.js?v=thema4-v9"></script>
+<script src="app.js?v=thema4-content-v3"></script>
+<script src="../shared/l4-bunny-direct.js?v=3"></script>
+<script src="../shared/l4-t2-audio.js?v=3"></script>
+<script>
+renderSprachPilotHeader({title:"Wohnungsanzeigen",subtitle:"A1 Lektion 4 · Thema 4",backHref:"index.html",overviewHref:"uebersicht.html",statsHref:"statistik.html"});
+const area=document.getElementById("area");
+const FILE="karteikarten.html";
+let i=null,revealed=false,solved=false;
 
-const FILE="karteikarten.html";let i=null;
 function expected(w){return w.full||w.word}
-function promptFor(w){return w.article?"Sage das deutsche Wort mit Artikel.":"Sage einfach das Wort."}
-function hintFor(w){return w.article?"Artikel und Wort":"das Wort"}
+function frontVisual(w){return w.image?imgTag(w,"task-img"):'<div class="task-img" style="display:grid;place-items:center;font-size:86px">🗂️</div>'}
+function backHtml(w){return `<div class="flip-word">${esc(expected(w))}</div><div class="flip-note">Lösung</div><button type="button" class="btn secondary card-listen-btn" id="cardListenBtn">🔊 Anhören</button>`}
+function playBackAudio(w){L4T2Audio.play(w,false,"audioStatus",expected(w))}
+
 function show(){
-  if(pct(FILE,FLASHCARD_WORDS.length)>=100)return complete(area,FILE,"hoeren.html");
-  i=nextIndex(FILE,FLASHCARD_WORDS.length);
-  const w=FLASHCARD_WORDS[i];
-  area.innerHTML=`${progressHtml(FILE,FLASHCARD_WORDS.length)}
-    <div class="question">${promptFor(w)}</div>
-    <div class="hint">${esc(translateWord(w))}</div>
-    ${w.image?imgTag(w,'flash-img'):''}
-    <div class="input-row">
-      <button class="btn" id="mic" onclick="say()">🎤 Sprechen</button>
-      <button class="btn secondary" onclick="writeMode()">Ich kann nicht sprechen</button>
-      <button class="btn secondary" onclick="flip()">Karte umdrehen</button>
-    </div>
-    <div id="writeBox" class="input-row hidden">
-      <input id="ans" placeholder="Schreiben Sie die Antwort hier">
-      <button class="btn" onclick="check()">Kontrollieren</button>
-    </div>
-    <div id="fb" class="feedback"></div>`
+ L4T2Audio.stop();
+ if(pct(FILE,FLASHCARD_WORDS.length)>=100){complete(area,FILE,"hoeren.html");return}
+ i=nextIndex(FILE,FLASHCARD_WORDS.length);
+ const w=FLASHCARD_WORDS[i];
+ if(!w){area.innerHTML='<div class="no">Die Karte konnte nicht geladen werden.</div>';return}
+ revealed=false;solved=false;
+ area.innerHTML=`${progressHtml(FILE,FLASHCARD_WORDS.length)}
+  <div class="flip-wrap">
+   <div id="fcard" class="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen">
+    <div class="flip-face flip-front">${frontVisual(w)}</div>
+    <div class="flip-face flip-back">${backHtml(w)}</div>
+   </div>
+  </div>
+  <div class="hint">Übersetzung: <b>${esc(translateWord(w))}</b></div>
+  <div class="actions card-actions"><button id="micBtn" type="button" class="btn">Sprechen</button><button id="writeBtn" type="button" class="btn secondary">Schreiben</button></div>
+  <div id="audioStatus" class="audio-status" aria-live="polite"></div>
+  <div id="micStatus" class="small"></div>
+  <div id="box" class="card-answer-box" style="display:none"><input id="ans" autocomplete="off" placeholder="Antwort schreiben"><button id="checkBtn" type="button" class="btn">Kontrollieren</button></div>
+  <div id="fb" class="feedback"></div><div id="after" class="actions card-actions"></div>`;
+ const card=document.getElementById("fcard");
+ card.addEventListener("click",()=>reveal(true));
+ card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();reveal(true)}});
+ document.getElementById("cardListenBtn").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();playBackAudio(w)});
+ document.getElementById("micBtn").addEventListener("click",sayAnswer);
+ document.getElementById("writeBtn").addEventListener("click",writeMode);
+ document.getElementById("checkBtn").addEventListener("click",check);
+ document.getElementById("ans").addEventListener("keydown",e=>{if(e.key==="Enter")check()});
 }
-function writeMode(){writeBox.classList.remove('hidden');ans.focus()}
-function say(){startMic(mic,t=>{writeMode();ans.value=t;check()})}
-function flip(){
-  const w=FLASHCARD_WORDS[i];
-  markWrong(FILE,FLASHCARD_WORDS.length);
-  fb.className='feedback';
-  fb.innerHTML=`<div class="hint"><b>Lösung:</b> ${esc(expected(w))}</div><div class="no">Schreiben Sie das Wort selbst in das Feld.</div>`;
+function writeMode(){const box=document.getElementById("box"),ans=document.getElementById("ans");if(box)box.style.display="block";if(ans)ans.focus()}
+function reveal(help){
+ if(solved)return;
+ const card=document.getElementById("fcard");if(card)card.classList.add("flipped");
+ if(help&&!revealed){revealed=true;markWrong(FILE,FLASHCARD_WORDS.length);const after=document.getElementById("after");after.innerHTML='<button type="button" class="btn" id="nextHelpBtn">Weiter</button>';document.getElementById("nextHelpBtn").addEventListener("click",nextAfterHelp)}
 }
+function nextAfterHelp(){markRight(FILE,FLASHCARD_WORDS.length);show()}
+function sayAnswer(){startMic(document.getElementById("micBtn"),text=>{writeMode();const ans=document.getElementById("ans");ans.value=text;check()})}
 function check(){
-  const w=FLASHCARD_WORDS[i];
-  if(eq(ans.value,expected(w))){fb.innerHTML='<div class="ok">Richtig!</div>';markRight(FILE,FLASHCARD_WORDS.length);setTimeout(show,600)}
-  else{const t=markWrong(FILE,FLASHCARD_WORDS.length);fb.innerHTML=t<3?'<div class="no">Noch einmal. Achte auf Artikel und Schreibweise.</div>':`<div class="no">Lösung: ${esc(expected(w))}</div>`}
+ const w=FLASHCARD_WORDS[i],ans=document.getElementById("ans"),fb=document.getElementById("fb");
+ if(!w||!ans||!fb)return;
+ if(eq(ans.value,expected(w))){solved=true;document.getElementById("fcard").classList.add("flipped");fb.innerHTML='<div class="ok">Richtig!</div>';markRight(FILE,FLASHCARD_WORDS.length);document.getElementById("after").innerHTML='<button type="button" class="btn" id="nextBtn">Weiter</button>';document.getElementById("nextBtn").addEventListener("click",show);return}
+ const tries=markWrong(FILE,FLASHCARD_WORDS.length);fb.innerHTML=tries>=3?`<div class="no">Lösung: ${esc(expected(w))}</div>`:'<div class="no">Noch nicht richtig.</div>';
 }
-show();</script></body></html>
+show();
+</script>
+</body>
+</html>
