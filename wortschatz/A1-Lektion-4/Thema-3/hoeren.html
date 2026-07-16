@@ -1,28 +1,95 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Hören Thema 3</title><link rel="stylesheet" href="style.css?v=321"><link rel="stylesheet" href="l4t3-color-mode.css?v=1"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=319"></script><script src="l4t3-color-mode.js?v=1"></script><script src="l4t3-bunny-images.js?v=1"></script><script>
-header('Farben & Adjektive');
-const file='hoeren.html';
-let tasks=L4T3ColorMode.activeHearingTasks();
-let selectedColor=null;
-function colorButton(c){return `<button class="opt image-only color-choice-button" data-color="${c.id}" onclick="pickColor('${c.id}')">${L4T3ColorMode.visual(c,'choice-img')}</button>`}
-function itemButton(it){return `<button class="opt image-only" data-item="${it.id}" onclick="pickItem('${it.id}')">${img(it.img,'choice-img')}</button>`}
-function render(){
-  tasks=L4T3ColorMode.activeHearingTasks();
-  const total=tasks.length;
-  let i=nextIndex(file,total);
-  if(i===null)return complete(area,file,'farben.html');
-  selectedColor=null;
-  let t=tasks[i],color=colorById(t.color),item=furnitureById(t.item);
-  let colorOpts=mixWithCorrect(color,L4T3ColorMode.activeColors(),4);
-  let itemOpts=mixWithCorrect(item,FURNITURE,4);
-  area.innerHTML=progressHtml(file,total)+
-  `<div class="small" style="text-align:center">${L4T3ColorMode.label()}</div>
-   <div class="question">Höre. Wähle zuerst die Farbe, dann das Möbel.</div>
-   <div class="actions"><button class="btn" onclick="speak('${item.full} ist ${color.word}.')">▶️ Deutsch hören</button><button class="btn secondary" onclick="speak('${item.full} ist ${color.word}.',true)">🐢 Deutsch langsam</button></div>
-   <h3>1. Farbe</h3><div class="options image-grid-4">${colorOpts.map(colorButton).join('')}</div>
-   <h3>2. Möbel</h3><div class="options image-grid-4 locked-options" id="itemOptions">${itemOpts.map(itemButton).join('')}</div>
-   <div id="fb" class="feedback"></div>`;
-}
-function pickColor(id){let total=tasks.length,st=loadTask(file,total),t=tasks[st.current];document.querySelectorAll('[data-color]').forEach(x=>x.classList.remove('selected','wrong'));let btn=document.querySelector(`[data-color="${id}"]`);if(id===t.color){selectedColor=id;if(btn)btn.classList.add('selected');itemOptions.classList.remove('locked-options');fb.innerHTML='<div class="ok">Farbe richtig. Wähle jetzt das Möbel.</div>'}else{if(btn)btn.classList.add('wrong');let tr=markWrong(file,total,colorById(t.color).word);fb.innerHTML='<div class="no">'+feedbackForTry(tr,colorById(t.color).word,'die Farbe')+'</div>'}}
-function pickItem(id){let total=tasks.length,st=loadTask(file,total),t=tasks[st.current],item=furnitureById(t.item);if(!selectedColor){fb.innerHTML='<div class="no">Wähle zuerst die Farbe.</div>';return}document.querySelectorAll('[data-item]').forEach(x=>x.classList.remove('selected','wrong'));let btn=document.querySelector(`[data-item="${id}"]`);if(id===t.item){if(btn)btn.classList.add('selected');fb.innerHTML='<div class="ok">Richtig!</div>';setTimeout(()=>{markRight(file,total)?complete(area,file,'farben.html'):render()},280)}else{if(btn)btn.classList.add('wrong');let tr=markWrong(file,total,item.full);fb.innerHTML='<div class="no">'+feedbackForTry(tr,item.full,'das Möbel')+'</div>'}}
-maybeStart(render,'hoeren.html');
-</script></body></html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Hören · A1 Lektion 4 Thema 3</title>
+<style>
+*{box-sizing:border-box}html,body{margin:0;min-height:100%;font-family:Arial,sans-serif;color:#442f00}
+body{background:linear-gradient(180deg,#ffd536,#ffeb8a);padding:18px}
+.container{width:min(940px,100%);margin:auto}
+.topbar,.panel{background:#fff;border-radius:28px;box-shadow:0 10px 28px rgba(121,80,0,.14)}
+.topbar{padding:15px 18px;margin-bottom:18px}
+.brand{display:flex;align-items:center;justify-content:space-between;gap:12px;color:#694700;text-decoration:none}
+.brand strong{font-size:23px}.subtitle{font-size:14px;color:#805d18;margin-top:3px}
+.nav,.actions{display:flex;gap:9px;flex-wrap:wrap;justify-content:center;margin-top:12px}
+.nav{justify-content:flex-start}
+.panel{padding:22px;min-height:470px}
+.btn{border:0;border-radius:14px;padding:12px 17px;background:#d49400;color:#fff;font-weight:800;font-size:16px;cursor:pointer;text-decoration:none;display:inline-flex;align-items:center;justify-content:center}
+.btn.secondary{background:#fff4c4;color:#704b00;border:2px solid #e9bd28}
+.btn.green{background:#228b4d}
+.small{text-align:center;font-size:14px;color:#76591c}
+.question{font-size:24px;font-weight:900;text-align:center;margin:18px 0;color:#765000}
+.progress{height:14px;border-radius:99px;background:#f7e8aa;overflow:hidden;margin:8px 0 16px}
+.bar{height:100%;background:#d79a00;transition:width .25s}
+.section-title{font-size:19px;font-weight:900;text-align:center;margin:20px 0 10px}
+.grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.option{min-height:145px;border:3px solid #f0cf64;border-radius:20px;background:#fff;cursor:pointer;padding:8px;display:flex;align-items:center;justify-content:center;transition:.15s}
+.option:active{transform:scale(.98)}.option.selected{border-color:#1f9a55;background:#e9fff2}.option.wrong{border-color:#d94949;background:#fff0f0}
+.option:disabled{cursor:not-allowed;opacity:.42}
+.color-swatch{width:100%;height:120px;border-radius:14px;border:2px solid #cba932}
+.furniture-img{display:block;width:100%;height:125px;object-fit:contain}
+.feedback{text-align:center;min-height:42px;font-weight:800;margin-top:14px}
+.ok{color:#176b39}.no{color:#a22922}.audio-status{text-align:center;min-height:24px;color:#76591c;margin-top:8px}
+.finish{text-align:center;padding:45px 12px}.finish-icon{font-size:66px;color:#218a4c}
+.footer{text-align:center;color:#fff;margin:22px 0;font-size:18px}
+.error-box{padding:22px;border:2px solid #e35555;background:#fff2f2;border-radius:18px;text-align:center;color:#8c1f1f}
+@media(max-width:700px){body{padding:10px}.panel{padding:14px;border-radius:22px}.grid{grid-template-columns:repeat(2,minmax(0,1fr))}.option{min-height:128px}.color-swatch{height:105px}.furniture-img{height:108px}.brand strong{font-size:20px}}
+</style>
+</head>
+<body>
+<div class="container">
+<header class="topbar">
+<a class="brand" href="/index.html"><div><strong>🚀 SprachPilot</strong><div class="subtitle">Hören · A1 Lektion 4 · Thema 3</div></div><span>🏠</span></a>
+<nav class="nav"><a class="btn secondary" href="index.html">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a><button class="btn secondary" id="resetBtn" type="button">Fortschritt löschen</button></nav>
+</header>
+<main class="panel" id="area"><div class="small">Höraufgabe wird vorbereitet …</div></main>
+<div class="footer">© SprachPilot</div>
+</div>
+<script>
+(function(){
+'use strict';
+const area=document.getElementById('area');
+const IMAGE='https://sprachpilot.b-cdn.net/';
+const MODE_KEY='SP_L4_T3_COLOR_MODE_V1';
+const BASE_IDS=['rot','blau','gruen','gelb','orange','weiss','schwarz','grau','braun','rosa','lila','tuerkis'];
+const COLORS=[{id:'rot',word:'rot',hex:'#ef4444'},{id:'dunkelrot',word:'dunkelrot',hex:'#991b1b'},{id:'hellrot',word:'hellrot',hex:'#fca5a5'},{id:'blau',word:'blau',hex:'#3b82f6'},{id:'dunkelblau',word:'dunkelblau',hex:'#1e3a8a'},{id:'hellblau',word:'hellblau',hex:'#93c5fd'},{id:'gruen',word:'grün',hex:'#22c55e'},{id:'dunkelgruen',word:'dunkelgrün',hex:'#166534'},{id:'hellgruen',word:'hellgrün',hex:'#86efac'},{id:'gelb',word:'gelb',hex:'#facc15'},{id:'dunkelgelb',word:'dunkelgelb',hex:'#ca8a04'},{id:'hellgelb',word:'hellgelb',hex:'#fde68a'},{id:'orange',word:'orange',hex:'#fb923c'},{id:'dunkelorange',word:'dunkelorange',hex:'#c2410c'},{id:'hellorange',word:'hellorange',hex:'#fdba74'},{id:'weiss',word:'weiß',hex:'#ffffff'},{id:'schwarz',word:'schwarz',hex:'#111827'},{id:'grau',word:'grau',hex:'#9ca3af'},{id:'dunkelgrau',word:'dunkelgrau',hex:'#4b5563'},{id:'hellgrau',word:'hellgrau',hex:'#d1d5db'},{id:'braun',word:'braun',hex:'#92400e'},{id:'dunkelbraun',word:'dunkelbraun',hex:'#451a03'},{id:'hellbraun',word:'hellbraun',hex:'#b45309'},{id:'rosa',word:'rosa',hex:'#f9a8d4'},{id:'dunkelrosa',word:'dunkelrosa',hex:'#be185d'},{id:'hellrosa',word:'hellrosa',hex:'#fbcfe8'},{id:'lila',word:'lila',hex:'#a855f7'},{id:'dunkellila',word:'dunkellila',hex:'#6b21a8'},{id:'helllila',word:'helllila',hex:'#d8b4fe'},{id:'tuerkis',word:'türkis',hex:'#14b8a6'},{id:'dunkeltuerkis',word:'dunkeltürkis',hex:'#0f766e'},{id:'helltuerkis',word:'helltürkis',hex:'#5eead4'}];
+const FURNITURE=[{id:'schrank',full:'der Schrank'},{id:'kuehlschrank',full:'der Kühlschrank'},{id:'sofa',full:'das Sofa'},{id:'tisch',full:'der Tisch'},{id:'stuhl',full:'der Stuhl'},{id:'bett',full:'das Bett'},{id:'fernseher',full:'der Fernseher'},{id:'teppich',full:'der Teppich'},{id:'sessel',full:'der Sessel'},{id:'lampe',full:'die Lampe'},{id:'herd',full:'der Herd'},{id:'elektrogeraet',full:'das Elektrogerät'},{id:'dusche',full:'die Dusche'},{id:'badewanne',full:'die Badewanne'},{id:'toilette',full:'die Toilette'},{id:'waschbecken',full:'das Waschbecken'}];
+const ALL_TASKS=[{color:'rot',item:'stuhl'},{color:'dunkelrot',item:'sessel'},{color:'hellrot',item:'sofa'},{color:'blau',item:'tisch'},{color:'dunkelblau',item:'kuehlschrank'},{color:'hellblau',item:'bett'},{color:'gruen',item:'lampe'},{color:'dunkelgruen',item:'fernseher'},{color:'hellgruen',item:'teppich'},{color:'gelb',item:'schrank'},{color:'dunkelgelb',item:'herd'},{color:'hellgelb',item:'elektrogeraet'},{color:'orange',item:'dusche'},{color:'dunkelorange',item:'badewanne'},{color:'hellorange',item:'toilette'},{color:'grau',item:'waschbecken'},{color:'dunkelgrau',item:'stuhl'},{color:'hellgrau',item:'tisch'},{color:'braun',item:'bett'},{color:'dunkelbraun',item:'schrank'},{color:'hellbraun',item:'sessel'},{color:'rosa',item:'lampe'},{color:'dunkelrosa',item:'sofa'},{color:'hellrosa',item:'badewanne'},{color:'lila',item:'sessel'},{color:'dunkellila',item:'fernseher'},{color:'helllila',item:'toilette'},{color:'tuerkis',item:'elektrogeraet'},{color:'dunkeltuerkis',item:'waschbecken'},{color:'helltuerkis',item:'kuehlschrank'}];
+const mode=localStorage.getItem(MODE_KEY)==='advanced'?'advanced':'basis';
+const activeColorIds=new Set(mode==='advanced'?COLORS.map(x=>x.id):BASE_IDS);
+const tasks=ALL_TASKS.filter(x=>activeColorIds.has(x.color));
+const FILE='hoeren.html';
+const KEY='SP_L4_T3_V2_'+FILE+'_'+mode;
+let current=0,selectedColor=null,speaking=false;
+function esc(v){return String(v||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;')}
+function shuffle(a){const b=a.slice();for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b}
+function byColor(id){return COLORS.find(x=>x.id===id)}
+function byFurniture(id){return FURNITURE.find(x=>x.id===id)}
+function emptyState(){return{total:tasks.length,queue:shuffle([...Array(tasks.length).keys()]),done:[],current:null,tries:0,hadWrong:false,wrongItems:[]}}
+function loadState(){try{const s=JSON.parse(localStorage.getItem(KEY)||'null');if(s&&s.total===tasks.length&&Array.isArray(s.queue)&&Array.isArray(s.done))return s}catch(e){}return emptyState()}
+function saveState(s){try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}syncProgress(s)}
+function syncProgress(s){try{if(sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1')return;const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:'4',theme:'3',title:'A1 Lektion 4 · Thema 3',key:'SP_L4_T3_V2',file:FILE,taskKey:FILE,taskTitle:'Hören',total:s.total,done:s.done.length,percent:Math.round(s.done.length/s.total*100)||0,completed:s.done.length>=s.total,wrongItems:s.wrongItems||[]};if(window.SPProgress&&SPProgress.recordTaskProgress)SPProgress.recordTaskProgress(payload)}catch(e){}}
+function nextIndex(){const s=loadState();if(s.done.length>=s.total)return null;if(s.current===null||s.current===undefined){if(!s.queue.length)s.queue=[...Array(s.total).keys()].filter(i=>!s.done.includes(i));s.current=s.queue.shift();s.tries=0;s.hadWrong=false;saveState(s)}return s.current}
+function markWrong(item){const s=loadState();s.tries=(s.tries||0)+1;s.hadWrong=true;if(item)s.wrongItems=[...(s.wrongItems||[]),item].slice(-80);saveState(s);return s.tries}
+function markRight(){const s=loadState(),cur=s.current;if(cur!==null&&cur!==undefined){if(s.hadWrong||s.tries>0){if(!s.done.includes(cur)&&!s.queue.includes(cur))s.queue.push(cur)}else if(!s.done.includes(cur))s.done.push(cur)}s.current=null;s.tries=0;s.hadWrong=false;saveState(s);return s.done.length>=s.total}
+function progress(){const s=loadState(),p=Math.round(s.done.length/s.total*100)||0;return `<div class="small">${s.done.length} richtig · ${s.total-s.done.length} übrig · ${p}% · ${mode==='advanced'?'Farben Fortgeschritten':'Farben Basis'}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
+function feedbackForTry(n,solution,label){if(n===1)return'Da ist noch ein Fehler.';if(n===2)return'Tipp: Prüfe '+label+'.';return'Lösung: '+solution}
+function colorVisual(c){return `<div class="color-swatch" style="background:${c.hex};${c.id==='weiss'?'border-color:#94a3b8':''}" aria-label="${esc(c.word)}"></div>`}
+function furnitureVisual(f){return `<img class="furniture-img" src="${IMAGE+encodeURIComponent(f.id)+'.webp'}" alt="" loading="eager" onerror="this.outerHTML='<div style=&quot;font-size:58px&quot;>🪑</div>'">`}
+function sentence(){const t=tasks[current],c=byColor(t.color),f=byFurniture(t.item);return f.full+' ist '+c.word+'.'}
+function speak(slow=false){if(speaking)try{speechSynthesis.cancel()}catch(e){}const status=document.getElementById('audioStatus');if(!('speechSynthesis'in window)){if(status)status.textContent='Audio ist auf diesem Gerät nicht verfügbar.';return}try{const u=new SpeechSynthesisUtterance(sentence());u.lang='de-DE';u.rate=slow?0.62:0.92;u.onstart=()=>{speaking=true;if(status)status.textContent=slow?'Langsame Wiedergabe läuft …':'Wiedergabe läuft …'};u.onend=()=>{speaking=false;if(status)status.textContent=''};u.onerror=()=>{speaking=false;if(status)status.textContent='Audio konnte nicht abgespielt werden.'};speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){if(status)status.textContent='Audio konnte nicht abgespielt werden.'}}
+function optionSet(correct,pool,count=4){return shuffle([correct,...shuffle(pool.filter(x=>x.id!==correct.id)).slice(0,count-1)])}
+function render(){try{speechSynthesis.cancel()}catch(e){}const idx=nextIndex();if(idx===null){finish();return}current=idx;selectedColor=null;const t=tasks[current],c=byColor(t.color),f=byFurniture(t.item),colorOpts=optionSet(c,COLORS.filter(x=>activeColorIds.has(x.id))),itemOpts=optionSet(f,FURNITURE);area.innerHTML=progress()+`<div class="question">Höre. Wähle zuerst die Farbe, dann das Möbel.</div><div class="actions"><button class="btn" id="listenBtn" type="button">▶️ Deutsch hören</button><button class="btn secondary" id="slowBtn" type="button">🐢 Deutsch langsam</button></div><div id="audioStatus" class="audio-status"></div><div class="section-title">1. Farbe</div><div class="grid">${colorOpts.map(x=>`<button class="option" data-color="${x.id}" type="button">${colorVisual(x)}</button>`).join('')}</div><div class="section-title">2. Möbel</div><div class="grid">${itemOpts.map(x=>`<button class="option" data-item="${x.id}" type="button" disabled>${furnitureVisual(x)}</button>`).join('')}</div><div id="feedback" class="feedback"></div>`;document.getElementById('listenBtn').onclick=()=>speak(false);document.getElementById('slowBtn').onclick=()=>speak(true);document.querySelectorAll('[data-color]').forEach(btn=>btn.onclick=()=>pickColor(btn.dataset.color));document.querySelectorAll('[data-item]').forEach(btn=>btn.onclick=()=>pickItem(btn.dataset.item))}
+function pickColor(id){const t=tasks[current],fb=document.getElementById('feedback');document.querySelectorAll('[data-color]').forEach(x=>x.classList.remove('selected','wrong'));const btn=document.querySelector(`[data-color="${id}"]`);if(id===t.color){selectedColor=id;if(btn)btn.classList.add('selected');document.querySelectorAll('[data-item]').forEach(x=>x.disabled=false);fb.innerHTML='<div class="ok">Farbe richtig. Wähle jetzt das Möbel.</div>'}else{if(btn)btn.classList.add('wrong');const correct=byColor(t.color),tries=markWrong(correct.word);fb.innerHTML='<div class="no">'+feedbackForTry(tries,correct.word,'die Farbe')+'</div>'}}
+function pickItem(id){const t=tasks[current],correct=byFurniture(t.item),fb=document.getElementById('feedback');if(!selectedColor){fb.innerHTML='<div class="no">Wähle zuerst die Farbe.</div>';return}document.querySelectorAll('[data-item]').forEach(x=>x.classList.remove('selected','wrong'));const btn=document.querySelector(`[data-item="${id}"]`);if(id===t.item){if(btn)btn.classList.add('selected');fb.innerHTML='<div class="ok">Richtig!</div>';setTimeout(()=>{markRight();render()},350)}else{if(btn)btn.classList.add('wrong');const tries=markWrong(correct.full);fb.innerHTML='<div class="no">'+feedbackForTry(tries,correct.full,'das Möbel')+'</div>'}}
+function finish(){area.innerHTML='<div class="finish"><div class="finish-icon">✓</div><h1>Aufgabe geschafft!</h1><p>100% erreicht.</p><div class="actions"><button class="btn" id="again" type="button">Nochmal üben</button><a class="btn green" href="farben.html?done=1">Weiter</a><a class="btn secondary" href="index.html">Zum Thema</a></div></div>';document.getElementById('again').onclick=()=>{localStorage.removeItem(KEY);render()}}
+function showStart(){area.innerHTML='<div class="finish"><h1>Hören</h1><p>Die Aufgabe startet erst, wenn du auf „Starten“ klickst.</p><div class="actions"><button class="btn green" id="startBtn" type="button">Starten</button><a class="btn secondary" href="index.html">Zum Thema</a></div></div>';document.getElementById('startBtn').onclick=()=>{history.replaceState(null,'',location.pathname);render()}}
+document.getElementById('resetBtn').onclick=()=>{if(confirm('Möchten Sie den Fortschritt dieser Höraufgabe löschen?')){localStorage.removeItem(KEY);render()}};
+window.addEventListener('error',e=>{console.error(e.error||e.message);if(area&&!area.querySelector('.grid')&&!area.querySelector('.finish'))area.innerHTML='<div class="error-box"><b>Die Höraufgabe konnte nicht gestartet werden.</b><div class="actions"><button class="btn" onclick="location.reload()">Neu laden</button><a class="btn secondary" href="index.html">Zum Thema</a></div></div>'});
+setTimeout(()=>{try{import('/js/progress.js?v=l4t3-hearing-standalone').then(()=>syncProgress(loadState())).catch(()=>{})}catch(e){}},0);
+try{new URLSearchParams(location.search).get('done')==='1'?showStart():render()}catch(e){console.error(e);area.innerHTML='<div class="error-box"><b>Die Höraufgabe konnte nicht gestartet werden.</b><br>'+esc(e.message)+'<div class="actions"><button class="btn" onclick="location.reload()">Neu laden</button></div></div>'}
+})();
+</script>
+</body>
+</html>
