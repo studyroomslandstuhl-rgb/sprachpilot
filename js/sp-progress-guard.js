@@ -163,4 +163,89 @@
   window.spDashboardHref=dashboardHref;
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',patchDashboardButtons);else patchDashboardButtons();
   setTimeout(patchDashboardButtons,300);
+
+  function installL4T2FastSync(){
+    const path=String(location.pathname||"");
+    if(!/A1-Lektion-4\/Thema-2/i.test(path))return;
+    if(window.__spL4T2FastSyncInstalled||window.__spL4T2FastSyncWaiting)return;
+    window.__spL4T2FastSyncWaiting=true;
+    let tries=0;
+    const wait=setInterval(function(){
+      tries++;
+      if(typeof window.saveTask!=="function"||typeof window.taskKey!=="function"){
+        if(tries>120)clearInterval(wait);
+        return;
+      }
+      clearInterval(wait);
+      if(window.__spL4T2FastSyncInstalled)return;
+      window.__spL4T2FastSyncInstalled=true;
+      const originalQueue=typeof window.queueProgress==="function"?window.queueProgress:null;
+      const originalSync=typeof window.syncDashboardProgress==="function"?window.syncDashboardProgress:null;
+      const pending=new Map();
+      let flushTimer=0;
+      let syncing=false;
+
+      function percentFor(st){
+        const total=Number(st&&st.total||0)||1;
+        const done=Array.isArray(st&&st.done)?st.done.length:0;
+        return Math.min(100,Math.round(done/total*100)||0);
+      }
+      function snapshot(st){
+        const copy={};
+        Object.keys(st||{}).forEach(function(k){
+          const v=st[k];
+          copy[k]=Array.isArray(v)?v.slice():v;
+        });
+        return copy;
+      }
+      function taskTitle(file){return String(file||"").replace(/\.html$/i,"").replace(/-/g," ")}
+      function schedule(){
+        clearTimeout(flushTimer);
+        flushTimer=setTimeout(flush,650);
+      }
+      function flush(){
+        if(syncing){schedule();return;}
+        const batch=Array.from(pending.entries());
+        pending.clear();
+        syncing=true;
+        setTimeout(function(){
+          try{
+            if(originalSync)originalSync();
+            if(originalQueue){
+              batch.forEach(function(entry){
+                const file=entry[0],st=entry[1];
+                const total=Number(st.total||0)||0;
+                const done=Array.isArray(st.done)?st.done.length:0;
+                originalQueue("recordTaskProgress",{
+                  file:file,
+                  taskKey:file,
+                  taskTitle:taskTitle(file),
+                  total:total,
+                  done:done,
+                  percent:percentFor(st),
+                  completed:total>0&&done>=total,
+                  tries:st.tries||0,
+                  wrongItems:st.wrongItems||[],
+                  lastWrongItem:st.lastWrongItem||""
+                });
+              });
+            }
+          }catch(e){}
+          syncing=false;
+          if(pending.size)schedule();
+        },0);
+      }
+      if(originalSync){
+        window.syncDashboardProgress=function(){schedule();};
+      }
+      window.saveTask=function(file,st){
+        try{localStorage.setItem(window.taskKey(file),JSON.stringify(st));}catch(e){}
+        try{window.dispatchEvent(new CustomEvent("sprachpilot-progress",{detail:{file:file,st:st}}));}catch(e){}
+        pending.set(file,snapshot(st));
+        schedule();
+      };
+      window.addEventListener("pagehide",flush);
+    },50);
+  }
+  installL4T2FastSync();
 })();
