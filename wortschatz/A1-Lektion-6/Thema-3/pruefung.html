@@ -1,18 +1,26 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=1"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="app.js?v=1"></script><script>
-header('Prüfung');const FILE='pruefung.html';let q=[],i=0,score=0;
-function build(){q=[
-{p:'Artikel: ___ Speisekarte',a:'die',opts:['der','die','das']},
-{p:'Ich esse ___ Hamburger.',a:'den',opts:['der','den','die']},
-{p:'Ich nehme ___ Salat.',a:'einen',opts:['ein','einen','eine']},
-{p:'Ich trinke ___ Cola.',a:'meine',opts:['mein','meinen','meine']},
-{p:'Kompositum: Apfel + Saft = ?',a:'der Apfelsaft',opts:['der Apfelsaft','die Apfelsaft','das Apfelsaft']},
-{p:'Artikel: ___ Käsebrot',a:'das',opts:['der','die','das']},
-{p:'Satz: Der Mann isst den Hamburger. Was ist das Objekt?',a:'den Hamburger',opts:['Der Mann','isst','den Hamburger']},
-{p:'Nominativ oder Akkusativ: den Salat',a:'Akkusativ',opts:['Nominativ','Akkusativ','Verb']},
-{p:'Picknick: Mila bringt einen Salat mit. Richtig?',a:'Richtig',opts:['Richtig','Falsch','Keine Information']},
-{p:'Fehler: Ich esse der Hamburger. Richtige Form?',a:'den',opts:['der','den','das']}
-]}
-function show(){if(!q.length)build();if(i>=q.length){done();return}const it=q[i];area.innerHTML=`<div class="small">Aufgabe ${i+1} / ${q.length}</div><div class="question">${it.p}</div><div class="choice-grid">${shuffle(it.opts).map(o=>`<button class="choice" onclick="check('${encodeURIComponent(o)}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`}
-function check(raw){const it=q[i],val=decodeURIComponent(raw);if(exact(val,it.a))score++;i++;show()}
-function done(){const percent=Math.round(score/q.length*100);markTaskDone(FILE,10);try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:3,topicId:'wortschatz-a1-lektion-6-thema-3',title:'A1 Lektion 6 · Thema 3',percent,scorePercent:percent,stars:percent>=100?3:percent>=70?2:percent>=50?1:0})}catch(e){}area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="hint">Ergebnis: ${score} / ${q.length} = ${percent}%</div><div class="actions"><a class="btn" href="index.html">Zum Thema</a></div></div>`}
-show();</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=2"><link rel="stylesheet" href="l6t3-upgrade.css?v=1"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t3-upgrade1"></script><script src="app.js?v=1"></script><script src="l6t3-upgrade.js?v=1"></script><script>
+const area=document.getElementById('area'),FILE='pruefung.html';header('Prüfung');let q=[],i=0,score=0,answered=false;
+function prereqDone(){return L6T3.activeTasks().filter(t=>t[0]!==FILE).every(t=>pctFor(t[0],t[1])>=100)}
+function distract(correct,pool,count=3){return L6T3.fisher([correct,...L6T3.fisher(pool.filter(x=>x!==correct)).slice(0,count)])}
+function build(){
+ const nouns=L6T3.fisher(WORDS.filter(w=>w.type==='noun'&&['der','die','das'].includes(w.article))).slice(0,4);
+ const compA=L6T3.fisher(COMPOUNDS).slice(0,2),compB=L6T3.fisher(COMPOUNDS).slice(0,2);
+ const analysis=L6T3.analysisItems('pruefung-analyse').slice(0,4);
+ const definite=L6T3.definiteItems().slice(0,2),indefinite=L6T3.indefiniteItems().slice(0,2),possessive=L6T3.possessiveItems().slice(0,2),dialogs=L6T3.dialogItems().slice(0,2);
+ const dialogAnswers=L6T3.dialogItems().map(x=>x.answer);
+ q=[];
+ nouns.forEach(w=>q.push({p:`Artikel: ___ ${w.word}`,a:w.article,opts:['der','die','das']}));
+ compA.forEach(x=>q.push({p:`Artikel: ___ ${x.word}`,a:x.article,opts:['der','die','das']}));
+ compB.forEach(x=>q.push({p:`Kompositum: ${x.left} + ${x.right}`,a:x.full,opts:distract(x.full,COMPOUNDS.map(c=>c.full))}));
+ analysis.forEach((x,n)=>{if(n===0)q.push({p:`Welcher Artikel steht in „${x.target}“?`,a:x.article,opts:['der','den','die','das']});else if(n===1||n===3)q.push({p:`${x.sentence} · „${x.target}“ ist …`,a:x.case,opts:['Nominativ','Akkusativ']});else q.push({p:`${x.sentence} · Warum steht „${x.target}“ so?`,a:x.reason,opts:L6T3.reasonOptions()})});
+ definite.forEach(x=>q.push({p:x.q,a:x.answer,opts:['der','den','die','das']}));
+ indefinite.forEach(x=>q.push({p:x.q,a:x.answer,opts:['ein','einen','eine']}));
+ possessive.forEach(x=>q.push({p:`Person ${x.owner}: ${x.q}`,a:x.answer,opts:x.options}));
+ dialogs.forEach(x=>q.push({p:x.dialog.join(' '),a:x.answer,opts:distract(x.answer,dialogAnswers)}));
+ q=L6T3.fisher(q).slice(0,20);i=0;score=0;
+}
+function show(){if(!prereqDone()){area.innerHTML='<div class="finish-box"><div class="finish-icon">🔒</div><div class="question">Prüfung gesperrt</div><p class="small">Schließe zuerst alle freigegebenen Aufgaben mit 100% ab.</p><div class="actions"><a class="btn secondary" href="index.html">Zum Themenmenü</a></div></div>';return}if(!q.length)build();if(i>=q.length){done();return}answered=false;const it=q[i];area.innerHTML=`<div class="small">Aufgabe ${i+1} / ${q.length}</div><div class="progress"><div class="bar" style="width:${Math.round(i/q.length*100)}%"></div></div><div class="question">${it.p}</div><div class="choice-grid">${L6T3.fisher(it.opts).map(o=>`<button type="button" class="choice" onclick="check(this,'${encodeURIComponent(o)}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`}
+function check(btn,raw){if(answered)return;answered=true;const it=q[i],value=decodeURIComponent(raw);if(exact(value,it.a)){score++;btn.classList.add('ok');fb.innerHTML='<div class="ok">Richtig!</div>'}else{btn.classList.add('no');fb.innerHTML=`<div class="no">Richtige Lösung: ${it.a}</div>`}setTimeout(()=>{i++;show()},750)}
+function done(){const percent=Math.round(score/q.length*100);markTaskDone(FILE,20);try{if(window.SPProgress&&SPProgress.recordExamResult)SPProgress.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:6,theme:3,topicId:'wortschatz-a1-lektion-6-thema-3',title:'A1 Lektion 6 · Thema 3',percent,scorePercent:percent,score,maxScore:q.length,stars:percent>=100?3:percent>=70?2:percent>=50?1:0})}catch(e){}area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="big">${percent}%</div><div class="hint">${score} / ${q.length} richtig</div><div class="actions"><button class="btn" onclick="build();show()">Neue zufällige Prüfung</button><a class="btn secondary" href="index.html">Zum Thema</a></div></div>`}
+L6T3.refreshRelease(show);
+</script></body></html>
