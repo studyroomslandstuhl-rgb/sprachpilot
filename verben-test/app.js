@@ -6,7 +6,7 @@
   var ASSESSMENT_FAST_SECONDS=7;
   var TASK_POINTS=[5,10,15];
   var EXAM_POINTS=[100,200,300];
-  var BUNNY='https://sprachpilot.b-cdn.net/verben-A1/bilder/';
+  var BUNNY='https://sprachpilot.b-cdn.net/';
   var TASKS=[
     ['karteikarten','Karteikarten'],
     ['bild-verb','Bild → Verb'],
