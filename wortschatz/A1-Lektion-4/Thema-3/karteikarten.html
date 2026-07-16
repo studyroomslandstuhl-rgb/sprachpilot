@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Karteikarten Thema 3</title>
-<link rel="stylesheet" href="style.css?v=323">
+<link rel="stylesheet" href="style.css?v=324">
 <link rel="stylesheet" href="l4t3-color-mode.css?v=1">
 <style>
 .flip-wrap{width:min(390px,100%);margin:18px auto;perspective:1100px}
@@ -37,67 +37,30 @@
 <script src="l4t3-color-mode.js?v=2"></script>
 <script src="l4t3-bunny-images.js?v=1"></script>
 <script src="../shared/l4-t2-audio.js?v=3"></script>
+<script src="l4t3-audio.js?v=1"></script>
 <script>
 const area=document.getElementById("area");
 header("Farben & Adjektive");
 const FILE="karteikarten.html";
 let items=[],i=0,revealed=false,solved=false;
-
 function cardItems(){return L4T3ColorMode.activeCards()}
 function solution(w){return w.word}
-function frontVisual(w){
- if(w.type==="color")return L4T3ColorMode.visual(w,"color-card-front");
- if(w.type==="reaction")return `<div class="smile-card flashcard-front-emoji">${w.emoji}</div>`;
- return img(w.img||w.id+".png","flashcard-front-img");
-}
-function backHtml(w){
- return `<div class="flip-word">${safe(solution(w))}</div><div class="flip-note">Lösung</div><button type="button" class="btn secondary card-listen-btn" id="cardListenBtn">🔊 Anhören</button>`;
-}
-function playBackAudio(w){L4T2Audio.play(w,false,"audioStatus",solution(w))}
-
+function frontVisual(w){if(w.type==="color")return L4T3ColorMode.visual(w,"color-card-front");if(w.type==="reaction")return `<div class="smile-card flashcard-front-emoji">${w.emoji}</div>`;return img(w.img||w.id+".png","flashcard-front-img")}
+function backHtml(w){return `<div class="flip-word">${safe(solution(w))}</div><div class="flip-note">Lösung</div><button type="button" class="btn secondary card-listen-btn" id="cardListenBtn">🔊 Anhören</button>`}
+function playBackAudio(w){L4T3Audio.playItem(w,false,"audioStatus")}
 function render(){
- L4T2Audio.stop();
- items=cardItems();
+ L4T3Audio.stop();items=cardItems();
  if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,"hoeren.html");return}
- i=nextIndex(FILE,items.length);revealed=false;solved=false;
- const w=items[i];
+ i=nextIndex(FILE,items.length);revealed=false;solved=false;const w=items[i];
  if(!w){area.innerHTML='<div class="no">Die Karte konnte nicht geladen werden.</div>';return}
- area.innerHTML=`${progressHtml(FILE,items.length)}
-  <div class="small" style="text-align:center">${L4T3ColorMode.label()}</div>
-  <div class="flip-wrap">
-   <div id="fcard" class="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen">
-    <div class="flip-face flip-front">${frontVisual(w)}</div>
-    <div class="flip-face flip-back">${backHtml(w)}</div>
-   </div>
-  </div>
-  <div class="hint">Übersetzung: <b>${safe(translate(w))}</b></div>
-  <div class="actions card-actions"><button id="micBtn" type="button" class="btn mic-btn">Sprechen</button><button id="writeBtn" type="button" class="btn secondary">Schreiben</button></div>
-  <div id="audioStatus" class="audio-status" aria-live="polite"></div>
-  <div id="micStatus" class="mic-status"></div>
-  <div id="box" class="card-answer-box" style="display:none"><input id="ans" autocomplete="off" placeholder="Antwort schreiben"><button id="checkBtn" type="button" class="btn">Kontrollieren</button></div>
-  <div id="fb" class="feedback"></div><div id="after" class="actions card-actions"></div>`;
- const card=document.getElementById("fcard");
- card.addEventListener("click",()=>reveal(true));
- card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();reveal(true)}});
- document.getElementById("cardListenBtn").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();playBackAudio(w)});
- document.getElementById("micBtn").addEventListener("click",speakAnswer);
- document.getElementById("writeBtn").addEventListener("click",writeBox);
- document.getElementById("checkBtn").addEventListener("click",()=>check(document.getElementById("ans").value));
- document.getElementById("ans").addEventListener("keydown",e=>{if(e.key==="Enter")check(e.target.value)});
+ area.innerHTML=`${progressHtml(FILE,items.length)}<div class="small" style="text-align:center">${L4T3ColorMode.label()}</div><div class="flip-wrap"><div id="fcard" class="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="flip-face flip-front">${frontVisual(w)}</div><div class="flip-face flip-back">${backHtml(w)}</div></div></div><div class="hint">Übersetzung: <b>${safe(translate(w))}</b></div><div class="actions card-actions"><button id="micBtn" type="button" class="btn mic-btn">Sprechen</button><button id="writeBtn" type="button" class="btn secondary">Schreiben</button></div><div id="audioStatus" class="audio-status" aria-live="polite"></div><div id="micStatus" class="mic-status"></div><div id="box" class="card-answer-box" style="display:none"><input id="ans" autocomplete="off" placeholder="Antwort schreiben"><button id="checkBtn" type="button" class="btn">Kontrollieren</button></div><div id="fb" class="feedback"></div><div id="after" class="actions card-actions"></div>`;
+ const card=document.getElementById("fcard");card.addEventListener("click",()=>reveal(true));card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();reveal(true)}});document.getElementById("cardListenBtn").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();playBackAudio(w)});document.getElementById("micBtn").addEventListener("click",speakAnswer);document.getElementById("writeBtn").addEventListener("click",writeBox);document.getElementById("checkBtn").addEventListener("click",()=>check(document.getElementById("ans").value));document.getElementById("ans").addEventListener("keydown",e=>{if(e.key==="Enter")check(e.target.value)});
 }
 function writeBox(){const box=document.getElementById("box"),ans=document.getElementById("ans");if(box)box.style.display="block";if(ans)ans.focus()}
-function reveal(help){
- if(solved)return;
- const card=document.getElementById("fcard");if(card)card.classList.add("flipped");
- if(help&&!revealed){revealed=true;markWrong(FILE,items.length);const after=document.getElementById("after");after.innerHTML='<button type="button" class="btn" id="nextHelpBtn">Weiter</button>';document.getElementById("nextHelpBtn").addEventListener("click",nextAfterHelp)}
-}
+function reveal(help){if(solved)return;const card=document.getElementById("fcard");if(card)card.classList.add("flipped");if(help&&!revealed){revealed=true;markWrong(FILE,items.length);const after=document.getElementById("after");after.innerHTML='<button type="button" class="btn" id="nextHelpBtn">Weiter</button>';document.getElementById("nextHelpBtn").addEventListener("click",nextAfterHelp)}}
 function nextAfterHelp(){markRight(FILE,items.length);render()}
 function speakAnswer(){startMic(document.getElementById("micBtn"),value=>{writeBox();const ans=document.getElementById("ans");ans.value=value;check(value)})}
-function check(value){
- const w=items[i],feedback=document.getElementById("fb");
- if(simple(value)===simple(solution(w))){solved=true;document.getElementById("fcard").classList.add("flipped");feedback.innerHTML='<div class="ok">Richtig!</div>';markRight(FILE,items.length);document.getElementById("after").innerHTML='<button type="button" class="btn" id="nextBtn">Weiter</button>';document.getElementById("nextBtn").addEventListener("click",render);return}
- const tries=markWrong(FILE,items.length,w.word);feedback.innerHTML=tries>=3?`<div class="no">Lösung: ${safe(solution(w))}</div>`:'<div class="no">Noch nicht richtig.</div>';
-}
+function check(value){const w=items[i],feedback=document.getElementById("fb");if(simple(value)===simple(solution(w))){solved=true;document.getElementById("fcard").classList.add("flipped");feedback.innerHTML='<div class="ok">Richtig!</div>';markRight(FILE,items.length);document.getElementById("after").innerHTML='<button type="button" class="btn" id="nextBtn">Weiter</button>';document.getElementById("nextBtn").addEventListener("click",render);return}const tries=markWrong(FILE,items.length,w.word);feedback.innerHTML=tries>=3?`<div class="no">Lösung: ${safe(solution(w))}</div>`:'<div class="no">Noch nicht richtig.</div>'}
 maybeStart(render,FILE);
 </script>
 </body>
