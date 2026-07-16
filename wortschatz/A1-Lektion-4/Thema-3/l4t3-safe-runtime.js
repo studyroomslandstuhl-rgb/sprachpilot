@@ -57,10 +57,19 @@
       }
     };
   }
+  function loadThemeScore(){
+    if(window.L4T3ThemeScore||document.querySelector('script[data-l4t3-theme-score]'))return;
+    const script=document.createElement('script');
+    script.src='l4t3-theme-score.js?v=1';
+    script.dataset.l4t3ThemeScore='1';
+    script.defer=true;
+    document.head.appendChild(script);
+  }
+  loadThemeScore();
   function showFailure(message){
     const area=document.getElementById('area');
     if(!area)return;
-    area.innerHTML='<div class="no"><b>Die Aufgabe konnte nicht gestartet werden.</b><br>'+String(message||'Bitte lade die Seite neu.')+'</div><div class="actions"><button class="btn" type="button" onclick="location.reload()">Neu laden</button><a class="btn secondary" href="index.html?v=l4t3-recovery3">Zum Thema</a></div>';
+    area.innerHTML='<div class="no"><b>Die Aufgabe konnte nicht gestartet werden.</b><br>'+String(message||'Bitte lade die Seite neu.')+'</div><div class="actions"><button class="btn" type="button" onclick="location.reload()">Neu laden</button><a class="btn secondary" href="index.html?v=l4t3-ledger1">Zum Thema</a></div>';
   }
   window.addEventListener('error',function(event){
     console.error(event.error||event.message);
