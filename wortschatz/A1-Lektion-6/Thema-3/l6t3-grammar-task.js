@@ -1,52 +1,27 @@
 (function(){
-  function optionsFor(mode,item){
-    if(mode==='definite')return ['der','den','die','das'];
-    if(mode==='indefinite')return ['ein','einen','eine'];
-    if(mode==='possessive')return item.options.slice();
-    return ['der','den','die','das'];
-  }
-  function itemQuestion(mode,item){
-    if(mode==='svo'||mode==='nomakk')return `<div class="sentence-box">${L6T3.markTarget(item.sentence,item.target)}</div>`;
-    const owner=mode==='possessive'?`<div class="owner-pill">Person: <b>${item.owner}</b></div>`:'';
-    return owner+`<div class="sentence-box">${item.q}</div>`;
-  }
-  function stageTitle(stage){return ['1. Welcher Artikel passt?','2. Nominativ oder Akkusativ?','3. Warum?'][stage]}
-  function start(config){
-    const area=document.getElementById('area'),file=config.file,mode=config.mode;
-    header(config.title);
-    let items=[],index=0,stage=0,locked=false;
-    function loadItems(){
-      if(mode==='definite')return L6T3.definiteItems();
-      if(mode==='indefinite')return L6T3.indefiniteItems();
-      if(mode==='possessive')return L6T3.possessiveItems();
-      return L6T3.analysisItems(file);
-    }
-    function show(){
-      items=loadItems();
-      if(loadTask(file,items.length).done.length>=items.length){complete(area,file,L6T3.nextFile(file));return}
-      index=spNextIndex(file,items.length);stage=0;locked=false;render();
-    }
-    function render(){
-      const item=items[index];
-      if(!item){area.innerHTML='<div class="no">Die Aufgabe konnte nicht geladen werden.</div>';return}
-      const answer=stage===0?item.answer||item.article:(stage===1?item.case:item.reason);
-      const options=stage===0?optionsFor(mode,item):(stage===1?['Nominativ','Akkusativ']:L6T3.reasonOptions());
-      area.innerHTML=`${progress(file,items.length)}<div class="small task-step">${stageTitle(stage)}</div>${itemQuestion(mode,item)}<div class="choice-grid">${L6T3.fisher(options).map(o=>`<button type="button" class="choice" onclick="L6T3Grammar.choose(this,'${encodeURIComponent(o)}')">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`;
-      window.L6T3Grammar.currentAnswer=answer;
-    }
-    function choose(btn,raw){
-      if(locked)return;
-      const value=decodeURIComponent(raw),item=items[index],answer=stage===0?(item.answer||item.article):(stage===1?item.case:item.reason);
-      if(value===answer){
-        btn.classList.add('ok');locked=true;
-        if(stage<2){stage++;setTimeout(()=>{locked=false;render()},450);return}
-        fb.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(file,items.length);setTimeout(show,650);
-      }else{
-        btn.classList.add('no');const tries=spMarkWrong(file,items.length);fb.innerHTML=tries>=3?`<div class="no">Richtige Antwort: ${answer}</div>`:'<div class="no">Noch nicht richtig.</div>';
-      }
-    }
-    window.L6T3Grammar.choose=choose;
-    L6T3.refreshRelease(show);
-  }
-  window.L6T3Grammar={start,currentAnswer:''};
+'use strict';
+function optionsFor(mode,item){if(mode==='definite')return['der','den','die','das'];if(mode==='indefinite')return['ein','einen','eine'];if(mode==='possessive')return item.options.slice();return[]}
+function source(mode){const d=L6T3Revision.data;if(mode==='svo')return d.svoItems;if(mode==='nomakk')return d.nomAkkItems;if(mode==='definite')return d.definiteItems;if(mode==='indefinite')return d.indefiniteItems;if(mode==='possessive')return d.possessiveItems;return[]}
+function sentenceHtml(mode,item){if(mode==='nomakk')return `<div class="sentence-box">${L6T3.markTarget(item.sentence,item.target)}</div>`;const owner=mode==='possessive'?`<div class="owner-pill">Person: <b>${item.owner}</b></div>`:'';return owner+`<div class="sentence-box">${item.q}</div>`}
+function startSvo(area,file,title){
+ header(title);const items=source('svo');let index=0,active='verb',done=new Set(),chosen={verb:new Set(),sub:new Set(),obj:new Set()},locked=false;
+ const order=['verb','sub','obj'],labels={verb:'Verb',sub:'Subjekt',obj:'Objekt'},colors={verb:'orange',sub:'rot',obj:'grün'};
+ function show(){if(loadTask(file,items.length).done.length>=items.length){complete(area,file,L6T3.nextFile(file));return}index=spNextIndex(file,items.length);active='verb';done=new Set();chosen={verb:new Set(),sub:new Set(),obj:new Set()};locked=false;render('')}
+ function targetIndexes(item,role){return item.segments.map((s,i)=>s.role===role?i:-1).filter(i=>i>=0)}
+ function tokenClass(i){for(const role of order)if(chosen[role].has(i))return' role-'+role;return''}
+ function render(message){const item=items[index],targets=targetIndexes(item,active),verbHint=active==='verb'&&targets.length>1?' Markiere beide Verbteile.':'';area.innerHTML=`${progress(file,items.length)}${instruction('Markiere im Satz das Verb, das Subjekt und das Objekt.')}<div class="role-legend"><span class="legend-sub">Subjekt = rot</span><span class="legend-verb">Verb = orange</span><span class="legend-obj">Objekt = grün</span></div><div class="role-questions">${order.map((r,n)=>`<div class="role-question ${done.has(r)?'done':active===r?'active':''}"><b>${n+1}. Wo ist das ${labels[r]}?</b>${r==='verb'&&targetIndexes(item,r).length>1?' <span class="small">Basis und Präfix</span>':''}${done.has(r)?' ✓':''}</div>`).join('')}</div><div class="sentence-select">${item.segments.map((s,i)=>`<button type="button" class="sentence-token${tokenClass(i)}" onclick="L6T3Grammar.pickToken(${i})">${s.text}</button>`).join('')}<span>.</span></div><div class="revision-note">Aktuell: <b>${labels[active]}</b> markieren.${verbHint}</div><div id="fb" class="feedback">${message}</div>`}
+ function nextRole(){const pos=order.indexOf(active);if(pos<order.length-1){active=order[pos+1];render('<div class="ok">Richtig. Jetzt '+labels[active]+' markieren.</div>');return}locked=true;area.querySelectorAll('.sentence-token').forEach(b=>b.disabled=true);fb.innerHTML='<div class="ok">Alle drei Satzteile sind richtig markiert.</div>';spMarkRight(file,items.length);setTimeout(show,750)}
+ function pickToken(i){if(locked)return;const item=items[index],seg=item.segments[i],targets=targetIndexes(item,active);if(seg.role!==active){const tries=spMarkWrong(file,items.length);render(tries>=3?`<div class="no">Tipp: Suche jetzt das ${labels[active]}.</div>`:'<div class="no">Dieser Satzteil ist hier nicht richtig.</div>');return}chosen[active].add(i);if(chosen[active].size<targets.length){render('<div class="hint">Ein Verbteil ist markiert. Markiere auch das zweite Verbteil.</div>');return}done.add(active);nextRole()}
+ window.L6T3Grammar.pickToken=pickToken;show();
+}
+function startPanels(area,file,mode,title){
+ header(title);const items=source(mode);let index=0,correct=new Set(),locked=false;
+ function panels(item){const out=[];if(mode!=='nomakk')out.push({key:'article',title:'1. Welcher Artikel passt?',answer:item.answer,options:optionsFor(mode,item)});out.push({key:'case',title:(mode==='nomakk'?'1':'2')+'. Nominativ oder Akkusativ?',answer:item.case,options:['Nominativ','Akkusativ']});out.push({key:'reason',title:(mode==='nomakk'?'2':'3')+'. Warum?',answer:item.reason,options:L6T3.reasonOptions()});return out}
+ function show(){if(loadTask(file,items.length).done.length>=items.length){complete(area,file,L6T3.nextFile(file));return}index=spNextIndex(file,items.length);correct=new Set();locked=false;render()}
+ function render(){const item=items[index],all=panels(item);area.innerHTML=`${progress(file,items.length)}${instruction('Beantworte alle Fragen zu diesem Satz auf derselben Seite.')}${sentenceHtml(mode,item)}<div class="all-question-grid">${all.map(p=>`<section class="answer-panel ${correct.has(p.key)?'done':'active'}" id="panel-${p.key}"><div class="answer-panel-title">${p.title}${correct.has(p.key)?' ✓':''}</div><div class="choice-grid">${L6T3.fisher(p.options).map(o=>`<button type="button" class="choice" ${correct.has(p.key)?'disabled':''} onclick="L6T3Grammar.choosePanel(this,'${p.key}','${encodeURIComponent(o)}')">${o}</button>`).join('')}</div></section>`).join('')}</div><div id="fb" class="feedback"></div>`}
+ function choose(btn,key,raw){if(locked||correct.has(key))return;const item=items[index],panel=panels(item).find(p=>p.key===key),value=decodeURIComponent(raw);if(value===panel.answer){correct.add(key);btn.classList.add('ok');const box=document.getElementById('panel-'+key);if(box){box.classList.remove('active');box.classList.add('done');box.querySelectorAll('button').forEach(b=>b.disabled=true);box.querySelector('.answer-panel-title').innerHTML=panel.title+' ✓'}if(correct.size===panels(item).length){locked=true;fb.innerHTML='<div class="ok">Alle Antworten sind richtig.</div>';spMarkRight(file,items.length);setTimeout(show,750)}else fb.innerHTML='<div class="ok">Richtig. Beantworte auch die anderen Fragen.</div>'}else{btn.classList.add('no');const tries=spMarkWrong(file,items.length);fb.innerHTML=tries>=3?`<div class="no">Richtige Antwort bei „${panel.title}": ${panel.answer}</div>`:'<div class="no">Noch nicht richtig. Der Satz kommt am Ende noch einmal.</div>'}}
+ window.L6T3Grammar.choosePanel=choose;show();
+}
+function start(config){const area=document.getElementById('area');if(config.mode==='svo')startSvo(area,config.file,config.title);else startPanels(area,config.file,config.mode,config.title)}
+window.L6T3Grammar={start,pickToken(){},choosePanel(){}};
 })();
