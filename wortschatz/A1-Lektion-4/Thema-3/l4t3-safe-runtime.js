@@ -57,22 +57,23 @@
       }
     };
   }
-  function loadThemeScore(){
-    if(window.L4T3ThemeScore||document.querySelector('script[data-l4t3-theme-score]'))return;
+  function loadBlockingOnce(src,marker){
+    if(document.querySelector('script['+marker+']'))return;
     if(document.readyState==='loading'){
-      document.write('<script data-l4t3-theme-score="1" src="l4t3-theme-score.js?v=1"><\/script>');
+      document.write('<script '+marker+'="1" src="'+src+'"><\/script>');
       return;
     }
     const script=document.createElement('script');
-    script.src='l4t3-theme-score.js?v=1';
-    script.dataset.l4t3ThemeScore='1';
+    script.src=src;
+    script.setAttribute(marker,'1');
     document.head.appendChild(script);
   }
-  loadThemeScore();
+  if(!window.L4T3ThemeScore)loadBlockingOnce('l4t3-theme-score.js?v=1','data-l4t3-theme-score');
+  if(!window.L4T3Reset)loadBlockingOnce('l4t3-reset.js?v=1','data-l4t3-reset');
   function showFailure(message){
     const area=document.getElementById('area');
     if(!area)return;
-    area.innerHTML='<div class="no"><b>Die Aufgabe konnte nicht gestartet werden.</b><br>'+String(message||'Bitte lade die Seite neu.')+'</div><div class="actions"><button class="btn" type="button" onclick="location.reload()">Neu laden</button><a class="btn secondary" href="index.html?v=l4t3-ledger1">Zum Thema</a></div>';
+    area.innerHTML='<div class="no"><b>Die Aufgabe konnte nicht gestartet werden.</b><br>'+String(message||'Bitte lade die Seite neu.')+'</div><div class="actions"><button class="btn" type="button" onclick="location.reload()">Neu laden</button><a class="btn secondary" href="index.html?colors=basis&v=l4t3-reset2">Zum Thema</a></div>';
   }
   window.addEventListener('error',function(event){
     console.error(event.error||event.message);
