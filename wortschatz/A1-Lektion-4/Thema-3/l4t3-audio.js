@@ -4,6 +4,10 @@
   const ADJECTIVE_IDS=new Set(['schoen','haesslich','hell','dunkel','gross','klein','breit','schmal','teuer','billig','neu','alt','modern','altmodisch','sauber','schmutzig','bequem','unbequem']);
   const REACTION_IDS=new Set(['sehr-gut','gut','ganz-gut','es-geht','nicht-so-gut']);
   const UPLOADED_IDS=new Set([...BASE_COLOR_IDS,...ADJECTIVE_IDS,...REACTION_IDS]);
+  const AUDIO_FILE_BY_ID={
+    gut:'ganz-gut',
+    'ganz-gut':'gut'
+  };
   let player=null;
   let playToken=0;
 
@@ -39,13 +43,14 @@
     try{player.pause();player.currentTime=0}catch(e){}
     player.onerror=null;player.onplay=null;player.onended=null;
   }
+  function audioFileId(item){return AUDIO_FILE_BY_ID[item&&item.id]||item&&item.id||''}
   function playItem(item,slow=false,statusId='audioStatus'){
     if(!item)return false;
     const text=item.word||item.full||'';
     if(!isUploaded(item))return fallbackSpeak(text,slow,statusId);
     const token=++playToken;
     const audio=getPlayer();
-    const src=AUDIO_CDN+encodeURIComponent(item.id)+'.mp3';
+    const src=AUDIO_CDN+encodeURIComponent(audioFileId(item))+'.mp3';
     setStatus(statusId,'Audio wird geladen …',false);
     try{
       audio.pause();
@@ -80,5 +85,5 @@
   if(!document.getElementById('l4t3-audio-style')){
     const style=document.createElement('style');style.id='l4t3-audio-style';style.textContent='.l4t3-audio-actions{margin:10px 0;justify-content:center}.l4t3-audio-icon{display:inline-flex;align-items:center;justify-content:center;margin-left:6px;padding:4px 7px;border:1px solid #e4bd20;border-radius:9px;background:#fff8cf;cursor:pointer;font-size:16px;line-height:1}.l4t3-audio-icon:hover{background:#ffef9a}.audio-status{min-height:24px;margin:8px 0;text-align:center;font-weight:800;color:#7a5100}.audio-status.error{color:#9b1c1c}';document.head.appendChild(style);
   }
-  window.L4T3Audio={baseColorIds:[...BASE_COLOR_IDS],uploadedIds:[...UPLOADED_IDS],itemById,itemByWord,isUploaded,playItem,playId,playWord,buttons,icon,stop};
+  window.L4T3Audio={baseColorIds:[...BASE_COLOR_IDS],uploadedIds:[...UPLOADED_IDS],audioFileById:{...AUDIO_FILE_BY_ID},itemById,itemByWord,isUploaded,playItem,playId,playWord,buttons,icon,stop};
 })();
