@@ -27,7 +27,7 @@ L6T3.dialogItems=()=>DATA.imageDialogs.slice();
 L6T3.reasonOptions=()=>{const out=[DATA.reasons.sub,DATA.reasons.obj,DATA.reasons.sein];if(L6T3.apEnabled())out.push('Akkusativpräposition');return out};
 function isProgressKey(key){
  key=String(key||'');
- if(key.startsWith(CFG.key))return true;
+ if(key.startsWith(CFG.key)||key.includes(CFG.key))return true;
  return (key.startsWith('SP_TASK_STATE_')||key.startsWith('SP_TASK_PROGRESS_'))&&/L6[_-]?T3|L6.*THEMA.?3/i.test(key);
 }
 function clearStorage(storage){const keys=[];for(let i=0;i<storage.length;i++){const key=storage.key(i);if(isProgressKey(key))keys.push(key)}keys.forEach(key=>storage.removeItem(key));return keys.length}
