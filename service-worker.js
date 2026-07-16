@@ -1,4 +1,4 @@
-const CACHE_VERSION="sprachpilot-static-v20260716-l4t3-card-filter2";
+const CACHE_VERSION="sprachpilot-static-v20260716-l4t3-reactions2";
 
 self.addEventListener("install",event=>{
   self.skipWaiting();
