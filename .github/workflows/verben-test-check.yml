@@ -32,6 +32,18 @@ jobs:
           grep -q 'styles.css?v=5' verben-test/index.html
           grep -q 'app.js?v=3' verben-test/index.html
           ! grep -qE 'l6-card-pattern|boot\.js|app-clean\.js|choose-filter\.js|state\.js|progress\.js|cloud-progress-sync|firebase-progress-sync|package-progress-v2|task-route-stable|back-flow-fix' verben-test/index.html
+      - name: Assessment like Verben A1
+        run: |
+          grep -q 'var ASSESSMENT_FAST_SECONDS=7' verben-test/app.js
+          grep -q 'function renderAssess' verben-test/app.js
+          grep -q 'function markAssessment' verben-test/app.js
+          grep -q 'function checkAssessmentAnswer' verben-test/app.js
+          grep -q 'function revealAssessmentVerb' verben-test/app.js
+          grep -q 'Schnell + richtig = kann ich' verben-test/app.js
+          grep -q 'data-assessment-input' verben-test/app.js
+          grep -q "markAssessment(fast?'known':'unsure')" verben-test/app.js
+          grep -q "data-assessment-mark=\"unknown\"" verben-test/app.js
+          grep -q 'Du hast bereits' verben-test/app.js
       - name: Pattern rules from L5 L6
         run: |
           grep -q 'function normalizeTask' verben-test/app.js
@@ -76,3 +88,11 @@ jobs:
           grep -q 'sich_vorstellen.webp' verben-test/app.js
           grep -q 'sich_kaemmen.webp' verben-test/app.js
           grep -q 'koennen.webp' verben-test/app.js
+      - name: Visible German text uses umlauts
+        run: |
+          grep -q 'Was möchtest du machen' verben-test/app.js
+          grep -q 'Verben wählen' verben-test/app.js
+          grep -q 'Verben einschätzen' verben-test/app.js
+          grep -q 'Aufgabenübersicht' verben-test/app.js
+          grep -q 'Prüfung' verben-test/app.js
+          grep -q 'Lösung' verben-test/app.js
