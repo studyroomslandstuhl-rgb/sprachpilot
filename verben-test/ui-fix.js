@@ -10,6 +10,20 @@
     'satz-bauen':'🧱',
     'konjugieren':'🔤'
   };
+  var NEU_BASE='https://sprachpilot.b-cdn.net/Neu/';
+  var NEU_IMAGE_MAP={
+    'klopfen':'klopfen.webp',
+    'riechen':'riechen.webp',
+    'stinken':'stinken.webp',
+    'schauen':'schauen.webp',
+    'gucken':'gucken.webp',
+    'wuerfeln':'wuerfeln.webp',
+    'wuerfeln':'wuerfeln.webp',
+    'wandern':'wandern.webp',
+    'schweigen':'schweigen.webp',
+    'vernichten':'vernichten.webp',
+    'erleben':'erleben.webp'
+  };
 
   function imageSlug(value){
     return String(value||'')
@@ -25,15 +39,21 @@
       .replace(/^_|_$/g,'');
   }
 
+  function wantedImageUrl(alt){
+    var key=imageSlug(alt);
+    if(NEU_IMAGE_MAP[key])return NEU_BASE+NEU_IMAGE_MAP[key];
+    return 'https://sprachpilot.b-cdn.net/'+encodeURIComponent(key+'.webp');
+  }
+
   function fixBunnyImage(img){
     if(!img||!img.alt||img.dataset.spBunnyFixed==='1')return;
     try{
       var url=new URL(img.currentSrc||img.src,location.href);
       if(url.hostname!=='sprachpilot.b-cdn.net')return;
-      var wanted=imageSlug(img.alt)+'.webp';
-      if(!wanted||url.pathname.slice(-wanted.length)===wanted)return;
+      var wanted=wantedImageUrl(img.alt);
+      if(!wanted||url.href===wanted)return;
       img.dataset.spBunnyFixed='1';
-      img.src='https://sprachpilot.b-cdn.net/'+encodeURIComponent(wanted);
+      img.src=wanted;
     }catch(e){}
   }
 
