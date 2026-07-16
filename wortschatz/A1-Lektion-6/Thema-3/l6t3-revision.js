@@ -24,7 +24,7 @@ L6T3.definiteItems=()=>DATA.definiteItems.slice();
 L6T3.indefiniteItems=()=>DATA.indefiniteItems.slice();
 L6T3.possessiveItems=()=>DATA.possessiveItems.slice();
 L6T3.dialogItems=()=>DATA.imageDialogs.slice();
-L6T3.reasonOptions=()=>[DATA.reasons.sub,DATA.reasons.obj,DATA.reasons.sein];
+L6T3.reasonOptions=()=>{const out=[DATA.reasons.sub,DATA.reasons.obj,DATA.reasons.sein];if(L6T3.apEnabled())out.push('Akkusativpräposition');return out};
 function isProgressKey(key){
  key=String(key||'');
  if(key.startsWith(CFG.key))return true;
