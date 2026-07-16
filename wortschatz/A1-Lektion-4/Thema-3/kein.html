@@ -1,9 +1,9 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>nicht kein keine Thema 3</title><link rel="stylesheet" href="style.css?v=310"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="/js/sp-progress-guard.js?v=points-safe"></script><script src="app.js?v=310"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>nicht kein keine Thema 3</title><link rel="stylesheet" href="style.css?v=l4t3-recovery3"></head><body><div class="container"><header class="topbar"></header><section class="card"><div id="area"></div></section><footer>© SprachPilot</footer></div><script src="app.js?v=l4t3-recovery3"></script><script src="l4t3-safe-runtime.js?v=1"></script><script>
 header('Farben & Adjektive');
 const file='kein.html',total=KEIN_TASKS.length;
 function render(){
   let i=nextIndex(file,total);
-  if(i===null)return complete(area,file,'reaktionen.html');
+  if(i===null)return complete(area,file,'reaktionen.html?v=l4t3-recovery3');
   let t=KEIN_TASKS[i];
   area.innerHTML=progressHtml(file,total)+
   instruction('Wähle „nicht“, „kein“ oder „keine“.')+
@@ -15,7 +15,7 @@ function check(x){
   let st=loadTask(file,total),t=KEIN_TASKS[st.current];
   if(x===t.gap){
     fb.innerHTML='<div class="ok">Richtig!</div>';
-    setTimeout(()=>{markRight(file,total)?complete(area,file,'reaktionen.html'):render()},500)
+    setTimeout(()=>{markRight(file,total)?complete(area,file,'reaktionen.html?v=l4t3-recovery3'):render()},500)
   }else{
     let tr=markWrong(file,total,t.gap);
     fb.innerHTML='<div class="no">'+feedbackForTry(tr,t.gap,'nicht / kein / keine')+'</div>';
