@@ -18,7 +18,6 @@
     'schauen':'schauen.webp',
     'gucken':'gucken.webp',
     'wuerfeln':'wuerfeln.webp',
-    'wuerfeln':'wuerfeln.webp',
     'wandern':'wandern.webp',
     'schweigen':'schweigen.webp',
     'vernichten':'vernichten.webp',
