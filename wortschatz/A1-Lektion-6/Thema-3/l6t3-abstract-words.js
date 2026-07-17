@@ -1,6 +1,8 @@
 (function(){
 'use strict';
 if(!Array.isArray(WORDS))return;
+const mitbringen=WORDS.find(word=>word.id==='mitbringen');
+if(mitbringen)mitbringen.image='mitbringen.webp';
 const abstractWords=[
  {id:'endlich',group:'Zeit und Reihenfolge',type:'adverb',word:'endlich',full:'endlich',meaning:'nach langem Warten',sentence:'Endlich ist das Essen da.',tr:{en:'finally',ru:'наконец',uk:'нарешті',tr:'sonunda',ar:'أخيرًا',ja:'やっと',ro:'în sfârșit',pl:'wreszcie'}},
  {id:'zuerst',group:'Zeit und Reihenfolge',type:'adverb',word:'zuerst',full:'zuerst',meaning:'als Erstes',sentence:'Zuerst lese ich die Speisekarte.',tr:{en:'first',ru:'сначала',uk:'спочатку',tr:'önce',ar:'أولًا',ja:'まず',ro:'mai întâi',pl:'najpierw'}},
