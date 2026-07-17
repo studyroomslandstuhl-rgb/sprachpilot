@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Im Imbiss</title>
+<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="l6t3-upgrade.css?v=1">
+<link rel="stylesheet" href="l6t3-revision.css?v=1">
+<style>
+.imbiss-scene{max-width:820px;margin:18px auto;padding:18px;border:2px solid #bfe6ef;border-radius:24px;background:#f5fdff}.imbiss-stage{margin:14px 0 18px;text-align:center;font-size:18px;font-weight:900;color:#0b5c73}.imbiss-row{display:flex;flex-direction:column;margin:14px 0}.imbiss-row.right{align-items:flex-end}.imbiss-name{margin:0 10px 5px;font-size:14px;font-weight:900;color:#52606d}.imbiss-bubble{max-width:88%;padding:15px 18px;border-radius:22px;background:#fff;border:2px solid #bfe6ef;box-shadow:0 7px 18px rgba(15,95,117,.08);font-size:18px;line-height:1.55}.imbiss-row.right .imbiss-bubble{background:#e8fbff}.food-chip{display:inline-flex;width:92px;height:92px;margin:5px 7px;vertical-align:middle;align-items:center;justify-content:center;border:2px solid #9fdce9;border-radius:18px;background:#fff;overflow:hidden}.food-chip img{width:100%;height:100%;object-fit:contain}.speak-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px auto;max-width:720px}.speak-turn{padding:14px;border:2px solid #bfe6ef;border-radius:18px;background:#fff;text-align:center}.speak-turn.done{border-color:#22c55e;background:#effff4}.speak-turn .btn{margin-top:8px}.write-dialog{display:grid;gap:14px;max-width:760px;margin:16px auto}.write-turn{padding:14px;border:2px solid #bfe6ef;border-radius:18px;background:#fff}.write-turn label{display:block;margin-bottom:7px;font-weight:900;color:#0b5c73}.write-turn textarea{width:100%;min-height:96px;resize:vertical}.stage-done{color:#15803d;font-weight:900}.stage-open{color:#765000;font-weight:800}.imbiss-help{max-width:760px;margin:12px auto;padding:12px 14px;border-radius:16px;background:#fff8dc;border:1px solid #facc15;text-align:center}.mic-result{min-height:26px;margin:10px 0;text-align:center;font-weight:800}@media(max-width:640px){.imbiss-scene{padding:12px}.imbiss-bubble{max-width:96%;font-size:16px;padding:12px}.food-chip{width:74px;height:74px;margin:4px}.speak-checks{grid-template-columns:1fr}.write-turn textarea{min-height:112px}}
+</style>
+</head>
+<body>
+<div class="container">
+<header class="topbar"></header>
+<section class="card" id="area"></section>
+<footer>© SprachPilot</footer>
+</div>
+<script type="module" src="/js/guard.js?v=l6t3-imbiss1"></script>
+<script src="app.js?v=1"></script>
+<script src="l6t3-upgrade.js?v=1"></script>
+<script src="l6t3-revision-data.js?v=1"></script>
+<script src="l6t3-revision.js?v=2"></script>
+<script>
+header('Im Imbiss');
+const FILE='imbiss.html';
+const FOOD={
+ hamburger:{phrase:'einen Hamburger',image:'hamburger.webp'},
+ cola:{phrase:'eine Cola',image:'cola.webp'},
+ apfelsaft:{phrase:'einen Apfelsaft',image:'apfelsaft.webp'},
+ orangensaft:{phrase:'einen Orangensaft',image:'orangensaft.webp'},
+ salat:{phrase:'einen Salat',image:'salat.webp'},
+ kaesebrot:{phrase:'ein Käsebrot',image:'kaesebrot.webp'},
+ schinkenbrot:{phrase:'ein Schinkenbrot',image:'schinkenbrot.webp'},
+ pommes:{phrase:'eine Portion Pommes',image:'pommes.webp'},
+ getraenk:{phrase:'ein Getränk',image:'getraenk.webp'}
+};
+const items=[
+ ['Mila','Ben','hamburger','cola','apfelsaft'],
+ ['Sara','Tom','salat','orangensaft','kaesebrot'],
+ ['Anna','Leo','pommes','cola','salat'],
+ ['Nina','Amir','schinkenbrot','apfelsaft','getraenk'],
+ ['Lea','Omar','kaesebrot','orangensaft','hamburger'],
+ ['Paula','Daniel','salat','cola','pommes'],
+ ['Eva','Samir','hamburger','apfelsaft','kaesebrot'],
+ ['Mila','Tom','schinkenbrot','cola','orangensaft'],
+ ['Sara','Ben','pommes','getraenk','salat'],
+ ['Anna','Amir','kaesebrot','cola','apfelsaft'],
+ ['Nina','Leo','hamburger','orangensaft','schinkenbrot'],
+ ['Lea','Samir','salat','apfelsaft','getraenk']
+].map((x,n)=>({id:'imb'+String(n+1).padStart(2,'0'),aName:x[0],bName:x[1],first:FOOD[x[2]],second:FOOD[x[3]],third:FOOD[x[4]]}));
+const total=items.length;
+let index=0,stage='speak',spoken=new Set();
+function lineA(item){return `Ich hätte gern ${item.first.phrase} und ${item.second.phrase}. Und du? Möchtest du auch etwas?`}
+function lineB(item){return `Ich denke, ich nehme nur ${item.third.phrase}. Ich habe keinen Hunger.`}
+function accepted(text){return [text,text.replace('hätte gern','hätte gerne')]}
+function foodImage(food){return `<span class="food-chip"><img src="${CDN+food.image}" alt="Bild einer Speise oder eines Getränks" onerror="this.parentElement.innerHTML='Bild'"></span>`}
+function scaffold(item){return `<div class="imbiss-scene"><div class="imbiss-row left"><div class="imbiss-name">${item.aName}</div><div class="imbiss-bubble">Ich hätte gern ${foodImage(item.first)} und ${foodImage(item.second)}.<br>Und du? Möchtest du auch etwas?</div></div><div class="imbiss-row right"><div class="imbiss-name">${item.bName}</div><div class="imbiss-bubble">Ich denke, ich nehme nur ${foodImage(item.third)}.<br>Ich habe keinen Hunger.</div></div></div>`}
+function show(){
+ if(loadTask(FILE,total).done.length>=total){complete(area,FILE,L6T3.nextFile(FILE));return}
+ index=spNextIndex(FILE,total);stage='speak';spoken=new Set();renderSpeak('');
+}
+function renderSpeak(message){
+ const item=items[index];
+ area.innerHTML=`${progress(FILE,total)}${instruction('Sprich zuerst beide Rollen. Die Bilder ersetzen die Speisen und Getränke.')}<div class="imbiss-stage">1. Dialog sprechen</div>${scaffold(item)}<div class="speak-checks"><section class="speak-turn ${spoken.has('a')?'done':''}"><b>${item.aName}</b><div class="${spoken.has('a')?'stage-done':'stage-open'}">${spoken.has('a')?'Richtig gesprochen ✓':'Bestellung und Frage sprechen'}</div><button class="btn mic-btn" type="button" ${spoken.has('a')?'disabled':''} onclick="speakTurn(this,'a')">🎤 Rolle sprechen</button></section><section class="speak-turn ${spoken.has('b')?'done':''}"><b>${item.bName}</b><div class="${spoken.has('b')?'stage-done':'stage-open'}">${spoken.has('b')?'Richtig gesprochen ✓':'Antwort sprechen'}</div><button class="btn mic-btn" type="button" ${spoken.has('b')?'disabled':''} onclick="speakTurn(this,'b')">🎤 Rolle sprechen</button></section></div><div id="micStatus" class="mic-status"></div><div class="mic-result">${message}</div>${spoken.size===2?'<div class="actions"><button class="btn green" type="button" onclick="stage=\'write\';renderWrite(\'\')">Weiter zum Schreiben</button></div>':''}`;
+}
+function speakTurn(button,turn){
+ if(typeof startMic!=='function'){
+  renderSpeak('<div class="no">Die Spracherkennung ist auf diesem Gerät nicht verfügbar.</div>');
+  return;
+ }
+ startMic(button,text=>checkSpeech(turn,text));
+}
+function checkSpeech(turn,text){
+ const item=items[index],solution=turn==='a'?lineA(item):lineB(item);
+ if(exact(text,accepted(solution))){
+  spoken.add(turn);
+  renderSpeak('<div class="ok">Richtig gesprochen.</div>');
+ }else{
+  const tries=spMarkWrong(FILE,total);
+  renderSpeak(tries>=3?`<div class="no">Sprich genau nach dem Gerüst. Lösung: ${solution}</div>`:'<div class="no">Noch nicht vollständig richtig. Prüfe Artikel, Nomen und Satzende.</div>');
+ }
+}
+function renderWrite(message){
+ const item=items[index];
+ area.innerHTML=`${progress(FILE,total)}${instruction('Schreibe jetzt beide Rollen vollständig.')}<div class="imbiss-stage">2. Dialog schreiben</div>${scaffold(item)}<div class="write-dialog"><div class="write-turn"><label for="answerA">${item.aName}</label><textarea id="answerA" autocomplete="off" placeholder="Bestellung und Frage schreiben"></textarea></div><div class="write-turn"><label for="answerB">${item.bName}</label><textarea id="answerB" autocomplete="off" placeholder="Antwort schreiben"></textarea></div></div><div class="actions"><button class="btn" type="button" onclick="checkWriting()">Kontrollieren</button><button class="btn secondary" type="button" onclick="stage='speak';renderSpeak('')">Zurück zum Sprechen</button></div><div id="fb" class="feedback">${message}</div>`;
+ answerA.focus();
+}
+function checkWriting(){
+ const item=items[index],aValue=answerA.value,bValue=answerB.value;
+ const okA=exact(aValue,accepted(lineA(item))),okB=exact(bValue,lineB(item));
+ if(okA&&okB){
+  fb.innerHTML='<div class="ok">Der ganze Dialog ist richtig gesprochen und geschrieben.</div>';
+  spMarkRight(FILE,total);
+  setTimeout(show,850);
+  return;
+ }
+ const tries=spMarkWrong(FILE,total),parts=[];
+ if(!okA)parts.push(item.aName);
+ if(!okB)parts.push(item.bName);
+ fb.innerHTML=tries>=3?`<div class="no"><b>${parts.join(' und ')} noch korrigieren.</b><br>${item.aName}: ${lineA(item)}<br>${item.bName}: ${lineB(item)}</div>`:`<div class="no">Noch nicht richtig bei ${parts.join(' und ')}. Prüfe Akkusativ, Artikel und Wortstellung. Der Dialog kommt am Ende erneut.</div>`;
+}
+show();
+</script>
+</body>
+</html>
