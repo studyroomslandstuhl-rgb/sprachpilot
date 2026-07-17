@@ -63,9 +63,9 @@ if(typeof window!=="undefined"){
 }
 function verbStem(v){if(v.endsWith("eln"))return v.slice(0,-3)+"el"; if(v.endsWith("ern"))return v.slice(0,-1); if(v.endsWith("en"))return v.slice(0,-2); if(v.endsWith("n"))return v.slice(0,-1); return v}
 function regularForm(v,key){
-  const stem=verbStem(v);const needsE=/[td]$|chn$|ffn$|gn$|tm$/.test(stem);
+  const stem=verbStem(v);const needsE=/[td]$|chn$|ffn$|gn$|tm$/.test(stem);const duUsesT=/[sxzß]$|ss$/.test(stem);
   if(key==="ich")return stem+"e";
-  if(key==="du")return stem+(needsE?"est":"st");
+  if(key==="du")return stem+(needsE?"est":duUsesT?"t":"st");
   if(key==="er/sie/es")return stem+(needsE?"et":"t");
   if(key==="wir"||key==="sie/Sie")return v;
   if(key==="ihr")return stem+(needsE?"et":"t");
