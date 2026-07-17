@@ -20,7 +20,7 @@ window.L7_STRUCTURE={
    title:'können, wollen und möchten',
    grammar:['können','wollen','Modalverb auf Position 2','Infinitiv am Satzende','Ja-/Nein-Fragen','W-Fragen','wollen oder möchten'],
    taskOrder:[
-    'karteikarten.html','bild-erklaerung-wort.html','artikel-plural.html','koennen-formen.html','wollen-formen.html','verbform-waehlen.html','aussagen-ordnen.html','ja-nein-fragen.html','w-fragen.html','faehigkeiten-abstufen.html','bildimpulse.html','fragen-antworten.html','partnerinterview.html','wollen-möchten.html','dialoge-ergaenzen.html','hoeren-wuensche.html','eigene-faehigkeiten.html','eigene-plaene.html','pruefung.html'
+    'karteikarten.html','bild-erklaerung-wort.html','artikel-plural.html','koennen-formen.html','wollen-formen.html','verbform-waehlen.html','aussagen-ordnen.html','ja-nein-fragen.html','w-fragen.html','faehigkeiten-abstufen.html','bildimpulse.html','fragen-antworten.html','partnerinterview.html','wollen-moechten.html','dialoge-ergaenzen.html','hoeren-wuensche.html','eigene-faehigkeiten.html','eigene-plaene.html','pruefung.html'
    ]
   },
   {
