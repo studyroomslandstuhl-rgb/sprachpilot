@@ -2,6 +2,7 @@
 'use strict';
 const DATA=window.L6T3RevisionData;
 if(!DATA||!window.L6T3)return;
+const IMBISS_FILE='imbiss.html';
 const counts={
  'komposita-artikel.html':DATA.compoundArticle.length,
  'komposita-bauen.html':DATA.compoundBuild.length,
@@ -11,12 +12,25 @@ const counts={
  'akkusativ-unbestimmt.html':DATA.indefiniteItems.length,
  'meinen-deinen.html':DATA.possessiveItems.length,
  'bilddialoge.html':DATA.imageDialogs.length,
+ [IMBISS_FILE]:12,
  'dialoge-planen.html':DATA.chatDialogs.reduce((n,x)=>n+x.qs.length,0),
  'nachrichten-rf.html':DATA.messageThreads.reduce((n,x)=>n+x.qs.length,0),
  'satz-bauen.html':DATA.sentencePrompts.length
 };
+if(Array.isArray(TASKS)&&!TASKS.some(t=>t[0]===IMBISS_FILE)){
+ const taskIndex=TASKS.findIndex(t=>t[0]==='bilddialoge.html');
+ TASKS.splice(taskIndex>=0?taskIndex+1:TASKS.length,0,[IMBISS_FILE,counts[IMBISS_FILE],'Im Imbiss']);
+}
+Object.assign(ICONS,{[IMBISS_FILE]:'🍔'});
 if(!L6T3.__baseActiveTasks)L6T3.__baseActiveTasks=L6T3.activeTasks.bind(L6T3);
-function activeTasks(){return L6T3.__baseActiveTasks().map(t=>[t[0],counts[t[0]]||t[1],t[2]])}
+function activeTasks(){
+ const tasks=L6T3.__baseActiveTasks().map(t=>[t[0],counts[t[0]]||t[1],t[2]]);
+ if(!tasks.some(t=>t[0]===IMBISS_FILE)){
+  const index=tasks.findIndex(t=>t[0]==='bilddialoge.html');
+  tasks.splice(index>=0?index+1:tasks.length,0,[IMBISS_FILE,counts[IMBISS_FILE],'Im Imbiss']);
+ }
+ return tasks;
+}
 L6T3.activeTasks=activeTasks;
 L6T3.nextFile=function(file){const files=activeTasks().map(t=>t[0]),i=files.indexOf(file);return files[i+1]||'index.html'};
 L6T3.analysisItems=()=>DATA.nomAkkItems.slice();
@@ -35,7 +49,7 @@ function clearProgress(){const removed=clearStorage(localStorage)+clearStorage(s
 window.resetThemeProgress=function(){
  if(!confirm('Fortschritte in Lektion 6 · Thema 3 löschen? Bereits verdiente Punkte bleiben erhalten.'))return false;
  clearProgress();
- location.href='index.html?reset='+Date.now()+'&v=l6t3-revision2';
+ location.href='index.html?reset='+Date.now()+'&v=l6t3-imbiss1';
  return true;
 };
 if(new URLSearchParams(location.search).has('reset'))clearProgress();
@@ -53,11 +67,12 @@ window.renderMenu=function(){
   'akkusativ-unbestimmt.html':'Artikel, Kasus und Begründung auf einem Bildschirm.',
   'meinen-deinen.html':'Possessivartikel, Kasus und Begründung gemeinsam.',
   'bilddialoge.html':'Kleine Bildkarte direkt neben der Lücke.',
+  [IMBISS_FILE]:'Einen Imbiss-Dialog mit Bildern sprechen und schreiben.',
   'dialoge-planen.html':'SMS-Dialoge mit Namen lesen.',
   'nachrichten-rf.html':'Längere Nachrichten verstehen.',
   'satz-bauen.html':'Mit Bildern selbst sprechen oder schreiben.'
  };
- grid.innerHTML='<div class="grid">'+tasks.map((t,i)=>{const p=pctFor(t[0],t[1]);return `<a class="module" href="${t[0]}?v=l6t3-revision2"><div class="num">${i+1}. ${t[2]}</div><div class="big-icon">${ICONS[t[0]]||'▶'}</div><p class="small">${descriptions[t[0]]||'Akkusativ, Artikel, Restaurant und Planen üben.'}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}).join('')+'</div>';
+ grid.innerHTML='<div class="grid">'+tasks.map((t,i)=>{const p=pctFor(t[0],t[1]);return `<a class="module" href="${t[0]}?v=l6t3-imbiss1"><div class="num">${i+1}. ${t[2]}</div><div class="big-icon">${ICONS[t[0]]||'▶'}</div><p class="small">${descriptions[t[0]]||'Akkusativ, Artikel, Restaurant und Planen üben.'}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${p>=100?'Fertig':'Starten'}</div></a>`}).join('')+'</div>';
 };
-window.L6T3Revision={data:DATA,counts,clearProgress,activeTasks};
+window.L6T3Revision={data:DATA,counts,clearProgress,activeTasks,imbissFile:IMBISS_FILE};
 })();
