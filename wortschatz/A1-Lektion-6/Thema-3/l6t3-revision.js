@@ -15,7 +15,7 @@ const counts={
  'meinen-deinen.html':DATA.possessiveItems.length,
  'bilddialoge.html':DATA.imageDialogs.length,
  [IMBISS_FILE]:12,
- 'dialoge-planen.html':DATA.chatDialogs.reduce((n,x)=>n+x.qs.length,0),
+ 'dialoge-planen.html':DATA.chatDialogs.length,
  'nachrichten-rf.html':DATA.messageThreads.reduce((n,x)=>n+x.qs.length,0),
  'fehler-finden.html':20,
  'satz-bauen.html':DATA.sentencePrompts.length
