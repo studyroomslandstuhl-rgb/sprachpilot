@@ -32,7 +32,7 @@ const TASKS=[
   ['exam','★','Tagesprüfung','Prüfe Bedeutung und Konjugation aller bisher gelernten Verben.']
 ];
 const TASK_IDS=TASKS.map(task=>task[0]);
-const CHANGES=['a → ä','au → äu','e → i','e → ie','Sonderform'];
+const CHANGES=['a → ä','e → i','e → ie','Sonderform'];
 let STATE;
 let RUN=null;
 let RECOGNITION=null;
@@ -113,6 +113,13 @@ function groupKey(verb){
   if(verb.change==='e → ie')return 'eie';
   return 'a';
 }
+function changeGroupLabel(verb){
+  const key=groupKey(verb);
+  if(key==='ei')return 'e → i';
+  if(key==='eie')return 'e → ie';
+  if(key==='special')return 'Sonderform';
+  return 'a → ä';
+}
 function groupDefinition(){
   return [
     {key:'a',title:'a → ä',note:'Hier stehen auch laufen und saufen mit au → äu.'},
@@ -170,20 +177,20 @@ function questions(task,day){
   const active=shuffle(learnedVerbs(day.day));
   const verbNames=active.map(verb=>verb.v);
   const meanings=active.map(verb=>verb.meaning);
-  if(task==='meaning-to-verb')return active.map(verb=>({id:`mv-${verb.v}`,verb,p:verb.meaning,a:verb.v,o:optionList(verb.v,verbNames)}));
+  if(task==='meaning-to-verb')return active.map(verb=>({id:`mv-${verb.v}`,verb,p:verb.meaning,a:verb.v,o:optionList(verb.v,verbNames),hideVerb:true}));
   if(task==='verb-to-meaning')return active.map(verb=>({id:`vm-${verb.v}`,verb,p:`Was bedeutet „${verb.v}“?`,a:verb.meaning,o:optionList(verb.meaning,meanings)}));
-  if(task==='listen')return active.map(verb=>({id:`listen-${verb.v}`,verb,p:'Höre das Wort und wähle das Verb.',a:verb.v,o:optionList(verb.v,verbNames),audio:verb.v}));
-  if(task==='image-to-verb')return active.map(verb=>({id:`iv-${verb.v}`,verb,p:'Welches Verb zeigt das Bild?',a:verb.v,o:optionList(verb.v,verbNames),imagePrompt:true}));
+  if(task==='listen')return active.map(verb=>({id:`listen-${verb.v}`,verb,p:'Höre das Wort und wähle das Verb.',a:verb.v,o:optionList(verb.v,verbNames),audio:verb.v,hideVerb:true}));
+  if(task==='image-to-verb')return active.map(verb=>({id:`iv-${verb.v}`,verb,p:'Welches Verb zeigt das Bild?',a:verb.v,o:optionList(verb.v,verbNames),imagePrompt:true,hideVerb:true}));
   if(task==='verb-to-image')return active.map(verb=>({id:`vi-${verb.v}`,verb,p:`Welches Bild passt zu „${verb.v}“?`,a:verb.v,imageChoice:optionList(verb.v,verbNames).map(name=>active.find(item=>item.v===name)||ALL.find(item=>item.v===name))}));
-  if(task==='read-sentence')return active.map(verb=>({id:`read-${verb.v}`,verb,p:fullSentence(verb),support:'Welcher Infinitiv gehört zu diesem Satz?',a:verb.v,o:optionList(verb.v,verbNames)}));
-  if(task==='change')return active.map(verb=>({id:`change-${verb.v}`,verb,p:`Zu welcher Gruppe gehört „${verb.v}“?`,a:verb.change,o:CHANGES}));
+  if(task==='read-sentence')return active.map(verb=>({id:`read-${verb.v}`,verb,p:fullSentence(verb),support:'Welcher Infinitiv gehört zu diesem Satz?',a:verb.v,o:optionList(verb.v,verbNames),hideVerb:true}));
+  if(task==='change')return active.map(verb=>({id:`change-${verb.v}`,verb,p:`Zu welcher Gruppe gehört „${verb.v}“?`,a:changeGroupLabel(verb),o:CHANGES}));
   if(task==='choose-form')return active.map((verb,index)=>{const person=personFor(index,day.day,0);return{id:`choose-${verb.v}-${person.key}`,verb,p:`${person.label} – ${verb.v}`,support:'Wähle die richtige Präsensform.',a:verb.forms[person.key],o:optionList(verb.forms[person.key],[...Object.values(verb.forms),...ALL.map(item=>item.forms[person.key])])}});
   if(task==='write-form')return active.map((verb,index)=>{const person=personFor(index,day.day,2);return{id:`write-${verb.v}-${person.key}`,verb,p:`${person.label} – ${verb.v}`,support:'Schreibe nur die Verbform.',a:verb.forms[person.key],input:true}});
   if(task==='speak')return active.map((verb,index)=>{const person=personFor(index,day.day,4),form=verb.forms[person.key],phrase=`${person.label} ${form}`;return{id:`speak-${verb.v}-${person.key}`,verb,p:`Sprich: ${person.label} – ${verb.v}`,support:`Bilde die ${person.label}-Form.`,a:phrase,answers:[phrase,form],speech:true}});
   if(task==='sentence')return active.map(verb=>{const form=verb.forms[verb.sentence.person];return{id:`sentence-${verb.v}`,verb,p:`${verb.sentence.subject} ___ ${verb.sentence.rest}`,support:`Infinitiv: ${verb.v}`,a:form,o:optionList(form,[...Object.values(verb.forms),...ALL.map(item=>item.forms[verb.sentence.person])])}});
   if(task==='exam'){
     const newest=new Set(newVerbs(day.day).map(verb=>verb.v));
-    const makeVocab=verb=>({id:`exam-v-${verb.v}`,verb,p:verb.meaning,support:'Schreibe den Infinitiv.',a:verb.v,input:true});
+    const makeVocab=verb=>({id:`exam-v-${verb.v}`,verb,p:verb.meaning,support:'Schreibe den Infinitiv.',a:verb.v,input:true,hideVerb:true});
     const makeForm=(verb,index,extra='')=>{const person=personFor(index,day.day,extra?4:1);return{id:`exam-f-${extra}${verb.v}-${person.key}`,verb,p:`${person.label} – ${verb.v}`,support:'Schreibe die richtige Präsensform.',a:verb.forms[person.key],input:true}};
     const base=active.map((verb,index)=>index%2===0?makeVocab(verb):makeForm(verb,index));
     const extra=active.map((verb,index)=>({verb,index})).filter(item=>newest.has(item.verb.v)).map(item=>item.index%2===0?makeForm(item.verb,item.index,'new-'):makeVocab(item.verb));
@@ -245,7 +252,8 @@ function renderQuiz(){
   const visual=question.imagePrompt?imageBlock(question.verb,false,true):'';
   const audio=question.audio?`<div class="listen-box"><button class="btn" data-act="play" ${feedback?'disabled':''}>🔊 Verb anhören</button><span>Du kannst das Wort mehrmals hören.</span></div>${RUN.tech?`<div class="tech-note">${esc(RUN.tech)}</div>`:''}`:'';
   const message=feedback?`<div class="feedback ${feedback.ok?'ok':'no'}">${feedback.ok?'Richtig.':esc(feedback.message)}${feedback.solution?`<div class="solution">Lösung: <strong>${esc(question.a)}</strong></div>`:''}</div><div class="actions"><button class="btn" data-act="next">Weiter</button></div>`:'';
-  APP.innerHTML=taskShell(`<div class="task-progress-row"><span>${RUN.solved.size} von ${RUN.all.length} gelöst</span><span>Fehler bei dieser Aufgabe: ${RUN.tries[question.id]||0}/3</span></div><div class="mini-progress"><div style="width:${percent(RUN.solved.size,RUN.all.length)}%"></div></div><div class="question-card"><p class="eyebrow">${esc(question.verb.v)} · ${esc(question.verb.change)}</p>${visual}${audio}<div class="question">${esc(question.p)}</div>${question.support&&!question.input&&!question.speech?`<p class="question-support">${esc(question.support)}</p>`:''}${question.verb.note?`<div class="word-note">${esc(question.verb.note)}</div>`:''}${answerArea}${message}</div>`);
+  const questionLabel=question.hideVerb?'Wortschatz · Wiederholung':`${question.verb.v} · ${question.verb.change}`;
+  APP.innerHTML=taskShell(`<div class="task-progress-row"><span>${RUN.solved.size} von ${RUN.all.length} gelöst</span><span>Fehler bei dieser Aufgabe: ${RUN.tries[question.id]||0}/3</span></div><div class="mini-progress"><div style="width:${percent(RUN.solved.size,RUN.all.length)}%"></div></div><div class="question-card"><p class="eyebrow">${esc(questionLabel)}</p>${visual}${audio}<div class="question">${esc(question.p)}</div>${question.support&&!question.input&&!question.speech?`<p class="question-support">${esc(question.support)}</p>`:''}${question.verb.note?`<div class="word-note">${esc(question.verb.note)}</div>`:''}${answerArea}${message}</div>`);
   bindImageFallbacks();
   if(!feedback&&!question.o&&!question.imageChoice&&(!question.speech||RUN.write))requestAnimationFrame(()=>APP.querySelector('input')?.focus());
 }
