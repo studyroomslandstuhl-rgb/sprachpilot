@@ -1,0 +1,52 @@
+Lektion 6 · Thema 3 · Dialoge hören
+
+Dateiname: a1-l6-t3-dialog-01.mp3
+Titel: Picknick im Park
+Mila: Hallo Ben, hast du am Samstag Zeit?
+Ben: Ja. Was möchtest du machen?
+Mila: Wir machen ein Picknick im Park. Ich kaufe Brot und Getränke.
+Ben: Prima. Dann bringe ich einen Salat und Käsebrot mit.
+Mila: Super, dann ist alles fertig.
+
+Dateiname: a1-l6-t3-dialog-02.mp3
+Titel: Party am Freitag
+Sara: Tom, kommst du am Freitag zu Leas Party?
+Tom: Ich komme später. Ich habe zuerst einen Besichtigungstermin.
+Sara: Die Party beginnt um 19 Uhr. Was bringst du mit?
+Tom: Ich bringe Pommes mit. Kannst du Lea Bescheid sagen?
+Sara: Na klar, ich schreibe ihr sofort.
+
+Dateiname: a1-l6-t3-dialog-03.mp3
+Titel: Ausflug mit dem Kurs
+Nina: Amir, kommst du am Sonntag mit zum Ausflug?
+Amir: Ja, gern. Wohin fahren wir?
+Nina: Zuerst fahren wir mit dem Bus in den Park. Dann machen wir ein Picknick.
+Amir: Das klingt gut. Ich bringe Brot und Käse mit.
+Nina: Prima. Ich kaufe die Getränke.
+
+Dateiname: a1-l6-t3-dialog-04.mp3
+Titel: Im Restaurant
+Leo: Mila, weißt du schon, was du nimmst?
+Mila: Ja. Ich nehme Pommes und eine Cola. Und du?
+Leo: Ich lese noch die Speisekarte.
+Mila: Nimmst du einen Salat?
+Leo: Ja, zuerst einen Salat und danach einen Hamburger.
+
+Dateiname: a1-l6-t3-dialog-05.mp3
+Titel: Einladung schreiben
+Anna: Ben, kannst du mir kurz helfen? Ich schreibe die Einladung für die Party.
+Ben: Gern. Welche Adresse soll ich schreiben?
+Anna: Die neue Adresse steht in meinem Profil.
+Ben: Gut. Wen lädst du ein?
+Anna: Ich lade den ganzen Deutschkurs ein.
+
+Dateiname: a1-l6-t3-dialog-06.mp3
+Titel: Einkauf für Samstag
+Sara: Tom, was brauchen wir für Samstag?
+Tom: Wir brauchen Brot, Käse und einen Salat.
+Sara: Ich kaufe Brot und Käse. Kannst du den Salat mitbringen?
+Tom: Ja, und ich bringe auch Ketchup mit.
+Sara: Perfekt. Dann ist die Einkaufsliste fertig.
+
+Upload-Ziel:
+https://sprachpilot.b-cdn.net/audio/<dateiname>
