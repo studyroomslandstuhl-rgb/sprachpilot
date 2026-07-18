@@ -103,7 +103,8 @@ function renderScore(){
 }
 window.renderMenu=function(){
  const tasks=activeTasks(),circle=document.getElementById('totalCircle'),bar=document.getElementById('totalBar'),text=document.getElementById('totalText'),grid=document.getElementById('taskGrid');
- const values=tasks.map(t=>({task:t,p:pctFor(t[0],t[1])}));
+ const scoreData=window.L6T3ThemeScore&&typeof L6T3ThemeScore.summary==='function'?L6T3ThemeScore.summary():null;
+ const values=tasks.map(t=>({task:t,p:t[0]==='pruefung.html'&&scoreData?scoreData.examBestPercent:pctFor(t[0],t[1])}));
  const avg=Math.round(values.reduce((sum,x)=>sum+x.p,0)/Math.max(1,values.length))||0;
  if(circle)circle.textContent=avg+'%';
  if(bar)bar.style.width=avg+'%';
@@ -132,10 +133,10 @@ window.renderMenu=function(){
   const cls='module'+(locked?' exam-locked':'');
   const href=locked?'':` href="${t[0]}?v=l6t3-score1"`;
   const aria=locked?' aria-disabled="true"':'';
-  const start=locked?'Gesperrt':p>=100?'Fertig':'Starten';
+  const start=locked?'Gesperrt':isExam&&p>0?`${p}% erreicht`:p>=100?'Fertig':'Starten';
   return `<a class="${cls}"${href}${aria}><div class="num">${i+1}. ${t[2]}</div><div class="big-icon">${ICONS[t[0]]||'▶'}</div><p class="small">${locked?'Die Prüfung wird geöffnet, wenn alle vorherigen Aufgaben 100% erreicht haben.':descriptions[t[0]]||'Akkusativ, Artikel, Restaurant und Planen üben.'}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${start}</div></a>`;
  }).join('')+'</div>';
 };
-if(!window.__L6T3_SCORE_LISTENER){window.__L6T3_SCORE_LISTENER=true;window.addEventListener('l6t3-score-change',renderScore)}
+if(!window.__L6T3_SCORE_LISTENER){window.__L6T3_SCORE_LISTENER=true;window.addEventListener('l6t3-score-change',()=>{renderScore();renderMenu()})}
 window.L6T3Revision={data:DATA,counts,clearProgress,activeTasks,imbissFile:IMBISS_FILE,progressFiles,genericProgressKeys,renderScore};
 })();
