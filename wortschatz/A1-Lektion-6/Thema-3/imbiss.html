@@ -6,154 +6,102 @@
 <title>Im Imbiss</title>
 <link rel="stylesheet" href="style.css?v=2">
 <link rel="stylesheet" href="l6t3-upgrade.css?v=1">
-<link rel="stylesheet" href="l6t3-revision.css?v=1">
+<link rel="stylesheet" href="l6t3-revision.css?v=2">
 <style>
-.imbiss-scene{max-width:820px;margin:18px auto;padding:18px;border:2px solid #bfe6ef;border-radius:24px;background:#f5fdff}.imbiss-stage{margin:14px 0 18px;text-align:center;font-size:18px;font-weight:900;color:#0b5c73}.imbiss-row{display:flex;flex-direction:column;margin:14px 0}.imbiss-row.right{align-items:flex-end}.imbiss-name{margin:0 10px 5px;font-size:14px;font-weight:900;color:#52606d}.imbiss-bubble{max-width:88%;padding:15px 18px;border-radius:22px;background:#fff;border:2px solid #bfe6ef;box-shadow:0 7px 18px rgba(15,95,117,.08);font-size:18px;line-height:1.55}.imbiss-row.right .imbiss-bubble{background:#e8fbff}.food-chip{display:inline-flex;width:92px;height:92px;margin:5px 7px;vertical-align:middle;align-items:center;justify-content:center;border:2px solid #9fdce9;border-radius:18px;background:#fff;overflow:hidden}.food-chip img{width:100%;height:100%;object-fit:contain}.speak-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px auto;max-width:760px}.speak-turn{padding:14px;border:2px solid #bfe6ef;border-radius:18px;background:#fff;text-align:center}.speak-turn.done{border-color:#22c55e;background:#effff4}.speak-turn .btn{margin-top:8px}.fallback-box{margin-top:12px;padding:12px;border:2px dashed #f0b429;border-radius:15px;background:#fffaf0}.fallback-box label{display:block;margin-bottom:7px;font-weight:900;color:#765000}.fallback-box textarea{width:100%;min-height:92px;resize:vertical}.fallback-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.write-dialog{display:grid;gap:14px;max-width:760px;margin:16px auto}.write-turn{padding:14px;border:2px solid #bfe6ef;border-radius:18px;background:#fff}.write-turn label{display:block;margin-bottom:7px;font-weight:900;color:#0b5c73}.write-turn textarea{width:100%;min-height:96px;resize:vertical}.stage-done{color:#15803d;font-weight:900}.stage-open{color:#765000;font-weight:800}.mic-result{min-height:26px;margin:10px 0;text-align:center;font-weight:800}@media(max-width:640px){.imbiss-scene{padding:12px}.imbiss-bubble{max-width:96%;font-size:16px;padding:12px}.food-chip{width:74px;height:74px;margin:4px}.speak-checks{grid-template-columns:1fr}.write-turn textarea,.fallback-box textarea{min-height:112px}}
+.imbiss-scene{max-width:820px;margin:18px auto;padding:18px;border:2px solid #bfe6ef;border-radius:24px;background:#f5fdff}.imbiss-row{display:flex;flex-direction:column;margin:14px 0}.imbiss-row.right{align-items:flex-end}.imbiss-name{margin:0 10px 5px;font-size:14px;font-weight:900;color:#52606d}.imbiss-bubble{max-width:90%;padding:15px 18px;border-radius:22px;background:#fff;border:2px solid #bfe6ef;box-shadow:0 7px 18px rgba(15,95,117,.08);font-size:19px;line-height:1.6}.imbiss-row.right .imbiss-bubble{background:#e8fbff}.food-chip{display:inline-flex;width:84px;height:84px;margin:5px 7px;vertical-align:middle;align-items:center;justify-content:center;border:2px solid #9fdce9;border-radius:18px;background:#fff;overflow:hidden}.food-chip img{width:100%;height:100%;object-fit:contain}.speak-checks{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px;margin:16px auto;max-width:760px}.speak-turn{padding:14px;border:2px solid #bfe6ef;border-radius:18px;background:#fff;text-align:center}.speak-turn.done{border-color:#22c55e;background:#effff4}.fallback-box{margin-top:12px;padding:12px;border:2px dashed #f0b429;border-radius:15px;background:#fffaf0}.fallback-box label{display:block;margin-bottom:7px;font-weight:900;color:#765000}.fallback-box textarea{width:100%;min-height:100px;resize:vertical}.fallback-actions{display:flex;justify-content:center;gap:8px;flex-wrap:wrap}.stage-done{color:#15803d;font-weight:900}.stage-open{color:#765000;font-weight:800}.mic-result{min-height:30px;margin:10px 0;text-align:center;font-weight:800}@media(max-width:640px){.imbiss-scene{padding:12px}.imbiss-bubble{max-width:96%;font-size:17px;padding:12px}.food-chip{width:70px;height:70px;margin:4px}.speak-checks{grid-template-columns:1fr}.fallback-box textarea{min-height:115px}}
 </style>
 </head>
 <body>
-<div class="container">
-<header class="topbar"></header>
-<section class="card" id="area"></section>
-<footer>© SprachPilot</footer>
-</div>
-<script type="module" src="/js/guard.js?v=l6t3-imbiss2"></script>
+<div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div>
+<script type="module" src="/js/guard.js?v=l6t3-review1"></script>
 <script src="app.js?v=1"></script>
 <script src="l6t3-upgrade.js?v=1"></script>
-<script src="l6t3-revision-data.js?v=1"></script>
-<script src="l6t3-revision.js?v=2"></script>
+<script src="l6t3-revision-data.js?v=2"></script>
+<script src="l6t3-revision.js?v=4"></script>
 <script>
 header('Im Imbiss');
 const FILE='imbiss.html';
 const FOOD={
- hamburger:{phrase:'einen Hamburger',image:'hamburger.webp'},
- cola:{phrase:'eine Cola',image:'cola.webp'},
- apfelsaft:{phrase:'einen Apfelsaft',image:'apfelsaft.webp'},
- orangensaft:{phrase:'einen Orangensaft',image:'orangensaft.webp'},
- salat:{phrase:'einen Salat',image:'salat.webp'},
- kaesebrot:{phrase:'ein Käsebrot',image:'kaesebrot.webp'},
- schinkenbrot:{phrase:'ein Schinkenbrot',image:'schinkenbrot.webp'},
- pommes:{phrase:'eine Portion Pommes',image:'pommes.webp'},
- getraenk:{phrase:'ein Getränk',image:'getraenk.webp'}
+ hamburger:{phrase:'einen Hamburger',image:'hamburger.webp'},cola:{phrase:'eine Cola',image:'cola.webp'},apfelsaft:{phrase:'einen Apfelsaft',image:'apfelsaft.webp'},orangensaft:{phrase:'einen Orangensaft',image:'orangensaft.webp'},salat:{phrase:'einen Salat',image:'salat.webp'},kaesebrot:{phrase:'ein Käsebrot',image:'kaesebrot.webp'},schinkenbrot:{phrase:'ein Schinkenbrot',image:'schinkenbrot.webp'},pommes:{phrase:'eine Portion Pommes',image:'pommes.webp'},getraenk:{phrase:'ein Getränk',image:'getraenk.webp'}
 };
-const items=[
- ['Mila','Ben','hamburger','cola','apfelsaft'],
- ['Sara','Tom','salat','orangensaft','kaesebrot'],
- ['Anna','Leo','pommes','cola','salat'],
- ['Nina','Amir','schinkenbrot','apfelsaft','getraenk'],
- ['Lea','Omar','kaesebrot','orangensaft','hamburger'],
- ['Paula','Daniel','salat','cola','pommes'],
- ['Eva','Samir','hamburger','apfelsaft','kaesebrot'],
- ['Mila','Tom','schinkenbrot','cola','orangensaft'],
- ['Sara','Ben','pommes','getraenk','salat'],
- ['Anna','Amir','kaesebrot','cola','apfelsaft'],
- ['Nina','Leo','hamburger','orangensaft','schinkenbrot'],
- ['Lea','Samir','salat','apfelsaft','getraenk']
-].map((x,n)=>({id:'imb'+String(n+1).padStart(2,'0'),aName:x[0],bName:x[1],first:FOOD[x[2]],second:FOOD[x[3]],third:FOOD[x[4]]}));
+const raw=[
+['Mila','Ben','hamburger','cola','apfelsaft',0],['Sara','Tom','salat','orangensaft','kaesebrot',1],['Anna','Leo','pommes','cola','salat',2],['Nina','Amir','schinkenbrot','apfelsaft','getraenk',3],['Lea','Omar','kaesebrot','orangensaft','hamburger',0],['Paula','Daniel','salat','cola','pommes',1],['Eva','Samir','hamburger','apfelsaft','kaesebrot',2],['Mila','Tom','schinkenbrot','cola','orangensaft',3],['Sara','Ben','pommes','getraenk','salat',0],['Anna','Amir','kaesebrot','cola','apfelsaft',1],['Nina','Leo','hamburger','orangensaft','schinkenbrot',2],['Lea','Samir','salat','apfelsaft','getraenk',3]
+];
+const items=raw.map((x,n)=>({id:'imb'+String(n+1).padStart(2,'0'),aName:x[0],bName:x[1],first:FOOD[x[2]],second:FOOD[x[3]],third:FOOD[x[4]],template:x[5]}));
 const total=items.length;
-let index=0,stage='speak',spoken=new Set(),fallbackVisible=new Set(),fallbackValues={a:'',b:''},completedBy={};
-function lineA(item){return `Ich hätte gern ${item.first.phrase} und ${item.second.phrase}. Und du? Möchtest du auch etwas?`}
-function lineB(item){return `Ich denke, ich nehme nur ${item.third.phrase}. Ich habe keinen Hunger.`}
+let index=0,doneRoles=new Set(),fallbackVisible=new Set(),fallbackValues={a:'',b:''},completedBy={},finishing=false;
+function lines(item){
+ const sets=[
+  [`Ich hätte gern ${item.first.phrase} und ${item.second.phrase}. Was möchtest du?`,`Ich nehme nur ${item.third.phrase}. Ich habe heute keinen Hunger.`],
+  [`Ich nehme ${item.first.phrase} und ${item.second.phrase}. Nimmst du auch etwas?`,`Ja, ich nehme nur ${item.third.phrase}. Mehr möchte ich nicht.`],
+  [`Ich bestelle ${item.first.phrase} und ${item.second.phrase}. Was bestellst du?`,`Für mich bitte nur ${item.third.phrase}. Ich habe nicht viel Hunger.`],
+  [`Ich möchte ${item.first.phrase} und ${item.second.phrase}. Und du?`,`Ich nehme nur ${item.third.phrase}. Das reicht mir.`]
+ ];
+ return sets[item.template];
+}
+function line(item,turn){return lines(item)[turn==='a'?0:1]}
 function accepted(text){return [text,text.replace('hätte gern','hätte gerne')]}
-function escapeHtml(value){return String(value||'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
-function foodImage(food){return `<span class="food-chip"><img src="${CDN+food.image}" alt="Bild einer Speise oder eines Getränks" onerror="this.parentElement.innerHTML='Bild'"></span>`}
-function scaffold(item){return `<div class="imbiss-scene"><div class="imbiss-row left"><div class="imbiss-name">${item.aName}</div><div class="imbiss-bubble">Ich hätte gern ${foodImage(item.first)} und ${foodImage(item.second)}.<br>Und du? Möchtest du auch etwas?</div></div><div class="imbiss-row right"><div class="imbiss-name">${item.bName}</div><div class="imbiss-bubble">Ich denke, ich nehme nur ${foodImage(item.third)}.<br>Ich habe keinen Hunger.</div></div></div>`}
-function roleSolution(item,turn){return turn==='a'?lineA(item):lineB(item)}
+function esc(v){return String(v||'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
+function food(food){return `<span class="food-chip"><img src="${CDN+food.image}" alt="${food.phrase}" onerror="this.parentElement.textContent='Bild'"></span>`}
+function scaffold(item){
+ const first=lines(item)[0],second=lines(item)[1];
+ const replacements=[first.replace(item.first.phrase,food(item.first)).replace(item.second.phrase,food(item.second)),second.replace(item.third.phrase,food(item.third))];
+ return `<div class="imbiss-scene"><div class="imbiss-row left"><div class="imbiss-name">${item.aName}</div><div class="imbiss-bubble">${replacements[0]}</div></div><div class="imbiss-row right"><div class="imbiss-name">${item.bName}</div><div class="imbiss-bubble">${replacements[1]}</div></div></div>`;
+}
 function roleStatus(turn){
- if(!spoken.has(turn))return turn==='a'?'Bestellung und Frage sprechen':'Antwort sprechen';
+ if(!doneRoles.has(turn))return turn==='a'?'Bestellung und Frage':'Antwort';
  return completedBy[turn]==='write'?'Richtig geschrieben ✓':'Richtig gesprochen ✓';
 }
 function fallbackBox(turn){
- if(!fallbackVisible.has(turn)||spoken.has(turn))return '';
- const value=escapeHtml(fallbackValues[turn]);
- return `<div class="fallback-box"><label for="fallback-${turn}">Mikrofon funktioniert nicht? Rolle schreiben:</label><textarea id="fallback-${turn}" autocomplete="off">${value}</textarea><div class="fallback-actions"><button class="btn" type="button" onclick="checkFallback('${turn}')">Schreiben kontrollieren</button></div></div>`;
+ if(!fallbackVisible.has(turn)||doneRoles.has(turn))return'';
+ return `<div class="fallback-box"><label for="fallback-${turn}">Schreibe die vollständige Rolle:</label><textarea id="fallback-${turn}" autocomplete="off">${esc(fallbackValues[turn])}</textarea><div class="fallback-actions"><button class="btn" type="button" onclick="checkFallback('${turn}')">Kontrollieren</button></div></div>`;
 }
 function roleCard(item,turn){
  const name=turn==='a'?item.aName:item.bName;
- return `<section class="speak-turn ${spoken.has(turn)?'done':''}"><b>${name}</b><div class="${spoken.has(turn)?'stage-done':'stage-open'}">${roleStatus(turn)}</div><div class="fallback-actions"><button class="btn mic-btn" type="button" ${spoken.has(turn)?'disabled':''} onclick="speakTurn(this,'${turn}')">🎤 Rolle sprechen</button><button class="btn secondary" type="button" ${spoken.has(turn)?'disabled':''} onclick="showWriteFallback('${turn}')">✍️ Stattdessen schreiben</button></div>${fallbackBox(turn)}</section>`;
+ return `<section class="speak-turn ${doneRoles.has(turn)?'done':''}"><b>${name}</b><div class="${doneRoles.has(turn)?'stage-done':'stage-open'}">${roleStatus(turn)}</div><div class="fallback-actions"><button class="btn mic-btn" type="button" ${doneRoles.has(turn)?'disabled':''} onclick="speakTurn(this,'${turn}')">🎤 Sprechen</button><button class="btn secondary" type="button" ${doneRoles.has(turn)?'disabled':''} onclick="showWrite('${turn}')">✍️ Schreiben</button></div>${fallbackBox(turn)}</section>`;
 }
 function show(){
  if(loadTask(FILE,total).done.length>=total){complete(area,FILE,L6T3.nextFile(FILE));return}
- index=spNextIndex(FILE,total);stage='speak';spoken=new Set();fallbackVisible=new Set();fallbackValues={a:'',b:''};completedBy={};renderSpeak('');
+ index=spNextIndex(FILE,total);doneRoles=new Set();fallbackVisible=new Set();fallbackValues={a:'',b:''};completedBy={};finishing=false;render('');
 }
-function renderSpeak(message){
+function render(message){
  const item=items[index];
- area.innerHTML=`${progress(FILE,total)}${instruction('Sprich zuerst beide Rollen. Wenn das Mikrofon nicht funktioniert, kannst du die Rolle schreiben.')}<div class="imbiss-stage">1. Dialog sprechen oder ersatzweise schreiben</div>${scaffold(item)}<div class="speak-checks">${roleCard(item,'a')}${roleCard(item,'b')}</div><div id="micStatus" class="mic-status"></div><div class="mic-result">${message}</div>${spoken.size===2?'<div class="actions"><button class="btn green" type="button" onclick="stage=\'write\';renderWrite(\'\')">Weiter zum Schreiben</button></div>':''}`;
+ area.innerHTML=`${progress(FILE,total)}${instruction('Bearbeite beide Rollen: sprechen oder schreiben. Eine richtig gesprochene Rolle musst du nicht mehr schreiben.')} ${scaffold(item)}<div class="speak-checks">${roleCard(item,'a')}${roleCard(item,'b')}</div><div id="micStatus" class="mic-status"></div><div class="mic-result">${message}</div>`;
 }
-function showWriteFallback(turn,message){
- fallbackVisible.add(turn);
- renderSpeak(message||'<div class="hint">Schreibe die vollständige Rolle.</div>');
+function showWrite(turn,message){
+ fallbackVisible.add(turn);render(message||'<div class="hint">Schreibe die vollständige Rolle.</div>');
  setTimeout(()=>document.getElementById('fallback-'+turn)?.focus(),30);
+}
+function completeRole(turn,method){
+ doneRoles.add(turn);completedBy[turn]=method;fallbackVisible.delete(turn);
+ if(doneRoles.size===2&&!finishing){
+  finishing=true;render('<div class="ok">Beide Rollen sind richtig. Der Dialog ist abgeschlossen.</div>');
+  spMarkRight(FILE,total);setTimeout(show,850);
+ }else render(`<div class="ok">Rolle richtig ${method==='write'?'geschrieben':'gesprochen'}.</div>`);
 }
 function speakTurn(button,turn){
  const SR=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!SR){showWriteFallback(turn,'<div class="hint">Das Mikrofon ist auf diesem Gerät nicht verfügbar. Bitte schreibe die Rolle.</div>');return}
+ if(!SR){showWrite(turn,'<div class="hint">Das Mikrofon ist nicht verfügbar. Bitte schreibe die Rolle.</div>');return}
  let recognition,resultReceived=false,failed=false;
- try{recognition=new SR()}catch(e){showWriteFallback(turn,'<div class="hint">Das Mikrofon konnte nicht gestartet werden. Bitte schreibe die Rolle.</div>');return}
- recognition.lang='de-DE';recognition.interimResults=false;recognition.maxAlternatives=3;
- button.disabled=true;const oldText=button.textContent;button.textContent='Ich höre …';
- recognition.onresult=event=>{
-  resultReceived=true;
-  const alternatives=event.results&&event.results[0]?Array.from(event.results[0]).map(x=>x.transcript).filter(Boolean):[];
-  checkSpeech(turn,alternatives);
- };
- recognition.onerror=()=>{
-  failed=true;
-  showWriteFallback(turn,'<div class="hint">Das Mikrofon ist blockiert oder hat nicht funktioniert. Bitte schreibe die Rolle.</div>');
- };
- recognition.onnomatch=()=>{
-  failed=true;
-  showWriteFallback(turn,'<div class="hint">Ich konnte nichts erkennen. Bitte schreibe die Rolle.</div>');
- };
- recognition.onend=()=>{
-  button.disabled=false;button.textContent=oldText;
-  if(!resultReceived&&!failed)showWriteFallback(turn,'<div class="hint">Ich konnte nichts erkennen. Bitte schreibe die Rolle.</div>');
- };
- try{recognition.start()}catch(e){failed=true;button.disabled=false;button.textContent=oldText;showWriteFallback(turn,'<div class="hint">Das Mikrofon konnte nicht gestartet werden. Bitte schreibe die Rolle.</div>')}
+ try{recognition=new SR()}catch(e){showWrite(turn,'<div class="hint">Das Mikrofon konnte nicht gestartet werden. Bitte schreibe die Rolle.</div>');return}
+ recognition.lang='de-DE';recognition.interimResults=false;recognition.maxAlternatives=4;
+ button.disabled=true;const old=button.textContent;button.textContent='Ich höre …';
+ recognition.onresult=e=>{resultReceived=true;const alternatives=e.results&&e.results[0]?Array.from(e.results[0]).map(x=>x.transcript).filter(Boolean):[];checkSpeech(turn,alternatives)};
+ recognition.onerror=()=>{failed=true;showWrite(turn,'<div class="hint">Das Mikrofon ist blockiert oder hat nicht funktioniert. Bitte schreibe die Rolle.</div>')};
+ recognition.onnomatch=()=>{failed=true;showWrite(turn,'<div class="hint">Ich konnte nichts erkennen. Bitte schreibe die Rolle.</div>')};
+ recognition.onend=()=>{button.disabled=false;button.textContent=old;if(!resultReceived&&!failed)showWrite(turn,'<div class="hint">Ich konnte nichts erkennen. Bitte schreibe die Rolle.</div>')};
+ try{recognition.start()}catch(e){button.disabled=false;button.textContent=old;showWrite(turn,'<div class="hint">Das Mikrofon konnte nicht gestartet werden. Bitte schreibe die Rolle.</div>')}
 }
 function checkSpeech(turn,alternatives){
- const item=items[index],solution=roleSolution(item,turn);
- const correct=(alternatives||[]).some(text=>exact(text,accepted(solution)));
- if(correct){
-  spoken.add(turn);completedBy[turn]='speak';fallbackVisible.delete(turn);
-  renderSpeak('<div class="ok">Richtig gesprochen.</div>');
- }else{
-  const tries=spMarkWrong(FILE,total);
-  showWriteFallback(turn,tries>=3?`<div class="no">Die Aufnahme war nicht vollständig richtig. Du kannst die Rolle schreiben.<br>Lösung: ${solution}</div>`:'<div class="no">Noch nicht vollständig richtig. Versuche es noch einmal oder schreibe die Rolle.</div>');
- }
+ const solution=line(items[index],turn);
+ if((alternatives||[]).some(t=>exact(t,accepted(solution))))completeRole(turn,'speak');
+ else{const tries=spMarkWrong(FILE,total);showWrite(turn,tries>=3?`<div class="no">Die Aufnahme war nicht vollständig richtig.<br>Lösung: ${solution}</div>`:'<div class="no">Noch nicht vollständig richtig. Sprich noch einmal oder schreibe die Rolle.</div>')}
 }
 function checkFallback(turn){
- const input=document.getElementById('fallback-'+turn);
- if(!input)return;
- const value=input.value,fallback={...fallbackValues,[turn]:value},item=items[index],solution=roleSolution(item,turn);
- fallbackValues=fallback;
- if(exact(value,accepted(solution))){
-  spoken.add(turn);completedBy[turn]='write';
-  renderSpeak('<div class="ok">Richtig geschrieben. Diese Rolle ist erledigt.</div>');
- }else{
-  const tries=spMarkWrong(FILE,total);
-  renderSpeak(tries>=3?`<div class="no">Lösung: ${solution}</div>`:'<div class="no">Noch nicht richtig. Prüfe Artikel, Nomen und Wortstellung.</div>');
-  setTimeout(()=>document.getElementById('fallback-'+turn)?.focus(),30);
- }
-}
-function renderWrite(message){
- const item=items[index],savedA=escapeHtml(fallbackValues.a),savedB=escapeHtml(fallbackValues.b);
- area.innerHTML=`${progress(FILE,total)}${instruction('Schreibe jetzt beide Rollen vollständig. Bereits als Ersatz geschriebene Rollen bleiben eingetragen.')}<div class="imbiss-stage">2. Dialog schreiben</div>${scaffold(item)}<div class="write-dialog"><div class="write-turn"><label for="answerA">${item.aName}</label><textarea id="answerA" autocomplete="off" placeholder="Bestellung und Frage schreiben">${savedA}</textarea></div><div class="write-turn"><label for="answerB">${item.bName}</label><textarea id="answerB" autocomplete="off" placeholder="Antwort schreiben">${savedB}</textarea></div></div><div class="actions"><button class="btn" type="button" onclick="checkWriting()">Kontrollieren</button><button class="btn secondary" type="button" onclick="stage='speak';renderSpeak('')">Zurück zum Sprechen</button></div><div id="fb" class="feedback">${message}</div>`;
- document.getElementById(fallbackValues.a?'answerB':'answerA')?.focus();
-}
-function checkWriting(){
- const item=items[index],aValue=answerA.value,bValue=answerB.value;
- const okA=exact(aValue,accepted(lineA(item))),okB=exact(bValue,lineB(item));
- if(okA&&okB){
-  fb.innerHTML='<div class="ok">Der ganze Dialog ist richtig bearbeitet.</div>';
-  spMarkRight(FILE,total);
-  setTimeout(show,850);
-  return;
- }
- const tries=spMarkWrong(FILE,total),parts=[];
- if(!okA)parts.push(item.aName);
- if(!okB)parts.push(item.bName);
- fb.innerHTML=tries>=3?`<div class="no"><b>${parts.join(' und ')} noch korrigieren.</b><br>${item.aName}: ${lineA(item)}<br>${item.bName}: ${lineB(item)}</div>`:`<div class="no">Noch nicht richtig bei ${parts.join(' und ')}. Prüfe Akkusativ, Artikel und Wortstellung. Der Dialog kommt am Ende erneut.</div>`;
+ const input=document.getElementById('fallback-'+turn);if(!input)return;
+ fallbackValues[turn]=input.value;const solution=line(items[index],turn);
+ if(exact(input.value,accepted(solution)))completeRole(turn,'write');
+ else{const tries=spMarkWrong(FILE,total);render(tries>=3?`<div class="no">Lösung: ${solution}</div>`:'<div class="no">Noch nicht richtig. Prüfe Artikel und Wortstellung.</div>');setTimeout(()=>document.getElementById('fallback-'+turn)?.focus(),30)}
 }
 show();
 </script>
