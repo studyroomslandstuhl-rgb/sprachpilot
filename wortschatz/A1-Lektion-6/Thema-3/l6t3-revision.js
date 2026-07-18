@@ -5,6 +5,8 @@ if(!DATA||!window.L6T3)return;
 const IMBISS_FILE='imbiss.html';
 const TOPIC_ID='wortschatz-a1-lektion-6-thema-3';
 const TOPIC_PATH='A1-Lektion-6/Thema-3';
+const SCORE_LEDGER_KEY='SP_THEME_SCORE_A1_L6_T3_V1';
+const SCORE_RUN_KEY='SP_SCORE_RUN_'+TOPIC_ID;
 const counts={
  'komposita-artikel.html':DATA.compoundArticle.length,
  'komposita-bauen.html':DATA.compoundBuild.length,
@@ -62,8 +64,12 @@ function genericProgressKeys(){
  });
  return keys;
 }
+function scoreKeyProtected(key){
+ if(key===SCORE_LEDGER_KEY||key===SCORE_RUN_KEY)return true;
+ try{return !!(window.L6T3ThemeScore&&L6T3ThemeScore.isProtectedKey(key))}catch(e){return false}
+}
 function isProgressKey(key,genericKeys){
- key=String(key||'');if(!key)return false;
+ key=String(key||'');if(!key||scoreKeyProtected(key))return false;
  if(key.startsWith(CFG.key)||key.includes(CFG.key))return true;
  if(key.startsWith('SP_L6_T3')||key.includes(TOPIC_ID)||key.includes(TOPIC_PATH))return true;
  if(/SP_(?:TASK_)?(?:STATE|PROGRESS).*L6[_-]?T3/i.test(key))return true;
@@ -82,13 +88,19 @@ function clearProgress(){
  return{localRemoved,sessionRemoved,total:localRemoved.length+sessionRemoved.length};
 }
 window.resetThemeProgress=function(){
+ if(window.L6T3ThemeScore&&typeof L6T3ThemeScore.resetPractice==='function')return L6T3ThemeScore.resetPractice();
  if(!confirm('Fortschritte in Lektion 6 · Thema 3 löschen? Bereits verdiente Punkte bleiben erhalten.'))return false;
  const result=clearProgress();
  try{sessionStorage.setItem('SP_L6_T3_RESET_RESULT',JSON.stringify(result))}catch(e){}
- location.replace('index.html?resetDone='+Date.now()+'&v=l6t3-review1');
+ location.replace('index.html?resetDone='+Date.now()+'&v=l6t3-score1');
  return true;
 };
 if(new URLSearchParams(location.search).has('reset'))clearProgress();
+function renderScore(){
+ const box=document.getElementById('scoreSummary');
+ if(!box)return;
+ box.innerHTML=window.L6T3ThemeScore&&typeof L6T3ThemeScore.summaryHtml==='function'?L6T3ThemeScore.summaryHtml():'';
+}
 window.renderMenu=function(){
  const tasks=activeTasks(),circle=document.getElementById('totalCircle'),bar=document.getElementById('totalBar'),text=document.getElementById('totalText'),grid=document.getElementById('taskGrid');
  const values=tasks.map(t=>({task:t,p:pctFor(t[0],t[1])}));
@@ -96,6 +108,7 @@ window.renderMenu=function(){
  if(circle)circle.textContent=avg+'%';
  if(bar)bar.style.width=avg+'%';
  if(text)text.textContent=values.filter(x=>x.p>=100).length+' / '+tasks.length+' Aufgaben abgeschlossen';
+ renderScore();
  if(!grid)return;
  const examUnlocked=values.filter(x=>x.task[0]!=='pruefung.html').every(x=>x.p>=100);
  const descriptions={
@@ -117,11 +130,12 @@ window.renderMenu=function(){
  grid.innerHTML='<div class="grid">'+values.map((x,i)=>{
   const t=x.task,p=x.p,isExam=t[0]==='pruefung.html',locked=isExam&&!examUnlocked;
   const cls='module'+(locked?' exam-locked':'');
-  const href=locked?'':` href="${t[0]}?v=l6t3-review1"`;
+  const href=locked?'':` href="${t[0]}?v=l6t3-score1"`;
   const aria=locked?' aria-disabled="true"':'';
   const start=locked?'Gesperrt':p>=100?'Fertig':'Starten';
   return `<a class="${cls}"${href}${aria}><div class="num">${i+1}. ${t[2]}</div><div class="big-icon">${ICONS[t[0]]||'▶'}</div><p class="small">${locked?'Die Prüfung wird geöffnet, wenn alle vorherigen Aufgaben 100% erreicht haben.':descriptions[t[0]]||'Akkusativ, Artikel, Restaurant und Planen üben.'}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${start}</div></a>`;
  }).join('')+'</div>';
 };
-window.L6T3Revision={data:DATA,counts,clearProgress,activeTasks,imbissFile:IMBISS_FILE,progressFiles,genericProgressKeys};
+if(!window.__L6T3_SCORE_LISTENER){window.__L6T3_SCORE_LISTENER=true;window.addEventListener('l6t3-score-change',renderScore)}
+window.L6T3Revision={data:DATA,counts,clearProgress,activeTasks,imbissFile:IMBISS_FILE,progressFiles,genericProgressKeys,renderScore};
 })();
