@@ -18,7 +18,8 @@ const IS_L3T1=path.includes("/wortschatz/A1-Lektion-3/Thema-1/");
 const IS_L3T2=path.includes("/wortschatz/A1-Lektion-3/Thema-2/");
 const IS_L5=path.includes("/wortschatz/A1-Lektion-5/");
 const IS_L6T2=path.includes("/wortschatz/A1-Lektion-6/Thema-2/");
-const HAS_OWN_PROGRESS_SYSTEM=IS_L3T2||IS_L5||IS_L6T2;
+const IS_L6T3=path.includes("/wortschatz/A1-Lektion-6/Thema-3/");
+const HAS_OWN_PROGRESS_SYSTEM=IS_L3T2||IS_L5||IS_L6T2||IS_L6T3;
 const IS_WORTSCHATZ_TASK_PAGE=IS_WORTSCHATZ_EXERCISE&&!IS_WORTSCHATZ_THEME_OVERVIEW;
 const NEEDS_EXAM_UNLOCK_FIX=IS_WORTSCHATZ_TASK_PAGE&&!IS_L3T1&&!HAS_OWN_PROGRESS_SYSTEM&&!IS_L6T2;
 const USES_STANDARD_PROGRESS=(IS_WORTSCHATZ_TASK_PAGE&&!IS_L3T1&&!HAS_OWN_PROGRESS_SYSTEM)||IS_FRAGEN_EXERCISE;
@@ -77,6 +78,9 @@ if(IS_L3T2){
 }
 if(IS_L6T2){
   import("/wortschatz/A1-Lektion-6/Thema-2/l6t2-stability.js?v=1").catch(()=>{});
+}
+if(IS_L6T3){
+  import("/wortschatz/A1-Lektion-6/Thema-3/l6t3-theme-score.js?v=1").catch(()=>{});
 }
 if(USES_STANDARD_PROGRESS){
   import("/js/sp-progress-standard.js?v=4").catch(()=>{});
