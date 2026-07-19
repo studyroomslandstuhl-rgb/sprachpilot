@@ -5,6 +5,16 @@
   <meta name="viewport" content="width=device-width,initial-scale=1">
   <title>Irreguläre Verben · SprachPilot</title>
   <link rel="stylesheet" href="styles.css?v=3">
+  <style>
+    .score-ledger-card{border:2px solid #ffe28a;background:#fffdf2}
+    .score-ledger-head{display:flex;align-items:center;justify-content:space-between;gap:20px;flex-wrap:wrap}
+    .score-ledger-total{min-width:150px;padding:14px 18px;border:2px solid #f0c95a;border-radius:18px;background:#fff;font-size:34px;font-weight:900;color:#8a5b00;text-align:center}
+    .score-ledger-total span{display:block;margin-top:3px;font-size:13px;color:#64748b}
+    .score-rules{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+    .score-rules span{padding:8px 12px;border-radius:999px;background:#fff3bf;color:#765000;font-weight:900}
+    .score-earned-note{margin-top:18px;padding:13px 16px;border:2px solid #f0c95a;border-radius:16px;background:#fffdf2;color:#765000;font-weight:900}
+    @media(max-width:600px){.score-ledger-total{width:100%}.score-ledger-head{align-items:stretch}}
+  </style>
 </head>
 <body>
   <div class="shell">
@@ -20,6 +30,7 @@
   <script src="/verben-A1/data/translations.js?v=12"></script>
   <script>window.SP_VERB_TRANSLATIONS=typeof VERB_TRANSLATIONS!=='undefined'?VERB_TRANSLATIONS:{};</script>
   <script src="data.js?v=3"></script>
+  <script src="score.js?v=1"></script>
   <script type="module" src="app-v7.js?v=7"></script>
   <script defer src="../js/performance-boot.js?v=20260709d"></script>
   <script src="/shared/sprachpilot-design-system.js"></script>
