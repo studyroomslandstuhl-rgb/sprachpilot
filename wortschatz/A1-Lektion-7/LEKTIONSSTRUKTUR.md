@@ -1,8 +1,19 @@
 # SprachPilot · A1 Lektion 7
 
-## Verbindliche Quelldatei
+## Status
 
-Der vollständige Arbeitsauftrag für Lektion 7, Thema 1–4, ist in [`ARBEITS-PROMPT.md`](./ARBEITS-PROMPT.md) gespeichert. Bei der Entwicklung von Wortschatz, Grammatik, Aufgaben, Hörtexten, Lösungen und Prüfungen gelten diese Vorgaben vollständig. Die vier `STRUKTUR.md`-Dateien ordnen den Arbeitsauftrag jeweils in eine konkrete Aufgabenfolge ein.
+Die vollständigen inhaltlichen Quelldaten für Thema 1–4 sind ausgearbeitet. Interaktive HTML-Aufgaben, Audiodateien und Bilddateien werden auf Grundlage dieser Dateien schrittweise umgesetzt.
+
+## Verbindliche Quelldateien
+
+Der vollständige Arbeitsauftrag ist in [`ARBEITS-PROMPT.md`](./ARBEITS-PROMPT.md) gespeichert. Die vier `STRUKTUR.md`-Dateien legen die Aufgabenfolge fest. Die vollständigen Aufgabeninhalte, Hörtexte, Schreibaufträge, Prüfungen und Lösungen stehen in:
+
+- [`Thema-1/INHALTE.md`](./Thema-1/INHALTE.md) – können, wollen und möchten
+- [`Thema-2/INHALTE.md`](./Thema-2/INHALTE.md) – Perfekt mit haben
+- [`Thema-3/INHALTE.md`](./Thema-3/INHALTE.md) – Perfekt mit sein und haben/sein
+- [`Thema-4/INHALTE.md`](./Thema-4/INHALTE.md) – Kommunikation in der Schule
+
+Bei der technischen Umsetzung dürfen die geschlossenen Items nur mit den dort hinterlegten eindeutigen Lösungen verwendet werden. Freie Aufgaben behalten die angegebenen Pflichtkriterien.
 
 ## Übergeordnete Lernziele
 
@@ -27,38 +38,39 @@ Die Lernenden sollen:
 3. Alle relevanten Nomen werden mit Artikel, Singular und Plural trainiert.
 4. Geschlossene Aufgaben besitzen genau eine eindeutige Lösung.
 5. Fehlerhafte Aufgaben erscheinen am Ende erneut.
-6. Nach Möglichkeit werden Lesen, Hören, Schreiben und Sprechen verbunden.
-7. Jede Sprechaufgabe erhält einen Schreib-Fallback, falls das Mikrofon nicht funktioniert.
-8. Thema 2 verwendet ausschließlich Perfekt mit **haben**.
-9. Thema 3 beginnt ausschließlich mit Perfekt mit **sein**; erst danach werden **haben** und **sein** verglichen.
-10. Keine Passivformen.
-11. Keine Grammatik, die im jeweiligen Thema noch nicht eingeführt ist.
-12. Hörtexte sind kurz, klar, natürlich und inhaltlich aussagekräftig.
-13. Lösungen werden zu allen geschlossenen Aufgaben hinterlegt.
-14. Lehrer-Vorschau verändert keine Teilnehmerpunkte oder Fortschritte.
-15. Das unklare Wort **„Direktometer“** wird nicht aufgenommen, bis die Bedeutung geklärt ist.
+6. Dreistufige Hilfe: erster Fehler = falsch, zweiter Fehler = konkreter Hinweis, ab drittem Fehler = Lösung; die richtige Antwort muss anschließend selbst eingegeben werden.
+7. Nach Möglichkeit werden Lesen, Hören, Schreiben und Sprechen verbunden.
+8. Jede Sprechaufgabe erhält einen sichtbaren Schreib-Fallback. Ein technischer Mikrofonfehler zählt nicht als falsche Antwort.
+9. Thema 2 verwendet ausschließlich Perfekt mit **haben**.
+10. Thema 3 beginnt ausschließlich mit Perfekt mit **sein**; erst danach werden **haben** und **sein** verglichen.
+11. Keine Passivformen.
+12. Keine Grammatik, die im jeweiligen Thema noch nicht eingeführt ist.
+13. Hörtexte sind kurz, klar, natürlich und inhaltlich aussagekräftig.
+14. Lösungen werden zu allen geschlossenen Aufgaben hinterlegt.
+15. Lehrer-Vorschau verändert keine Teilnehmerpunkte oder Fortschritte.
+16. Das unklare Wort **„Direktometer“** wird nicht aufgenommen, bis die Bedeutung geklärt ist.
 
 ## Themenübersicht
 
 ### Thema 1 · können, wollen und möchten
 
-Schwerpunkt: Fähigkeiten, Wünsche, Pläne, Satzklammer, Fragen, Abstufungen und höfliche Wünsche.
+Schwerpunkt: Fähigkeiten, Wünsche, Pläne, Satzklammer, Fragen, Abstufungen und höfliche Wünsche. Enthält 19 Aufgaben einschließlich Hörverstehen und Themenprüfung.
 
 ### Thema 2 · Perfekt mit haben
 
-Schwerpunkt: häufige Partizip-II-Formen, Endungen **-t/-en**, Satzklammer, Zeitangaben und kurze Dialoge.
+Schwerpunkt: häufige Partizip-II-Formen, Endungen **-t/-en**, Satzklammer, Zeitangaben und kurze Dialoge. Enthält 21 Aufgaben einschließlich Lesen, Hören und Themenprüfung.
 
 ### Thema 3 · Perfekt mit sein
 
-Schwerpunkt: Bewegungsverben, Formen von **sein**, Satzbildung und später die Unterscheidung **haben/sein**.
+Schwerpunkt: Bewegungsverben, Formen von **sein**, Satzbildung und danach die Unterscheidung **haben/sein**. Enthält 22 Aufgaben in zwei klar getrennten Phasen.
 
 ### Thema 4 · Kommunikation in der Schule
 
-Schwerpunkt: Schulwortschatz, Mitteilungen, Entschuldigungen, Telefongespräche, Lesen, Hören, Schreiben und Sprechen.
+Schwerpunkt: Schulwortschatz, Mitteilungen, Entschuldigungen, Telefongespräche, Lesen, Hören, Schreiben und Sprechen. Enthält 23 Aufgaben einschließlich zweier Schreibaufgaben und Themenprüfung.
 
-## Entwicklungsreihenfolge
+## Technische Entwicklungsreihenfolge
 
-1. Thema 1 vollständig aufbauen und testen.
+1. Thema 1 vollständig als interaktive Aufgaben aufbauen und testen.
 2. Thema 2 ausschließlich mit **haben** aufbauen und testen.
 3. Thema 3 zuerst nur mit **sein**, danach Vergleich **haben/sein**.
 4. Thema 4 mit authentischen, aber einfachen Schul- und Kurssituationen.
