@@ -39,7 +39,23 @@ function l6t4TaskKey(file){return (l6t4IsPreview()?'SP_L6_T4_PREVIEW_':L6T4_CFG.
 function l6t4Simple(value){return String(value||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:“”"']/g,'').replace(/\s+/g,' ')}
 function l6t4Exact(value,solutions){const normalized=l6t4Simple(value);return (Array.isArray(solutions)?solutions:[solutions]).some(solution=>l6t4Simple(solution)===normalized)}
 function l6t4Shuffle(list){const copy=list.slice();for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}return copy}
-function l6t4Load(file,total){try{const value=JSON.parse(l6t4Storage().getItem(l6t4TaskKey(file))||'null');if(value&&value.total===total&&Array.isArray(value.done)&&Array.isArray(value.queue))return value}catch(e){}return{total,done:[],queue:l6t4Shuffle([...Array(total).keys()]),current:null,tries:0,hadWrong:false,firstCorrect:0,firstSeen:[]}}
+function l6t4Load(file,total){
+ try{
+  const value=JSON.parse(l6t4Storage().getItem(l6t4TaskKey(file))||'null');
+  if(value&&value.total===total&&Array.isArray(value.done)&&Array.isArray(value.queue))return value
+ }catch(e){}
+ if(!l6t4IsPreview()&&file==='plural-sprechen.html'){
+  try{
+   const old=JSON.parse(localStorage.getItem('SP_L6_T4_V1_plural-sprechen.html')||'null');
+   if(old&&old.total===total&&Array.isArray(old.done)&&Array.isArray(old.queue)){
+    const migrated={...old,firstCorrect:Number(old.firstCorrect||0),firstSeen:Array.isArray(old.firstSeen)?old.firstSeen:[]};
+    localStorage.setItem(l6t4TaskKey(file),JSON.stringify(migrated));
+    return migrated
+   }
+  }catch(e){}
+ }
+ return{total,done:[],queue:l6t4Shuffle([...Array(total).keys()]),current:null,tries:0,hadWrong:false,firstCorrect:0,firstSeen:[]}
+}
 function l6t4Save(file,state){l6t4Storage().setItem(l6t4TaskKey(file),JSON.stringify(state));l6t4Sync(file,state)}
 function l6t4RegisterAttempt(file,total,index,isCorrect){const state=l6t4Load(file,total);state.firstSeen=Array.isArray(state.firstSeen)?state.firstSeen:[];if(!state.firstSeen.includes(index)){state.firstSeen.push(index);if(isCorrect)state.firstCorrect=(state.firstCorrect||0)+1}l6t4Save(file,state)}
 function l6t4TaskByKey(file){return L6T4_TASKS.find(task=>task.key===file||task.file===file||task.id===file)}
