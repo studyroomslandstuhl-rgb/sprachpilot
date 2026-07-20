@@ -2,7 +2,25 @@
 
 ## Status
 
-Die vollständigen inhaltlichen Quelldaten für Thema 1–4 sind ausgearbeitet. Interaktive HTML-Aufgaben, Audiodateien und Bilddateien werden auf Grundlage dieser Dateien schrittweise umgesetzt.
+Die erste vollständige interaktive Version von Lektion 7 ist aufgebaut:
+
+- Thema 1: 19 Aufgaben
+- Thema 2: 21 Aufgaben
+- Thema 3: 22 Aufgaben
+- Thema 4: 23 Aufgaben
+- insgesamt: 85 Aufgaben mit 678 Übungsitems
+
+Jedes Thema besitzt eine eigene Übersicht, eine gesperrte Themenprüfung und ein gemeinsames interaktives Aufgabensystem. Hörinhalte werden in dieser ersten Version über die deutsche Browser-Sprachausgabe wiedergegeben. Eigene MP3-Dateien können später ergänzt werden. Bilder werden über das SprachPilot-CDN geladen; fehlt ein Bild, erscheint automatisch eine Bedeutungskarte.
+
+## Technische Seiten
+
+- [`index.html`](./index.html) – Übersicht Lektion 7
+- `Thema-1/index.html` bis `Thema-4/index.html` – Themenübersichten
+- `Thema-1/task.html` bis `Thema-4/task.html` – gemeinsamer Aufgabentyp pro Thema
+- `Thema-1/data-loader.js` bis `Thema-4/data-loader.js` – vollständige interaktive Datensätze
+- [`shared/l7-state.js`](./shared/l7-state.js) – Fortschritt, Fehlerwiederholung, Punkte und Prüfungssperre
+- [`shared/l7-ui.js`](./shared/l7-ui.js) – gemeinsame Aufgabenoberfläche
+- [`shared/l7-style.css`](./shared/l7-style.css) – gemeinsames Design
 
 ## Verbindliche Quelldateien
 
@@ -12,8 +30,6 @@ Der vollständige Arbeitsauftrag ist in [`ARBEITS-PROMPT.md`](./ARBEITS-PROMPT.m
 - [`Thema-2/INHALTE.md`](./Thema-2/INHALTE.md) – Perfekt mit haben
 - [`Thema-3/INHALTE.md`](./Thema-3/INHALTE.md) – Perfekt mit sein und haben/sein
 - [`Thema-4/INHALTE.md`](./Thema-4/INHALTE.md) – Kommunikation in der Schule
-
-Bei der technischen Umsetzung dürfen die geschlossenen Items nur mit den dort hinterlegten eindeutigen Lösungen verwendet werden. Freie Aufgaben behalten die angegebenen Pflichtkriterien.
 
 ## Übergeordnete Lernziele
 
@@ -31,47 +47,45 @@ Die Lernenden sollen:
 - einfache schulische Mitteilungen und Entschuldigungen verstehen und schreiben,
 - Gespräche mit Schule oder Sekretariat führen.
 
-## Verbindliche didaktische Regeln
+## Verbindliche didaktische und technische Regeln
 
 1. Alle Inhalte bleiben auf A1-Niveau.
 2. Neue Strukturen werden zuerst erkannt, dann kontrolliert geübt und anschließend selbstständig angewendet.
 3. Alle relevanten Nomen werden mit Artikel, Singular und Plural trainiert.
 4. Geschlossene Aufgaben besitzen genau eine eindeutige Lösung.
-5. Fehlerhafte Aufgaben erscheinen am Ende erneut.
+5. Eine falsch beantwortete Aufgabe bleibt stehen, bis sie richtig gelöst ist, und erscheint danach am Ende erneut.
 6. Dreistufige Hilfe: erster Fehler = falsch, zweiter Fehler = konkreter Hinweis, ab drittem Fehler = Lösung; die richtige Antwort muss anschließend selbst eingegeben werden.
-7. Nach Möglichkeit werden Lesen, Hören, Schreiben und Sprechen verbunden.
-8. Jede Sprechaufgabe erhält einen sichtbaren Schreib-Fallback. Ein technischer Mikrofonfehler zählt nicht als falsche Antwort.
-9. Thema 2 verwendet ausschließlich Perfekt mit **haben**.
-10. Thema 3 beginnt ausschließlich mit Perfekt mit **sein**; erst danach werden **haben** und **sein** verglichen.
-11. Keine Passivformen.
-12. Keine Grammatik, die im jeweiligen Thema noch nicht eingeführt ist.
-13. Hörtexte sind kurz, klar, natürlich und inhaltlich aussagekräftig.
-14. Lösungen werden zu allen geschlossenen Aufgaben hinterlegt.
-15. Lehrer-Vorschau verändert keine Teilnehmerpunkte oder Fortschritte.
-16. Das unklare Wort **„Direktometer“** wird nicht aufgenommen, bis die Bedeutung geklärt ist.
+7. Sprechaufgaben besitzen immer einen sichtbaren Schreib-Fallback. Ein technischer Mikrofonfehler zählt nicht als falsche Antwort.
+8. Angefangene Aufgaben und freie Texte werden pro Teilnehmer gespeichert.
+9. Eine Themenprüfung öffnet erst, wenn alle vorherigen Aufgaben des Themas zu 100 % abgeschlossen sind.
+10. Erstversuche werden für das Prüfungsergebnis getrennt erfasst.
+11. Lehrer-Vorschau verändert keine Teilnehmerpunkte oder Teilnehmerfortschritte.
+12. Thema 2 verwendet ausschließlich Perfekt mit **haben**.
+13. Thema 3 beginnt ausschließlich mit Perfekt mit **sein**; erst danach werden **haben** und **sein** verglichen.
+14. Keine Passivformen.
+15. Das unklare Wort **„Direktometer“** wird nicht aufgenommen.
 
 ## Themenübersicht
 
 ### Thema 1 · können, wollen und möchten
 
-Schwerpunkt: Fähigkeiten, Wünsche, Pläne, Satzklammer, Fragen, Abstufungen und höfliche Wünsche. Enthält 19 Aufgaben einschließlich Hörverstehen und Themenprüfung.
+Fähigkeiten, Wünsche, Pläne, Satzklammer, Fragen, Abstufungen, höfliche Wünsche und Hobbywortschatz. 19 Aufgaben.
 
 ### Thema 2 · Perfekt mit haben
 
-Schwerpunkt: häufige Partizip-II-Formen, Endungen **-t/-en**, Satzklammer, Zeitangaben und kurze Dialoge. Enthält 21 Aufgaben einschließlich Lesen, Hören und Themenprüfung.
+Partizip-II-Formen, Endungen **-t/-en**, Satzklammer, Zeitangaben, Lesen und Hören. 21 Aufgaben.
 
 ### Thema 3 · Perfekt mit sein
 
-Schwerpunkt: Bewegungsverben, Formen von **sein**, Satzbildung und danach die Unterscheidung **haben/sein**. Enthält 22 Aufgaben in zwei klar getrennten Phasen.
+Bewegungsverben und Formen von **sein**, danach die Unterscheidung **haben/sein**. 22 Aufgaben in zwei klar getrennten Phasen.
 
 ### Thema 4 · Kommunikation in der Schule
 
-Schwerpunkt: Schulwortschatz, Mitteilungen, Entschuldigungen, Telefongespräche, Lesen, Hören, Schreiben und Sprechen. Enthält 23 Aufgaben einschließlich zweier Schreibaufgaben und Themenprüfung.
+Schulwortschatz, Mitteilungen, Entschuldigungen, Telefongespräche, Lesen, Hören, Schreiben und Sprechen. 23 Aufgaben.
 
-## Technische Entwicklungsreihenfolge
+## Noch offen für spätere Ausbaustufen
 
-1. Thema 1 vollständig als interaktive Aufgaben aufbauen und testen.
-2. Thema 2 ausschließlich mit **haben** aufbauen und testen.
-3. Thema 3 zuerst nur mit **sein**, danach Vergleich **haben/sein**.
-4. Thema 4 mit authentischen, aber einfachen Schul- und Kurssituationen.
-5. Danach Gesamtprüfung und Qualitätskontrolle über alle vier Themen.
+- eigene MP3-Dateien statt Browser-Sprachausgabe,
+- praktische Kontrolle aller Mikrofonvarianten auf verschiedenen Android-Geräten,
+- Kontrolle und Ergänzung aller gewünschten CDN-Bilder,
+- zusätzliche redaktionelle Feinkorrekturen nach dem ersten Unterrichtstest.
