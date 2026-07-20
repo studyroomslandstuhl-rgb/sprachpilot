@@ -1,5 +1,9 @@
 # SprachPilot · A1 Lektion 7
 
+## Verbindliche Quelldatei
+
+Der vollständige Arbeitsauftrag für Lektion 7, Thema 1–4, ist in [`ARBEITS-PROMPT.md`](./ARBEITS-PROMPT.md) gespeichert. Bei der Entwicklung von Wortschatz, Grammatik, Aufgaben, Hörtexten, Lösungen und Prüfungen gelten diese Vorgaben vollständig. Die vier `STRUKTUR.md`-Dateien ordnen den Arbeitsauftrag jeweils in eine konkrete Aufgabenfolge ein.
+
 ## Übergeordnete Lernziele
 
 Die Lernenden sollen:
