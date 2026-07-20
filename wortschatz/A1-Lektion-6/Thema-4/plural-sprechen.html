@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Plural sprechen · L6T4</title>
-<link rel="stylesheet" href="style.css?v=1">
+<link rel="stylesheet" href="style.css?v=2">
 </head>
 <body>
 <div class="container">
@@ -12,9 +12,10 @@
 <section class="card" id="area"></section>
 <footer>© SprachPilot</footer>
 </div>
-<script type="module" src="/js/guard.js?v=l6t4-plural1"></script>
+<script type="module" src="/js/guard.js?v=l6t4-build1"></script>
 <script src="plural-data.js?v=1"></script>
-<script src="app.js?v=1"></script>
+<script src="theme4-data.js?v=1"></script>
+<script src="app.js?v=2"></script>
 <script>
 const FILE='plural-sprechen.html';
 const items=window.L6T4PluralItems||[];
@@ -22,37 +23,54 @@ const total=items.length;
 const area=document.getElementById('area');
 let currentIndex=0;
 l6t4Header('Plural sprechen');
+
 function accepted(item){
  if(item.noPlural)return ['kein Plural üblich','kein Plural','kein üblicher Plural','keine Pluralform','keine Pluralform üblich','hat keinen Plural'];
  const withoutArticle=String(item.plural).replace(/^die\s+/i,'');
- return [item.plural,withoutArticle];
+ return [item.plural,withoutArticle]
 }
 function solution(item){return item.noPlural?'kein Plural üblich':item.plural}
-function render(message='',showWriting=false){
+function help(item,tries){
+ if(tries===1)return'<div class="no">Noch nicht richtig. Versuche es noch einmal.</div>';
+ if(tries===2)return'<div class="hint">Prüfe den Artikel, den Umlaut und die Endung.</div>';
+ if(tries>=3)return`<div class="no">Lösung: <b>${solution(item)}</b><br>Gib die richtige Lösung selbst ein. Das Wort kommt später noch einmal.</div>`;
+ return''
+}
+function render(message='',showWriting=true){
  const state=l6t4Load(FILE,total);
- if(state.done.length>=total){l6t4Complete(area,'index.html');return}
+ if(state.done.length>=total){l6t4Complete(area,'task.html?task=sound-activity&v=l6t4-build1','Du hast alle Pluralformen fehlerfrei wiederholt.');return}
  currentIndex=l6t4NextIndex(FILE,total);
  const item=items[currentIndex];
- area.innerHTML=`${l6t4Progress(FILE,total)}<div class="task-instruction">Sieh oder höre das Nomen und sprich die Pluralform mit Artikel. Bei Nomen ohne üblichen Plural sage: <b>kein Plural üblich</b>.</div><div class="plural-card"><span class="source-pill">Wiederholung aus ${item.source}</span><div class="singular">${item.singular}</div><div class="prompt">Wie lautet der Plural?</div><div class="actions" style="justify-content:center;margin-top:20px"><button class="btn secondary" type="button" onclick="l6t4Say('${item.singular.replace(/'/g,"\\'")}')">🔊 Singular hören</button><button id="micBtn" class="btn" type="button" onclick="startPluralMic(this)">🎤 Plural sprechen</button><button class="btn secondary" type="button" onclick="openWriting()">✍️ Stattdessen schreiben</button></div><div id="micStatus" class="mic-status"></div></div><div id="writeBox" class="write-box" style="display:${showWriting?'block':'none'}"><label for="pluralAnswer">Pluralform schreiben</label><input id="pluralAnswer" autocomplete="off" placeholder="z. B. die Bücher oder kein Plural üblich"><div class="actions" style="margin-top:10px"><button class="btn" type="button" onclick="checkWritten()">Kontrollieren</button></div></div><div id="feedback" class="feedback">${message}</div>`;
+ area.innerHTML=`${l6t4Progress(FILE,total)}
+ <div class="task-instruction">Sieh oder höre das Nomen. Sprich oder schreibe die Pluralform mit Artikel. Bei Nomen ohne üblichen Plural: <b>kein Plural üblich</b>.</div>
+ <div class="plural-card">
+  <span class="source-pill">Wiederholung aus ${item.source}</span>
+  <div class="singular">${item.singular}</div>
+  <div class="prompt">Wie lautet der Plural?</div>
+  <div class="actions centered" style="margin-top:20px">
+   <button class="btn secondary" type="button" onclick="l6t4Say('${item.singular.replace(/'/g,"\\'")}')">🔊 Singular hören</button>
+   <button id="micBtn" class="btn" type="button" onclick="startPluralMic(this)">🎤 Plural sprechen</button>
+   <button class="btn secondary" type="button" onclick="openWriting()">✍️ Schreiben</button>
+  </div>
+  <div id="micStatus" class="mic-status"></div>
+ </div>
+ <div id="writeBox" class="write-box" style="display:${showWriting?'block':'none'}">
+  <label for="pluralAnswer">Pluralform schreiben</label>
+  <div class="answer-row"><input id="pluralAnswer" autocomplete="off" placeholder="z. B. die Bücher"><button class="btn" type="button" onclick="checkWritten()">Prüfen</button></div>
+ </div>
+ <div id="feedback" class="feedback">${message||help(item,state.tries||0)}</div>`;
  if(showWriting)setTimeout(()=>document.getElementById('pluralAnswer')?.focus(),30);
- document.getElementById('pluralAnswer')?.addEventListener('keydown',event=>{if(event.key==='Enter')checkWritten()});
+ document.getElementById('pluralAnswer')?.addEventListener('keydown',event=>{if(event.key==='Enter')checkWritten()})
 }
-function openWriting(message=''){
- const previous=document.getElementById('feedback')?.innerHTML||'';
- render(message||previous,true);
-}
+function openWriting(message=''){const previous=document.getElementById('feedback')?.innerHTML||'';render(message||previous,true)}
 function startPluralMic(button){
  const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;
- if(!Recognition){openWriting('<div class="hint">Das Mikrofon wird auf diesem Gerät nicht unterstützt. Bitte schreibe die Pluralform.</div>');return}
+ if(!Recognition){openWriting('<div class="hint">Das Mikrofon wird nicht unterstützt. Bitte schreibe die Pluralform.</div>');return}
  let recognition,resultReceived=false,failed=false;
  try{recognition=new Recognition()}catch(error){openWriting('<div class="hint">Das Mikrofon konnte nicht gestartet werden. Bitte schreibe die Pluralform.</div>');return}
- recognition.lang='de-DE';recognition.interimResults=false;recognition.maxAlternatives=3;
+ recognition.lang='de-DE';recognition.interimResults=false;recognition.maxAlternatives=5;
  const oldText=button.textContent;button.disabled=true;button.textContent='Ich höre …';
- recognition.onresult=event=>{
-  resultReceived=true;
-  const alternatives=event.results&&event.results[0]?Array.from(event.results[0]).map(result=>result.transcript).filter(Boolean):[];
-  checkSpoken(alternatives);
- };
+ recognition.onresult=event=>{resultReceived=true;const alternatives=Array.from(event.results?.[0]||[]).map(result=>result.transcript).filter(Boolean);checkSpoken(alternatives)};
  recognition.onerror=()=>{failed=true;openWriting('<div class="hint">Das Mikrofon ist blockiert oder hat nicht funktioniert. Bitte schreibe die Pluralform.</div>')};
  recognition.onnomatch=()=>{failed=true;openWriting('<div class="hint">Ich konnte nichts erkennen. Bitte schreibe die Pluralform.</div>')};
  recognition.onend=()=>{button.disabled=false;button.textContent=oldText;if(!resultReceived&&!failed)openWriting('<div class="hint">Ich konnte nichts erkennen. Bitte schreibe die Pluralform.</div>')};
@@ -60,22 +78,26 @@ function startPluralMic(button){
 }
 function checkSpoken(alternatives){
  const item=items[currentIndex],isCorrect=(alternatives||[]).some(value=>l6t4Exact(value,accepted(item)));
- if(isCorrect){correct('<div class="ok">Richtig gesprochen: '+solution(item)+'</div>');return}
- const tries=l6t4Wrong(FILE,total),message=tries>=3?`<div class="no">Noch nicht richtig. Lösung: <b>${solution(item)}</b><br>Schreibe die Lösung. Das Wort erscheint später erneut.</div>`:'<div class="no">Noch nicht richtig erkannt. Versuche es erneut oder schreibe die Pluralform. Das Wort erscheint später erneut.</div>';
- openWriting(message);
+ l6t4RegisterAttempt(FILE,total,currentIndex,isCorrect);
+ if(isCorrect){correct();return}
+ const tries=l6t4Wrong(FILE,total);
+ openWriting(help(item,tries))
 }
 function checkWritten(){
  const input=document.getElementById('pluralAnswer'),item=items[currentIndex];
- if(!input)return;
- if(l6t4Exact(input.value,accepted(item))){correct('<div class="ok">Richtig geschrieben: '+solution(item)+'</div>');return}
+ if(!input||!input.value.trim())return;
+ const isCorrect=l6t4Exact(input.value,accepted(item));
+ l6t4RegisterAttempt(FILE,total,currentIndex,isCorrect);
+ if(isCorrect){correct();return}
  const tries=l6t4Wrong(FILE,total);
- document.getElementById('feedback').innerHTML=tries>=3?`<div class="no">Lösung: <b>${solution(item)}</b></div>`:'<div class="no">Noch nicht richtig. Prüfe Artikel, Umlaut und Endung.</div>';
- input.focus();
+ document.getElementById('feedback').innerHTML=help(item,tries);
+ input.focus()
 }
-function correct(message){
- document.getElementById('feedback').innerHTML=message;
+function correct(){
+ const state=l6t4Load(FILE,total),repeated=state.hadWrong||state.tries>0;
  l6t4Right(FILE,total);
- setTimeout(()=>render(),800);
+ document.getElementById('feedback').innerHTML=`<div class="ok">Richtig: ${solution(items[currentIndex])}.${repeated?' Das Wort kommt am Ende noch einmal.':''}</div>`;
+ setTimeout(()=>render(),700)
 }
 render();
 </script>
