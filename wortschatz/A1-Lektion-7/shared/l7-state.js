@@ -24,15 +24,15 @@ function legacyPid(){
  return[p.email,p.kurs,p.kursnummer,p.courseCode,p.vorname,p.nachname].filter(Boolean).join('_').toLowerCase().replace(/[^a-z0-9äöüß]+/gi,'_')||'student'
 }
 function pid(){
- if(cachedPid)return cachedPid;
  const store=preview()?sessionStorage:localStorage;
  const cacheKey=preview()?'SP_L7_PREVIEW_PID':'SP_L7_STABLE_PID';
- const existing=clean(store.getItem(cacheKey));
- if(existing){cachedPid=existing;return cachedPid}
  const p=profile();
- const chosen=clean(p.uid||p.userId||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_'))||'student';
- cachedPid=chosen;
- try{store.setItem(cacheKey,cachedPid)}catch(e){}
+ const resolved=clean(p.uid||p.userId||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_'));
+ if(cachedPid&&cachedPid!=='student')return cachedPid;
+ const existing=clean(store.getItem(cacheKey));
+ if(existing&&existing!=='student'){cachedPid=existing;return cachedPid}
+ cachedPid=resolved||existing||'student';
+ if(cachedPid!=='student')try{store.setItem(cacheKey,cachedPid)}catch(e){}
  return cachedPid
 }
 function st(){return preview()?sessionStorage:localStorage}
@@ -119,7 +119,7 @@ function right(theme,id,total,free=false){
 function pct(theme,id,total){return total?Math.round(load(theme,id,total).done.length/total*100):0}
 function allDone(theme){return preview()||T.tasks.filter(x=>!x.exam).every(x=>pct(theme,x.id,x.items.length)>=100)}
 function image(file,alt='Bild'){return file?`<div class="l7-image"><img src="${CDN+encodeURIComponent(file)}" alt="${esc(alt)}" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="l7-image-fallback" hidden><strong>${esc(alt)}</strong><span>Nutze die Erklärung.</span></div></div>`:''}
-function say(text,fail){if(!('speechSynthesis'in window)){fail?.();return}try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=.84;u.onerror=()=>fail?.();speechSynthesis.speak(u)}catch(e){fail?.()}}
+function say(text,fail){if(!('speechSynthesis' in window)){fail?.();return}try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=.84;u.onerror=()=>fail?.();speechSynthesis.speak(u)}catch(e){fail?.()}}
 function dash(){return String(localStorage.getItem('SP_LOGIN_ROLE')||'').toLowerCase()==='teacher'?'/teacher/index.html':'/student-dashboard/index.html'}
 function header(theme,title,reset=false){const p=profile(),name=[p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join(' ')||(preview()?'Lehrer-Vorschau':'Schüler/in');return`<header class="l7-topbar"><div class="l7-top-main"><a class="l7-brand" href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"><div><h1>SprachPilot</h1><p>Lektion 7 · Thema ${theme} · ${esc(title)}</p></div></a><div class="l7-account"><span>${esc(name)}</span><a href="${dash()}">Dashboard</a><a href="/profile/index.html">Profil</a></div></div><nav><a class="l7-btn secondary" href="../index.html">← Lektion 7</a><a class="l7-btn secondary" href="index.html">Themenübersicht</a>${reset?'<button class="l7-btn danger" id="resetTheme">Fortschritte löschen</button>':''}</nav></header>`}
 function reset(theme){
