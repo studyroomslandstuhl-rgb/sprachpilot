@@ -24,7 +24,7 @@ function legacyPid(){
  return[p.email,p.kurs,p.kursnummer,p.courseCode,p.vorname,p.nachname].filter(Boolean).join('_').toLowerCase().replace(/[^a-z0-9äöüß]+/gi,'_')||'student'
 }
 function pid(){
- const store=preview()?sessionStorage:localStorage;
+ const store=localStorage;
  const cacheKey=preview()?'SP_L7_PREVIEW_PID':'SP_L7_STABLE_PID';
  const p=profile();
  const resolved=clean(p.uid||p.userId||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_'));
@@ -35,36 +35,46 @@ function pid(){
  if(cachedPid!=='student')try{store.setItem(cacheKey,cachedPid)}catch(e){}
  return cachedPid
 }
-function st(){return preview()?sessionStorage:localStorage}
+function st(){return localStorage}
 function k(theme,task){return`${preview()?'SP_L7_PREVIEW':'SP_L7'}_${pid()}_T${theme}_${task}`}
 function empty(total){return{total,done:[],queue:shuffle([...Array(total).keys()]),current:null,tries:0,hadWrong:false,firstSeen:[],firstCorrect:0,answers:{}}}
 function valid(x,total){return!!(x&&x.total===total&&Array.isArray(x.done)&&Array.isArray(x.queue))}
 function normalizeState(x,total){return{...empty(total),...x,total,done:Array.isArray(x?.done)?x.done:[],queue:Array.isArray(x?.queue)?x.queue:[],firstSeen:Array.isArray(x?.firstSeen)?x.firstSeen:[],firstCorrect:Number(x?.firstCorrect||0),answers:x?.answers&&typeof x.answers==='object'?x.answers:{}}}
 function scoreState(x){return(x.done?.length||0)*100000+(x.current!=null?1000:0)+(x.firstSeen?.length||0)*10+(x.queue?.length?1:0)}
-function candidateKeys(theme,task){
- const storage=st(),suffix=`_T${theme}_${task}`,keys=[k(theme,task)];
+function identityMatch(key){
+ if(preview())return true;
+ const p=profile();
+ const strong=[p.uid,p.userId,p.id,p.email].map(clean).filter(Boolean);
+ if(strong.length)return strong.some(x=>String(key).includes(x));
+ const fallback=[p.kurs,p.kursnummer,p.courseCode,p.vorname,p.firstName,p.nachname,p.lastName].map(clean).filter(Boolean);
+ return fallback.length>=2&&fallback.filter(x=>String(key).includes(x)).length>=2
+}
+function candidateKeys(theme,task,storage){
+ const suffix=`_T${theme}_${task}`,keys=[k(theme,task)];
  const old=`${preview()?'SP_L7_PREVIEW':'SP_L7'}_${legacyPid()}${suffix}`;
  if(!keys.includes(old))keys.push(old);
  const student=`${preview()?'SP_L7_PREVIEW':'SP_L7'}_student${suffix}`;
  if(!keys.includes(student))keys.push(student);
  for(let i=0;i<storage.length;i++){
-  const key=storage.key(i);
-  if(String(key||'').startsWith(preview()?'SP_L7_PREVIEW_':'SP_L7_')&&String(key||'').endsWith(suffix)&&!keys.includes(key))keys.push(key)
+  const key=storage.key(i),text=String(key||'');
+  if(text.startsWith(preview()?'SP_L7_PREVIEW_':'SP_L7_')&&text.endsWith(suffix)&&identityMatch(text)&&!keys.includes(key))keys.push(key)
  }
  return keys
 }
 function load(theme,task,total){
- const storage=st(),canonical=k(theme,task);
- let best=null,bestKey='';
- for(const key of candidateKeys(theme,task)){
-  try{
-   const x=JSON.parse(storage.getItem(key)||'null');
-   if(valid(x,total)&&(!best||scoreState(x)>scoreState(best))){best=x;bestKey=key}
-  }catch(e){}
+ const canonical=k(theme,task),stores=preview()?[localStorage,sessionStorage]:[localStorage];
+ let best=null,bestKey='',bestStore=null;
+ for(const storage of stores){
+  for(const key of candidateKeys(theme,task,storage)){
+   try{
+    const x=JSON.parse(storage.getItem(key)||'null');
+    if(valid(x,total)&&(!best||scoreState(x)>scoreState(best))){best=x;bestKey=key;bestStore=storage}
+   }catch(e){}
+  }
  }
  if(best){
   const out=normalizeState(best,total);
-  if(bestKey!==canonical){try{storage.setItem(canonical,JSON.stringify(out))}catch(e){}}
+  if(bestKey!==canonical||bestStore!==localStorage){try{localStorage.setItem(canonical,JSON.stringify(out))}catch(e){}}
   return out
  }
  return empty(total)
