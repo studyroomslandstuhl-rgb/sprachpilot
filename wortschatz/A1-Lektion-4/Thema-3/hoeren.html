@@ -50,7 +50,8 @@ body{background:linear-gradient(180deg,#ffd536,#ffeb8a);padding:18px}
 (function(){
 'use strict';
 const area=document.getElementById('area');
-const CDN='https://sprachpilot.b-cdn.net/';
+const IMAGE='https://sprachpilot.b-cdn.net/';
+const AUDIO='https://sprachpilot.b-cdn.net/audio/';
 const MODE_KEY='SP_L4_T3_COLOR_MODE_V1';
 const BASE_IDS=['rot','blau','gruen','gelb','orange','weiss','schwarz','grau','braun','rosa','lila','tuerkis'];
 const COLORS=[{id:'rot',word:'rot',hex:'#ef4444'},{id:'dunkelrot',word:'dunkelrot',hex:'#991b1b'},{id:'hellrot',word:'hellrot',hex:'#fca5a5'},{id:'blau',word:'blau',hex:'#3b82f6'},{id:'dunkelblau',word:'dunkelblau',hex:'#1e3a8a'},{id:'hellblau',word:'hellblau',hex:'#93c5fd'},{id:'gruen',word:'grün',hex:'#22c55e'},{id:'dunkelgruen',word:'dunkelgrün',hex:'#166534'},{id:'hellgruen',word:'hellgrün',hex:'#86efac'},{id:'gelb',word:'gelb',hex:'#facc15'},{id:'dunkelgelb',word:'dunkelgelb',hex:'#ca8a04'},{id:'hellgelb',word:'hellgelb',hex:'#fde68a'},{id:'orange',word:'orange',hex:'#fb923c'},{id:'dunkelorange',word:'dunkelorange',hex:'#c2410c'},{id:'hellorange',word:'hellorange',hex:'#fdba74'},{id:'weiss',word:'weiß',hex:'#ffffff'},{id:'schwarz',word:'schwarz',hex:'#111827'},{id:'grau',word:'grau',hex:'#9ca3af'},{id:'dunkelgrau',word:'dunkelgrau',hex:'#4b5563'},{id:'hellgrau',word:'hellgrau',hex:'#d1d5db'},{id:'braun',word:'braun',hex:'#92400e'},{id:'dunkelbraun',word:'dunkelbraun',hex:'#451a03'},{id:'hellbraun',word:'hellbraun',hex:'#b45309'},{id:'rosa',word:'rosa',hex:'#f9a8d4'},{id:'dunkelrosa',word:'dunkelrosa',hex:'#be185d'},{id:'hellrosa',word:'hellrosa',hex:'#fbcfe8'},{id:'lila',word:'lila',hex:'#a855f7'},{id:'dunkellila',word:'dunkellila',hex:'#6b21a8'},{id:'helllila',word:'helllila',hex:'#d8b4fe'},{id:'tuerkis',word:'türkis',hex:'#14b8a6'},{id:'dunkeltuerkis',word:'dunkeltürkis',hex:'#0f766e'},{id:'helltuerkis',word:'helltürkis',hex:'#5eead4'}];
@@ -84,9 +85,9 @@ function markRight(){const s=loadState(),cur=s.current;if(cur!==null&&cur!==unde
 function progress(){const s=loadState(),p=Math.round(s.done.length/s.total*100)||0;return `<div class="small">${s.done.length} richtig · ${s.total-s.done.length} übrig · ${p}% · ${mode==='advanced'?'Alle Farben':'Basisfarben'}</div><div class="progress"><div class="bar" style="width:${p}%"></div></div>`}
 function feedbackForTry(n,solution,label){if(n===1)return'Da ist noch ein Fehler.';if(n===2)return'Tipp: Prüfe '+label+'.';return'Lösung: '+solution}
 function colorVisual(c){return `<div class="color-swatch" style="background:${c.hex};${c.id==='weiss'?'border-color:#94a3b8':''}" aria-label="${esc(c.word)}"></div>`}
-function furnitureVisual(f){return `<img class="furniture-img" src="${CDN+encodeURIComponent(f.id)+'.webp'}" alt="" loading="eager" onerror="this.outerHTML='<div style=&quot;font-size:58px&quot;>🪑</div>'">`}
+function furnitureVisual(f){return `<img class="furniture-img" src="${IMAGE+encodeURIComponent(f.id)+'.webp'}" alt="" loading="eager" onerror="this.outerHTML='<div style=&quot;font-size:58px&quot;>🪑</div>'">`}
 function sentence(){const t=tasks[current],c=byColor(t.color),f=byFurniture(t.item);return f.full+' ist '+c.word+'.'}
-function audioUrl(slow=false){const t=tasks[current];return CDN+'a1-l4-t3-hoeren-'+t.color+'-'+t.item+(slow?'-langsam':'')+'.mp3'}
+function audioUrl(slow=false){const t=tasks[current];return AUDIO+'a1-l4-t3-hoeren-'+t.color+'-'+t.item+(slow?'-langsam':'')+'.mp3'}
 function stopPlayback(){if(currentAudio){try{currentAudio.pause();currentAudio.currentTime=0}catch(e){}currentAudio=null}try{speechSynthesis.cancel()}catch(e){}}
 function speechFallback(slow=false){
  const status=document.getElementById('audioStatus');
@@ -125,7 +126,7 @@ function showStart(){stopPlayback();area.innerHTML='<div class="finish"><h1>Hör
 document.getElementById('resetBtn').onclick=()=>{if(confirm('Möchten Sie den Fortschritt dieser Höraufgabe löschen?')){stopPlayback();localStorage.removeItem(KEY);render()}};
 window.addEventListener('beforeunload',stopPlayback);
 window.addEventListener('error',e=>{console.error(e.error||e.message);if(area&&!area.querySelector('.grid')&&!area.querySelector('.finish'))area.innerHTML='<div class="error-box"><b>Die Höraufgabe konnte nicht gestartet werden.</b><div class="actions"><button class="btn" onclick="location.reload()">Neu laden</button><a class="btn secondary" href="index.html">Zum Thema</a></div></div>'});
-setTimeout(()=>{try{import('/js/progress.js?v=l4t3-hearing-bunny1').then(()=>syncProgress(loadState())).catch(()=>{})}catch(e){}},0);
+setTimeout(()=>{try{import('/js/progress.js?v=l4t3-hearing-audio-folder1').then(()=>syncProgress(loadState())).catch(()=>{})}catch(e){}},0);
 try{new URLSearchParams(location.search).get('done')==='1'?showStart():render()}catch(e){console.error(e);area.innerHTML='<div class="error-box"><b>Die Höraufgabe konnte nicht gestartet werden.</b><br>'+esc(e.message)+'<div class="actions"><button class="btn" onclick="location.reload()">Neu laden</button></div></div>'}
 })();
 </script>
