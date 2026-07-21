@@ -2,7 +2,7 @@
 if(window.L4T3ThemeScore)L4T3ThemeScore.reconcile();header('Farben & Adjektive',true);colorModeMount.innerHTML=L4T3ColorMode.selectorHtml();
 const resetButton=document.querySelector('.danger-btn');if(resetButton)resetButton.onclick=()=>L4T3Reset.resetAll();
 const params=new URLSearchParams(location.search);if(params.has('reset'))resetMessage.innerHTML='<div class="reset-ok">Alle sichtbaren L4T3-Fortschritte wurden gelöscht.</div>';
-const VERSION='l4t3-combine-speech1';
+const VERSION='l4t3-exam-visual2';
 const cardCount=L4T3ColorMode.mode()==='basis'?35:55;
 const TASK_INFO=[
  ['karteikarten.html','Karteikarten','🃏',cardCount+' Karten · '+L4T3ColorMode.label()+'.'],
