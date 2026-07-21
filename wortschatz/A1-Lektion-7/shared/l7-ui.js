@@ -2,7 +2,7 @@
 'use strict';
 const S=window.L7S,T=S.T;
 let R={},order=[];
-const VERSION='l7-progress1';
+const VERSION='l7-progress3';
 const href=t=>`task.html?task=${encodeURIComponent(t.id)}&v=${VERSION}`;
 const note=()=>S.preview()?'<div class="l7-preview">Lehrer-Vorschau: Es werden keine Teilnehmerpunkte und keine Teilnehmerfortschritte gespeichert.</div>':'';
 const accepted=i=>[i.answer,i.word,...(i.answers||[])].filter(Boolean);
