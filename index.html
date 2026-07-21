@@ -33,7 +33,7 @@
 
 <script type="module">
 import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "./js/auth.js?v=login-main-4";
-import { loadCourseRelease, moduleOpen } from "./js/course-releases.js?v=irregular-verbs-1";
+import { loadCourseRelease, moduleOpen } from "./js/course-releases.js?v=verb-groups-1";
 window.logout=logout;
 
 const modulesEl=document.querySelector("#modules");
@@ -61,15 +61,13 @@ function renderModules(assignments={}){
   const teacherAll=isTeacherAllAccess();
   const fragen=teacherAll || moduleOpen(assignments,"Fragen A1");
   const wortschatz=teacherAll || moduleOpen(assignments,"Wortschatz");
-  const verben=teacherAll || moduleOpen(assignments,"Verben A1");
+  const verben=teacherAll || moduleOpen(assignments,"Verben");
   const irregular=teacherAll || moduleOpen(assignments,"Irreguläre Verben");
-  const verbenTest=teacherAll || moduleOpen(assignments,"Verben Test");
   modulesEl.innerHTML=`
     ${moduleCard('Fragen A1','/fragen-A1/','Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.',fragen)}
     ${moduleCard('Wortschatz','/wortschatz/','Wörter nach Lektionen und Themen üben.',wortschatz)}
-    ${moduleCard('Verben A1','/verben-A1/','Verben einschätzen, wählen und üben.',verben)}
+    ${moduleCard('Verben','/verben/','258 Verben in frei wählbaren Gruppen mit drei Wiederholungsrunden.',verben)}
     ${moduleCard('Irreguläre Verben','/irregulaere-verben/','42 unregelmäßige Verben im Präsens in 14 aufeinander aufbauenden Lerntagen.',irregular)}
-    ${moduleCard('Verben Test','/verben-test/','Neues festes 20er-Paketsystem mit Neu, Aktiv und Gelernt.',verbenTest)}
   `;
 }
 
