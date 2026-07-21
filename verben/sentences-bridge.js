@@ -1,1 +1,0 @@
-(function(){window.SP_VERB_SENTENCES=window.SP_VERB_SENTENCES||{};})();
