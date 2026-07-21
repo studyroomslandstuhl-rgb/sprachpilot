@@ -1,0 +1,1 @@
+(function(){window.VERB_TRANSLATIONS=window.VERB_TRANSLATIONS||{};})();
