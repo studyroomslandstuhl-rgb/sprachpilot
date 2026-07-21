@@ -13,7 +13,7 @@ const IS_WORTSCHATZ_EXERCISE=/\/wortschatz\/A\d-Lektion-\d+\/Thema-\d+\//.test(p
 const IS_WORTSCHATZ_THEME_OVERVIEW=/\/wortschatz\/A\d-Lektion-\d+\/Thema-\d+\/?(?:index\.html)?$/i.test(path);
 const IS_WORTSCHATZ_LESSON_OVERVIEW=/\/wortschatz\/A\d-Lektion-\d+\/?(?:index\.html)?$/i.test(path);
 const IS_FRAGEN_EXERCISE=path.includes("/fragen-A1/")||path.includes("/fragen/");
-const IS_VERBEN_EXERCISE=path.includes("/verben-A1/");
+const IS_VERBEN_EXERCISE=path.includes("/verben/");
 const IS_L3T1=path.includes("/wortschatz/A1-Lektion-3/Thema-1/");
 const IS_L3T2=path.includes("/wortschatz/A1-Lektion-3/Thema-2/");
 const IS_L5=path.includes("/wortschatz/A1-Lektion-5/");
@@ -100,13 +100,6 @@ if(FULL_FIREBASE){
   setTimeout(()=>{import("/js/scoring.js?v=10").catch(()=>{})},scoringDelay);
 }
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){setTimeout(()=>import("/wortschatz/index-release-lock.js?v=12").catch(()=>{}),900)}
-if(IS_VERBEN_EXERCISE){
-  import("/verben-A1/js/release-bridge.js?v=11").catch(()=>{});
-  if(!PERFORMANCE_SYNC_OFF){
-    import("/verben-A1/js/scoring-bridge.js?v=6").catch(()=>{});
-    window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/verben-A1/js/verb-overview-dedupe.js?v=1";document.body.appendChild(s)},2500));
-  }
-}
 if(!PERFORMANCE_SYNC_OFF&&IS_FRAGEN_EXERCISE){
   setTimeout(()=>import("/js/fragen-progress-sync.js?v=3").catch(()=>{}),2400);
   import("/fragen-A1/scoring-bridge.js?v=3").catch(()=>{});
