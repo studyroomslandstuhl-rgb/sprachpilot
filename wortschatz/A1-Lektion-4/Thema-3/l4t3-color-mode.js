@@ -3,6 +3,7 @@
   const BASE_IDS=['rot','blau','gruen','gelb','orange','weiss','schwarz','grau','braun','rosa','lila','tuerkis'];
   const EXTRA_IDS=COLORS.filter(c=>!BASE_IDS.includes(c.id)).map(c=>c.id);
   const ALL_IDS=COLORS.map(c=>c.id);
+  const HEARING_EXTRAS=[{color:'weiss',item:'sofa'},{color:'schwarz',item:'fernseher'}];
   const COMBINATION_FILE='farben-kombinieren.html';
   const COLOR_TASKS=new Set(['karteikarten.html','hoeren.html','farben.html','gefallen.html',COMBINATION_FILE,'saetze-bauen.html','schreiben.html']);
   const originalTaskKey=window.taskKey;
@@ -29,7 +30,7 @@
     localStorage.setItem(MODE_KEY,next);
     const url=new URL(location.href);
     url.searchParams.set('colors',next);
-    url.searchParams.set('v','l4t3-color-split3');
+    url.searchParams.set('v','l4t3-hearing-bunny1');
     location.href=url.pathname+url.search;
   }
   function activeIds(){return mode()==='advanced'?ALL_IDS:BASE_IDS}
@@ -44,7 +45,13 @@
   }
   function activeHearingTasks(){
     const ids=activeColorIds();
-    return HEARING_TASKS.filter(task=>ids.has(task.color));
+    const tasks=HEARING_TASKS.filter(task=>ids.has(task.color));
+    const existing=new Set(tasks.map(task=>task.color+'|'+task.item));
+    HEARING_EXTRAS.forEach(task=>{
+      const key=task.color+'|'+task.item;
+      if(ids.has(task.color)&&!existing.has(key)){tasks.push({...task});existing.add(key)}
+    });
+    return tasks;
   }
   function normalized(value){
     return String(value||'').toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss');
