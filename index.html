@@ -33,7 +33,7 @@
 
 <script type="module">
 import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "./js/auth.js?v=login-main-4";
-import { loadCourseRelease, moduleOpen } from "./js/course-releases.js?v=verb-groups-1";
+import { loadCourseRelease, moduleOpen } from "./js/course-releases.js?v=verb-groups-2";
 window.logout=logout;
 
 const modulesEl=document.querySelector("#modules");
@@ -66,7 +66,7 @@ function renderModules(assignments={}){
   modulesEl.innerHTML=`
     ${moduleCard('Fragen A1','/fragen-A1/','Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.',fragen)}
     ${moduleCard('Wortschatz','/wortschatz/','Wörter nach Lektionen und Themen üben.',wortschatz)}
-    ${moduleCard('Verben','/verben/','258 Verben in frei wählbaren Gruppen mit drei Wiederholungsrunden.',verben)}
+    ${moduleCard('Verben','/verben/','Freigegebene Verben in 20er-Gruppen üben.',verben)}
     ${moduleCard('Irreguläre Verben','/irregulaere-verben/','42 unregelmäßige Verben im Präsens in 14 aufeinander aufbauenden Lerntagen.',irregular)}
   `;
 }
