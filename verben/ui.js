@@ -2,6 +2,7 @@
 'use strict';
 const E=window.VerbGroupsEngine,app=document.querySelector('#app'),topbar=document.querySelector('#topbar');
 let dashboard='/student-dashboard/index.html',logoutFn=()=>{},locked=false,currentQuestion=null,rec=null;
+let cardRevealed=false,cardSolved=false;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const route=()=>{const q=new URLSearchParams(location.search),group=Math.max(0,Math.min(E.GROUPS.length,Number(q.get('group'))||0)),task=q.get('task')||'',view=q.get('view')||'';return{group,task:E.TASKS.some(x=>x[0]===task)?task:'',view:view==='overview'?'overview':''}};
 const href=(group=0,task='',view='')=>{const q=new URLSearchParams();if(group)q.set('group',group);if(task)q.set('task',task);if(view)q.set('view',view);return'/verben/'+(q.toString()?'?'+q.toString():'')};
@@ -44,8 +45,44 @@ function questionBody(q){
  return`${media}<div class="question">${esc(q.prompt)}</div>${answer}<div id="feedback"></div>`
 }
 function renderCards(groupId){
- const task='cards',v=E.nextVerb(groupId,task);if(!v)return finishTask(groupId,task);currentQuestion={kind:'card',answer:v};
- app.innerHTML=`<section class="card task-page"><div class="task-page-head"><div><p class="eyebrow">Gruppe ${groupId}</p><h2>Karteikarten</h2></div><button class="btn secondary" data-action="group" data-group="${groupId}">Aufgaben</button></div>${taskProgressHtml(groupId,task)}<div class="flashcard">${image(v)}<div class="flash-verb">${esc(v)}</div><div class="flash-meaning">${esc(E.meaning(v))}</div><div class="change-badge">${esc(E.groupLabel(v))}</div><div class="forms-grid">${E.PERSONS.map((person,i)=>`<div><span>${person.label}</span><strong>${esc(E.displayForm(v,i))}</strong></div>`).join('')}</div><div class="example-sentence">${esc(E.sentence(v))}</div><div class="actions"><button class="btn secondary" data-action="audio" data-text="${esc(v)}">🔊</button><button class="btn" data-action="card-next">Weiter</button></div></div></section>`
+ const task='cards',v=E.nextVerb(groupId,task);if(!v)return finishTask(groupId,task);
+ currentQuestion={kind:'card',answer:v};cardRevealed=false;cardSolved=false;
+ app.innerHTML=`<section class="card task-page"><div class="task-page-head"><div><p class="eyebrow">Gruppe ${groupId}</p><h2>Karteikarten</h2></div><button class="btn secondary" data-action="group" data-group="${groupId}">Aufgaben</button></div>${taskProgressHtml(groupId,task)}<div class="flip-wrap"><div id="verbFlipCard" class="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="flip-face flip-front">${image(v)}</div><div class="flip-face flip-back"><div class="flip-word">${esc(v)}</div><div class="flip-note">Lösung</div><button type="button" class="btn secondary card-listen-btn" id="cardListenBtn">🔊 Anhören</button></div></div></div><div class="hint card-translation">Übersetzung: <b>${esc(E.meaning(v))}</b></div><div class="actions card-actions"><button id="cardMicBtn" type="button" class="btn">Sprechen</button><button id="cardWriteBtn" type="button" class="btn secondary">Schreiben</button></div><div id="cardMicStatus" class="small card-mic-status"></div><div id="cardAnswerBox" class="card-answer-box" hidden><div class="answer-row"><input id="cardAnswerInput" autocomplete="off" placeholder="Verb schreiben"><button id="cardCheckBtn" type="button" class="btn">Kontrollieren</button></div></div><div id="cardFeedback"></div><div id="cardAfter" class="actions card-actions"></div></section>`;
+ const card=document.querySelector('#verbFlipCard');
+ card.addEventListener('click',()=>revealCard(groupId));
+ card.addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();revealCard(groupId)}});
+ document.querySelector('#cardListenBtn').addEventListener('click',e=>{e.preventDefault();e.stopPropagation();speak(v)});
+ document.querySelector('#cardMicBtn').addEventListener('click',()=>startCardMic(groupId));
+ document.querySelector('#cardWriteBtn').addEventListener('click',openCardWrite);
+ document.querySelector('#cardCheckBtn').addEventListener('click',()=>checkCardAnswer(groupId,document.querySelector('#cardAnswerInput').value));
+ document.querySelector('#cardAnswerInput').addEventListener('keydown',e=>{if(e.key==='Enter')checkCardAnswer(groupId,e.target.value)});
+}
+function openCardWrite(message=''){
+ const box=document.querySelector('#cardAnswerBox'),input=document.querySelector('#cardAnswerInput'),status=document.querySelector('#cardMicStatus');
+ if(box)box.hidden=false;if(status&&message)status.textContent=message;setTimeout(()=>input?.focus(),30)
+}
+function revealCard(groupId){
+ if(cardSolved)return;
+ document.querySelector('#verbFlipCard')?.classList.add('flipped');
+ if(!cardRevealed){cardRevealed=true;E.markWrong(groupId,'cards');const after=document.querySelector('#cardAfter');if(after){after.innerHTML='<button type="button" class="btn" id="cardHelpNext">Weiter</button>';document.querySelector('#cardHelpNext').addEventListener('click',()=>{E.markRight(groupId,'cards');renderCards(groupId)})}}
+}
+function startCardMic(groupId){
+ const SR=window.SpeechRecognition||window.webkitSpeechRecognition,status=document.querySelector('#cardMicStatus'),btn=document.querySelector('#cardMicBtn');
+ if(!SR){openCardWrite('Mikrofon wird hier nicht unterstützt. Bitte schreiben.');return}
+ try{stopMic();rec=new SR();rec.lang='de-DE';rec.interimResults=false;rec.continuous=false;if(status)status.textContent='Ich höre zu …';btn?.classList.add('active');rec.onresult=e=>{const value=e.results?.[0]?.[0]?.transcript||'';if(!value){openCardWrite('Nichts erkannt. Bitte schreiben.');return}openCardWrite();const input=document.querySelector('#cardAnswerInput');if(input)input.value=value;checkCardAnswer(groupId,value)};rec.onerror=()=>openCardWrite('Mikrofon hat nicht funktioniert. Bitte schreiben.');rec.onnomatch=()=>openCardWrite('Nichts erkannt. Bitte schreiben.');rec.onend=()=>{btn?.classList.remove('active');rec=null};rec.start()}catch{openCardWrite('Mikrofon konnte nicht gestartet werden. Bitte schreiben.')}
+}
+function checkCardAnswer(groupId,value){
+ if(cardSolved||!currentQuestion)return;
+ const feedbackBox=document.querySelector('#cardFeedback'),after=document.querySelector('#cardAfter');
+ if(E.isCorrect(value,currentQuestion)){
+  cardSolved=true;document.querySelector('#verbFlipCard')?.classList.add('flipped');
+  if(feedbackBox){feedbackBox.className='feedback ok';feedbackBox.textContent='Richtig!'}
+  E.markRight(groupId,'cards');
+  if(after){after.innerHTML='<button type="button" class="btn" id="cardNextBtn">Weiter</button>';document.querySelector('#cardNextBtn').addEventListener('click',()=>renderCards(groupId))}
+  return
+ }
+ const tries=E.markWrong(groupId,'cards');
+ if(feedbackBox){feedbackBox.className='feedback no';feedbackBox.innerHTML=tries>=3?`Lösung: <strong>${esc(currentQuestion.answer)}</strong>`:'Noch nicht richtig.'}
 }
 function renderTask(groupId,task){
  if(task==='exam')return renderExam(groupId);
@@ -72,7 +109,7 @@ function finishExam(groupId){const run=E.currentRun(groupId),session=run.exam.se
 function answerFromInput(){const value=document.querySelector('#answerInput')?.value||'',r=route();r.task==='exam'?checkExamAnswer(value):checkTaskAnswer(value)}
 function render(){stopMic();const r=route();header(r);if(locked){app.innerHTML='<section class="card locked-card"><h2>Verben sind gesperrt</h2><a class="btn" href="/index.html">Zur Startseite</a></section>';return}if(r.view==='overview')return renderOverview();if(r.group&&r.task)return renderTask(r.group,r.task);renderHome(r.group)}
 function install(options={}){dashboard=options.dashboard||dashboard;logoutFn=options.logout||logoutFn;locked=!!options.locked;E.load();render()}
-document.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(!b)return;const a=b.dataset.action,g=Number(b.dataset.group)||0,t=b.dataset.task||'';if(a==='logout')return logoutFn();if(a==='overview')return go({view:'overview'});if(a==='group')return go({group:g});if(a==='task')return go({group:g,task:t});if(a==='reset-group'){if(E.isPreview())return;if(confirm(`Fortschritt von Gruppe ${g} löschen? Punkte bleiben erhalten.`)){E.resetGroup(g);render()}return}if(a==='next-run'){const next=E.groupState(g).currentRun+1;if(confirm(`Runde ${next} starten?`)&&E.startNextRun(g))go({group:g});return}if(a==='audio')return speak(b.dataset.text||'');if(a==='audio-slow')return speak(b.dataset.text||'',true);if(a==='card-next'){const r=route();E.markRight(r.group,'cards');return renderCards(r.group)}if(a==='answer'){const r=route();return r.task==='exam'?checkExamAnswer(b.dataset.answer||''):checkTaskAnswer(b.dataset.answer||'')}if(a==='check-input')return answerFromInput();if(a==='mic')return startMic();if(a==='write-fallback')return openWriteFallback();if(a==='start-exam'){go({group:g,task:'exam'});return startExam(g)}});
+document.addEventListener('click',ev=>{const b=ev.target.closest('[data-action]');if(!b)return;const a=b.dataset.action,g=Number(b.dataset.group)||0,t=b.dataset.task||'';if(a==='logout')return logoutFn();if(a==='overview')return go({view:'overview'});if(a==='group')return go({group:g});if(a==='task')return go({group:g,task:t});if(a==='reset-group'){if(E.isPreview())return;if(confirm(`Fortschritt von Gruppe ${g} löschen? Punkte bleiben erhalten.`)){E.resetGroup(g);render()}return}if(a==='next-run'){const next=E.groupState(g).currentRun+1;if(confirm(`Runde ${next} starten?`)&&E.startNextRun(g))go({group:g});return}if(a==='audio')return speak(b.dataset.text||'');if(a==='audio-slow')return speak(b.dataset.text||'',true);if(a==='answer'){const r=route();return r.task==='exam'?checkExamAnswer(b.dataset.answer||''):checkTaskAnswer(b.dataset.answer||'')}if(a==='check-input')return answerFromInput();if(a==='mic')return startMic();if(a==='write-fallback')return openWriteFallback();if(a==='start-exam'){go({group:g,task:'exam'});return startExam(g)}});
 document.addEventListener('keydown',ev=>{if(ev.key==='Enter'&&ev.target?.id==='answerInput'){ev.preventDefault();answerFromInput()}});
 window.addEventListener('popstate',render);
 window.VerbGroupsUI={install,render};
