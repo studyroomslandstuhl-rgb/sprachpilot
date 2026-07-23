@@ -58,7 +58,7 @@ if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",normalizeExamIcons);else normalizeExamIcons();
 setTimeout(normalizeExamIcons,250);
 setTimeout(normalizeExamIcons,1400);
-if(!IS_L3T1&&!IS_L5){
+if(!IS_L3T1&&!IS_L5&&!IS_L6T3){
   try{
     let iconTimer=null;
     new MutationObserver(()=>{
