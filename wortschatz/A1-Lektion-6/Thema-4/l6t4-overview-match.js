@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 
-function esc(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
+function esc(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char]))}
 function isThemeMenu(){
  const path=location.pathname.replace(/\/+$/,'');
  return path.endsWith('/Thema-4')||path.endsWith('/Thema-4/index.html');
@@ -9,7 +9,7 @@ function isThemeMenu(){
 function backHref(){return isThemeMenu()?'../index.html':'index.html'}
 function taskHref(task){
  const separator=task.file.includes('?')?'&':'?';
- return `${task.file}${separator}v=l6t4-bunny1`;
+ return `${task.file}${separator}v=l6t4-revision2`;
 }
 function overviewImage(word,icon){
  const bunny=window.L6T4Bunny;
@@ -26,7 +26,7 @@ window.l6t4MatchedHeader=function(title,showReset=false){
  const name=`${profile?.vorname||profile?.firstName||''} ${profile?.nachname||profile?.lastName||''}`.trim()||'Schüler/in';
  const activeRole=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();
  const dashboard=activeRole==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';
- header.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${title} · ${L6T4_CFG.title}</div></div></a><div class="account-tools"><span class="account-pill">${name}</span><a class="account-link" href="${dashboard}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="${backHref()}">← Zurück</a><a class="btn secondary" href="uebersicht.html?v=l6t4-bunny1">Übersicht</a>${showReset?'<button class="btn danger-btn" type="button" onclick="l6t4Reset()">Fortschritte löschen</button>':''}</nav>`;
+ header.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${title} · ${L6T4_CFG.title}</div></div></a><div class="account-tools"><span class="account-pill">${name}</span><a class="account-link" href="${dashboard}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="${backHref()}">← Zurück</a><a class="btn secondary" href="uebersicht.html?v=l6t4-revision2">Übersicht</a>${showReset?'<button class="btn danger-btn" type="button" onclick="l6t4Reset()">Fortschritte löschen</button>':''}</nav>`;
 };
 
 window.l6t4MatchedMenu=function(){
