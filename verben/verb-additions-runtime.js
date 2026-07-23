@@ -44,12 +44,12 @@ const FORMS={
  'wiegen':['wiege','wiegst','wiegt','wiegen','wiegt','wiegen'],
  'zwingen':['zwinge','zwingst','zwingt','zwingen','zwingt','zwingen']
 };
-const IRR=new Set(Object.keys(FORMS).concat(['auffallen','einfallen','hinweisen','spazieren gehen']));
+const IRR=new Set(['bieten','bitten','nennen','sitzen','treiben','binden','brennen','erschrecken','fliehen','fließen','frieren','gelingen','gelten','geschehen','gleichen','heben','klingen','leiden','leihen','meiden','reiben','scheiden','scheinen','schießen','schmeißen','treten','verzeihen','weisen','wiegen','zwingen','auffallen','einfallen','hinweisen','spazieren gehen']);
 const ACC={ich:'mich',du:'dich',er:'sich',wir:'uns',ihr:'euch',sie:'sich'};
 const DAT={ich:'mir',du:'dir',er:'sich',wir:'uns',ihr:'euch',sie:'sich'};
 const original={forms:E.forms.bind(E),displayForm:E.displayForm.bind(E),groupLabel:E.groupLabel.bind(E),phrase:E.phrase.bind(E),meaning:E.meaning.bind(E),sentence:E.sentence.bind(E),question:E.question.bind(E)};
 function parts(v){
- const sep=SEP[v]||null,ref=REF.has(v),base=sep?sep[0]:(ref?v.replace(/^sich\s+/,''):v);
+ const sep=SEP[v]||null,ref=REF.has(v),base=sep?sep[0]:(ref?v.replace(/^sich\s+/,'' ):v);
  return{base,prefix:sep?.[1]||'',reflexive:ref,dative:DAT_REF.has(v)}
 }
 function forms(v){
