@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SprachPilot</title>
-<link rel="stylesheet" href="style.css?v=login-main-4">
+<link rel="stylesheet" href="style.css?v=verben-bereich1">
 </head>
 <body>
 <div id="accountStrip" class="account-strip"></div>
@@ -62,14 +62,12 @@ function renderModules(assignments={}){
   const fragen=teacherAll || moduleOpen(assignments,"Fragen A1");
   const wortschatz=teacherAll || moduleOpen(assignments,"Wortschatz");
   const verben=teacherAll || moduleOpen(assignments,"Verben");
-  const perfekt=verben;
   const irregular=teacherAll || moduleOpen(assignments,"Irreguläre Verben");
+  const verbArea=verben||irregular;
   modulesEl.innerHTML=`
     ${moduleCard('Fragen A1','/fragen-A1/','Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.',fragen)}
     ${moduleCard('Wortschatz','/wortschatz/','Wörter nach Lektionen und Themen üben.',wortschatz)}
-    ${moduleCard('Verben','/verben/','Freigegebene Verben in 20er-Gruppen üben.',verben)}
-    ${moduleCard('Perfekt','/perfekt/','Dieselben Verbgruppen mit Partizip II, haben oder sein und Perfektsätzen üben.',perfekt)}
-    ${moduleCard('Irreguläre Verben','/irregulaere-verben/','42 unregelmäßige Verben im Präsens in 14 aufeinander aufbauenden Lerntagen.',irregular)}
+    ${moduleCard('Verben','/verben-bereich/','Verben, irreguläre Verben und Perfekt in einem gemeinsamen Lernbereich.',verbArea)}
   `;
 }
 
