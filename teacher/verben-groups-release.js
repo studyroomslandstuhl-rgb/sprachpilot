@@ -7,7 +7,7 @@ const IRR=new Set(['sein','haben','werden','tun','wissen','kommen','gehen','brin
 const INSEP=/^(be|emp|ent|er|ge|miss|ver|zer)/;
 function paths(v){return[['enabledWords',v],['enabledWords','verben/'+v],['enabledWords','Verben/'+v],['enabledWords','verben-A1/'+v],['enabledWords','Verben A1/'+v],['releases','verben','words',v],['releases','Verben','words',v],['releases','verben-A1','words',v],['releases','Verben A1','words',v]]}
 function verbs(){return[...new Set((window.ALL_VERBS||[]).map(x=>x&&x.v).filter(Boolean))]}
-function prefix(v){const bare=String(v).replace(/^sich\s+/,'');return SEP.has(v)||INSEP.test(bare)}
+function prefix(v){if(REF.has(v)||String(v).startsWith('sich '))return false;const bare=String(v).replace(/^sich\s+/,'');return SEP.has(v)||INSEP.test(bare)}
 function categories(){
  const all=verbs(),used=new Set(),take=fn=>all.filter(v=>!used.has(v)&&fn(v)).map(v=>(used.add(v),v));
  return[
