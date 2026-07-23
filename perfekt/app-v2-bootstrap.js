@@ -20,6 +20,15 @@ function decodeBase64(value){
  return bytes;
 }
 
+function installImageOverrides(source){
+ const pattern=/const\s+imageUrl\s*=\s*v\s*=>[^;]+;/;
+ if(!pattern.test(source)){
+  console.warn('Perfekt-Bildfunktion wurde nicht gefunden; DOM-Bildkorrektur bleibt aktiv.');
+  return source;
+ }
+ return source.replace(pattern,"const imageUrl=v=>(typeof window.SP_VERB_IMAGE_OVERRIDE==='function'&&window.SP_VERB_IMAGE_OVERRIDE(v))||'https://sprachpilot.b-cdn.net/'+encodeURIComponent(slug(v)+'.webp');");
+}
+
 async function boot(){
  if(typeof DecompressionStream!=='function')throw new Error('Dieser Browser unterstützt die benötigte GZIP-Dekomprimierung nicht.');
  const response=await fetch('./app-v2-loader.js?v=perfekt-groups3-source',{cache:'no-store'});
@@ -32,6 +41,7 @@ async function boot(){
  if(!source.includes("'schreiben':'geschrieben'")){
   source=source.replace('const SPECIAL={',"const SPECIAL={'schreiben':'geschrieben',");
  }
+ source=installImageOverrides(source);
  const script=document.createElement('script');
  script.type='module';
  script.textContent=source+'\n//# sourceURL=/perfekt/app-v2-runtime.js';
