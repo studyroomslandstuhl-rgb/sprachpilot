@@ -83,7 +83,7 @@ if(IS_L6T2){
   import("/wortschatz/A1-Lektion-6/Thema-2/l6t2-stability.js?v=1").catch(()=>{});
 }
 if(IS_L6T3){
-  import("/wortschatz/A1-Lektion-6/Thema-3/l6t3-theme-score.js?v=1").catch(()=>{});
+  import("/wortschatz/A1-Lektion-6/Thema-3/l6t3-theme-score-v2.js?v=1").catch(()=>{});
 }
 if((IS_L6T4||IS_L7)&&!PERFORMANCE_SYNC_OFF){
   import(IS_L7?"/js/progress.js?v=l7-build1":"/js/progress.js?v=l6t4-build1").catch(()=>{});
