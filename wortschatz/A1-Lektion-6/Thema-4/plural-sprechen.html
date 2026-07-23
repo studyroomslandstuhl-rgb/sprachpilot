@@ -4,7 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Plural sprechen · L6T4</title>
-<link rel="stylesheet" href="style.css?v=l6t4-revision1">
+<link rel="stylesheet" href="style.css?v=l6t4-revision2">
+<link rel="stylesheet" href="l6t4-revision2.css?v=l6t4-revision2">
 </head>
 <body>
 <div class="container">
@@ -12,10 +13,12 @@
 <section class="card" id="area"></section>
 <footer>© SprachPilot</footer>
 </div>
-<script type="module" src="/js/guard.js?v=l6t4-revision1"></script>
-<script src="theme4-data.js?v=l6t4-revision1"></script>
+<script type="module" src="/js/guard.js?v=l6t4-revision2"></script>
+<script src="theme4-data.js?v=l6t4-revision2"></script>
+<script src="l6t4-content-revision2.js?v=l6t4-revision2"></script>
 <script>window.L6T4PluralItems=(window.L6T4_DATA?.lesson6Nouns||[]).map(item=>({...item,answer:item.noPlural?'kein Plural üblich':item.plural}));</script>
-<script src="app.js?v=l6t4-revision1"></script>
+<script src="app.js?v=l6t4-revision2"></script>
+<script src="l6t4-meta-revision2.js?v=l6t4-revision2"></script>
 <script>
 const FILE='plural-sprechen.html';
 const items=window.L6T4PluralItems||[];
@@ -28,9 +31,9 @@ function solution(item){return item.noPlural?'kein Plural üblich':item.plural}
 function help(item,tries){if(tries===1)return'<div class="no">Noch nicht richtig. Versuche es noch einmal.</div>';if(tries===2)return'<div class="hint">Prüfe den Artikel, den Umlaut und die Endung.</div>';if(tries>=3)return`<div class="no">Lösung: <b>${solution(item)}</b><br>Gib die richtige Lösung selbst ein. Das Wort kommt später noch einmal.</div>`;return''}
 function render(message='',showWriting=true){
  const state=l6t4Load(FILE,total);
- if(state.done.length>=total){l6t4Complete(area,'task.html?task=sound-activity&v=l6t4-revision1','Du hast alle Nomen aus Lektion 6 fehlerfrei wiederholt.');return}
+ if(state.done.length>=total){l6t4Complete(area,'task.html?task=sound-activity&v=l6t4-revision2','Du hast alle Nomen ohne Komposita fehlerfrei wiederholt.');return}
  currentIndex=l6t4NextIndex(FILE,total);const item=items[currentIndex];
- area.innerHTML=`${l6t4Progress(FILE,total)}<div class="task-instruction">Sieh oder höre das Nomen. Sprich oder schreibe die Pluralform mit Artikel. Bei Nomen ohne üblichen Plural: <b>kein Plural üblich</b>.</div><div class="plural-card"><span class="source-pill">Nomen aus ${item.source}</span><div class="singular">${item.singular}</div><div class="prompt">Wie lautet der Plural?</div><div class="actions centered" style="margin-top:20px"><button class="btn secondary" type="button" onclick="l6t4Say('${item.singular.replace(/'/g,"\\'")}')">🔊 Singular hören</button><button id="micBtn" class="btn" type="button" onclick="startPluralMic(this)">🎤 Plural sprechen</button><button class="btn secondary" type="button" onclick="openWriting()">✍️ Schreiben</button></div><div id="micStatus" class="mic-status"></div></div><div id="writeBox" class="write-box" style="display:${showWriting?'block':'none'}"><label for="pluralAnswer">Pluralform schreiben</label><div class="answer-row"><input id="pluralAnswer" autocomplete="off" placeholder="z. B. die Bücher"><button class="btn" type="button" onclick="checkWritten()">Prüfen</button></div></div><div id="feedback" class="feedback">${message||help(item,state.tries||0)}</div>`;
+ area.innerHTML=`${l6t4Progress(FILE,total)}<div class="task-instruction">Sieh oder höre das Nomen. Sprich oder schreibe die Pluralform mit Artikel. Komposita sind in dieser Aufgabe nicht enthalten. Bei Nomen ohne üblichen Plural: <b>kein Plural üblich</b>.</div><div class="plural-card"><span class="source-pill">Nomen aus ${item.source}</span><div class="singular">${item.singular}</div><div class="prompt">Wie lautet der Plural?</div><div class="actions centered" style="margin-top:20px"><button class="btn secondary" type="button" onclick="l6t4Say('${item.singular.replace(/'/g,"\\'")}')">🔊 Singular hören</button><button id="micBtn" class="btn" type="button" onclick="startPluralMic(this)">🎤 Plural sprechen</button><button class="btn secondary" type="button" onclick="openWriting()">✍️ Schreiben</button></div><div id="micStatus" class="mic-status"></div></div><div id="writeBox" class="write-box" style="display:${showWriting?'block':'none'}"><label for="pluralAnswer">Pluralform schreiben</label><div class="answer-row"><input id="pluralAnswer" autocomplete="off" placeholder="z. B. die Bücher"><button class="btn" type="button" onclick="checkWritten()">Prüfen</button></div></div><div id="feedback" class="feedback">${message||help(item,state.tries||0)}</div>`;
  if(showWriting)setTimeout(()=>document.getElementById('pluralAnswer')?.focus(),30);document.getElementById('pluralAnswer')?.addEventListener('keydown',event=>{if(event.key==='Enter')checkWritten()})
 }
 function openWriting(message=''){const previous=document.getElementById('feedback')?.innerHTML||'';render(message||previous,true)}
