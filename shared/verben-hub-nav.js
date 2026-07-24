@@ -42,10 +42,11 @@ function seedLocalHistory(){
  else if(overview)nativePushState({spVerbNavigation:section,route:'overview'},'',original)
 }
 
-function setLink(link,href,label){
+function setLink(link,href,label,target){
  if(!(link instanceof HTMLAnchorElement))return;
  link.href=href;
- link.textContent=label
+ link.textContent=label;
+ link.dataset.spBackTarget=target
 }
 
 function apply(){
@@ -54,15 +55,15 @@ function apply(){
  document.querySelectorAll('#topbar nav.topnav a[href]').forEach(link=>{
   const href=link.getAttribute('href')||'';
   const text=String(link.textContent||'').trim().toLowerCase();
-  if(href==='/index.html'||href===HUB||text.includes('startseite')||text.includes('verben-bereich')||text==='← verben'){
-   if(overview)setLink(link,HOME,`← ${sectionTitle}`);
-   else setLink(link,HUB,'← Verben-Bereich')
+  if(href==='/index.html'||href===HUB||href===HOME||text.includes('startseite')||text.includes('verben-bereich')||text==='← verben'||text==='← perfekt'){
+   if(overview)setLink(link,HOME,`← ${sectionTitle}`,'module-home');
+   else setLink(link,HUB,'← Verben-Bereich','hub')
   }
  });
  document.querySelectorAll('#app a[href]').forEach(link=>{
   const href=link.getAttribute('href')||'';
   const text=String(link.textContent||'').trim().toLowerCase();
-  if(href==='/index.html'&&(text.includes('startseite')||text.includes('zurück')))setLink(link,HUB,'← Verben-Bereich')
+  if(href==='/index.html'&&(text.includes('startseite')||text.includes('zurück')))setLink(link,HUB,'← Verben-Bereich','hub')
  })
 }
 
@@ -71,7 +72,28 @@ function renderCurrentRoute(){
  catch{window.dispatchEvent(new Event('popstate'))}
 }
 
+function openInsideModule(target,state){
+ nativeReplaceState({spVerbNavigation:section,...state},'',target);
+ renderCurrentRoute()
+}
+
 document.addEventListener('click',event=>{
+ const moduleHome=event.target.closest('a[data-sp-back-target="module-home"]');
+ if(moduleHome){
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  openInsideModule(HOME,{route:'home'});
+  return
+ }
+
+ const hubLink=event.target.closest('a[data-sp-back-target="hub"],a[href="/verben-bereich/"]');
+ if(hubLink){
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  location.assign(HUB);
+  return
+ }
+
  const groupButton=event.target.closest('[data-action="group"]');
  if(groupButton){
   const current=new URLSearchParams(location.search);
@@ -79,15 +101,9 @@ document.addEventListener('click',event=>{
    const group=Math.max(0,Number(groupButton.dataset.group)||Number(current.get('group'))||0);
    event.preventDefault();
    event.stopImmediatePropagation();
-   nativeReplaceState({spVerbNavigation:section,route:'group',group},'',groupUrl(group));
-   renderCurrentRoute();
-   return
+   openInsideModule(groupUrl(group),{route:'group',group});
   }
  }
- const hubLink=event.target.closest('a[href="/verben-bereich/"]');
- if(hubLink){event.preventDefault();location.assign(HUB);return}
- const moduleHome=event.target.closest(`a[href="${HOME}"]`);
- if(moduleHome){event.preventDefault();location.assign(HOME)}
 },true);
 
 seedLocalHistory();
