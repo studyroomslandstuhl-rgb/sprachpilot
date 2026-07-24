@@ -229,13 +229,13 @@ export async function renderLessonOverview(config){
 
   const timeoutMs=Number(config.loadTimeoutMs||3500);
   const releasePromise=withTimeout(
-    import("./course-releases.js")
+    import("./course-releases.js?v=lesson-overview-fix1")
       .then(async module=>({data:await module.loadCourseRelease(profile||{}),themeOpen:module.themeOpen})),
     timeoutMs,
     "Lektionsfreigaben: Zeitüberschreitung"
   );
   const progressPromise=withTimeout(
-    import("./progress.js").then(module=>module.loadCurrentStudentProgress()),
+    import("./progress.js?v=lesson-overview-fix1").then(module=>module.loadCurrentStudentProgress()),
     timeoutMs,
     "Fortschritt: Zeitüberschreitung"
   );
