@@ -2,6 +2,30 @@
 'use strict';
 const DATA=window.L6T3RevisionData;
 if(!DATA||!window.L6T3)return;
+
+// Aufgaben dürfen niemals auf Firebase oder das Netzwerk warten.
+// Zuerst sofort anzeigen, Freigaben danach mit Zeitlimit im Hintergrund aktualisieren.
+if(!L6T3.__instantRefreshPatched){
+ L6T3.__instantRefreshPatched=true;
+ L6T3.refreshRelease=function(callback){
+  if(typeof callback==='function'){
+   try{callback()}catch(error){console.error('L6T3 konnte nicht sofort angezeigt werden:',error)}
+  }
+  const refresh=window.SprachPilotRelease&&typeof SprachPilotRelease.refresh==='function'
+   ? Promise.resolve().then(()=>SprachPilotRelease.refresh())
+   : Promise.resolve();
+  Promise.race([
+   refresh,
+   new Promise(resolve=>setTimeout(resolve,2500))
+  ]).catch(error=>console.warn('L6T3-Freigaben konnten nicht aktualisiert werden:',error)).then(()=>{
+   if(document.getElementById('taskGrid')&&typeof window.renderMenu==='function'){
+    try{window.renderMenu()}catch(error){console.warn('L6T3-Menü konnte nicht aktualisiert werden:',error)}
+   }
+   window.dispatchEvent(new CustomEvent('l6t3-release-refreshed'));
+  });
+ };
+}
+
 const IMBISS_FILE='imbiss.html';
 const TOPIC_ID='wortschatz-a1-lektion-6-thema-3';
 const TOPIC_PATH='A1-Lektion-6/Thema-3';
@@ -131,7 +155,7 @@ window.renderMenu=function(){
  grid.innerHTML='<div class="grid">'+values.map((x,i)=>{
   const t=x.task,p=x.p,isExam=t[0]==='pruefung.html',locked=isExam&&!examUnlocked;
   const cls='module'+(locked?' exam-locked':'');
-  const href=locked?'':` href="${t[0]}?v=l6t3-score1"`;
+  const href=locked?'':` href="${t[0]}?v=l6t3-openfix1"`;
   const aria=locked?' aria-disabled="true"':'';
   const start=locked?'Gesperrt':isExam&&p>0?`${p}% erreicht`:p>=100?'Fertig':'Starten';
   return `<a class="${cls}"${href}${aria}><div class="num">${i+1}. ${t[2]}</div><div class="big-icon">${ICONS[t[0]]||'▶'}</div><p class="small">${locked?'Die Prüfung wird geöffnet, wenn alle vorherigen Aufgaben 100% erreicht haben.':descriptions[t[0]]||'Akkusativ, Artikel, Restaurant und Planen üben.'}</p><div class="progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start">${start}</div></a>`;
