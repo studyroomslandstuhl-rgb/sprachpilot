@@ -13,42 +13,41 @@
 </head>
 <body>
 <div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div>
-<script type="module" src="/js/guard.js?v=l6t3-imbiss2"></script>
+<script type="module" src="/js/guard.js?v=l6t3-imbiss3"></script>
 <script src="app.js?v=1"></script>
 <script src="l6t3-upgrade.js?v=1"></script>
 <script src="l6t3-revision-data.js?v=2"></script>
 <script src="l6t3-revision.js?v=8"></script>
 <script>
 header('Im Imbiss');
+const menuUrl='/wortschatz/A1-Lektion-6/Thema-3/index.html?v=l6t3-imbiss3';
+const backButton=document.querySelector('.nav .btn.secondary');
+if(backButton){backButton.href=menuUrl;backButton.addEventListener('click',event=>{event.preventDefault();location.replace(menuUrl)})}
 const FILE='imbiss.html';
 const IMAGE_BASES=[CDN,CDN+'Neu/'];
 const FOOD={
  hamburger:{phrase:'einen Hamburger',image:'hamburger.webp',icon:'🍔'},
  salat:{phrase:'einen Salat',image:'salat.webp',icon:'🥗'},
- kaesebrot:{phrase:'ein Käsebrot',image:'kaesebrot.webp',icon:'🥪'},
- schinkenbrot:{phrase:'ein Schinkenbrot',image:'schinkenbrot.webp',icon:'🥪'},
  pommes:{phrase:'eine Portion Pommes',visible:'eine Portion',image:'pommes.webp',icon:'🍟'},
+ brot:{phrase:'Brot',image:'brot.webp',icon:'🍞'},
+ kaese:{phrase:'Käse',image:'kaese.webp',icon:'🧀'},
  cola:{phrase:'eine Cola',image:'cola.webp',icon:'🥤'},
- apfelsaft:{phrase:'einen Apfelsaft',image:'apfelsaft.webp',icon:'🧃'},
  saft:{phrase:'einen Saft',image:'saft.webp',icon:'🧃'},
- wasser:{phrase:'ein Wasser',image:'wasser.webp',icon:'💧'},
- milch:{phrase:'Milch',image:'milch.webp',icon:'🥛'},
- kaffee:{phrase:'einen Kaffee',image:'kaffee.webp',icon:'☕'},
  getraenk:{phrase:'ein Getränk',image:'getraenk.webp',icon:'🥤'}
 };
 const raw=[
- ['Mila','Ben','hamburger','apfelsaft','salat',0],
- ['Sara','Tom','salat','wasser','kaesebrot',1],
- ['Anna','Leo','pommes','milch','hamburger',2],
- ['Nina','Amir','schinkenbrot','kaffee','getraenk',3],
- ['Lea','Omar','kaesebrot','saft','hamburger',0],
- ['Paula','Daniel','salat','apfelsaft','pommes',1],
- ['Eva','Samir','hamburger','wasser','kaesebrot',2],
- ['Mila','Tom','schinkenbrot','milch','saft',3],
- ['Sara','Ben','pommes','kaffee','salat',0],
- ['Anna','Amir','kaesebrot','cola','apfelsaft',1],
- ['Nina','Leo','hamburger','saft','schinkenbrot',2],
- ['Lea','Samir','salat','wasser','pommes',3]
+ ['Mila','Ben','hamburger','saft','salat',0],
+ ['Sara','Tom','salat','getraenk','hamburger',1],
+ ['Anna','Leo','pommes','saft','salat',2],
+ ['Nina','Amir','brot','kaese','getraenk',3],
+ ['Lea','Omar','hamburger','getraenk','salat',0],
+ ['Paula','Daniel','salat','saft','pommes',1],
+ ['Eva','Samir','pommes','cola','hamburger',2],
+ ['Mila','Tom','brot','kaese','saft',3],
+ ['Sara','Ben','hamburger','saft','pommes',0],
+ ['Anna','Amir','salat','getraenk','hamburger',1],
+ ['Nina','Leo','brot','kaese','salat',2],
+ ['Lea','Samir','pommes','getraenk','hamburger',3]
 ];
 const items=raw.map((x,n)=>({id:'imb'+String(n+1).padStart(2,'0'),aName:x[0],bName:x[1],first:FOOD[x[2]],second:FOOD[x[3]],third:FOOD[x[4]],template:x[5]}));
 const total=items.length;
