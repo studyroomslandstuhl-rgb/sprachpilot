@@ -38,7 +38,7 @@ function addDelta(progress,delta){delta=Math.max(0,point(delta));if(delta)progre
 function takeDelta(progress){const d=Math.max(0,point(progress?.__pointsDelta));if(progress&&Object.prototype.hasOwnProperty.call(progress,"__pointsDelta"))delete progress.__pointsDelta;return d}
 function topicId(p){return p.topicId||p.themeId||cleanId([p.module||"wortschatz",p.level||"A1","lektion",p.lesson||p.lektion||"","thema",p.theme||p.thema||""].filter(Boolean).join("_"))}
 function runKey(scope){return`SP_SCORE_RUN_${scope}`}
-function currentRun(scope){return Math.max(1,Math.round(Number(localStorage.getItem(runKey(scope))||1)||1)}
+function currentRun(scope){return Math.max(1,Math.round(Number(localStorage.getItem(runKey(scope))||1)||1))}
 function setRun(scope,run){localStorage.setItem(runKey(scope),String(Math.max(1,Math.round(Number(run)||1))))}
 function mergeRuns(a={},b={}){const out={...b,...a};Object.keys(b||{}).forEach(k=>out[k]=Math.max(Number(out[k]||0),Number(b[k]||0)));Object.keys(a||{}).forEach(k=>out[k]=Math.max(Number(out[k]||0),Number(a[k]||0)));return out}
 function betterTask(a={},b={}){return clamp(b.percent)>clamp(a.percent)?b:{...b,...a,percent:Math.max(clamp(a.percent),clamp(b.percent)),completed:!!(a.completed||b.completed),done:Math.max(Number(a.done||0),Number(b.done||0)),total:Math.max(Number(a.total||0),Number(b.total||0)),points:Math.max(Number(a.points||0),Number(b.points||0)),pointsByRun:{...(b.pointsByRun||{}),...(a.pointsByRun||{})}}}
