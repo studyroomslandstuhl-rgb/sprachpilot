@@ -1,22 +1,47 @@
 (function(){
 'use strict';
 
+const BUNNY='https://sprachpilot.b-cdn.net/';
 const IMAGE_URLS=Object.freeze({
- 'öffnen':'https://sprachpilot.b-cdn.net/Neu/oeffnen.webp',
- 'oeffnen':'https://sprachpilot.b-cdn.net/Neu/oeffnen.webp',
- 'offnen':'https://sprachpilot.b-cdn.net/Neu/oeffnen.webp',
- 'schließen':'https://sprachpilot.b-cdn.net/Neu/schliessen.webp',
- 'schliessen':'https://sprachpilot.b-cdn.net/Neu/schliessen.webp',
- 'planen':'https://sprachpilot.b-cdn.net/Neu/planen.webp',
- 'spazieren gehen':'https://sprachpilot.b-cdn.net/Neu/spazierengehen.webp',
- 'spazierengehen':'https://sprachpilot.b-cdn.net/Neu/spazierengehen.webp',
- 'spazieren_gehen':'https://sprachpilot.b-cdn.net/Neu/spazierengehen.webp',
- 'vereinbaren':'https://sprachpilot.b-cdn.net/Neu/vereinbaren.webp',
- 'nehmen':'https://sprachpilot.b-cdn.net/Neu/nehmen.webp',
- 'enden':'https://sprachpilot.b-cdn.net/Neu/enden.webp',
- 'besuchen':'https://sprachpilot.b-cdn.net/Neu/besuchen.webp',
- 'ausleihen':'https://sprachpilot.b-cdn.net/Neu/ausleihen.webp',
- 'anfangen':'https://sprachpilot.b-cdn.net/Neu/anfangen.webp'
+ 'öffnen':BUNNY+'Neu/oeffnen.webp',
+ 'oeffnen':BUNNY+'Neu/oeffnen.webp',
+ 'offnen':BUNNY+'Neu/oeffnen.webp',
+ 'schließen':BUNNY+'Neu/schliessen.webp',
+ 'schliessen':BUNNY+'Neu/schliessen.webp',
+ 'planen':BUNNY+'Neu/planen.webp',
+ 'spazieren gehen':BUNNY+'Neu/spazierengehen.webp',
+ 'spazierengehen':BUNNY+'Neu/spazierengehen.webp',
+ 'spazieren_gehen':BUNNY+'Neu/spazierengehen.webp',
+ 'vereinbaren':BUNNY+'Neu/vereinbaren.webp',
+ 'nehmen':BUNNY+'Neu/nehmen.webp',
+ 'enden':BUNNY+'Neu/enden.webp',
+ 'besuchen':BUNNY+'Neu/besuchen.webp',
+ 'ausleihen':BUNNY+'Neu/ausleihen.webp',
+ 'anfangen':BUNNY+'Neu/anfangen.webp',
+
+ 'sich interessieren':BUNNY+'sich_interessieren_fuer.webp',
+ 'sich interessieren für':BUNNY+'sich_interessieren_fuer.webp',
+ 'sich_interessieren':BUNNY+'sich_interessieren_fuer.webp',
+ 'sich_interessieren_fuer':BUNNY+'sich_interessieren_fuer.webp',
+ 'wiegen':BUNNY+'wiegen.webp',
+ 'zwingen':BUNNY+'zwingen.webp',
+ 'sich erinnern':BUNNY+'sich_erinnern_an.webp',
+ 'sich erinnern an':BUNNY+'sich_erinnern_an.webp',
+ 'sich_erinnern':BUNNY+'sich_erinnern_an.webp',
+ 'sich_erinnern_an':BUNNY+'sich_erinnern_an.webp',
+ 'sich anziehen':BUNNY+'sich_anziehen.webp',
+ 'sich_anziehen':BUNNY+'sich_anziehen.webp',
+ 'sich ausziehen':BUNNY+'sich_ausziehen.webp',
+ 'sich_ausziehen':BUNNY+'sich_ausziehen.webp',
+ 'sich umziehen':BUNNY+'sich_umziehen.webp',
+ 'sich_umziehen':BUNNY+'sich_umziehen.webp',
+ 'sich duschen':BUNNY+'sich_duschen.webp',
+ 'sich_duschen':BUNNY+'sich_duschen.webp',
+ 'sich freuen':BUNNY+'sich_freuen.webp',
+ 'sich_freuen':BUNNY+'sich_freuen.webp',
+ 'sich ärgern':BUNNY+'sich_aergern.webp',
+ 'sich aergern':BUNNY+'sich_aergern.webp',
+ 'sich_aergern':BUNNY+'sich_aergern.webp'
 });
 
 const normalize=value=>String(value||'').trim().toLowerCase();
@@ -26,19 +51,24 @@ const fileKey=value=>normalize(value)
  .replace(/[^a-z0-9]+/g,'_').replace(/^_|_$/g,'');
 const previous=typeof window.SP_VERB_IMAGE_OVERRIDE==='function'?window.SP_VERB_IMAGE_OVERRIDE:null;
 
+function standardImage(value){
+ const key=fileKey(value);
+ return key?BUNNY+encodeURIComponent(key)+'.webp':null
+}
 function resolveImage(value){
- const direct=IMAGE_URLS[normalize(value)]||IMAGE_URLS[fileKey(value)];
- return direct||(previous?previous(value):null)||null;
+ const normalized=normalize(value),key=fileKey(value);
+ const direct=IMAGE_URLS[normalized]||IMAGE_URLS[key];
+ return direct||(previous?previous(value):null)||standardImage(value)
 }
 
 window.SP_VERB_IMAGE_URLS=IMAGE_URLS;
+window.SP_VERB_IMAGE_FILE_KEY=fileKey;
 window.SP_VERB_IMAGE_OVERRIDE=resolveImage;
 
 function patchEngine(name){
  const engine=window[name];
  if(!engine||typeof engine.imageUrl!=='function'||engine.__imageOverridesInstalled)return;
- const original=engine.imageUrl.bind(engine);
- engine.imageUrl=value=>resolveImage(value)||original(value);
+ engine.imageUrl=value=>resolveImage(value);
  Object.defineProperty(engine,'__imageOverridesInstalled',{value:true});
 }
 
