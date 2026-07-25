@@ -1,9 +1,15 @@
 (function(){
 'use strict';
+
 const ORDER=['Regelmäßige Verben','Starke / unregelmäßige Verben','Verben auf -ieren','Nicht trennbare Verben','Reflexive Verben','Trennbare Verben'];
 const rank=title=>{const index=ORDER.findIndex(item=>String(title||'').includes(item));return index<0?ORDER.length:index};
 const mapping=new Map();
 let applying=false;
+let queued=false;
+
+function setText(element,value){
+ if(element&&element.textContent!==value)element.textContent=value
+}
 
 function rememberMapping(panels){
  mapping.clear();
@@ -11,8 +17,7 @@ function rememberMapping(panels){
   const summary=panel.querySelector('summary[data-group]');
   const actual=Number(summary?.dataset.group)||0;
   if(actual)mapping.set(actual,index+1);
-  const label=panel.querySelector('.group-number');
-  if(label)label.textContent=`Gruppe ${index+1}`
+  setText(panel.querySelector('.group-number'),`Gruppe ${index+1}`)
  });
  try{sessionStorage.setItem('SP_PERFEKT_VISIBLE_GROUPS',JSON.stringify(Object.fromEntries(mapping)))}catch{}
 }
@@ -29,13 +34,18 @@ function replaceGroupLabels(root=document){
   const match=String(element.textContent||'').trim().match(/^Gruppe\s+(\d+)$/i);
   if(!match)return;
   const visible=mapping.get(Number(match[1]));
-  if(visible)element.textContent=`Gruppe ${visible}`
+  if(visible)setText(element,`Gruppe ${visible}`)
  })
+}
+
+function sameOrder(current,sorted){
+ return current.length===sorted.length&&current.every((panel,index)=>panel===sorted[index])
 }
 
 function apply(){
  if(applying)return;
  applying=true;
+ observer.disconnect();
  try{
   const panels=[...document.querySelectorAll('#app .group-panel')];
   if(panels.length){
@@ -45,16 +55,26 @@ function apply(){
     const bTitle=b.querySelector('summary span:nth-child(2)')?.textContent||'';
     return rank(aTitle)-rank(bTitle)
    });
-   sorted.forEach(panel=>parent?.appendChild(panel));
+   if(parent&&!sameOrder(panels,sorted))sorted.forEach(panel=>parent.appendChild(panel));
    rememberMapping(sorted)
   }
   replaceGroupLabels(document)
- }finally{applying=false}
+ }finally{
+  observer.observe(document.documentElement,{childList:true,subtree:true});
+  applying=false
+ }
 }
 
-const observer=new MutationObserver(()=>queueMicrotask(apply));
+function schedule(){
+ if(queued)return;
+ queued=true;
+ const run=()=>{queued=false;apply()};
+ if(typeof requestAnimationFrame==='function')requestAnimationFrame(run);else setTimeout(run,0)
+}
+
+const observer=new MutationObserver(schedule);
 observer.observe(document.documentElement,{childList:true,subtree:true});
-window.addEventListener('popstate',()=>queueMicrotask(apply));
-document.addEventListener('click',()=>setTimeout(apply,0),true);
-apply();
+window.addEventListener('popstate',schedule);
+document.addEventListener('click',()=>setTimeout(schedule,0),true);
+schedule();
 })();
