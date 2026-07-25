@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Verben · SprachPilot</title>
-<link rel="stylesheet" href="/style.css?v=verben-bereich1">
+<link rel="stylesheet" href="/style.css?v=verben-bereich2">
 <style>
   .verb-hub-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}
   .verb-hub-head .actions{margin:0}
@@ -41,10 +41,10 @@
   <footer>© SprachPilot</footer>
 </div>
 
-<script type="module" src="/js/guard.js?v=verben-bereich1"></script>
+<script type="module" src="/js/guard.js?v=verben-bereich2"></script>
 <script type="module">
 import { getActiveProfile, getActiveRole, dashboardHref, safeText, renderAccountStrip } from '/js/auth.js?v=login-main-4';
-import { loadCourseRelease, moduleOpen } from '/js/course-releases.js?v=verb-groups-2';
+import { loadCourseRelease, moduleOpen } from '/js/course-releases.js?v=perfekt-start2';
 
 const target=document.querySelector('#verbModules');
 const dashboard=document.querySelector('#dashboardLink');
@@ -69,7 +69,7 @@ function render(assignments={}){
  target.innerHTML=[
   card('Verben','Aa','/verben/','Freigegebene Verben in Gruppen lernen, konjugieren, hören, schreiben und sprechen.',verbs),
   card('Irreguläre Verben','↔','/irregulaere-verben/','Unregelmäßige Präsensformen systematisch lernen und wiederholen.',irregular),
-  card('Perfekt','hat / ist','/perfekt/','Perfektformen mit Partizip II sowie haben oder sein trainieren.',perfect)
+  card('Perfekt','hat / ist','/perfekt/start.html','Perfektformen mit Partizip II sowie haben oder sein trainieren.',perfect)
  ].join('');
 }
 
