@@ -27,13 +27,60 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v6
 
+      - name: Prepare static site
+        run: |
+          mkdir -p _site
+          rsync -a --exclude='.git' --exclude='.github' --exclude='_site' ./ _site/
+          python - <<'PY'
+          from pathlib import Path
+
+          source = Path('_site/perfekt/app-stable.js')
+          target = Path('_site/perfekt/app-stable-v2.js')
+          text = source.read_text(encoding='utf-8')
+          text = text.replace(
+              "from'/js/course-releases.js?v=verb-groups-2';",
+              "from'/js/course-releases.js?v=perfekt-start2';",
+          )
+          text = text.replace(
+              "return'/perfekt/'+(q.toString()?'?'+q.toString():'')",
+              "return'/perfekt/start.html'+(q.toString()?'?'+q.toString():'')",
+          )
+          old_init = "async function init(){const user=requireLogin();if(!user)return;profile=getActiveProfile()||{};const role=String(getActiveRole()||'').toLowerCase();preview=role==='teacher';try{const raw=sessionStorage.getItem('SP_TEACHER_PREVIEW');if(raw==='1'||JSON.parse(raw||'null')?.teacherPreview===true)preview=true}catch{}const all=[...new Set((window.SP_VERB_GROUP_DATA?.verbs||BASE?.ALL||[]).filter(Boolean))];try{const assignments=await loadCourseRelease(profile);locked=!preview&&!moduleOpen(assignments,'Verben');VERBS=preview?all:releasedVerbs(assignments,all)}catch{VERBS=preview?all:[];locked=!preview}rebuildGroups();load();render()}"
+          new_init = """async function init(){
+           const user=requireLogin();if(!user)return;
+           profile=getActiveProfile()||{};
+           const role=String(getActiveRole()||'').toLowerCase();
+           preview=role==='teacher';
+           try{const raw=sessionStorage.getItem('SP_TEACHER_PREVIEW');if(raw==='1'||JSON.parse(raw||'null')?.teacherPreview===true)preview=true}catch{}
+           const all=[...new Set((window.SP_VERB_GROUP_DATA?.verbs||BASE?.ALL||[]).filter(Boolean))];
+           let assignments=profile.assignments||{};
+           try{const cached=JSON.parse(localStorage.getItem('SP_COURSE_RELEASES')||'null');if(cached&&typeof cached==='object'&&Object.keys(cached).length)assignments=cached}catch{}
+           const applyAssignments=data=>{
+            const releases=data&&typeof data==='object'?data:{};
+            locked=!preview&&!moduleOpen(releases,'Verben');
+            VERBS=preview?all:releasedVerbs(releases,all);
+            rebuildGroups();load();render();
+            window.SP_PERFEKT_READY=true
+           };
+           applyAssignments(assignments);
+           try{
+            const fresh=await Promise.race([loadCourseRelease(profile),new Promise(resolve=>setTimeout(()=>resolve(assignments),3000))]);
+            applyAssignments(fresh||assignments)
+           }catch(error){console.warn('Kursfreigaben konnten nicht aktualisiert werden',error)}
+          }"""
+          if old_init not in text:
+              raise SystemExit('Perfekt init block was not found; deployment stopped to avoid publishing a broken app.')
+          text = text.replace(old_init, new_init)
+          target.write_text(text, encoding='utf-8')
+          PY
+
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v5
 
       - name: Upload static site
         uses: actions/upload-pages-artifact@v4
         with:
-          path: .
+          path: _site
 
       - name: Deploy to GitHub Pages
         id: deployment
