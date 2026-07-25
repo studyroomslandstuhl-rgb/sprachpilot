@@ -7,7 +7,7 @@ on:
   workflow_dispatch:
 
 permissions:
-  contents: read
+  contents: write
   pages: write
   id-token: write
 
@@ -17,6 +17,8 @@ concurrency:
 
 jobs:
   deploy:
+    outputs:
+      page_url: ${{ steps.deployment.outputs.page_url }}
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
@@ -36,3 +38,53 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
+  report:
+    if: always()
+    needs: deploy
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout deployment status branch
+        uses: actions/checkout@v6
+        with:
+          ref: deploy-status
+          fetch-depth: 1
+
+      - name: Write deployment result
+        env:
+          DEPLOY_RESULT: ${{ needs.deploy.result }}
+          PAGE_URL: ${{ needs.deploy.outputs.page_url }}
+          SOURCE_SHA: ${{ github.sha }}
+          RUN_ID: ${{ github.run_id }}
+          RUN_ATTEMPT: ${{ github.run_attempt }}
+          REPOSITORY: ${{ github.repository }}
+        run: |
+          python - <<'PY'
+          import json
+          import os
+          from datetime import datetime, timezone
+
+          result = {
+              "result": os.environ.get("DEPLOY_RESULT", "unknown"),
+              "source_sha": os.environ.get("SOURCE_SHA", ""),
+              "page_url": os.environ.get("PAGE_URL", ""),
+              "run_id": os.environ.get("RUN_ID", ""),
+              "run_attempt": os.environ.get("RUN_ATTEMPT", ""),
+              "run_url": f"https://github.com/{os.environ.get('REPOSITORY', '')}/actions/runs/{os.environ.get('RUN_ID', '')}",
+              "recorded_at": datetime.now(timezone.utc).isoformat(),
+          }
+          with open("deployment-status.json", "w", encoding="utf-8") as file:
+              json.dump(result, file, ensure_ascii=False, indent=2)
+              file.write("\n")
+          PY
+
+      - name: Publish deployment result
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add deployment-status.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Record Pages deployment result for ${GITHUB_SHA}"
+          git push origin HEAD:deploy-status
