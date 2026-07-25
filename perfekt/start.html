@@ -4,48 +4,11 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Perfekt · SprachPilot</title>
-<link rel="preconnect" href="https://sprachpilot.b-cdn.net" crossorigin>
-<link rel="dns-prefetch" href="//sprachpilot.b-cdn.net">
-<link rel="stylesheet" href="/verben/styles.css?v=perfekt-start2">
-<link rel="stylesheet" href="/verben/ui-v2.css?v=perfekt-start2">
-<link rel="stylesheet" href="/perfekt/styles.css?v=perfekt-start2">
-<script>
-(function(){
- function showProblem(detail){
-  const app=document.getElementById('app');
-  if(!app)return;
-  const text=String(app.textContent||'');
-  if(!/Perfekt wird geladen|Perfekt wird vorbereitet/.test(text)&&text.trim())return;
-  app.innerHTML='<section class="card"><h2>Perfekt konnte nicht gestartet werden</h2><p>'+String(detail||'Unbekannter Startfehler').replace(/[&<>]/g,function(c){return({"&":"&amp;","<":"&lt;",">":"&gt;"})[c]})+'</p><div class="actions"><button class="btn" onclick="location.replace(\'/perfekt/start.html?fresh=2\')">Erneut laden</button><a class="btn secondary" href="/verben-bereich/">Zum Verben-Bereich</a></div></section>';
- }
- window.SP_PERFEKT_SHOW_PROBLEM=showProblem;
- window.addEventListener('error',function(event){showProblem(event.message||'Eine benötigte Datei konnte nicht geladen werden.')});
- window.addEventListener('unhandledrejection',function(event){showProblem(event.reason&&event.reason.message?event.reason.message:'Die Perfekt-App wurde beim Start unterbrochen.')});
- setTimeout(function(){showProblem('Der Start hat länger als acht Sekunden gedauert.')},8000);
-})();
-</script>
+<meta http-equiv="refresh" content="0;url=/perfekt/">
+<link rel="canonical" href="/perfekt/">
 </head>
 <body>
-<div class="shell">
-<header class="topbar" id="topbar"></header>
-<main id="app"><section class="card">Perfekt wird vorbereitet …</section></main>
-<footer>© SprachPilot</footer>
-</div>
-<script type="module" src="/js/guard.js?v=perfekt-start2"></script>
-<script src="/js/back-button-fix.js?v=3"></script>
-<script type="module" src="/js/progress.js?v=perfekt-start2"></script>
-<script src="/verben/data.js?v=perfekt-start2"></script>
-<script src="/verben/translations.js?v=perfekt-start2"></script>
-<script src="/verben/sentences.js?v=perfekt-start2"></script>
-<script src="/verben/meanings.js?v=perfekt-start2"></script>
-<script src="/verben/lexicon-bridge.js?v=perfekt-start2"></script>
-<script src="/verben/verb-additions.js?v=perfekt-start2"></script>
-<script src="/verben/engine.js?v=perfekt-start2"></script>
-<script src="/verben/verb-additions-runtime.js?v=perfekt-start2"></script>
-<script src="/verben/image-overrides.js?v=perfekt-start2"></script>
-<script type="module" src="/perfekt/runtime-media-fix.js?v=perfekt-start2"></script>
-<script src="/perfekt/navigation-safe-v2.js?v=perfekt-start2"></script>
-<script type="module" src="/perfekt/app-stable-v2.js?v=perfekt-start2"></script>
-<script src="/shared/sprachpilot-design-system.js?v=perfekt-start2"></script>
+<p><a href="/perfekt/">Perfekt öffnen</a></p>
+<script>location.replace('/perfekt/'+location.search+location.hash)</script>
 </body>
 </html>
