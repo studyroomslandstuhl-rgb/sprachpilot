@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Verben · SprachPilot</title>
-<link rel="stylesheet" href="/style.css?v=verben-bereich3">
+<link rel="stylesheet" href="/style.css?v=verben-bereich4">
 <style>
 .verb-hub-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.verb-hub-head .actions{margin:0}.verb-hub-note{margin:8px 0 0;color:#5f7180}.modules{margin-top:18px}.module-title{font-size:22px}.module .module-icon{font-size:42px;line-height:1;margin-bottom:12px}
 </style>
@@ -16,17 +16,16 @@
 <section class="card"><div class="verb-hub-head"><div><h2>Verben</h2><p class="verb-hub-note">Wähle den passenden Lernbereich.</p></div><div class="actions"><a class="btn secondary" href="/index.html">← Startseite</a><a class="btn secondary" id="dashboardLink" href="/student-dashboard/">Dashboard</a></div></div><div class="modules" id="verbModules"></div></section>
 <footer>© SprachPilot</footer>
 </div>
-<script type="module" src="/js/guard.js?v=verben-bereich3"></script>
 <script type="module">
 import{getActiveProfile,getActiveRole,dashboardHref,safeText,renderAccountStrip}from'/js/auth.js?v=login-main-4';
-import{loadCourseRelease,moduleOpen}from'/js/course-releases.js?v=perfekt-renderfix1';
+import{loadCourseRelease,moduleOpen}from'/js/course-releases.js?v=verb-stable3';
 const target=document.querySelector('#verbModules'),dashboard=document.querySelector('#dashboardLink');
 const role=String(getActiveRole()||'').toLowerCase(),profile=getActiveProfile();dashboard.href=dashboardHref();
 function card(title,icon,href,description,open){return `<a class="module ${open?'':'locked'}" href="${open?href:'#'}" ${open?'':'onclick="return false" aria-disabled="true"'}><div class="module-icon" aria-hidden="true">${safeText(icon)}</div><div class="module-title">${safeText(title)}</div><p>${safeText(open?description:'Für deinen Kurs noch nicht freigeschaltet.')}</p><span class="badge">${open?'Öffnen':'Gesperrt'}</span></a>`}
 function render(assignments={}){const teacher=role==='teacher',verbs=teacher||moduleOpen(assignments,'Verben'),irregular=teacher||moduleOpen(assignments,'Irreguläre Verben');target.innerHTML=[card('Verben','Aa','/verben/','Freigegebene Verben in Gruppen lernen, konjugieren, hören, schreiben und sprechen.',verbs),card('Irreguläre Verben','↔','/irregulaere-verben/','Unregelmäßige Präsensformen systematisch lernen und wiederholen.',irregular),card('Perfekt','hat / ist','/perfekt/','Perfektformen mit Partizip II sowie haben oder sein trainieren.',verbs)].join('')}
-async function init(){if(!profile&&role!=='teacher'){location.href='/login/';return}render(profile?.assignments||{});if(profile&&role!=='teacher'){try{render(await loadCourseRelease(profile)||profile.assignments||{})}catch(error){console.warn('Kursfreigaben konnten nicht geladen werden',error)}}try{renderAccountStrip()}catch{}}
+async function init(){if(!profile&&role!=='teacher'){location.href='/login/';return}render(profile?.assignments||{});if(profile&&role!=='teacher'){loadCourseRelease(profile).then(data=>render(data||profile.assignments||{})).catch(error=>console.warn('Kursfreigaben konnten nicht geladen werden',error))}try{renderAccountStrip()}catch{}}
 init();
 </script>
-<script src="/shared/sprachpilot-design-system.js?v=verben-bereich3"></script>
+<script src="/shared/sprachpilot-design-system.js?v=verben-bereich4"></script>
 </body>
 </html>
