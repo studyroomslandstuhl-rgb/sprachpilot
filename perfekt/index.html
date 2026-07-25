@@ -9,6 +9,7 @@
 <link rel="stylesheet" href="/verben/styles.css?v=verb-groups-2">
 <link rel="stylesheet" href="/verben/ui-v2.css?v=verb-groups-3">
 <link rel="stylesheet" href="styles.css?v=perfekt-stable5">
+<script type="importmap">{"imports":{"/js/course-releases.js?v=verb-groups-2":"/js/course-releases.js?v=perfekt-renderfix1"}}</script>
 </head>
 <body>
 <div class="shell">
@@ -16,7 +17,7 @@
 <main id="app"><section class="card">Perfekt wird geladen …</section></main>
 <footer>© SprachPilot</footer>
 </div>
-<script type="module" src="/js/guard.js?v=perfekt-nav-safe2"></script>
+<script type="module" src="/js/guard.js?v=perfekt-renderfix1"></script>
 <script src="/js/back-button-fix.js?v=2"></script>
 <script type="module" src="/js/progress.js?v=verb-points-1"></script>
 <script src="/verben/data.js?v=verb-groups-2"></script>
@@ -28,11 +29,19 @@
 <script src="/verben/engine.js?v=verb-groups-2"></script>
 <script src="/verben/verb-additions-runtime.js?v=base-translations-1"></script>
 <script src="/verben/image-overrides.js?v=perfekt-media3"></script>
-<script src="progress-preflight.js?v=perfekt-mobile-fix2"></script>
-<script src="group-order-ui.js?v=perfekt-mobile-fix2"></script>
-<script type="module" src="runtime-media-fix.js?v=perfekt-mobile-fix2"></script>
-<script src="navigation-fix.js?v=perfekt-nav-safe2"></script>
-<script type="module" src="app-stable.js?v=perfekt-nav-safe2"></script>
+<script src="progress-preflight.js?v=perfekt-renderfix1"></script>
+<script src="group-order-ui.js?v=perfekt-renderfix1"></script>
+<script type="module" src="runtime-media-fix.js?v=perfekt-renderfix1"></script>
+<script src="navigation-fix.js?v=perfekt-renderfix1"></script>
+<script type="module" src="app-stable.js?v=perfekt-renderfix1"></script>
 <script src="/shared/sprachpilot-design-system.js"></script>
+<script>
+setTimeout(function(){
+ const app=document.getElementById('app');
+ if(app&&/Perfekt wird geladen/.test(app.textContent||'')){
+  app.innerHTML='<section class="card"><h2>Perfekt konnte nicht vollständig geladen werden</h2><p>Die Seite verwendet jetzt die gespeicherten Kursdaten. Bitte tippe einmal auf „Erneut versuchen“.</p><button class="btn" onclick="location.replace(\'/perfekt/?retry=1\')">Erneut versuchen</button></section>';
+ }
+},7000);
+</script>
 </body>
 </html>
