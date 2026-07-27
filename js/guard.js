@@ -57,10 +57,40 @@ function normalizeExamIcons(){
     setStar(el.querySelector?.(".icon,.big-icon"));
   });
 }
+let overviewProbe=null;
+function overviewButtonClass(nav){
+  const sample=nav.querySelector("a.l7-btn,button.l7-btn,a.btn,button.btn");
+  if(sample?.classList.contains("l7-btn"))return"l7-btn secondary";
+  return"btn secondary";
+}
+async function ensureThemeOverviewButton(){
+  if(!IS_WORTSCHATZ_EXERCISE)return;
+  if(document.querySelector('a[href*="uebersicht.html"]'))return;
+  const nav=document.querySelector(".topbar nav,.l7-topbar nav,header.topbar nav,nav.nav");
+  if(!nav)return;
+  if(!overviewProbe){
+    const url=new URL("uebersicht.html",location.href);
+    overviewProbe=fetch(url,{method:"HEAD",cache:"no-store"}).then(response=>response.ok).catch(()=>false);
+  }
+  if(!await overviewProbe)return;
+  if(document.querySelector('a[href*="uebersicht.html"]'))return;
+  const link=document.createElement("a");
+  link.href="uebersicht.html";
+  link.textContent="Übersicht";
+  link.className=overviewButtonClass(nav);
+  const reset=[...nav.querySelectorAll("button")].find(button=>/Fortschritt|löschen|zurücksetzen/i.test(String(button.textContent||"")));
+  nav.insertBefore(link,reset||null);
+}
+function scheduleThemeOverviewButton(){setTimeout(()=>ensureThemeOverviewButton(),0)}
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",installHeaderOnce);else installHeaderOnce();
 if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",normalizeExamIcons);else normalizeExamIcons();
+if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",scheduleThemeOverviewButton);else scheduleThemeOverviewButton();
+window.addEventListener("load",scheduleThemeOverviewButton);
 setTimeout(normalizeExamIcons,250);
 setTimeout(normalizeExamIcons,1400);
+setTimeout(ensureThemeOverviewButton,300);
+setTimeout(ensureThemeOverviewButton,1400);
+setTimeout(ensureThemeOverviewButton,3200);
 if(!IS_L3T1&&!IS_L5&&!IS_L6T3){
   try{
     let iconTimer=null;
