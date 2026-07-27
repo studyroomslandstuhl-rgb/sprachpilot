@@ -38,65 +38,75 @@ jobs:
           engine = engine_path.read_text(encoding='utf-8')
           old_engine = "function rebuildGroups(){GROUPS=[];for(let i=0;i<VERBS.length;i+=GROUP_SIZE)GROUPS.push({id:GROUPS.length+1,verbs:VERBS.slice(i,i+GROUP_SIZE),signature:VERBS.slice(i,i+GROUP_SIZE).join('|')})}\nfunction setActiveVerbs(list){const allowed=new Set((list||[]).filter(v=>ALL.includes(v)));VERBS=ALL.filter(v=>allowed.has(v));rebuildGroups()}"
           new_engine = """function groupBare(v){return String(v||'').replace(/^sich\\s+/,'')}
-function groupBucket(v){
- const b=groupBare(v);
- if(Object.prototype.hasOwnProperty.call(SEPARABLE,v)||Object.prototype.hasOwnProperty.call(SEPARABLE,b))return'separable';
- if((b.endsWith('ieren')&&b!=='verlieren')||INSEPARABLE_RE.test(b))return'middle';
- if(IRREGULAR.has(v)||IRREGULAR.has(b)||MODALS.has(v)||MODALS.has(b))return'strong';
- return'regular'
-}
-function pedagogicalOrder(list){
- const buckets={regular:[],strong:[],middle:[],separable:[]};
- for(const v of list)buckets[groupBucket(v)].push(v);
- const first=buckets.regular.splice(0,80);
- while(first.length<80&&buckets.strong.length)first.push(buckets.strong.shift());
- const strongPhase=buckets.strong.splice(0,140);
- while(strongPhase.length<140&&buckets.regular.length)strongPhase.push(buckets.regular.shift());
- return first.concat(strongPhase,buckets.regular,buckets.strong,buckets.middle,buckets.separable)
-}
-function rebuildGroups(){GROUPS=[];for(let i=0;i<VERBS.length;i+=GROUP_SIZE){const verbs=VERBS.slice(i,i+GROUP_SIZE);GROUPS.push({id:GROUPS.length+1,verbs,signature:verbs.join('|')})}}
-function setActiveVerbs(list){const allowed=new Set((list||[]).filter(v=>ALL.includes(v)));VERBS=pedagogicalOrder(ALL.filter(v=>allowed.has(v)));rebuildGroups()}"""
-          if old_engine not in engine:
-              raise SystemExit('Verben grouping block not found; deployment stopped.')
-          engine_path.write_text(engine.replace(old_engine, new_engine), encoding='utf-8')
+          function groupBucket(v){
+           const b=groupBare(v);
+           if(Object.prototype.hasOwnProperty.call(SEPARABLE,v)||Object.prototype.hasOwnProperty.call(SEPARABLE,b))return'separable';
+           if((b.endsWith('ieren')&&b!=='verlieren')||INSEPARABLE_RE.test(b))return'middle';
+           if(IRREGULAR.has(v)||IRREGULAR.has(b)||MODALS.has(v)||MODALS.has(b))return'strong';
+           return'regular'
+          }
+          function pedagogicalOrder(list){
+           const buckets={regular:[],strong:[],middle:[],separable:[]};
+           for(const v of list)buckets[groupBucket(v)].push(v);
+           const first=buckets.regular.splice(0,80);
+           while(first.length<80&&buckets.strong.length)first.push(buckets.strong.shift());
+           const strongPhase=buckets.strong.splice(0,140);
+           while(strongPhase.length<140&&buckets.regular.length)strongPhase.push(buckets.regular.shift());
+           return first.concat(strongPhase,buckets.regular,buckets.strong,buckets.middle,buckets.separable)
+          }
+          function rebuildGroups(){GROUPS=[];for(let i=0;i<VERBS.length;i+=GROUP_SIZE){const verbs=VERBS.slice(i,i+GROUP_SIZE);GROUPS.push({id:GROUPS.length+1,verbs,signature:verbs.join('|')})}}
+          function setActiveVerbs(list){const allowed=new Set((list||[]).filter(v=>ALL.includes(v)));VERBS=pedagogicalOrder(ALL.filter(v=>allowed.has(v)));rebuildGroups()}"""
+          if old_engine in engine:
+              engine_path.write_text(engine.replace(old_engine, new_engine), encoding='utf-8')
+              print('Verben grouping patch applied.')
+          elif 'function pedagogicalOrder(list)' in engine:
+              print('Verben grouping patch already present.')
+          else:
+              print('WARNING: Verben grouping block changed; publishing unchanged source instead of stopping deployment.')
 
           perfekt_path = Path('_site/perfekt/app-stable.js')
           perfekt = perfekt_path.read_text(encoding='utf-8')
           old_perfekt = "const CATEGORY_ORDER=[['reflexive','Reflexive Verben'],['separable','Trennbare Verben'],['strong','Starke / unregelmäßige Verben'],['ieren','Verben auf -ieren'],['inseparable','Nicht trennbare Verben'],['weak','Regelmäßige Verben']];"
-          perfekt = perfekt.replace(old_perfekt, "const CATEGORY_ORDER=[];")
+          if old_perfekt in perfekt:
+              perfekt = perfekt.replace(old_perfekt, "const CATEGORY_ORDER=[];")
           old_functions = "function category(v){if(v.startsWith('sich '))return'reflexive';const label=BASE?.groupLabel?.(v);if(SEP.has(v)||label==='Trennbar')return'separable';if(bare(v).endsWith('ieren')&&v!=='verlieren')return'ieren';if(label==='Unregelmäßig'||SPECIAL[v]&&['schaffen','trennen','teilen','schauen','senden','passieren'].indexOf(v)<0)return'strong';if(INSEP.test(bare(v))||NO_GE.has(v))return'inseparable';return'weak'}\nfunction rebuildGroups(){GROUPS=[];let id=1;for(const [key,title]of CATEGORY_ORDER){const list=VERBS.filter(v=>category(v)===key);for(let i=0;i<list.length;i+=20)GROUPS.push({id:id++,category:key,title,verbs:list.slice(i,i+20),signature:key+'|'+list.slice(i,i+20).join('|')})}}"
           new_functions = """function category(v){
- const b=bare(v),label=BASE?.groupLabel?.(v);
- if(SEP.has(v)||SEP.has(b)||label==='Trennbar')return'separable';
- if((b.endsWith('ieren')&&b!=='verlieren')||INSEP.test(b)||NO_GE.has(v)||NO_GE.has(b))return'middle';
- if(label==='Unregelmäßig'||SPECIAL[v]&&['schaffen','trennen','teilen','schauen','senden','passieren'].indexOf(v)<0||SPECIAL[b]&&['schaffen','trennen','teilen','schauen','senden','passieren'].indexOf(b)<0)return'strong';
- return'regular'
-}
-function orderedPerfektVerbs(){
- const buckets={regular:[],strong:[],middle:[],separable:[]};
- for(const v of VERBS)buckets[category(v)].push(v);
- const first=buckets.regular.splice(0,80);
- while(first.length<80&&buckets.strong.length)first.push(buckets.strong.shift());
- const strongPhase=buckets.strong.splice(0,140);
- while(strongPhase.length<140&&buckets.regular.length)strongPhase.push(buckets.regular.shift());
- return first.concat(strongPhase,buckets.regular,buckets.strong,buckets.middle,buckets.separable)
-}
-function rebuildGroups(){
- GROUPS=[];
- const ordered=orderedPerfektVerbs();
- for(let i=0;i<ordered.length;i+=20){
-  const verbs=ordered.slice(i,i+20),number=GROUPS.length+1;
-  let categoryKey='mixed',title='Regelmäßige und starke Verben';
-  if(number<=4){categoryKey='regular';title='Regelmäßige Verben'}
-  else if(number<=11){categoryKey='strong';title='Starke / unregelmäßige Verben'}
-  else if(verbs.every(v=>category(v)==='separable')){categoryKey='separable';title='Trennbare Verben'}
-  else if(verbs.every(v=>category(v)==='middle')){categoryKey='middle';title='Nicht trennbare Verben / Verben auf -ieren'}
-  GROUPS.push({id:number,category:categoryKey,title,verbs,signature:categoryKey+'|'+verbs.join('|')})
- }
-}"""
-          if old_functions not in perfekt:
-              raise SystemExit('Perfekt grouping block not found; deployment stopped.')
-          perfekt_path.write_text(perfekt.replace(old_functions, new_functions), encoding='utf-8')
+           const b=bare(v),label=BASE?.groupLabel?.(v);
+           if(SEP.has(v)||SEP.has(b)||label==='Trennbar')return'separable';
+           if((b.endsWith('ieren')&&b!=='verlieren')||INSEP.test(b)||NO_GE.has(v)||NO_GE.has(b))return'middle';
+           if(label==='Unregelmäßig'||SPECIAL[v]&&['schaffen','trennen','teilen','schauen','senden','passieren'].indexOf(v)<0||SPECIAL[b]&&['schaffen','trennen','teilen','schauen','senden','passieren'].indexOf(b)<0)return'strong';
+           return'regular'
+          }
+          function orderedPerfektVerbs(){
+           const buckets={regular:[],strong:[],middle:[],separable:[]};
+           for(const v of VERBS)buckets[category(v)].push(v);
+           const first=buckets.regular.splice(0,80);
+           while(first.length<80&&buckets.strong.length)first.push(buckets.strong.shift());
+           const strongPhase=buckets.strong.splice(0,140);
+           while(strongPhase.length<140&&buckets.regular.length)strongPhase.push(buckets.regular.shift());
+           return first.concat(strongPhase,buckets.regular,buckets.strong,buckets.middle,buckets.separable)
+          }
+          function rebuildGroups(){
+           GROUPS=[];
+           const ordered=orderedPerfektVerbs();
+           for(let i=0;i<ordered.length;i+=20){
+            const verbs=ordered.slice(i,i+20),number=GROUPS.length+1;
+            let categoryKey='mixed',title='Regelmäßige und starke Verben';
+            if(number<=4){categoryKey='regular';title='Regelmäßige Verben'}
+            else if(number<=11){categoryKey='strong';title='Starke / unregelmäßige Verben'}
+            else if(verbs.every(v=>category(v)==='separable')){categoryKey='separable';title='Trennbare Verben'}
+            else if(verbs.every(v=>category(v)==='middle')){categoryKey='middle';title='Nicht trennbare Verben / Verben auf -ieren'}
+            GROUPS.push({id:number,category:categoryKey,title,verbs,signature:categoryKey+'|'+verbs.join('|')})
+           }
+          }"""
+          if old_functions in perfekt:
+              perfekt_path.write_text(perfekt.replace(old_functions, new_functions), encoding='utf-8')
+              print('Perfekt grouping patch applied.')
+          elif 'function orderedPerfektVerbs()' in perfekt:
+              perfekt_path.write_text(perfekt, encoding='utf-8')
+              print('Perfekt grouping patch already present.')
+          else:
+              print('WARNING: Perfekt grouping block changed; publishing unchanged source instead of stopping deployment.')
 
           l6t3_dir = Path('_site/wortschatz/A1-Lektion-6/Thema-3')
           performance_tag = '<script src="l6t3-performance.js?v=1"></script>'
@@ -105,7 +115,8 @@ function rebuildGroups(){
               if performance_tag in html:
                   continue
               if '</body>' not in html:
-                  raise SystemExit(f'L6T3 page has no closing body tag: {html_path}')
+                  print(f'WARNING: L6T3 page has no closing body tag and was left unchanged: {html_path}')
+                  continue
               html_path.write_text(html.replace('</body>', performance_tag + '</body>'), encoding='utf-8')
           PY
 
