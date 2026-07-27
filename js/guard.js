@@ -71,10 +71,17 @@ if(!IS_L3T1&&!IS_L5&&!IS_L6T3){
   }catch(e){}
 }
 window.addEventListener("SP_PROFILE_SYNCED",()=>setTimeout(installHeaderOnce,0));
-import("/js/microphone-fallback.js?v=1").catch(()=>{});
-import("/js/back-button-fix.js?v=1").catch(()=>{});
+function delayedImport(src,delay){setTimeout(()=>import(src).catch(()=>{}),delay)}
+if(IS_L6T3){
+  delayedImport("/js/microphone-fallback.js?v=1",1200);
+  delayedImport("/js/back-button-fix.js?v=1",1600);
+  delayedImport("/js/sp-help-flow.js?v=1",1800);
+}else{
+  import("/js/microphone-fallback.js?v=1").catch(()=>{});
+  import("/js/back-button-fix.js?v=1").catch(()=>{});
+  import("/js/sp-help-flow.js?v=1").catch(()=>{});
+}
 if(!IS_L6T2)import("/js/release-helper.js?v=11").catch(()=>{});
-import("/js/sp-help-flow.js?v=1").catch(()=>{});
 if(IS_L3T1){
   import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-stability.js?v=3").catch(()=>{});
   import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-image-fix.js?v=3").catch(()=>{});
@@ -86,7 +93,7 @@ if(IS_L6T2){
   import("/wortschatz/A1-Lektion-6/Thema-2/l6t2-stability.js?v=1").catch(()=>{});
 }
 if(IS_L6T3){
-  import("/wortschatz/A1-Lektion-6/Thema-3/l6t3-theme-score-v2.js?v=1").catch(()=>{});
+  import("/wortschatz/A1-Lektion-6/Thema-3/l6t3-theme-score-v2.js?v=3").catch(()=>{});
 }
 if((IS_L6T4||IS_L7)&&!PERFORMANCE_SYNC_OFF){
   import(IS_L7?"/js/progress.js?v=l7-build1":"/js/progress.js?v=l6t4-build1").catch(()=>{});
