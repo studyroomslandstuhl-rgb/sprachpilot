@@ -46,21 +46,31 @@ jobs:
            if(IRREGULAR.has(v)||IRREGULAR.has(b)||MODALS.has(v)||MODALS.has(b))return'strong';
            return'regular'
           }
-          function pedagogicalOrder(list){
+          function bucketedVerbs(list){
            const buckets={regular:[],strong:[],middle:[],separable:[]};
            for(const v of list)buckets[groupBucket(v)].push(v);
-           const first=buckets.regular.splice(0,80);
-           while(first.length<80&&buckets.strong.length)first.push(buckets.strong.shift());
-           const strongPhase=buckets.strong.splice(0,140);
-           while(strongPhase.length<140&&buckets.regular.length)strongPhase.push(buckets.regular.shift());
-           return first.concat(strongPhase,buckets.regular,buckets.strong,buckets.middle,buckets.separable)
+           return buckets
           }
-          function rebuildGroups(){GROUPS=[];for(let i=0;i<VERBS.length;i+=GROUP_SIZE){const verbs=VERBS.slice(i,i+GROUP_SIZE);GROUPS.push({id:GROUPS.length+1,verbs,signature:verbs.join('|')})}}
+          function pedagogicalOrder(list){
+           const buckets=bucketedVerbs(list);
+           return buckets.regular.concat(buckets.strong,buckets.middle,buckets.separable)
+          }
+          function rebuildGroups(){
+           GROUPS=[];
+           const buckets=bucketedVerbs(VERBS);
+           for(const key of ['regular','strong','middle','separable']){
+            const list=buckets[key];
+            for(let i=0;i<list.length;i+=GROUP_SIZE){
+             const verbs=list.slice(i,i+GROUP_SIZE);
+             GROUPS.push({id:GROUPS.length+1,category:key,verbs,signature:key+'|'+verbs.join('|')})
+            }
+           }
+          }
           function setActiveVerbs(list){const allowed=new Set((list||[]).filter(v=>ALL.includes(v)));VERBS=pedagogicalOrder(ALL.filter(v=>allowed.has(v)));rebuildGroups()}"""
           if old_engine in engine:
               engine_path.write_text(engine.replace(old_engine, new_engine), encoding='utf-8')
               print('Verben grouping patch applied.')
-          elif 'function pedagogicalOrder(list)' in engine:
+          elif 'function bucketedVerbs(list)' in engine:
               print('Verben grouping patch already present.')
           else:
               print('WARNING: Verben grouping block changed; publishing unchanged source instead of stopping deployment.')
@@ -114,32 +124,31 @@ jobs:
            if(label==='Unregelmäßig'||SPECIAL[v]&&['schaffen','trennen','teilen','schauen','senden','passieren'].indexOf(v)<0||SPECIAL[b]&&['schaffen','trennen','teilen','schauen','senden','passieren'].indexOf(b)<0)return'strong';
            return'regular'
           }
-          function orderedPerfektVerbs(){
+          function perfektBuckets(){
            const buckets={regular:[],strong:[],middle:[],separable:[]};
            for(const v of VERBS)buckets[category(v)].push(v);
-           const first=buckets.regular.splice(0,80);
-           while(first.length<80&&buckets.strong.length)first.push(buckets.strong.shift());
-           const strongPhase=buckets.strong.splice(0,140);
-           while(strongPhase.length<140&&buckets.regular.length)strongPhase.push(buckets.regular.shift());
-           return first.concat(strongPhase,buckets.regular,buckets.strong,buckets.middle,buckets.separable)
+           return buckets
+          }
+          function orderedPerfektVerbs(){
+           const buckets=perfektBuckets();
+           return buckets.regular.concat(buckets.strong,buckets.middle,buckets.separable)
           }
           function rebuildGroups(){
            GROUPS=[];
-           const ordered=orderedPerfektVerbs();
-           for(let i=0;i<ordered.length;i+=20){
-            const verbs=ordered.slice(i,i+20),number=GROUPS.length+1;
-            let categoryKey='mixed',title='Regelmäßige und starke Verben';
-            if(number<=4){categoryKey='regular';title='Regelmäßige Verben'}
-            else if(number<=11){categoryKey='strong';title='Starke / unregelmäßige Verben'}
-            else if(verbs.every(v=>category(v)==='separable')){categoryKey='separable';title='Trennbare Verben'}
-            else if(verbs.every(v=>category(v)==='middle')){categoryKey='middle';title='Nicht trennbare Verben / Verben auf -ieren'}
-            GROUPS.push({id:number,category:categoryKey,title,verbs,signature:categoryKey+'|'+verbs.join('|')})
+           const buckets=perfektBuckets();
+           const titles={regular:'Regelmäßige Verben',strong:'Starke / unregelmäßige Verben',middle:'Nicht trennbare Verben / Verben auf -ieren',separable:'Trennbare Verben'};
+           for(const key of ['regular','strong','middle','separable']){
+            const list=buckets[key];
+            for(let i=0;i<list.length;i+=20){
+             const verbs=list.slice(i,i+20),number=GROUPS.length+1;
+             GROUPS.push({id:number,category:key,title:titles[key],verbs,signature:key+'|'+verbs.join('|')})
+            }
            }
           }"""
           if old_functions in perfekt:
               perfekt = perfekt.replace(old_functions, new_functions)
               print('Perfekt grouping patch applied.')
-          elif 'function orderedPerfektVerbs()' in perfekt:
+          elif 'function perfektBuckets()' in perfekt:
               print('Perfekt grouping patch already present.')
           else:
               print('WARNING: Perfekt grouping block changed; publishing unchanged source instead of stopping deployment.')
