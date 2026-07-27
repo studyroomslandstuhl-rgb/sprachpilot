@@ -97,6 +97,16 @@ function rebuildGroups(){
           if old_functions not in perfekt:
               raise SystemExit('Perfekt grouping block not found; deployment stopped.')
           perfekt_path.write_text(perfekt.replace(old_functions, new_functions), encoding='utf-8')
+
+          l6t3_dir = Path('_site/wortschatz/A1-Lektion-6/Thema-3')
+          performance_tag = '<script src="l6t3-performance.js?v=1"></script>'
+          for html_path in l6t3_dir.glob('*.html'):
+              html = html_path.read_text(encoding='utf-8')
+              if performance_tag in html:
+                  continue
+              if '</body>' not in html:
+                  raise SystemExit(f'L6T3 page has no closing body tag: {html_path}')
+              html_path.write_text(html.replace('</body>', performance_tag + '</body>'), encoding='utf-8')
           PY
 
       - name: Configure GitHub Pages
