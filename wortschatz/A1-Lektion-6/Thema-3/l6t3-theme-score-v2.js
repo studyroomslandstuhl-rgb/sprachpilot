@@ -3,8 +3,11 @@ const TOPIC_ID='wortschatz-a1-lektion-6-thema-3';
 const RUN_KEY='SP_SCORE_RUN_'+TOPIC_ID;
 const EXAM_FILE='pruefung.html';
 const VERSION=1;
+const TASK_QUEUE=new Map();
+const IS_OVERVIEW=/\/(?:index\.html)?$/.test(location.pathname)&&location.pathname.includes('/wortschatz/A1-Lektion-6/Thema-3/');
 let syncTimer=0;
 let syncing=false;
+let taskFlushTimer=0;
 
 function now(){return new Date().toISOString()}
 function clamp(value){return Math.max(0,Math.min(100,Math.round(Number(value)||0)))}
@@ -70,6 +73,7 @@ function writeLedger(ledger,{schedule=true,dispatch=true}={}){
 }
 function statePercent(state){if(!state||typeof state!=='object')return 0;if(state.completed===true||state.finished===true)return 100;const total=Math.max(0,Number(state.total)||0);const done=Array.isArray(state.done)?state.done.length:Math.max(0,Number(state.done)||0);return total?clamp(done/total*100):clamp(state.percent??state.progress)}
 function taskSnapshot(state){return{percent:statePercent(state),total:Math.max(0,Number(state&&state.total)||0),done:Array.isArray(state&&state.done)?state.done.length:Math.max(0,Number(state&&state.done)||0)}}
+function queuedSnapshot(state){return{total:Math.max(0,Number(state&&state.total)||0),done:Array.isArray(state&&state.done)?state.done.slice():Math.max(0,Number(state&&state.done)||0),completed:statePercent(state)>=100}}
 function applyTaskState(ledger,run,file,state,title=''){
  if(!file||file===EXAM_FILE)return false;
  const data=runData(ledger,run),snap=taskSnapshot(state),old=data.tasks[file]||{percent:0,completed:false,points:0,total:0,done:0};
@@ -79,9 +83,26 @@ function applyTaskState(ledger,run,file,state,title=''){
  if(changed){data.tasks[file]=next;data.updatedAt=now();ledger.pending.tasks[run+':'+file]=true}
  return changed;
 }
-function recordTask(file,state){if(isPreview()||file===EXAM_FILE)return readLedger();const ledger=readLedger();if(!applyTaskState(ledger,ledger.currentRun,file,state))return ledger;return writeLedger(ledger)}
+function recordTask(file,state,{dispatch=true,schedule=true}={}){if(isPreview()||file===EXAM_FILE)return readLedger();const ledger=readLedger();if(!applyTaskState(ledger,ledger.currentRun,file,state))return ledger;return writeLedger(ledger,{dispatch,schedule})}
+function queueTask(file,state){
+ if(isPreview()||!file||file===EXAM_FILE)return state;
+ TASK_QUEUE.set(String(file),queuedSnapshot(state));
+ clearTimeout(taskFlushTimer);
+ const delay=IS_OVERVIEW?250:(statePercent(state)>=100?1800:15000);
+ taskFlushTimer=setTimeout(()=>flushTaskQueue(),delay);
+ return state;
+}
+function flushTaskQueue(){
+ clearTimeout(taskFlushTimer);taskFlushTimer=0;
+ if(!TASK_QUEUE.size)return readLedger();
+ const entries=[...TASK_QUEUE.entries()];TASK_QUEUE.clear();
+ let ledger=null;
+ for(const [file,state] of entries)ledger=recordTask(file,state,{dispatch:IS_OVERVIEW,schedule:IS_OVERVIEW});
+ return ledger||readLedger();
+}
 function recordExam(result){
  if(isPreview())return readLedger();
+ flushTaskQueue();
  const ledger=readLedger(),run=ledger.currentRun,data=runData(ledger,run),percent=clamp(result&&result.percent);
  if(percent>=Number(data.examBestPercent||0)){data.examBestPercent=percent;data.examPoints=Math.round(examMax(run)*percent/100);data.examStars=Math.max(Number(data.examStars)||0,Number(result&&result.stars)||0)}
  data.completed=Number(data.examBestPercent||0)>=100;data.updatedAt=now();ledger.pending.exams[String(run)]=true;return writeLedger(ledger);
@@ -136,9 +157,10 @@ function startNextRun(){
 }
 function summary(){return summaryFromLedger(readLedger())}
 function summaryHtml(){const s=summary();if(s.preview)return '<div class="score-ledger-card"><div><b>Lehrer-Vorschau</b><div class="small">In der Vorschau werden keine Schülerpunkte vergeben.</div></div></div>';const next=s.currentRun<3?s.currentRun+1:null;return '<div class="score-ledger-card"><div><b>Punkterunde '+s.currentRun+' von 3</b><div class="small">Aufgaben: '+s.runTaskPoints+' Punkte · Prüfung: '+s.runExamPoints+' Punkte</div></div><div class="score-ledger-total">Gesamt: '+s.lifetimePoints+' Punkte</div>'+(s.pending?'<div class="small">Synchronisierung vorgemerkt</div>':'')+(s.canRepeat?'<div class="actions"><button class="btn" type="button" onclick="L6T3ThemeScore.startNextRun()">Thema wiederholen – Runde '+next+' starten</button></div>':'')+'</div>'}
-async function ensureProgressApi(){if(window.SPProgress&&typeof window.SPProgress.recordTaskProgress==='function')return window.SPProgress;try{await import('/js/progress.js?v=l6t3-score2')}catch(e){return null}return window.SPProgress||null}
+async function ensureProgressApi(){if(window.SPProgress&&typeof window.SPProgress.recordTaskProgress==='function')return window.SPProgress;try{await import('/js/progress.js?v=l6t3-score3')}catch(e){return null}return window.SPProgress||null}
 async function syncFirebase(){
  if(isPreview()||syncing)return false;
+ if(IS_OVERVIEW)flushTaskQueue();
  const ledger=readLedger(),taskKeys=Object.keys(ledger.pending.tasks||{}),examKeys=Object.keys(ledger.pending.exams||{});if(!taskKeys.length&&!examKeys.length)return true;
  const api=await ensureProgressApi();if(!api)return false;syncing=true;let ok=true;
  try{
@@ -149,13 +171,12 @@ async function syncFirebase(){
  return ok;
 }
 function runIdle(callback,timeout=1200){if('requestIdleCallback'in window)requestIdleCallback(()=>callback(),{timeout});else setTimeout(callback,80)}
-function scheduleSync(){clearTimeout(syncTimer);syncTimer=setTimeout(()=>runIdle(syncFirebase,2500),1200)}
+function scheduleSync(){if(!IS_OVERVIEW)return;clearTimeout(syncTimer);syncTimer=setTimeout(()=>runIdle(syncFirebase,4000),1800)}
 function install(){
- if(typeof window.syncTask==='function')window.syncTask=function(file,state){return recordTask(file,state)};
- window.L6T3ThemeScore={read:readLedger,recordTask,recordExam,reconcile,summary,summaryHtml,resetPractice,startNextRun,syncFirebase,taskPoints,examMax,isProtectedKey,ledgerKey:LEDGER_KEY,runKey:RUN_KEY};
- runIdle(reconcile,700);
- window.addEventListener('online',scheduleSync);
- window.addEventListener('pagehide',()=>{try{localStorage.setItem(RUN_KEY,String(readLedger().currentRun))}catch(e){}});
- setTimeout(scheduleSync,1800);
+ if(typeof window.syncTask==='function')window.syncTask=function(file,state){return queueTask(file,state)};
+ window.L6T3ThemeScore={read:readLedger,recordTask,queueTask,flushTaskQueue,recordExam,reconcile,summary,summaryHtml,resetPractice,startNextRun,syncFirebase,taskPoints,examMax,isProtectedKey,ledgerKey:LEDGER_KEY,runKey:RUN_KEY};
+ if(IS_OVERVIEW){runIdle(reconcile,1000);window.addEventListener('online',scheduleSync);setTimeout(scheduleSync,2200)}
+ window.addEventListener('pagehide',()=>{try{flushTaskQueue();localStorage.setItem(RUN_KEY,String(readLedger().currentRun))}catch(e){}});
+ document.addEventListener('visibilitychange',()=>{if(document.hidden)try{flushTaskQueue()}catch(e){}});
 }
 install();
