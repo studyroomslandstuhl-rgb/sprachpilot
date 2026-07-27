@@ -17,12 +17,35 @@ const options=(answer,index)=>{const other=names.filter(value=>value!==answer),s
 const items=[];
 rows.forEach(([answer,audioFile],index)=>items.push({phase:'choice',kind:'choice',prompt:'Welche Aktivität hörst du?',answer,options:options(answer,index),audioFile}));
 rows.forEach(([answer,audioFile])=>items.push({phase:'produce',kind:'input',prompt:'Welche Aktivität hörst du?',answer,answers:[String(answer).replace(/^die\s+/i,'')],audioFile}));
+
+const phrase='auf jeden Fall';
+const normalized=value=>String(value||'').trim().toLowerCase().replace(/[.!?;,]/g,'');
+const isPhrase=value=>normalized(value)===phrase;
+function addPhraseToTheme(theme){
+ const tasks=theme.tasks||[];
+ const cardTask=tasks.find(task=>Array.isArray(task.items)&&task.items.some(item=>item&&item.word&&item.meaning))||tasks.find(task=>task.kind==='cards'||/karteikarten|wortschatz|wörter/i.test(String(task.title||'')));
+ if(cardTask){
+  cardTask.items=Array.isArray(cardTask.items)?cardTask.items:[];
+  if(!cardTask.items.some(item=>isPhrase(item?.word)))cardTask.items.push({word:'auf jeden Fall',meaning:'ganz sicher; in jedem Fall',image:'auf_jeden_fall.webp',audio:'auf jeden Fall',example:'Ich komme auf jeden Fall.'});
+ }
+ const practiceTask=tasks.find(task=>{
+  if(task.exam||task===cardTask||!Array.isArray(task.items))return false;
+  const label=`${task.title||''} ${task.description||''}`;
+  return /wollen|möchten|dialog|reaktion|redemittel|antwort/i.test(label)&&task.items.some(item=>(item.kind||task.kind)==='choice')
+ });
+ if(practiceTask&&!practiceTask.items.some(item=>isPhrase(item?.answer))){
+  practiceTask.items.push({kind:'choice',context:'Mara: Kommst du morgen zum Konzert?\nTim: Ja, ich komme ___.',prompt:'Welche Redewendung passt?',answer:'auf jeden Fall',options:['auf jeden Fall','vielleicht','leider','gar nicht'],hint:'Tim ist ganz sicher.'});
+ }
+}
+
 window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(()=>{
  const theme=window.L7_THEME;if(!theme||!Array.isArray(theme.tasks))return theme;
- if(theme.tasks.some(task=>task.id==='hoeren-erkennen'))return theme;
- const entry={id:'hoeren-erkennen',title:'Hören und Erkennen',icon:'🔉',description:'Höre Geräusche und erkenne die Aktivitäten.',external:'hoeren-erkennen.html?v=l7t1-sound1',items};
- const examIndex=theme.tasks.findIndex(task=>task.exam);
- if(examIndex>=0)theme.tasks.splice(examIndex,0,entry);else theme.tasks.push(entry);
+ addPhraseToTheme(theme);
+ if(!theme.tasks.some(task=>task.id==='hoeren-erkennen')){
+  const entry={id:'hoeren-erkennen',title:'Hören und Erkennen',icon:'🔉',description:'Höre Geräusche und erkenne die Aktivitäten.',external:'hoeren-erkennen.html?v=l7t1-sound1',items};
+  const examIndex=theme.tasks.findIndex(task=>task.exam);
+  if(examIndex>=0)theme.tasks.splice(examIndex,0,entry);else theme.tasks.push(entry)
+ }
  return theme
 });
 })();
