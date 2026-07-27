@@ -7,11 +7,7 @@ if(typeof original!=='function')return;
 window.l6t4MatchedMenu=function(){
  const result=original.apply(this,arguments);
  document.querySelectorAll('a[href*="task.html?task=dialog-abc"]').forEach(link=>{
-  try{
-   const url=new URL(link.getAttribute('href'),location.href);
-   url.searchParams.set('v','l6t4-dialog13-3');
-   link.setAttribute('href',url.pathname.split('/').pop()+url.search)
-  }catch(e){}
+  link.setAttribute('href','dialoge.html?v=l6t4-dialoge1');
  });
  return result
 };
