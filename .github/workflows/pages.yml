@@ -68,12 +68,26 @@ jobs:
           perfekt_path = Path('_site/perfekt/app-stable.js')
           perfekt = perfekt_path.read_text(encoding='utf-8')
           old_participle = "function participle(v){if(SPECIAL[v])return SPECIAL[v];const b=bare(v);if(SPECIAL[b])return SPECIAL[b];if(b.endsWith('ieren'))return regularPart(b,false);if(INSEP.test(b)||NO_GE.has(v)||NO_GE.has(b)||/^(über|unter)/.test(b))return regularPart(b,false);return regularPart(b,true)}"
-          new_participle = """const SEPARABLE_PREFIXES=['spazieren ','zurück','zusammen','dabei','kennen','hinzu','heraus','hinein','herüber','hinüber','weiter','wieder','vorbei','fest','statt','teil','fern','auf','aus','ein','an','ab','mit','vor','zu','um','los','hin','her','weg','über','unter','durch','leid'];
+          new_participle = """const SEPARABLE_PARTICIPLES={
+           'aufräumen':'aufgeräumt','einkaufen':'eingekauft','anrufen':'angerufen','fernsehen':'ferngesehen','anfangen':'angefangen',
+           'aussterben':'ausgestorben','aufmachen':'aufgemacht','zumachen':'zugemacht','mitgeben':'mitgegeben','mitnehmen':'mitgenommen',
+           'aufstehen':'aufgestanden','anziehen':'angezogen','ausziehen':'ausgezogen','einsteigen':'eingestiegen','aussteigen':'ausgestiegen',
+           'umsteigen':'umgestiegen','ankommen':'angekommen','abfahren':'abgefahren','ausfüllen':'ausgefüllt','anmelden':'angemeldet',
+           'mitkommen':'mitgekommen','zurückkommen':'zurückgekommen','abbiegen':'abgebogen','abholen':'abgeholt','ausleihen':'ausgeliehen',
+           'vorhaben':'vorgehabt','aufgeben':'aufgegeben','zuhören':'zugehört','zusehen':'zugesehen','abschreiben':'abgeschrieben',
+           'vorlesen':'vorgelesen','ausfallen':'ausgefallen','aufbacken':'aufgebacken','austauschen':'ausgetauscht','ablenken':'abgelenkt',
+           'absagen':'abgesagt','abraten':'abgeraten','vorschlagen':'vorgeschlagen','aussuchen':'ausgesucht','vorstellen':'vorgestellt',
+           'losfahren':'losgefahren','dabeihaben':'dabeigehabt','leidtun':'leidgetan','kennenlernen':'kennengelernt','einladen':'eingeladen',
+           'hinweisen':'hingewiesen','auffallen':'aufgefallen','einfallen':'eingefallen','hinzufügen':'hinzugefügt','umziehen':'umgezogen',
+           'spazieren gehen':'spazieren gegangen'
+          };
+          const SEPARABLE_PREFIXES=['spazieren ','zurück','zusammen','dabei','kennen','hinzu','heraus','hinein','herüber','hinüber','weiter','wieder','vorbei','fest','statt','teil','fern','auf','aus','ein','an','ab','mit','vor','zu','um','los','hin','her','weg','über','unter','durch','leid'];
           function baseParticiple(v){if(SPECIAL[v])return SPECIAL[v];if(v.endsWith('ieren'))return regularPart(v,false);if(INSEP.test(v)||NO_GE.has(v)||/^(über|unter)/.test(v))return regularPart(v,false);return regularPart(v,true)}
           function participle(v){
            if(SPECIAL[v])return SPECIAL[v];
            const b=bare(v);
            if(SPECIAL[b])return SPECIAL[b];
+           if(SEPARABLE_PARTICIPLES[b])return SEPARABLE_PARTICIPLES[b];
            const label=BASE?.groupLabel?.(v)||BASE?.groupLabel?.(b);
            if(SEP.has(v)||SEP.has(b)||label==='Trennbar'){
             const prefix=SEPARABLE_PREFIXES.find(part=>b.startsWith(part)&&b.length>part.length);
@@ -84,7 +98,7 @@ jobs:
           if old_participle in perfekt:
               perfekt = perfekt.replace(old_participle, new_participle)
               print('Perfekt separable-participle patch applied.')
-          elif 'const SEPARABLE_PREFIXES=' in perfekt:
+          elif 'const SEPARABLE_PARTICIPLES=' in perfekt:
               print('Perfekt separable-participle patch already present.')
           else:
               print('WARNING: Perfekt participle block changed; publishing unchanged participle source.')
