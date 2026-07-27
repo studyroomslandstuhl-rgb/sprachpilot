@@ -21,12 +21,26 @@ rows.forEach(([answer,audioFile])=>items.push({phase:'produce',kind:'input',prom
 const phrase='auf jeden Fall';
 const normalized=value=>String(value||'').trim().toLowerCase().replace(/[.!?;,]/g,'');
 const isPhrase=value=>normalized(value)===phrase;
+function migrateSavedTotal(task,oldTotal){
+ if(!task?.id||task.items.length===oldTotal)return;
+ const newTotal=task.items.length,newIndex=oldTotal,suffix=`_T1_${task.id}`;
+ for(const storage of[localStorage,sessionStorage]){
+  const keys=[];for(let i=0;i<storage.length;i++){const key=String(storage.key(i)||'');if((key.startsWith('SP_L7_')||key.startsWith('SP_L7_PREVIEW_'))&&key.endsWith(suffix))keys.push(key)}
+  keys.forEach(key=>{try{
+   const state=JSON.parse(storage.getItem(key)||'null');if(!state||Number(state.total)!==oldTotal)return;
+   state.total=newTotal;state.done=Array.isArray(state.done)?state.done:[];state.queue=Array.isArray(state.queue)?state.queue:[];
+   if(!state.done.includes(newIndex)&&state.current!==newIndex&&!state.queue.includes(newIndex))state.queue.push(newIndex);
+   storage.setItem(key,JSON.stringify(state))
+  }catch(e){}})
+ }
+}
+function appendItem(task,item){const oldTotal=task.items.length;task.items.push(item);migrateSavedTotal(task,oldTotal)}
 function addPhraseToTheme(theme){
  const tasks=theme.tasks||[];
  const cardTask=tasks.find(task=>Array.isArray(task.items)&&task.items.some(item=>item&&item.word&&item.meaning))||tasks.find(task=>task.kind==='cards'||/karteikarten|wortschatz|wörter/i.test(String(task.title||'')));
  if(cardTask){
   cardTask.items=Array.isArray(cardTask.items)?cardTask.items:[];
-  if(!cardTask.items.some(item=>isPhrase(item?.word)))cardTask.items.push({word:'auf jeden Fall',meaning:'ganz sicher; in jedem Fall',image:'auf_jeden_fall.webp',audio:'auf jeden Fall',example:'Ich komme auf jeden Fall.'});
+  if(!cardTask.items.some(item=>isPhrase(item?.word)))appendItem(cardTask,{word:'auf jeden Fall',meaning:'ganz sicher; in jedem Fall',image:'auf_jeden_fall.webp',audio:'auf jeden Fall',example:'Ich komme auf jeden Fall.'});
  }
  const practiceTask=tasks.find(task=>{
   if(task.exam||task===cardTask||!Array.isArray(task.items))return false;
@@ -34,7 +48,7 @@ function addPhraseToTheme(theme){
   return /wollen|möchten|dialog|reaktion|redemittel|antwort/i.test(label)&&task.items.some(item=>(item.kind||task.kind)==='choice')
  });
  if(practiceTask&&!practiceTask.items.some(item=>isPhrase(item?.answer))){
-  practiceTask.items.push({kind:'choice',context:'Mara: Kommst du morgen zum Konzert?\nTim: Ja, ich komme ___.',prompt:'Welche Redewendung passt?',answer:'auf jeden Fall',options:['auf jeden Fall','vielleicht','leider','gar nicht'],hint:'Tim ist ganz sicher.'});
+  appendItem(practiceTask,{kind:'choice',context:'Mara: Kommst du morgen zum Konzert?\nTim: Ja, ich komme ___.',prompt:'Welche Redewendung passt?',answer:'auf jeden Fall',options:['auf jeden Fall','vielleicht','leider','gar nicht'],hint:'Tim ist ganz sicher.'});
  }
 }
 
