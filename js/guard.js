@@ -1,11 +1,14 @@
-import "/js/sp-assets.js?v=3";
-import "/js/sp-image-guard.js?v=4";
 import "/js/session-restore.js?v=1";
 import { requireLogin, logout } from "/js/auth.js";
 import { installSpHeader } from "/js/sp-header.js";
+const path=location.pathname;
+const IS_L6T3_PATH=path.includes("/wortschatz/A1-Lektion-6/Thema-3/");
+if(!IS_L6T3_PATH){
+  import("/js/sp-assets.js?v=3").catch(()=>{});
+  import("/js/sp-image-guard.js?v=4").catch(()=>{});
+}
 window.logout=logout;
 const SP_USER=requireLogin();
-const path=location.pathname;
 const qs=new URLSearchParams(location.search);
 if(qs.has("nofirebase"))localStorage.setItem("SP_NO_FIREBASE_SYNC","1");
 if(qs.has("firebase"))localStorage.removeItem("SP_NO_FIREBASE_SYNC");
@@ -19,7 +22,7 @@ const IS_L3T1=path.includes("/wortschatz/A1-Lektion-3/Thema-1/");
 const IS_L3T2=path.includes("/wortschatz/A1-Lektion-3/Thema-2/");
 const IS_L5=path.includes("/wortschatz/A1-Lektion-5/");
 const IS_L6T2=path.includes("/wortschatz/A1-Lektion-6/Thema-2/");
-const IS_L6T3=path.includes("/wortschatz/A1-Lektion-6/Thema-3/");
+const IS_L6T3=IS_L6T3_PATH;
 const IS_L6T4=path.includes("/wortschatz/A1-Lektion-6/Thema-4/");
 const IS_L7=path.includes("/wortschatz/A1-Lektion-7/");
 const HAS_OWN_PROGRESS_SYSTEM=IS_L3T2||IS_L5||IS_L6T2||IS_L6T3||IS_L6T4||IS_L7;
@@ -97,8 +100,10 @@ if(NEEDS_EXAM_UNLOCK_FIX&&!PERFORMANCE_SYNC_OFF){
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
 if(FULL_FIREBASE){
   if(!LIGHT_FIREBASE_PAGE)setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).catch(()=>{})},1500);
-  const scoringDelay=IS_L5?1800:300;
-  setTimeout(()=>{import("/js/scoring.js?v=10").catch(()=>{})},scoringDelay);
+  if(!IS_L6T3){
+    const scoringDelay=IS_L5?1800:300;
+    setTimeout(()=>{import("/js/scoring.js?v=10").catch(()=>{})},scoringDelay);
+  }
 }
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){setTimeout(()=>import("/wortschatz/index-release-lock.js?v=12").catch(()=>{}),900)}
 if(!PERFORMANCE_SYNC_OFF&&IS_FRAGEN_EXERCISE){
