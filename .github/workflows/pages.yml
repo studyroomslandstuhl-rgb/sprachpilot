@@ -67,6 +67,28 @@ jobs:
 
           perfekt_path = Path('_site/perfekt/app-stable.js')
           perfekt = perfekt_path.read_text(encoding='utf-8')
+          old_participle = "function participle(v){if(SPECIAL[v])return SPECIAL[v];const b=bare(v);if(SPECIAL[b])return SPECIAL[b];if(b.endsWith('ieren'))return regularPart(b,false);if(INSEP.test(b)||NO_GE.has(v)||NO_GE.has(b)||/^(über|unter)/.test(b))return regularPart(b,false);return regularPart(b,true)}"
+          new_participle = """const SEPARABLE_PREFIXES=['spazieren ','zurück','zusammen','dabei','kennen','hinzu','heraus','hinein','herüber','hinüber','weiter','wieder','vorbei','fest','statt','teil','fern','auf','aus','ein','an','ab','mit','vor','zu','um','los','hin','her','weg','über','unter','durch','leid'];
+          function baseParticiple(v){if(SPECIAL[v])return SPECIAL[v];if(v.endsWith('ieren'))return regularPart(v,false);if(INSEP.test(v)||NO_GE.has(v)||/^(über|unter)/.test(v))return regularPart(v,false);return regularPart(v,true)}
+          function participle(v){
+           if(SPECIAL[v])return SPECIAL[v];
+           const b=bare(v);
+           if(SPECIAL[b])return SPECIAL[b];
+           const label=BASE?.groupLabel?.(v)||BASE?.groupLabel?.(b);
+           if(SEP.has(v)||SEP.has(b)||label==='Trennbar'){
+            const prefix=SEPARABLE_PREFIXES.find(part=>b.startsWith(part)&&b.length>part.length);
+            if(prefix)return prefix+baseParticiple(b.slice(prefix.length))
+           }
+           return baseParticiple(b)
+          }"""
+          if old_participle in perfekt:
+              perfekt = perfekt.replace(old_participle, new_participle)
+              print('Perfekt separable-participle patch applied.')
+          elif 'const SEPARABLE_PREFIXES=' in perfekt:
+              print('Perfekt separable-participle patch already present.')
+          else:
+              print('WARNING: Perfekt participle block changed; publishing unchanged participle source.')
+
           old_perfekt = "const CATEGORY_ORDER=[['reflexive','Reflexive Verben'],['separable','Trennbare Verben'],['strong','Starke / unregelmäßige Verben'],['ieren','Verben auf -ieren'],['inseparable','Nicht trennbare Verben'],['weak','Regelmäßige Verben']];"
           if old_perfekt in perfekt:
               perfekt = perfekt.replace(old_perfekt, "const CATEGORY_ORDER=[];")
@@ -101,13 +123,13 @@ jobs:
            }
           }"""
           if old_functions in perfekt:
-              perfekt_path.write_text(perfekt.replace(old_functions, new_functions), encoding='utf-8')
+              perfekt = perfekt.replace(old_functions, new_functions)
               print('Perfekt grouping patch applied.')
           elif 'function orderedPerfektVerbs()' in perfekt:
-              perfekt_path.write_text(perfekt, encoding='utf-8')
               print('Perfekt grouping patch already present.')
           else:
               print('WARNING: Perfekt grouping block changed; publishing unchanged source instead of stopping deployment.')
+          perfekt_path.write_text(perfekt, encoding='utf-8')
 
           l6t3_dir = Path('_site/wortschatz/A1-Lektion-6/Thema-3')
           performance_tag = '<script src="l6t3-performance.js?v=3"></script>'
