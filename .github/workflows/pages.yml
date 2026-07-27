@@ -110,17 +110,22 @@ jobs:
               print('WARNING: Perfekt grouping block changed; publishing unchanged source instead of stopping deployment.')
 
           l6t3_dir = Path('_site/wortschatz/A1-Lektion-6/Thema-3')
-          performance_tag = '<script src="l6t3-performance.js?v=2"></script>'
+          performance_tag = '<script src="l6t3-performance.js?v=3"></script>'
+          old_performance_pattern = re.compile(r'<script src="l6t3-performance\.js\?v=\d+"></script>')
+          app_pattern = re.compile(r'(<script src="app\.js\?v=[^"]+"></script>)')
           guard_pattern = re.compile(r'<script type="module" src="/js/guard\.js\?v=[^"]+"></script>')
-          guard_tag = '<script type="module" src="/js/guard.js?v=l6t3-performance3"></script>'
+          guard_tag = '<script type="module" src="/js/guard.js?v=l6t3-performance4"></script>'
           for html_path in l6t3_dir.glob('*.html'):
               html = html_path.read_text(encoding='utf-8')
               html = guard_pattern.sub(guard_tag, html)
+              html = old_performance_pattern.sub('', html)
               if performance_tag not in html:
-                  if '</body>' not in html:
-                      print(f'WARNING: L6T3 page has no closing body tag and was left unchanged: {html_path}')
-                      continue
-                  html = html.replace('</body>', performance_tag + '</body>')
+                  if app_pattern.search(html):
+                      html = app_pattern.sub(r'\1' + performance_tag, html, count=1)
+                  elif '</body>' in html:
+                      html = html.replace('</body>', performance_tag + '</body>')
+                  else:
+                      print(f'WARNING: L6T3 page has no app script or closing body tag: {html_path}')
               html_path.write_text(html, encoding='utf-8')
           PY
 
