@@ -23,8 +23,11 @@ window.l6t4LanguageName=()=>LANGUAGE_NAMES[languageKey()]||'Englisch';
 window.l6t4Translation=translation;
 
 function rebuildMeta(){
- const source=window.L6T4_USER_META||[];
+ const rawSource=window.L6T4_USER_META||[];
+ const source=rawSource.map(entry=>entry.id==='exam'?{...entry,title:'Prüfung',icon:'⭐'}:entry);
  if(!source.length||typeof L6T4_META==='undefined'||typeof L6T4_TASKS==='undefined')return;
+ const examTask=window.L6T4_DATA?.tasks?.find(item=>item.id==='exam');
+ if(examTask){examTask.title='Prüfung';examTask.icon='⭐'}
  const build=entry=>{
   const current=window.L6T4_DATA?.tasks?.find(item=>item.id===entry.id);
   const file=entry.external||`task.html?task=${encodeURIComponent(entry.id)}`;
