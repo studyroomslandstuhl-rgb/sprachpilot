@@ -33,6 +33,7 @@ jobs:
           rsync -a --exclude='.git' --exclude='.github' --exclude='_site' ./ _site/
           python - <<'PY'
           from pathlib import Path
+          import re
 
           engine_path = Path('_site/verben/engine.js')
           engine = engine_path.read_text(encoding='utf-8')
@@ -109,15 +110,18 @@ jobs:
               print('WARNING: Perfekt grouping block changed; publishing unchanged source instead of stopping deployment.')
 
           l6t3_dir = Path('_site/wortschatz/A1-Lektion-6/Thema-3')
-          performance_tag = '<script src="l6t3-performance.js?v=1"></script>'
+          performance_tag = '<script src="l6t3-performance.js?v=2"></script>'
+          guard_pattern = re.compile(r'<script type="module" src="/js/guard\.js\?v=[^"]+"></script>')
+          guard_tag = '<script type="module" src="/js/guard.js?v=l6t3-performance3"></script>'
           for html_path in l6t3_dir.glob('*.html'):
               html = html_path.read_text(encoding='utf-8')
-              if performance_tag in html:
-                  continue
-              if '</body>' not in html:
-                  print(f'WARNING: L6T3 page has no closing body tag and was left unchanged: {html_path}')
-                  continue
-              html_path.write_text(html.replace('</body>', performance_tag + '</body>'), encoding='utf-8')
+              html = guard_pattern.sub(guard_tag, html)
+              if performance_tag not in html:
+                  if '</body>' not in html:
+                      print(f'WARNING: L6T3 page has no closing body tag and was left unchanged: {html_path}')
+                      continue
+                  html = html.replace('</body>', performance_tag + '</body>')
+              html_path.write_text(html, encoding='utf-8')
           PY
 
       - name: Configure GitHub Pages
