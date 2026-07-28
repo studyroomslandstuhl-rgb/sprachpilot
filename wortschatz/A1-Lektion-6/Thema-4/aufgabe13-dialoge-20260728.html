@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Aufgabe 13 · Dialoge</title>
+<link rel="stylesheet" href="style.css?v=aufgabe13-20260728">
+<link rel="stylesheet" href="l6t4-dialog13.css?v=aufgabe13-20260728">
+<style>
+.dialog13-release{max-width:980px;margin:0 auto}.dialog13-release .task-title-block{margin-bottom:16px}.dialog13-release .release-mark{display:inline-block;margin-top:8px;padding:5px 10px;border-radius:999px;background:#fff3bf;color:#765000;font-size:12px;font-weight:900}.dialog13-release .dialog13-audio{margin:18px 0}.dialog13-release audio{width:100%}.dialog13-release .dialog13-question{margin:20px 0;padding:18px;border:2px solid #ead28a;border-radius:18px;background:#fffdf4}.dialog13-release .dialog13-question h2{margin:0 0 14px;font-size:1.15rem}.dialog13-release .dialog13-options{display:grid;gap:10px}.dialog13-release .option{display:flex;align-items:center;gap:12px;width:100%;text-align:left}.dialog13-release .option.selected{outline:3px solid rgba(190,136,0,.25);border-color:#bd8700;background:#fff5c7}.dialog13-release .abc-letter{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;border-radius:50%;background:#f4d66e;font-weight:900}.dialog13-release .actions{display:flex;justify-content:center;margin-top:22px}.dialog13-release .audio-load-error{padding:12px;border-radius:12px;background:#fde0dc;color:#a62618;font-weight:800}.dialog13-release .finish-box{text-align:center;padding:30px}.dialog13-release .task-progress-row{display:flex;justify-content:space-between;gap:12px;margin:12px 0 8px}.dialog13-release .progress{height:12px;border-radius:999px;background:#eee;overflow:hidden}.dialog13-release .progress .bar{height:100%;background:#e6b832}.dialog13-release .dialog13-page-label{text-align:center;font-weight:900;color:#765000;margin:10px 0 4px}@media(max-width:600px){.dialog13-release .dialog13-question{padding:14px}.dialog13-release .option{padding:12px}.dialog13-release .task-progress-row{font-size:14px}}
+</style>
+</head>
+<body>
+<div class="container dialog13-release">
+<header class="topbar" id="topbar"></header>
+<section class="card" id="area"><p>Aufgabe 13 wird geladen …</p></section>
+<footer>© SprachPilot</footer>
+</div>
+<script type="module" src="/js/guard.js?v=aufgabe13-20260728"></script>
+<script>
+(function(){
+'use strict';
+const RELEASE='aufgabe13-dialoge-20260728';
+const FILE='task-dialog-abc';
+const KEY='SP_L6_T4_V2_'+FILE;
+const AUDIO='https://sprachpilot.b-cdn.net/audio/';
+const area=document.getElementById('area');
+const topbar=document.getElementById('topbar');
+const DIALOGS=[
+ {audio:AUDIO+'l6t4-aufgabe13-dialog-01.mp3',questions:[
+  {prompt:'Was macht Omar am Vormittag?',answer:'Er arbeitet.',options:['Er fährt Fahrrad.','Er arbeitet.','Er spielt Backgammon.']},
+  {prompt:'Wo treffen sich Lea und Omar?',answer:'Am Bahnhof.',options:['Am See.','Am Bahnhof.','Vor Omars Arbeit.']},
+  {prompt:'Was machen sie bei Regen?',answer:'Sie gehen in ein Café und spielen.',options:['Sie fahren mit dem Fahrrad.','Sie gehen nach Hause.','Sie gehen in ein Café und spielen.']}
+ ]},
+ {audio:AUDIO+'l6t4-aufgabe13-dialog-02.mp3',questions:[
+  {prompt:'Warum sehen Mara und Tom nicht den Krimi?',answer:'Tom kann nicht pünktlich da sein.',options:['Mara mag keine Krimis.','Tom kann nicht pünktlich da sein.','Der Krimi beginnt erst um 21 Uhr.']},
+  {prompt:'Wer kauft die Kinokarten?',answer:'Mara.',options:['Mara.','Tom.','Paul.']},
+  {prompt:'Was machen Mara und Tom nach dem Film?',answer:'Sie besuchen ein Konzert.',options:['Sie gehen direkt nach Hause.','Sie fahren Fahrrad.','Sie besuchen ein Konzert.']}
+ ]},
+ {audio:AUDIO+'l6t4-aufgabe13-dialog-03.mp3',questions:[
+  {prompt:'Was macht Jonas vor dem Grillen?',answer:'Er geht schwimmen.',options:['Er geht schwimmen.','Er arbeitet.','Er trifft Mara im Café.']},
+  {prompt:'Was soll Jonas mitbringen?',answer:'Brot und Wasser.',options:['Fleisch und Kartoffeln.','Brot und Wasser.','Einen Salat und Kaffee.']},
+  {prompt:'Warum hat Nina auch viel Gemüse gekauft?',answer:'Ahmed isst kein Fleisch.',options:['Jonas mag kein Brot.','Mara möchte nur Salat.','Ahmed isst kein Fleisch.']}
+ ]},
+ {audio:AUDIO+'l6t4-aufgabe13-dialog-04.mp3',questions:[
+  {prompt:'Warum sucht Sofia ein neues Hobby?',answer:'Sie findet ihre Freizeit im Internet langweilig.',options:['Sie möchte weniger arbeiten.','Sie findet ihre Freizeit im Internet langweilig.','Sie möchte einen neuen Beruf finden.']},
+  {prompt:'Wann treffen sich Sofia und Paul?',answer:'Um 17:45 Uhr.',options:['Um 17:45 Uhr.','Um 17 Uhr.','Um 18:20 Uhr.']},
+  {prompt:'Was ist für Sofia beim ersten Besuch wichtig?',answer:'Sie hat Spaß.',options:['Sie kann schon gut tanzen.','Sie bringt 30 Euro mit.','Sie hat Spaß.']}
+ ]},
+ {audio:AUDIO+'l6t4-aufgabe13-dialog-05.mp3',questions:[
+  {prompt:'Wo haben Anna und Daniel zuletzt mit dem Würfel gespielt?',answer:'Im Café.',options:['Im Park.','Im Café.','Bei Daniel zu Hause.']},
+  {prompt:'Wo hat der Kellner den Würfel gefunden?',answer:'Unter einem Stuhl.',options:['Unter einem Stuhl.','In Annas Tasche.','Neben der Kasse.']},
+  {prompt:'Was machen Anna und Daniel danach?',answer:'Sie gehen zu Daniel und spielen weiter.',options:['Sie gehen wieder in den Park.','Sie fahren mit dem Fahrrad.','Sie gehen zu Daniel und spielen weiter.']}
+ ]}
+];
+const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
+const exact=(a,b)=>String(a||'').trim().toLowerCase()===String(b||'').trim().toLowerCase();
+function preview(){
+ const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();
+ if(role==='teacher')return true;
+ try{return JSON.parse(sessionStorage.getItem('SP_TEACHER_PREVIEW')||'null')?.teacherPreview===true}catch(e){return false}
+}
+const store=()=>preview()?sessionStorage:localStorage;
+function freshState(){return{release:RELEASE,total:5,done:[],queue:[0,1,2,3,4],current:null,tries:0,needsRepeat:[]}}
+function load(){
+ try{
+  const value=JSON.parse(store().getItem(KEY)||'null');
+  if(value&&value.total===5&&Array.isArray(value.done)&&Array.isArray(value.queue))return{...freshState(),...value,needsRepeat:Array.isArray(value.needsRepeat)?value.needsRepeat:[]};
+ }catch(e){}
+ return freshState();
+}
+let state=load(),selections={};
+function save(){if(!preview())store().setItem(KEY,JSON.stringify(state))}
+function ensureCurrent(){if(state.current===null||state.current===undefined){state.current=state.queue.shift();state.tries=0;save()}return state.current}
+function header(){
+ let profile={};try{profile=JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{}}catch(e){}
+ const name=[profile.vorname||profile.firstName,profile.nachname||profile.lastName].filter(Boolean).join(' ')||'Schüler/in';
+ const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();
+ const dashboard=role==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';
+ topbar.innerHTML='<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">Dialoge · A1 Lektion 6 · Thema 4</div></div></a><div class="account-tools"><span class="account-pill">'+esc(name)+'</span><a class="account-link" href="'+dashboard+'">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="index.html?v=aufgabe13-20260728">← Zurück</a></nav>';
+}
+function progress(){const percent=Math.round(state.done.length/5*100);return'<div class="task-progress-row"><span>'+state.done.length+' fehlerfrei · '+(5-state.done.length)+' übrig</span><strong>'+percent+'%</strong></div><div class="progress"><div class="bar" style="width:'+percent+'%"></div></div>'}
+function feedback(){
+ if(state.tries===1)return'<div class="feedback no">Noch nicht richtig. Höre den Dialog noch einmal und prüfe alle drei Antworten.</div>';
+ if(state.tries===2)return'<div class="feedback hint"><strong>Hinweis:</strong> Achte auf Zeiten, Orte und Gründe.</div>';
+ if(state.tries>=3){const d=DIALOGS[state.current];return'<div class="feedback no"><strong>Lösungen:</strong>'+d.questions.map((q,i)=>'<br>'+(i+1)+'. '+esc(q.answer)).join('')+'<br>Der Dialog kommt später noch einmal.</div>'}
+ return'';
+}
+function question(q,index){return'<section class="dialog13-question"><h2>'+(index+1)+'. '+esc(q.prompt)+'</h2><div class="dialog13-options">'+q.options.map((option,i)=>'<button type="button" class="option" data-question="'+index+'" data-value="'+esc(option)+'"><span class="abc-letter">'+String.fromCharCode(65+i)+'</span><span>'+esc(option)+'</span></button>').join('')+'</div></section>'}
+function render(){
+ if(state.done.length>=5)return finish();
+ const index=ensureCurrent(),dialog=DIALOGS[index];
+ if(!dialog){state=freshState();save();return render()}
+ selections={};
+ area.innerHTML='<div class="task-title-block"><span class="task-number">Aufgabe 13</span><h1>Dialoge</h1><span class="release-mark">Neue Aufgabe 13</span></div>'+progress()+'<div class="task-instruction">Höre den Dialog und beantworte alle drei Fragen.</div><div class="dialog13-page-label">Dialog '+(index+1)+' von 5</div><div class="dialog13-audio"><audio controls playsinline preload="metadata" src="'+esc(dialog.audio)+'"></audio><div class="audio-load-error" hidden>Die Audiodatei konnte nicht geladen werden.</div></div>'+dialog.questions.map(question).join('')+'<div class="actions"><button class="btn" type="button" id="check" disabled>Kontrollieren</button></div><div id="feedback">'+feedback()+'</div>';
+ const audio=area.querySelector('audio');audio?.addEventListener('error',()=>{audio.hidden=true;audio.nextElementSibling.hidden=false},{once:true});
+}
+function select(button){
+ const question=Number(button.dataset.question);selections[question]=button.dataset.value;
+ area.querySelectorAll('[data-question="'+question+'"]').forEach(item=>item.classList.toggle('selected',item===button));
+ document.getElementById('check').disabled=Object.keys(selections).length<3;
+}
+function check(){
+ const index=state.current,dialog=DIALOGS[index];
+ if(!dialog||Object.keys(selections).length<3)return;
+ const correct=dialog.questions.every((q,i)=>exact(selections[i],q.answer));
+ if(!correct){state.tries++;if(!state.needsRepeat.includes(index))state.needsRepeat.push(index);save();return render()}
+ if(state.needsRepeat.includes(index)&&state.tries>0){state.queue.push(index)}else{if(!state.done.includes(index))state.done.push(index);state.needsRepeat=state.needsRepeat.filter(x=>x!==index)}
+ state.current=null;state.tries=0;save();setTimeout(render,350);
+}
+function finish(){area.innerHTML='<div class="finish-box"><h2>Aufgabe 13 fertig</h2><p>Du hast alle fünf Dialoge fehlerfrei bearbeitet.</p><a class="btn" href="task.html?task=phrases&v=aufgabe13-20260728">Weiter zu Aufgabe 14</a></div>'}
+area.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(button.dataset.question!==undefined)return select(button);if(button.id==='check')check()});
+header();render();
+})();
+</script>
+</body>
+</html>
