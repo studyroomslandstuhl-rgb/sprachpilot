@@ -1,0 +1,54 @@
+name: Bind L4T4 score
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/l4t4-bind-score.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Bind score script to all L4T4 pages
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('wortschatz/A1-Lektion-4/Thema-4')
+          tag = '<script src="l4t4-theme-score.js?v=1"></script>'
+          changed = []
+
+          for path in sorted(root.glob('*.html')):
+              text = path.read_text(encoding='utf-8')
+              if 'l4t4-theme-score.js' in text:
+                  continue
+              pattern = r'(<script\s+src="\.\./shared/lektion4-standard\.js\?v=[^"]+"\s*></script>)'
+              patched, count = re.subn(pattern, r'\1' + tag, text, count=1)
+              if not count:
+                  print(f'No standard-script anchor in {path}')
+                  continue
+              path.write_text(patched, encoding='utf-8')
+              changed.append(str(path))
+
+          print('Changed files:')
+          print('\n'.join(changed))
+          PY
+      - name: Commit patched L4T4 pages
+        run: |
+          if git diff --quiet; then
+            echo "No changes"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add wortschatz/A1-Lektion-4/Thema-4/*.html
+          git commit -m "Enable points and progress across L4T4"
+          git push
