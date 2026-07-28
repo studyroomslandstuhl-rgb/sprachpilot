@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__L6T4_USER_UI_20260727)return;
-window.__L6T4_USER_UI_20260727=true;
+if(window.__L6T4_USER_UI_20260728_TASK13)return;
+window.__L6T4_USER_UI_20260728_TASK13=true;
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 function profile(){try{return typeof l6t4Profile==='function'?(l6t4Profile()||{}):JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{}}catch(e){return{}}}
 function languageKey(){
@@ -24,15 +24,28 @@ window.l6t4Translation=translation;
 
 function rebuildMeta(){
  const rawSource=window.L6T4_USER_META||[];
- const source=rawSource.map(entry=>entry.id==='exam'?{...entry,title:'Prüfung',icon:'⭐'}:entry);
+ const source=rawSource.map(entry=>{
+  if(entry.id==='exam')return{...entry,title:'Prüfung',icon:'⭐'};
+  if(entry.id==='dialog-abc')return{
+   ...entry,
+   number:'13',
+   title:'Dialoge',
+   icon:'🎧',
+   description:'Höre einen Dialog und beantworte alle drei Fragen.',
+   external:'dialoge.html?v=l6t4-dialoge3',
+   key:'task-dialog-abc',
+   total:5
+  };
+  return entry
+ });
  if(!source.length||typeof L6T4_META==='undefined'||typeof L6T4_TASKS==='undefined')return;
  const examTask=window.L6T4_DATA?.tasks?.find(item=>item.id==='exam');
  if(examTask){examTask.title='Prüfung';examTask.icon='⭐'}
  const build=entry=>{
   const current=window.L6T4_DATA?.tasks?.find(item=>item.id===entry.id);
   const file=entry.external||`task.html?task=${encodeURIComponent(entry.id)}`;
-  const key=entry.external||`task-${entry.id}`;
-  const total=entry.id==='plural'?(window.L6T4PluralItems?.length||0):(current?.items?.length||0);
+  const key=entry.key||entry.external||`task-${entry.id}`;
+  const total=entry.total??(entry.id==='plural'?(window.L6T4PluralItems?.length||0):(current?.items?.length||0));
   return{...entry,file,key,total,exam:entry.id==='exam'};
  };
  L6T4_META.splice(0,L6T4_META.length,...source);
@@ -52,7 +65,11 @@ function headerHtml(title,showReset=false){
 window.l6t4Header=function(title,showReset=false){const header=document.querySelector('.topbar');if(header)header.innerHTML=headerHtml(title,showReset)};
 window.l6t4MatchedHeader=window.l6t4Header;
 
-function taskHref(task){const separator=task.file.includes('?')?'&':'?';return`${task.file}${separator}v=l6t4-user1`}
+function taskHref(task){
+ if(task.id==='dialog-abc')return task.file;
+ const separator=task.file.includes('?')?'&':'?';
+ return`${task.file}${separator}v=l6t4-user2`
+}
 window.l6t4MatchedMenu=function(){
  rebuildMeta();
  const grid=document.getElementById('taskGrid'),circle=document.getElementById('totalCircle'),text=document.getElementById('totalText'),bar=document.getElementById('totalBar');
