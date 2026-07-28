@@ -1,33 +1,32 @@
 const L6T4_CFG={key:'SP_L6_T4_V2',topicId:'wortschatz-a1-lektion-6-thema-4',title:'A1 Lektion 6 · Thema 4'};
 const L6T4_META=[
- {id:'cards',number:'1',title:'Karteikarten',icon:'🃏',description:'Wörter wie bei L6T3 lernen.'},
- {id:'image-word',number:'2',title:'Bedeutung → Wort',icon:'💡',description:'Bedeutung lesen und Wort wählen.'},
- {id:'word-image',number:'3',title:'Bild → Wort',icon:'🖼️',description:'Nur das Bild sehen und das Wort wählen.'},
- {id:'listen-image',number:'4',title:'Hören → Bild',icon:'🎧',description:'Wort hören und nur ein Bild wählen.'},
- {id:'article',number:'5',title:'Nomen aus Lektion 6',icon:'der',description:'Alle Nomen aus Lektion 6 mit Artikel.'},
- {id:'plural',number:'6',title:'Plural: Nomen aus Lektion 6',icon:'🎤',description:'Nur Nomen aus Lektion 6.',external:'plural-sprechen.html'},
- {id:'sound-activity',number:'7',title:'Geräusche und Aktivitäten',icon:'🔉',description:'15 eindeutig hörbare Aktivitäten.'},
- {id:'noun-verb',number:'8',title:'Nomen und Verb verbinden',icon:'↔️',description:'Nur Nomen und passende Verben.'},
- {id:'phrases',number:'9',title:'Redemittel und Bedeutung',icon:'💬',description:'15 Gesprächsbausteine verstehen.'},
- {id:'nehmen',number:'10',title:'nehmen in Dialogen',icon:'☕',description:'15 Formen von nehmen.'},
- {id:'yes-no-doch',number:'11',title:'ja, nein oder doch?',icon:'↩️',description:'15 passende Kurzantworten.'},
- {id:'doch-answer',number:'12',title:'Mit doch antworten',icon:'DOCH',description:'Name oder Pronomen wird akzeptiert.'},
- {id:'dialog-rf',number:'13',title:'Dialoge: richtig oder falsch',icon:'✓✗',description:'Echte Dialoge in Sprechblasen.'},
- {id:'dialog-abc',number:'14',title:'Dialoge: passende Information',icon:'ABC',description:'15 Fragen zu Alltagsdialogen.'},
- {id:'gaps',number:'15',title:'Dialoge ergänzen',icon:'▤',description:'15 natürliche Gesprächsbeiträge.'},
- {id:'write-dialog',number:'16/17',title:'Schreibaufgabe: Freizeitdialog',icon:'✍️',description:'Eine klare Schreibaufgabe mit Beispiel.'},
- {id:'listen-abc',number:'18',title:'Hörverstehen',icon:'🎧',description:'15 vollständige A1-Transkripte.'},
- {id:'finden',number:'19',title:'finden: zwei Bedeutungen',icon:'🔍',description:'15 Sätze unterscheiden.'},
- {id:'questions',number:'20',title:'Hobbys und Lieblingssachen',icon:'❓',description:'15 Fragen und Antworten.'},
- {id:'singular-plural',number:'21',title:'Hobby: Singular und Plural',icon:'1↔2',description:'15 Varianten üben.'},
- {id:'profile',number:'22',title:'Mein Freizeitprofil',icon:'👤',description:'Klare Schreibaufgabe mit Länge und Vorgaben.'},
- {id:'exam',number:'23',title:'Themenprüfung',icon:'⭐',description:'15 gemischte Aufgaben.'}
+ {id:'cards',number:'1',title:'Karteikarten',icon:'🃏',description:'Lerne die Wörter.'},
+ {id:'image-word',number:'2',title:'Bedeutung → Wort',icon:'💡',description:'Finde das Wort.'},
+ {id:'word-image',number:'3',title:'Bild → Wort',icon:'🖼️',description:'Finde das Wort.'},
+ {id:'listen-image',number:'4',title:'Hören → Bild',icon:'🎧',description:'Höre das Wort und finde das Bild.'},
+ {id:'article',number:'5',title:'Artikel',icon:'der',description:'Wähle den passenden Artikel.'},
+ {id:'plural',number:'6',title:'Plural',icon:'🎤',description:'Bilde die Pluralform mit Artikel.',external:'plural-sprechen.html'},
+ {id:'sound-activity',number:'7',title:'Hören und Erkennen',icon:'🔉',description:'Höre und erkenne die Aktivität.'},
+ {id:'noun-verb',number:'8',title:'Nomen-Verb-Verbindungen',icon:'↔️',description:'Finde das passende Verb.'},
+ {id:'nehmen',number:'9',title:'Verb „nehmen“',icon:'☕',description:'Finde die richtige Form von „nehmen“.'},
+ {id:'yes-no-doch',number:'10',title:'Ja, Nein oder Doch',icon:'↩️',description:'Wähle die passende Antwort.'},
+ {id:'doch-answer',number:'11',title:'Doch',icon:'DOCH',description:'Widersprich der Aussage.'},
+ {id:'dialog-rf',number:'12',title:'Dialoge – richtig oder falsch',icon:'✓✗',description:'Lies den Dialog und entscheide.',external:'task.html?task=dialog-rf&number=12'},
+ {id:'dialog-abc',number:'13',title:'Dialoge',icon:'🎧',description:'Höre einen Dialog und beantworte alle drei Fragen.',external:'dialoge.html?v=l6t4-dialoge4',key:'task-dialog-abc',total:5},
+ {id:'phrases',number:'14',title:'Reagieren',icon:'💬',description:'Wähle die passende Antwort.'},
+ {id:'gaps',number:'15',title:'Dialoge ergänzen',icon:'▤',description:'Ergänze den Dialog.'},
+ {id:'listen-abc',number:'16',title:'Hören und Verstehen',icon:'🎧',description:'Höre den Dialog und entscheide A, B oder C.'},
+ {id:'phrase-reaction',number:'17',title:'Hören und Reagieren',icon:'🎧💬',description:'Höre und antworte passend.'},
+ {id:'finden',number:'18',title:'Bedeutungen von „finden“',icon:'🔍',description:'Unterscheide Meinung und Aktivität.'},
+ {id:'questions',number:'19',title:'Hobbys und Lieblingssachen',icon:'❓',description:'Finde die passende Antwort.'},
+ {id:'singular-plural',number:'20',title:'Hobby',icon:'1↔2',description:'Wähle die richtige Frage oder Antwort.'},
+ {id:'exam',number:'21',title:'Themenprüfung',icon:'⭐',description:'Zeige, was du gelernt hast.'}
 ];
 const L6T4_TASKS=L6T4_META.map(meta=>{
  const task=window.L6T4_DATA?.tasks?.find(item=>item.id===meta.id);
  const file=meta.external||`task.html?task=${encodeURIComponent(meta.id)}`;
- const key=meta.external||`task-${meta.id}`;
- const total=meta.id==='plural'?(window.L6T4PluralItems?.length||0):(task?.items?.length||0);
+ const key=meta.key||meta.external||`task-${meta.id}`;
+ const total=meta.total??(meta.id==='plural'?(window.L6T4PluralItems?.length||0):(task?.items?.length||0));
  return {...meta,file,key,total,exam:meta.id==='exam'};
 });
 function l6t4Profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')}catch(e){return null}}
