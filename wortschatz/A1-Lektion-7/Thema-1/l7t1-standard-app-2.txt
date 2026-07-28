@@ -1,0 +1,80 @@
+ if(kind==='audio-file-choice'||kind==='audio-file-produce')media+=fileAudio(item);
+ const prompt=kind==='cards'?'':`<h2 class="question">${esc(item.prompt||item.meaning||'Was ist richtig?')}</h2>`;
+ let body='';
+ if(kind==='choice'||kind==='audio-file-choice')body=options(item.options||[],item);
+ else if(kind==='image-choice')body=imageOptions(item.options||[]);
+ else if(kind==='input')body=answerInput('Schreibe die vollständige Antwort.');
+ else if(kind==='order')body=orderBody(item);
+ else if(kind==='speak'||kind==='produce'||kind==='audio-produce'||kind==='audio-file-produce')body=productionBody(kind==='produce'?'Pluralform mit Artikel':'Deine Antwort');
+ else if(kind==='free')body=freeBody(item);
+ else body=answerInput('Schreibe die Antwort.');
+ return`<div class="question-card">${media}${prompt}${body}<div id="feedback" class="feedback">${help(item,task)}</div><div id="tech"></div></div>`
+}
+function options(list,item){
+ const values=S.shuffle(list);
+ const abc=values.length===3||item.abc===true;
+ return`<div class="option-grid ${abc?'abc-list':''}">${values.map((value,index)=>`<button class="option" type="button" data-answer="${esc(value)}">${abc?`<span class="abc-letter">${String.fromCharCode(65+index)}</span>`:''}<span>${esc(value)}</span></button>`).join('')}</div>`
+}
+function imageOptions(list){
+ return`<div class="image-choice-grid">${S.shuffle(list).map(option=>`<button class="image-option" type="button" data-answer="${esc(option.label)}">${image(option.image,option.label,true)}<span class="sr-only">${esc(option.label)}</span></button>`).join('')}</div>`
+}
+function answerInput(label){
+ return`<div class="answer-area"><label for="answerInput">${esc(label)}</label><div class="answer-row"><input id="answerInput" autocomplete="off" autocapitalize="sentences"><button class="btn" type="button" data-action="check-input">Kontrollieren</button></div></div>`
+}
+function productionBody(label){
+ return`<div class="mode-actions"><button class="btn" type="button" data-action="mic">🎤 Sprechen</button><button class="btn secondary" type="button" data-action="open-write">✍️ Schreiben</button></div><div id="writePanel" class="write-panel" hidden>${answerInput(label)}</div>`
+}
+function orderBody(item){
+ return`<div class="order-answer" id="orderAnswer"><span>Klicke die Wörter in der richtigen Reihenfolge an.</span></div><div class="token-grid">${S.shuffle(item.tokens||[]).map((token,index)=>`<button class="token" type="button" data-token="${esc(token)}" data-token-index="${index}">${esc(token)}</button>`).join('')}</div><div class="actions centered"><button class="btn" type="button" data-action="check-order">Kontrollieren</button><button class="btn secondary" type="button" data-action="undo-order">Zurück</button><button class="btn ghost" type="button" data-action="reset-order">Neu</button></div>`
+}
+function freeBody(item){
+ const state=S.load(R.task.id,R.task.items.length),draft=String(state.answers?.[`free:${R.index}`]||'');
+ return`<div class="free-panel"><label for="freeAnswer">Deine Antwort</label><textarea id="freeAnswer" rows="6" placeholder="Schreibe vollständige Sätze.">${esc(draft)}</textarea><p class="small">Mindestens ${item.minWords||5} Wörter.</p><div class="actions centered"><button class="btn" type="button" data-action="save-free">Speichern und weiter</button></div></div>`
+}
+function textAudio(item){
+ return`<div class="audio-task"><button class="btn secondary" type="button" id="textAudioButton" data-action="text-audio">🔊 Anhören</button><div id="transcript" class="transcript" hidden>${esc(item.transcript||item.audio||'')}</div></div>`
+}
+function fileAudio(item){
+ const src=CDN+encodeURIComponent(item.audioFile||'');
+ return`<div class="audio-task"><audio controls preload="metadata" src="${src}"></audio><p class="small">Du kannst das Geräusch mehrmals hören.</p></div>`
+}
+function technical(message){const target=document.getElementById('tech');if(target)target.innerHTML=`<div class="hint">${esc(message)}</div>`}
+function bind(task,item){
+ root.onclick=event=>{
+  const button=event.target.closest('button');if(!button)return;
+  if(button.dataset.answer!==undefined)return submit(button.dataset.answer);
+  if(button.dataset.token!==undefined)return addToken(button);
+  const action=button.dataset.action;
+  if(action==='check-input')return submit(document.getElementById('answerInput')?.value||'');
+  if(action==='check-order')return submit(R.order.join(' '));
+  if(action==='undo-order')return undoOrder();
+  if(action==='reset-order')return resetOrder();
+  if(action==='open-write')return openWrite();
+  if(action==='mic')return startMic(item);
+  if(action==='card-audio')return S.sayWord(item.word,false,()=>technical('Die Audiofunktion ist nicht verfügbar.'));
+  if(action==='word-audio')return S.sayWord(item.audio||item.answer,false,()=>technical('Die Audiofunktion ist nicht verfügbar.'));
+  if(action==='text-audio')return cycleTextAudio(item);
+  if(action==='card-next')return skipRevealedCard();
+  if(action==='save-free')return saveFree(item);
+  if(action==='repeat-exam')return repeatExam(task)
+ };
+ const card=document.getElementById('flipCard');
+ card?.addEventListener('click',event=>{if(event.target.closest('button'))return;revealCard(item)});
+ card?.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();revealCard(item)}});
+ document.getElementById('answerInput')?.addEventListener('keydown',event=>{if(event.key==='Enter')submit(event.target.value)});
+ document.getElementById('freeAnswer')?.addEventListener('input',event=>saveDraft(event.target.value))
+}
+function submit(value){
+ const task=R.task,item=task.items[R.index];
+ if(R.busy||!String(value||'').trim())return;
+ const ok=correct(item,value,task);
+ S.attempt(task.id,task.items.length,R.index,ok);
+ if(ok)return markRight();
+ return task.exam?examWrong(item):normalWrong()
+}
+function normalWrong(){S.wrong(R.task.id,R.task.items.length);renderTask()}
+function markRight(){
+ const task=R.task,state=S.load(task.id,task.items.length),repeat=state.hadWrong||state.tries>0;
+ R.busy=true;S.right(task.id,task.items.length,{forceDone:!!task.exam});
+ disableArea();
+ const feedback=document.getElementById('feedback');
