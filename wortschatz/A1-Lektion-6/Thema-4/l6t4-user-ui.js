@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__L6T4_USER_UI_20260728_TASK13)return;
-window.__L6T4_USER_UI_20260728_TASK13=true;
+if(window.__L6T4_USER_UI_20260728_TASK13_V2)return;
+window.__L6T4_USER_UI_20260728_TASK13_V2=true;
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 function profile(){try{return typeof l6t4Profile==='function'?(l6t4Profile()||{}):JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{}}catch(e){return{}}}
 function languageKey(){
@@ -26,13 +26,21 @@ function rebuildMeta(){
  const rawSource=window.L6T4_USER_META||[];
  const source=rawSource.map(entry=>{
   if(entry.id==='exam')return{...entry,title:'Prüfung',icon:'⭐'};
+  if(entry.id==='dialog-rf')return{
+   ...entry,
+   number:'12',
+   title:'Dialoge – richtig oder falsch',
+   icon:'✓✗',
+   description:'Lies den Dialog und entscheide.',
+   external:'task.html?task=dialog-rf&number=12'
+  };
   if(entry.id==='dialog-abc')return{
    ...entry,
    number:'13',
    title:'Dialoge',
    icon:'🎧',
    description:'Höre einen Dialog und beantworte alle drei Fragen.',
-   external:'dialoge.html?v=l6t4-dialoge3',
+   external:'dialoge.html?v=l6t4-dialoge4',
    key:'task-dialog-abc',
    total:5
   };
@@ -60,15 +68,15 @@ function headerHtml(title,showReset=false){
  const p=profile(),name=`${p.vorname||p.firstName||''} ${p.nachname||p.lastName||''}`.trim()||'Schüler/in';
  const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();
  const dashboard=role==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';
- return`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · ${esc(L6T4_CFG.title)}</div></div></a><div class="account-tools"><span class="account-pill">${esc(name)}</span><a class="account-link" href="${dashboard}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="${backHref()}">← Zurück</a><a class="btn secondary" href="uebersicht.html?v=l6t4-overview3">Übersicht</a>${showReset?'<button class="btn danger-btn" type="button" onclick="l6t4Reset()">Fortschritte löschen</button>':''}</nav>`;
+ return`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · ${esc(L6T4_CFG.title)}</div></div></a><div class="account-tools"><span class="account-pill">${esc(name)}</span><a class="account-link" href="${dashboard}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="${backHref()}">← Zurück</a><a class="btn secondary" href="uebersicht.html?v=l6t4-overview4">Übersicht</a>${showReset?'<button class="btn danger-btn" type="button" onclick="l6t4Reset()">Fortschritte löschen</button>':''}</nav>`;
 }
 window.l6t4Header=function(title,showReset=false){const header=document.querySelector('.topbar');if(header)header.innerHTML=headerHtml(title,showReset)};
 window.l6t4MatchedHeader=window.l6t4Header;
 
 function taskHref(task){
- if(task.id==='dialog-abc')return task.file;
+ if(task.id==='dialog-abc'||task.id==='dialog-rf')return task.file;
  const separator=task.file.includes('?')?'&':'?';
- return`${task.file}${separator}v=l6t4-user2`
+ return`${task.file}${separator}v=l6t4-user4`
 }
 window.l6t4MatchedMenu=function(){
  rebuildMeta();
