@@ -4,8 +4,9 @@ import { installSpHeader } from "/js/sp-header.js";
 const path=location.pathname;
 const IS_L6T3_PATH=path.includes("/wortschatz/A1-Lektion-6/Thema-3/");
 if(!IS_L6T3_PATH){
-  import("/js/sp-assets.js?v=3").catch(()=>{});
-  import("/js/sp-image-guard.js?v=4").catch(()=>{});
+  import("/js/sp-teacher-unlocked.js?v=1").catch(()=>{});
+  import("/js/sp-assets.js?v=4").catch(()=>{});
+  import("/js/sp-image-guard.js?v=5").catch(()=>{});
 }
 window.logout=logout;
 const SP_USER=requireLogin();
