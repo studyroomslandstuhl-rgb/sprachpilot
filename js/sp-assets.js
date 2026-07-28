@@ -1,3 +1,5 @@
+try{import('/js/sp-teacher-unlocked.js?v=1').catch(function(){});}catch(e){}
+try{import('/js/sp-image-guard.js?v=5').catch(function(){});}catch(e){}
 try{import('/js/sp-progress-standard.js?v=3').catch(function(){});}catch(e){}
 const SP_BUNNY_BASE="https://sprachpilot.b-cdn.net";
 window.SP_ASSET_BASE=SP_BUNNY_BASE;
