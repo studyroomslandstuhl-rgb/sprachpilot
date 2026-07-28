@@ -113,7 +113,7 @@ const href=(group=0,task='',view='')=>{const q=new URLSearchParams();if(group)q.
 const go=o=>{history.pushState(null,'',href(o.group,o.task,o.view));render()};
 function image(v,compact=false){return`<div class="verb-image ${compact?'compact':''}"><img src="${esc(imageUrl(v))}" alt="Bild zu ${esc(v)}" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="image-fallback" hidden><strong>${esc(v)}</strong></div></div>`}
 const RECORDED_AUDIO_BASE='https://sprachpilot.b-cdn.net/audio/';
-const RECORDED_AUDIO_SPECIAL={'hat gefallen':'hat_gefallen.mp3','ist gefallen':'ist_gefallen.mp3','hat vergessen':'hat_vergessen.mp3'};
+const RECORDED_AUDIO_SPECIAL={'hat bekommen':'hat_bekommen.mp3','hat gefallen':'hat_gefallen.mp3','ist gefallen':'ist_gefallen.mp3','hat vergessen':'hat_vergessen.mp3'};
 let activeRecordedAudio=null;
 const audioSlug=value=>String(value||'').toLowerCase().trim().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
 function computerSpeak(text,slow=false){if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=slow?.55:.92;speechSynthesis.speak(u)}
