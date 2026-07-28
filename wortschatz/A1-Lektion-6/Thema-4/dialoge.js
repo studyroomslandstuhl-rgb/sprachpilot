@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 const FILE='task-dialog-abc';
-const VERSION='l6t4-dialoge-standalone1';
+const VERSION='l6t4-dialoge-standalone2';
 const AUDIO='https://sprachpilot.b-cdn.net/audio/';
 const area=document.getElementById('area');
 if(!area)return;
@@ -82,7 +82,7 @@ function render(){
  if(!dialog){storage().removeItem(key());prepareState();activeIndex=null;selections={};render();return}
  if(typeof l6t4MatchedHeader==='function')l6t4MatchedHeader('Dialoge');else if(typeof l6t4Header==='function')l6t4Header('Dialoge');
  document.title='Aufgabe 13 · Dialoge';
- area.innerHTML='<div class="task-title-block"><span class="task-number">Aufgabe 13</span><h1>Dialoge</h1></div>'+l6t4Progress(FILE,DIALOGS.length)+'<div class="task-instruction">Höre den Dialog und beantworte alle drei Fragen.</div><div class="dialog13-audio"><audio controls preload="metadata" src="'+esc(dialog.audio)+'"></audio><div class="audio-load-error" hidden>Die Audiodatei konnte nicht geladen werden.</div></div><div class="dialog13-page-label">Dialog '+dialog.number+' von '+DIALOGS.length+'</div><div class="dialog13-question-list">'+dialog.questions.map(questionHtml).join('')+'</div><div class="actions centered"><button class="btn" type="button" data-check disabled>Kontrollieren</button></div><div id="feedback" class="feedback">'+feedback(dialog)+'</div><div id="tech"></div>';
+ area.innerHTML='<div class="task-title-block"><span class="task-number">Aufgabe 13</span><h1>Dialoge</h1></div>'+l6t4Progress(FILE,DIALOGS.length)+'<div class="task-instruction">Höre den Dialog und beantworte alle drei Fragen.</div><div class="dialog13-audio"><audio controls playsinline preload="metadata" src="'+esc(dialog.audio)+'"></audio><div class="audio-load-error" hidden>Die Audiodatei konnte nicht geladen werden.</div></div><div class="dialog13-page-label">Dialog '+dialog.number+' von '+DIALOGS.length+'</div><div class="dialog13-question-list">'+dialog.questions.map(questionHtml).join('')+'</div><div class="actions centered"><button class="btn" type="button" data-check disabled>Kontrollieren</button></div><div id="feedback" class="feedback">'+feedback(dialog)+'</div><div id="tech"></div>';
  const audio=area.querySelector('audio');
  audio?.addEventListener('error',()=>{audio.hidden=true;const error=audio.nextElementSibling;if(error)error.hidden=false},{once:true});
 }
@@ -108,7 +108,7 @@ function check(){
  l6t4Wrong(FILE,DIALOGS.length);selections={};render();
 }
 function finish(){
- l6t4Complete(area,'task.html?task=phrases&v=l6t4-dialoge1','Du hast alle fünf Dialoge fehlerfrei bearbeitet.');
+ l6t4Complete(area,'task.html?task=phrases&v=l6t4-dialoge2','Du hast alle fünf Dialoge fehlerfrei bearbeitet.');
 }
 area.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;if(button.dataset.question!==undefined){select(button);return}if(button.hasAttribute('data-check'))check()});
 prepareState();
