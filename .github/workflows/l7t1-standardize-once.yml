@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
   push:
     branches:
-      - l7t1-full-standardization
+      - main
     paths:
       - '.github/workflows/l7t1-standardize-once.yml'
 
