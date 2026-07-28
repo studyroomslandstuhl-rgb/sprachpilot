@@ -1,0 +1,68 @@
+name: Fix Perfekt Speech And Audio Once
+
+on:
+  push:
+    branches:
+      - main
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      - name: Patch active Perfekt source
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('perfekt/app-stable.js')
+          source = path.read_text(encoding='utf-8')
+
+          norm_line = "const norm=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\\u0300-\\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:\"'`´()]/g,'').replace(/\\s+/g,' ');"
+          norm_new = norm_line + "\nconst answerNorm=v=>norm(v).replace(/\\s+/g,'');"
+          if 'const answerNorm=' not in source:
+              if norm_line not in source:
+                  raise SystemExit('Perfekt norm function not found')
+              source = source.replace(norm_line, norm_new, 1)
+
+          old_speak = "function speak(text,slow=false){if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=slow?.55:.92;speechSynthesis.speak(u)}"
+          new_speak = """const RECORDED_AUDIO_BASE='https://sprachpilot.b-cdn.net/audio/';
+          const RECORDED_AUDIO_SPECIAL={'hat gefallen':'hat_gefallen.mp3','ist gefallen':'ist_gefallen.mp3','hat vergessen':'hat_vergessen.mp3'};
+          let activeRecordedAudio=null;
+          const audioSlug=value=>String(value||'').toLowerCase().trim().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+          function computerSpeak(text,slow=false){if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=slow?.55:.92;speechSynthesis.speak(u)}
+          function recordedAudioFile(text){const raw=String(text||'').trim(),key=norm(raw);if(RECORDED_AUDIO_SPECIAL[key])return RECORDED_AUDIO_SPECIAL[key];const word=raw.replace(/^(hat|ist)\\s+/i,'').replace(/^sich\\s+/i,'');const slug=audioSlug(word);return slug?slug+'.mp3':''}
+          function speak(text,slow=false){
+           const raw=String(text||'').trim();if(!raw)return;
+           const file=recordedAudioFile(raw);if(!file)return computerSpeak(raw,slow);
+           try{activeRecordedAudio?.pause()}catch{}
+           const audio=new Audio(RECORDED_AUDIO_BASE+encodeURIComponent(file));activeRecordedAudio=audio;audio.preload='auto';audio.playbackRate=slow?.75:1;
+           let usedFallback=false;
+           const fallback=()=>{if(usedFallback)return;usedFallback=true;try{audio.pause()}catch{}if(activeRecordedAudio===audio)activeRecordedAudio=null;computerSpeak(raw,slow)};
+           audio.onerror=fallback;audio.onended=()=>{if(activeRecordedAudio===audio)activeRecordedAudio=null};
+           const playResult=audio.play();if(playResult&&typeof playResult.catch==='function')playResult.catch(fallback)
+          }"""
+          if 'const RECORDED_AUDIO_BASE=' not in source:
+              if old_speak not in source:
+                  raise SystemExit('Perfekt speak function not found')
+              source = source.replace(old_speak, new_speak, 1)
+
+          source = source.replace("if(norm(value)===norm(answer)){", "if(answerNorm(value)===answerNorm(answer)){", 1)
+          source = source.replace("function isCorrect(value,q){return norm(value)===norm(q.answer)}", "function isCorrect(value,q){return answerNorm(value)===answerNorm(q.answer)}", 1)
+
+          path.write_text(source, encoding='utf-8')
+          PY
+          git config user.name github-actions[bot]
+          git config user.email 41898282+github-actions[bot]@users.noreply.github.com
+          git add perfekt/app-stable.js
+          if git diff --cached --quiet; then
+            echo "No source changes needed."
+          else
+            git commit -m "Accept spaced Perfekt forms and add audio fallback"
+            git push
+          fi
