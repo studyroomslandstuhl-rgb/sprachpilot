@@ -8,7 +8,8 @@ const esc=S.esc;
 function dashboard(){return String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase()==='teacher'?'/teacher/index.html':'/student-dashboard/index.html'}
 function name(){const p=S.profile();return[p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join(' ')||(S.preview()?'Lehrer-Vorschau':'Schüler/in')}
 function header(title,reset=false){
- return`<header class="topbar"><div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">Lektion 7 · Thema 1 · ${esc(title)}</div></div></a><div class="account-tools"><span class="account-pill">${esc(name())}</span><a class="account-link" href="${dashboard()}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="../index.html">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a>${reset?'<button class="btn danger-btn" type="button" id="resetTheme">Fortschritte löschen</button>':''}</nav></header>`
+ const back=page==='theme'?'../index.html':'index.html';
+ return`<header class="topbar"><div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">Lektion 7 · Thema 1 · ${esc(title)}</div></div></a><div class="account-tools"><span class="account-pill">${esc(name())}</span><a class="account-link" href="${dashboard()}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="${back}">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a>${reset?'<button class="btn danger-btn" type="button" id="resetTheme">Fortschritte löschen</button>':''}</nav></header>`
 }
 function previewNote(){return S.preview()?'<div class="preview-note">Lehrer-Vorschau: Es werden keine Teilnehmerpunkte und keine Teilnehmerfortschritte gespeichert.</div>':''}
 function taskHref(task){return`task.html?task=${encodeURIComponent(task.id)}&v=l7t1-full1`}
@@ -26,7 +27,7 @@ function themePage(){
 function taskCard(task){
  const percent=S.pct(task.id,task.items.length),locked=task.exam&&!S.allDone(),done=percent>=100;
  const href=locked?'#':taskHref(task);
- return`<a id="task-${esc(task.id)}" class="module ${locked?'locked':''} ${done?'done-card':''}" href="${href}" ${locked?'aria-disabled="true" onclick="return false"':''}><div class="module-top"><span class="num">${esc(task.number)}</span><span class="status-icon">${done?'✓':locked?'🔒':''}</span></div><div class="big-icon">${task.icon||'▶'}</div><h3>${esc(task.title)}</h3><p class="small">${esc(locked?'Die Prüfung wird geöffnet, wenn alle vorherigen Aufgaben 100% erreicht haben.':task.description)}</p><div class="progress"><div class="bar" style="width:${percent}%"></div></div><div class="module-bottom"><span>${locked?'Erst alle Aufgaben abschließen':percent+'%'}</span><strong>${done?'Fertig':'Starten'}</strong></div></a>`
+ return`<a id="task-${esc(task.id)}" class="module ${locked?'locked':''} ${done?'done-card':''}" href="${href}" ${locked?'aria-disabled="true" onclick="return false"':''}><div class="num">${esc(task.number)}. ${esc(task.title)}</div><div class="big-icon">${task.icon||'▶'}</div><p class="small">${esc(locked?'Die Prüfung wird geöffnet, wenn alle vorherigen Aufgaben 100% erreicht haben.':task.description)}</p><div class="progress"><div class="bar" style="width:${percent}%"></div></div><div class="small">${percent}%</div><div class="start">${locked?'Gesperrt':done?'Fertig':'Starten'}</div></a>`
 }
 function image(file,alt='',small=false){
  if(!file)return'';
@@ -65,8 +66,21 @@ function help(item,task){
  if(tries===2)return`<div class="hint"><strong>Hinweis:</strong> ${esc(item.hint||genericHint(item))}</div>`;
  return`<div class="no"><strong>Lösung:</strong> ${esc(item.answer||item.word||'')}<br>Gib die richtige Antwort jetzt selbst ein. Die Aufgabe kommt später noch einmal.</div>`
 }
+function normalizePhase(task,state){
+ if(task.id!=='hoeren-erkennen')return state;
+ const choice=task.items.map((item,index)=>item.phase==='choice'||item.kind==='audio-file-choice'?index:-1).filter(index=>index>=0);
+ const produce=task.items.map((item,index)=>item.phase==='produce'||item.kind==='audio-file-produce'?index:-1).filter(index=>index>=0);
+ const allowed=choice.every(index=>state.done.includes(index))?produce:choice;
+ const remaining=allowed.filter(index=>!state.done.includes(index));
+ const invalidCurrent=state.current!=null&&!allowed.includes(state.current);
+ const invalidQueue=state.queue.some(index=>!allowed.includes(index)||state.done.includes(index));
+ if(invalidCurrent){state.current=null;state.tries=0;state.hadWrong=false}
+ if(invalidQueue||(!state.queue.length&&state.current==null&&remaining.length))state.queue=S.shuffle(remaining);
+ S.save(task.id,state);
+ return state
+}
 function current(){
- const task=R.task,state=S.load(task.id,task.items.length);
+ const task=R.task,state=normalizePhase(task,S.load(task.id,task.items.length));
  R.index=state.current==null?S.nextIndex(task.id,task.items.length):state.current;
  return task.items[R.index]
 }
@@ -94,7 +108,3 @@ function cardBody(item,task){
 }
 function questionBody(item,task){
  const kind=item.kind||task.kind||'choice';
- let media='';
- if(item.image)media=image(item.image,item.prompt);
- if(kind==='image-choice'&&item.audio)media+=`<div class="audio-panel"><button class="btn secondary" type="button" data-action="word-audio">🔊 Anhören</button></div>`;
- if(kind==='audio-produce')media+=textAudio(item);
