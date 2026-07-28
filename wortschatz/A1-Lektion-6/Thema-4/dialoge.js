@@ -1,7 +1,7 @@
 (function(){
 'use strict';
 const FILE='task-dialog-abc';
-const VERSION='l6t4-dialoge-standalone2';
+const VERSION='l6t4-dialoge-standalone3';
 const AUDIO='https://sprachpilot.b-cdn.net/audio/';
 const area=document.getElementById('area');
 if(!area)return;
@@ -57,12 +57,30 @@ let selections={};
 const esc=value=>String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]));
 function storage(){return typeof l6t4Storage==='function'?l6t4Storage():localStorage}
 function key(){return typeof l6t4TaskKey==='function'?l6t4TaskKey(FILE):'SP_L6_T4_V2_'+FILE}
+function blankState(){return{total:DIALOGS.length,done:[],queue:[0,1,2,3,4],current:null,tries:0,hadWrong:false,firstCorrect:0,firstSeen:[]}}
+function normalizeSavedState(saved){
+ const total=DIALOGS.length;
+ if(!saved||typeof saved!=='object')return blankState();
+ const oldDone=Array.isArray(saved.done)?saved.done.map(Number).filter(Number.isFinite):[];
+ let done=[];
+ if(Number(saved.total)===15){
+  done=[0,1,2,3,4].filter(page=>[page*3,page*3+1,page*3+2].every(index=>oldDone.includes(index)));
+ }else{
+  done=[...new Set(oldDone.filter(index=>index>=0&&index<total))];
+ }
+ const currentRaw=Number(saved.current);
+ const current=Number.isInteger(currentRaw)&&currentRaw>=0&&currentRaw<total&&!done.includes(currentRaw)?currentRaw:null;
+ const queue=[0,1,2,3,4].filter(index=>!done.includes(index)&&index!==current);
+ return{...saved,total,done,queue,current,tries:Number(saved.tries)||0,hadWrong:!!saved.hadWrong,firstCorrect:Number(saved.firstCorrect)||done.length,firstSeen:Array.isArray(saved.firstSeen)?saved.firstSeen:done.slice()};
+}
 function prepareState(){
  const store=storage();
  const marker=(typeof l6t4IsPreview==='function'&&l6t4IsPreview()?'SP_L6_T4_PREVIEW_':'SP_L6_T4_')+'DIALOG13_CONTENT_VERSION';
- if(store.getItem(marker)===VERSION)return;
+ let saved=null;
+ try{saved=JSON.parse(store.getItem(key())||'null')}catch(e){saved=null}
+ const normalized=normalizeSavedState(saved);
+ store.setItem(key(),JSON.stringify(normalized));
  store.setItem(marker,VERSION);
- store.setItem(key(),JSON.stringify({total:DIALOGS.length,done:[],queue:[0,1,2,3,4],current:null,tries:0,hadWrong:false,firstCorrect:0,firstSeen:[]}));
 }
 function state(){return l6t4Load(FILE,DIALOGS.length)}
 function getIndex(){const saved=state();return saved.current===null||saved.current===undefined?l6t4NextIndex(FILE,DIALOGS.length):saved.current}
@@ -79,7 +97,7 @@ function render(){
  const saved=state();
  if(saved.done.length>=DIALOGS.length){finish();return}
  const dialog=current();
- if(!dialog){storage().removeItem(key());prepareState();activeIndex=null;selections={};render();return}
+ if(!dialog){storage().setItem(key(),JSON.stringify(blankState()));activeIndex=null;selections={};render();return}
  if(typeof l6t4MatchedHeader==='function')l6t4MatchedHeader('Dialoge');else if(typeof l6t4Header==='function')l6t4Header('Dialoge');
  document.title='Aufgabe 13 · Dialoge';
  area.innerHTML='<div class="task-title-block"><span class="task-number">Aufgabe 13</span><h1>Dialoge</h1></div>'+l6t4Progress(FILE,DIALOGS.length)+'<div class="task-instruction">Höre den Dialog und beantworte alle drei Fragen.</div><div class="dialog13-audio"><audio controls playsinline preload="metadata" src="'+esc(dialog.audio)+'"></audio><div class="audio-load-error" hidden>Die Audiodatei konnte nicht geladen werden.</div></div><div class="dialog13-page-label">Dialog '+dialog.number+' von '+DIALOGS.length+'</div><div class="dialog13-question-list">'+dialog.questions.map(questionHtml).join('')+'</div><div class="actions centered"><button class="btn" type="button" data-check disabled>Kontrollieren</button></div><div id="feedback" class="feedback">'+feedback(dialog)+'</div><div id="tech"></div>';
