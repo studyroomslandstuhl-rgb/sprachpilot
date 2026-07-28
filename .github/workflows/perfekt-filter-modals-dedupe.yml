@@ -1,0 +1,98 @@
+name: Fix Perfekt modal verbs and duplicates
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/perfekt-filter-modals-dedupe.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  patch:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+      - name: Exclude modal verbs and deduplicate Perfekt groups
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          import json
+          import re
+
+          app_path = Path('perfekt/app-stable.js')
+          text = app_path.read_text(encoding='utf-8')
+
+          old_anchor = "const CATEGORY_ORDER=[];"
+          new_anchor = """const CATEGORY_ORDER=[];
+const MODAL_VERBS=new Set(['können','müssen','wollen','dürfen','sollen','möchten','mögen']);
+function canonicalVerb(value){return String(value||'').normalize('NFC').trim().toLowerCase().replace(/\\s+/g,' ')}
+function uniquePerfektVerbs(list){
+ const seen=new Set(),result=[];
+ for(const item of list||[]){
+  const raw=typeof item==='string'?item:item?.v;
+  const verb=String(raw||'').normalize('NFC').trim().replace(/\\s+/g,' ');
+  const key=canonicalVerb(verb);
+  if(!verb||MODAL_VERBS.has(key)||seen.has(key))continue;
+  seen.add(key);result.push(verb)
+ }
+ return result
+}"""
+          if old_anchor not in text:
+              raise SystemExit('CATEGORY_ORDER anchor not found')
+          text = text.replace(old_anchor, new_anchor, 1)
+
+          old_rebuild = "function rebuildGroups(){\n GROUPS=[];"
+          new_rebuild = "function rebuildGroups(){\n VERBS=uniquePerfektVerbs(VERBS);\n GROUPS=[];"
+          if old_rebuild not in text:
+              raise SystemExit('rebuildGroups anchor not found')
+          text = text.replace(old_rebuild, new_rebuild, 1)
+
+          old_init = "async function init(){const user=requireLogin();if(!user)return;profile=getActiveProfile()||{};const role=String(getActiveRole()||'').toLowerCase();preview=role==='teacher';try{const raw=sessionStorage.getItem('SP_TEACHER_PREVIEW');if(raw==='1'||JSON.parse(raw||'null')?.teacherPreview===true)preview=true}catch{}const all=[...new Set((window.SP_VERB_GROUP_DATA?.verbs||BASE?.ALL||[]).filter(Boolean))];try{const assignments=await loadCourseRelease(profile);locked=!preview&&!moduleOpen(assignments,'Verben');VERBS=preview?all:releasedVerbs(assignments,all)}catch{VERBS=preview?all:[];locked=!preview}rebuildGroups();load();render()}"
+          new_init = "async function init(){const user=requireLogin();if(!user)return;profile=getActiveProfile()||{};const role=String(getActiveRole()||'').toLowerCase();preview=role==='teacher';try{const raw=sessionStorage.getItem('SP_TEACHER_PREVIEW');if(raw==='1'||JSON.parse(raw||'null')?.teacherPreview===true)preview=true}catch{}const all=uniquePerfektVerbs(window.SP_VERB_GROUP_DATA?.verbs||BASE?.ALL||[]);try{const assignments=await loadCourseRelease(profile);locked=!preview&&!moduleOpen(assignments,'Verben');VERBS=uniquePerfektVerbs(preview?all:releasedVerbs(assignments,all))}catch{VERBS=preview?all:[];locked=!preview}rebuildGroups();load();render()}"
+          if old_init not in text:
+              raise SystemExit('init anchor not found')
+          text = text.replace(old_init, new_init, 1)
+          app_path.write_text(text, encoding='utf-8')
+
+          index_path = Path('perfekt/index.html')
+          html = index_path.read_text(encoding='utf-8')
+          if 'perfekt-fix4' not in html:
+              raise SystemExit('Expected Perfekt cache version not found')
+          index_path.write_text(html.replace('perfekt-fix4', 'perfekt-fix5'), encoding='utf-8')
+
+          data_text = Path('verben/data.js').read_text(encoding='utf-8')
+          match = re.search(r'const VERBS=(\[.*?\]);', data_text, re.S)
+          if not match:
+              raise SystemExit('VERBS list not found')
+          source_verbs = json.loads(match.group(1))
+          modals = {'können','müssen','wollen','dürfen','sollen','möchten','mögen'}
+          cleaned=[]
+          seen=set()
+          duplicates=[]
+          for raw in source_verbs:
+              verb=' '.join(str(raw).strip().split())
+              key=verb.casefold()
+              if key in modals:
+                  continue
+              if key in seen:
+                  duplicates.append(verb)
+                  continue
+              seen.add(key)
+              cleaned.append(verb)
+          assert not any(v.casefold() in modals for v in cleaned)
+          assert len(cleaned)==len(set(v.casefold() for v in cleaned))
+          print('Modal verbs excluded:', sorted(modals))
+          print('Source duplicates removed:', duplicates)
+          print('Unique Perfekt verbs after filter:', len(cleaned))
+          PY
+      - name: Commit active Perfekt cleanup
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add perfekt/app-stable.js perfekt/index.html
+          git commit -m "Exclude modal verbs and deduplicate Perfekt groups"
+          git push
