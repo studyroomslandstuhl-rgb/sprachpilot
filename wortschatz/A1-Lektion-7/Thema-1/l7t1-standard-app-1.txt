@@ -1,0 +1,100 @@
+(function(){
+'use strict';
+const S=window.L7T1S,T=window.L7_THEME,root=document.getElementById('app'),page=document.body.dataset.page||'theme',CDN='https://sprachpilot.b-cdn.net/';
+if(!S||!T||!root)return;
+let R={task:null,index:null,selected:'',order:[],writeOpen:false,audioClicks:0,cardBack:false,busy:false};
+const tasks=T.tasks||[];
+const esc=S.esc;
+function dashboard(){return String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase()==='teacher'?'/teacher/index.html':'/student-dashboard/index.html'}
+function name(){const p=S.profile();return[p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join(' ')||(S.preview()?'Lehrer-Vorschau':'Schüler/in')}
+function header(title,reset=false){
+ return`<header class="topbar"><div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">Lektion 7 · Thema 1 · ${esc(title)}</div></div></a><div class="account-tools"><span class="account-pill">${esc(name())}</span><a class="account-link" href="${dashboard()}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="../index.html">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a>${reset?'<button class="btn danger-btn" type="button" id="resetTheme">Fortschritte löschen</button>':''}</nav></header>`
+}
+function previewNote(){return S.preview()?'<div class="preview-note">Lehrer-Vorschau: Es werden keine Teilnehmerpunkte und keine Teilnehmerfortschritte gespeichert.</div>':''}
+function taskHref(task){return`task.html?task=${encodeURIComponent(task.id)}&v=l7t1-full1`}
+function average(){
+ if(!tasks.length)return 0;
+ return Math.round(tasks.reduce((sum,task)=>sum+S.pct(task.id,task.items.length),0)/tasks.length)
+}
+function themePage(){
+ document.title='Lektion 7 · Thema 1';
+ const avg=average(),complete=tasks.filter(task=>S.pct(task.id,task.items.length)>=100).length;
+ root.innerHTML=`<div class="container">${header(T.title,true)}${previewNote()}<section class="card progress-card"><div class="circle">${avg}%</div><div><h2>Dein Fortschritt</h2><p class="small">${complete} / ${tasks.length} Aufgaben abgeschlossen</p><div class="progress"><div class="bar" style="width:${avg}%"></div></div><p class="small">${esc(T.goal||'Ziel: können, wollen und möchten sicher benutzen.')}</p><div class="score-ledger-card"><div><b>Bestes Prüfungsergebnis</b><div class="small">Die Prüfung wird nach allen Lernaufgaben geöffnet.</div></div><div class="score-ledger-total">${S.bestExam()}%</div></div></div></section><section id="taskGrid"><div class="section-heading"><div><p class="eyebrow">Lektion 7 · Thema 1</p><h2>${esc(T.title)}</h2></div><span class="task-count">${tasks.length} Aufgaben</span></div><div class="grid">${tasks.map(taskCard).join('')}</div></section><footer>© SprachPilot</footer></div>`;
+ document.getElementById('resetTheme')?.addEventListener('click',S.resetTheme);
+ if(location.hash)setTimeout(()=>document.querySelector(location.hash)?.scrollIntoView({behavior:'smooth',block:'center'}),80)
+}
+function taskCard(task){
+ const percent=S.pct(task.id,task.items.length),locked=task.exam&&!S.allDone(),done=percent>=100;
+ const href=locked?'#':taskHref(task);
+ return`<a id="task-${esc(task.id)}" class="module ${locked?'locked':''} ${done?'done-card':''}" href="${href}" ${locked?'aria-disabled="true" onclick="return false"':''}><div class="module-top"><span class="num">${esc(task.number)}</span><span class="status-icon">${done?'✓':locked?'🔒':''}</span></div><div class="big-icon">${task.icon||'▶'}</div><h3>${esc(task.title)}</h3><p class="small">${esc(locked?'Die Prüfung wird geöffnet, wenn alle vorherigen Aufgaben 100% erreicht haben.':task.description)}</p><div class="progress"><div class="bar" style="width:${percent}%"></div></div><div class="module-bottom"><span>${locked?'Erst alle Aufgaben abschließen':percent+'%'}</span><strong>${done?'Fertig':'Starten'}</strong></div></a>`
+}
+function image(file,alt='',small=false){
+ if(!file)return'';
+ const src=CDN+encodeURIComponent(file);
+ return`<div class="visual ${small?'small-visual':''}"><img src="${src}" alt="${esc(alt)}" loading="lazy" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="image-fallback" hidden><strong>${esc(alt||'Bild')}</strong><span>Bild nicht verfügbar.</span></div></div>`
+}
+function progress(task){
+ const state=S.load(task.id,task.items.length),percent=task.items.length?Math.round(state.done.length/task.items.length*100):0;
+ return`<div class="task-progress-row"><span>${state.done.length} fehlerfrei · ${task.items.length-state.done.length} übrig</span><strong>${percent}%</strong></div><div class="progress"><div class="bar" style="width:${percent}%"></div></div>`
+}
+function taskTop(task){
+ return`<div class="task-title-block"><span class="task-number">Aufgabe ${esc(task.number)}</span><h1>${esc(task.title)}</h1></div>${progress(task)}<div class="task-instruction">${task.instructionHtml||esc(task.instruction||task.description||'Bearbeite die Aufgabe.')}</div>`
+}
+function accepted(item,task){
+ const values=[item.answer,item.word,...(item.answers||[])].filter(Boolean);
+ if(task.id==='karteikarten'){
+  const word=String(item.word||'');values.push(word.replace(/^(der|die|das)\s+/i,''))
+ }
+ return[...new Set(values)]
+}
+function correct(item,value,task){
+ const kind=item.kind||task.kind||'choice';
+ return accepted(item,task).some(answer=>S.norm(answer)===S.norm(value)||(kind==='order'&&S.compact(answer)===S.compact(value)))
+}
+function genericHint(item){
+ const answer=String(item.answer||item.word||'');
+ if(item.kind==='order')return'Das Modalverb steht weit vorne. Der Infinitiv steht am Ende.';
+ if(item.kind==='audio-produce'||item.kind==='audio-file-produce')return'Höre noch einmal und antworte mit einem vollständigen Satz.';
+ if(item.kind==='image-choice')return'Achte auf das Bild und höre das Wort noch einmal.';
+ return answer?`Die Lösung beginnt mit „${answer.charAt(0)}“.`:'Lies die Aufgabe noch einmal.'
+}
+function help(item,task){
+ const tries=S.load(task.id,task.items.length).tries||0;
+ if(!tries)return'';
+ if(tries===1)return'<div class="no">Noch nicht richtig. Versuche es noch einmal.</div>';
+ if(tries===2)return`<div class="hint"><strong>Hinweis:</strong> ${esc(item.hint||genericHint(item))}</div>`;
+ return`<div class="no"><strong>Lösung:</strong> ${esc(item.answer||item.word||'')}<br>Gib die richtige Antwort jetzt selbst ein. Die Aufgabe kommt später noch einmal.</div>`
+}
+function current(){
+ const task=R.task,state=S.load(task.id,task.items.length);
+ R.index=state.current==null?S.nextIndex(task.id,task.items.length):state.current;
+ return task.items[R.index]
+}
+function taskPage(){
+ const id=new URLSearchParams(location.search).get('task'),task=tasks.find(entry=>entry.id===id);
+ if(!task){root.innerHTML=`<div class="container">${header('Aufgabe')}<section class="card finish-box"><h2>Aufgabe nicht gefunden</h2><a class="btn" href="index.html">Zur Übersicht</a></section></div>`;return}
+ if(task.exam&&!S.allDone()){root.innerHTML=`<div class="container">${header(task.title)}<section class="card finish-box"><div class="finish-icon">🔒</div><h2>Prüfung gesperrt</h2><p>Schließe zuerst alle Lernaufgaben mit 100% ab.</p><a class="btn" href="index.html#task-${esc(task.id)}">Zur Übersicht</a></section></div>`;return}
+ R={task,index:null,selected:'',order:[],writeOpen:false,audioClicks:0,cardBack:false,busy:false};
+ renderTask()
+}
+function renderTask(){
+ const task=R.task,state=S.load(task.id,task.items.length);
+ if(state.done.length>=task.items.length)return finishTask(task);
+ const item=current();
+ if(!item){S.resetTask(task.id);return renderTask()}
+ R.selected='';R.order=[];R.writeOpen=false;R.audioClicks=0;R.cardBack=(state.tries||0)>=3;R.busy=false;
+ document.title=`Aufgabe ${task.number} · ${task.title}`;
+ root.innerHTML=`<div class="container">${header(task.title)}${previewNote()}<section class="card" id="area">${taskTop(task)}${task.id==='karteikarten'?cardBody(item,task):questionBody(item,task)}</section><footer>© SprachPilot</footer></div>`;
+ bind(task,item)
+}
+function cardBody(item,task){
+ const tr=S.translation(item),plural=item.plural?`<div><span>Plural</span><strong>${esc(String(item.plural).replace('die Frühstücke','die Frühstücke (verschiedene Angebote)'))}</strong></div>`:'';
+ const visual=item.image?image(item.image,item.word):`<div class="meaning-visual"><span>Bedeutung</span><strong>${esc(item.meaning||'')}</strong></div>`;
+ return`<div class="flip-wrap"><div id="flipCard" class="flip-card ${R.cardBack?'flipped':''}" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="flip-face flip-front">${visual}<div class="card-translation-box"><span>${esc(tr.language)}</span><strong>${esc(tr.text)}</strong></div></div><div class="flip-face flip-back"><div class="flip-word">${esc(item.word)}</div><div class="card-details">${plural}<div><span>Beispiel</span><strong>${esc(item.example||'')}</strong></div></div><button class="btn secondary card-listen-btn" type="button" data-action="card-audio">🔊 Anhören</button></div></div></div><div class="actions card-actions"><button class="btn" type="button" data-action="mic">🎤 Sprechen</button><button class="btn secondary" type="button" data-action="open-write">✍️ Schreiben</button></div><div id="writePanel" class="write-panel" hidden>${answerInput('Wort schreiben')}</div><div id="feedback" class="feedback">${help(item,task)}</div><div id="tech"></div><div id="afterCard" class="actions card-actions">${R.cardBack?'<button class="btn" type="button" data-action="card-next">Weiter</button>':''}</div>`
+}
+function questionBody(item,task){
+ const kind=item.kind||task.kind||'choice';
+ let media='';
+ if(item.image)media=image(item.image,item.prompt);
+ if(kind==='image-choice'&&item.audio)media+=`<div class="audio-panel"><button class="btn secondary" type="button" data-action="word-audio">🔊 Anhören</button></div>`;
+ if(kind==='audio-produce')media+=textAudio(item);
