@@ -117,6 +117,8 @@ function resetTheme(){
  const prefixes=[`${KEY_PREFIX}_${pid()}_T${THEME}_`,`${KEY_PREFIX}_PREVIEW_T${THEME}_`,`SP_L7_${pid()}_T${THEME}_`,`SP_L7_${legacy}_T${THEME}_`,`SP_L7_PREVIEW_${pid()}_T${THEME}_`,`SP_L7_PREVIEW_${legacy}_T${THEME}_`],keys=[];
  for(const storage of[localStorage,sessionStorage]){for(let i=0;i<storage.length;i++){const current=String(storage.key(i)||'');if(prefixes.some(prefix=>current.startsWith(prefix))||current.startsWith(`SP_L7_student_T${THEME}_`))keys.push([storage,current])}}
  keys.forEach(([storage,current])=>storage.removeItem(current));
+ const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:LESSON,theme:THEME,topicId:TOPIC_ID,title:'A1 Lektion 7 · Thema 1'};
+ if(window.SPProgress?.recordThemeReset)window.SPProgress.recordThemeReset(payload);else(window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[]).push({method:'recordThemeReset',payload});
  location.href='index.html?reset='+Date.now()
 }
 async function ensureProgress(){if(window.SPProgress?.recordTaskProgress)return window.SPProgress;try{await import('/js/progress.js?v=l7t1-full1')}catch{return null}return window.SPProgress||null}
@@ -128,14 +130,15 @@ async function syncTask(id,state){
  if(api?.recordTaskProgress)return api.recordTaskProgress(payload);
  (window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[]).push({method:'recordTaskProgress',payload});return false
 }
-async function recordExam(percent){
+async function recordExam(percent,score=0,maxScore=0){
  if(preview())return false;
- const rounded=Math.max(0,Math.min(100,Math.round(percent))),stars=rounded>=100?3:rounded>=70?2:rounded>=50?1:0;
+ const rounded=Math.max(0,Math.min(100,Math.round(percent))),stars=rounded>=100?3:rounded>=70?2:rounded>=50?1:0,run=Math.max(1,Number(localStorage.getItem('SP_SCORE_RUN_'+TOPIC_ID)||1)||1),marker=`SP_L7T1_EXAM_SYNCED_${run}_${rounded}`;
  setBestExam(rounded);
- const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:LESSON,theme:THEME,topicId:TOPIC_ID,title:'A1 Lektion 7 · Thema 1',percent:rounded,scorePercent:rounded,stars};
+ if(localStorage.getItem(marker)==='1')return true;
+ const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:LESSON,theme:THEME,topicId:TOPIC_ID,title:'A1 Lektion 7 · Thema 1',percent:rounded,scorePercent:rounded,score:Number(score)||0,maxScore:Number(maxScore)||0,stars};
  const api=await ensureProgress();
- if(api?.recordExamResult)return api.recordExamResult(payload);
- (window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[]).push({method:'recordExamResult',payload});return false
+ if(api?.recordExamResult){const result=await api.recordExamResult(payload);localStorage.setItem(marker,'1');return result}
+ (window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[]).push({method:'recordExamResult',payload});localStorage.setItem(marker,'1');return false
 }
 function audioSlug(value){return String(value||'').toLowerCase().trim().replace(/^(der|die|das)\s+/,'').replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'')}
 function computerSpeak(text,slow=false,fail){
