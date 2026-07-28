@@ -1,3 +1,7 @@
+ let media='';
+ if(item.image)media=image(item.image,item.prompt);
+ if(kind==='image-choice'&&item.audio)media+=`<div class="audio-panel"><button class="btn secondary" type="button" data-action="word-audio">🔊 Anhören</button></div>`;
+ if(kind==='audio-produce')media+=textAudio(item);
  if(kind==='audio-file-choice'||kind==='audio-file-produce')media+=fileAudio(item);
  const prompt=kind==='cards'?'':`<h2 class="question">${esc(item.prompt||item.meaning||'Was ist richtig?')}</h2>`;
  let body='';
@@ -78,3 +82,4 @@ function markRight(){
  R.busy=true;S.right(task.id,task.items.length,{forceDone:!!task.exam});
  disableArea();
  const feedback=document.getElementById('feedback');
+ if(feedback)feedback.innerHTML=`<div class="ok">Richtig.${repeat&&!task.exam?' Die Aufgabe kommt am Ende noch einmal.':''}</div>`;
