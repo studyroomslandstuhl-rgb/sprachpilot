@@ -96,3 +96,5 @@ function uniquePerfektVerbs(list){
           git add perfekt/app-stable.js perfekt/index.html
           git commit -m "Exclude modal verbs and deduplicate Perfekt groups"
           git push
+
+# retry 1
