@@ -1,0 +1,77 @@
+name: Standardize L7T1 once
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - l7t1-full-standardization
+    paths:
+      - '.github/workflows/l7t1-standardize-once.yml'
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout working branch
+        uses: actions/checkout@v6
+
+      - name: Extract complete L7T1 replacement
+        shell: bash
+        run: |
+          set -euo pipefail
+          cat .l7t1-transfer/part-*.txt | base64 -d > /tmp/l7t1-standard.tar.gz
+          tar -xzf /tmp/l7t1-standard.tar.gz
+          rm -f \
+            wortschatz/A1-Lektion-7/Thema-1/l7t1-l6t4-layout.css \
+            wortschatz/A1-Lektion-7/Thema-1/l7t1-l6t4-layout.js \
+            wortschatz/A1-Lektion-7/Thema-1/l7t1-hoeren-erkennen-data.js
+
+      - name: Validate complete L7T1 system
+        shell: bash
+        run: |
+          set -euo pipefail
+          base='wortschatz/A1-Lektion-7/Thema-1'
+          node --check "$base/l7t1-standard-data.js"
+          node --check "$base/l7t1-standard-state.js"
+          node --check "$base/l7t1-standard-app.js"
+          node --check "$base/l7t1-standard-boot.js"
+          node <<'NODE'
+          const fs=require('fs');
+          const vm=require('vm');
+          const base='wortschatz/A1-Lektion-7/Thema-1';
+          const sandbox={window:{}};
+          vm.runInNewContext(fs.readFileSync(`${base}/l7t1-standard-data.js`,'utf8'),sandbox);
+          const tasks=sandbox.window.L7_THEME?.tasks||[];
+          if(tasks.length!==21)throw new Error(`Expected 21 tasks, found ${tasks.length}`);
+          if(tasks.some((task,index)=>Number(task.number)!==index+1))throw new Error('Task numbering is not continuous');
+          const cards=tasks.find(task=>task.id==='karteikarten');
+          if(cards?.items?.length!==35)throw new Error(`Expected 35 cards, found ${cards?.items?.length}`);
+          const exam=tasks.find(task=>task.exam);
+          if(exam?.items?.length!==15)throw new Error(`Expected 15 exam items, found ${exam?.items?.length}`);
+          const app=fs.readFileSync(`${base}/l7t1-standard-app.js`,'utf8');
+          if(!app.includes('Kontrollieren'))throw new Error('Kontrollieren label is missing');
+          if(app.includes('>Prüfen<'))throw new Error('Old Prüfen label is still active');
+          if(!app.includes('card-listen-btn'))throw new Error('Card-back audio button is missing');
+          for(const file of['index.html','task.html','uebersicht.html']){
+            const html=fs.readFileSync(`${base}/${file}`,'utf8');
+            if(!html.includes('l7t1-standard'))throw new Error(`${file} does not load the new L7T1 system`);
+            if(html.includes('../shared/l7-boot.js'))throw new Error(`${file} still loads the old shared L7 app`);
+          }
+          console.log(JSON.stringify({tasks:tasks.length,cards:cards.items.length,exam:exam.items.length}));
+          NODE
+
+      - name: Commit complete L7T1 replacement
+        shell: bash
+        run: |
+          set -euo pipefail
+          rm -rf .l7t1-transfer
+          rm -f .github/workflows/l7t1-standardize-once.yml
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -m 'Standardize all L7T1 structure and learning logic'
+          git push
