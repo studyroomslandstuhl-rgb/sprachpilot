@@ -1,0 +1,69 @@
+ if(feedback)feedback.innerHTML=`<div class="ok">Richtig.${repeat&&!task.exam?' Die Aufgabe kommt am Ende noch einmal.':''}</div>`;
+ setTimeout(renderTask,650)
+}
+function examWrong(item){
+ const task=R.task;R.busy=true;S.right(task.id,task.items.length,{forceDone:true});disableArea();
+ const feedback=document.getElementById('feedback');
+ if(feedback)feedback.innerHTML=`<div class="no">Nicht richtig.<br><strong>Lösung:</strong> ${esc(item.answer||item.word||'')}</div>`;
+ setTimeout(renderTask,950)
+}
+function disableArea(){root.querySelectorAll('#area button,#area input,#area textarea,#area audio').forEach(element=>element.disabled=true)}
+function revealCard(item){
+ if(R.cardBack||R.busy)return;
+ R.cardBack=true;
+ S.attempt(R.task.id,R.task.items.length,R.index,false);
+ S.wrong(R.task.id,R.task.items.length);
+ document.getElementById('flipCard')?.classList.add('flipped');
+ const after=document.getElementById('afterCard');if(after)after.innerHTML='<button class="btn" type="button" data-action="card-next">Weiter</button>';
+ const feedback=document.getElementById('feedback');if(feedback)feedback.innerHTML='<div class="hint">Du hast die Lösung angesehen. Die Karte kommt am Ende noch einmal.</div>'
+}
+function skipRevealedCard(){S.right(R.task.id,R.task.items.length);renderTask()}
+function openWrite(){const panel=document.getElementById('writePanel');if(panel)panel.hidden=false;setTimeout(()=>document.getElementById('answerInput')?.focus(),30)}
+function startMic(item){
+ S.mic(item,alternatives=>{const exact=alternatives.find(value=>correct(item,value,R.task));submit(exact||alternatives[0]||'')},message=>{technical(message);openWrite()})
+}
+function addToken(button){if(button.disabled)return;R.order.push(button.dataset.token);button.disabled=true;drawOrder()}
+function drawOrder(){const target=document.getElementById('orderAnswer');if(target)target.innerHTML=R.order.length?R.order.map(token=>`<span>${esc(token)}</span>`).join(' '):'<span>Klicke die Wörter in der richtigen Reihenfolge an.</span>'}
+function undoOrder(){
+ if(!R.order.length)return;R.order.pop();const used={};R.order.forEach(token=>used[token]=(used[token]||0)+1);
+ root.querySelectorAll('[data-token]').forEach(button=>{const token=button.dataset.token;if(used[token]){button.disabled=true;used[token]--}else button.disabled=false});drawOrder()
+}
+function resetOrder(){R.order=[];root.querySelectorAll('[data-token]').forEach(button=>button.disabled=false);drawOrder()}
+function cycleTextAudio(item){
+ const button=document.getElementById('textAudioButton'),transcript=document.getElementById('transcript');
+ if(R.audioClicks===0){S.sayText(item.audio,false,()=>technical('Die Audiofunktion ist nicht verfügbar.'));R.audioClicks=1;if(button)button.textContent='🐢 Langsam anhören';return}
+ if(R.audioClicks===1){S.sayText(item.audio,true,()=>technical('Die Audiofunktion ist nicht verfügbar.'));R.audioClicks=2;if(button)button.textContent='📄 Transkript anzeigen';return}
+ if(transcript)transcript.hidden=false;if(button)button.disabled=true;R.audioClicks=3
+}
+function saveDraft(value){
+ const task=R.task,state=S.load(task.id,task.items.length);state.answers=state.answers||{};state.answers[`free:${R.index}`]=value;S.save(task.id,state)
+}
+function saveFree(item){
+ const value=String(document.getElementById('freeAnswer')?.value||'').trim(),count=value.split(/\s+/).filter(Boolean).length;
+ if(count<(item.minWords||5)){technical(`Schreibe mindestens ${item.minWords||5} Wörter und vollständige Sätze.`);return}
+ saveDraft(value);S.attempt(R.task.id,R.task.items.length,R.index,true);markRight()
+}
+function finishTask(task){
+ if(task.exam)return finishExam(task);
+ const index=tasks.findIndex(entry=>entry.id===task.id),next=tasks.slice(index+1).find(entry=>!entry.exam||S.allDone());
+ root.innerHTML=`<div class="container">${header(task.title)}<section class="card finish-box"><div class="finish-icon">✓</div><h2>Aufgabe abgeschlossen</h2><p>Du hast diese Aufgabe fehlerfrei abgeschlossen.</p><div class="actions centered"><a class="btn secondary" href="index.html#task-${esc(task.id)}">Zur Übersicht</a>${next?`<a class="btn" href="${taskHref(next)}">Weiter</a>`:''}</div></section><footer>© SprachPilot</footer></div>`
+}
+function finishExam(task){
+ const state=S.load(task.id,task.items.length),percent=task.items.length?Math.round(state.firstCorrect/task.items.length*100):0,stars=percent>=100?3:percent>=70?2:percent>=50?1:0,best=Math.max(S.bestExam(),percent);
+ S.recordExam(percent);
+ root.innerHTML=`<div class="container">${header(task.title)}<section class="card finish-box"><div class="finish-icon">★</div><h2>Prüfung abgeschlossen</h2><div class="exam-score">${percent}%</div><div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><p>Richtig beim ersten Versuch: ${state.firstCorrect} von ${task.items.length}</p><p class="small">Bestes Ergebnis: ${best}%</p><div class="actions centered"><a class="btn secondary" href="index.html#task-${esc(task.id)}">Zur Übersicht</a><button class="btn" type="button" data-action="repeat-exam">Prüfung wiederholen</button></div></section><footer>© SprachPilot</footer></div>`;
+ root.querySelector('[data-action="repeat-exam"]')?.addEventListener('click',()=>repeatExam(task))
+}
+function repeatExam(task){S.resetTask(task.id);location.href=taskHref(task)}
+function overviewPage(){
+ const cards=tasks.find(task=>task.id==='karteikarten')?.items||[],nouns=cards.filter(item=>/^(der|die|das)\s/.test(item.word)),verbs=cards.filter(item=>!nouns.includes(item)&&(/en$/.test(item.word)||/ spielen$/.test(item.word)||item.word==='los sein')),other=cards.filter(item=>!nouns.includes(item)&&!verbs.includes(item));
+ const group=(title,items)=>`<section class="type-block"><div class="type-title">${esc(title)}</div>${items.map(item=>{const tr=S.translation(item);return`<div class="word-row">${item.image?`<div class="word-placeholder"><img src="${CDN+encodeURIComponent(item.image)}" alt="${esc(item.word)}"></div>`:'<div class="word-placeholder">Aa</div>'}<div><b>${esc(item.word)}</b>${item.plural?`<br><span class="small">${esc(item.plural)}</span>`:''}<br><span class="small">${esc(item.meaning)}</span><div class="mother-translation"><span>${esc(tr.language)}</span><strong>${esc(tr.text)}</strong></div></div></div>`}).join('')}</section>`;
+ root.innerHTML=`<div class="container">${header('Übersicht')}<section class="card"><div class="task-title-block"><span class="task-number">Lektion 7 · Thema 1</span><h1>Übersicht</h1></div><div class="grammar-grid"><section class="grammar-card"><h2>können</h2>${verbTable(['kann','kannst','kann','können','könnt','können'])}</section><section class="grammar-card"><h2>wollen</h2>${verbTable(['will','willst','will','wollen','wollt','wollen'])}</section><section class="grammar-card wide"><h2>Satzbau</h2><p><b>Aussage:</b> Ich <mark>kann</mark> gut <u>singen</u>.</p><p><b>Ja-/Nein-Frage:</b> <mark>Kannst</mark> du gut <u>singen</u>?</p><p><b>W-Frage:</b> Was <mark>willst</mark> du heute <u>machen</u>?</p><p class="small">Das Modalverb steht vorne. Der Infinitiv steht am Ende.</p></section><section class="grammar-card wide"><h2>wollen oder möchten?</h2><p><b>wollen</b> = Plan oder direkter Wunsch: Ich will heute das Lied üben.</p><p><b>möchten</b> = höflicher Wunsch: Ich möchte einen Tee, bitte.</p></section></div></section><section class="overview-groups">${group('Nomen',nouns)}${group('Verben und Aktivitäten',verbs)}${group('Weitere Wörter',other)}</section><footer>© SprachPilot</footer></div>`
+}
+function verbTable(forms){
+ const people=['ich','du','er/sie/es','wir','ihr','sie/Sie'];
+ return`<div class="form-table">${people.map((person,index)=>`<div><span>${person}</span><strong>${forms[index]}</strong></div>`).join('')}</div>`
+}
+if(page==='theme')themePage();else if(page==='overview')overviewPage();else taskPage();
+window.addEventListener('beforeunload',S.stopMic);
+})();
