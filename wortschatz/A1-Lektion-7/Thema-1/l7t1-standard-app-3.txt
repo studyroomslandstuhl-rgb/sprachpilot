@@ -1,4 +1,3 @@
- if(feedback)feedback.innerHTML=`<div class="ok">Richtig.${repeat&&!task.exam?' Die Aufgabe kommt am Ende noch einmal.':''}</div>`;
  setTimeout(renderTask,650)
 }
 function examWrong(item){
@@ -50,7 +49,7 @@ function finishTask(task){
 }
 function finishExam(task){
  const state=S.load(task.id,task.items.length),percent=task.items.length?Math.round(state.firstCorrect/task.items.length*100):0,stars=percent>=100?3:percent>=70?2:percent>=50?1:0,best=Math.max(S.bestExam(),percent);
- S.recordExam(percent);
+ S.recordExam(percent,state.firstCorrect,task.items.length);
  root.innerHTML=`<div class="container">${header(task.title)}<section class="card finish-box"><div class="finish-icon">★</div><h2>Prüfung abgeschlossen</h2><div class="exam-score">${percent}%</div><div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><p>Richtig beim ersten Versuch: ${state.firstCorrect} von ${task.items.length}</p><p class="small">Bestes Ergebnis: ${best}%</p><div class="actions centered"><a class="btn secondary" href="index.html#task-${esc(task.id)}">Zur Übersicht</a><button class="btn" type="button" data-action="repeat-exam">Prüfung wiederholen</button></div></section><footer>© SprachPilot</footer></div>`;
  root.querySelector('[data-action="repeat-exam"]')?.addEventListener('click',()=>repeatExam(task))
 }
