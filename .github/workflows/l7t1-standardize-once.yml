@@ -1,3 +1,4 @@
+# Triggered after the complete L7T1 analysis.
 name: Standardize L7T1 once
 
 on:
