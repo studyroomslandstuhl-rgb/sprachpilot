@@ -1,6 +1,5 @@
 (function(){
   if(location.pathname.includes('/wortschatz/A1-Lektion-6/Thema-2/'))return;
-  if(location.pathname.includes('/wortschatz/A1-Lektion-5/'))return;
   if(window.__SP_IMAGE_GUARD__)return;
   window.__SP_IMAGE_GUARD__=true;
 
@@ -29,6 +28,18 @@
   function sameUrl(a,b){
     try{return new URL(a,location.href).href===new URL(b,location.href).href}catch(e){return a===b}
   }
+  function isBunny(src){return /^https:\/\/sprachpilot\.b-cdn\.net\//i.test(String(src||''))}
+  function shouldIgnore(img){
+    const src=String(img.getAttribute('src')||'');
+    if(/\/assets\/logo\//i.test(src))return true;
+    if(/sprachpilot-logo/i.test(src))return true;
+    if(img.closest('.logo,.brand'))return true;
+    return false;
+  }
+  function bunnyUrl(name){
+    const key=slug(name,'_');
+    return key?CDN+key+'.webp':'';
+  }
   function candidates(img){
     const src=img.getAttribute('src')||'';
     const alt=cleanText(img.getAttribute('alt')||img.dataset.word||img.dataset.verb||img.dataset.l5t3Word||img.getAttribute('aria-label'));
@@ -41,15 +52,7 @@
     list.push(...attrList(img,'data-candidates','|'));
     list.push(...attrList(img,'data-alt','|'));
     list.push(...readJsonAttr(img,'data-fallbacks'));
-    keys.forEach(k=>{
-      if(!k)return;
-      list.push(CDN+k+'.webp',CDN+k+'.png',CDN+k+'.jpg');
-      list.push('/assets/img/'+k+'.webp','/assets/img/'+k+'.png','/assets/img/'+k+'.jpg');
-      const p=location.pathname.split('/').slice(0,-1).join('/')+'/';
-      list.push(p+k+'.webp',p+k+'.png',p+k+'.jpg');
-      list.push(p+'bilder/'+k+'.webp',p+'bilder/'+k+'.png',p+'bilder/'+k+'.jpg');
-      list.push('../bilder/'+k+'.webp','../bilder/'+k+'.png','../bilder/'+k+'.jpg');
-    });
+    keys.forEach(k=>{const u=bunnyUrl(k);if(u)list.push(u)});
     return uniq(list).filter(x=>!src||!sameUrl(x,src));
   }
   function placeholder(img){
@@ -59,8 +62,23 @@
     img.classList.add('sp-image-missing','missing');
     if(!img.getAttribute('alt'))img.alt='Bild fehlt';
   }
+  function forceBunny(img){
+    if(!img||img.tagName!=='IMG'||shouldIgnore(img))return false;
+    const src=img.getAttribute('src')||'';
+    if(!src||isBunny(src))return false;
+    const base=fileBase(src)||img.dataset.word||img.dataset.verb||img.dataset.id||img.getAttribute('alt')||'';
+    const next=bunnyUrl(base);
+    if(!next||sameUrl(next,src))return false;
+    img.dataset.spOriginalSrc=src;
+    img.dataset.spImageGuard='1';
+    img.loading='eager';
+    img.decoding='async';
+    try{img.fetchPriority='high'}catch(e){}
+    img.src=next;
+    return true;
+  }
   function tryLoad(img){
-    if(!img||img.tagName!=='IMG'||!img.isConnected)return false;
+    if(!img||img.tagName!=='IMG'||!img.isConnected||shouldIgnore(img))return false;
     const list=candidates(img);
     const idx=seen.get(img)||0;
     const next=list[idx];
@@ -76,10 +94,12 @@
   function inspect(root){
     const imgs=(root&&root.querySelectorAll)?root.querySelectorAll('img'):document.querySelectorAll('img');
     imgs.forEach(img=>{
+      if(shouldIgnore(img))return;
       if(!img.dataset.spImageGuard){
         img.dataset.spImageGuard='1';
         if(img.loading==='lazy')img.loading='eager';
       }
+      forceBunny(img);
       if(img.complete&&img.naturalWidth===0)tryLoad(img);
     });
   }
@@ -108,4 +128,5 @@
   }
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
   window.spImageGuardRefresh=()=>inspect(document);
+  window.spBunnyImageUrl=bunnyUrl;
 })();
