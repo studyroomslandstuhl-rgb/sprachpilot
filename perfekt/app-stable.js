@@ -11,30 +11,78 @@ const TASKS=[
 ];
 const LEARN=TASKS.slice(0,-1).map(x=>x[0]),TITLE=Object.fromEntries(TASKS.map(x=>[x[0],x[2]]));
 const SPECIAL={
- 'sein':'gewesen','haben':'gehabt','werden':'geworden','tun':'getan','wissen':'gewusst','kommen':'gekommen','gehen':'gegangen','bringen':'gebracht','denken':'gedacht','schreiben':'geschrieben','verstehen':'verstanden','schwimmen':'geschwommen','gewinnen':'gewonnen','springen':'gesprungen','verlieren':'verloren','unterschreiben':'unterschrieben','trinken':'getrunken','beißen':'gebissen','gießen':'gegossen','reißen':'gerissen','genießen':'genossen','singen':'gesungen','schließen':'geschlossen','rennen':'gerannt','finden':'gefunden','wiederholen':'wiederholt','schneiden':'geschnitten','streiten':'gestritten','essen':'gegessen','sprechen':'gesprochen','fahren':'gefahren','schlafen':'geschlafen','sehen':'gesehen','lesen':'gelesen','rufen':'gerufen','schreien':'geschrien','schieben':'geschoben','ziehen':'gezogen','stehen':'gestanden','empfehlen':'empfohlen','geben':'gegeben','backen':'gebacken','reiten':'geritten','greifen':'gegriffen','kennen':'gekannt','befehlen':'befohlen','helfen':'geholfen','braten':'gebraten','waschen':'gewaschen','nehmen':'genommen','stehlen':'gestohlen','tragen':'getragen','brechen':'gebrochen','laufen':'gelaufen','vergessen':'vergessen','messen':'gemessen','fressen':'gefressen','graben':'gegraben','schlagen':'geschlagen','sterben':'gestorben','treffen':'getroffen','werfen':'geworfen','fangen':'gefangen','blasen':'geblasen','fallen':'gefallen','saufen':'gesoffen','halten':'gehalten','laden':'geladen','lassen':'gelassen','wachsen':'gewachsen','werben':'geworben','raten':'geraten','stechen':'gestochen','gefallen':'gefallen','bleiben':'geblieben','verbiegen':'verbogen','heißen':'geheißen','sitzen':'gesessen','liegen':'gelegen','hängen':'gehangen','können':'gekonnt','müssen':'gemusst','wollen':'gewollt','dürfen':'gedurft','sollen':'gesollt','möchten':'gemocht','mögen':'gemocht','biegen':'gebogen','lügen':'gelogen','versprechen':'versprochen','vergeben':'vergeben','verbringen':'verbracht','entscheiden':'entschieden','sich benehmen':'benommen','benehmen':'benommen','riechen':'gerochen','stinken':'gestunken','schweigen':'geschwiegen','steigen':'gestiegen','sinken':'gesunken',
+ 'sein':'gewesen','haben':'gehabt','beginnen':'begonnen','bekommen':'bekommen','begraben':'begraben','werden':'geworden','tun':'getan','wissen':'gewusst','kommen':'gekommen','gehen':'gegangen','bringen':'gebracht','denken':'gedacht','schreiben':'geschrieben','verstehen':'verstanden','schwimmen':'geschwommen','gewinnen':'gewonnen','springen':'gesprungen','verlieren':'verloren','unterschreiben':'unterschrieben','trinken':'getrunken','beißen':'gebissen','gießen':'gegossen','reißen':'gerissen','genießen':'genossen','singen':'gesungen','schließen':'geschlossen','rennen':'gerannt','finden':'gefunden','wiederholen':'wiederholt','schneiden':'geschnitten','streiten':'gestritten','essen':'gegessen','sprechen':'gesprochen','fahren':'gefahren','schlafen':'geschlafen','sehen':'gesehen','lesen':'gelesen','rufen':'gerufen','schreien':'geschrien','schieben':'geschoben','ziehen':'gezogen','stehen':'gestanden','empfehlen':'empfohlen','geben':'gegeben','backen':'gebacken','reiten':'geritten','greifen':'gegriffen','kennen':'gekannt','befehlen':'befohlen','helfen':'geholfen','braten':'gebraten','waschen':'gewaschen','nehmen':'genommen','stehlen':'gestohlen','tragen':'getragen','brechen':'gebrochen','laufen':'gelaufen','vergessen':'vergessen','messen':'gemessen','fressen':'gefressen','graben':'gegraben','schlagen':'geschlagen','sterben':'gestorben','treffen':'getroffen','werfen':'geworfen','fangen':'gefangen','blasen':'geblasen','fallen':'gefallen','saufen':'gesoffen','halten':'gehalten','laden':'geladen','lassen':'gelassen','wachsen':'gewachsen','werben':'geworben','raten':'geraten','stechen':'gestochen','gefallen':'gefallen','bleiben':'geblieben','verbiegen':'verbogen','heißen':'geheißen','sitzen':'gesessen','liegen':'gelegen','hängen':'gehangen','können':'gekonnt','müssen':'gemusst','wollen':'gewollt','dürfen':'gedurft','sollen':'gesollt','möchten':'gemocht','mögen':'gemocht','biegen':'gebogen','lügen':'gelogen','versprechen':'versprochen','vergeben':'vergeben','verbringen':'verbracht','entscheiden':'entschieden','sich benehmen':'benommen','benehmen':'benommen','riechen':'gerochen','stinken':'gestunken','schweigen':'geschwiegen','steigen':'gestiegen','sinken':'gesunken',
  'aufräumen':'aufgeräumt','einkaufen':'eingekauft','anrufen':'angerufen','fernsehen':'ferngesehen','anfangen':'angefangen','aussterben':'ausgestorben','mitgeben':'mitgegeben','mitnehmen':'mitgenommen','aufstehen':'aufgestanden','anziehen':'angezogen','ausziehen':'ausgezogen','einsteigen':'eingestiegen','aussteigen':'ausgestiegen','umsteigen':'umgestiegen','ankommen':'angekommen','abfahren':'abgefahren','mitkommen':'mitgekommen','zurückkommen':'zurückgekommen','abbiegen':'abgebogen','ausleihen':'ausgeliehen','vorhaben':'vorgehabt','aufgeben':'aufgegeben','zusehen':'zugesehen','abschreiben':'abgeschrieben','vorlesen':'vorgelesen','verschlafen':'verschlafen','kennenlernen':'kennengelernt','einladen':'eingeladen','ausfallen':'ausgefallen','aufbacken':'aufgebacken','abraten':'abgeraten','beraten':'beraten','vorschlagen':'vorgeschlagen','losfahren':'losgefahren','dabeihaben':'dabeigehabt','leidtun':'leidgetan',
- 'bieten':'geboten','bitten':'gebeten','nennen':'genannt','treiben':'getrieben','binden':'gebunden','brennen':'gebrannt','erschrecken':'erschrocken','fliehen':'geflohen','fließen':'geflossen','frieren':'gefroren','gelingen':'gelungen','gelten':'gegolten','geschehen':'geschehen','passieren':'passiert','gleichen':'geglichen','heben':'gehoben','klingen':'geklungen','leiden':'gelitten','leihen':'geliehen','meiden':'gemieden','reiben':'gerieben','schaffen':'geschafft','scheiden':'geschieden','scheinen':'geschienen','schießen':'geschossen','schmeißen':'geschmissen','treten':'getreten','verzeihen':'verziehen','weisen':'gewiesen','hinweisen':'hingewiesen','auffallen':'aufgefallen','einfallen':'eingefallen','wiegen':'gewogen','zwingen':'gezwungen','hinzufügen':'hinzugefügt','spazieren gehen':'spazieren gegangen',
+ 'bieten':'geboten','bitten':'gebeten','nennen':'genannt','treiben':'getrieben','binden':'gebunden','brennen':'gebrannt','erschrecken':'erschrocken','fliehen':'geflohen','fließen':'geflossen','frieren':'gefroren','gelingen':'gelungen','gelten':'gegolten','geschehen':'geschehen','passieren':'passiert','gleichen':'geglichen','heben':'gehoben','klingen':'geklungen','leiden':'gelitten','leihen':'geliehen','meiden':'gemieden','reiben':'gerieben','schaffen':'geschaffen','scheiden':'geschieden','scheinen':'geschienen','schießen':'geschossen','schmeißen':'geschmissen','treten':'getreten','verzeihen':'verziehen','weisen':'gewiesen','hinweisen':'hingewiesen','auffallen':'aufgefallen','einfallen':'eingefallen','wiegen':'gewogen','zwingen':'gezwungen','hinzufügen':'hinzugefügt','spazieren gehen':'spazieren gegangen',
  'sich bewegen':'bewegt','sich konzentrieren':'konzentriert','sich kümmern':'gekümmert','sich interessieren':'interessiert','sich erinnern':'erinnert','sich anziehen':'angezogen','sich ausziehen':'ausgezogen','sich umziehen':'umgezogen','sich duschen':'geduscht','sich freuen':'gefreut','sich ärgern':'geärgert','sich beschweren':'beschwert','sich überlegen':'überlegt'
 };
 const SEP=new Set(['aufräumen','einkaufen','anrufen','fernsehen','anfangen','aussterben','aufmachen','zumachen','mitgeben','mitnehmen','aufstehen','anziehen','ausziehen','einsteigen','aussteigen','umsteigen','ankommen','abfahren','ausfüllen','anmelden','mitkommen','zurückkommen','abbiegen','abholen','ausleihen','vorhaben','aufgeben','zuhören','zusehen','abschreiben','vorlesen','ausfallen','aufbacken','austauschen','ablenken','absagen','abraten','vorschlagen','aussuchen','sich vorstellen','losfahren','dabeihaben','leidtun','kennenlernen','einladen','hinweisen','auffallen','einfallen','hinzufügen','sich anziehen','sich ausziehen','sich umziehen','spazieren gehen']);
-const SEIN=new Set(['sein','werden','kommen','gehen','schwimmen','springen','reisen','fahren','laufen','reiten','rennen','sterben','fallen','wachsen','bleiben','aussterben','aufstehen','einsteigen','aussteigen','umsteigen','ankommen','abfahren','mitkommen','zurückkommen','ausfallen','steigen','sinken','wandern','losfahren','fliehen','fließen','gelingen','geschehen','passieren','auffallen','einfallen','erschrecken','spazieren gehen']);
+const SEIN=new Set(['sein','werden','kommen','gehen','schwimmen','springen','reisen','fahren','laufen','reiten','rennen','sterben','fallen','wachsen','bleiben','aussterben','aufstehen','einsteigen','aussteigen','umsteigen','ankommen','abfahren','abbiegen','mitkommen','zurückkommen','ausfallen','steigen','sinken','wandern','losfahren','fliehen','fließen','gelingen','geschehen','passieren','auffallen','einfallen','erschrecken','spazieren gehen']);
 const NO_GE=new Set(['unterschreiben','wiederholen','überqueren','sich überlegen']);
 const INSEP=/^(be|emp|ent|er|ge|miss|ver|zer)/;
-const CATEGORY_ORDER=[['reflexive','Reflexive Verben'],['separable','Trennbare Verben'],['strong','Starke / unregelmäßige Verben'],['ieren','Verben auf -ieren'],['inseparable','Nicht trennbare Verben'],['weak','Regelmäßige Verben']];
+const CATEGORY_ORDER=[];
 let profile={},preview=false,locked=false,VERBS=[],GROUPS=[],state=null,currentQuestion=null,rec=null,cardRevealed=false,cardSolved=false;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:"'`´()]/g,'').replace(/\s+/g,' ');
 const shuffle=a=>{a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const bare=v=>String(v).replace(/^sich\s+/,''),stem=v=>v.endsWith('en')?v.slice(0,-2):v.endsWith('n')?v.slice(0,-1):v;
 function regularPart(v,withGe=true){const s=stem(v),e=/[td]$|chn$|ffn$|gn$|tm$/.test(s),part=s+(e?'et':'t');return(withGe?'ge':'')+part}
-function participle(v){if(SPECIAL[v])return SPECIAL[v];const b=bare(v);if(SPECIAL[b])return SPECIAL[b];if(b.endsWith('ieren'))return regularPart(b,false);if(INSEP.test(b)||NO_GE.has(v)||NO_GE.has(b)||/^(über|unter)/.test(b))return regularPart(b,false);return regularPart(b,true)}
+const SEPARABLE_PARTICIPLES={
+ 'aufräumen':'aufgeräumt','einkaufen':'eingekauft','anrufen':'angerufen','fernsehen':'ferngesehen','anfangen':'angefangen',
+ 'aussterben':'ausgestorben','aufmachen':'aufgemacht','zumachen':'zugemacht','mitgeben':'mitgegeben','mitnehmen':'mitgenommen',
+ 'aufstehen':'aufgestanden','anziehen':'angezogen','ausziehen':'ausgezogen','einsteigen':'eingestiegen','aussteigen':'ausgestiegen',
+ 'umsteigen':'umgestiegen','ankommen':'angekommen','abfahren':'abgefahren','ausfüllen':'ausgefüllt','anmelden':'angemeldet',
+ 'mitkommen':'mitgekommen','zurückkommen':'zurückgekommen','abbiegen':'abgebogen','abholen':'abgeholt','ausleihen':'ausgeliehen',
+ 'vorhaben':'vorgehabt','aufgeben':'aufgegeben','zuhören':'zugehört','zusehen':'zugesehen','abschreiben':'abgeschrieben',
+ 'vorlesen':'vorgelesen','ausfallen':'ausgefallen','aufbacken':'aufgebacken','austauschen':'ausgetauscht','ablenken':'abgelenkt',
+ 'absagen':'abgesagt','abraten':'abgeraten','vorschlagen':'vorgeschlagen','aussuchen':'ausgesucht','vorstellen':'vorgestellt',
+ 'losfahren':'losgefahren','dabeihaben':'dabeigehabt','leidtun':'leidgetan','kennenlernen':'kennengelernt','einladen':'eingeladen',
+ 'hinweisen':'hingewiesen','auffallen':'aufgefallen','einfallen':'eingefallen','hinzufügen':'hinzugefügt','umziehen':'umgezogen',
+ 'spazieren gehen':'spazieren gegangen'
+};
+const SEPARABLE_PREFIXES=['spazieren ','zurück','zusammen','dabei','kennen','hinzu','heraus','hinein','herüber','hinüber','weiter','wieder','vorbei','fest','statt','teil','fern','auf','aus','ein','an','ab','mit','vor','zu','um','los','hin','her','weg','über','unter','durch','leid'];
+function baseParticiple(v){if(SPECIAL[v])return SPECIAL[v];if(v.endsWith('ieren'))return regularPart(v,false);if(INSEP.test(v)||NO_GE.has(v)||/^(über|unter)/.test(v))return regularPart(v,false);return regularPart(v,true)}
+function participle(v){
+ if(SPECIAL[v])return SPECIAL[v];
+ const b=bare(v);
+ if(SPECIAL[b])return SPECIAL[b];
+ if(SEPARABLE_PARTICIPLES[b])return SEPARABLE_PARTICIPLES[b];
+ const label=BASE?.groupLabel?.(v)||BASE?.groupLabel?.(b);
+ if(SEP.has(v)||SEP.has(b)||label==='Trennbar'){
+  const prefix=SEPARABLE_PREFIXES.find(part=>b.startsWith(part)&&b.length>part.length);
+  if(prefix)return prefix+baseParticiple(b.slice(prefix.length))
+ }
+ return baseParticiple(b)
+}
 function auxiliary(v){return SEIN.has(v)?'ist':'hat'}
 function perfect(v){return`${auxiliary(v)} ${v.startsWith('sich ')?'sich ':''}${participle(v)}`}
 function imageUrl(v){return(typeof window.SP_VERB_IMAGE_OVERRIDE==='function'&&window.SP_VERB_IMAGE_OVERRIDE(v))||BASE?.imageUrl?.(v)||`https://sprachpilot.b-cdn.net/${encodeURIComponent(norm(v).replace(/\s+/g,'_'))}.webp`}
 function meaning(v){return BASE?.meaning?.(v)||window.SP_VERB_ENGLISH?.[v]||v}
 function sentence(v){return window.SP_VERB_SENTENCES?.[v]||`Ich lerne das Verb „${v}“.`}
-function category(v){if(v.startsWith('sich '))return'reflexive';const label=BASE?.groupLabel?.(v);if(SEP.has(v)||label==='Trennbar')return'separable';if(bare(v).endsWith('ieren')&&v!=='verlieren')return'ieren';if(label==='Unregelmäßig'||SPECIAL[v]&&['schaffen','trennen','teilen','schauen','senden','passieren'].indexOf(v)<0)return'strong';if(INSEP.test(bare(v))||NO_GE.has(v))return'inseparable';return'weak'}
-function rebuildGroups(){GROUPS=[];let id=1;for(const [key,title]of CATEGORY_ORDER){const list=VERBS.filter(v=>category(v)===key);for(let i=0;i<list.length;i+=20)GROUPS.push({id:id++,category:key,title,verbs:list.slice(i,i+20),signature:key+'|'+list.slice(i,i+20).join('|')})}}
+function category(v){
+ const b=bare(v),label=BASE?.groupLabel?.(v);
+ if(SEP.has(v)||SEP.has(b)||label==='Trennbar')return'separable';
+ if((b.endsWith('ieren')&&b!=='verlieren')||INSEP.test(b)||NO_GE.has(v)||NO_GE.has(b))return'middle';
+ if(label==='Unregelmäßig'||SPECIAL[v]&&['trennen','teilen','schauen','senden','passieren'].indexOf(v)<0||SPECIAL[b]&&['trennen','teilen','schauen','senden','passieren'].indexOf(b)<0)return'strong';
+ return'regular'
+}
+function perfektBuckets(){
+ const buckets={regular:[],strong:[],middle:[],separable:[]};
+ for(const v of VERBS)buckets[category(v)].push(v);
+ return buckets
+}
+function rebuildGroups(){
+ GROUPS=[];
+ const buckets=perfektBuckets();
+ const titles={regular:'Regelmäßige Verben',strong:'Starke / unregelmäßige Verben',middle:'Nicht trennbare Verben / Verben auf -ieren',separable:'Trennbare Verben'};
+ for(const key of ['regular','strong','middle','separable']){
+  const list=buckets[key];
+  for(let i=0;i<list.length;i+=20){
+   const verbs=list.slice(i,i+20),number=GROUPS.length+1;
+   GROUPS.push({id:number,category:key,title:titles[key],verbs,signature:key+'|'+verbs.join('|')})
+  }
+ }
+}
 const userSlug=()=>[profile.email,profile.courseCode,profile.kurs,profile.kursnummer,profile.vorname,profile.nachname].filter(Boolean).join('_').toLowerCase().replace(/[^a-z0-9äöüß]+/gi,'_')||'student';
 const storageKey=()=>`SP_PERFEKT_STABLE_${userSlug()}`;
 const blankTask=total=>({total,done:[],queue:[],current:null,tries:0,hadWrong:false});
