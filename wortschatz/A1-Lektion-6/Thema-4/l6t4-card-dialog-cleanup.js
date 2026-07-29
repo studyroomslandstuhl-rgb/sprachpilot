@@ -25,7 +25,11 @@ function removeAndRenumber(list){
  list.forEach((item,index)=>{item.number=String(index+1)});
 }
 try{removeAndRenumber(L6T4_META)}catch(e){}
-try{removeAndRenumber(L6T4_TASKS)}catch(e){}
+try{
+ removeAndRenumber(L6T4_TASKS);
+ const examMeta=L6T4_TASKS.find(item=>item?.id==='exam');
+ if(examMeta&&exam)examMeta.total=exam.items.length;
+}catch(e){}
 
 function cleanAudioLabels(root=document){
  root.querySelectorAll('button').forEach(button=>{
