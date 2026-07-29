@@ -55,8 +55,15 @@ function addPhraseToTheme(theme){
 window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(()=>{
  const theme=window.L7_THEME;if(!theme||!Array.isArray(theme.tasks))return theme;
  addPhraseToTheme(theme);
- if(!theme.tasks.some(task=>task.id==='hoeren-erkennen')){
-  const entry={id:'hoeren-erkennen',title:'Hören und Erkennen',icon:'🔉',description:'Höre und erkenne die Aktivität.',items};
+ let entry=theme.tasks.find(task=>task.id==='hoeren-erkennen');
+ if(entry){
+  entry.title='Hören und Erkennen';
+  entry.icon='🔉';
+  entry.description='Höre und erkenne die Aktivität.';
+  entry.items=items;
+  delete entry.external;
+ }else{
+  entry={id:'hoeren-erkennen',title:'Hören und Erkennen',icon:'🔉',description:'Höre und erkenne die Aktivität.',items};
   const examIndex=theme.tasks.findIndex(task=>task.exam);
   if(examIndex>=0)theme.tasks.splice(examIndex,0,entry);else theme.tasks.push(entry)
  }
