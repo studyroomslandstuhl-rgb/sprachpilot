@@ -56,7 +56,7 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(()=>{
  const theme=window.L7_THEME;if(!theme||!Array.isArray(theme.tasks))return theme;
  addPhraseToTheme(theme);
  if(!theme.tasks.some(task=>task.id==='hoeren-erkennen')){
-  const entry={id:'hoeren-erkennen',title:'Hören und Erkennen',icon:'🔉',description:'Höre Geräusche und erkenne die Aktivitäten.',external:'hoeren-erkennen.html?v=l7t1-sound1',items};
+  const entry={id:'hoeren-erkennen',title:'Hören und Erkennen',icon:'🔉',description:'Höre und erkenne die Aktivität.',items};
   const examIndex=theme.tasks.findIndex(task=>task.exam);
   if(examIndex>=0)theme.tasks.splice(examIndex,0,entry);else theme.tasks.push(entry)
  }
