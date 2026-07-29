@@ -6,7 +6,7 @@
 <title>Übersicht · Lektion 6 · Thema 4</title>
 <link rel="stylesheet" href="../Thema-3/style.css?v=2">
 <link rel="stylesheet" href="../Thema-3/l6t3-upgrade.css?v=1">
-<link rel="stylesheet" href="l6t4-user.css?v=l6t4-clean1">
+<link rel="stylesheet" href="l6t4-user.css?v=l6t4-rescue1">
 </head>
 <body>
 <div class="container">
@@ -14,25 +14,34 @@
 <section class="card"><h2>Übersicht – Thema 4</h2><p class="small">Freizeit, Hobbys, Häufigkeit, Redemittel und Alltagsdialoge.</p><div id="wordList"></div></section>
 <footer>© SprachPilot</footer>
 </div>
-<script type="module" src="/js/guard.js?v=l6t4-clean1"></script>
-<script src="theme4-data.js?v=l6t4-clean1"></script>
-<script src="l6t4-content-revision2.js?v=l6t4-clean1"></script>
-<script src="l6t4-final-content-patch.js?v=l6t4-clean1"></script>
-<script src="l6t4-bunny-images.js?v=l6t4-clean1"></script>
-<script src="l6t4-user-content.js?v=l6t4-clean1"></script>
-<script src="l6t4-remove-time-words.js?v=l6t4-clean1"></script>
-<script src="l6t4-move-auf-jeden-fall.js?v=l6t4-clean1"></script>
-<script src="app.js?v=l6t4-clean1"></script>
-<script src="l6t4-meta-revision2.js?v=l6t4-clean1"></script>
-<script src="l6t4-overview-match.js?v=l6t4-clean1"></script>
-<script src="l6t4-user-ui.js?v=l6t4-clean1"></script>
-<script src="l6t4-task-ref.js?v=l6t4-clean1"></script>
-<script src="l6t4-theme-score-v3.js?v=l6t4-clean1"></script>
-<script src="l6t4-cleanup.js?v=l6t4-clean1"></script>
+<script type="module" src="/js/guard.js?v=l6t4-rescue1"></script>
+<script src="theme4-data.js?v=l6t4-rescue1"></script>
+<script src="l6t4-content-revision2.js?v=l6t4-rescue1"></script>
+<script src="l6t4-final-content-patch.js?v=l6t4-rescue1"></script>
+<script src="l6t4-bunny-images.js?v=l6t4-rescue1"></script>
+<script src="l6t4-user-content.js?v=l6t4-rescue1"></script>
+<script src="l6t4-remove-time-words.js?v=l6t4-rescue1"></script>
+<script src="l6t4-move-auf-jeden-fall.js?v=l6t4-rescue1"></script>
+<script src="app.js?v=l6t4-rescue1"></script>
+<script src="l6t4-meta-revision2.js?v=l6t4-rescue1"></script>
+<script src="l6t4-overview-match.js?v=l6t4-rescue1"></script>
+<script src="l6t4-user-ui.js?v=l6t4-rescue1"></script>
+<script src="l6t4-task-ref.js?v=l6t4-rescue1"></script>
+<script src="l6t4-theme-score-v3.js?v=l6t4-rescue1"></script>
+<script src="l6t4-cleanup.js?v=l6t4-rescue1"></script>
 <script>
-L6T4ThemeScoreV3.initOverview();
-l6t4MatchedHeader('Übersicht');
-l6t4MatchedVocabulary(document.getElementById('wordList'));
+(function(){
+ function start(attempt){
+  try{
+   if(window.L6T4ThemeScoreV3&&typeof L6T4ThemeScoreV3.initOverview==='function')L6T4ThemeScoreV3.initOverview();
+   if(typeof l6t4MatchedHeader==='function')l6t4MatchedHeader('Übersicht');
+   if(typeof l6t4MatchedVocabulary==='function')l6t4MatchedVocabulary(document.getElementById('wordList'));
+   if(document.getElementById('wordList')?.children.length)return;
+  }catch(e){console.warn('L6T4 vocabulary start',e)}
+  if(attempt<12)setTimeout(()=>start(attempt+1),250);
+ }
+ start(0);
+})();
 </script>
 </body>
 </html>
