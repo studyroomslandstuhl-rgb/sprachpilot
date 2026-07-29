@@ -7,8 +7,8 @@
 <link rel="stylesheet" href="../Thema-3/style.css?v=2">
 <link rel="stylesheet" href="../Thema-3/l6t3-upgrade.css?v=1">
 <link rel="stylesheet" href="../Thema-3/l6t3-revision.css?v=3">
-<link rel="stylesheet" href="l6t4-user.css?v=l6t4-rescue1">
-<link rel="stylesheet" href="l6t4-compact-v2.css?v=l6t4-rescue1">
+<link rel="stylesheet" href="l6t4-user.css?v=l6t4-task13-final1">
+<link rel="stylesheet" href="l6t4-compact-v2.css?v=l6t4-task13-final1">
 </head>
 <body>
 <div class="container">
@@ -17,47 +17,46 @@
 <section id="taskGrid"></section>
 <footer>© SprachPilot</footer>
 </div>
-<script type="module" src="/js/guard.js?v=l6t4-rescue1"></script>
-<script src="theme4-data.js?v=l6t4-rescue1"></script>
-<script src="l6t4-content-revision2.js?v=l6t4-rescue1"></script>
-<script src="l6t4-final-content-patch.js?v=l6t4-rescue1"></script>
-<script src="l6t4-bunny-images.js?v=l6t4-rescue1"></script>
-<script src="l6t4-user-content.js?v=l6t4-rescue1"></script>
-<script src="l6t4-remove-time-words.js?v=l6t4-rescue1"></script>
-<script src="l6t4-compact-v2.js?v=l6t4-rescue1"></script>
-<script src="l6t4-move-auf-jeden-fall.js?v=l6t4-rescue1"></script>
-<script src="app.js?v=l6t4-rescue1"></script>
-<script src="l6t4-meta-revision2.js?v=l6t4-rescue1"></script>
-<script src="l6t4-overview-match.js?v=l6t4-rescue1"></script>
-<script src="l6t4-user-ui.js?v=l6t4-rescue1"></script>
-<script src="l6t4-task-ref.js?v=l6t4-rescue1"></script>
-<script src="l6t4-theme-score-v3.js?v=l6t4-rescue1"></script>
-<script src="l6t4-cleanup.js?v=l6t4-rescue1"></script>
+<script type="module" src="/js/guard.js?v=l6t4-task13-final1"></script>
+<script src="theme4-data.js?v=l6t4-task13-final1"></script>
+<script src="l6t4-content-revision2.js?v=l6t4-task13-final1"></script>
+<script src="l6t4-final-content-patch.js?v=l6t4-task13-final1"></script>
+<script src="l6t4-bunny-images.js?v=l6t4-task13-final1"></script>
+<script src="l6t4-user-content.js?v=l6t4-task13-final1"></script>
+<script src="l6t4-remove-time-words.js?v=l6t4-task13-final1"></script>
+<script src="l6t4-compact-v2.js?v=l6t4-task13-final1"></script>
+<script src="l6t4-move-auf-jeden-fall.js?v=l6t4-task13-final1"></script>
+<script src="app.js?v=l6t4-task13-final1"></script>
+<script src="l6t4-meta-revision2.js?v=l6t4-task13-final1"></script>
+<script src="l6t4-overview-match.js?v=l6t4-task13-final1"></script>
+<script src="l6t4-user-ui.js?v=l6t4-task13-final1"></script>
+<script src="l6t4-task-ref.js?v=l6t4-task13-final1"></script>
+<script src="l6t4-theme-score-v3.js?v=l6t4-task13-final1"></script>
 <script>
+L6T4ThemeScoreV3.initOverview();
+l6t4MatchedHeader('Freizeit & Alltag',true);
+l6t4MatchedMenu();
+L6T4ThemeScoreV3.renderSummary();
+
 (function(){
- function fallbackHeader(){
-  if(typeof l6t4MatchedHeader==='function')return l6t4MatchedHeader('Freizeit & Alltag',true);
-  if(typeof l6t4Header==='function')return l6t4Header('Freizeit & Alltag',true);
- }
- function fallbackMenu(){
-  if(typeof l6t4MatchedMenu==='function')return l6t4MatchedMenu();
-  if(typeof l6t4RenderMenu==='function')return l6t4RenderMenu();
- }
- function start(attempt){
-  try{
-   if(window.L6T4ThemeScoreV3&&typeof L6T4ThemeScoreV3.initOverview==='function')L6T4ThemeScoreV3.initOverview();
-   fallbackHeader();
-   fallbackMenu();
-   if(window.L6T4ThemeScoreV3&&typeof L6T4ThemeScoreV3.renderSummary==='function')L6T4ThemeScoreV3.renderSummary();
-   if(document.querySelector('#taskGrid a'))return;
-  }catch(e){console.warn('L6T4 overview start',e)}
-  if(attempt<12)setTimeout(()=>start(attempt+1),250);
-  else{
-   const grid=document.getElementById('taskGrid');
-   if(grid&&!grid.innerHTML.trim())grid.innerHTML='<section class="card"><h2>Die Aufgaben konnten nicht vollständig geladen werden.</h2><p>Bitte lade die Seite neu.</p><button class="btn" onclick="location.reload()">Neu laden</button></section>';
-  }
- }
- start(0);
+ const target='aufgabe13-dialoge-20260728.html';
+ const matches=link=>{
+  if(!link)return false;
+  const number=String(link.querySelector('.num')?.textContent||'').trim();
+  const href=String(link.getAttribute('href')||'');
+  return /^13\./.test(number)||href.includes('task=dialog-abc')||href.includes('dialoge.html');
+ };
+ const enforce=()=>document.querySelectorAll('#taskGrid a').forEach(link=>{if(matches(link))link.setAttribute('href',target)});
+ enforce();
+ const grid=document.getElementById('taskGrid');
+ if(grid)new MutationObserver(enforce).observe(grid,{childList:true,subtree:true,attributes:true,attributeFilter:['href']});
+ document.addEventListener('click',event=>{
+  const link=event.target.closest('#taskGrid a');
+  if(!matches(link))return;
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  location.assign(target);
+ },true);
 })();
 </script>
 </body>
