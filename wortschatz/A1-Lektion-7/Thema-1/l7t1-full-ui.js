@@ -1,8 +1,8 @@
 (function(){
 'use strict';
-const VERSION='l7t1-full1',THEME=1,CDN='https://sprachpilot.b-cdn.net/';
+const VERSION='l7t1-clean1',THEME=1,CDN='https://sprachpilot.b-cdn.net/';
 function load(src){return new Promise((ok,bad)=>{const s=document.createElement('script');s.src=src;s.onload=ok;s.onerror=bad;document.body.appendChild(s)})}
-Promise.resolve(window.L7_THEME_READY).then(()=>load(`../shared/l7-state.js?v=${VERSION}`)).then(start).catch(fail);
+Promise.resolve(window.L7_THEME_READY).then(()=>load(`../shared/l7-state.js?v=${VERSION}`)).then(()=>load(`../shared/l7-cleanup.js?v=${VERSION}`)).then(start).catch(fail);
 function fail(error){console.error(error);document.getElementById('app').innerHTML='<div class="container"><section class="card finish-box"><h2>Die Inhalte konnten nicht geladen werden.</h2><button class="btn" onclick="location.reload()">Neu laden</button></section></div>'}
 function start(){
  const S=window.L7S,T=window.L7_THEME,root=document.getElementById('app');let R=null,order=[],writeOpen=false,recognition=null,revealed=false;
