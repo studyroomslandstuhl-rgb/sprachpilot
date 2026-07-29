@@ -76,13 +76,14 @@ function renderBesondersCard(root=document){
   if(word!=='besonders')return;
   const front=card.querySelector('.flip-front');
   if(!front)return;
-  front.querySelectorAll('.visual,.image-fallback').forEach(element=>element.remove());
-  if(!front.querySelector('.special-word-visual')){
-   const visual=document.createElement('div');
-   visual.className='special-word-visual';
-   visual.textContent='speziell';
-   front.insertBefore(visual,front.firstChild);
-  }
+  card.classList.add('special-word-card');
+  front.querySelectorAll('.visual,.special-word-visual').forEach(element=>element.remove());
+  const visual=document.createElement('div');
+  visual.className='visual special-word-visual';
+  visual.setAttribute('aria-label','speziell');
+  visual.innerHTML='<span>speziell</span>';
+  const translation=front.querySelector('.card-translation-box');
+  front.insertBefore(visual,translation||front.firstChild);
  });
 }
 
@@ -100,7 +101,16 @@ function fixImageFallbacks(root=document){
 
 function apply(){cleanAudioLabels();renderBesondersCard();fixImageFallbacks()}
 const style=document.createElement('style');
-style.textContent='.special-word-visual{display:flex;align-items:center;justify-content:center;min-height:260px;margin:0 0 18px;border:2px solid #d8e6f3;border-radius:20px;background:#f7fbff;color:#173f68;font-size:clamp(2rem,7vw,4rem);font-weight:900;letter-spacing:.01em}.card-listen-btn,.sp-word-audio{width:auto!important;min-width:0!important;white-space:nowrap}.audio-file-panel audio{width:100%;max-width:620px}.image-fallback[hidden],.audio-load-error[hidden],.visual [hidden]{display:none!important}';
+style.textContent=`
+.special-word-card .flip-front{justify-content:flex-start!important;gap:12px!important;padding:16px!important}
+.special-word-card .special-word-visual{display:flex!important;flex:1 1 auto!important;align-items:center!important;justify-content:center!important;width:100%!important;height:auto!important;min-height:0!important;margin:0!important;border:2px solid #d8e6f3!important;border-radius:20px!important;background:#f7fbff!important;color:#173f68!important;overflow:hidden!important}
+.special-word-card .special-word-visual span{display:block;font-size:clamp(2.1rem,9vw,4rem);font-weight:900;line-height:1.05;overflow-wrap:anywhere;text-align:center;padding:18px}
+.special-word-card .card-translation-box{flex:0 0 auto;width:100%;margin:0!important;padding:10px 12px!important}
+.card-listen-btn,.sp-word-audio{width:auto!important;min-width:0!important;white-space:nowrap}
+.audio-file-panel audio{width:100%;max-width:620px}
+.image-fallback[hidden],.audio-load-error[hidden],.visual [hidden]{display:none!important}
+@media(max-width:640px){.special-word-card .flip-front{padding:12px!important;gap:10px!important}.special-word-card .special-word-visual span{font-size:clamp(2rem,12vw,3.4rem);padding:12px}.special-word-card .card-translation-box strong{font-size:18px}}
+`;
 document.head.appendChild(style);
 
 if(new URLSearchParams(location.search).get('task')==='dialog-abc'){
