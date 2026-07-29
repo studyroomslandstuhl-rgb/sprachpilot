@@ -22,9 +22,17 @@ window.l6t4LanguageKey=languageKey;
 window.l6t4LanguageName=()=>LANGUAGE_NAMES[languageKey()]||'Englisch';
 window.l6t4Translation=translation;
 
+function normalizeMetaEntry(entry){
+ if(Array.isArray(entry)){
+  const [id,number,title,icon,description,external]=entry;
+  return {id,number,title,icon,description,external};
+ }
+ return entry&&typeof entry==='object'?entry:{};
+}
+
 function rebuildMeta(){
  const rawSource=window.L6T4_USER_META||[];
- const source=rawSource.map(entry=>{
+ const source=rawSource.map(normalizeMetaEntry).filter(entry=>entry.id).map(entry=>{
   if(entry.id==='exam')return{...entry,title:'Prüfung',icon:'⭐'};
   if(entry.id==='dialog-rf')return{
    ...entry,
