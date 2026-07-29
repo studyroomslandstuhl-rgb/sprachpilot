@@ -7,38 +7,43 @@
 <link rel="stylesheet" href="../Thema-3/style.css?v=2">
 <link rel="stylesheet" href="../Thema-3/l6t3-upgrade.css?v=1">
 <link rel="stylesheet" href="../Thema-3/l6t3-revision.css?v=3">
-<link rel="stylesheet" href="l6t4-user.css?v=l6t4-sync-audio3">
-<link rel="stylesheet" href="l6t4-compact-v2.css?v=l6t4-sync-audio3">
+<link rel="stylesheet" href="l6t4-user.css?v=l6t4-exam-no-audio5">
+<link rel="stylesheet" href="l6t4-compact-v2.css?v=l6t4-exam-no-audio5">
 </head>
 <body>
 <div class="container">
 <header class="topbar"></header>
-<section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Freizeit-Wortschatz, Hobbys, Häufigkeit, Dialoge und Hörverstehen sicher benutzen.</p><div id="scoreSummary"></div></div></section>
+<section class="card progress-card"><div class="circle" id="totalCircle">0%</div><div><h2>Dein Fortschritt</h2><p class="small" id="totalText">0 Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar"></div></div><p class="small">Ziel: Freizeit-Wortschatz, Hobbys, Häufigkeit und Alltagsdialoge sicher benutzen.</p><div id="scoreSummary"></div></div></section>
 <section id="taskGrid"></section>
 <footer>© SprachPilot</footer>
 </div>
-<script type="module" src="/js/guard.js?v=l6t4-sync-audio3"></script>
-<script src="theme4-data.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-content-revision2.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-final-content-patch.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-bunny-images.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-user-content.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-remove-time-words.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-compact-v2.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-move-auf-jeden-fall.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-remove-genau-ganz-sicher.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-overview-from-cards.js?v=l6t4-sync-audio3"></script>
-<script src="app.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-meta-revision2.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-card-dialog-cleanup.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-overview-match.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-user-ui.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-task-ref.js?v=l6t4-sync-audio3"></script>
-<script src="l6t4-theme-score-v3.js?v=l6t4-sync-audio3"></script>
+<script type="module" src="/js/guard.js?v=l6t4-exam-no-audio5"></script>
+<script src="theme4-data.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-content-revision2.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-final-content-patch.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-bunny-images.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-user-content.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-remove-time-words.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-compact-v2.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-move-auf-jeden-fall.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-remove-genau-ganz-sicher.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-overview-from-cards.js?v=l6t4-exam-no-audio5"></script>
+<script src="app.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-meta-revision2.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-card-dialog-cleanup.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-overview-match.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-user-ui.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-task-ref.js?v=l6t4-exam-no-audio5"></script>
+<script src="l6t4-theme-score-v3.js?v=l6t4-exam-no-audio5"></script>
 <script>
 L6T4ThemeScoreV3.initOverview();
 l6t4MatchedHeader('Freizeit & Alltag',true);
 l6t4MatchedMenu();
+document.querySelectorAll('a[href*="task=exam"]').forEach(link=>{
+ const url=new URL(link.href,location.href);
+ url.searchParams.set('v','l6t4-exam-no-audio5');
+ link.href=url.pathname+url.search;
+});
 L6T4ThemeScoreV3.renderSummary();
 </script>
 </body>
