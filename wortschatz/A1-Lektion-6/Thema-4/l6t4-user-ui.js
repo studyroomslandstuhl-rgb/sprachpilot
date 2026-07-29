@@ -66,6 +66,8 @@ function rebuildMeta(){
  };
  L6T4_META.splice(0,L6T4_META.length,...source);
  L6T4_TASKS.splice(0,L6T4_TASKS.length,...source.map(build));
+ window.L6T4_META=L6T4_META;
+ window.L6T4_TASKS=L6T4_TASKS;
 }
 rebuildMeta();
 window.l6t4RebuildUserMeta=rebuildMeta;
