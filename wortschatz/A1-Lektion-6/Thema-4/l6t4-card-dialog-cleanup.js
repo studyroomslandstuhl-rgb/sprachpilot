@@ -4,8 +4,10 @@ const data=window.L6T4_DATA;
 if(!data)return;
 
 function normalize(value){return String(value??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:“”"'…]/g,'').replace(/\s+/g,' ')}
+const choice=(prompt,answer,options,hint='',extra={})=>({kind:'choice',prompt,answer,options,hint,...extra});
+const dialog=(speaker,text,side='left')=>({speaker,text,side});
 
-/* „besonders“: keine Bildkarte, sondern klare Bedeutungsstütze. */
+/* „besonders“: keine Bildkarte, sondern Bedeutungsstütze. */
 const besonders=(data.vocabulary||[]).find(item=>normalize(item?.word)==='besonders');
 if(besonders){
  besonders.image='';
@@ -15,27 +17,27 @@ if(besonders){
 /* Die separate Audio-Dialogaufgabe bleibt aus dem Thema entfernt. */
 if(Array.isArray(data.tasks))data.tasks=data.tasks.filter(task=>task?.id!=='dialog-abc');
 
-/* Defekte alte Hörtexte aus der Prüfung entfernen und durch vorhandene Inhalte ersetzen. */
+/* Prüfung: exakt 15 kontrollierbare Aufgaben, vollständig ohne Audio und ohne Hörfelder. */
 const exam=(data.tasks||[]).find(task=>task?.id==='exam');
-if(exam&&Array.isArray(exam.items)){
- const base=exam.items.filter(item=>!item?.audioName&&normalize(item?.prompt)!=='was macht nina am freitag');
- const existingSound={
-  kind:'audio-choice',
-  prompt:'Welche Aktivität hörst du?',
-  answer:'Musik hören',
-  options:['Musik hören','telefonieren','staubsaugen'],
-  audioFile:'l6t4-geraeusch-musik-hoeren.mp3',
-  hint:'Achte auf das typische Geräusch.',
-  abc:true
- };
- const besondersMeaning={
-  kind:'choice',
-  prompt:'Was bedeutet „besonders“?',
-  answer:'speziell',
-  options:['speziell','nie','langweilig','zusammen'],
-  hint:'„Besonders“ bedeutet hier: mehr als andere.'
- };
- exam.items=[...base,existingSound,besondersMeaning].slice(0,15);
+if(exam){
+ exam.title='Prüfung';
+ exam.items=[
+  choice('Was bedeutet „besonders“?','speziell',['speziell','nie','langweilig','zusammen'],'„Besonders“ bedeutet: mehr als andere.'),
+  choice('___ Hobby','das',['der','die','das','kein Artikel'],'Hobby ist ein Neutrum.'),
+  choice('Plural: der Beruf','die Berufe',['die Berufe','die Berufen','der Berufe','die Beruf'],'Achte auf Artikel und Pluralendung.'),
+  choice('Was bedeutet „dabeihaben“?','etwas bei sich haben',['etwas bei sich haben','etwas vergessen','etwas suchen','etwas kaufen'],'Denke an: Hast du den Würfel dabei?'),
+  choice('Ich ___ einen Tee.','nehme',['nehme','nimmt','nimmst','nehmt'],'Achte auf das Subjekt „ich“.'),
+  choice('Was ___ du?','nimmst',['nimmst','nehme','nimmt','nehmen'],'Achte auf das Subjekt „du“.'),
+  choice('Gitarre ___','spielen',['spielen','fahren','treffen','hören'],'Bilde die passende Nomen-Verb-Verbindung.'),
+  choice('„Kein einziges Mal“ bedeutet:','nie',['nie','oft','manchmal','immer'],'Gesucht ist eine Häufigkeitsangabe.'),
+  choice('Welche Reaktion passt?', 'Oh, wie dumm!',['Oh, wie dumm!','Na klar.','Ich weiß es nicht.','Stimmt.'],'Der Bus ist schon weg.',{dialog:[dialog('Anna','Der Bus ist schon weg.')]}),
+  choice('Spielst du nicht gern Tennis?','Doch, sehr gern.',['Doch, sehr gern.','Nein, sehr gern.','Vielleicht nächste Woche.','Ich weiß es nicht.'],'Eine negative Frage wird hier positiv beantwortet.'),
+  choice('Was bedeutet „Ich glaube …“?','Ich denke …',['Ich denke …','Ich weiß es sicher.','Ich frage …','Ich vergesse …'],'„Glauben“ drückt hier eine Vermutung aus.'),
+  choice('Welche Bedeutung hat „finden“?', 'eine Meinung sagen',['eine Meinung sagen','suchen oder entdecken'],'Der Film wird bewertet.',{dialog:[dialog('Mara','Ich finde den Film toll.')]}),
+  choice('Welche Antwort passt?', 'Mein Hobby ist Schwimmen.',['Mein Hobby ist Schwimmen.','Meine Hobbys ist Schwimmen.','Ich bin Schwimmen.','Mein Beruf ist Schwimmen.'],'Achte auf Singular: das Hobby.'),
+  choice('Meine Hobbys ___ Lesen und Wandern.','sind',['sind','ist','bin','seid'],'Das Subjekt steht im Plural.'),
+  choice('Welche Antwort passt?', 'Ich weiß es nicht.',['Ich weiß es nicht.','Na klar.','Oh, wie dumm!','Auf jeden Fall.'],'Die Person kennt die Uhrzeit nicht.',{dialog:[dialog('Tim','Wann beginnt der Film?')]})
+ ];
 }
 
 function removeAndRenumber(list){
@@ -47,19 +49,25 @@ try{removeAndRenumber(L6T4_META)}catch(e){}
 try{
  removeAndRenumber(L6T4_TASKS);
  const examMeta=L6T4_TASKS.find(item=>item?.id==='exam');
- if(examMeta&&exam)examMeta.total=exam.items.length;
+ if(examMeta&&exam)examMeta.total=15;
 }catch(e){}
 
-/* Alte laufende Prüfung einmalig zurücksetzen, damit die defekte Audiofrage verschwindet. */
+/* Einmaliger Neustart nur des laufenden Prüfungsstands. Punkte und abgeschlossene Runs bleiben erhalten. */
 try{
- const releaseKey='SP_L6_T4_EXAM_AUDIO_REPLACED_V3';
+ const releaseKey='SP_L6_T4_EXAM_WITHOUT_AUDIO_V5';
  if(localStorage.getItem(releaseKey)!=='1'){
-  const keys=[];
-  for(let index=0;index<localStorage.length;index++){
-   const key=String(localStorage.key(index)||'');
-   if(/SP_L6_T4/i.test(key)&&/task-exam$/i.test(key))keys.push(key);
-  }
-  keys.forEach(key=>localStorage.removeItem(key));
+  ['SP_L6_T4_V2_task-exam','SP_L6_T4_V1_task-exam','SP_L6_T4_PREVIEW_task-exam'].forEach(key=>{
+   localStorage.removeItem(key);
+   sessionStorage.removeItem(key);
+  });
+  [localStorage,sessionStorage].forEach(storage=>{
+   const keys=[];
+   for(let index=0;index<storage.length;index++){
+    const key=String(storage.key(index)||'');
+    if(/SP_L6_T4/i.test(key)&&/task-exam$/i.test(key))keys.push(key);
+   }
+   keys.forEach(key=>storage.removeItem(key));
+  });
   localStorage.setItem(releaseKey,'1');
  }
 }catch(e){}
@@ -107,8 +115,7 @@ style.textContent=`
 .special-word-card .special-word-visual span{display:block;font-size:clamp(2.1rem,9vw,4rem);font-weight:900;line-height:1.05;overflow-wrap:anywhere;text-align:center;padding:18px}
 .special-word-card .card-translation-box{flex:0 0 auto;width:100%;margin:0!important;padding:10px 12px!important}
 .card-listen-btn,.sp-word-audio{width:auto!important;min-width:0!important;white-space:nowrap}
-.audio-file-panel audio{width:100%;max-width:620px}
-.image-fallback[hidden],.audio-load-error[hidden],.visual [hidden]{display:none!important}
+.image-fallback[hidden],.audio-load-error[hidden],.visual [hidden],[hidden]{display:none!important}
 @media(max-width:640px){.special-word-card .flip-front{padding:12px!important;gap:10px!important}.special-word-card .special-word-visual span{font-size:clamp(2rem,12vw,3.4rem);padding:12px}.special-word-card .card-translation-box strong{font-size:18px}}
 `;
 document.head.appendChild(style);
