@@ -41,7 +41,8 @@ if(PERFORMANCE_SYNC_OFF){
 }
 function shouldInstallGlobalHeader(){
   if(IS_WORTSCHATZ_LESSON_OVERVIEW)return false;
-  return !document.querySelector(".topbar") && !document.querySelector("header.topbar");
+  if(IS_WORTSCHATZ_EXERCISE)return true;
+  return !document.querySelector(".topbar")&&!document.querySelector("header.topbar");
 }
 function installHeaderOnce(){
   if(!SP_USER)return;
