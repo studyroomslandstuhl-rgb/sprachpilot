@@ -2,7 +2,7 @@
 'use strict';
 const CDN='https://sprachpilot.b-cdn.net/';
 const DIRS=[CDN+'audio/',CDN+'Audio/'];
-const VERSION='l7t1-standardbar5';
+const VERSION='l7t1-standardbar6';
 let current=null;
 let headerTimer=null;
 function simple(value){return String(value??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[….,!?;:“”"'`´()]/g,'').replace(/\s+/g,' ')}
@@ -40,6 +40,12 @@ function pageTitle(){
  return'Lektion 7 · Thema 1';
 }
 function navBack(){return document.body?.dataset?.page==='theme'?'../index.html':'index.html'}
+function resetVisible(){return typeof window.resetThemeProgress==='function'&&document.body?.dataset?.page!=='task'}
+function headerKey(title){
+ const p=readProfile();
+ const name=[p.vorname||p.firstName||'',p.nachname||p.lastName||'',p.kurs||p.kursnummer||p.courseCode||'',localStorage.getItem('SP_LOGIN_ROLE')||'',document.body?.dataset?.page||'',resetVisible()?'reset':'no-reset'].join('|');
+ return `${title}|${name}`;
+}
 function headerHtml(title){
  const p=readProfile();
  const first=p.vorname||p.firstName||'';
@@ -48,18 +54,25 @@ function headerHtml(title){
  const course=p.kurs||p.kursnummer||p.courseCode||'';
  const dash=dashboardHref();
  const overview=`uebersicht.html?v=${VERSION}`;
- const reset=typeof window.resetThemeProgress==='function'&&document.body?.dataset?.page!=='task';
+ const reset=resetVisible();
  return `<div class="topbar-main"><a class="brand" href="/index.html" data-sp-href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 7 · Thema 1</div></div></a><div class="account-tools"><span class="account-pill">${esc(name)}${course?' · '+esc(course):''}</span><a class="account-link" href="${dash}" data-sp-href="${dash}">Dashboard</a><a class="account-link" href="/profile/index.html" data-sp-href="/profile/index.html">Profil</a><button class="account-link account-btn" type="button" data-sp-action="logout">Abmelden</button></div></div><nav class="nav"><button class="btn secondary" type="button" data-sp-action="back" data-sp-fallback="${navBack()}">← Zurück</button><a class="btn secondary" href="${overview}" data-sp-href="${overview}">Übersicht</a>${reset?'<button class="btn danger-btn" type="button" data-sp-action="reset">Fortschritte löschen</button>':''}</nav>`;
 }
 function installHeader(){
  const title=pageTitle();
+ const key=headerKey(title);
  document.querySelectorAll('.topbar:not(.sp-standard-topbar)').forEach(h=>h.remove());
  const existing=document.querySelector('.topbar.sp-standard-topbar');
- if(existing){existing.innerHTML=headerHtml(title);return;}
+ if(existing){
+  if(existing.dataset.renderKey===key)return;
+  existing.innerHTML=headerHtml(title);
+  existing.dataset.renderKey=key;
+  return;
+ }
  const container=document.querySelector('#app .container')||document.querySelector('.container')||document.getElementById('app')||document.body;
  const h=document.createElement('header');
  h.className='topbar sp-standard-topbar';
  h.dataset.standard='1';
+ h.dataset.renderKey=key;
  h.innerHTML=headerHtml(title);
  if(container===document.body)document.body.prepend(h);else container.prepend(h);
 }
