@@ -1,225 +1,132 @@
 import { getActiveProfile, logout, safeText, dashboardHref } from "./auth.js";
 
+const HEADER_VERSION="theme-standard2";
 const LESSONS={
-  1:{title:"Lektion 1",subtitle:"Wortschatz · A1 Lektion 1",color:{main:"#2f95ad",dark:"#0b5c73"}},
-  2:{title:"Lektion 2",subtitle:"Wortschatz · A1 Lektion 2",color:{main:"#6f8f2f",dark:"#3d5415"}},
-  3:{title:"Lektion 3: Einkaufen",subtitle:"Wortschatz · A1 Lektion 3 · Einkaufen",color:{main:"#f6b46b",dark:"#8a4f16"}},
-  4:{title:"Lektion 4: Wohnen",subtitle:"Wortschatz · A1 Lektion 4 · Wohnen",color:{main:"#f6d96b",dark:"#6d5a00"}},
-  5:{title:"Lektion 5: Mein Tag",subtitle:"Wortschatz · A1 Lektion 5 · Mein Tag",color:{main:"#2f95ad",dark:"#0b5c73"}},
-  6:{title:"Lektion 6: Wetter",subtitle:"Wortschatz · A1 Lektion 6 · Wetter",color:{main:"#FFB6C1",dark:"#8a3a4f"}}
+  1:{title:"Lektion 1",subtitle:"Wortschatz · A1 Lektion 1",color:{main:"#9fdcf0",dark:"#155e75",soft:"#eefbff",line:"#c7eaf4"}},
+  2:{title:"Lektion 2",subtitle:"Wortschatz · A1 Lektion 2",color:{main:"#c7d99a",dark:"#4d641f",soft:"#f6faeb",line:"#dce8bd"}},
+  3:{title:"Lektion 3: Einkaufen",subtitle:"Wortschatz · A1 Lektion 3 · Einkaufen",color:{main:"#f6b46b",dark:"#8a4f16",soft:"#fff4e8",line:"#f3d0aa"}},
+  4:{title:"Lektion 4: Wohnen",subtitle:"Wortschatz · A1 Lektion 4 · Wohnen",color:{main:"#f6d96b",dark:"#6d5a00",soft:"#fff9dc",line:"#eadf9f"}},
+  5:{title:"Lektion 5: Mein Tag",subtitle:"Wortschatz · A1 Lektion 5 · Mein Tag",color:{main:"#29b8b3",dark:"#16847f",soft:"#e8fbfa",line:"#bfece9"}},
+  6:{title:"Lektion 6: Wetter",subtitle:"Wortschatz · A1 Lektion 6 · Wetter",color:{main:"#ffb6c1",dark:"#8a3a4f",soft:"#fff0f4",line:"#f3c2cc"}},
+  7:{title:"Lektion 7",subtitle:"Wortschatz und Grammatik · A1 Lektion 7",color:{main:"#a8cfff",dark:"#235a92",soft:"#eef7ff",line:"#b9dcff"}}
+};
+const THEME_TITLES={
+  "3-1":"Lebensmittel & Getränke","3-2":"Mengen & Verpackungen",
+  "4-1":"Wohnung & Zimmer","4-2":"Möbel & Elektrogeräte","4-3":"Farben & Adjektive","4-4":"Wohnungsanzeigen","4-5":"Am Telefon",
+  "5-1":"Alltag und trennbare Verben","5-2":"Uhrzeit","5-3":"Tage, Tageszeiten und Präpositionen","5-4":"Kurse, Familie und Öffnungszeiten",
+  "6-1":"Wetter","6-2":"Himmelsrichtungen, Länder & Jahreszeiten","6-3":"Restaurant, Akkusativ & Planen","6-4":"Freizeit & Alltag",
+  "7-1":"können, wollen und möchten","7-2":"Perfekt mit haben","7-3":"Perfekt mit sein","7-4":"Kommunikation in der Schule"
 };
 
 function profileText(profile){
-  if(!profile) return "Nicht eingeloggt";
-  const name=[profile.vorname||profile.firstName||profile.name,profile.nachname||profile.lastName]
-    .filter(Boolean)
-    .join(" ")
-    .trim();
+  if(!profile)return"Nicht eingeloggt";
+  const name=[profile.vorname||profile.firstName||profile.name,profile.nachname||profile.lastName].filter(Boolean).join(" ").trim();
   const course=profile.kurs||profile.kursnummer||profile.courseCode||profile.course||"";
-  return [name||profile.email||"Profil",course].filter(Boolean).join(" · ");
+  return[name||profile.email||"Profil",course].filter(Boolean).join(" · ");
 }
-
 function fileTitle(file){
   const raw=String(file||"").replace(/\.html$/i,"").replace(/[-_]+/g," ").trim();
-  if(!raw||raw.toLowerCase()==="index") return "";
+  if(!raw||raw.toLowerCase()==="index")return"";
   return raw.charAt(0).toUpperCase()+raw.slice(1);
 }
-
-function setColor(name,value){
-  if(value) document.documentElement.style.setProperty(name,value);
+function computedVar(...names){
+  try{const style=getComputedStyle(document.documentElement);for(const name of names){const value=style.getPropertyValue(name).trim();if(value)return value}}catch(e){}
+  return"";
 }
-
-function lessonHref(lessonNumber){return `/wortschatz/A1-Lektion-${lessonNumber}/`}
-function themeHref(lessonNumber,themeNumber){return `/wortschatz/A1-Lektion-${lessonNumber}/Thema-${themeNumber}/`}
-function themeOverviewHref(lessonNumber,themeNumber){return `/wortschatz/A1-Lektion-${lessonNumber}/Thema-${themeNumber}/uebersicht.html`}
+function setVar(name,value){if(value)document.documentElement.style.setProperty(name,value)}
+function applyThemeColors(fallback={}){
+  const main=computedVar("--lesson-main","--main")||fallback.main;
+  const dark=computedVar("--lesson-dark","--lesson-main-dark","--dark")||fallback.dark;
+  const soft=computedVar("--lesson-soft","--soft")||fallback.soft;
+  const line=computedVar("--lesson-line","--line")||fallback.line;
+  setVar("--lesson-main",main);setVar("--lesson-dark",dark);setVar("--lesson-main-dark",dark);setVar("--lesson-soft",soft);setVar("--lesson-line",line);
+}
+function lessonHref(n){return`/wortschatz/A1-Lektion-${n}/`}
+function themeHref(n,t){return`/wortschatz/A1-Lektion-${n}/Thema-${t}/`}
+function themeOverviewHref(n,t){return`/wortschatz/A1-Lektion-${n}/Thema-${t}/uebersicht.html`}
 
 export function detectSpHeaderContext(pathname=window.location.pathname){
   const path=String(pathname||"/").replace(/\/index\.html$/i,"/");
   const match=path.match(/\/wortschatz\/A1-Lektion-(\d+)\/?(?:Thema-(\d+)\/?)?(?:([^/]+\.html))?$/i);
   if(match){
-    const lessonNumber=Number(match[1]);
-    const themeNumber=match[2] ? Number(match[2]) : null;
-    const file=match[3]||"";
+    const lessonNumber=Number(match[1]),themeNumber=match[2]?Number(match[2]):null,file=match[3]||"";
     const lesson=LESSONS[lessonNumber]||{title:`Lektion ${lessonNumber}`,subtitle:`Wortschatz · A1 Lektion ${lessonNumber}`,color:{}};
-    const isTask=!!file && !/^index\.html$/i.test(file);
-    const level=isTask ? "task" : (themeNumber ? "theme" : "lesson");
-    const taskTitle=fileTitle(file);
-    const subtitle=level==="task"
-      ? `${taskTitle} · A1 Lektion ${lessonNumber} · Thema ${themeNumber}`
-      : level==="theme"
-        ? `A1 Lektion ${lessonNumber} · Thema ${themeNumber}`
-        : lesson.subtitle;
-    const backHref=level==="lesson" ? "/wortschatz/" : (level==="theme" ? lessonHref(lessonNumber) : themeHref(lessonNumber,themeNumber));
-    const overviewHref=themeNumber ? themeOverviewHref(lessonNumber,themeNumber) : lessonHref(lessonNumber);
-    const navItems=level==="lesson"
-      ? [{label:"← Zurück",href:backHref}]
-      : [
-          {label:"← Zurück",href:backHref},
-          {label:"Übersicht",href:overviewHref},
-          {label:"Fortschritte löschen",type:"button",action:"reset-progress",variant:"danger"}
-        ];
-    return {area:"wortschatz",level,lessonNumber,themeNumber,taskTitle,title:"SprachPilot",subtitle,navItems,color:lesson.color,variant:level};
+    const isTask=!!file&&!/^index\.html$/i.test(file),level=isTask?"task":themeNumber?"theme":"lesson";
+    const taskTitle=fileTitle(file),themeTitle=THEME_TITLES[`${lessonNumber}-${themeNumber}`]||`Thema ${themeNumber}`;
+    const subtitle=level==="task"?`${taskTitle} · A1 Lektion ${lessonNumber} · Thema ${themeNumber}`:level==="theme"?`${themeTitle} · A1 Lektion ${lessonNumber} · Thema ${themeNumber}`:lesson.subtitle;
+    const backHref=level==="lesson"?"/wortschatz/":level==="theme"?lessonHref(lessonNumber):themeHref(lessonNumber,themeNumber);
+    const navItems=level==="lesson"?[{label:"← Zurück",href:backHref}]:[
+      {label:"← Zurück",href:backHref},
+      {label:"Übersicht",href:themeOverviewHref(lessonNumber,themeNumber)},
+      {label:"Fortschritte löschen",type:"button",action:"reset-progress",variant:"danger"}
+    ];
+    return{area:"wortschatz",level,lessonNumber,themeNumber,taskTitle,title:"SprachPilot",subtitle,navItems,color:lesson.color,variant:level};
   }
-
-  if(/^\/verben-A1\/?/i.test(path)){
-    return {area:"verben-A1",level:"verben",title:"SprachPilot",subtitle:"Verben A1",navItems:[{label:"← Zurück",href:"/student-dashboard/index.html"}],color:{main:"#2f95ad",dark:"#0b5c73"},variant:"verben"};
-  }
-
-  return {area:"default",level:"default",title:"SprachPilot",subtitle:"",navItems:[],color:{main:"#2f95ad",dark:"#0b5c73"},variant:"default"};
+  if(/^\/verben-A1\/?/i.test(path))return{area:"verben-A1",level:"verben",title:"SprachPilot",subtitle:"Verben A1",navItems:[{label:"← Zurück",href:"/student-dashboard/index.html"}],color:{main:"#9fdcf0",dark:"#155e75",soft:"#eefbff",line:"#c7eaf4"},variant:"verben"};
+  return{area:"default",level:"default",title:"SprachPilot",subtitle:"",navItems:[],color:{main:"#9fdcf0",dark:"#155e75",soft:"#eefbff",line:"#c7eaf4"},variant:"default"};
 }
-
 function navItem(item){
-  if(!item) return "";
-  const danger=item.variant==="danger" ? " is-danger" : "";
-  if(item.type==="button")return `<button class="sp-header__nav-link${danger}" type="button" ${item.action?`data-sp-action="${safeText(item.action)}"`:""}>${safeText(item.label)}</button>`;
-  return `<a class="sp-header__nav-link${danger}" href="${safeText(item.href||"#")}">${safeText(item.label)}</a>`;
+  if(!item)return"";
+  const danger=item.variant==="danger"?" is-danger":"";
+  if(item.type==="button")return`<button class="sp-header__nav-link${danger}" type="button" ${item.action?`data-sp-action="${safeText(item.action)}"`:""}>${safeText(item.label)}</button>`;
+  return`<a class="sp-header__nav-link${danger}" href="${safeText(item.href||"#")}">${safeText(item.label)}</a>`;
 }
-
 export function renderSpHeader(options={}){
-  const detected=detectSpHeaderContext(options.pathname||window.location.pathname);
-  const context={...detected,...options};
-  const color={...(detected.color||{}),...(options.color||{})};
-  setColor("--lesson-main",color.main);
-  setColor("--lesson-dark",color.dark);
-
-  const profile=context.profile||getActiveProfile();
-  const account=context.accountText||profileText(profile);
-  const title=context.title||"SprachPilot";
-  const subtitle=context.subtitle||"";
-  const homeHref=context.homeHref||"/index.html";
-  const dash=context.dashboardHref||((typeof dashboardHref==="function") ? dashboardHref() : "/student-dashboard/index.html");
-  const nav=(context.navItems||[]).map(navItem).join("");
-
-  return `
-    <header class="sp-header ${safeText(context.variant?`sp-header--${context.variant}`:"")}">
-      <div class="sp-header__main">
-        <a class="sp-header__brand" href="${safeText(homeHref)}">
-          <span class="sp-header__logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></span>
-          <span class="sp-header__title">
-            <h1>${safeText(title)}</h1>
-            ${subtitle?`<span class="sp-header__subtitle">${safeText(subtitle)}</span>`:""}
-          </span>
-        </a>
-        <div class="sp-header__account">
-          <span class="sp-header__pill">${safeText(account)}</span>
-          <a class="sp-header__button" href="${safeText(dash)}">Dashboard</a>
-          <a class="sp-header__button" href="/profile/index.html">Profil</a>
-          <button class="sp-header__button" type="button" data-sp-logout>Abmelden</button>
-        </div>
-      </div>
-      ${nav?`<nav class="sp-header__nav">${nav}</nav>`:""}
-    </header>
-  `;
+  const detected=detectSpHeaderContext(options.pathname||window.location.pathname),context={...detected,...options};
+  applyThemeColors({...detected.color,...(options.color||{})});
+  const profile=context.profile||getActiveProfile(),account=context.accountText||profileText(profile),title=context.title||"SprachPilot",subtitle=context.subtitle||"";
+  const homeHref=context.homeHref||"/index.html",dash=context.dashboardHref||((typeof dashboardHref==="function")?dashboardHref():"/student-dashboard/index.html");
+  const nav=(context.navItems||[]).filter(item=>!/statistik/i.test(String(item?.label||""))).map(navItem).join("");
+  return`<header class="sp-header ${safeText(context.variant?`sp-header--${context.variant}`:"")}" data-sp-header-version="${HEADER_VERSION}"><div class="sp-header__main"><a class="sp-header__brand" href="${safeText(homeHref)}"><span class="sp-header__logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></span><span class="sp-header__title"><h1>${safeText(title)}</h1>${subtitle?`<span class="sp-header__subtitle">${safeText(subtitle)}</span>`:""}</span></a><div class="sp-header__account"><span class="sp-header__pill">${safeText(account)}</span><a class="sp-header__button" href="${safeText(dash)}">Dashboard</a><a class="sp-header__button" href="/profile/index.html">Profil</a><button class="sp-header__button" type="button" data-sp-logout>Abmelden</button></div></div>${nav?`<nav class="sp-header__nav">${nav}</nav>`:""}</header>`;
 }
-
 export function bindSpHeader(root=document){
-  root.querySelectorAll("[data-sp-logout]").forEach(button=>{
-    if(button.dataset.spBound) return;
-    button.dataset.spBound="1";
-    button.addEventListener("click",()=>logout());
-  });
-  root.querySelectorAll('[data-sp-action="reset-progress"]').forEach(button=>{
-    if(button.dataset.spBound) return;
-    button.dataset.spBound="1";
-    button.addEventListener("click",()=>{
-      if(typeof window.resetThemeProgress==="function"){
-        window.resetThemeProgress();
-      }else{
-        window.dispatchEvent(new CustomEvent("sp:reset-theme-progress"));
-      }
-    });
-  });
+  root.querySelectorAll("[data-sp-logout]").forEach(button=>{if(button.dataset.spBound)return;button.dataset.spBound="1";button.addEventListener("click",()=>logout())});
+  root.querySelectorAll('[data-sp-action="reset-progress"]').forEach(button=>{if(button.dataset.spBound)return;button.dataset.spBound="1";button.addEventListener("click",()=>{
+    if(typeof window.resetThemeProgress==="function")window.resetThemeProgress();
+    else if(typeof window.resetAll==="function")window.resetAll();
+    else if(typeof window.resetCurrentPackage==="function")window.resetCurrentPackage();
+    else window.dispatchEvent(new CustomEvent("sp:reset-theme-progress"));
+  })});
 }
-
 function ensureHeaderCss(){
-  if(document.querySelector('link[href="/css/sp-header.css"]')) return;
-  const link=document.createElement("link");
-  link.rel="stylesheet";
-  link.href="/css/sp-header.css";
-  document.head.appendChild(link);
+  let link=document.querySelector('link[data-sp-header-css],link[href^="/css/sp-header.css"]');
+  if(link){link.dataset.spHeaderCss="1";if(!link.href.includes(HEADER_VERSION))link.href=`/css/sp-header.css?v=${HEADER_VERSION}`;return}
+  link=document.createElement("link");link.rel="stylesheet";link.href=`/css/sp-header.css?v=${HEADER_VERSION}`;link.dataset.spHeaderCss="1";document.head.appendChild(link);
 }
-
-function hideOldAccountStrip(){
-  document.querySelectorAll("#accountStrip,.account-strip").forEach(el=>{
-    el.innerHTML="";
-    el.style.display="none";
-    el.style.height="0";
-    el.style.minHeight="0";
-    el.style.overflow="hidden";
-  });
+function hideOldAccountStrip(){document.querySelectorAll("#accountStrip,.account-strip").forEach(el=>{el.innerHTML="";el.style.display="none";el.style.height="0";el.style.minHeight="0";el.style.overflow="hidden"})}
+function isStatisticsControl(el){const text=String(el?.textContent||"").replace(/\s+/g," ").trim(),href=String(el?.getAttribute?.("href")||"");return/^statistik$/i.test(text)||/(?:^|\/)statistik\.html(?:[?#]|$)/i.test(href)}
+function removeStatisticsControls(){document.querySelectorAll("a,button").forEach(el=>{if(isStatisticsControl(el))el.remove()})}
+const LEGACY_SELECTORS=".topbar,#spHeader,.l7-topbar,.l7-header,header.sp-shell,header.top,.sp-shell";
+function removeLegacyHeaders(keep=null){document.querySelectorAll(LEGACY_SELECTORS).forEach(el=>{if(el!==keep&&!el.classList.contains("sp-header"))el.remove()})}
+function removeDuplicateStandardHeaders(keep){document.querySelectorAll(".sp-header").forEach(el=>{if(el!==keep)el.remove()})}
+function findTarget(){return document.querySelector("#spHeader,.topbar,.l7-topbar,.l7-header,header.sp-shell,header.top,.sp-shell")}
+function insertHeader(html){
+  const target=findTarget();
+  if(target){target.outerHTML=html;return}
+  const host=document.querySelector("#app .l7-page,.container,.sp-page,.wrap,.page,#app")||document.body;
+  if(host===document.body||host.id==="app"&&host.children.length===0)host.insertAdjacentHTML("beforebegin" in host?"beforebegin":"afterbegin",html);
+  else host.insertAdjacentHTML("afterbegin",html);
 }
-
-function removeExtraSharedHeaders(){
-  const headers=[...document.querySelectorAll(".sp-header")];
-  headers.slice(1).forEach(el=>el.remove());
-}
-
-function removeOldHeaders(){
-  document.querySelectorAll(".topbar,#spHeader").forEach(el=>{
-    if(!el.classList.contains("sp-header")) el.remove();
-  });
-  document.querySelectorAll(".hero").forEach(hero=>{
-    const shared=hero.querySelector(":scope > .sp-header");
-    if(shared && document.querySelector("body > .sp-header, .container > .sp-header, .sp-page > .sp-header")) shared.remove();
-  });
-}
-
 function replaceOldHeader(){
-  hideOldAccountStrip();
-  removeExtraSharedHeaders();
-  const existing=document.querySelector(".sp-header");
-  if(existing){
-    removeOldHeaders();
-    bindSpHeader(document);
-    return true;
-  }
+  hideOldAccountStrip();ensureHeaderCss();
+  const existing=document.querySelector(`.sp-header[data-sp-header-version="${HEADER_VERSION}"]`);
+  if(existing){removeDuplicateStandardHeaders(existing);removeLegacyHeaders(existing);removeStatisticsControls();bindSpHeader(document);return true}
   const html=renderSpHeader();
-  const explicit=document.getElementById("spHeader");
-  if(explicit){
-    explicit.outerHTML=html;
-    bindSpHeader(document);
-    return true;
-  }
-  const topbar=document.querySelector(".topbar");
-  if(topbar){
-    topbar.outerHTML=html;
-    bindSpHeader(document);
-    return true;
-  }
-  const hero=document.querySelector(".hero");
-  if(hero){
-    hero.innerHTML=html;
-    bindSpHeader(hero);
-    return true;
-  }
-  return false;
+  const oldStandard=document.querySelector(".sp-header");
+  if(oldStandard)oldStandard.outerHTML=html;else insertHeader(html);
+  const current=document.querySelector(`.sp-header[data-sp-header-version="${HEADER_VERSION}"]`);
+  if(!current)return false;
+  removeDuplicateStandardHeaders(current);removeLegacyHeaders(current);removeStatisticsControls();bindSpHeader(document);return true;
 }
-
+let runQueued=false;
+function run(){runQueued=false;try{replaceOldHeader()}catch(e){console.warn("sp-header standard failed",e)}}
+function schedule(){if(runQueued)return;runQueued=true;if(typeof requestAnimationFrame==="function")requestAnimationFrame(run);else setTimeout(run,0)}
 export function installSpHeader(){
-  ensureHeaderCss();
-  hideOldAccountStrip();
-  const run=()=>replaceOldHeader();
-  if(document.readyState==="loading") document.addEventListener("DOMContentLoaded",run,{once:true});
-  else run();
-  window.addEventListener("load",run,{once:true});
-  setTimeout(run,100);
-  setTimeout(run,500);
-  setTimeout(run,1200);
-  setTimeout(run,2500);
-  if(!window.SP_HEADER_OBSERVER){
-    window.SP_HEADER_OBSERVER=new MutationObserver(()=>run());
-    const startObserver=()=>document.body&&window.SP_HEADER_OBSERVER.observe(document.body,{childList:true,subtree:true});
-    if(document.body) startObserver();
-    else document.addEventListener("DOMContentLoaded",startObserver,{once:true});
-  }
+  ensureHeaderCss();hideOldAccountStrip();schedule();
+  if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",schedule,{once:true});
+  window.addEventListener("load",schedule,{once:true});
+  [100,500,1200,2500].forEach(delay=>setTimeout(schedule,delay));
+  if(!window.SP_HEADER_OBSERVER){window.SP_HEADER_OBSERVER=new MutationObserver(schedule);const start=()=>document.body&&window.SP_HEADER_OBSERVER.observe(document.body,{childList:true,subtree:true});if(document.body)start();else document.addEventListener("DOMContentLoaded",start,{once:true})}
 }
-
-export function renderAutoSpHeader(target=document.getElementById("spHeader")){
-  if(!target) return;
-  target.outerHTML=renderSpHeader();
-  bindSpHeader(document);
-}
-
-if(document.currentScript?.hasAttribute("data-sp-auto-header")){
-  installSpHeader();
-}
+export function renderAutoSpHeader(target=document.getElementById("spHeader")){if(target)target.outerHTML=renderSpHeader();else insertHeader(renderSpHeader());bindSpHeader(document)}
+if(document.currentScript?.hasAttribute("data-sp-auto-header"))installSpHeader();
