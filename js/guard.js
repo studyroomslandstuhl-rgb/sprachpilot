@@ -105,11 +105,11 @@ window.addEventListener("SP_PROFILE_SYNCED",()=>setTimeout(installHeaderOnce,0))
 function delayedImport(src,delay){setTimeout(()=>import(src).catch(()=>{}),delay)}
 if(IS_L6T3){
   delayedImport("/js/microphone-fallback.js?v=1",1200);
-  delayedImport("/js/back-button-fix.js?v=1",1600);
+  delayedImport("/js/back-button-fix.js?v=2",1600);
   delayedImport("/js/sp-help-flow.js?v=1",1800);
 }else{
   import("/js/microphone-fallback.js?v=1").catch(()=>{});
-  import("/js/back-button-fix.js?v=1").catch(()=>{});
+  import("/js/back-button-fix.js?v=2").catch(()=>{});
   import("/js/sp-help-flow.js?v=1").catch(()=>{});
 }
 if(!IS_L6T2)import("/js/release-helper.js?v=11").catch(()=>{});
