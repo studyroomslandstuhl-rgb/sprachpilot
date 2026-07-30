@@ -3,13 +3,13 @@
    Die Bilddateien dürfen 800 x 800 px sein; sichtbar bleibt die Karte kompakt. */
 
 .flip-wrap{
-  --sp-card-image-size:min(420px,calc(100vw - 72px));
-  width:min(470px,100%);
+  --sp-card-image-size:min(300px,calc(100vw - 72px));
+  width:min(360px,100%);
   margin:18px auto;
 }
 
 .flip-card{
-  height:calc(var(--sp-card-image-size) + 142px);
+  height:calc(var(--sp-card-image-size) + 138px);
   max-height:none;
 }
 
@@ -29,7 +29,7 @@
   flex:0 0 auto;
   margin:0 auto;
   border:2px solid var(--lesson-line);
-  border-radius:22px;
+  border-radius:20px;
   background:#fff;
 }
 
@@ -42,7 +42,7 @@
 }
 
 .flip-front .card-translation-box{
-  width:min(420px,100%);
+  width:min(300px,100%);
   margin:12px auto 0;
 }
 
@@ -53,17 +53,17 @@
 .flip-back-grid{
   width:100%;
   display:grid;
-  grid-template-columns:150px minmax(0,1fr);
-  gap:14px;
+  grid-template-columns:120px minmax(0,1fr);
+  gap:12px;
   align-items:center;
 }
 
 .flip-back-image .visual{
-  width:150px;
-  height:150px;
+  width:120px;
+  height:120px;
   min-height:0;
   margin:0;
-  border-radius:18px;
+  border-radius:16px;
   background:#fff;
 }
 
@@ -77,12 +77,12 @@
 .flip-back-info{
   min-width:0;
   display:grid;
-  gap:8px;
+  gap:7px;
   justify-items:stretch;
 }
 
 .flip-back .flip-word{
-  font-size:28px;
+  font-size:25px;
   line-height:1.15;
   overflow-wrap:anywhere;
 }
@@ -90,20 +90,20 @@
 .flip-back .back-translation{
   margin:0;
   width:100%;
-  padding:9px 10px;
+  padding:8px 9px;
 }
 
 .flip-back .back-translation strong{
-  font-size:18px;
+  font-size:17px;
 }
 
 .flip-back .card-details{
   max-width:none;
-  gap:8px;
+  gap:7px;
 }
 
 .flip-back .card-details>div{
-  padding:9px 10px;
+  padding:8px 9px;
 }
 
 .flip-back .card-listen-btn{
@@ -113,12 +113,12 @@
 
 @media(max-width:640px){
   .flip-wrap{
-    --sp-card-image-size:min(320px,calc(100vw - 46px));
-    width:min(350px,100%);
+    --sp-card-image-size:min(280px,calc(100vw - 46px));
+    width:min(320px,100%);
   }
 
   .flip-card{
-    height:calc(var(--sp-card-image-size) + 132px);
+    height:calc(var(--sp-card-image-size) + 130px);
   }
 
   .flip-face{
@@ -135,8 +135,8 @@
   }
 
   .flip-back-image .visual{
-    width:118px;
-    height:118px;
+    width:100px;
+    height:100px;
     margin:0 auto;
   }
 
