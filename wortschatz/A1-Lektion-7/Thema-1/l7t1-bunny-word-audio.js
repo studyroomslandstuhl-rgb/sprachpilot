@@ -21,7 +21,6 @@ window.spLogout=function(){
  location.href='/index.html';
 };
 window.spGoBack=function(fallbackHref){
- if(history.length>1){history.back();return;}
  location.href=fallbackHref||'index.html';
 };
 function headerTitle(existing){
@@ -40,7 +39,7 @@ function installHeader(){
  const back=page==='theme'?'../index.html':'index.html';
  const title=headerTitle(h);
  h.dataset.spL6t2Header='1';
- h.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 7 · Thema 1</div></div></a><div class="account-tools"><span class="account-pill">${esc(name)}${course?' · '+esc(course):''}</span><a class="account-link" href="${dashboardHref()}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><button class="account-link account-btn" type="button" onclick="spLogout()">Abmelden</button></div></div><nav class="nav"><button class="btn secondary" type="button" onclick="spGoBack('${back}')">← Zurück</button><a class="btn secondary" href="uebersicht.html?v=l7t1-header-purple1">Übersicht</a></nav>`;
+ h.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 7 · Thema 1</div></div></a><div class="account-tools"><span class="account-pill">${esc(name)}${course?' · '+esc(course):''}</span><a class="account-link" href="${dashboardHref()}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><button class="account-link account-btn" type="button" onclick="spLogout()">Abmelden</button></div></div><nav class="nav"><button class="btn secondary" type="button" onclick="spGoBack('${back}')">← Zurück</button><a class="btn secondary" href="uebersicht.html?v=l7t1-header-purple2">Übersicht</a></nav>`;
 }
 function installHeaderStyle(){
  if(document.getElementById('l7-l6t2-header-style'))return;
