@@ -1,0 +1,65 @@
+name: Finalize L5 Bunny audio
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  finalize:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref }}
+      - name: Load Bunny audio on every relevant L5 page
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          python <<'PY'
+          from pathlib import Path
+          import re
+
+          root = Path('wortschatz/A1-Lektion-5')
+          tag = '<script src="/wortschatz/A1-Lektion-5/l5-bunny-words.js?v=l5-bunny-all3"></script>'
+          name_hints = ('karteikarten', 'hoeren', 'hören', 'schreiben', 'pruefung')
+          content_hints = ('<audio', 'speechSynthesis', 'spL5PlayWord', 'speakDialog', 'sayGerman(')
+          changed = []
+
+          for path in sorted(root.glob('Thema-*/*.html')):
+              text = path.read_text(encoding='utf-8')
+              relevant = any(hint in path.name.lower() for hint in name_hints) or any(hint in text for hint in content_hints)
+              if not relevant:
+                  continue
+
+              updated = re.sub(
+                  r'<script\s+src="(?:\.\./|/wortschatz/A1-Lektion-5/)?l5-bunny-words\.js\?v=[^"]+"\s*></script>',
+                  tag,
+                  text,
+              )
+              if 'l5-bunny-words.js' not in updated:
+                  points = re.search(r'<script\s+src="[^"]*(?:l5-points|points-hook)\.js[^"]*"\s*></script>', updated)
+                  if points:
+                      updated = updated[:points.start()] + tag + updated[points.start():]
+                  else:
+                      updated = updated.replace('</body>', tag + '</body>')
+
+              if updated != text:
+                  path.write_text(updated, encoding='utf-8')
+                  changed.append(str(path))
+
+          print(f'Updated {len(changed)} L5 pages')
+          for path in changed:
+              print(path)
+          PY
+          rm -f .github/workflows/l5-bunny-finalize.yml
+          git add wortschatz/A1-Lektion-5 .github/workflows/l5-bunny-finalize.yml
+          if git diff --cached --quiet; then
+            echo "No changes needed"
+            exit 0
+          fi
+          git commit -m "Load Bunny audio on all relevant L5 pages"
+          git push origin HEAD:${GITHUB_HEAD_REF}
