@@ -13,6 +13,9 @@ body.l7t1-card-rules .card-back-image{width:120px;height:120px;min-height:0;max-
 body.l7t1-card-rules .card-back-image img{width:100%;height:100%;max-height:none;object-fit:contain;display:block}
 body.l7t1-card-rules .card-back-info{display:grid;gap:8px;min-width:0;width:100%}
 body.l7t1-card-rules .card-back-info .card-translation-box{margin:0}
+body.l7t1-card-rules .card-example-box{width:100%;padding:10px;border-radius:13px;background:#fff}
+body.l7t1-card-rules .card-example-box span{display:block;font-size:13px;color:var(--muted)}
+body.l7t1-card-rules .card-example-box strong{display:block;margin-top:4px;font-size:17px;line-height:1.35}
 body.l7t1-card-rules .card-answer-hint{max-width:690px;margin:12px auto 0}
 @media(max-width:760px){
  body.l7t1-card-rules .flip-card{height:560px}
@@ -27,7 +30,7 @@ function removeSkipControls(scope=document){
 }
 
 function unwrapImageLink(box){
- const link=box.querySelector('a.bunny-image-link');
+ const link=box?.querySelector('a.bunny-image-link');
  if(!link)return;
  while(link.firstChild)link.parentNode.insertBefore(link.firstChild,link);
  link.remove();
@@ -50,11 +53,25 @@ function ensureAnswerHint(card){
  else question.appendChild(hint);
 }
 
+function optionalExample(wordText){
+ const item=(window.L7T1_VOCAB||[]).find(entry=>String(entry.word||'').trim()===wordText);
+ if(!item?.example)return null;
+ const box=document.createElement('div');
+ box.className='card-example-box';
+ const label=document.createElement('span');
+ label.textContent='Beispiel';
+ const text=document.createElement('strong');
+ text.textContent=item.example;
+ box.append(label,text);
+ return box;
+}
+
 function standardizeBack(card){
  const back=card.querySelector('.flip-back');
  if(!back||back.dataset.cardRulesReady==='1')return;
  const frontImage=card.querySelector('.flip-front .card-image');
  const frontMeaning=card.querySelector('.flip-front .card-translation-box');
+ unwrapImageLink(frontImage);
  const info=document.createElement('div');
  info.className='card-back-info';
  [...back.children].forEach(child=>info.appendChild(child));
@@ -65,13 +82,18 @@ function standardizeBack(card){
   if(word)word.insertAdjacentElement('afterend',meaning);
   else info.prepend(meaning);
  }
+ const example=optionalExample(String(word?.textContent||'').trim());
+ const audio=info.querySelector('.card-listen-btn');
+ if(example){
+  if(audio)audio.insertAdjacentElement('beforebegin',example);
+  else info.appendChild(example);
+ }
  const grid=document.createElement('div');
  grid.className='card-back-grid';
  if(frontImage){
   const image=frontImage.cloneNode(true);
   image.classList.remove('card-image');
   image.classList.add('card-back-image');
-  unwrapImageLink(image);
   grid.appendChild(image);
  }
  grid.appendChild(info);
@@ -102,7 +124,8 @@ function applyRules(){
 }
 
 document.addEventListener('click',event=>{
- const skip=event.target.closest('[data-action="card-next"]');
+ const target=event.target instanceof Element?event.target:null;
+ const skip=target?.closest('[data-action="card-next"]');
  if(!skip)return;
  event.preventDefault();
  event.stopPropagation();
