@@ -2,6 +2,11 @@
 .account-strip,
 .topbar:not(.sp-header),
 #spHeader:not(.sp-header),
+.l7-topbar,
+.l7-header,
+header.sp-shell,
+header.top,
+.sp-shell,
 .hero > .topbar,
 .hero > #spHeader{
   display:none!important;
@@ -88,7 +93,7 @@
 .sp-header__nav-link{
   border:2px solid rgba(255,255,255,.82);
   background:rgba(255,255,255,.92);
-  color:var(--lesson-dark,#0b5c73);
+  color:var(--lesson-dark,var(--lesson-main-dark,#0b5c73));
   border-radius:14px;
   padding:10px 14px;
   min-height:44px;
