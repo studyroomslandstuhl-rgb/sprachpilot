@@ -3,7 +3,7 @@
 const CDN='https://sprachpilot.b-cdn.net/';
 const DIRS=[CDN+'audio/',CDN+'Audio/'];
 let current=null;
-let installingHeader=false;
+let headerTimer=null;
 function simple(value){return String(value??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[….,!?;:“”"'`´()]/g,'').replace(/\s+/g,' ')}
 function slug(value,separator='_'){return simple(value).replace(/^(der|die|das)\s+/,'').replace(/[^a-z0-9]+/g,separator).replace(new RegExp('^'+separator+'+|'+separator+'+$','g'),'')}
 function base(value){return String(value??'').split(/[?#]/)[0].split('/').filter(Boolean).pop()?.replace(/\.(webp|png|jpe?g|gif|svg|mp3)$/i,'')||''}
@@ -23,7 +23,7 @@ window.spLogout=function(){
 };
 window.spGoBack=function(fallbackHref){location.href=fallbackHref||'index.html'};
 function pageTitle(){
- const old=document.querySelector('.topbar .subtitle');
+ const old=document.querySelector('.topbar:not(.sp-standard-topbar) .subtitle')||document.querySelector('.topbar.sp-standard-topbar .subtitle');
  const oldText=String(old?.textContent||'').split('· A1 Lektion 7')[0].trim();
  if(oldText)return oldText;
  if(document.body?.dataset?.page==='overview')return'Übersicht';
@@ -31,28 +31,26 @@ function pageTitle(){
  return'Lektion 7 · Thema 1';
 }
 function navBack(){return document.body?.dataset?.page==='theme'?'../index.html':'index.html'}
-function headerHtml(){
+function headerHtml(title){
  const p=readProfile();
  const first=p.vorname||p.firstName||'';
  const last=p.nachname||p.lastName||'';
  const name=(`${first} ${last}`).trim()||'Schüler/in';
  const course=p.kurs||p.kursnummer||p.courseCode||'';
  const reset=typeof window.resetThemeProgress==='function'&&document.body?.dataset?.page!=='task';
- return `<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${esc(pageTitle())} · A1 Lektion 7 · Thema 1</div></div></a><div class="account-tools"><span class="account-pill">${esc(name)}${course?' · '+esc(course):''}</span><a class="account-link" href="${dashboardHref()}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><button class="account-link account-btn" type="button" onclick="spLogout()">Abmelden</button></div></div><nav class="nav"><button class="btn secondary" type="button" onclick="spGoBack('${navBack()}')">← Zurück</button><a class="btn secondary" href="uebersicht.html?v=l7t1-standardbar1">Übersicht</a>${reset?'<button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button>':''}</nav>`;
+ return `<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 7 · Thema 1</div></div></a><div class="account-tools"><span class="account-pill">${esc(name)}${course?' · '+esc(course):''}</span><a class="account-link" href="${dashboardHref()}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><button class="account-link account-btn" type="button" onclick="spLogout()">Abmelden</button></div></div><nav class="nav"><button class="btn secondary" type="button" onclick="spGoBack('${navBack()}')">← Zurück</button><a class="btn secondary" href="uebersicht.html?v=l7t1-standardbar2">Übersicht</a>${reset?'<button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button>':''}</nav>`;
 }
 function installHeader(){
- if(installingHeader)return;
- installingHeader=true;
- try{
-  const title=pageTitle();
-  document.querySelectorAll('.topbar').forEach(h=>h.remove());
-  const container=document.querySelector('#app .container')||document.querySelector('.container')||document.getElementById('app')||document.body;
-  const h=document.createElement('header');
-  h.className='topbar sp-standard-topbar';
-  h.dataset.standard='1';
-  h.innerHTML=headerHtml().replace('>'+esc(pageTitle())+' · A1 Lektion 7 · Thema 1<','>'+esc(title)+' · A1 Lektion 7 · Thema 1<');
-  if(container===document.body)document.body.prepend(h);else container.prepend(h);
- }finally{installingHeader=false;}
+ const title=pageTitle();
+ document.querySelectorAll('.topbar:not(.sp-standard-topbar)').forEach(h=>h.remove());
+ const existing=document.querySelector('.topbar.sp-standard-topbar');
+ if(existing){existing.innerHTML=headerHtml(title);return;}
+ const container=document.querySelector('#app .container')||document.querySelector('.container')||document.getElementById('app')||document.body;
+ const h=document.createElement('header');
+ h.className='topbar sp-standard-topbar';
+ h.dataset.standard='1';
+ h.innerHTML=headerHtml(title);
+ if(container===document.body)document.body.prepend(h);else container.prepend(h);
 }
 function installHeaderStyle(){
  if(document.getElementById('l7-standard-header-style'))return;
@@ -71,7 +69,11 @@ document.addEventListener('click',event=>{
  event.preventDefault();event.stopPropagation();event.stopImmediatePropagation();
  play(id,word,image);
 },true);
-function applyStandard(){installHeaderStyle();installHeader()}
+function applyStandard(){
+ installHeaderStyle();
+ if(headerTimer)return;
+ headerTimer=setTimeout(()=>{headerTimer=null;installHeader()},0);
+}
 document.addEventListener('DOMContentLoaded',applyStandard);
 new MutationObserver(()=>applyStandard()).observe(document.documentElement,{childList:true,subtree:true});
 window.L7T1BunnyWordAudio={play};
