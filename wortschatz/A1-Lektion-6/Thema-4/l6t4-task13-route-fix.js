@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const TARGET='dialoge.html?v=202607301352';
+const TARGET='dialoge.html?v=202607301410';
 function fix(){
  document.querySelectorAll('#taskGrid a').forEach(link=>{
   const text=(link.textContent||'').toLowerCase();
