@@ -113,11 +113,11 @@ const href=(group=0,task='',view='')=>{const q=new URLSearchParams();if(group)q.
 const go=o=>{history.pushState(null,'',href(o.group,o.task,o.view));render()};
 function image(v,compact=false){return`<div class="verb-image ${compact?'compact':''}"><img src="${esc(imageUrl(v))}" alt="Bild zu ${esc(v)}" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="image-fallback" hidden><strong>${esc(v)}</strong></div></div>`}
 const RECORDED_AUDIO_BASE='https://sprachpilot.b-cdn.net/audio/';
-const RECORDED_AUDIO_SPECIAL={'hat bekommen':'hat_bekommen.mp3','hat begraben':'hat_begraben.mp3','hat gehört':'hat_gehoert.mp3','hat gefallen':'hat_gefallen.mp3','ist gefallen':'ist_gefallen.mp3','hat vergessen':'hat_vergessen.mp3'};
+const RECORDED_AUDIO_FILES=window.SP_PERFEKT_AUDIO_FILES||Object.create(null);
+const RECORDED_AUDIO_MISSING=window.SP_PERFEKT_AUDIO_MISSING||[];
 let activeRecordedAudio=null;
-const audioSlug=value=>String(value||'').toLowerCase().trim().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
 function computerSpeak(text,slow=false){if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=slow?.55:.92;speechSynthesis.speak(u)}
-function recordedAudioFile(text){const raw=String(text||'').trim(),key=norm(raw);if(RECORDED_AUDIO_SPECIAL[key])return RECORDED_AUDIO_SPECIAL[key];const word=raw.replace(/^(hat|ist)\s+/i,'').replace(/^sich\s+/i,'');const slug=audioSlug(word);return slug?slug+'.mp3':''}
+function recordedAudioFile(text){const raw=String(text||'').trim();if(!raw)return'';return RECORDED_AUDIO_FILES[norm(raw)]||''}
 function speak(text,slow=false){
  const raw=String(text||'').trim();if(!raw)return;
  const file=recordedAudioFile(raw);if(!file)return computerSpeak(raw,slow);
