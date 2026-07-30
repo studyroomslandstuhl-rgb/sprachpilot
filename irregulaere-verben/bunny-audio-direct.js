@@ -47,15 +47,16 @@ function showError(button,value){
 }
 
 function play(value,slow=false,button=null){
- const list=audioCandidates(value);
- if(!list.length){showError(button,value);return;}
+ const verb=resolveVerb(value)||String(value||'').trim();
+ const list=audioCandidates(verb);
+ if(!list.length){showError(button,verb);return;}
  let index=0;
  try{activeAudio?.pause()}catch(e){}
  clearError(button?.closest('.task-page')||document);
  const next=()=>{
   if(index>=list.length){
    if(activeAudio)activeAudio=null;
-   showError(button,value);
+   showError(button,verb);
    return;
   }
   const audio=new Audio(list[index++]);
@@ -94,23 +95,11 @@ function addCardButton(){
 }
 
 document.addEventListener('click',event=>{
- const target=event.target instanceof Element?event.target.closest('button'):null;
+ const target=event.target instanceof Element?event.target.closest('[data-bunny-card-audio]'):null;
  if(!target)return;
- if(target.matches('[data-bunny-card-audio]')){
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  play(target.dataset.bunnyCardAudio||'',false,target);
-  return;
- }
- if(target.dataset.act==='play'){
-  const value=document.querySelector('.question-card .question')?.textContent?.replace(/^Höre das Verb\.?$/i,'').trim()||window.IRREGULAR_CURRENT_AUDIO||'';
-  const current=(window.IRREGULAR_VERB_DAYS||[]).flatMap(day=>day.verbs||[]).find(item=>document.querySelector('.task-page')?.textContent?.includes(item.v));
-  const verb=resolveVerb(value)||current?.v||'';
-  if(!verb)return;
-  event.preventDefault();
-  event.stopImmediatePropagation();
-  play(verb,false,target);
- }
+ event.preventDefault();
+ event.stopImmediatePropagation();
+ play(target.dataset.bunnyCardAudio||'',false,target);
 },true);
 
 new MutationObserver(addCardButton).observe(document.documentElement,{childList:true,subtree:true});
