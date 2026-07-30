@@ -64,9 +64,8 @@ function isCorrect(item,value){const normalized=simple(value);return accepted(it
 function state(){return loadTask(FILE,WORDS.length)}
 function current(){const saved=state();currentIndex=saved.current===null||saved.current===undefined?spNextIndex(FILE,WORDS.length):saved.current;return WORDS[currentIndex]}
 function taskHeading(){return'<div class="task-title-block"><span class="task-number">Aufgabe 1</span><h1>Karteikarten</h1></div>'}
-function instructionHtml(){return'<div class="task-instruction">Wörter wie bei L6T3 mit Bild, Sprechen, Schreiben und Rückseite lernen.</div>'}
 function progressHtml(){const saved=state(),percent=WORDS.length?Math.round(saved.done.length/WORDS.length*100):0;return`<div class="task-progress-row"><span>${saved.done.length} fehlerfrei · ${WORDS.length-saved.done.length} übrig</span><strong>${percent}%</strong></div><div class="progress"><div class="bar" style="width:${percent}%"></div></div>`}
-function top(){return`${taskHeading()}${progressHtml()}${instructionHtml()}`}
+function top(){return`${taskHeading()}${progressHtml()}`}
 function genericHint(item){const solution=String(full(item)||'');return solution?`Die Lösung beginnt mit „${solution.charAt(0)}“.`:'Lies die Aufgabe noch einmal.'}
 function hint(item){const tries=state().tries||0;if(tries===1)return'<div class="no">Noch nicht richtig. Prüfe beide Antworten und versuche es erneut.</div>';if(tries===2)return`<div class="hint"><strong>Hinweis:</strong> ${esc(genericHint(item))}</div>`;if(tries>=3)return`<div class="no"><strong>Lösung:</strong> ${esc(full(item))}<br>Die Aufgabe kommt am Ende noch einmal.</div>`;return''}
 function answerInput(label='Schreibe deine Antwort.',withMic=false,hidden=false){return`<div class="write-panel" id="writePanel" ${hidden?'hidden':''}><div class="answer-area"><label for="answerInput">${esc(label)}</label><div class="answer-row"><input id="answerInput" autocomplete="off" autocapitalize="sentences"><button class="btn" type="button" data-action="check-input">Kontrollieren</button>${withMic?'<button class="btn secondary" type="button" data-action="mic">🎤 Sprechen</button>':''}</div></div></div>`}
