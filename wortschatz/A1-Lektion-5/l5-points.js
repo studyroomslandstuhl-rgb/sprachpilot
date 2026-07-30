@@ -16,7 +16,7 @@
   const pending=new Map();
   function cleanId(s){return String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'item'}
   function topicId(){return cleanId(['wortschatz','A1','lektion','5','thema',theme].join('_'))}
-  function loadProgress(){if(progressLoading||window.SPProgress)return;progressLoading=true;const s=document.createElement('script');s.type='module';s.src='/js/progress.js?v=10';document.head.appendChild(s)}
+  function loadProgress(){if(progressLoading||window.SPProgress||window.__SP_NAVIGATING)return;progressLoading=true;const s=document.createElement('script');s.type='module';s.src='/js/progress.js?v=11';document.head.appendChild(s)}
   function payload(file,percent,total,done){return{module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:'5',theme,topicId:topicId(),title:topicTitle,file,taskKey:file,taskTitle:TASK_TITLES[file]||file.replace('.html',''),percent:Math.max(0,Math.min(100,Math.round(Number(percent)||0))),completed:Number(percent)>=100,total:Number(total||0),done:Number(done||0),countAttempt:false}}
   function stateKey(file){return themeKey+'_'+file}
   function parse(raw){try{return JSON.parse(raw||'null')}catch(e){return null}}
@@ -26,15 +26,16 @@
   function percent(st){const total=totalCount(st);return total?Math.round(doneCount(st)/total*100):0}
   function sig(file,st){return [file,percent(st),doneCount(st),totalCount(st)].join(':')}
   function sigKey(file){return `SP_L5_POINTS_SIG_${topicId()}_${file}`}
-  function shouldQueue(file,st){const pct=percent(st),total=totalCount(st);if(!total||pct<=0)return false;const s=sig(file,st),k=sigKey(file);const old=sessionStorage.getItem(k)||localStorage.getItem(k)||'';if(old===s)return false;try{sessionStorage.setItem(k,s);localStorage.setItem(k,s)}catch(e){}return true}
-  function queue(method,p){pending.set(method+':'+p.file, {method,payload:p});clearTimeout(syncTimer);syncTimer=setTimeout(flush,2400)}
+  function shouldQueue(file,st){const pct=percent(st),total=totalCount(st);if(!total||pct<=0||window.__SP_NAVIGATING)return false;const s=sig(file,st),k=sigKey(file);const old=sessionStorage.getItem(k)||localStorage.getItem(k)||'';if(old===s)return false;try{sessionStorage.setItem(k,s);localStorage.setItem(k,s)}catch(e){}return true}
+  function queue(method,p){if(window.__SP_NAVIGATING)return;pending.set(method+':'+p.file,{method,payload:p});clearTimeout(syncTimer);syncTimer=setTimeout(flush,2400)}
   function flush(){
-    if(!pending.size)return;
+    if(window.__SP_NAVIGATING||!pending.size)return;
     loadProgress();
     const items=[...pending.values()];
     pending.clear();
     let attempts=0;
     const run=()=>{
+      if(window.__SP_NAVIGATING)return;
       if(window.SPProgress){
         items.forEach(item=>{try{const fn=window.SPProgress[item.method];if(typeof fn==='function')fn(item.payload)}catch(e){console.warn('SPProgress',e)}});
         return;
@@ -49,9 +50,7 @@
   function syncExam(file,st){if(!shouldQueue(file,st))return;const total=totalCount(st),done=doneCount(st);const pct=percent(st);const p=payload(file,pct,total,done);p.scorePercent=pct;p.score=pct;p.stars=pct>=100?3:pct>=70?2:pct>=50?1:0;queue('recordExamResult',p);queue('recordTaskProgress',p)}
   function syncFile(file,st){if(!st)return;if(file==='pruefung.html')syncExam(file,st);else syncTask(file,st)}
   const oldSave=window.saveTask;
-  if(typeof oldSave==='function'){
-    window.saveTask=function(file,st){oldSave(file,st);try{syncFile(file,st)}catch(e){}}
-  }
+  if(typeof oldSave==='function')window.saveTask=function(file,st){oldSave(file,st);try{syncFile(file,st)}catch(e){}};
   const oldMark=window.markTaskDone;
   window.markTaskDone=function(file,total){
     if(typeof oldMark==='function'&&oldMark!==window.markTaskDone){oldMark(file,total)}else{const st={total,done:[...Array(total).keys()],queue:[],current:null,tries:0,hadWrong:false};if(typeof window.saveTask==='function')window.saveTask(file,st);else localStorage.setItem(stateKey(file),JSON.stringify(st))}
