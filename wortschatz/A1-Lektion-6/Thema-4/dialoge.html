@@ -7,11 +7,8 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>Aufgabe 13 · Dialoge</title>
-<link rel="stylesheet" href="style.css?v=task13-bunny-202607301410">
-<link rel="stylesheet" href="l6t4-dialog13.css?v=task13-bunny-202607301410">
-<style>
-.dialog13-release{max-width:980px;margin:0 auto}.dialog13-release .dialog13-audio{margin:18px 0}.dialog13-release audio{display:block;width:100%}.dialog13-question{margin:20px 0;padding:18px;border:2px solid #ead28a;border-radius:18px;background:#fffdf4}.dialog13-options{display:grid;gap:10px}.option{display:flex;align-items:center;gap:12px;width:100%;text-align:left}.option.selected{outline:3px solid rgba(190,136,0,.25);border-color:#bd8700;background:#fff5c7}.abc-letter{display:inline-flex;align-items:center;justify-content:center;min-width:34px;height:34px;border-radius:50%;background:#f4d66e;font-weight:900}.actions{display:flex;justify-content:center;margin-top:22px}.task-progress-row{display:flex;justify-content:space-between;gap:12px;margin:12px 0 8px}.progress{height:12px;border-radius:999px;background:#eee;overflow:hidden}.progress .bar{height:100%;background:#e6b832}.dialog13-page-label{text-align:center;font-weight:900;color:#765000;margin:10px 0 4px}.finish-box{text-align:center;padding:30px}@media(max-width:600px){.dialog13-question{padding:14px}.option{padding:12px}.task-progress-row{font-size:14px}}
-</style>
+<link rel="stylesheet" href="style.css?v=task13-standard-202607301535">
+<link rel="stylesheet" href="l6t4-dialog13.css?v=task13-standard-202607301535">
 </head>
 <body>
 <div class="container dialog13-release">
@@ -19,7 +16,7 @@
 <section class="card" id="area"><p>Aufgabe 13 wird geladen …</p></section>
 <footer>© SprachPilot</footer>
 </div>
-<script type="module" src="/js/guard.js?v=task13-bunny-202607301410"></script>
+<script type="module" src="/js/guard.js?v=task13-standard-202607301535"></script>
 <script>
 (function(){
 'use strict';
@@ -94,7 +91,9 @@ function header(){
  const name=[profile.vorname||profile.firstName,profile.nachname||profile.lastName].filter(Boolean).join(' ')||'Schüler/in';
  const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();
  const dashboard=role==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';
- topbar.innerHTML='<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">Dialoge · A1 Lektion 6 · Thema 4</div></div></a><div class="account-tools"><span class="account-pill">'+esc(name)+'</span><a class="account-link" href="'+dashboard+'">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="index.html?v=202607301410">← Zurück</a></nav>';
+ topbar.innerHTML='<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">Dialoge · A1 Lektion 6 · Thema 4</div></div></a><div class="account-tools"><span class="account-pill">'+esc(name)+'</span><a class="account-link" href="'+dashboard+'">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><a class="account-link" href="/index.html" data-logout>Abmelden</a></div></div><nav class="nav"><a class="btn secondary" href="index.html?v=202607301410">← Zurück</a><a class="btn secondary" href="index.html?v=202607301410">Übersicht</a></nav>';
+ const logout=topbar.querySelector('[data-logout]');
+ if(logout)logout.addEventListener('click',()=>{try{localStorage.removeItem('SP_USER_PROFILE');localStorage.removeItem('SP_STUDENT_PROFILE');localStorage.removeItem('SP_LOGIN_ROLE');localStorage.removeItem('SP_ACTIVE_ROLE');sessionStorage.clear()}catch(e){}});
 }
 function progress(){
  const percent=Math.round(state.done.length/5*100);
@@ -107,7 +106,7 @@ function feedback(){
  return'';
 }
 function question(q,index){
- return'<section class="dialog13-question"><h2>'+(index+1)+'. '+esc(q[0])+'</h2><div class="dialog13-options">'+q[2].map((option,i)=>'<button type="button" class="option" data-question="'+index+'" data-value="'+esc(option)+'"><span class="abc-letter">'+String.fromCharCode(65+i)+'</span><span>'+esc(option)+'</span></button>').join('')+'</div></section>';
+ return'<section class="dialog13-question"><div class="dialog13-question-number">'+(index+1)+'</div><h2>'+esc(q[0])+'</h2><div class="dialog13-options">'+q[2].map((option,i)=>'<button type="button" class="option" data-question="'+index+'" data-value="'+esc(option)+'"><span class="abc-letter">'+String.fromCharCode(65+i)+'</span><span>'+esc(option)+'</span></button>').join('')+'</div></section>';
 }
 function render(){
  if(state.done.length>=5){
@@ -119,7 +118,7 @@ function render(){
  if(!dialog){state=fresh();save();render();return}
  selections={};
  const audioUrl=AUDIO+dialog.file;
- area.innerHTML='<div class="task-title-block"><span class="task-number">Aufgabe 13</span><h1>Dialoge</h1></div>'+progress()+'<div class="task-instruction">Höre den Dialog und beantworte alle drei Fragen.</div><div class="dialog13-page-label">Dialog '+(index+1)+' von 5</div><div class="audio-box dialog13-audio"><audio controls preload="metadata"><source src="'+esc(audioUrl)+'" type="audio/mpeg"></audio></div>'+dialog.questions.map(question).join('')+'<div class="actions"><button class="btn" id="check" type="button" disabled>Kontrollieren</button></div><div id="feedback">'+feedback()+'</div>';
+ area.innerHTML='<div class="task-title-block"><span class="task-number">Aufgabe 13</span><h1>Dialoge</h1></div>'+progress()+'<div class="task-instruction">Höre den Dialog und beantworte alle drei Fragen.</div><div class="dialog13-page-label">Dialog '+(index+1)+' von 5</div><div class="audio-box dialog13-audio"><audio controls preload="metadata"><source src="'+esc(audioUrl)+'" type="audio/mpeg"></audio></div><div class="dialog13-question-list">'+dialog.questions.map(question).join('')+'</div><div class="actions"><button class="btn" id="check" type="button" disabled>Kontrollieren</button></div><div id="feedback">'+feedback()+'</div>';
 }
 area.addEventListener('click',event=>{
  const button=event.target.closest('button');
