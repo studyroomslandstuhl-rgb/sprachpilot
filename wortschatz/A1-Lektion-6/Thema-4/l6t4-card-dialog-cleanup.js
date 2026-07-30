@@ -81,9 +81,10 @@ function cleanAudioLabels(root=document){
 function renderBesondersCard(root=document){
  root.querySelectorAll('.flip-card').forEach(card=>{
   const word=normalize(card.querySelector('.flip-word')?.textContent||'');
-  if(word!=='besonders')return;
+  if(word!=='besonders'||card.dataset.l6t4SpecialReady==='1')return;
   const front=card.querySelector('.flip-front');
   if(!front)return;
+  card.dataset.l6t4SpecialReady='1';
   card.classList.add('special-word-card');
   front.querySelectorAll('.visual,.special-word-visual').forEach(element=>element.remove());
   const visual=document.createElement('div');
@@ -97,6 +98,8 @@ function renderBesondersCard(root=document){
 
 function fixImageFallbacks(root=document){
  root.querySelectorAll('.visual img,.word-placeholder img,.image-option img').forEach(img=>{
+  if(img.dataset.l6t4FallbackReady==='1')return;
+  img.dataset.l6t4FallbackReady='1';
   const fallback=img.nextElementSibling;
   const sync=()=>{
    if(!fallback||!fallback.classList.contains('image-fallback'))return;
@@ -125,6 +128,15 @@ if(new URLSearchParams(location.search).get('task')==='dialog-abc'){
  return;
 }
 apply();
-const observer=new MutationObserver(apply);
+let scheduled=false;
+const scheduleApply=()=>{
+ if(scheduled)return;
+ scheduled=true;
+ requestAnimationFrame(()=>{
+  scheduled=false;
+  apply();
+ });
+};
+const observer=new MutationObserver(scheduleApply);
 observer.observe(document.documentElement,{childList:true,subtree:true});
 })();
