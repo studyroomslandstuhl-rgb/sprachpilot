@@ -33,7 +33,7 @@ jobs:
           ];
           const payload=files.map(file=>{
             const text=fs.readFileSync(`${dir}/${file}`,'utf8');
-            const match=text.match(/\[(?:\d+)\]='([^']*)';?$/);
+            const match=text.match(/\[(?:\d+)\]\+?='([^']*)';?$/);
             if(!match)throw new Error(`Payload not found in ${file}`);
             return match[1];
           }).join('');
