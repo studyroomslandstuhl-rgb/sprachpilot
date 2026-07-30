@@ -1,5 +1,18 @@
 import {getActiveProfile,getActiveRole} from '/js/auth.js?v=login-main-4';
 
+const NativeAudio=window.Audio;
+if(typeof NativeAudio==='function'&&!window.SP_PERFEKT_AUDIO_REDIRECT_INSTALLED){
+ window.SP_PERFEKT_AUDIO_REDIRECT_INSTALLED=true;
+ const PerfektAudio=function(src){
+  const value=String(src||'');
+  const fixed=value.replace(/\/audio\/gehoert\.mp3(?=($|[?#]))/,'/audio/hat_gehoert.mp3');
+  return new NativeAudio(fixed);
+ };
+ PerfektAudio.prototype=NativeAudio.prototype;
+ Object.setPrototypeOf(PerfektAudio,NativeAudio);
+ window.Audio=PerfektAudio;
+}
+
 const engine=window.VerbGroupsEngine;
 const profile=getActiveProfile()||{};
 const role=String(getActiveRole()||'').toLowerCase();
