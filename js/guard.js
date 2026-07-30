@@ -1,6 +1,6 @@
 import "/js/session-restore.js?v=1";
 import { requireLogin, logout } from "/js/auth.js";
-import { installSpHeader } from "/js/sp-header.js";
+import { installSpHeader } from "/js/sp-header.js?v=theme-standard2";
 const path=location.pathname;
 const IS_L6T3_PATH=path.includes("/wortschatz/A1-Lektion-6/Thema-3/");
 if(!IS_L6T3_PATH){
