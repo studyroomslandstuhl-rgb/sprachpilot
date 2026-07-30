@@ -1,40 +1,34 @@
-.dialog13-release{max-width:1180px!important;margin:0 auto!important}
-.dialog13-release .card{max-width:920px;margin:0 auto 18px;padding:24px;border:3px solid var(--lesson-line);border-radius:26px;background:#fff;box-shadow:0 10px 26px rgba(138,58,79,.08)}
-.dialog13-release .task-title-block{text-align:center;margin:0 0 14px}
-.dialog13-release .task-title-block .task-number{display:inline-flex;align-items:center;justify-content:center;margin:0 0 8px;padding:7px 14px;border-radius:999px;background:var(--lesson-soft);border:1px solid var(--lesson-line);color:var(--lesson-main-dark);font-weight:900;font-size:14px}
-.dialog13-release .task-title-block h1{margin:0;color:var(--lesson-main-dark);font-size:clamp(28px,4vw,42px);line-height:1.1;letter-spacing:0}
-.dialog13-release .task-instruction{max-width:760px;margin:16px auto 18px;padding:13px 16px;border:1px solid var(--lesson-line);border-radius:18px;background:var(--lesson-soft);color:var(--text);font-weight:800;text-align:center}
-.dialog13-release .task-progress-row{display:flex!important;justify-content:space-between!important;align-items:center;gap:12px;max-width:760px;margin:10px auto 8px;color:var(--muted);font-size:15px;font-weight:800}
-.dialog13-release .progress{max-width:760px;height:12px;margin:0 auto 16px;border-radius:999px;background:#f3e2e6!important;overflow:hidden}
-.dialog13-release .progress .bar{height:100%;border-radius:999px;background:var(--lesson-main-dark)!important;transition:width .2s ease}
-.dialog13-audio,.dialog13-release .dialog13-audio{max-width:760px;margin:14px auto 18px!important;padding:14px!important;border:2px solid var(--lesson-line)!important;border-radius:20px!important;background:var(--lesson-soft)!important;box-shadow:none!important}
-.dialog13-audio audio,.dialog13-release audio{display:block;width:100%;height:42px}
-.dialog13-page-label{display:flex!important;align-items:center;justify-content:center;width:max-content;max-width:100%;margin:0 auto 16px!important;padding:8px 14px!important;border:1px solid var(--lesson-line);border-radius:999px;background:#fff!important;color:var(--lesson-main-dark)!important;font-weight:900;text-align:center}
-.dialog13-question-list{display:grid;gap:14px;max-width:820px;margin:0 auto}
-.dialog13-question{position:relative;margin:0!important;padding:18px 18px 18px 68px!important;border:2px solid var(--lesson-line)!important;border-radius:22px!important;background:#fff!important;text-align:left;box-shadow:0 6px 16px rgba(138,58,79,.06)}
-.dialog13-question h2{margin:0 0 14px!important;padding:0!important;color:var(--lesson-main-dark);font-size:clamp(18px,2.2vw,22px);line-height:1.35;letter-spacing:0}
-.dialog13-question-number{position:absolute;top:18px;left:18px;display:grid;place-items:center;width:36px;height:36px;border-radius:50%;background:var(--lesson-soft)!important;border:1px solid var(--lesson-line);color:var(--lesson-main-dark)!important;font-weight:900}
-.dialog13-options{display:grid!important;grid-template-columns:1fr!important;gap:10px!important}
-.dialog13-options .option,.dialog13-release .option{display:grid!important;grid-template-columns:38px 1fr!important;align-items:center!important;gap:12px!important;width:100%;min-height:56px;padding:12px 14px!important;border:2px solid var(--lesson-line)!important;border-radius:18px!important;background:#fff!important;color:var(--text)!important;text-align:left!important;font-weight:900;box-shadow:none;cursor:pointer}
-.dialog13-options .option:hover,.dialog13-release .option:hover{background:var(--lesson-soft)!important;border-color:var(--lesson-main-dark)!important}
-.dialog13-options .option.selected,.dialog13-release .option.selected{outline:4px solid rgba(246,169,188,.32)!important;border-color:var(--lesson-main-dark)!important;background:var(--lesson-soft)!important}
-.dialog13-options .option:focus-visible{outline:4px solid rgba(246,169,188,.42)!important;border-color:var(--lesson-main-dark)!important}
-.abc-letter{display:grid!important;place-items:center;min-width:34px!important;width:34px;height:34px;border-radius:50%;background:var(--lesson-soft)!important;border:1px solid var(--lesson-line);color:var(--lesson-main-dark)!important;font-weight:900}
-.dialog13-question-list+.actions,.dialog13-release .actions{display:flex!important;justify-content:center!important;align-items:center;gap:10px;margin-top:20px!important}
+.dialog13-release{max-width:1180px;margin:0 auto}
+.dialog13-release .card{max-width:none;margin-bottom:18px;padding:22px;border:2px solid var(--lesson-line);border-radius:24px;background:#fff;box-shadow:0 8px 22px rgba(0,0,0,.08)}
+.dialog13-release .task-title-block{display:grid;gap:4px;margin-bottom:14px;text-align:left}
+.dialog13-release .task-title-block .task-number{margin:0;padding:0;border:0;border-radius:0;background:transparent;color:#0b6f88;font-size:14px;font-weight:900;letter-spacing:.04em;text-transform:uppercase}
+.dialog13-release .task-title-block h1{margin:0;font-size:clamp(24px,4vw,34px);line-height:1.15;color:var(--lesson-main-dark);letter-spacing:0}
+.dialog13-release .task-instruction{margin:14px 0 18px;padding:13px 16px;border:1px solid var(--lesson-line);border-radius:18px;background:var(--lesson-soft);color:var(--text);font-weight:800;text-align:center}
+.dialog13-release .task-progress-row{display:flex;justify-content:space-between;align-items:center;gap:12px;margin:4px 0 7px;color:var(--muted);font-size:14px}
+.dialog13-release .progress{height:12px;margin:0 0 16px;border-radius:999px;background:#f3e2e6;overflow:hidden}
+.dialog13-release .progress .bar{height:100%;background:var(--lesson-main-dark);transition:width .2s ease}
+.dialog13-audio,.dialog13-release .dialog13-audio{max-width:620px;margin:14px auto 18px;padding:14px;border:2px solid var(--lesson-line);border-radius:18px;background:var(--lesson-soft);text-align:center}
+.dialog13-audio audio,.dialog13-release audio{display:block;width:100%}
+.dialog13-page-label{display:inline-flex;align-items:center;justify-content:center;margin:0 0 16px;padding:7px 12px;border-radius:999px;background:#e5f6fa;color:#075d72;font-weight:900}
+.dialog13-question-list{display:grid;gap:18px;margin-top:18px}
+.dialog13-question{position:relative;margin:0;padding:16px;border:1px solid #d7e3ea;border-radius:18px;background:#f9fcfd;text-align:left;box-shadow:none}
+.dialog13-question h2{margin:0 0 12px;color:var(--lesson-main-dark);font-size:1.05rem;line-height:1.4;letter-spacing:0}
+.dialog13-question-number{display:grid;place-items:center;width:32px;height:32px;margin-bottom:10px;border-radius:50%;background:#dff4fa;color:#075b70;font-weight:900}
+.dialog13-options{display:grid;grid-template-columns:1fr;gap:10px}
+.dialog13-options .option,.dialog13-release .option{display:grid;grid-template-columns:38px 1fr;align-items:center;gap:10px;width:100%;min-height:58px;padding:13px;border:2px solid var(--lesson-line);border-radius:18px;background:#fff;color:var(--text);text-align:left;font-weight:900;box-shadow:none;cursor:pointer}
+.dialog13-options .option:hover,.dialog13-release .option:hover{background:var(--lesson-soft);border-color:var(--lesson-main-dark)}
+.dialog13-options .option.selected,.dialog13-release .option.selected{outline:3px solid #0b7590;background:#e8f9fc;border-color:var(--lesson-line)}
+.dialog13-options .option:focus-visible{outline:3px solid #0b7590}
+.abc-letter{display:inline-grid;place-items:center;width:32px;height:32px;border-radius:50%;background:#e6f7fb;color:#075d72;font-weight:900}
+.dialog13-question-list+.actions,.dialog13-release .actions{display:flex;justify-content:center;align-items:center;gap:10px;margin-top:18px}
 .dialog13-question-list+.actions .btn:disabled,.dialog13-release .btn:disabled{cursor:not-allowed;opacity:.55}
-.dialog13-release .feedback{max-width:760px;min-height:42px;margin:14px auto 0}
+.dialog13-release .feedback{min-height:42px;margin-top:12px}
 .dialog13-release .ok,.dialog13-release .no,.dialog13-release .hint{padding:12px 14px;border-radius:14px;font-weight:800;line-height:1.45}
-.finish-box{text-align:center;padding:34px!important;max-width:720px;margin:24px auto}
-@media(max-width:700px){
- .dialog13-release .card{padding:16px;border-radius:22px}
- .dialog13-question{padding:16px!important;padding-top:62px!important}
- .dialog13-question-number{top:16px;left:16px}
- .dialog13-options .option,.dialog13-release .option{grid-template-columns:34px 1fr!important;min-height:54px;padding:11px 12px!important}
- .dialog13-release .task-progress-row{font-size:14px}
-}
-@media(max-width:430px){
- .dialog13-release .card{padding:14px}
- .dialog13-question{padding:14px!important;padding-top:58px!important}
- .dialog13-question h2{font-size:18px}
- .dialog13-audio,.dialog13-release .dialog13-audio{padding:10px!important}
+.finish-box{text-align:center;padding:34px;max-width:720px;margin:35px auto}
+@media(max-width:640px){
+ .dialog13-release .card{padding:15px}
+ .dialog13-question{padding:16px 14px}
+ .dialog13-question h2{font-size:1rem}
+ .dialog13-options .option,.dialog13-release .option{grid-template-columns:34px 1fr;font-size:14px;padding:11px 12px;overflow-wrap:anywhere}
+ .dialog13-release .actions .btn{width:100%}
 }
