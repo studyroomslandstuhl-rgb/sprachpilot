@@ -1,7 +1,7 @@
 (function(){
   'use strict';
-  if(window.__SP_BACK_BUTTON_FIX_V3)return;
-  window.__SP_BACK_BUTTON_FIX_V3=true;
+  if(window.__SP_BACK_BUTTON_FIX_V4)return;
+  window.__SP_BACK_BUTTON_FIX_V4=true;
 
   const HUB='/verben-bereich/';
   let navigationStarted=false;
@@ -15,14 +15,14 @@
 
     if(path.includes('/perfekt/')){
       if(/verben-bereich/i.test(text))return HUB;
-      if(overview||/←\s*perfekt/i.test(text))return '/perfekt/';
+      if(overview||/perfekt/i.test(text))return '/perfekt/';
       if(task&&group)return `/perfekt/?group=${group}`;
       return HUB;
     }
 
     if(path.includes('/verben/')){
       if(/verben-bereich/i.test(text))return HUB;
-      if(overview||/^←\s*verben$/i.test(text))return '/verben/';
+      if(overview||/^\s*(?:←\s*)?verben\s*$/i.test(text))return '/verben/';
       if(task&&group)return `/verben/?group=${group}`;
       return HUB;
     }
@@ -52,6 +52,19 @@
 
   function isBack(el){
     return !!el&&(/zurück|zurueck|←/i.test(String(el.textContent||'').trim())||el?.dataset?.spFastBack==='1');
+  }
+
+  function isStatisticsControl(el){
+    if(!el)return false;
+    const text=String(el.textContent||'').replace(/\s+/g,' ').trim();
+    const href=String(el.getAttribute?.('href')||'');
+    return /^statistik$/i.test(text)||/(?:^|\/)statistik\.html(?:[?#]|$)/i.test(href);
+  }
+
+  function removeStatisticsControls(){
+    document.querySelectorAll('a,button').forEach(el=>{
+      if(isStatisticsControl(el))el.remove();
+    });
   }
 
   function beginNavigation(){
@@ -136,13 +149,14 @@
     el.dataset.spBackTarget=target;
     el.dataset.spFastBack='1';
     if(el.tagName==='A')el.setAttribute('href',target);
-    if(el.textContent!=='Zurück')el.textContent='Zurück';
+    if(el.textContent!=='← Zurück')el.textContent='← Zurück';
     el.setAttribute('aria-label','Zurück');
     el.setAttribute('title','Zurück');
   }
 
   function fix(){
     fixScheduled=false;
+    removeStatisticsControls();
     document.querySelectorAll('a,button').forEach(el=>{
       if(!isBack(el))return;
       const target=targetFor(el);
