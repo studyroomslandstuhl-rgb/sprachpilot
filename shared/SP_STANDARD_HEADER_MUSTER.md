@@ -16,7 +16,7 @@ Diese Datei ist eine Vorlage. Sie wird nur auf Seiten eingebunden, die bewusst m
 
 Nicht veraendern:
 
-- Button-Reihenfolge: Logo/Name/Dashboard/Profil/Abmelden, unten Zurueck, Uebersicht, optional Fortschritte loeschen
+- Button-Reihenfolge: Logo/Name/Dashboard/Profil/Abmelden, unten Zurueck, Uebersicht, Fortschritte loeschen in Rot
 - Klicklogik ueber `data-sp-action` und `data-sp-href`
 - zentraler Klick-Handler mit `event.stopImmediatePropagation()`
 - `headerKey`, damit der Header nicht bei jeder kleinen Seitenaenderung neu gezeichnet wird
@@ -67,7 +67,7 @@ window.SP_STANDARD_HEADER = {
 - Abmelden: leert Login-/Preview-Daten und geht zu `/index.html`
 - Zurueck: nutzt zuerst Browser-History innerhalb SprachPilot, sonst Fallback
 - Uebersicht: nutzt `overviewHref`
-- Fortschritte loeschen: erscheint nur, wenn `window.resetThemeProgress` existiert und die Seite keine Aufgabe ist
+- Fortschritte loeschen: erscheint auf allen Nicht-Aufgaben-Seiten als roter Button; auf Aufgaben-Seiten nicht
 
 ## Wichtig fuer kuenftige Arbeit
 
