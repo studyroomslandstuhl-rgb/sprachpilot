@@ -4,6 +4,70 @@ if(window.L7T1_CARD_RULES_INSTALLED)return;
 window.L7T1_CARD_RULES_INSTALLED=true;
 document.body.classList.add('l7t1-card-rules');
 
+const EXAMPLES=Object.freeze({
+ 'prima':'Das Essen schmeckt prima.',
+ 'das Team':'Wir arbeiten im Team.',
+ 'wecken':'Meine Mutter weckt mich um sieben Uhr.',
+ 'das Frühstück':'Das Frühstück ist fertig.',
+ 'fertig sein':'Ich bin mit der Aufgabe fertig.',
+ 'los sein':'Was ist los?',
+ 'schreiben':'Ich schreibe einen Brief.',
+ 'die Mathematik':'Mathematik ist heute einfach.',
+ 'der Test':'Wir schreiben heute einen Test.',
+ 'pünktlich':'Ali kommt pünktlich zum Unterricht.',
+ 'auf keinen Fall':'Ich komme auf keinen Fall zu spät.',
+ 'auf jeden Fall':'Ich komme auf jeden Fall mit.',
+ 'schmecken':'Der Kuchen schmeckt gut.',
+ 'nach Hause':'Ich gehe nach Hause.',
+ 'die Schule':'Die Kinder gehen in die Schule.',
+ 'können':'Ich kann gut schwimmen.',
+ 'krank':'Maria ist heute krank.',
+ 'der Arzt':'Der Arzt untersucht den Patienten.',
+ 'die Ärztin':'Die Ärztin arbeitet im Krankenhaus.',
+ 'backen':'Wir backen einen Kuchen.',
+ 'singen':'Jana kann gut singen.',
+ 'reiten':'Anna möchte reiten.',
+ 'das Klavier':'Das Klavier steht im Wohnzimmer.',
+ 'malen':'Mina malt ein Bild.',
+ 'der Ski':'Die Skier stehen im Keller.',
+ 'das Tennis':'Wir spielen am Samstag Tennis.',
+ 'wollen':'Wir wollen heute grillen.',
+ 'möchten':'Ich möchte einen Tee.',
+ 'endlich':'Der Bus kommt endlich.',
+ 'das Lied':'Wir hören ein Lied.',
+ 'üben':'Ich übe jeden Tag Deutsch.',
+ 'der Text':'Ich lese den Text.',
+ 'die Übung':'Die Übung ist leicht.',
+ 'der Brief':'Ich schreibe einen Brief.',
+ 'der Film':'Der Film beginnt um acht Uhr.',
+ 'die Grammatik':'Wir üben die Grammatik.',
+ 'das Spiel':'Das Spiel macht Spaß.',
+ 'das Fahrrad':'Mein Fahrrad ist neu.',
+ 'die Gitarre':'Er spielt Gitarre.',
+ 'der Kuchen':'Der Kuchen schmeckt prima.',
+ 'die Hausaufgabe':'Die Hausaufgabe ist schwer.',
+ 'der Freund':'Mein Freund kommt heute.',
+ 'hören':'Ich höre ein Lied.',
+ 'machen':'Wir machen eine Übung.',
+ 'lesen':'Ich lese ein Buch.',
+ 'sehen':'Wir sehen einen Film.',
+ 'spielen':'Wir spielen Tennis.',
+ 'fahren':'Ich fahre mit dem Fahrrad.',
+ 'treffen':'Ich treffe meine Freunde.',
+ 'gehen':'Wir gehen nach Hause.',
+ 'sprechen':'Wir sprechen Deutsch.',
+ 'tanzen':'Wir tanzen zur Musik.',
+ 'wandern':'Wir wandern am Wochenende.',
+ 'grillen':'Wir grillen im Garten.',
+ 'schwimmen':'Ich schwimme gern.',
+ 'stricken':'Meine Oma strickt einen Schal.',
+ 'jonglieren':'Er kann gut jonglieren.',
+ 'kochen':'Wir kochen eine Suppe.',
+ 'fotografieren':'Sie fotografiert die Stadt.',
+ 'einkaufen':'Ich kaufe im Supermarkt ein.',
+ 'aufstehen':'Ich stehe um sieben Uhr auf.'
+});
+
 const style=document.createElement('style');
 style.id='l7t1-card-rules-style';
 style.textContent=`
@@ -53,15 +117,16 @@ function ensureAnswerHint(card){
  else question.appendChild(hint);
 }
 
-function optionalExample(wordText){
+function exampleBox(wordText){
  const item=(window.L7T1_VOCAB||[]).find(entry=>String(entry.word||'').trim()===wordText);
- if(!item?.example)return null;
+ const example=String(item?.example||EXAMPLES[wordText]||'').trim();
+ if(!example)return null;
  const box=document.createElement('div');
  box.className='card-example-box';
  const label=document.createElement('span');
  label.textContent='Beispiel';
  const text=document.createElement('strong');
- text.textContent=item.example;
+ text.textContent=example;
  box.append(label,text);
  return box;
 }
@@ -82,7 +147,7 @@ function standardizeBack(card){
   if(word)word.insertAdjacentElement('afterend',meaning);
   else info.prepend(meaning);
  }
- const example=optionalExample(String(word?.textContent||'').trim());
+ const example=exampleBox(String(word?.textContent||'').trim());
  const audio=info.querySelector('.card-listen-btn');
  if(example){
   if(audio)audio.insertAdjacentElement('beforebegin',example);
