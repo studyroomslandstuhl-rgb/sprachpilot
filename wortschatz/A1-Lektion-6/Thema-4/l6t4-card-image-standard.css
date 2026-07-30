@@ -50,6 +50,67 @@
   justify-content:center;
 }
 
+.flip-back-grid{
+  width:100%;
+  display:grid;
+  grid-template-columns:150px minmax(0,1fr);
+  gap:14px;
+  align-items:center;
+}
+
+.flip-back-image .visual{
+  width:150px;
+  height:150px;
+  min-height:0;
+  margin:0;
+  border-radius:18px;
+  background:#fff;
+}
+
+.flip-back-image .visual img{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  object-position:center;
+}
+
+.flip-back-info{
+  min-width:0;
+  display:grid;
+  gap:8px;
+  justify-items:stretch;
+}
+
+.flip-back .flip-word{
+  font-size:28px;
+  line-height:1.15;
+  overflow-wrap:anywhere;
+}
+
+.flip-back .back-translation{
+  margin:0;
+  width:100%;
+  padding:9px 10px;
+}
+
+.flip-back .back-translation strong{
+  font-size:18px;
+}
+
+.flip-back .card-details{
+  max-width:none;
+  gap:8px;
+}
+
+.flip-back .card-details>div{
+  padding:9px 10px;
+}
+
+.flip-back .card-listen-btn{
+  justify-self:center;
+  margin-top:0;
+}
+
 @media(max-width:640px){
   .flip-wrap{
     --sp-card-image-size:min(320px,calc(100vw - 46px));
@@ -66,5 +127,28 @@
 
   .flip-front .card-translation-box strong{
     font-size:17px;
+  }
+
+  .flip-back-grid{
+    grid-template-columns:1fr;
+    gap:8px;
+  }
+
+  .flip-back-image .visual{
+    width:118px;
+    height:118px;
+    margin:0 auto;
+  }
+
+  .flip-back .flip-word{
+    font-size:23px;
+  }
+
+  .flip-back .back-translation strong{
+    font-size:16px;
+  }
+
+  .flip-back .card-details>div{
+    padding:7px 9px;
   }
 }
