@@ -1,6 +1,7 @@
 (function(){
   if(window.__SP_L5_POINTS_READY)return;
   window.__SP_L5_POINTS_READY=true;
+  if(!window.__SP_L5_BUNNY_AUDIO_ALL3&&!document.querySelector('script[data-sp-l5-bunny]')){const audioScript=document.createElement('script');audioScript.src='/wortschatz/A1-Lektion-5/l5-bunny-words.js?v=l5-bunny-all3';audioScript.dataset.spL5Bunny='1';document.head.appendChild(audioScript)}
   const cfg=window.SP_L5_THEME||{};
   const theme=String((cfg.id||'Thema-1').match(/\d+/)?.[0]||'1');
   const themeKey=cfg.key||`SP_L5_T${theme}_V1`;
