@@ -21,7 +21,15 @@ window.spLogout=function(){
  localStorage.removeItem('SP_TEACHER_PREVIEW');
  location.href='/index.html';
 };
-window.spGoBack=function(fallbackHref){location.href=fallbackHref||'index.html'};
+window.spGoBack=function(fallbackHref){
+ const fallback=fallbackHref||'index.html';
+ try{
+  const ref=document.referrer?new URL(document.referrer):null;
+  const here=new URL(location.href);
+  if(ref&&ref.origin===here.origin&&ref.href!==here.href&&history.length>1){history.back();return;}
+ }catch(e){}
+ location.href=fallback;
+};
 function pageTitle(){
  const old=document.querySelector('.topbar:not(.sp-standard-topbar) .subtitle')||document.querySelector('.topbar.sp-standard-topbar .subtitle');
  const oldText=String(old?.textContent||'').split('· A1 Lektion 7')[0].trim();
@@ -38,7 +46,7 @@ function headerHtml(title){
  const name=(`${first} ${last}`).trim()||'Schüler/in';
  const course=p.kurs||p.kursnummer||p.courseCode||'';
  const reset=typeof window.resetThemeProgress==='function'&&document.body?.dataset?.page!=='task';
- return `<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 7 · Thema 1</div></div></a><div class="account-tools"><span class="account-pill">${esc(name)}${course?' · '+esc(course):''}</span><a class="account-link" href="${dashboardHref()}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><button class="account-link account-btn" type="button" onclick="spLogout()">Abmelden</button></div></div><nav class="nav"><button class="btn secondary" type="button" onclick="spGoBack('${navBack()}')">← Zurück</button><a class="btn secondary" href="uebersicht.html?v=l7t1-standardbar3">Übersicht</a>${reset?'<button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button>':''}</nav>`;
+ return `<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 7 · Thema 1</div></div></a><div class="account-tools"><span class="account-pill">${esc(name)}${course?' · '+esc(course):''}</span><a class="account-link" href="${dashboardHref()}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a><button class="account-link account-btn" type="button" onclick="spLogout()">Abmelden</button></div></div><nav class="nav"><button class="btn secondary" type="button" onclick="spGoBack('${navBack()}')">← Zurück</button><a class="btn secondary" href="uebersicht.html?v=l7t1-standardbar4">Übersicht</a>${reset?'<button class="btn danger-btn" type="button" onclick="resetThemeProgress()">Fortschritte löschen</button>':''}</nav>`;
 }
 function installHeader(){
  const title=pageTitle();
