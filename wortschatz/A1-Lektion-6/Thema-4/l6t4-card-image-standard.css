@@ -1,15 +1,15 @@
 /* SprachPilot Karteikarten-Bildstandard
    Ziel: Bilder auf Karteikarten immer unverzerrt in einer quadratischen 1:1-Fläche zeigen.
-   Desktop: bis 800 x 800 px. Mobil: passend zur Bildschirmbreite, weiterhin 1:1. */
+   Die Bilddateien dürfen 800 x 800 px sein; sichtbar bleibt die Karte kompakt. */
 
 .flip-wrap{
-  --sp-card-image-size:min(800px,calc(100vw - 72px));
-  width:min(860px,100%);
+  --sp-card-image-size:min(420px,calc(100vw - 72px));
+  width:min(470px,100%);
   margin:18px auto;
 }
 
 .flip-card{
-  height:calc(var(--sp-card-image-size) + 150px);
+  height:calc(var(--sp-card-image-size) + 142px);
   max-height:none;
 }
 
@@ -42,7 +42,7 @@
 }
 
 .flip-front .card-translation-box{
-  width:min(800px,100%);
+  width:min(420px,100%);
   margin:12px auto 0;
 }
 
@@ -52,11 +52,12 @@
 
 @media(max-width:640px){
   .flip-wrap{
-    --sp-card-image-size:min(800px,calc(100vw - 46px));
+    --sp-card-image-size:min(320px,calc(100vw - 46px));
+    width:min(350px,100%);
   }
 
   .flip-card{
-    height:calc(var(--sp-card-image-size) + 140px);
+    height:calc(var(--sp-card-image-size) + 132px);
   }
 
   .flip-face{
