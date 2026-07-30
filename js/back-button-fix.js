@@ -1,10 +1,11 @@
 (function(){
   'use strict';
-  if(window.__SP_BACK_BUTTON_FIX_V2)return;
-  window.__SP_BACK_BUTTON_FIX_V2=true;
+  if(window.__SP_BACK_BUTTON_FIX_V3)return;
+  window.__SP_BACK_BUTTON_FIX_V3=true;
 
   const HUB='/verben-bereich/';
   let navigationStarted=false;
+  let fixScheduled=false;
   const syncState={chain:Promise.resolve(),latest:new Map(),sent:new Map()};
 
   function moduleTarget(path,query,text){
@@ -30,16 +31,19 @@
   }
 
   function targetFor(el){
+    const stored=String(el?.dataset?.spBackTarget||'');
+    if(stored)return stored;
+
     const path=location.pathname;
     const query=new URLSearchParams(location.search);
     const text=String(el?.textContent||'').trim();
     const module=moduleTarget(path,query,text);
     if(module)return module;
 
-    let match=path.match(/^\/wortschatz\/(A\d-Lektion-\d+)\/(Thema-\d+)\/(.+)$/i);
-    if(match)return 'index.html';
-    match=path.match(/^\/wortschatz\/(A\d-Lektion-\d+)\/(Thema-\d+)\/?(?:index\.html)?$/i);
+    let match=path.match(/^\/wortschatz\/(A\d-Lektion-\d+)\/(Thema-\d+)\/?(?:index\.html)?$/i);
     if(match)return '../index.html';
+    match=path.match(/^\/wortschatz\/(A\d-Lektion-\d+)\/(Thema-\d+)\/[^/]+$/i);
+    if(match)return 'index.html';
     match=path.match(/^\/wortschatz\/(A\d-Lektion-\d+)\/?(?:index\.html)?$/i);
     if(match)return '/wortschatz/';
     if(path.includes('/verben-A1/')||path.includes('/fragen-A1/'))return '/student-dashboard/index.html';
@@ -47,7 +51,7 @@
   }
 
   function isBack(el){
-    return !!el&&/zurück|zurueck|←/i.test(String(el.textContent||'').trim());
+    return !!el&&(/zurück|zurueck|←/i.test(String(el.textContent||'').trim())||el?.dataset?.spFastBack==='1');
   }
 
   function beginNavigation(){
@@ -128,13 +132,29 @@
     location.assign(target);
   }
 
+  function normalizeBack(el,target){
+    el.dataset.spBackTarget=target;
+    el.dataset.spFastBack='1';
+    if(el.tagName==='A')el.setAttribute('href',target);
+    if(el.textContent!=='Zurück')el.textContent='Zurück';
+    el.setAttribute('aria-label','Zurück');
+    el.setAttribute('title','Zurück');
+  }
+
   function fix(){
+    fixScheduled=false;
     document.querySelectorAll('a,button').forEach(el=>{
       if(!isBack(el))return;
       const target=targetFor(el);
-      if(el.tagName==='A')el.setAttribute('href',target);
-      el.dataset.spFastBack='1';
+      if(!target)return;
+      normalizeBack(el,target);
     });
+  }
+
+  function scheduleFix(){
+    if(fixScheduled)return;
+    fixScheduled=true;
+    if(typeof requestAnimationFrame==='function')requestAnimationFrame(fix);else setTimeout(fix,0);
   }
 
   installProgressGate();
@@ -147,8 +167,9 @@
     const el=event.target.closest?.('a,button');
     if(el?.dataset.spFastBack==='1'||isBack(el))fastNavigate(event,el);
   },true);
-  document.addEventListener('DOMContentLoaded',fix);
-  if(document.readyState!=='loading')fix();
-  setTimeout(fix,300);
-  setTimeout(fix,1200);
+  document.addEventListener('DOMContentLoaded',scheduleFix);
+  if(document.readyState!=='loading')scheduleFix();
+  setTimeout(scheduleFix,300);
+  setTimeout(scheduleFix,1200);
+  try{new MutationObserver(scheduleFix).observe(document.documentElement,{childList:true,subtree:true,characterData:true})}catch(e){}
 })();
