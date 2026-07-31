@@ -1,0 +1,39 @@
+:root{
+  --main:#b397e1!important;
+  --dark:#5f477f!important;
+  --soft:#f4effb!important;
+  --line:#d9ccef!important;
+  --text:#382c4e!important;
+  --muted:#716780!important;
+  --lesson-main:#b397e1!important;
+  --lesson-main-dark:#5f477f!important;
+  --lesson-dark:#5f477f!important;
+  --lesson-main-light:#d8caf1!important;
+  --lesson-soft:#f4effb!important;
+  --lesson-line:#d9ccef!important;
+  --lesson-bg:#fbf9ff!important;
+  --theme-main:#b397e1!important;
+  --theme-dark:#5f477f!important;
+  --theme-soft:#f4effb!important;
+  --theme-line:#d9ccef!important;
+  --theme-bg:#fbf9ff!important;
+}
+html,body{
+  background:linear-gradient(180deg,#f4effb 0%,#fbf9ff 48%,#fff 100%)!important;
+  color:var(--text)!important;
+}
+.sp-header{background:#b397e1!important}
+.l7-topbar,.l7-card,.l7-module,.l7-question-card,.l7-learning{
+  border-color:var(--line)!important;
+}
+.l7-topbar,.l7-card{box-shadow:0 10px 28px rgba(95,71,127,.12)!important}
+.l7-module:hover{box-shadow:0 10px 20px rgba(95,71,127,.14)!important}
+.l7-progress,.progress{background:var(--soft)!important}
+.l7-progress span,.progress .bar{background:var(--dark)!important}
+.l7-circle{border-color:var(--main)!important;background:var(--soft)!important;color:var(--dark)!important}
+.l7-btn{background:var(--dark)!important}
+.l7-btn.secondary,.l7-btn.ghost{background:var(--soft)!important;color:var(--dark)!important;border-color:var(--line)!important}
+.l7-account span,.l7-account a,.l7-section-head>span,.l7-module-top span,.l7-instruction,.l7-order-answer,.l7-speech{
+  background:var(--soft)!important;
+  color:var(--dark)!important;
+}
