@@ -1,9 +1,9 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_CONTENT_RESTORE_1)return;
-window.__SP_L7T1_CONTENT_RESTORE_1=true;
+if(window.__SP_L7T1_CONTENT_RESTORE_2)return;
+window.__SP_L7T1_CONTENT_RESTORE_2=true;
 
-const VERSION='l7t1-content-restore1';
+const VERSION='l7t1-content-restore2';
 const META=Object.freeze({
  'karteikarten':['Karteikarten','Lerne die Wörter.'],
  'bild-erklaerung-wort':['Bedeutung → Wort','Finde das passende Wort.'],
@@ -149,6 +149,21 @@ function fallback(){
   document.head.appendChild(script);
  });
 }
+function loadFrameScript(doc,src){
+ return new Promise((resolve,reject)=>{
+  const script=doc.createElement('script');
+  script.src=src;
+  script.onload=resolve;
+  script.onerror=()=>reject(new Error(`Inhaltsquelle konnte nicht geladen werden: ${src}`));
+  doc.head.appendChild(script);
+ });
+}
+async function waitFor(value,message,timeout=5000){
+ return Promise.race([
+  Promise.resolve(value),
+  new Promise((_,reject)=>setTimeout(()=>reject(new Error(message)),timeout))
+ ]);
+}
 async function extractRestoredTheme(){
  if(!('DecompressionStream'in window))return fallback();
  const payload=(window.L7T1_REV5_PARTS||[]).join('');
@@ -162,22 +177,19 @@ async function extractRestoredTheme(){
  frame.setAttribute('aria-hidden','true');
  frame.tabIndex=-1;
  document.documentElement.appendChild(frame);
- let theme;
  try{
   const doc=frame.contentDocument;
   doc.open();
-  doc.write('<!doctype html><html><head></head><body data-theme="1" data-page="content"><div id="app"></div></body></html>');
+  doc.write(`<!doctype html><html><head><base href="${location.href}"></head><body data-theme="1" data-page="content"><div id="app"></div></body></html>`);
   doc.close();
   const isolated=frame.contentWindow;
   isolated.console=console;
+  await loadFrameScript(doc,`data-loader.js?v=${VERSION}`);
+  if(isolated.L7_THEME_READY)await waitFor(isolated.L7_THEME_READY,'Zeitüberschreitung bei den L7T1-Basisdaten.');
   isolated.eval(code);
-  if(isolated.L7_THEME_READY){
-   theme=await Promise.race([
-    Promise.resolve(isolated.L7_THEME_READY),
-    new Promise((_,reject)=>setTimeout(()=>reject(new Error('Zeitüberschreitung beim Wiederherstellen der L7T1-Inhalte.')),4000))
-   ]);
-  }
-  theme=theme||isolated.L7_THEME;
+  if(isolated.L7_THEME_READY)await waitFor(isolated.L7_THEME_READY,'Zeitüberschreitung beim Wiederherstellen der L7T1-Inhalte.');
+  await new Promise(resolve=>setTimeout(resolve,80));
+  const theme=isolated.L7_THEME||await waitFor(isolated.L7_THEME_READY,'Der frühere L7T1-Inhaltsstand enthält keine Themendaten.');
   if(!theme)throw new Error('Der frühere L7T1-Inhaltsstand enthält keine Themendaten.');
   return clone(theme);
  }finally{
