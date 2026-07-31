@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_HEADER_CLEANUP_2)return;
-window.__SP_L7T1_HEADER_CLEANUP_2=true;
+if(window.__SP_L7T1_HEADER_CLEANUP_3)return;
+window.__SP_L7T1_HEADER_CLEANUP_3=true;
 
 let scheduled=false;
 let headerRequested=false;
@@ -9,8 +9,7 @@ let headerRequested=false;
 function isLegacyHeader(element){
   if(!(element instanceof Element))return false;
   if(element.classList.contains('sp-header'))return false;
-  const classes=String(element.className||'').toLowerCase();
-  if(/(?:^|\s)(?:l7-)?(?:topbar|header)(?:\s|$)/.test(classes))return true;
+  if(element.matches('.topbar,.l7-topbar,.l7-header,.sp-standard-topbar'))return true;
   const text=String(element.textContent||'').replace(/\s+/g,' ').trim();
   return /SprachPilot/i.test(text)&&/(Dashboard|Profil|Abmelden|Zurück|Übersicht|Fortschritte löschen)/i.test(text);
 }
@@ -32,7 +31,7 @@ function clean(){
   const root=document.getElementById('app');
   if(root){
     const candidates=new Set([
-      ...root.querySelectorAll('header,.topbar,.l7-topbar,.l7-header,[class*="topbar"],[class*="header"]'),
+      ...root.querySelectorAll('header,.topbar,.l7-topbar,.l7-header,.sp-standard-topbar,[class*="topbar"],[class*="header"]'),
       ...root.querySelectorAll('.l7-page > :first-child')
     ]);
     candidates.forEach(element=>{
@@ -55,7 +54,7 @@ style.textContent=`
 #app .topbar,
 #app .l7-topbar,
 #app .l7-header,
-#app header:not(.sp-header){display:none!important}
+#app .sp-standard-topbar{display:none!important}
 `;
 document.head.appendChild(style);
 
