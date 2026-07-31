@@ -1,0 +1,26 @@
+html[data-sp-card-lesson="3"]{
+ --lesson-main:#f6b46b;--lesson-main-dark:#8a4f16;--lesson-main-light:#ffd7a8;
+ --lesson-soft:#fff4e8;--lesson-line:#f3d0aa;--lesson-bg:#fffaf5;
+ --lesson-shadow:0 12px 28px rgba(138,79,22,.16);
+}
+html[data-sp-card-lesson="4"]{
+ --lesson-main:#f6d96b;--lesson-main-dark:#6d5a00;--lesson-main-light:#f9e79a;
+ --lesson-soft:#fff9dc;--lesson-line:#eadf9f;--lesson-bg:#fffdf2;
+ --lesson-shadow:0 12px 28px rgba(109,90,0,.16);
+}
+html[data-sp-card-lesson="6"]{
+ --lesson-main:#ffb6c1;--lesson-main-dark:#8a3a4f;--lesson-main-light:#ffd6de;
+ --lesson-soft:#fff0f4;--lesson-line:#f3c2cc;--lesson-bg:#fff7f9;
+ --lesson-shadow:0 12px 28px rgba(138,58,79,.16);
+}
+html[data-sp-card-lesson="7"]{
+ --lesson-main:#a8cfff;--lesson-main-dark:#235a92;--lesson-main-light:#dceeff;
+ --lesson-soft:#eef7ff;--lesson-line:#b9dcff;--lesson-bg:#f7fbff;
+ --lesson-shadow:0 12px 28px rgba(35,90,146,.16);
+}
+body{background:linear-gradient(180deg,var(--lesson-bg),#fff)!important}
+.topbar,.card,.sp-header{box-shadow:var(--lesson-shadow)}
+.progress{background:color-mix(in srgb,var(--lesson-soft) 86%,#fff)}
+.answer-area,.free-box,.speech-box,.write-box,.card-answer-box{background:var(--lesson-bg)}
+.answer-row input:focus,.free-box textarea:focus,.write-box input:focus{outline-color:color-mix(in srgb,var(--lesson-main) 28%,transparent)}
+footer{color:var(--lesson-main-dark)}
