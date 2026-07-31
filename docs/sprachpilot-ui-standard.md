@@ -36,11 +36,13 @@ Der Knopf „Übersicht“ führt immer auf die eigene `uebersicht.html` des akt
 Alle Karteikarten verwenden den gemeinsamen Kartenstandard:
 
 - Vorderseite: Bild und Übersetzung in der gewählten Muttersprache
-- Rückseite: kleines Bild, deutsches Wort, Übersetzung, Plural, Beispiel und Anhören
+- Rückseite exakt wie in L6T4: links ein kleines quadratisches Bild; rechts deutsches Wort, Übersetzung, Plural, Beispiel und darunter „🔊 Anhören“
 - Knöpfe: 🎤 Sprechen und ✍️ Schreiben
 - Das Umdrehen zeigt nur die Rückseite und überspringt keine Karte.
+- Unter der umgedrehten Karte steht ausschließlich: „Sprich oder schreib das Wort.“
 - Erst eine richtige gesprochene oder geschriebene Antwort führt weiter.
 - Fehlerhafte Karten werden später erneut gezeigt.
+- Beim Öffnen der Karteikarten und nach jeder neuen Karte scrollt die Seite automatisch zur Karte.
 
 ## Wortschatzübersicht
 
