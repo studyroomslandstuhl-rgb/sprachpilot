@@ -1,48 +1,43 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten</title><link rel="stylesheet" href="style.css?v=13"><style>
-.flip-wrap{width:min(390px,100%);margin:18px auto;perspective:1100px}.flip-card{position:relative;width:100%;height:330px;transform-style:preserve-3d;transition:transform .55s ease;cursor:pointer;touch-action:manipulation}.flip-card.flipped{transform:rotateY(180deg)}.flip-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;border:3px solid var(--lesson-line);border-radius:26px;background:#fff;box-shadow:0 12px 28px rgba(0,0,0,.1);backface-visibility:hidden;-webkit-backface-visibility:hidden;text-align:center}.flip-front .task-img-box{margin:0 auto 6px}.flip-back{transform:rotateY(180deg);background:var(--lesson-soft)}.flip-word{font-size:30px;font-weight:900;color:var(--lesson-main-dark);line-height:1.35}.flip-note{font-size:14px;color:#667085}.card-actions{justify-content:center}.card-answer-box{max-width:620px;margin:14px auto 0}.card-answer-box .btn{margin-top:10px}.card-listen-btn{margin-top:8px;position:relative;z-index:3}@media(max-width:600px){.flip-card{height:300px}.flip-word{font-size:24px}.flip-face{padding:14px}}
-</style></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js?v=l6t2-stable2"></script><script src="app.js?v=14"></script><script src="l6t2-postkarte.js?v=15"></script><script src="l6t2-images.js?v=5"></script><script src="l6t2-stability.js?v=2"></script><script>
-const area=document.getElementById('area');header('Karteikarten');
+<!DOCTYPE html>
+<html lang="de" data-sp-card-lesson="6">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Karteikarten · L6T2</title>
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/style.css?v=l6t4-bunny-audio9">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-revision2.css?v=l6t4-bunny-audio9">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-user.css?v=l6t4-bunny-audio9">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-compact-v2.css?v=l6t4-bunny-audio9">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-card-image-standard.css?v=20260730-card300">
+<link rel="stylesheet" href="/css/sp-card-standard-colors.css?v=1">
+</head>
+<body>
+<div class="container">
+<header class="topbar"></header>
+<section class="card" id="area"><p>Die Aufgabe wird geladen …</p></section>
+<footer>© SprachPilot</footer>
+</div>
+<script type="module" src="/js/guard.js?v=card-standard1"></script>
+<script src="app.js?v=14"></script>
+<script src="l6t2-postkarte.js?v=15"></script>
+<script src="l6t2-images.js?v=5"></script>
+<script src="l6t2-stability.js?v=2"></script>
+<script src="/js/sp-card-standard.js?v=1"></script>
+<script>
+(function(){
 const FILE='karteikarten.html';
-let items=[],i=0,revealed=false,solved=false;
-function cardItems(){return words()}
-function solution(w){return full(w)}
-function migrateOldProgress(){
-  const count=items.length,key=taskKey(FILE),marker=CFG.key+'_cards_word_only_v2';
-  if(localStorage.getItem(marker)==='1')return;
-  try{
-    const old=JSON.parse(localStorage.getItem(key)||'null');
-    if(old&&Number(old.total)===count*2){
-      const mapList=list=>[...new Set((Array.isArray(list)?list:[]).filter(n=>Number.isInteger(n)&&n>=0&&n<count*2&&n%2===0).map(n=>n/2))];
-      const done=mapList(old.done),queue=mapList(old.queue).filter(n=>!done.includes(n));
-      const current=Number.isInteger(old.current)&&old.current>=0&&old.current<count*2&&old.current%2===0?old.current/2:null;
-      const used=new Set([...done,...queue,...(current===null?[]:[current])]);
-      const missing=[...Array(count).keys()].filter(n=>!used.has(n));
-      localStorage.setItem(key,JSON.stringify({total:count,done,queue:[...queue,...missing],current,tries:Number(old.tries||0),hadWrong:!!old.hadWrong}));
-      if(typeof clearTaskCaches==='function')clearTaskCaches();
-    }
-  }catch(e){}
-  localStorage.setItem(marker,'1');
-}
-function backHtml(w){return `<div class="flip-word">${solution(w)}</div><div class="flip-note">Lösung</div><button type="button" class="btn secondary card-listen-btn" id="cardListenBtn">🔊 Anhören</button>`}
-function show(){
-  items=cardItems();migrateOldProgress();
-  if(loadTask(FILE,items.length).done.length>=items.length){complete(area,FILE,'bild-wort.html?v=l6t2-stable2');return}
-  i=spNextIndex(FILE,items.length);revealed=false;solved=false;
-  const w=items[i];
-  area.innerHTML=`${progress(FILE,items.length)}<div class="flip-wrap"><div id="fcard" class="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="flip-face flip-front">${visual(w)}</div><div class="flip-face flip-back">${backHtml(w)}</div></div></div><div class="hint">Übersetzung: <b>${tr(w)}</b></div><div class="actions card-actions"><button id="micBtn" class="btn">Sprechen</button><button id="writeBtn" class="btn secondary">Schreiben</button></div><div id="micStatus" class="small"></div><div id="box" class="card-answer-box" style="display:none"><input id="ans" autocomplete="off" placeholder="Antwort schreiben"><button id="checkBtn" class="btn">Kontrollieren</button></div><div id="fb" class="feedback"></div><div id="after" class="actions card-actions"></div>`;
-  document.getElementById('fcard').addEventListener('click',()=>reveal(true));
-  document.getElementById('fcard').addEventListener('keydown',e=>{if(e.key==='Enter'||e.key===' '){e.preventDefault();reveal(true)}});
-  document.getElementById('cardListenBtn').addEventListener('click',e=>{e.stopPropagation();say(solution(w))});
-  document.getElementById('micBtn').addEventListener('click',speakAns);
-  document.getElementById('writeBtn').addEventListener('click',writeBox);
-  document.getElementById('checkBtn').addEventListener('click',()=>check(document.getElementById('ans').value));
-  document.getElementById('ans').addEventListener('keydown',e=>{if(e.key==='Enter')check(e.target.value)});
-  if(window.l6t2ConnectImages)l6t2ConnectImages(area);
-}
-function writeBox(){document.getElementById('box').style.display='block';document.getElementById('ans').focus()}
-function reveal(help){if(solved)return;document.getElementById('fcard').classList.add('flipped');if(help&&!revealed){revealed=true;spMarkWrong(FILE,items.length);document.getElementById('after').innerHTML='<button class="btn" id="nextHelpBtn">Weiter</button>';document.getElementById('nextHelpBtn').addEventListener('click',nextAfterHelp)}}
-function nextAfterHelp(){spMarkRight(FILE,items.length);show()}
-function startMic(btn,callback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition,status=document.getElementById('micStatus');if(!SR){if(status)status.textContent='Mikrofon wird hier nicht unterstützt. Bitte schreiben.';writeBox();return}const rec=new SR();rec.lang='de-DE';rec.onresult=e=>callback(e.results[0][0].transcript);rec.onerror=()=>{if(status)status.textContent='Mikrofon hat nicht funktioniert. Bitte schreiben.'};rec.onend=()=>{btn.classList.remove('active')};btn.classList.add('active');if(status)status.textContent='Ich höre zu …';rec.start()}
-function speakAns(){startMic(document.getElementById('micBtn'),txt=>{writeBox();document.getElementById('ans').value=txt;check(txt)})}
-function check(v){const w=items[i],sol=solution(w),feedback=document.getElementById('fb');if(exact(v,sol)){solved=true;document.getElementById('fcard').classList.add('flipped');feedback.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,items.length);document.getElementById('after').innerHTML='<button class="btn" id="nextBtn">Weiter</button>';document.getElementById('nextBtn').addEventListener('click',show);return}const t=spMarkWrong(FILE,items.length);feedback.innerHTML=t>=3?`<div class="no">Lösung: ${sol}</div>`:'<div class="no">Noch nicht richtig.</div>'}
-show();</script></body></html>
+function items(){return words()}
+function migrate(){const list=items(),count=list.length,key=taskKey(FILE),marker=CFG.key+'_cards_word_only_v2';if(localStorage.getItem(marker)==='1')return;try{const old=JSON.parse(localStorage.getItem(key)||'null');if(old&&Number(old.total)===count*2){const mapList=value=>[...new Set((Array.isArray(value)?value:[]).filter(n=>Number.isInteger(n)&&n>=0&&n<count*2&&n%2===0).map(n=>n/2))];const done=mapList(old.done),queue=mapList(old.queue).filter(n=>!done.includes(n));const current=Number.isInteger(old.current)&&old.current>=0&&old.current<count*2&&old.current%2===0?old.current/2:null;const used=new Set([...done,...queue,...(current===null?[]:[current])]);const missing=[...Array(count).keys()].filter(n=>!used.has(n));localStorage.setItem(key,JSON.stringify({total:count,done,queue:[...queue,...missing],current,tries:Number(old.tries||0),hadWrong:!!old.hadWrong}));if(typeof clearTaskCaches==='function')clearTaskCaches()}}catch(e){}localStorage.setItem(marker,'1')}
+migrate();
+SPCardStandard.mount({
+ area:'#area',words:items,nextPage:'bild-wort.html?v=l6t2-stable2',full:w=>full(w),word:w=>w.word,
+ plural:w=>w.plural||'',example:w=>w.sentence||'',translation:w=>tr(w),languageName:'Muttersprache',visual:w=>visual(w),normalize:v=>simple(v),accept:(w,value)=>exact(value,full(w)),audio:w=>say(full(w)),
+ state:{progress(){const list=items(),st=loadTask(FILE,list.length);return{total:list.length,done:st.done.length,tries:st.tries||0,hadWrong:!!st.hadWrong}},current(){const list=items();return list[spNextIndex(FILE,list.length)]},wrong(){return spMarkWrong(FILE,items().length)},right(){spMarkRight(FILE,items().length)},resetCurrent(){localStorage.removeItem(taskKey(FILE))}}
+});
+})();
+</script>
+</body>
+</html>
