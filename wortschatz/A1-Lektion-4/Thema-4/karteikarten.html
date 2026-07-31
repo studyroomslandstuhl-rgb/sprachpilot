@@ -1,94 +1,45 @@
 <!DOCTYPE html>
-<html lang="de">
+<html lang="de" data-sp-card-lesson="4">
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
-<title>Karteikarten</title>
-<link rel="stylesheet" href="../shared/lektion4-standard.css?v=thema4-v9">
-<link rel="stylesheet" href="style.css?v=thema4-v9">
-<style>
-.flip-wrap{width:min(390px,100%);margin:18px auto;perspective:1100px}
-.flip-card{position:relative;width:100%;height:330px;transform-style:preserve-3d;transition:transform .55s ease;cursor:pointer;touch-action:manipulation}
-.flip-card.flipped{transform:rotateY(180deg)}
-.flip-face{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;padding:20px;border:3px solid #ffe28a;border-radius:26px;background:#fff;box-shadow:0 12px 28px rgba(0,0,0,.1);backface-visibility:hidden;-webkit-backface-visibility:hidden;text-align:center}
-.flip-front .task-img{width:100%;height:250px;object-fit:contain;margin:0}
-.flip-back{transform:rotateY(180deg);background:#fff9dd}
-.flip-word{font-size:30px;font-weight:900;color:#7a5100;line-height:1.35}
-.flip-note{font-size:14px;color:#667085}
-.card-actions{justify-content:center}
-.card-answer-box{max-width:620px;margin:14px auto 0}
-.card-answer-box .btn{margin-top:10px}
-.card-listen-btn{position:relative;z-index:5;margin-top:8px}
-.audio-status{min-height:24px;margin:8px 0;text-align:center;font-weight:800;color:#7a5100}
-.audio-status.error{color:#9b1c1c}
-@media(max-width:600px){.flip-card{height:300px}.flip-word{font-size:24px}.flip-face{padding:14px}.flip-front .task-img{height:220px}}
-</style>
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Karteikarten · L4T4</title>
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/style.css?v=l6t4-bunny-audio9">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-revision2.css?v=l6t4-bunny-audio9">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-user.css?v=l6t4-bunny-audio9">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-compact-v2.css?v=l6t4-bunny-audio9">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-card-image-standard.css?v=20260730-card300">
+<link rel="stylesheet" href="/css/sp-card-standard-colors.css?v=1">
 </head>
 <body>
 <div class="container">
 <header class="topbar"></header>
-<main id="area" class="card"><div class="question">Aufgabe wird geladen …</div></main>
+<section class="card" id="area"><p>Die Aufgabe wird geladen …</p></section>
 <footer>© SprachPilot</footer>
 </div>
-<script src="../shared/lektion4-standard.js?v=thema4-v9"></script><script src="l4t4-theme-score.js?v=1"></script>
+<script type="module" src="/js/guard.js?v=card-standard1"></script>
+<script src="../shared/lektion4-standard.js?v=thema4-v9"></script>
+<script src="l4t4-theme-score.js?v=1"></script>
 <script src="app.js?v=thema4-content-v3"></script>
 <script src="../shared/l4-bunny-direct.js?v=3"></script>
 <script src="../shared/l4-t2-audio.js?v=3"></script>
+<script src="/js/sp-card-standard.js?v=1"></script>
 <script>
-renderSprachPilotHeader({title:"Wohnungsanzeigen",subtitle:"A1 Lektion 4 · Thema 4",backHref:"index.html",overviewHref:"uebersicht.html",statsHref:"statistik.html"});
-const area=document.getElementById("area");
-const FILE="karteikarten.html";
-let i=null,revealed=false,solved=false;
-
+(function(){
+const FILE='karteikarten.html';
 function expected(w){return w.full||w.word}
-function frontVisual(w){return w.image?imgTag(w,"task-img"):'<div class="task-img" style="display:grid;place-items:center;font-size:86px">🗂️</div>'}
-function backHtml(w){return `<div class="flip-word">${esc(expected(w))}</div><div class="flip-note">Lösung</div><button type="button" class="btn secondary card-listen-btn" id="cardListenBtn">🔊 Anhören</button>`}
-function playBackAudio(w){L4T2Audio.play(w,false,"audioStatus",expected(w))}
-
-function show(){
- L4T2Audio.stop();
- if(pct(FILE,FLASHCARD_WORDS.length)>=100){complete(area,FILE,"hoeren.html");return}
- i=nextIndex(FILE,FLASHCARD_WORDS.length);
- const w=FLASHCARD_WORDS[i];
- if(!w){area.innerHTML='<div class="no">Die Karte konnte nicht geladen werden.</div>';return}
- revealed=false;solved=false;
- area.innerHTML=`${progressHtml(FILE,FLASHCARD_WORDS.length)}
-  <div class="flip-wrap">
-   <div id="fcard" class="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen">
-    <div class="flip-face flip-front">${frontVisual(w)}</div>
-    <div class="flip-face flip-back">${backHtml(w)}</div>
-   </div>
-  </div>
-  <div class="hint">Übersetzung: <b>${esc(translateWord(w))}</b></div>
-  <div class="actions card-actions"><button id="micBtn" type="button" class="btn">Sprechen</button><button id="writeBtn" type="button" class="btn secondary">Schreiben</button></div>
-  <div id="audioStatus" class="audio-status" aria-live="polite"></div>
-  <div id="micStatus" class="small"></div>
-  <div id="box" class="card-answer-box" style="display:none"><input id="ans" autocomplete="off" placeholder="Antwort schreiben"><button id="checkBtn" type="button" class="btn">Kontrollieren</button></div>
-  <div id="fb" class="feedback"></div><div id="after" class="actions card-actions"></div>`;
- const card=document.getElementById("fcard");
- card.addEventListener("click",()=>reveal(true));
- card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();reveal(true)}});
- document.getElementById("cardListenBtn").addEventListener("click",e=>{e.preventDefault();e.stopPropagation();playBackAudio(w)});
- document.getElementById("micBtn").addEventListener("click",sayAnswer);
- document.getElementById("writeBtn").addEventListener("click",writeMode);
- document.getElementById("checkBtn").addEventListener("click",check);
- document.getElementById("ans").addEventListener("keydown",e=>{if(e.key==="Enter")check()});
-}
-function writeMode(){const box=document.getElementById("box"),ans=document.getElementById("ans");if(box)box.style.display="block";if(ans)ans.focus()}
-function reveal(help){
- if(solved)return;
- const card=document.getElementById("fcard");if(card)card.classList.add("flipped");
- if(help&&!revealed){revealed=true;markWrong(FILE,FLASHCARD_WORDS.length);const after=document.getElementById("after");after.innerHTML='<button type="button" class="btn" id="nextHelpBtn">Weiter</button>';document.getElementById("nextHelpBtn").addEventListener("click",nextAfterHelp)}
-}
-function nextAfterHelp(){markRight(FILE,FLASHCARD_WORDS.length);show()}
-function sayAnswer(){startMic(document.getElementById("micBtn"),text=>{writeMode();const ans=document.getElementById("ans");ans.value=text;check()})}
-function check(){
- const w=FLASHCARD_WORDS[i],ans=document.getElementById("ans"),fb=document.getElementById("fb");
- if(!w||!ans||!fb)return;
- if(eq(ans.value,expected(w))){solved=true;document.getElementById("fcard").classList.add("flipped");fb.innerHTML='<div class="ok">Richtig!</div>';markRight(FILE,FLASHCARD_WORDS.length);document.getElementById("after").innerHTML='<button type="button" class="btn" id="nextBtn">Weiter</button>';document.getElementById("nextBtn").addEventListener("click",show);return}
- const tries=markWrong(FILE,FLASHCARD_WORDS.length);fb.innerHTML=tries>=3?`<div class="no">Lösung: ${esc(expected(w))}</div>`:'<div class="no">Noch nicht richtig.</div>';
-}
-show();
+function visualCard(w,opts){if(w.image&&typeof imgTag==='function')return `<div class="visual ${opts.small?'small-visual':''} ${opts.pure?'pure-visual':''}">${imgTag(w,'task-img')}</div>`;return ''}
+SPCardStandard.mount({
+ area:'#area',words:()=>FLASHCARD_WORDS,nextPage:'hoeren.html',full:expected,word:w=>w.word,
+ plural:w=>w.plural||'',example:w=>w.sentence||'',translation:w=>translateWord(w),languageName:'Muttersprache',
+ image:w=>w.image||'',visual:visualCard,normalize:v=>simple(v),audio:w=>window.L4T2Audio?L4T2Audio.play(w,false,'tech',expected(w)):null,
+ accept:(w,value)=>eq(value,expected(w)),
+ state:{progress(){const st=loadTask(FILE,FLASHCARD_WORDS.length);return{total:FLASHCARD_WORDS.length,done:st.done.length,tries:st.tries||0,hadWrong:!!st.hadWrong}},current(){return FLASHCARD_WORDS[nextIndex(FILE,FLASHCARD_WORDS.length)]},wrong(){return markWrong(FILE,FLASHCARD_WORDS.length)},right(){markRight(FILE,FLASHCARD_WORDS.length)},resetCurrent(){localStorage.removeItem(taskKey(FILE))}}
+});
+})();
 </script>
 </body>
 </html>
