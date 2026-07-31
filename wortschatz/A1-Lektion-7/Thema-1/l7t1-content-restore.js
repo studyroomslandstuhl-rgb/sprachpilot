@@ -1,9 +1,8 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_CONTENT_RESTORE_2)return;
-window.__SP_L7T1_CONTENT_RESTORE_2=true;
+if(window.__SP_L7T1_CONTENT_ONLY_1)return;
+window.__SP_L7T1_CONTENT_ONLY_1=true;
 
-const VERSION='l7t1-content-restore2';
 const META=Object.freeze({
  'karteikarten':['Karteikarten','Lerne die Wörter.'],
  'bild-erklaerung-wort':['Bedeutung → Wort','Finde das passende Wort.'],
@@ -68,137 +67,64 @@ const EXAMPLES=Object.freeze({
  'die Übung':'Die Übung ist leicht.',
  'der Brief':'Ich schreibe einen Brief.',
  'das Diktat':'Wir schreiben heute ein Diktat.',
- 'das Buch':'Ich lese ein Buch.',
- 'der Film':'Der Film beginnt um acht Uhr.',
- 'die Grammatik':'Wir üben die Grammatik.',
- 'das Spiel':'Das Spiel macht Spaß.',
- 'das Fahrrad':'Mein Fahrrad ist neu.',
- 'die Gitarre':'Er spielt Gitarre.',
- 'Gitarre spielen':'Er kann Gitarre spielen.',
- 'der Kuchen':'Der Kuchen schmeckt prima.',
- 'die Hausaufgabe':'Die Hausaufgabe ist schwer.',
- 'der Freund':'Mein Freund kommt heute.',
- 'hören':'Ich höre ein Lied.',
- 'machen':'Wir machen eine Übung.',
- 'lesen':'Ich lese ein Buch.',
- 'sehen':'Wir sehen einen Film.',
- 'spielen':'Wir spielen Tennis.',
- 'fahren':'Ich fahre mit dem Fahrrad.',
- 'treffen':'Ich treffe meine Freunde.',
- 'gehen':'Wir gehen nach Hause.',
- 'sprechen':'Wir sprechen Deutsch.',
- 'tanzen':'Wir tanzen zur Musik.',
- 'wandern':'Wir wandern am Wochenende.',
- 'grillen':'Wir grillen im Garten.',
- 'schwimmen':'Ich schwimme gern.',
- 'stricken':'Meine Oma strickt einen Schal.',
- 'jonglieren':'Er kann gut jonglieren.',
- 'kochen':'Wir kochen eine Suppe.',
- 'fotografieren':'Sie fotografiert die Stadt.',
- 'einkaufen':'Ich kaufe im Supermarkt ein.',
- 'aufstehen':'Ich stehe um sieben Uhr auf.'
+ 'das Buch':'Ich lese ein Buch.'
 });
 
-const VERB_TASKS=new Set(['koennen-formen','wollen-formen','verbform-waehlen','wollen-moechten','bildimpulse','fragen-antworten','partnerinterview','dialoge-ergaenzen','eigene-faehigkeiten','eigene-plaene']);
+const VERB_TASKS=new Set([
+ 'koennen-formen','wollen-formen','verbform-waehlen','wollen-moechten',
+ 'bildimpulse','fragen-antworten','partnerinterview','dialoge-ergaenzen',
+ 'eigene-faehigkeiten','eigene-plaene'
+]);
 
-function clone(value){
- try{return structuredClone(value)}catch(error){return JSON.parse(JSON.stringify(value))}
-}
-function textOf(item){
+function wordOf(item){
  return String(item?.word||item?.full||item?.answer||item?.infinitive||item?.verb||'').trim();
 }
 function inferInfinitive(item,taskId){
- const text=[item?.infinitive,item?.verb,item?.word,item?.answer,item?.prompt,item?.context,item?.example,...(item?.options||[])].filter(Boolean).join(' ').toLowerCase();
- if(taskId==='koennen-formen'||/\b(kann|kannst|können|koennen|könnt|koennt|konnte|konnten)\b/.test(text))return'können';
- if(taskId==='wollen-formen'||/\b(will|willst|wollen|wollt|wollte|wollten)\b/.test(text))return'wollen';
+ const text=[
+  item?.infinitive,item?.verb,item?.word,item?.answer,item?.prompt,
+  item?.context,item?.example,...(item?.options||[])
+ ].filter(Boolean).join(' ').toLowerCase();
+ if(taskId==='koennen-formen'||/\b(kann|kannst|können|koennen|könnt|koennt)\b/.test(text))return'können';
+ if(taskId==='wollen-formen'||/\b(will|willst|wollen|wollt)\b/.test(text))return'wollen';
  if(/\b(möchte|moechte|möchtest|moechtest|möchten|moechten|möchtet|moechtet)\b/.test(text))return'möchten';
- const direct=textOf(item);
- if(/^(sich\s+)?[A-Za-zÄÖÜäöüß]+(?:\s+[A-Za-zÄÖÜäöüß]+)?$/.test(direct))return direct;
- return'';
+ const direct=wordOf(item);
+ return /^(sich\s+)?[A-Za-zÄÖÜäöüß]+(?:\s+[A-Za-zÄÖÜäöüß]+)?$/.test(direct)?direct:'';
 }
 function enrich(theme){
- if(!theme||!Array.isArray(theme.tasks))throw new Error('L7T1-Inhaltsdaten fehlen.');
+ if(!theme||!Array.isArray(theme.tasks))throw new Error('Die L7T1-Daten konnten nicht geladen werden.');
  for(const task of theme.tasks){
   const meta=META[task.id];
-  if(meta){task.title=meta[0];task.description=meta[1]}
+  if(meta){
+   task.title=meta[0];
+   task.description=meta[1];
+  }
   const items=Array.isArray(task.items)?task.items:[];
   if(task.id==='karteikarten'){
    for(const item of items){
-    const word=textOf(item);
-    const example=EXAMPLES[word];
-    if(example)item.example=example;
+    const word=wordOf(item);
+    if(EXAMPLES[word])item.example=EXAMPLES[word];
     if(!item.audio&&word)item.audio=word;
    }
   }
   if(VERB_TASKS.has(task.id)){
    for(const item of items){
     const infinitive=inferInfinitive(item,task.id);
-    if(infinitive){item.audio=infinitive;item.audioInfinitive=infinitive}
+    if(infinitive){
+     item.audio=infinitive;
+     item.audioInfinitive=infinitive;
+    }
    }
   }
  }
- theme.contentRevision='l7t1-requested-content-20260730';
+ theme.contentRevision='l7t1-own-vocabulary-only';
  return theme;
 }
-function fallback(){
- return new Promise((resolve,reject)=>{
-  const script=document.createElement('script');
-  script.src=`data-loader.js?v=${VERSION}`;
-  script.onload=()=>Promise.resolve(window.L7_THEME_READY).then(resolve,reject);
-  script.onerror=()=>reject(new Error('L7T1-Ersatzdaten konnten nicht geladen werden.'));
-  document.head.appendChild(script);
- });
-}
-function loadFrameScript(doc,src){
- return new Promise((resolve,reject)=>{
-  const script=doc.createElement('script');
-  script.src=src;
-  script.onload=resolve;
-  script.onerror=()=>reject(new Error(`Inhaltsquelle konnte nicht geladen werden: ${src}`));
-  doc.head.appendChild(script);
- });
-}
-async function waitFor(value,message,timeout=5000){
- return Promise.race([
-  Promise.resolve(value),
-  new Promise((_,reject)=>setTimeout(()=>reject(new Error(message)),timeout))
- ]);
-}
-async function extractRestoredTheme(){
- if(!('DecompressionStream'in window))return fallback();
- const payload=(window.L7T1_REV5_PARTS||[]).join('');
- delete window.L7T1_REV5_PARTS;
- if(!payload)return fallback();
- const bytes=Uint8Array.from(atob(payload),character=>character.charCodeAt(0));
- const stream=new Blob([bytes]).stream().pipeThrough(new DecompressionStream('gzip'));
- const code=await new Response(stream).text();
- const frame=document.createElement('iframe');
- frame.hidden=true;
- frame.setAttribute('aria-hidden','true');
- frame.tabIndex=-1;
- document.documentElement.appendChild(frame);
- try{
-  const doc=frame.contentDocument;
-  doc.open();
-  doc.write(`<!doctype html><html><head><base href="${location.href}"></head><body data-theme="1" data-page="content"><div id="app"></div></body></html>`);
-  doc.close();
-  const isolated=frame.contentWindow;
-  isolated.console=console;
-  await loadFrameScript(doc,`data-loader.js?v=${VERSION}`);
-  if(isolated.L7_THEME_READY)await waitFor(isolated.L7_THEME_READY,'Zeitüberschreitung bei den L7T1-Basisdaten.');
-  isolated.eval(code);
-  if(isolated.L7_THEME_READY)await waitFor(isolated.L7_THEME_READY,'Zeitüberschreitung beim Wiederherstellen der L7T1-Inhalte.');
-  await new Promise(resolve=>setTimeout(resolve,80));
-  const theme=isolated.L7_THEME||await waitFor(isolated.L7_THEME_READY,'Der frühere L7T1-Inhaltsstand enthält keine Themendaten.');
-  if(!theme)throw new Error('Der frühere L7T1-Inhaltsstand enthält keine Themendaten.');
-  return clone(theme);
- }finally{
-  frame.remove();
- }
-}
 
-window.L7_THEME_READY=extractRestoredTheme()
- .catch(error=>{console.warn('L7T1-Inhaltswiederherstellung:',error);return fallback()})
+const source=window.L7_THEME_READY;
+window.L7_THEME_READY=Promise.resolve(source)
  .then(enrich)
- .then(theme=>{window.L7_THEME=theme;return theme});
+ .then(theme=>{
+  window.L7_THEME=theme;
+  return theme;
+ });
 })();
