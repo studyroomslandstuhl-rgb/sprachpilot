@@ -31,6 +31,26 @@ Verbindliche Rückwege:
 
 Der Knopf „Übersicht“ führt immer auf die eigene `uebersicht.html` des aktuellen Themas.
 
+## Themenübersicht und Aufgaben-Emojis
+
+Jede Aufgabe auf der TÜ besitzt genau ein fest zugeordnetes Emoji, das die tatsächliche Tätigkeit der Aufgabe zeigt. Zufällige Dekorationen oder Emojis ohne inhaltlichen Bezug sind nicht erlaubt.
+
+Verbindliche Grundzuordnung:
+
+- Karteikarten: 🃏
+- Bildaufgabe: 🖼️
+- Hören: 🎧
+- Sprechen oder Interview: 🎤
+- Schreiben oder Sätze bilden: ✍️
+- Ordnen oder Sortieren: 🧩
+- Auswählen oder Prüfen: ✅
+- Fragen, Antworten oder Dialog: 💬
+- Lesen: 📖
+- Zeitangaben: ⏰
+- Prüfung: immer ⭐
+
+Bei spezielleren Aufgaben wird ein eindeutiges, unmittelbar passendes Emoji fest in der Themenkonfiguration zugeordnet. Das in den Inhaltsdaten vorhandene Emoji darf den TÜ-Standard nicht überschreiben.
+
 ## Karteikarten
 
 Alle Karteikarten verwenden den gemeinsamen Kartenstandard:
