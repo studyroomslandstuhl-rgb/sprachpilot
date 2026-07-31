@@ -1,1 +1,98 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Karteikarten</title><link rel="stylesheet" href="style.css?v=l5-bunny2"></head><body><script type="module" src="/js/guard.js?v=l5t3-cards"></script><div class="container"><header class="topbar"></header><section class="card" id="area"><div class="question">Aufgabe wird geladen …</div></section><footer>© SprachPilot</footer></div><script>window.SP_L5_THEME={id:'Thema-3',title:'Wann? Termine und Tageszeiten',sub:'A1 Lektion 5 · Thema 3',key:'SP_L5_T3_V2'};</script><script src="app.js?v=l5-bunny2"></script><script src="l5t3-translations.js?v=4"></script><script src="l5t3-image-names.js?v=3"></script><script src="l5t3-word-filter.js?v=1"></script><script src="l5t3-day-abbr.js?v=1"></script><script src="l5t3-stability-fix.js?v=2"></script><script src="/wortschatz/A1-Lektion-5/l5-bunny-words.js?v=l5-bunny-all3"></script><script src="../l5-points.js?v=2"></script><script>header('Karteikarten');const FILE='karteikarten.html';let i=0,revealed=false,solved=false;function back(w){return `<div class="flip-word">${full(w)}</div>${w.plural?'<div class="flip-plural">Plural: <b>'+w.plural+'</b></div>':''}<button class="btn secondary" onclick="spL5PlayWord(WORDS[i],this);return false">🔊 Anhören</button>`}function show(){if(loadTask(FILE,WORDS.length).done.length>=WORDS.length){complete(area,FILE,'sortieren.html');return}i=spNextIndex(FILE,WORDS.length);revealed=false;solved=false;const w=WORDS[i];area.innerHTML=`${spProgressHtml(FILE,WORDS.length)}<div class="question">${cardPrompt(w)}</div>${nativeTrHtml(w)}<div class="flip-wrap"><div id="fcard" class="flip-card" onclick="reveal(true)"><div class="flip-face flip-front">${bigImgHtml(w)}<div class="small">Klicken: Karte umdrehen</div></div><div class="flip-face flip-back">${back(w)}</div></div></div><div class="actions"><button class="btn secondary" onclick="spL5PlayWord(WORDS[i],this)">🔊 Anhören</button><button id="micBtn" class="btn" onclick="say()">🎤 Sprechen</button><button class="btn secondary" onclick="writeBox()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="box" class="hidden"><input id="ans" placeholder="Schreiben Sie die Antwort hier"><button class="btn" onclick="check(ans.value)">Kontrollieren</button></div><div id="fb" class="feedback"></div><div id="after" class="actions"></div>`}function writeBox(){box.classList.remove('hidden')}function reveal(help){if(solved)return;fcard.classList.add('flipped');if(help&&!revealed){revealed=true;const t=spMarkWrong(FILE,WORDS.length);fb.innerHTML=t<3?'Die Karte wurde umgedreht. Dieses Wort kommt später noch einmal.':'Lösung: '+full(WORDS[i]);after.innerHTML='<button class="btn" onclick="nextAfterHelp()">Weiter</button>'}}function nextAfterHelp(){spMarkRight(FILE,WORDS.length);show()}function say(){startMic(micBtn,txt=>{writeBox();ans.value=txt;check(txt)})}function correct(v,w){return w.article?simple(v)===simple(full(w)):(simple(v)===simple(full(w))||simple(v)===simple(w.word))}function check(v){const w=WORDS[i];if(correct(v,w)){solved=true;fcard.classList.add('flipped');fb.innerHTML='<div class="ok">Richtig!</div><div class="hint">Lies das Wort noch einmal und höre es bei Bedarf.</div>';spMarkRight(FILE,WORDS.length);after.innerHTML='<button class="btn" onclick="show()">Weiter</button>'}else{const t=spMarkWrong(FILE,WORDS.length);fb.innerHTML=t<3?'<div class="no">Da ist noch ein Fehler.</div>':'<div class="no">Lösung: '+full(w)+'</div>'}}show();</script></body></html>
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Karteikarten · L5T3</title>
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/style.css?v=l6t4-bunny-audio9">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-revision2.css?v=l6t4-bunny-audio9">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-user.css?v=l6t4-bunny-audio9">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-compact-v2.css?v=l6t4-bunny-audio9">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-card-image-standard.css?v=20260730-card300">
+<style id="l5-card-standard-pastel-turquoise">
+:root{
+ --lesson-main:#29b8b3;
+ --lesson-main-dark:#16847f;
+ --lesson-main-light:#9fe9e5;
+ --lesson-soft:#e8fbfa;
+ --lesson-line:#bfece9;
+ --lesson-bg:#f4ffff;
+ --lesson-shadow:0 12px 28px rgba(22,132,127,.16);
+}
+body{background:linear-gradient(180deg,var(--lesson-bg),#fff)}
+.topbar,.card{box-shadow:var(--lesson-shadow)}
+.progress{background:#dff7f5}
+.module:hover{box-shadow:0 12px 24px rgba(22,132,127,.14)}
+.answer-area,.free-box,.speech-box,.write-box,.card-answer-box{background:#f4ffff}
+.answer-row input:focus,.free-box textarea:focus,.write-box input:focus{outline-color:rgba(41,184,179,.28)}
+footer{color:#52706e}
+</style>
+</head>
+<body>
+<div class="container">
+<header class="topbar"></header>
+<section class="card" id="area"><p>Die Aufgabe wird geladen …</p></section>
+<footer>© SprachPilot</footer>
+</div>
+<script type="module" src="/js/guard.js?v=l5-card-standard1"></script>
+<script>window.SP_L5_THEME={id:'Thema-3',title:'Wann? Termine und Tageszeiten',sub:'A1 Lektion 5 · Thema 3',key:'SP_L5_T3_V2'};</script>
+<script src="app.js?v=l5-card-standard1"></script>
+<script src="l5t3-translations.js?v=4"></script>
+<script src="l5t3-image-names.js?v=3"></script>
+<script src="l5t3-word-filter.js?v=1"></script>
+<script src="l5t3-day-abbr.js?v=1"></script>
+<script src="l5t3-stability-fix.js?v=2"></script>
+<script src="/wortschatz/A1-Lektion-5/l5-bunny-words.js?v=l5-bunny-all3"></script>
+<script src="../l5-points.js?v=2"></script>
+<script>
+(function(){
+'use strict';
+const area=document.getElementById('area');
+const FILE='karteikarten.html';
+const THEME_NUMBER=3;
+const NEXT_PAGE='sortieren.html';
+let currentIndex=null;
+let recognition=null;
+let autoScrollTimer=null;
+
+function esc(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
+function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')}catch(e){return null}}
+function languageName(){try{return LANG_NAMES[langKey()]||'Englisch'}catch(e){return'Englisch'}}
+function translation(item){try{return tr(item)||''}catch(e){return''}}
+function imageSource(item){try{if(typeof window.displayImage==='function')return window.displayImage(item)||''}catch(e){}return item?.image||''}
+function imageBlock(item,small=false,pure=false){const source=imageSource(item);if(!source)return'';return`<div class="visual ${small?'small-visual':''} ${pure?'pure-visual':''}"><img src="${esc(source)}" alt="${esc(full(item))}" loading="lazy" decoding="async" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="image-fallback blank" hidden aria-label="Bild nicht verfügbar"></div></div>`}
+function playCardAudio(item){if(typeof window.spL5PlayWord==='function')window.spL5PlayWord(item)}
+function accepted(item){const word=full(item),withoutArticle=String(word||'').replace(/^(der|die|das)\s+/i,'');return[word,item?.word,withoutArticle,...(Array.isArray(item?.aliases)?item.aliases:[])].filter(Boolean)}
+function isCorrect(item,value){const normalized=simple(value);if(accepted(item).some(solution=>simple(solution)===normalized))return true;try{return typeof window.l5t4Accepted==='function'&&window.l5t4Accepted(value,item)}catch(e){return false}}
+function state(){return loadTask(FILE,WORDS.length)}
+function current(){const saved=state();currentIndex=saved.current===null||saved.current===undefined?spNextIndex(FILE,WORDS.length):saved.current;return WORDS[currentIndex]}
+function taskHeading(){return'<div class="task-title-block"><span class="task-number">Aufgabe 1</span><h1>Karteikarten</h1></div>'}
+function progressHtml(){const saved=state(),percent=WORDS.length?Math.round(saved.done.length/WORDS.length*100):0;return`<div class="task-progress-row"><span>${saved.done.length} fehlerfrei · ${WORDS.length-saved.done.length} übrig</span><strong>${percent}%</strong></div><div class="progress"><div class="bar" style="width:${percent}%"></div></div>`}
+function top(){return`${taskHeading()}${progressHtml()}`}
+function genericHint(item){const solution=String(full(item)||'');return solution?`Die Lösung beginnt mit „${solution.charAt(0)}“.`:'Lies die Aufgabe noch einmal.'}
+function hint(item){const tries=state().tries||0;if(tries===1)return'<div class="no">Noch nicht richtig. Prüfe beide Antworten und versuche es erneut.</div>';if(tries===2)return`<div class="hint"><strong>Hinweis:</strong> ${esc(genericHint(item))}</div>`;if(tries>=3)return`<div class="no"><strong>Lösung:</strong> ${esc(full(item))}<br>Die Aufgabe kommt am Ende noch einmal.</div>`;return''}
+function answerInput(label='Schreibe deine Antwort.',withMic=false,hidden=false){return`<div class="write-panel" id="writePanel" ${hidden?'hidden':''}><div class="answer-area"><label for="answerInput">${esc(label)}</label><div class="answer-row"><input id="answerInput" autocomplete="off" autocapitalize="sentences"><button class="btn" type="button" data-action="check-input">Kontrollieren</button>${withMic?'<button class="btn secondary" type="button" data-action="mic">🎤 Sprechen</button>':''}</div></div></div>`}
+function header(title){const target=document.querySelector('.topbar');if(!target)return;const p=profile(),name=`${p?.vorname||p?.firstName||''} ${p?.nachname||p?.lastName||''}`.trim()||'Schüler/in';const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();const dashboard=role==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';target.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 5 · Thema ${THEME_NUMBER}</div></div></a><div class="account-tools"><span class="account-pill">${esc(name)}</span><a class="account-link" href="${dashboard}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="index.html">← Zur Übersicht</a></nav>`}
+function bindInputs(){document.getElementById('answerInput')?.addEventListener('keydown',event=>{if(event.key==='Enter')checkInput(event.target.value)})}
+function scrollToTaskImage(){clearTimeout(autoScrollTimer);autoScrollTimer=setTimeout(()=>{const target=area?.querySelector('.flip-wrap,.question-card>.visual,.question-card .visual,.question-card');if(!target)return;target.scrollIntoView({block:'center',inline:'nearest',behavior:'smooth'})},180)}
+function render(){stopMic();const saved=state();if(saved.done.length>=WORDS.length){finish();return}const item=current();if(!item){localStorage.removeItem(taskKey(FILE));return render()}header('Karteikarten');document.title='Aufgabe 1 · Karteikarten';renderCard(item);bindInputs();scrollToTaskImage()}
+function renderCard(item){const plural=item.plural?`<div><span>Plural</span><strong>${esc(String(item.plural).replace('kein Plural üblich','kein Plural'))}</strong></div>`:'',meaning=translation(item);area.innerHTML=`${top()}<div class="flip-wrap"><div id="verbFlipCard" class="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="flip-face flip-front">${imageBlock(item)}<div class="card-translation-box"><span>${esc(languageName())}</span><strong>${esc(meaning)}</strong></div></div><div class="flip-face flip-back"><div class="flip-back-grid"><div class="flip-back-image">${imageBlock(item,true,true)}</div><div class="flip-back-info"><div class="flip-word">${esc(full(item))}</div><div class="card-translation-box back-translation"><span>${esc(languageName())}</span><strong>${esc(meaning)}</strong></div><div class="card-details">${plural}<div><span>Beispiel</span><strong>${esc(item.sentence||'')}</strong></div></div><button type="button" class="btn secondary card-listen-btn" id="cardListenBtn">🔊 Anhören</button></div></div></div></div></div><div class="actions card-actions"><button id="cardMicBtn" type="button" class="btn">🎤 Sprechen</button><button id="cardWriteBtn" type="button" class="btn secondary">✍️ Schreiben</button></div><div id="cardAnswerBox" hidden>${answerInput('Wort schreiben')}</div><div id="feedback" class="feedback">${hint(item)}</div><div id="tech"></div><div id="cardAfter" class="actions card-actions"></div>`;const card=document.getElementById('verbFlipCard');card?.addEventListener('click',reveal);card?.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();reveal()}});document.getElementById('cardListenBtn')?.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();playCardAudio(item)});document.getElementById('cardMicBtn')?.addEventListener('click',()=>startMic(item));document.getElementById('cardWriteBtn')?.addEventListener('click',openCardWrite)}
+function technical(message){const target=document.getElementById('tech');if(target)target.innerHTML=`<div class="hint">${esc(message)}</div>`}
+function checkInput(value){const item=current();if(!String(value||'').trim())return;if(isCorrect(item,value))return markRight();spMarkWrong(FILE,WORDS.length);render()}
+function markRight(){const saved=state(),repeated=saved.hadWrong||saved.tries>0;spMarkRight(FILE,WORDS.length);area.querySelectorAll('button,input,textarea,audio').forEach(element=>element.disabled=true);const feedback=document.getElementById('feedback');if(feedback)feedback.innerHTML=`<div class="ok">Richtig.${repeated?' Der Dialog kommt am Ende noch einmal.':''}</div>`;setTimeout(render,650)}
+function reveal(){const item=current(),card=document.getElementById('verbFlipCard');if(card?.classList.contains('flipped'))return;card?.classList.add('flipped');spMarkWrong(FILE,WORDS.length);const after=document.getElementById('cardAfter');if(after){after.innerHTML='<button type="button" class="btn" id="cardHelpNext">Weiter</button>';document.getElementById('cardHelpNext').onclick=()=>{spMarkRight(FILE,WORDS.length);render()}}}
+function openCardWrite(){const box=document.getElementById('cardAnswerBox');if(box)box.hidden=false;bindInputs();setTimeout(()=>document.getElementById('answerInput')?.focus(),30)}
+function startMic(item=current()){const Recognition=window.SpeechRecognition||window.webkitSpeechRecognition;if(!Recognition){technical('Das Mikrofon wird nicht unterstützt. Bitte schreibe die Antwort.');openCardWrite();return}stopMic();let received=false,failed=false;try{recognition=new Recognition()}catch(e){technical('Das Mikrofon konnte nicht gestartet werden. Bitte schreibe die Antwort.');openCardWrite();return}recognition.lang='de-DE';recognition.interimResults=false;recognition.maxAlternatives=5;technical('Ich höre zu …');recognition.onresult=event=>{received=true;const alternatives=Array.from(event.results[0]||[]).map(result=>result.transcript),exact=alternatives.find(value=>isCorrect(item,value));checkInput(exact||alternatives[0]||'')};recognition.onerror=()=>{failed=true;technical('Das Mikrofon ist blockiert oder hat nicht funktioniert. Bitte schreibe die Antwort.');openCardWrite()};recognition.onend=()=>{recognition=null;if(!received&&!failed){technical('Ich konnte nichts erkennen. Bitte schreibe die Antwort.');openCardWrite()}};try{recognition.start()}catch(e){technical('Das Mikrofon konnte nicht gestartet werden. Bitte schreibe die Antwort.');openCardWrite()}}
+function stopMic(){if(recognition)try{recognition.abort()}catch(e){}recognition=null}
+function finish(){area.innerHTML=`<div class="finish-box"><div class="finish-icon">✓</div><h2>Geschafft!</h2><p>Du hast diese Aufgabe fehlerfrei abgeschlossen.</p><div class="actions"><a class="btn" href="${NEXT_PAGE}">Weiter →</a><a class="btn secondary" href="index.html">Zur Übersicht</a></div></div>`}
+area.addEventListener('click',event=>{const button=event.target.closest('button');if(!button)return;const action=button.dataset.action;if(action==='check-input')return checkInput(document.getElementById('answerInput')?.value||'')})
+window.addEventListener('beforeunload',stopMic);
+render();
+})();
+</script>
+<script src="/wortschatz/A1-Lektion-6/Thema-4/l6t4-card-no-skip.js?v=20260730-noskip1"></script>
+</body>
+</html>
