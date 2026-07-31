@@ -43,7 +43,7 @@ function objectValue(object,code){
  }
  return'';
 }
-function translation(item,code=currentCode()){
+function exactTranslation(item,code){
  for(const object of objects(item)){
   const value=objectValue(object,code);
   if(value)return value;
@@ -52,6 +52,12 @@ function translation(item,code=currentCode()){
   if(typeof item?.meaning==='string'&&item.meaning.trim())return item.meaning.trim();
   if(typeof item?.translation==='string'&&item.translation.trim())return item.translation.trim();
  }
+ return'';
+}
+function translation(item,code=currentCode()){
+ const exact=exactTranslation(item,code);
+ if(exact)return exact;
+ if(code!==currentCode())return'';
  for(const fallback of['en','ru','uk','tr','ar']){
   for(const object of objects(item)){
    const value=objectValue(object,fallback);
@@ -73,7 +79,7 @@ function type(item){
 }
 function labelForType(value){return({noun:'Nomen',verb:'Verben',adjective:'Adjektive',adverb:'Adverbien',phrase:'Ausdrücke und Redewendungen',other:'Weitere Wörter'})[value]||'Weitere Wörter'}
 function grid(item){
- return `<div class="sp-translation-grid">${LANGS.map(([code,label])=>`<div><b>${esc(label)}:</b> <span>${esc(translation(item,code)||'—')}</span></div>`).join('')}</div>`;
+ return `<div class="sp-translation-grid">${LANGS.map(([code,label])=>`<div><b>${esc(label)}:</b> <span>${esc(exactTranslation(item,code)||'—')}</span></div>`).join('')}</div>`;
 }
 function native(item){const code=currentCode();return{code,label:NAME[code]||code.toUpperCase(),text:translation(item,code)}}
 function enrich(){
@@ -87,6 +93,6 @@ function enrich(){
  }));
 }
 
-window.L7TranslationStandard={langs:LANGS,name:code=>NAME[code]||code,currentCode,translation,native,grid,full,type,labelForType,enrich,escape:esc};
+window.L7TranslationStandard={langs:LANGS,name:code=>NAME[code]||code,currentCode,translation,exactTranslation,native,grid,full,type,labelForType,enrich,escape:esc};
 Promise.resolve(window.L7_THEME_READY).then(enrich).catch(()=>{});
 })();
