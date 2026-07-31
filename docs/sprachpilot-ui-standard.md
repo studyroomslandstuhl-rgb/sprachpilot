@@ -99,16 +99,28 @@ Vor dem Start einer neuen Hördatei werden beendet:
 
 Fehler- und Fallback-Ereignisse dürfen pro Audioquelle nur einmal zur nächsten Quelle wechseln.
 
+## Verbindliche Inhaltsverteilung in Lektion 7
+
+Der Wortschatz der Lektion 7 ist auf Thema 1 bis Thema 4 verteilt. Jedes Thema lädt ausschließlich seinen eigenen Datensatz:
+
+- `Thema-1/data-loader.js`
+- `Thema-2/data-loader.js`
+- `Thema-3/data-loader.js`
+- `Thema-4/data-loader.js`
+
+Ein gemeinsamer Sammeldatensatz, ein historisches Gesamtpaket oder ein Loader, der Wörter aus mehreren Themen in eine TÜ, Aufgabe, Karteikartensammlung oder Übersicht einfügt, ist nicht erlaubt.
+
+Die Standardisierung von Darstellung, Leisten, Farben, Übersetzungen, Audio und Karteikartenlogik darf die thematische Wortverteilung nicht verändern.
+
 ## Verbindlicher Inhalt für L7T1
 
-Der am 30. Juli 2026 überarbeitete L7T1-Inhaltsstand darf nicht durch den allgemeinen L7-Datenloader ersetzt werden. Darstellung, Leiste und Farben dürfen standardisiert werden; die folgenden Inhalte und Funktionen bleiben erhalten:
+L7T1 verwendet ausschließlich den Wortschatz aus `Thema-1/data-loader.js`. Die Datei `Thema-1/l7t1-content-restore.js` darf diese Daten nur ergänzen, nicht durch einen früheren Gesamtwortschatz ersetzen.
 
-- der überarbeitete Wortbestand von L7T1
-- alle L7T1-Nomen in der Aufgabe „Artikel und Plural“
-- ein passender A1-Beispielsatz auf jeder Karteikarte
+Für die vorhandenen L7T1-Wörter bleiben erhalten:
+
+- passende A1-Beispielsätze auf den Karteikarten
 - Übersetzungen in der gewählten Muttersprache
 - die überarbeiteten kurzen Aufgabenbezeichnungen und Du-Anweisungen
-- die zusätzliche Aufgabe „Hören und Erkennen“
 - die Hör-Aufgaben nach der L6T4-Struktur
 - die Karteikartenregeln aus dem Abschnitt „Karteikarten“
 
@@ -118,5 +130,3 @@ Für L7T1-Verben gilt zusätzlich:
 - Trennbare und reflexive Verben erhalten Dateinamen mit Unterstrich, zum Beispiel `aufstehen.mp3` und `sich_anziehen.mp3`.
 - Es wird keine Computerstimme als Ersatz abgespielt.
 - Fehlt die MP3, erscheint exakt: „Die Audiodatei konnte nicht geladen werden.“
-
-Die überarbeiteten Daten werden über `Thema-1/l7t1-content-restore.js` geladen. Dabei wird nur der frühere Inhaltsstand übernommen; alte Oberflächen, Leisten und Farben werden nicht wieder aktiviert.
