@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_HEADER_CLEANUP_1)return;
-window.__SP_L7T1_HEADER_CLEANUP_1=true;
+if(window.__SP_L7T1_HEADER_CLEANUP_2)return;
+window.__SP_L7T1_HEADER_CLEANUP_2=true;
 
 let scheduled=false;
 let headerRequested=false;
@@ -18,7 +18,7 @@ function isLegacyHeader(element){
 function requestStandardHeader(){
   if(document.querySelector('.sp-header')||headerRequested)return;
   headerRequested=true;
-  import('/js/sp-header.js?v=theme-standard2').then(module=>{
+  import('/js/sp-header.js?v=l7-purple1').then(module=>{
     module.installSpHeader();
     setTimeout(()=>{headerRequested=false;schedule();},80);
   }).catch(()=>{headerRequested=false;});
@@ -33,7 +33,7 @@ function clean(){
   if(root){
     const candidates=new Set([
       ...root.querySelectorAll('header,.topbar,.l7-topbar,.l7-header,[class*="topbar"],[class*="header"]'),
-      ...root.querySelectorAll(':scope > *, .l7-page > :first-child')
+      ...root.querySelectorAll('.l7-page > :first-child')
     ]);
     candidates.forEach(element=>{
       if(isLegacyHeader(element))element.remove();
