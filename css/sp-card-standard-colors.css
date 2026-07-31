@@ -14,11 +14,11 @@ html[data-sp-card-lesson="6"]{
  --lesson-shadow:0 12px 28px rgba(138,58,79,.16);
 }
 html[data-sp-card-lesson="7"]{
- --lesson-main:#a8cfff;--lesson-main-dark:#235a92;--lesson-main-light:#dceeff;
- --lesson-soft:#eef7ff;--lesson-line:#b9dcff;--lesson-bg:#f7fbff;
- --lesson-shadow:0 12px 28px rgba(35,90,146,.16);
+ --lesson-main:#b397e1;--lesson-main-dark:#5f477f;--lesson-main-light:#d8caf1;
+ --lesson-soft:#f4effb;--lesson-line:#d9ccef;--lesson-bg:#fbf9ff;
+ --lesson-shadow:0 12px 28px rgba(95,71,127,.16);
 }
-body{background:linear-gradient(180deg,var(--lesson-bg),#fff)!important}
+body{background:linear-gradient(180deg,var(--lesson-bg),#fff)}
 .topbar,.card,.sp-header{box-shadow:var(--lesson-shadow)}
 .progress{background:color-mix(in srgb,var(--lesson-soft) 86%,#fff)}
 .answer-area,.free-box,.speech-box,.write-box,.card-answer-box{background:var(--lesson-bg)}
