@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t1-confirmed-merges2';
+const version='l7t1-scope-minimum1';
 
 function load(src){
  return new Promise((resolve,reject)=>{

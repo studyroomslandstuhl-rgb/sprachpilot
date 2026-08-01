@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_CONJUGATION_UI_2)return;
-window.__SP_L7T1_CONJUGATION_UI_2=true;
+if(window.__SP_L7T1_CONJUGATION_UI_3)return;
+window.__SP_L7T1_CONJUGATION_UI_3=true;
 if(!window.L7||!window.L7S)return;
 
 const S=window.L7S;
@@ -9,6 +9,7 @@ const originalRender=window.L7.renderTaskPage;
 let current=null;
 
 function esc(value){return S.esc(value)}
+function placementKey(index){return`placements:${index}`}
 function tokensFor(rows){
  const tokens=[];
  rows.forEach((row,index)=>{
@@ -17,23 +18,26 @@ function tokensFor(rows){
  });
  return tokens;
 }
-function stateFor(theme,task){
- S.index(theme,task.id,1);
- const state=S.load(theme,task.id,1);
- const saved=state.answers?.placements;
+function stateFor(theme,task,total,index){
+ const state=S.load(theme,task.id,total);
+ const saved=state.answers?.[placementKey(index)];
  return saved&&typeof saved==='object'&&!Array.isArray(saved)?{...saved}:{};
 }
 function savePlacements(){
- const{theme,task,placements}=current;
- const state=S.load(theme,task.id,1);
+ const{theme,task,total,index,placements}=current;
+ const state=S.load(theme,task.id,total);
  state.answers=state.answers||{};
- state.answers.placements={...placements};
+ state.answers[placementKey(index)]={...placements};
  S.save(theme,task.id,state,false);
 }
 function clearPlacements(){
+ const{theme,task,total,index}=current;
  current.placements={};
  current.selected='';
- savePlacements();
+ const state=S.load(theme,task.id,total);
+ state.answers=state.answers||{};
+ delete state.answers[placementKey(index)];
+ S.save(theme,task.id,state,false);
 }
 function tokenById(id){return current.tokens.find(token=>token.id===id)}
 function assignedToken(target){
@@ -117,20 +121,20 @@ function check(){
  }
  const wrong=targets.filter(target=>assignedToken(target)?.label!==expected[target]);
  const ok=wrong.length===0;
- S.attempt(current.theme,current.task.id,1,0,ok);
+ S.attempt(current.theme,current.task.id,current.total,current.index,ok);
  if(!ok){
-  const tries=S.wrong(current.theme,current.task.id,1);
+  const tries=S.wrong(current.theme,current.task.id,current.total);
   current.wrongTargets=new Set(tries>=2?wrong:[]);
   current.showSolution=tries>=3;
   current.feedback=tries===1?'<div class="l7-no">Noch nicht richtig. Versuche es noch einmal.</div>':tries===2?'<div class="l7-hint"><strong>Hinweis:</strong> Die markierten Felder sind noch falsch.</div>':'<div class="l7-no">Prüfe die Tabelle mit der Lösung und ordne alle Formen selbst richtig zu.</div>';
   draw();
   return;
  }
- const before=S.load(current.theme,current.task.id,1);
+ const before=S.load(current.theme,current.task.id,current.total);
  const repeat=before.hadWrong||before.tries>0;
  clearPlacements();
- S.right(current.theme,current.task.id,1);
- current.feedback=`<div class="l7-ok">Richtig.${repeat?' Die Tabelle kommt noch einmal.':''}</div>`;
+ S.right(current.theme,current.task.id,current.total);
+ current.feedback=`<div class="l7-ok">Richtig.${repeat?' Diese Runde kommt am Ende noch einmal.':''}</div>`;
  current.wrongTargets.clear();
  current.showSolution=false;
  draw();
@@ -140,21 +144,25 @@ function finish(theme,task){
  const root=document.getElementById('app');
  const tasks=S.T.tasks;
  const next=tasks[tasks.findIndex(item=>item.id===task.id)+1];
- root.innerHTML=`<div class="l7-page">${S.header(theme,task.title)}<section class="l7-card l7-finish"><div>✓</div><h2>Aufgabe abgeschlossen</h2><p>Du hast alle Formen von „können“ und „wollen“ richtig zugeordnet.</p><div class="l7-actions"><a class="l7-btn secondary" href="index.html#task-${esc(task.id)}">Zur Übersicht</a>${next?`<a class="l7-btn" href="task.html?task=${encodeURIComponent(next.id)}">Nächste Aufgabe</a>`:''}</div></section><footer>© SprachPilot</footer></div>`;
+ root.innerHTML=`<div class="l7-page">${S.header(theme,task.title)}<section class="l7-card l7-finish"><div>✓</div><h2>Aufgabe abgeschlossen</h2><p>Du hast alle 15 Runden zu „können“ und „wollen“ richtig gelöst.</p><div class="l7-actions"><a class="l7-btn secondary" href="index.html#task-${esc(task.id)}">Zur Übersicht</a>${next?`<a class="l7-btn" href="task.html?task=${encodeURIComponent(next.id)}">Nächste Aufgabe</a>`:''}</div></section><footer>© SprachPilot</footer></div>`;
 }
 function renderConjugation(theme,id){
  theme=Number(theme);
  const task=S.task(id);
  if(!task)return originalRender(theme,id);
- const state=S.load(theme,task.id,1);
- if(state.done.length>=1)return finish(theme,task);
- const item=task.items?.[0]||{};
+ const total=Math.max(1,task.items?.length||0);
+ let state=S.load(theme,task.id,total);
+ if(state.done.length>=total)return finish(theme,task);
+ const index=S.index(theme,task.id,total);
+ state=S.load(theme,task.id,total);
+ const item=task.items?.[index]||task.items?.[0]||{};
  const rows=Array.isArray(item.rows)?item.rows:[];
- const placements=stateFor(theme,task);
+ const placements=stateFor(theme,task,total,index);
  const tokens=tokensFor(rows);
- current={theme,task,rows,tokens,placements,selected:'',wrongTargets:new Set(),showSolution:false,feedback:'',tokenOrder:S.shuffle(tokens.map(token=>token.id))};
+ const percent=Math.round(state.done.length/total*100);
+ current={theme,task,total,index,rows,tokens,placements,selected:'',wrongTargets:new Set(),showSolution:false,feedback:'',tokenOrder:S.shuffle(tokens.map(token=>token.id))};
  const root=document.getElementById('app');
- root.innerHTML=`<div class="l7-page">${S.header(theme,task.title)}<section class="l7-card"><div class="l7-progress-row"><span>0 fehlerfrei · 1 übrig</span><strong>0%</strong></div><div class="l7-progress"><span style="width:0%"></span></div><div class="l7-instruction">${esc(task.description)}</div><div class="l7-question-card"><p class="eyebrow">Aufgabe 1</p><h2>${esc(item.prompt||task.description)}</h2><p class="sp-conj-help">Ziehe eine Form in ein Feld. Auf dem Smartphone kannst du zuerst die Form und danach das Feld antippen.</p><div id="spConjugationBoard"></div><div class="l7-actions"><button type="button" class="l7-btn" id="spCheckConjugation">Prüfen</button><button type="button" class="l7-btn secondary" id="spResetConjugation">Neu ordnen</button></div><div id="spConjugationFeedback"></div></div></section><footer>© SprachPilot</footer></div>`;
+ root.innerHTML=`<div class="l7-page">${S.header(theme,task.title)}<section class="l7-card"><div class="l7-progress-row"><span>${state.done.length} fehlerfrei · ${total-state.done.length} übrig</span><strong>${percent}%</strong></div><div class="l7-progress"><span style="width:${percent}%"></span></div><div class="l7-instruction">${esc(task.description)}</div><div class="l7-question-card"><p class="eyebrow">Aufgabe ${state.done.length+1} von ${total}</p><h2>${esc(item.prompt||task.description)}</h2><p class="sp-conj-help">Ziehe eine Form in ein Feld. Auf dem Smartphone kannst du zuerst die Form und danach das Feld antippen.</p><div id="spConjugationBoard"></div><div class="l7-actions"><button type="button" class="l7-btn" id="spCheckConjugation">Prüfen</button><button type="button" class="l7-btn secondary" id="spResetConjugation">Neu ordnen</button></div><div id="spConjugationFeedback"></div></div></section><footer>© SprachPilot</footer></div>`;
  document.getElementById('spCheckConjugation')?.addEventListener('click',check);
  document.getElementById('spResetConjugation')?.addEventListener('click',()=>{clearPlacements();current.feedback='';current.wrongTargets.clear();current.showSolution=false;draw()});
  draw();

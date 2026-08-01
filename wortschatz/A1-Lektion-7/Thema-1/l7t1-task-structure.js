@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_TASK_STRUCTURE_2)return;
-window.__SP_L7T1_TASK_STRUCTURE_2=true;
+if(window.__SP_L7T1_TASK_STRUCTURE_3)return;
+window.__SP_L7T1_TASK_STRUCTURE_3=true;
 
 const REMOVE_IDS=new Set([
  'partnerinterview',
@@ -31,6 +31,27 @@ function itemCopies(task,label){
   context:item.context||label
  }));
 }
+function modalTableItems(){
+ const rows=[
+  {pronoun:'ich',koennen:'kann',wollen:'will'},
+  {pronoun:'du',koennen:'kannst',wollen:'willst'},
+  {pronoun:'er / sie / es',koennen:'kann',wollen:'will'},
+  {pronoun:'wir',koennen:'können',wollen:'wollen'},
+  {pronoun:'ihr',koennen:'könnt',wollen:'wollt'},
+  {pronoun:'sie / Sie',koennen:'können',wollen:'wollen'}
+ ];
+ const rounds=[
+  [0],[1],[2],[3],[4],[5],
+  [0,1],[2,3],[4,5],[0,2],[1,4],[3,5],
+  [0,1,2],[3,4,5],[0,1,2,3,4,5]
+ ];
+ return rounds.map((indexes,index)=>({
+  prompt:index===14
+   ?'Ordne zum Abschluss alle Formen von „können“ und „wollen“ zu.'
+   :`Ordne die Formen von „können“ und „wollen“ zu. Runde ${index+1} von 15.`,
+  rows:indexes.map(rowIndex=>({...rows[rowIndex]}))
+ }));
+}
 function modalTableTask(){
  return{
   id:'koennen-wollen-formen',
@@ -38,17 +59,7 @@ function modalTableTask(){
   kind:'conjugation-table',
   title:'können und wollen',
   description:'Ordne die Verbformen den Personalpronomen zu.',
-  items:[{
-   prompt:'Ziehe alle Formen von „können“ und „wollen“ an die richtige Stelle.',
-   rows:[
-    {pronoun:'ich',koennen:'kann',wollen:'will'},
-    {pronoun:'du',koennen:'kannst',wollen:'willst'},
-    {pronoun:'er / sie / es',koennen:'kann',wollen:'will'},
-    {pronoun:'wir',koennen:'können',wollen:'wollen'},
-    {pronoun:'ihr',koennen:'könnt',wollen:'wollt'},
-    {pronoun:'sie / Sie',koennen:'können',wollen:'wollen'}
-   ]
-  }]
+  items:modalTableItems()
  };
 }
 function questionTask(first,second){
@@ -81,9 +92,9 @@ function modalChoiceTask(verbTask,politeTask){
  const hasMoechten=normalize(JSON.stringify(output.items)).includes('mocht');
  if(!hasMoechten){
   output.items.push(
-   {kind:'choice',prompt:'Ich ___ gern einen Tee.',context:'Höflicher Wunsch',answer:'möchte',options:['möchte','will','kann','möchten'],hint:'„möchten“ drückt hier einen höflichen Wunsch aus.'},
+   {kind:'choice',prompt:'Ich ___ gern Tennis spielen.',context:'Höflicher Wunsch',answer:'möchte',options:['möchte','will','kann','möchten'],hint:'„möchten“ drückt hier einen höflichen Wunsch aus.'},
    {kind:'choice',prompt:'Du ___ Klavier spielen. Das ist dein Wunsch.',context:'Höflicher Wunsch',answer:'möchtest',options:['möchtest','möchte','willst','kannst'],hint:'Bei „du“ heißt die Form „möchtest“.'},
-   {kind:'choice',prompt:'Wir ___ bitte zwei Eintrittskarten.',context:'Höflicher Wunsch',answer:'möchten',options:['möchten','wollen','können','möchtet'],hint:'Bei „wir“ heißt die Form „möchten“.'},
+   {kind:'choice',prompt:'Wir ___ heute einen Kuchen backen.',context:'Höflicher Wunsch',answer:'möchten',options:['möchten','wollen','können','möchtet'],hint:'Bei „wir“ heißt die Form „möchten“.'},
    {kind:'choice',prompt:'___ ihr am Wochenende Ski fahren?',context:'Höfliche Frage',answer:'Möchtet',answers:['Möchtet','möchtet'],options:['Möchtet','Wollt','Könnt','Möchten'],hint:'Bei „ihr“ heißt die Form „möchtet“.'}
   );
  }
@@ -129,7 +140,7 @@ function transform(theme){
 
  tasks.forEach((task,index)=>{task.order=index+1});
  theme.tasks=tasks;
- theme.contentRevision='l7t1-confirmed-task-merges-2026-08-01-v2';
+ theme.contentRevision='l7t1-confirmed-task-merges-2026-08-01-v3';
  window.L7_THEME=theme;
  return theme;
 }
