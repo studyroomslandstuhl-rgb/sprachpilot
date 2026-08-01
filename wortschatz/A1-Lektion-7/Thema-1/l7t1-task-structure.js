@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_TASK_STRUCTURE_1)return;
-window.__SP_L7T1_TASK_STRUCTURE_1=true;
+if(window.__SP_L7T1_TASK_STRUCTURE_2)return;
+window.__SP_L7T1_TASK_STRUCTURE_2=true;
 
 const REMOVE_IDS=new Set([
  'partnerinterview',
@@ -22,6 +22,14 @@ function taskIndex(tasks,ids){
 function removeTasks(tasks,ids){
  const set=new Set(Array.isArray(ids)?ids:[ids]);
  return tasks.filter(task=>!set.has(task?.id));
+}
+function itemCopies(task,label){
+ if(!task||!Array.isArray(task.items))return[];
+ return task.items.map(item=>({
+  ...item,
+  kind:item.kind||task.kind,
+  context:item.context||label
+ }));
 }
 function modalTableTask(){
  return{
@@ -44,31 +52,39 @@ function modalTableTask(){
  };
 }
 function questionTask(first,second){
- const items=[...(first?.items||[]),...(second?.items||[])];
- return{
+ const firstItems=itemCopies(first,'Ja-/Nein-Frage');
+ const secondItems=itemCopies(second,'W-Frage');
+ const kinds=new Set([...firstItems,...secondItems].map(item=>item.kind).filter(Boolean));
+ const task={
   id:'fragen-bilden',
   icon:first?.icon||second?.icon||'❓',
-  kind:first?.kind||second?.kind||'order',
   title:'Fragen bilden',
   description:'Ordne Ja-/Nein-Fragen und W-Fragen.',
+  items:[...firstItems,...secondItems]
+ };
+ if(kinds.size===1)task.kind=[...kinds][0];
+ return task;
+}
+function modalChoiceTask(verbTask,politeTask){
+ const firstItems=itemCopies(verbTask,'Wähle die passende Verbform.');
+ const politeItems=itemCopies(politeTask,'Unterscheide „wollen“ und „möchten“.');
+ const items=[...firstItems,...politeItems];
+ const kinds=new Set(items.map(item=>item.kind).filter(Boolean));
+ const output={
+  id:'modalverb-waehlen',
+  icon:verbTask?.icon||politeTask?.icon||'🔤',
+  title:'können, wollen oder möchten?',
+  description:'Wähle das passende Modalverb und die richtige Form.',
   items
  };
-}
-function ensureMoechtenTask(task){
- const output=task||{id:'verbform-waehlen',icon:'🔤',kind:'choice',items:[]};
- output.id='verbform-waehlen';
- output.icon=output.icon||'🔤';
- output.kind='choice';
- output.title='können, wollen oder möchten?';
- output.description='Wähle die passende Verbform.';
- output.items=Array.isArray(output.items)?output.items:[];
+ if(kinds.size===1)output.kind=[...kinds][0];
  const hasMoechten=normalize(JSON.stringify(output.items)).includes('mocht');
  if(!hasMoechten){
   output.items.push(
-   {prompt:'Ich ___ am Samstag Tennis spielen.',answer:'möchte',options:['möchte','will','kann','möchten'],hint:'„möchten“ drückt hier einen höflichen Wunsch aus.'},
-   {prompt:'Du ___ Klavier spielen. Das ist dein Wunsch.',answer:'möchtest',options:['möchtest','möchte','willst','kannst'],hint:'Bei „du“ heißt die Form „möchtest“.'},
-   {prompt:'Wir ___ heute einen Kuchen backen.',answer:'möchten',options:['möchten','wollen','können','möchtet'],hint:'Bei „wir“ heißt die Form „möchten“.'},
-   {prompt:'___ ihr am Wochenende Ski fahren?',answer:'Möchtet',answers:['Möchtet','möchtet'],options:['Möchtet','Wollt','Könnt','Möchten'],hint:'Bei „ihr“ heißt die Form „möchtet“.'}
+   {kind:'choice',prompt:'Ich ___ gern einen Tee.',context:'Höflicher Wunsch',answer:'möchte',options:['möchte','will','kann','möchten'],hint:'„möchten“ drückt hier einen höflichen Wunsch aus.'},
+   {kind:'choice',prompt:'Du ___ Klavier spielen. Das ist dein Wunsch.',context:'Höflicher Wunsch',answer:'möchtest',options:['möchtest','möchte','willst','kannst'],hint:'Bei „du“ heißt die Form „möchtest“.'},
+   {kind:'choice',prompt:'Wir ___ bitte zwei Eintrittskarten.',context:'Höflicher Wunsch',answer:'möchten',options:['möchten','wollen','können','möchtet'],hint:'Bei „wir“ heißt die Form „möchten“.'},
+   {kind:'choice',prompt:'___ ihr am Wochenende Ski fahren?',context:'Höfliche Frage',answer:'Möchtet',answers:['Möchtet','möchtet'],options:['Möchtet','Wollt','Könnt','Möchten'],hint:'Bei „ihr“ heißt die Form „möchtet“.'}
   );
  }
  return output;
@@ -82,9 +98,10 @@ function transform(theme){
  tasks.splice(Math.min(modalPosition,tasks.length),0,modalTableTask());
 
  const verbTask=tasks.find(task=>task.id==='verbform-waehlen');
- tasks=removeTasks(tasks,'verbform-waehlen');
+ const politeTask=tasks.find(task=>task.id==='wollen-moechten');
+ tasks=removeTasks(tasks,['verbform-waehlen','wollen-moechten']);
  let modalIndex=tasks.findIndex(task=>task.id==='koennen-wollen-formen');
- tasks.splice(modalIndex+1,0,ensureMoechtenTask(verbTask));
+ tasks.splice(modalIndex+1,0,modalChoiceTask(verbTask,politeTask));
 
  const yesNo=tasks.find(task=>task.id==='ja-nein-fragen');
  const wQuestions=tasks.find(task=>task.id==='w-fragen');
@@ -110,8 +127,9 @@ function transform(theme){
   tasks.push(exam);
  }
 
+ tasks.forEach((task,index)=>{task.order=index+1});
  theme.tasks=tasks;
- theme.contentRevision='l7t1-confirmed-task-merges-2026-08-01';
+ theme.contentRevision='l7t1-confirmed-task-merges-2026-08-01-v2';
  window.L7_THEME=theme;
  return theme;
 }

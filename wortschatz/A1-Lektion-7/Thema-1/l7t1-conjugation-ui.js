@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_CONJUGATION_UI_1)return;
-window.__SP_L7T1_CONJUGATION_UI_1=true;
+if(window.__SP_L7T1_CONJUGATION_UI_2)return;
+window.__SP_L7T1_CONJUGATION_UI_2=true;
 if(!window.L7||!window.L7S)return;
 
 const S=window.L7S;
@@ -98,9 +98,16 @@ function bindBoard(){
   });
  });
 }
-function check(){
+function expectedLabels(){
  const expected={};
- current.tokens.forEach(token=>expected[token.target]=token.id);
+ current.rows.forEach((row,index)=>{
+  expected[`k-zone-${index}`]=row.koennen;
+  expected[`w-zone-${index}`]=row.wollen;
+ });
+ return expected;
+}
+function check(){
+ const expected=expectedLabels();
  const targets=Object.keys(expected);
  const missing=targets.filter(target=>!current.placements[target]);
  if(missing.length){
@@ -108,7 +115,7 @@ function check(){
   draw();
   return;
  }
- const wrong=targets.filter(target=>current.placements[target]!==expected[target]);
+ const wrong=targets.filter(target=>assignedToken(target)?.label!==expected[target]);
  const ok=wrong.length===0;
  S.attempt(current.theme,current.task.id,1,0,ok);
  if(!ok){
