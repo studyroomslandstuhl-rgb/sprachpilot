@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_BUNNY_AUDIO_4)return;
-window.__SP_L7T1_BUNNY_AUDIO_4=true;
+if(window.__SP_L7T1_BUNNY_AUDIO_5)return;
+window.__SP_L7T1_BUNNY_AUDIO_5=true;
 if(!location.pathname.includes('/wortschatz/A1-Lektion-7/Thema-1/'))return;
 
 const BASES=['https://sprachpilot.b-cdn.net/audio/','https://sprachpilot.b-cdn.net/Audio/'];
@@ -26,7 +26,20 @@ function stop(){
  document.querySelectorAll('audio').forEach(audio=>{try{audio.pause();audio.currentTime=0}catch(error){}});
  document.querySelectorAll('.bunny-audio-playing').forEach(button=>button.classList.remove('bunny-audio-playing'));
 }
+function overviewItem(button){
+ const index=Number(button.dataset.audioIndex);
+ return Number.isInteger(index)?window.__SP_L7_OVERVIEW_ITEMS?.[index]:null;
+}
+function itemText(item){
+ if(!item)return'';
+ const direct=String(item.audio||'').trim();
+ if(direct)return direct;
+ const word=String(item.full||item.answer||item.word||'').trim();
+ return word.replace(/^(der|die|das)\s+/i,'');
+}
 function sourceText(button){
+ const overview=overviewItem(button);
+ if(overview)return itemText(overview);
  const direct=button.dataset.audioInfinitive||button.dataset.bunnyInfinitive||button.dataset.audio||button.dataset.text||'';
  if(direct)return String(direct).trim();
  const scope=button.closest('.flip-face,.l7-learning,.l7-question-card,.question-card,.card')||document;
@@ -36,10 +49,14 @@ function candidates(value){
  const raw=String(value||'').trim();
  const file=basename(raw);
  const stem=file.replace(/\.mp3$/i,'');
+ const withoutArticle=stem.replace(/^(der|die|das)[-_\s]+/i,'');
  const names=unique([
   stem,
+  withoutArticle,
   slug(stem,'_'),
   slug(stem,'-'),
+  slug(withoutArticle,'_'),
+  slug(withoutArticle,'-'),
   slug(raw,'_'),
   slug(raw,'-'),
   slug(normalize(raw),'_')
@@ -51,7 +68,7 @@ function candidates(value){
  return unique(urls);
 }
 function errorBox(button){
- const scope=button.closest('.l7-audio,.flip-face,.l7-learning,.l7-question-card,.question-card,.card')||button.parentElement;
+ const scope=button.closest('.l7-audio,.flip-face,.l7-learning,.l7-question-card,.question-card,.card,.sp-overview-word')||button.parentElement;
  if(!scope)return;
  let box=scope.querySelector('.bunny-audio-error');
  if(!box){
@@ -63,7 +80,7 @@ function errorBox(button){
  }
 }
 function clearError(button){
- const scope=button.closest('.l7-audio,.flip-face,.l7-learning,.l7-question-card,.question-card,.card')||button.parentElement;
+ const scope=button.closest('.l7-audio,.flip-face,.l7-learning,.l7-question-card,.question-card,.card,.sp-overview-word')||button.parentElement;
  scope?.querySelector('.bunny-audio-error')?.remove();
 }
 function play(value,button){
@@ -104,7 +121,7 @@ function play(value,button){
 }
 
 document.addEventListener('click',event=>{
- const button=event.target instanceof Element?event.target.closest('button[data-audio],button[data-audio-infinitive],[data-action="card-audio"],#cardListenBtn,.card-listen-btn,.word-audio'):null;
+ const button=event.target instanceof Element?event.target.closest('button[data-audio],button[data-audio-infinitive],[data-action="card-audio"],#cardListenBtn,.card-listen-btn,.word-audio,[data-audio-index]'):null;
  if(!button)return;
  const value=sourceText(button);
  if(!value)return;
