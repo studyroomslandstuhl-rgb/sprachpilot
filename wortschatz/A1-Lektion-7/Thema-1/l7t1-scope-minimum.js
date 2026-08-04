@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7_SCOPE_MINIMUM_1)return;
-window.__SP_L7_SCOPE_MINIMUM_1=true;
+if(window.__SP_L7_SCOPE_MINIMUM_2)return;
+window.__SP_L7_SCOPE_MINIMUM_2=true;
 
 const MIN_QUESTIONS=15;
 const T1_FOREIGN_TERMS=[
@@ -30,6 +30,29 @@ function fullWord(item){
  if(article&&!/^(der|die|das)\s/i.test(direct))return`${article} ${direct}`.trim();
  return direct;
 }
+function withoutOpenEnding(value){
+ return String(value||'').trim().replace(/\s*(?:\.{2,}|…+)\s*$/u,'').trim();
+}
+function prepareCardAnswers(item){
+ const values=[item?.answer,item?.word,item?.full,item?.term,...(Array.isArray(item?.answers)?item.answers:[])];
+ const answers=[];
+ for(const value of values){
+  const text=String(value||'').trim();
+  if(!text)continue;
+  answers.push(text);
+  const withoutEnding=withoutOpenEnding(text);
+  if(withoutEnding&&withoutEnding!==text)answers.push(withoutEnding);
+ }
+ const visible=fullWord(item);
+ if(visible){
+  answers.push(visible);
+  const withoutEnding=withoutOpenEnding(visible);
+  if(withoutEnding&&withoutEnding!==visible)answers.push(withoutEnding);
+ }
+ item.answers=[...new Set(answers)];
+ if(!item.answer&&visible)item.answer=visible;
+ return item;
+}
 function exactForeignWord(value){
  const word=normalize(value);
  if(!word)return false;
@@ -47,7 +70,7 @@ function filterThemeOne(theme){
  for(const task of theme.tasks||[]){
   if(!Array.isArray(task.items))continue;
   if(isCards(task)){
-   task.items=task.items.filter(item=>!exactForeignWord(fullWord(item)));
+   task.items=task.items.filter(item=>!exactForeignWord(fullWord(item))).map(prepareCardAnswers);
   }else{
    task.items=task.items.filter(item=>{
     try{return!containsForeignTerm(JSON.stringify(item))}catch(error){return true}
@@ -101,7 +124,7 @@ function transform(theme){
  filterThemeOne(theme);
  for(const task of theme.tasks)ensureMinimum(task);
  theme.minimumQuestions=MIN_QUESTIONS;
- theme.scopeRevision='l7-four-theme-distribution-2026-08-01';
+ theme.scopeRevision='l7-four-theme-distribution-2026-08-04-card-answer-fix';
  window.L7_THEME=theme;
  return theme;
 }
