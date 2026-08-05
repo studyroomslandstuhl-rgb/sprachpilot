@@ -1,12 +1,18 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_BUNNY_MANIFEST_V1)return;
-window.__SP_VERB_BUNNY_MANIFEST_V1=true;
+if(window.__SP_VERB_BUNNY_MANIFEST_V2)return;
+window.__SP_VERB_BUNNY_MANIFEST_V2=true;
 
 const FILES=window.SP_VERB_AUDIO_FILES||Object.create(null);
+const MISSING=new Set((window.SP_VERB_AUDIO_MISSING||[]).map(item=>normalize(item?.verb)));
+const nativeSynth=window.speechSynthesis;
+const nativeSpeak=nativeSynth&&typeof nativeSynth.speak==='function'?nativeSynth.speak.bind(nativeSynth):null;
+const nativeCancel=nativeSynth&&typeof nativeSynth.cancel==='function'?nativeSynth.cancel.bind(nativeSynth):null;
 let activeAudio=null;
 
-const normalize=value=>String(value||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:“”„"'`()]/g,'').replace(/\s+/g,' ');
+function normalize(value){
+ return String(value||'').toLowerCase().trim().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:“”„"'`()]/g,'').replace(/\s+/g,' ');
+}
 const unique=list=>[...new Set(list.filter(Boolean))];
 
 function availableVerbs(){
@@ -54,6 +60,20 @@ function showError(button,verb){
  error.textContent=`Die Bunny-Audiodatei für „${verb}“ konnte nicht geladen werden.`;
 }
 
+function computerSpeak(verb,slow=false){
+ if(!nativeSpeak)return false;
+ try{nativeCancel?.()}catch(e){}
+ try{
+  const utterance=new SpeechSynthesisUtterance(String(verb||''));
+  utterance.lang='de-DE';
+  utterance.rate=slow?0.55:0.92;
+  nativeSpeak(utterance);
+  return true;
+ }catch(e){
+  return false;
+ }
+}
+
 function play(verb,slow=false,button=null){
  const url=audioUrl(verb);
  if(!url)return false;
@@ -76,10 +96,15 @@ document.addEventListener('click',event=>{
  const button=event.target instanceof Element?event.target.closest('button'):null;
  if(!button||!button.matches('[data-action="audio"],[data-action="audio-slow"],#cardListenBtn,.audio-mini'))return;
  const verb=verbForButton(button);
- if(!verb||!audioUrl(verb))return;
+ if(!verb)return;
+ const slow=button.dataset.action==='audio-slow'||button.dataset.bunnySlow==='1';
+ const url=audioUrl(verb);
+ const needsFallback=MISSING.has(normalize(verb));
+ if(!url&&!needsFallback)return;
  event.preventDefault();
  event.stopImmediatePropagation();
- play(verb,button.dataset.action==='audio-slow'||button.dataset.bunnySlow==='1',button);
+ if(url)play(verb,slow,button);
+ else computerSpeak(verb,slow);
 },true);
 
 window.SPVerbBunnyAllInfinitives={
@@ -87,6 +112,7 @@ window.SPVerbBunnyAllInfinitives={
  audioUrl,
  urls:verb=>{const url=audioUrl(verb);return url?[url]:[]},
  play,
+ computerSpeak,
  audit:window.SP_VERB_AUDIO_AUDIT||null,
  missing:window.SP_VERB_AUDIO_MISSING||[]
 };
