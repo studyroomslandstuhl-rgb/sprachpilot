@@ -28,6 +28,7 @@ jobs:
           const fs = require('fs');
           const vm = require('vm');
 
+          (async () => {
           const source = fs.readFileSync('verben/data.js', 'utf8');
           const context = { window: {} };
           context.window.window = context.window;
@@ -145,6 +146,10 @@ jobs:
           fs.writeFileSync('verben/audio-missing.md', report);
 
           console.log(JSON.stringify({ total: rows.length, available: available.length, missing: missing.length }, null, 2));
+          })().catch(error => {
+            console.error(error);
+            process.exit(1);
+          });
           NODE
 
           rm -f .github/workflows/verb-audio-audit.yml
