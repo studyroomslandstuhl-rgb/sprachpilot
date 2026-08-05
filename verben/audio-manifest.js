@@ -253,38 +253,22 @@ window.SP_VERB_AUDIO_FILES=Object.freeze({
   "vernichten": "https://sprachpilot.b-cdn.net/audio/vernichten.mp3",
   "erleben": "https://sprachpilot.b-cdn.net/audio/erleben.mp3",
   "steigen": "https://sprachpilot.b-cdn.net/audio/steigen.mp3",
-  "sinken": "https://sprachpilot.b-cdn.net/audio/sinken.mp3"
+  "sinken": "https://sprachpilot.b-cdn.net/audio/sinken.mp3",
+  "beissen": "https://sprachpilot.b-cdn.net/audio/bei%C3%9Fen.mp3",
+  "giessen": "https://sprachpilot.b-cdn.net/audio/gie%C3%9Fen.mp3"
 });
 window.SP_VERB_AUDIO_MISSING=Object.freeze([
   {
-    "verb": "beißen",
-    "candidates": [
-      {
-        "url": "https://sprachpilot.b-cdn.net/audio/beissen.mp3",
-        "status": 404
-      },
-      {
-        "url": "https://sprachpilot.b-cdn.net/Audio/beissen.mp3",
-        "status": 404
-      }
-    ]
-  },
-  {
-    "verb": "gießen",
-    "candidates": [
-      {
-        "url": "https://sprachpilot.b-cdn.net/audio/giessen.mp3",
-        "status": 404
-      },
-      {
-        "url": "https://sprachpilot.b-cdn.net/Audio/giessen.mp3",
-        "status": 404
-      }
-    ]
-  },
-  {
     "verb": "schlafen",
     "candidates": [
+      {
+        "url": "https://sprachpilot.b-cdn.net/audio/schlafen.mp3",
+        "status": 404
+      },
+      {
+        "url": "https://sprachpilot.b-cdn.net/Audio/schlafen.mp3",
+        "status": 404
+      },
       {
         "url": "https://sprachpilot.b-cdn.net/audio/schlafen.mp3",
         "status": 404
@@ -305,6 +289,14 @@ window.SP_VERB_AUDIO_MISSING=Object.freeze([
       {
         "url": "https://sprachpilot.b-cdn.net/Audio/ausfuellen.mp3",
         "status": 404
+      },
+      {
+        "url": "https://sprachpilot.b-cdn.net/audio/ausf%C3%BCllen.mp3",
+        "status": 404
+      },
+      {
+        "url": "https://sprachpilot.b-cdn.net/Audio/ausf%C3%BCllen.mp3",
+        "status": 404
       }
     ]
   },
@@ -318,15 +310,23 @@ window.SP_VERB_AUDIO_MISSING=Object.freeze([
       {
         "url": "https://sprachpilot.b-cdn.net/Audio/moechten.mp3",
         "status": 404
+      },
+      {
+        "url": "https://sprachpilot.b-cdn.net/audio/m%C3%B6chten.mp3",
+        "status": 404
+      },
+      {
+        "url": "https://sprachpilot.b-cdn.net/Audio/m%C3%B6chten.mp3",
+        "status": 404
       }
     ]
   }
 ]);
 window.SP_VERB_AUDIO_AUDIT=Object.freeze({
-  "generatedAt": "2026-08-05T20:59:13.866Z",
+  "generatedAt": "2026-08-05T21:06:06.778Z",
   "total": 258,
-  "available": 253,
-  "missing": 5,
+  "available": 255,
+  "missing": 3,
   "bases": [
     "https://sprachpilot.b-cdn.net/audio/",
     "https://sprachpilot.b-cdn.net/Audio/"
