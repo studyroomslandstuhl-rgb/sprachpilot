@@ -14,15 +14,19 @@ jobs:
     steps:
       - uses: actions/checkout@v4
         with:
-          fetch-depth: 0
+          fetch-depth: 1
           ref: ${{ github.head_ref || github.ref_name }}
+          sparse-checkout: |
+            verben/audio-manifest.js
+            verben/audio-missing.md
+            .github/workflows/verb-audio-unicode-audit.yml
+          sparse-checkout-cone-mode: false
 
       - name: Check original German Bunny filenames
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           TARGET_BRANCH="${GITHUB_HEAD_REF:-main}"
-          git pull --rebase origin "$TARGET_BRANCH"
 
           node <<'NODE'
           const fs=require('fs');
