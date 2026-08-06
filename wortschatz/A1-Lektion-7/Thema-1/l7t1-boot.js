@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t1-scope-minimum1';
+const version='l7t1-optional-ellipsis1';
 
 function load(src){
  return new Promise((resolve,reject)=>{
@@ -17,6 +17,7 @@ function load(src){
 
 Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
+ .then(()=>load(`../shared/l7-answer-normalization.js?v=${version}`))
  .then(()=>{
   if(page==='theme'){
    return load(`../shared/l7-theme-standard.js?v=${version}`).then(()=>window.L7ThemeStandard.render(theme));
