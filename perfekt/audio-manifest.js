@@ -211,7 +211,17 @@ window.SP_PERFEKT_AUDIO_FILES=Object.freeze({
   "hat sich angezogen": "angezogen.mp3",
   "hat sich ausgezogen": "ausgezogen.mp3",
   "hat sich geduscht": "geduscht.mp3",
-  "ist spazieren gegangen": "spazieren_gegangen.mp3"
+  "ist spazieren gegangen": "spazieren_gegangen.mp3",
+  "hat gelitten": "gelitten.mp3",
+  "hat gerochen": "gerochen.mp3",
+  "hat gestunken": "gestunken.mp3",
+  "hat geschwiegen": "geschwiegen.mp3",
+  "ist gestiegen": "gestiegen.mp3",
+  "ist gesunken": "gesunken.mp3",
+  "hat geboten": "geboten.mp3",
+  "hat gebeten": "gebeten.mp3",
+  "hat genannt": "genannt.mp3",
+  "hat getrieben": "getrieben.mp3"
 });
 window.SP_PERFEKT_AUDIO_MISSING=Object.freeze([
   {
@@ -510,15 +520,6 @@ window.SP_PERFEKT_AUDIO_MISSING=Object.freeze([
     "status": 404
   },
   {
-    "verb": "leiden",
-    "perfect": "hat gelitten",
-    "candidates": [
-      "hat_gelitten.mp3",
-      "gelitten.mp3"
-    ],
-    "status": 404
-  },
-  {
     "verb": "opfern",
     "perfect": "hat geopfert",
     "candidates": [
@@ -537,38 +538,11 @@ window.SP_PERFEKT_AUDIO_MISSING=Object.freeze([
     "status": 404
   },
   {
-    "verb": "riechen",
-    "perfect": "hat gerochen",
-    "candidates": [
-      "hat_gerochen.mp3",
-      "gerochen.mp3"
-    ],
-    "status": 404
-  },
-  {
-    "verb": "stinken",
-    "perfect": "hat gestunken",
-    "candidates": [
-      "hat_gestunken.mp3",
-      "gestunken.mp3"
-    ],
-    "status": 404
-  },
-  {
     "verb": "würfeln",
     "perfect": "hat gewürfelt",
     "candidates": [
       "hat_gewuerfelt.mp3",
       "gewuerfelt.mp3"
-    ],
-    "status": 404
-  },
-  {
-    "verb": "schweigen",
-    "perfect": "hat geschwiegen",
-    "candidates": [
-      "hat_geschwiegen.mp3",
-      "geschwiegen.mp3"
     ],
     "status": 404
   },
@@ -587,78 +561,6 @@ window.SP_PERFEKT_AUDIO_MISSING=Object.freeze([
     "candidates": [
       "hat_erlebt.mp3",
       "erlebt.mp3"
-    ],
-    "status": 404
-  },
-  {
-    "verb": "steigen",
-    "perfect": "ist gestiegen",
-    "candidates": [
-      "ist_gestiegen.mp3",
-      "gestiegen.mp3"
-    ],
-    "status": 404
-  },
-  {
-    "verb": "sinken",
-    "perfect": "ist gesunken",
-    "candidates": [
-      "ist_gesunken.mp3",
-      "gesunken.mp3"
-    ],
-    "status": 404
-  },
-  {
-    "verb": "bieten",
-    "perfect": "hat geboten",
-    "candidates": [
-      "hat_geboten.mp3",
-      "geboten.mp3"
-    ],
-    "status": 404
-  },
-  {
-    "verb": "bitten",
-    "perfect": "hat gebeten",
-    "candidates": [
-      "hat_gebeten.mp3",
-      "gebeten.mp3"
-    ],
-    "status": 404
-  },
-  {
-    "verb": "nennen",
-    "perfect": "hat genannt",
-    "candidates": [
-      "hat_genannt.mp3",
-      "genannt.mp3"
-    ],
-    "status": 404
-  },
-  {
-    "verb": "treiben",
-    "perfect": "hat getrieben",
-    "candidates": [
-      "hat_getrieben.mp3",
-      "getrieben.mp3"
-    ],
-    "status": 404
-  },
-  {
-    "verb": "binden",
-    "perfect": "hat gebunden",
-    "candidates": [
-      "hat_gebunden.mp3",
-      "gebunden.mp3"
-    ],
-    "status": 404
-  },
-  {
-    "verb": "brennen",
-    "perfect": "hat gebrannt",
-    "candidates": [
-      "hat_gebrannt.mp3",
-      "gebrannt.mp3"
     ],
     "status": 404
   },
@@ -1030,13 +932,32 @@ window.SP_PERFEKT_AUDIO_MISSING=Object.freeze([
       "hinzugefuegt.mp3"
     ],
     "status": 404
+  },
+  {
+    "verb": "binden",
+    "perfect": "hat gebunden",
+    "file": "hat_gebunden.mp3",
+    "status": 404
+  },
+  {
+    "verb": "brennen",
+    "perfect": "hat gebrannt",
+    "file": "hat_gebrannt.mp3",
+    "status": 404
   }
 ]);
 window.SP_PERFEKT_AUDIO_AUDIT=Object.freeze({
-  "generatedAt": "2026-07-30T15:05:41.533Z",
+  "generatedAt": "2026-08-06T12:43:38.894Z",
   "total": 301,
   "available": 212,
   "missing": 89,
-  "base": "https://sprachpilot.b-cdn.net/audio/"
+  "base": "https://sprachpilot.b-cdn.net/audio/",
+  "group8": {
+    "id": 8,
+    "title": "Starke / unregelmäßige Verben",
+    "total": 20,
+    "available": 18,
+    "missing": 2
+  }
 });
 })();
