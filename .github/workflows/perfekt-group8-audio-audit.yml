@@ -40,9 +40,10 @@ jobs:
 
             const app=read('perfekt/app-stable.js');
             const algorithmStart=app.indexOf('const SPECIAL=');
-            const algorithmEnd=app.indexOf('function imageUrl',algorithmStart);
+            const algorithmEnd=app.indexOf('const userSlug',algorithmStart);
             if(algorithmStart<0||algorithmEnd<0)throw new Error('Perfekt algorithm block not found');
-            const algorithmContext={};
+            const algorithmContext={window:{}};
+            algorithmContext.window.window=algorithmContext.window;
             vm.runInNewContext(
               `const BASE={groupLabel:()=>''};\n${app.slice(algorithmStart,algorithmEnd)}\nVERBS=${JSON.stringify(verbs)};rebuildGroups();this.__groups=GROUPS.map(g=>({...g,verbs:[...g.verbs]}));this.__perfect=perfect;this.__participle=participle;this.__norm=norm;`,
               algorithmContext,
@@ -84,7 +85,7 @@ jobs:
               return 0;
             }
             async function exists(url){
-              const checked=url+(url.includes('?')?'&':'?')+'perfekt-group8-audit=1';
+              const checked=url+(url.includes('?')?'&':'?')+'perfekt-group8-audit=2';
               let status=await request(checked,'HEAD');
               if(status>=200&&status<400)return{ok:true,status};
               if(status===404)return{ok:false,status};
