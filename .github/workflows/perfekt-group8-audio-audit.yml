@@ -1,0 +1,147 @@
+name: Audit Perfekt group 8 audio
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+          ref: ${{ github.head_ref || github.ref_name }}
+
+      - name: Resolve all Bunny recordings for Perfekt group 8
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          TARGET_BRANCH="${GITHUB_HEAD_REF:-main}"
+          git pull --rebase origin "$TARGET_BRANCH"
+
+          node <<'NODE'
+          const fs=require('fs');
+          const vm=require('vm');
+
+          (async()=>{
+            const read=path=>fs.readFileSync(path,'utf8');
+            const dataContext={window:{}};
+            dataContext.window.window=dataContext.window;
+            for(const file of ['verben/data.js','verben/verb-additions.js','perfekt/filter-verbs.js']){
+              vm.runInNewContext(read(file),dataContext,{filename:file});
+            }
+            const verbs=[...(dataContext.window.SP_VERB_GROUP_DATA?.verbs||[])];
+            if(!verbs.length)throw new Error('No Perfekt verbs found');
+
+            const app=read('perfekt/app-stable.js');
+            const algorithmStart=app.indexOf('const SPECIAL=');
+            const algorithmEnd=app.indexOf('function imageUrl',algorithmStart);
+            if(algorithmStart<0||algorithmEnd<0)throw new Error('Perfekt algorithm block not found');
+            const algorithmContext={};
+            vm.runInNewContext(
+              `const BASE={groupLabel:()=>''};\n${app.slice(algorithmStart,algorithmEnd)}\nVERBS=${JSON.stringify(verbs)};rebuildGroups();this.__groups=GROUPS.map(g=>({...g,verbs:[...g.verbs]}));this.__perfect=perfect;this.__participle=participle;this.__norm=norm;`,
+              algorithmContext,
+              {filename:'perfekt-grouping.js'}
+            );
+            const groups=algorithmContext.__groups||[];
+            const group=groups[7];
+            if(!group)throw new Error(`Perfekt group 8 missing; only ${groups.length} groups generated`);
+            const perfect=algorithmContext.__perfect;
+            const participle=algorithmContext.__participle;
+            const norm=algorithmContext.__norm;
+
+            const manifestContext={window:{}};
+            manifestContext.window.window=manifestContext.window;
+            vm.runInNewContext(read('perfekt/audio-manifest.js'),manifestContext,{filename:'perfekt/audio-manifest.js'});
+            const files={...(manifestContext.window.SP_PERFEKT_AUDIO_FILES||{})};
+            const oldMissing=[...(manifestContext.window.SP_PERFEKT_AUDIO_MISSING||[])];
+            const oldAudit=manifestContext.window.SP_PERFEKT_AUDIO_AUDIT||{};
+
+            const bases=['https://sprachpilot.b-cdn.net/audio/','https://sprachpilot.b-cdn.net/Audio/'];
+            const asciiSlug=value=>String(value||'').toLowerCase().trim()
+              .replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss')
+              .normalize('NFD').replace(/[\u0300-\u036f]/g,'')
+              .replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+            const unicodeSlug=value=>String(value||'').toLowerCase().trim().normalize('NFC')
+              .replace(/[^\p{L}\p{N}]+/gu,'_').replace(/^_+|_+$/g,'');
+            const unique=list=>[...new Set(list.filter(Boolean))];
+            const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
+
+            async function request(url,method,headers={}){
+              for(let attempt=1;attempt<=3;attempt++){
+                try{
+                  const response=await fetch(url,{method,headers,redirect:'follow',cache:'no-store',signal:AbortSignal.timeout(10000)});
+                  if(response.body&&method!=='HEAD')await response.body.cancel().catch(()=>{});
+                  if((response.status===429||response.status>=500)&&attempt<3){await sleep(700*attempt);continue;}
+                  return response.status;
+                }catch(error){if(attempt===3)return 0;await sleep(700*attempt);}
+              }
+              return 0;
+            }
+            async function exists(url){
+              const checked=url+(url.includes('?')?'&':'?')+'perfekt-group8-audit=1';
+              let status=await request(checked,'HEAD');
+              if(status>=200&&status<400)return{ok:true,status};
+              if(status===404)return{ok:false,status};
+              status=await request(checked,'GET',{Range:'bytes=0-0'});
+              return{ok:status>=200&&status<400,status};
+            }
+            function candidates(verb){
+              const full=perfect(verb),part=participle(verb);
+              const existing=files[norm(full)]||'';
+              const names=unique([
+                existing,
+                asciiSlug(part)+'.mp3',unicodeSlug(part)+'.mp3',
+                asciiSlug(full)+'.mp3',unicodeSlug(full)+'.mp3',
+                asciiSlug(full.replace(/^(hat|ist)\s+/i,''))+'.mp3',
+                unicodeSlug(full.replace(/^(hat|ist)\s+/i,''))+'.mp3',
+                asciiSlug(full.replace(/^(hat|ist)\s+sich\s+/i,''))+'.mp3',
+                unicodeSlug(full.replace(/^(hat|ist)\s+sich\s+/i,''))+'.mp3'
+              ]);
+              return unique(names.flatMap(name=>{
+                if(/^https?:\/\//i.test(name))return[name];
+                return bases.map(base=>base+encodeURIComponent(name));
+              }));
+            }
+
+            const rows=[];
+            for(const verb of group.verbs){
+              const full=perfect(verb),attempts=[];
+              let found='';
+              for(const url of candidates(verb)){
+                const check=await exists(url);
+                attempts.push({url,status:check.status});
+                if(check.ok){found=url;break;}
+              }
+              if(found){
+                const parsed=new URL(found);
+                files[norm(full)]=decodeURIComponent(parsed.pathname.split('/').pop());
+              }
+              rows.push({verb,perfect:full,found,attempts});
+            }
+
+            const unresolved=rows.filter(row=>!row.found);
+            const groupKeys=new Set(rows.map(row=>norm(row.perfect)));
+            const retainedMissing=oldMissing.filter(item=>!groupKeys.has(norm(item.perfect||'')));
+            const missing=[...retainedMissing,...unresolved.map(row=>({verb:row.verb,perfect:row.perfect,file:asciiSlug(row.perfect)+'.mp3',status:row.attempts.at(-1)?.status||0}))];
+            const generatedAt=new Date().toISOString();
+            const audit={...oldAudit,generatedAt,group8:{id:8,title:group.title,total:rows.length,available:rows.length-unresolved.length,missing:unresolved.length}};
+            const manifest=`(function(){\n'use strict';\nwindow.SP_PERFEKT_AUDIO_FILES=Object.freeze(${JSON.stringify(files,null,2)});\nwindow.SP_PERFEKT_AUDIO_MISSING=Object.freeze(${JSON.stringify(missing,null,2)});\nwindow.SP_PERFEKT_AUDIO_AUDIT=Object.freeze(${JSON.stringify(audit,null,2)});\n})();\n`;
+            fs.writeFileSync('perfekt/audio-manifest.js',manifest);
+
+            const table=rows.map(row=>`| ${row.verb.replace(/\|/g,'\\|')} | ${row.perfect.replace(/\|/g,'\\|')} | ${row.found?'✅ `'+decodeURIComponent(new URL(row.found).pathname.split('/').pop())+'`':'❌ fehlt'} |`).join('\n');
+            const report=`# Perfekt Gruppe 8 – Bunny-Audio\n\nStand: ${generatedAt}\n\nKategorie: **${group.title}**  \nVerben: **${rows.length}**  \nVerbunden: **${rows.length-unresolved.length}**  \nFehlend: **${unresolved.length}**\n\n| Verb | Perfektform | Bunny-Datei |\n|---|---|---|\n${table}\n`;
+            fs.writeFileSync('perfekt/group8-audio-report.md',report);
+            console.log(JSON.stringify({group:8,title:group.title,total:rows.length,available:rows.length-unresolved.length,missing:unresolved.length,unresolved:unresolved.map(row=>row.perfect)},null,2));
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
+
+          rm -f .github/workflows/perfekt-group8-audio-audit.yml
+          git add perfekt/audio-manifest.js perfekt/group8-audio-report.md .github/workflows/perfekt-group8-audio-audit.yml
+          git commit -m "Connect Perfekt group 8 audio to Bunny Storage"
+          git push origin "HEAD:$TARGET_BRANCH"
