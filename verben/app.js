@@ -9,12 +9,15 @@ function storedAssignments(profile){
  return profile?.assignments||{}
 }
 
-function install(profile,preview,assignments){
+async function install(profile,preview,assignments){
  const data=assignments&&typeof assignments==='object'?assignments:{};
  const locked=!preview&&!moduleOpen(data,'Verben');
  const all=VerbGroupsEngine.ALL.slice();
  const active=preview?all:releasedVerbs(data,all);
  VerbGroupsEngine.setActiveVerbs(active);
+ try{
+  if(!preview&&window.SPVerbProgressPersistence?.restoreCloud)await window.SPVerbProgressPersistence.restoreCloud();
+ }catch(error){console.warn('Gespeicherter Verben-Fortschritt konnte nicht wiederhergestellt werden',error)}
  VerbGroupsUI.install({dashboard:dashboardHref(),logout,locked});
  window.SP_VERBEN_READY=true
 }
@@ -27,7 +30,7 @@ async function init(){
  try{const raw=sessionStorage.getItem('SP_TEACHER_PREVIEW');if(raw==='1'||JSON.parse(raw||'null')?.teacherPreview===true)preview=true}catch{}
  window.VerbGroupsProfile=profile;
  VerbGroupsEngine.setContext(profile,preview);
- install(profile,preview,storedAssignments(profile));
+ await install(profile,preview,storedAssignments(profile));
  loadCourseRelease(profile).catch(error=>console.warn('Kursfreigaben konnten nicht aktualisiert werden',error))
 }
 
