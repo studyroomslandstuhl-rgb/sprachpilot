@@ -1,189 +1,29 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_STANDARD_TASK_UPDATES_V2)return;
-window.__SP_VERB_STANDARD_TASK_UPDATES_V2=true;
+if(window.__SP_VERB_STANDARD_TASK_UPDATES_V3)return;
+window.__SP_VERB_STANDARD_TASK_UPDATES_V3=true;
 const E=window.VerbGroupsEngine;
 if(!E)return;
-
-const CLUES={
- lieben:'eine Person oder Sache sehr gern haben',
- kaufen:'etwas gegen Geld bekommen',
- verstehen:'wissen, was jemand sagt oder was etwas bedeutet',
- brauchen:'etwas nötig haben',
- hören:'mit den Ohren wahrnehmen',
- lernen:'neues Wissen oder eine neue Fähigkeit bekommen',
- wohnen:'an einem Ort sein Zuhause haben',
- bringen:'etwas zu einer Person oder an einen Ort tragen',
- sein:'existieren oder sich an einem Ort befinden',
- schreiben:'Wörter und Sätze mit Buchstaben notieren',
- fotografieren:'mit einer Kamera ein Bild machen',
- telefonieren:'am Telefon sprechen',
- kochen:'Essen warm zubereiten',
- leben:'am Leben sein',
- kommen:'sich zu einem Ort hin bewegen',
- buchstabieren:'ein Wort Buchstabe für Buchstabe sagen',
- gehen:'sich zu Fuß bewegen',
- schwimmen:'sich im Wasser bewegen',
- suchen:'versuchen, etwas oder jemanden zu finden',
- bestellen:'etwas in einem Restaurant oder Geschäft anfordern',
- weinen:'Tränen aus den Augen bekommen',
- reparieren:'etwas Kaputtes wieder in Ordnung bringen',
- gewinnen:'bei einem Spiel oder Wettbewerb Erster sein',
- spielen:'ein Spiel machen oder ein Instrument benutzen',
- springen:'sich mit den Füßen vom Boden abstoßen',
- verlieren:'etwas nicht mehr haben oder bei einem Spiel nicht gewinnen',
- fragen:'eine Frage stellen',
- verkaufen:'etwas gegen Geld abgeben',
- unterschreiben:'seinen Namen unter ein Dokument schreiben',
- reservieren:'einen Platz für später festhalten lassen',
- buchen:'eine Reise, ein Zimmer oder einen Termin fest bestellen',
- machen:'etwas tun oder herstellen',
- malen:'mit Farben ein Bild machen',
- trinken:'Flüssigkeit zu sich nehmen',
- schicken:'etwas oder jemanden zu einem anderen Ort senden',
- denken:'Gedanken im Kopf haben',
- winken:'die Hand zur Begrüßung oder zum Abschied bewegen',
- hassen:'jemanden oder etwas überhaupt nicht mögen',
- beißen:'mit den Zähnen fest zupacken',
- gießen:'Flüssigkeit aus einem Gefäß fließen lassen',
- reißen:'etwas mit Kraft auseinanderziehen',
- putzen:'etwas sauber machen',
- küssen:'jemanden mit den Lippen berühren',
- tanzen:'sich zur Musik rhythmisch bewegen',
- mixen:'mehrere Dinge miteinander mischen',
- reisen:'an einen anderen Ort oder in ein anderes Land fahren',
- haben:'etwas besitzen',
- grüßen:'jemandem Hallo sagen',
- singen:'mit der Stimme eine Melodie machen',
- schließen:'etwas zumachen',
- rennen:'sehr schnell laufen',
- lachen:'Freude mit Stimme und Gesicht zeigen',
- warten:'an einem Ort bleiben, bis etwas passiert',
- arbeiten:'eine berufliche Tätigkeit machen',
- finden:'etwas entdecken, das man gesucht hat',
- benutzen:'etwas verwenden',
- rechnen:'mit Zahlen arbeiten',
- zeichnen:'mit Linien ein Bild machen',
- öffnen:'etwas aufmachen',
- wiederholen:'etwas noch einmal machen oder sagen',
- schneiden:'etwas mit Messer oder Schere teilen',
- streiten:'heftig unterschiedliche Meinungen sagen',
- atmen:'Luft ein- und ausatmen',
- essen:'Nahrung zu sich nehmen',
- sprechen:'Wörter und Sätze mit der Stimme sagen',
- fahren:'sich mit einem Fahrzeug bewegen',
- schlafen:'mit geschlossenen Augen ruhen',
- sehen:'mit den Augen wahrnehmen',
- lesen:'geschriebene Wörter verstehen',
- rufen:'laut nach jemandem sprechen',
- schreien:'sehr laut sprechen',
- träumen:'im Schlaf Bilder und Geschichten erleben',
- kosten:'einen bestimmten Preis haben',
- schieben:'etwas von sich weg bewegen',
- ziehen:'etwas zu sich bewegen',
- schenken:'jemandem etwas als Geschenk geben',
- füttern:'einem Tier oder Menschen Essen geben',
- kontrollieren:'prüfen, ob etwas richtig ist',
- funktionieren:'richtig arbeiten oder laufen',
- stehen:'auf den Füßen sein',
- bekommen:'etwas erhalten',
- schmecken:'einen Geschmack haben',
- bezahlen:'Geld für etwas geben',
- empfehlen:'jemandem sagen, dass etwas gut ist',
- geben:'etwas an jemanden überreichen',
- backen:'Essen im Ofen zubereiten',
- zeigen:'etwas sichtbar machen oder darauf deuten',
- reden:'mit jemandem sprechen',
- sagen:'Wörter oder einen Satz sprechen',
- versuchen:'probieren, ob etwas gelingt',
- besuchen:'zu einer Person oder einem Ort gehen',
- reiten:'auf einem Pferd sitzen und sich bewegen',
- antworten:'auf eine Frage reagieren',
- erklären:'etwas verständlich machen',
- helfen:'jemanden unterstützen',
- waschen:'mit Wasser sauber machen',
- nehmen:'etwas greifen und zu sich holen',
- tragen:'etwas halten und mitnehmen oder Kleidung anhaben',
- laufen:'sich zu Fuß bewegen',
- vergessen:'sich an etwas nicht mehr erinnern',
- treffen:'mit einer Person zusammenkommen',
- werfen:'etwas durch die Luft schleudern',
- fallen:'sich nach unten bewegen',
- halten:'etwas fest in der Hand haben',
- wachsen:'größer werden',
- wissen:'eine Information kennen',
- werden:'sich verändern und einen neuen Zustand bekommen',
- gratulieren:'jemandem Glück wünschen',
- fehlen:'nicht da sein',
- mieten:'für die Nutzung von etwas bezahlen',
- aufräumen:'Dinge an ihren richtigen Platz bringen',
- einkaufen:'Waren in einem Geschäft kaufen',
- anrufen:'mit dem Telefon Kontakt aufnehmen',
- fernsehen:'Programme im Fernsehen anschauen',
- anfangen:'mit etwas beginnen',
- beginnen:'mit etwas anfangen',
- aufstehen:'vom Bett oder Stuhl nach oben gehen',
- frühstücken:'am Morgen eine Mahlzeit essen',
- duschen:'sich unter fließendem Wasser waschen',
- anziehen:'Kleidung an den Körper machen',
- ausziehen:'Kleidung vom Körper nehmen',
- einsteigen:'in Bus, Bahn oder Auto hineingehen',
- aussteigen:'Bus, Bahn oder Auto verlassen',
- umsteigen:'von einem Verkehrsmittel in ein anderes wechseln',
- ankommen:'ein Ziel erreichen',
- abfahren:'mit einem Verkehrsmittel losfahren',
- ausfüllen:'Informationen in ein Formular schreiben',
- anmelden:'sich offiziell registrieren',
- sitzen:'auf einem Stuhl oder einer Fläche sein',
- liegen:'waagerecht auf einer Fläche sein',
- hängen:'oben befestigt sein und nach unten reichen',
- können:'die Fähigkeit oder Möglichkeit haben',
- müssen:'etwas unbedingt tun sollen',
- wollen:'einen starken Wunsch haben',
- dürfen:'die Erlaubnis haben',
- sollen:'einen Auftrag oder Rat bekommen haben',
- möchten:'etwas höflich wünschen',
- mögen:'etwas gern haben',
- lügen:'etwas sagen, das nicht wahr ist',
- erzählen:'eine Geschichte oder Informationen sagen',
- abholen:'zu jemandem gehen und ihn mitnehmen',
- chatten:'schriftlich online miteinander sprechen',
- ausleihen:'etwas für eine Zeit benutzen und später zurückgeben',
- versprechen:'fest sagen, dass man etwas tun wird',
- planen:'vorher überlegen, was man tun will',
- zuhören:'aufmerksam hören, was jemand sagt',
- vorlesen:'einen Text laut lesen',
- bleiben:'nicht weggehen',
- einladen:'jemanden bitten, zu Besuch oder zu einer Veranstaltung zu kommen',
- absagen:'sagen, dass etwas nicht stattfindet',
- stören:'jemanden bei einer Tätigkeit unterbrechen',
- vorschlagen:'eine Idee anbieten',
- wählen:'sich für eine Möglichkeit entscheiden',
- entscheiden:'eine Auswahl treffen',
- wandern:'lange zu Fuß in der Natur gehen',
- grillen:'Essen auf einem Grill zubereiten',
- wecken:'jemanden aus dem Schlaf holen',
- üben:'etwas wiederholt machen, um besser zu werden',
- trainieren:'regelmäßig üben',
- losfahren:'mit einem Fahrzeug die Fahrt beginnen',
- leidtun:'Bedauern ausdrücken',
- klopfen:'mehrmals leicht gegen etwas schlagen',
- riechen:'mit der Nase einen Geruch wahrnehmen',
- stinken:'unangenehm riechen',
- schauen:'mit den Augen ansehen',
- würfeln:'einen Würfel werfen',
- schweigen:'nichts sagen',
- steigen:'nach oben gehen oder höher werden',
- sinken:'nach unten gehen oder niedriger werden'
-};
-function clue(v){return CLUES[v]||`die Handlung auf dem Bild ausführen`}
-function shuffle(a){a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+const MEANINGS=window.SP_VERB_A1_MEANINGS||{};
+const clue=v=>MEANINGS[v]||'die Handlung auf dem Bild';
+const shuffle=a=>{a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function uniqueOptions(answer,pool,count=4){const seen=new Set([String(answer)]),rest=[];shuffle(pool).forEach(x=>{const k=String(x);if(!seen.has(k)){seen.add(k);rest.push(x)}});return shuffle([answer,...rest.slice(0,count-1)])}
 function groupFor(id){return E.GROUPS.find(g=>Number(g.id)===Number(id))||E.GROUPS[Number(id)-1]}
 
-const listen=E.TASKS.find(t=>t[0]==='listen');if(listen){listen[1]='🔊→▣';listen[2]='Hören → Bild'}
-const change=E.TASKS.find(t=>t[0]==='change');if(change){change[1]='▣→🔊';change[2]='Bild → Hören'}
-E.TASK_TITLE.listen='Hören → Bild';E.TASK_TITLE.change='Bild → Hören';
+// Die frühere Aufgabe „Lesen → Verb“ ist komplett entfernt.
+const oldTaskIndex=E.TASKS.findIndex(t=>t[0]==='read-sentence');
+if(oldTaskIndex>=0)E.TASKS.splice(oldTaskIndex,1);
+const oldLearnIndex=E.LEARN.indexOf('read-sentence');
+if(oldLearnIndex>=0)E.LEARN.splice(oldLearnIndex,1);
+delete E.TASK_TITLE['read-sentence'];
+
+// Hör-Aufgaben bleiben als Bildaufgaben erhalten.
+const listen=E.TASKS.find(t=>t[0]==='listen');
+if(listen){listen[1]='🔊→▣';listen[2]='Hören → Bild'}
+const change=E.TASKS.find(t=>t[0]==='change');
+if(change){change[1]='▣→🔊';change[2]='Bild → Hören'}
+E.TASK_TITLE.listen='Hören → Bild';
+E.TASK_TITLE.change='Bild → Hören';
 
 const previous=E.question.bind(E);
 E.question=function(groupId,task,v,personOverride=null){
