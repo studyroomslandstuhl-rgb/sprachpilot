@@ -8,7 +8,7 @@ if(!E)return;
 
 const originalLoad=E.load.bind(E);
 const pad=value=>String(value).padStart(2,'0');
-const clamp=value=>Math.max(0,Math.min(100,Math.round(Number(value)||0));
+const clamp=value=>Math.max(0,Math.min(100,Math.round(Number(value)||0)));
 
 function profile(){
  if(window.VerbGroupsProfile&&typeof window.VerbGroupsProfile==='object')return window.VerbGroupsProfile;
