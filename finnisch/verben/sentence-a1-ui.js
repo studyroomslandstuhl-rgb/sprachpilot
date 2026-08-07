@@ -29,23 +29,35 @@ const userSlug=()=>[profile?.email,profile?.courseCode,profile?.kurs,profile?.ku
 const key=()=>`SP_FI_VERB_GROUPS_PROGRESS_${userSlug()}`;
 const norm=v=>String(v||'').trim().toLocaleLowerCase('fi-FI').normalize('NFC').replace(/[.,!?;:“”"'`´()…]/g,'').replace(/\s+/g,' ');
 const shuffle=a=>{a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const wait=()=>new Promise(resolve=>requestAnimationFrame(()=>resolve()));
 
 function route(){const q=new URLSearchParams(location.search);return{group:Number(q.get('group'))||0,task:q.get('task')||''}}
 function state(){try{return JSON.parse(localStorage.getItem(key())||'{}')||{}}catch{return{}}}
-function saveState(value){try{localStorage.setItem(key(),JSON.stringify(value))}catch{}}
-function currentDe(group){const s=state(),g=s[String(group)]||s[group];if(!g)return'';const run=g.runs?.[String(g.currentRun||1)];return run?.tasks?.sentence?.current||''}
-function markWrong(group){const s=state(),g=s[String(group)]||s[group];if(!g)return 1;const run=g.runs?.[String(g.currentRun||1)];if(!run)return 1;const task=run.tasks?.sentence;if(!task)return 1;task.tries=(Number(task.tries)||0)+1;task.hadWrong=true;saveState(s);return task.tries}
+function sentenceState(group){const s=state(),g=s[String(group)]||s[group];if(!g)return null;const run=g.runs?.[String(g.currentRun||1)];return run?.tasks?.sentence||null}
+function currentDe(group){return sentenceState(group)?.current||''}
+function currentTries(group){return Number(sentenceState(group)?.tries)||0}
 function currentVerb(group){const de=currentDe(group);return (window.SP_FI_VERBS||[]).find(v=>v.de===de)||null}
 
-async function clickOriginalSolution(original){
+function originalParts(original){
  const bank=()=>original.querySelector('#bank');
- const wait=()=>new Promise(resolve=>requestAnimationFrame(()=>resolve()));
  const pronouns=new Set(['minä','sinä','hän','me','te','he']);
- function buttonWhere(test){return [...(bank()?.querySelectorAll('[data-src]')||[])].find(b=>test((b.textContent||'').trim()))}
- const p=buttonWhere(t=>pronouns.has(t.toLowerCase()));p?.click();await wait();
- const f=buttonWhere(t=>!pronouns.has(t.toLowerCase())&&t.toLowerCase()!=='nyt'&&t!=='.');f?.click();await wait();
- const n=buttonWhere(t=>t.toLowerCase()==='nyt');n?.click();await wait();
- const dot=buttonWhere(t=>t==='.');dot?.click();
+ const buttonWhere=test=>[...(bank()?.querySelectorAll('[data-src]')||[])].find(b=>test((b.textContent||'').trim()));
+ return{bank,pronouns,buttonWhere};
+}
+async function clickOriginalSolution(original){
+ const {pronouns,buttonWhere}=originalParts(original);
+ buttonWhere(t=>pronouns.has(t.toLowerCase()))?.click();await wait();
+ buttonWhere(t=>!pronouns.has(t.toLowerCase())&&t.toLowerCase()!=='nyt'&&t!=='.')?.click();await wait();
+ buttonWhere(t=>t.toLowerCase()==='nyt')?.click();await wait();
+ buttonWhere(t=>t==='.')?.click();
+}
+async function clickOriginalWrong(original){
+ const {pronouns,buttonWhere}=originalParts(original);
+ // Absichtlich falsche Reihenfolge. Dadurch nutzt die Originalaufgabe ihre eigene Fehler-/Wiederholungslogik.
+ buttonWhere(t=>t.toLowerCase()==='nyt')?.click();await wait();
+ buttonWhere(t=>pronouns.has(t.toLowerCase()))?.click();await wait();
+ buttonWhere(t=>!pronouns.has(t.toLowerCase())&&t.toLowerCase()!=='nyt'&&t!=='.')?.click();await wait();
+ buttonWhere(t=>t==='.')?.click();await wait();
 }
 
 function enhance(){
@@ -74,8 +86,16 @@ function enhance(){
  const value=()=>chosen.map(x=>x.text).join(' ').replace(/\s+([.,!?])/g,'$1').trim();
  wrap.querySelector('#fiSentenceCheck').onclick=async()=>{
   const val=value();
-  if(accepted.some(x=>norm(x)===norm(val))){feedback.className='sentence-block-feedback feedback ok';feedback.textContent='Richtig!';await clickOriginalSolution(original);return}
-  const n=markWrong(r.group);feedback.className='sentence-block-feedback feedback no';feedback.innerHTML=n===1?'Da ist noch ein Fehler.':n===2?'Tipp: Subjekt – Verb – nyt – Punkt.':`Lösung zum Beispiel: <strong>${accepted[0]}</strong>`;chosen=[];draw();
+  if(accepted.some(x=>norm(x)===norm(val))){
+   feedback.className='sentence-block-feedback feedback ok';feedback.textContent='Richtig!';
+   await clickOriginalSolution(original);
+   return;
+  }
+  await clickOriginalWrong(original);
+  const n=currentTries(r.group);
+  feedback.className='sentence-block-feedback feedback no';
+  feedback.innerHTML=n===1?'Da ist noch ein Fehler.':n===2?'Tipp: Subjekt – Verb – nyt – Punkt.':`Lösung zum Beispiel: <strong>${accepted[0]}</strong>`;
+  chosen=[];draw();
  };
  wrap.querySelector('#fiSentenceReset').onclick=()=>{chosen=[];feedback.textContent='';feedback.className='sentence-block-feedback';draw()};
  draw();
