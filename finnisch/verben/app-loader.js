@@ -4,22 +4,18 @@ try{
   if(!response.ok)throw new Error(`HTTP ${response.status}`);
   let source=await response.text();
 
-  // Blob-Module brauchen für den Auth-Import eine absolute URL.
   source=source.replace(
     'from "/js/auth.js?v=login-main-4";',
     `from "${location.origin}/js/auth.js?v=login-main-4";`
   );
 
-  // Alte Aufgabe 7 vollständig aus Aufgabenliste und Lernfortschritt entfernen.
   source=source.replace(/,\['read-sentence','▣→🔊','Bild → Hören'\]/,'');
 
-  // Bedeutungen immer zuerst aus dem gemeinsamen einfachen A1-Wörterbuch nehmen.
   source=source.replace(
     "const clue=v=>CLUES[v.de]||'die Handlung auf dem Bild ausführen';",
     "const clue=v=>window.SP_VERB_A1_MEANINGS?.[v.de]||CLUES[v.de]||'die Handlung auf dem Bild';"
   );
 
-  // Alte direkte Links zur entfernten Aufgabe werden nicht mehr geöffnet.
   source=source.replace(
     "function route(){const q=new URLSearchParams(location.search);return{group:Number(q.get('group'))||0,task:q.get('task')||'',view:q.get('view')||''}}",
     "function route(){const q=new URLSearchParams(location.search),raw=q.get('task')||'';return{group:Number(q.get('group'))||0,task:TASKS.some(x=>x[0]===raw)?raw:'',view:q.get('view')||''}}"
@@ -32,7 +28,7 @@ try{
   } finally {
     URL.revokeObjectURL(url);
   }
-  await import('./sentence-a1-ui.js?v=1');
+  await import('./sentence-a1-ui.js?v=2');
 } catch(error){
   console.error('Finnische Verben konnten nicht geladen werden',error);
   const app=document.querySelector('#app');
