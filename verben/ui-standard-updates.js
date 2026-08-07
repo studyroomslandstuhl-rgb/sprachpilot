@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_UI_STANDARD_UPDATES_V2)return;
-window.__SP_VERB_UI_STANDARD_UPDATES_V2=true;
+if(window.__SP_VERB_UI_STANDARD_UPDATES_V3)return;
+window.__SP_VERB_UI_STANDARD_UPDATES_V3=true;
 const E=window.VerbGroupsEngine;
 if(!E)return;
 
@@ -16,12 +16,13 @@ function bunnyPlay(verb,button){
  }catch(e){}
 }
 
+// Beim Umdrehen einer Karte gibt es keinen Weiter-Knopf. Die Karte muss beantwortet werden.
 function fixCardReveal(){
  const r=route();if(r.task!=='cards')return;
- const next=document.querySelector('#cardHelpNext');
- if(next)next.remove();
+ document.querySelector('#cardHelpNext')?.remove();
 }
 
+// Bild → Hören: vier Hörmöglichkeiten, danach auswählen.
 function enhanceAudioChoices(){
  const r=route();if(r.task!=='change')return;
  const grid=document.querySelector('.question-card .option-grid');
@@ -39,43 +40,48 @@ function enhanceAudioChoices(){
  });
 }
 
-function buildSentenceTarget(r){
- const current=E.taskState(r.group,'sentence')?.current;if(!current)return null;
- const pi=E.personFor(r.group,'sentence',current),answer=E.displayForm(current,pi);
- const question=document.querySelector('.question-card .question');if(!question)return null;
- let full=String(question.textContent||'').replace(/_{2,}/g,answer).replace(new RegExp(`\\s*\\(${String(current).replace(/[.*+?^${}()|[\]\\]/g,'\\$&')}\\)\\s*`,'i'),' ').replace(/\s+([.,!?;:])/g,'$1').replace(/\s+/g,' ').trim();
- if(!/[.!?]$/.test(full))full+='.';
- return{verb:current,answer,full,question};
-}
-function tokensOf(sentence){return sentence.match(/[A-Za-zÄÖÜäöüß]+(?:['’-][A-Za-zÄÖÜäöüß]+)*|\d+|[^\sA-Za-zÄÖÜäöüß\d]/g)||[]}
+// Satz bauen: kompletter Satz aus Bausteinen. Akzeptiert 1. oder 3. Person Singular.
 function enhanceSentenceBlocks(){
  const r=route();if(r.task!=='sentence'||!r.group)return;
- const card=document.querySelector('.question-card');if(!card||card.dataset.blocksReady==='1')return;
- const target=buildSentenceTarget(r);if(!target)return;
- const form=card.querySelector('.answer-form');if(!form)return;
- card.dataset.blocksReady='1';form.hidden=true;
- const targetTokens=tokensOf(target.full),bankTokens=shuffle(targetTokens.map((text,i)=>({text,i})));
+ const card=document.querySelector('.question-card');
+ if(!card||card.dataset.fullSentenceBlocks==='1')return;
+ const verb=E.taskState(r.group,'sentence')?.current;if(!verb)return;
+ const form=document.querySelector('.question-card .answer-form');if(!form)return;
+ card.dataset.fullSentenceBlocks='1';
+ form.hidden=true;
+ const question=card.querySelector('.question');if(question)question.textContent='Baue einen ganzen Satz. Du kannst die 1. oder 3. Person benutzen.';
+ const first=E.displayForm(verb,0),third=E.displayForm(verb,2);
+ const accepted=[`Ich ${first}.`,`Er ${third}.`,`Sie ${third}.`,`Es ${third}.`];
+ const tokens=shuffle([
+  {id:'ich',text:'Ich'},{id:'er',text:'Er'},{id:'sie',text:'Sie'},{id:'es',text:'Es'},
+  {id:'f1',text:first},{id:'f3',text:third},{id:'dot',text:'.'}
+ ]);
  const wrap=document.createElement('div');wrap.className='sentence-block-builder';
- wrap.innerHTML='<div class="sentence-built" aria-live="polite"></div><div class="sentence-bank"></div><div class="sentence-block-actions"><button type="button" class="btn secondary sentence-reset">Zurücksetzen</button></div>';
+ wrap.innerHTML='<div class="sentence-built" aria-live="polite"><span class="small">Baue den Satz.</span></div><div class="sentence-bank"></div><div class="sentence-block-actions"><button type="button" class="btn" id="sentenceCheck">Kontrollieren</button><button type="button" class="btn secondary" id="sentenceReset">Zurücksetzen</button></div><div class="sentence-block-feedback"></div>';
  form.before(wrap);
- const built=wrap.querySelector('.sentence-built'),bank=wrap.querySelector('.sentence-bank');let chosen=[];
+ const built=wrap.querySelector('.sentence-built'),bank=wrap.querySelector('.sentence-bank'),feedback=wrap.querySelector('.sentence-block-feedback');
+ let chosen=[];
  function draw(){
   built.innerHTML=chosen.length?chosen.map((t,i)=>`<button type="button" class="sentence-token chosen" data-chosen="${i}">${t.text}</button>`).join(''):'<span class="small">Baue den Satz.</span>';
-  bank.innerHTML=bankTokens.filter(t=>!chosen.includes(t)).map(t=>`<button type="button" class="sentence-token" data-token="${t.i}">${t.text}</button>`).join('');
+  bank.innerHTML=tokens.filter(t=>!chosen.includes(t)).map(t=>`<button type="button" class="sentence-token" data-token="${t.id}">${t.text}</button>`).join('');
   built.querySelectorAll('[data-chosen]').forEach(b=>b.onclick=()=>{chosen.splice(Number(b.dataset.chosen),1);draw()});
-  bank.querySelectorAll('[data-token]').forEach(b=>b.onclick=()=>{const t=bankTokens.find(x=>x.i===Number(b.dataset.token));if(t){chosen.push(t);draw();if(chosen.length===targetTokens.length)checkOrder()}});
+  bank.querySelectorAll('[data-token]').forEach(b=>b.onclick=()=>{const t=tokens.find(x=>x.id===b.dataset.token);if(t&&chosen.length<3){chosen.push(t);draw()}});
  }
- function feedback(html,type='no'){const el=card.querySelector('#feedback');if(el){el.className='feedback '+type;el.innerHTML=html}}
- function checkOrder(){
-  const value=chosen.map(x=>x.text).join(' ').replace(/\s+([.,!?;:])/g,'$1');
-  if(norm(value)===norm(target.full)){
-   const input=form.querySelector('#answerInput'),check=form.querySelector('[data-action="check-input"]');if(input)input.value=target.answer;if(check)check.click();return;
+ function value(){return chosen.map(x=>x.text).join(' ').replace(/\s+([.,!?])/g,'$1').trim()}
+ function showWrong(n){feedback.className='sentence-block-feedback feedback no';feedback.innerHTML=n===1?'Da ist noch ein Fehler.':n===2?'Tipp: Subjekt – Verb – Punkt.':'Lösung zum Beispiel: <strong>'+accepted[0]+'</strong>'}
+ wrap.querySelector('#sentenceCheck').onclick=()=>{
+  const val=value();
+  if(accepted.some(x=>norm(x)===norm(val))){
+   feedback.className='sentence-block-feedback feedback ok';feedback.textContent='Richtig!';
+   const pi=E.personFor(r.group,'sentence',verb),expected=E.displayForm(verb,pi),input=form.querySelector('#answerInput'),check=form.querySelector('[data-action="check-input"]');
+   if(input)input.value=expected;
+   if(check)check.click();
+   return;
   }
-  const n=E.markWrong(r.group,'sentence');
-  feedback(n===1?'Da ist noch ein Fehler.':n===2?'Tipp: Prüfe die Reihenfolge im Satz.':`Lösung: <strong>${target.full}</strong>`);
-  chosen=[];draw();
- }
- wrap.querySelector('.sentence-reset').onclick=()=>{chosen=[];draw()};draw();
+  showWrong(E.markWrong(r.group,'sentence'));chosen=[];draw();
+ };
+ wrap.querySelector('#sentenceReset').onclick=()=>{chosen=[];feedback.textContent='';feedback.className='sentence-block-feedback';draw()};
+ draw();
 }
 
 function enhance(){fixCardReveal();enhanceAudioChoices();enhanceSentenceBlocks()}
@@ -93,7 +99,8 @@ style.textContent=`
 .sentence-built{background:#f7fbfd}
 .sentence-token{border:2px solid #b9dce7;border-radius:12px;background:#fff;padding:10px 14px;font:inherit;font-weight:800;color:#17324d;cursor:pointer}
 .sentence-token.chosen{background:#eef8fb}
-.sentence-block-actions{text-align:center}
+.sentence-block-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
+.sentence-block-feedback{text-align:center}
 @media(max-width:560px){.audio-choice-grid{grid-template-columns:1fr!important}.sentence-token{padding:9px 11px}}
 `;
 document.head.appendChild(style);
