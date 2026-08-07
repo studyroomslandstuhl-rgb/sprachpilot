@@ -1,0 +1,93 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SprachPilot – Finnisch</title>
+<link rel="stylesheet" href="/style.css?v=finnisch-basis-1">
+<style>
+.fi-badge{display:inline-block;margin-bottom:10px;background:#f0fbff;border:2px solid #84e3ff;color:#24576a;border-radius:999px;padding:6px 11px;font-weight:900;font-size:13px}
+.fi-info{background:#f6fdff;border:2px solid #d9eef7;border-radius:18px;padding:16px;margin-top:14px;color:#5f7180;line-height:1.5}
+.fi-info strong{color:#123047}
+.module.fi-disabled{cursor:default;pointer-events:none;opacity:.92}
+</style>
+</head>
+<body>
+<div id="accountStrip" class="account-strip"></div>
+<div class="container">
+  <section class="hero">
+    <a class="brand-logo" href="/finnisch/">
+      <img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo">
+      <h1>SprachPilot</h1>
+    </a>
+    <div><span class="fi-badge">🇫🇮 Finnisch · A1</span></div>
+    <p class="subtitle">Finnisch lernen mit klaren Übungen, Bildern, Fragen, Grammatik und Wiederholung.</p>
+  </section>
+
+  <section class="card">
+    <h2>Willkommen</h2>
+    <div id="loggedBox"></div>
+    <div id="guestBox" class="actions">
+      <a class="btn success" href="/register/">Als Schüler registrieren</a>
+      <a class="btn secondary" href="/login/?redirect=%2Ffinnisch%2F">Schüler-Login</a>
+      <a class="btn secondary" href="/teacher/login.html">Lehrer-Login</a>
+    </div>
+    <div class="fi-info">
+      <strong>Finnisch wird getrennt von Deutsch aufgebaut.</strong><br>
+      Die Bedienung bleibt gleich. Bilder aus dem bestehenden Bildpool können wiederverwendet werden. Deutsche Audiodateien werden nicht verwendet. Für finnische Wörter und Sätze wird zunächst die Computerstimme des Browsers verwendet. Grammatikaufgaben werden speziell für Finnisch erstellt und beginnen jeweils mit einer kurzen deutschen Erklärung.
+    </div>
+  </section>
+
+  <section class="modules" id="modules">
+    <a class="module fi-disabled" href="#" aria-disabled="true">
+      <div class="module-title">Fragen A1</div>
+      <p>Finnische Fragen und Antworten für Alltag, Kurs und einfache Gespräche.</p>
+      <span class="badge">Wird aufgebaut</span>
+    </a>
+    <a class="module fi-disabled" href="#" aria-disabled="true">
+      <div class="module-title">Wortschatz</div>
+      <p>Finnische Wörter nach Lektionen und Themen – mit der gleichen Lernlogik wie im deutschen Bereich.</p>
+      <span class="badge">Als Nächstes</span>
+    </a>
+    <a class="module fi-disabled" href="#" aria-disabled="true">
+      <div class="module-title">Verben</div>
+      <p>Finnische Verben mit Karteikarten, Bildern, Schreiben, Sprechen und Wiederholung.</p>
+      <span class="badge">Wird aufgebaut</span>
+    </a>
+  </section>
+
+  <footer>© SprachPilot</footer>
+</div>
+
+<script type="module">
+import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "/js/auth.js?v=login-main-4";
+window.logout=logout;
+
+const loggedBox=document.querySelector("#loggedBox");
+const guestBox=document.querySelector("#guestBox");
+
+function renderLoginState(){
+  const role=getActiveRole();
+  const profile=role==="student" ? getActiveProfile() : null;
+
+  if(profile){
+    loggedBox.innerHTML=`<div class="ok"><strong>Eingeloggt:</strong> ${safeText(profile.vorname||profile.firstName||'')} ${safeText(profile.nachname||profile.lastName||'')} · Kurs: ${safeText(profile.kurs||profile.courseCode||profile.kursnummer||'')}<br><a class="btn secondary" href="${dashboardHref()}">Zum Dashboard</a> <button class="btn secondary" onclick="logout()">Abmelden</button></div>`;
+    guestBox.classList.add("hidden");
+  }else if(role==="teacher"){
+    loggedBox.innerHTML=`<div class="ok"><strong>Lehrerzugang:</strong> Du bist als Lehrkraft eingeloggt.<br><a class="btn secondary" href="${dashboardHref()}">Zum Dashboard</a> <button class="btn secondary" onclick="logout()">Abmelden</button></div>`;
+    guestBox.classList.add("hidden");
+  }else{
+    loggedBox.innerHTML='<p>Registriere dich oder logge dich mit deinem Kurscode ein.</p>';
+    guestBox.classList.remove("hidden");
+  }
+
+  try{renderAccountStrip()}catch(e){}
+}
+
+renderLoginState();
+</script>
+<script src="/js/sp-language-switch.js?v=finnisch-basis-1"></script>
+<script defer src="/js/performance-boot.js?v=20260709b"></script>
+<script src="/shared/sprachpilot-design-system.js"></script>
+</body>
+</html>
