@@ -120,14 +120,17 @@ function recoverFromPreservedPoints(){
   const id=group.id;
   const before=Number(E.groupPoints(id))||0;
   const gs=E.groupState(id);
-  const run=gs?.runs?.['1'];
-  if(!gs||!run)continue;
-  const fullRun1=(E.LEARN||[]).length*(Number(E.taskPoints(1))||0)+(Number(E.examMax(1))||0);
-  const visibleProgress=(E.LEARN||[]).some(task=>(run.tasks?.[task]?.done||[]).length>0)||Number(run.exam?.bestPercent||0)>0;
-  if(!visibleProgress&&before>=fullRun1){
-   if(completeRun(id,1,{examPercent:100,restoreTasks:true}))restored++;
-   preservePointTotal(id,before);
+  if(!gs)continue;
+  let cumulative=0;
+  let changed=false;
+  for(let runId=1;runId<=3;runId++){
+   cumulative+=(E.LEARN||[]).length*(Number(E.taskPoints(runId))||0)+(Number(E.examMax(runId))||0);
+   if(before<cumulative)break;
+   const run=gs.runs?.[String(runId)];
+   const alreadyComplete=run&&(E.LEARN||[]).every(task=>run.tasks?.[task]?.done?.length>=group.verbs.length)&&Number(run.exam?.bestPercent||0)>=100;
+   if(!alreadyComplete&&completeRun(id,runId,{examPercent:100,restoreTasks:true}))changed=true;
   }
+  if(changed){restored++;preservePointTotal(id,before)}
  }
  if(restored)E.save();
  return restored;
