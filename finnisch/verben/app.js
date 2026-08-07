@@ -36,6 +36,7 @@ const userSlug=()=>[profile?.email,profile?.kurs,profile?.courseCode,profile?.vo
 const key="SP_FI_VERBS_PROGRESS_"+userSlug();
 let state=loadState();
 let recognition=null;
+let helpLevel=0;
 
 function loadState(){try{return JSON.parse(localStorage.getItem(key)||"{}")||{}}catch(e){return{}}}
 function saveState(){if(role==="teacher")return;try{localStorage.setItem(key,JSON.stringify(state))}catch(e){}}
@@ -45,7 +46,11 @@ function href({group=0,task="",view=""}={}){const q=new URLSearchParams();if(gro
 function route(){const q=new URLSearchParams(location.search);const group=Math.max(0,Math.min(GROUPS.length,Number(q.get("group"))||0));const task=TASKS.some(t=>t[0]===q.get("task"))?q.get("task"):"";const view=q.get("view")==="overview"?"overview":"";return{group,task,view}}
 function speak(text,slow=false){if(!("speechSynthesis" in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang="fi-FI";u.rate=slow?.62:.88;speechSynthesis.speak(u)}
 function image(v,small=false){return `<img src="${imgUrl(v)}" alt="Bild zu ${esc(v.fi)}" loading="${small?"lazy":"eager"}" onerror="this.style.visibility='hidden'">`}
-function backHref(r){if(r.task&&r.group)return href({group:r.group});if(r.group||r.view)return "/finnisch/";return "/finnisch/"}
+function backHref(r){
+ if(r.task&&r.group)return href({group:r.group});
+ if(r.group||r.view)return "/finnisch/verben/";
+ return "/finnisch/";
+}
 function renderHeader(r){
  const count=VERBS.length;
  const subtitle=r.group?`Gruppe ${r.group} · ${GROUPS[r.group-1]?.verbs.length||0} Verben`:`${count} Verben · ${GROUPS.length} Gruppen`;
@@ -73,8 +78,9 @@ function currentCard(id){
 function setFeedback(type,text){const el=document.querySelector("#spFeedback");if(!el)return;el.innerHTML=`<div class="sp-${type}">${esc(text)}</div>`}
 function revealCard(){document.querySelector("#spFlipCard")?.classList.add("flipped");setFeedback("hint","Sprich das finnische Wort oder schreibe es. Nur eine richtige Antwort geht weiter.")}
 function helpCard(id){
- const c=currentCard(id);if(!c)return;const v=c.v,st=groupState(id).cards;const w=st.wrong[v.de]||0;
- if(w<2)setFeedback("hint",`Hilfe: Das Wort beginnt mit „${v.fi.charAt(0)}“ und hat ${v.fi.replace(/\s/g,"").length} Buchstaben.`);
+ const c=currentCard(id);if(!c)return;const v=c.v;
+ helpLevel+=1;
+ if(helpLevel===1)setFeedback("hint",`Hilfe: Das Wort beginnt mit „${v.fi.charAt(0)}“ und hat ${v.fi.replace(/\s/g,"").length} Buchstaben.`);
  else setFeedback("hint",`Lösung: ${v.fi}. Die Hilfe zählt nicht als richtige Antwort.`);
 }
 function markWrong(id,v){const st=groupState(id).cards;st.wrong[v.de]=(st.wrong[v.de]||0)+1;saveState();const n=st.wrong[v.de];setFeedback("wrong",n>=3?`Noch nicht richtig. Lösung: ${v.fi}. Versuche es erneut.`:"Noch nicht richtig. Versuche es erneut.")}
@@ -90,10 +96,11 @@ function startMic(id){
  recognition.onend=()=>recognition=null;recognition.start()
 }
 function renderCards(id){
+ helpLevel=0;
  const g=GROUPS[id-1],c=currentCard(id);if(!g)return renderHome();
  if(!c){app.innerHTML=`<section class="fi-card fi-finish"><h2>Gut gemacht!</h2><p>Du hast alle ${g.verbs.length} Karteikarten richtig gesprochen oder geschrieben.</p><a class="btn" href="${href({group:id})}">Zurück</a></section>`;return}
  const v=c.v,done=groupState(id).cards.done.length;
- app.innerHTML=`<section class="fi-card sp-card-task"><div class="sp-task-header"><div>1. Karteikarten</div><div>${done+1} / ${g.verbs.length}</div></div><div class="fi-progress"><span style="width:${Math.round(done/g.verbs.length*100)}%"></span></div><div class="sp-flip-wrap"><div id="spFlipCard" class="sp-flip-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="sp-flip-face sp-flip-front"><div class="sp-card-image">${image(v)}</div><div class="sp-translation-box"><span>Deutsch</span><strong>${esc(v.de)}</strong></div></div><div class="sp-flip-face sp-flip-back"><div class="sp-back-grid"><div class="sp-back-image">${image(v)}</div><div class="sp-back-info"><div class="sp-card-word">${esc(v.fi)}</div><div class="sp-translation-box"><span>Deutsch</span><strong>${esc(v.de)}</strong></div><div class="sp-example-box"><span>Beispiel</span><strong>Haluan ${esc(v.fi)}.</strong></div><button class="btn secondary fi-audio" id="cardAudio">🔊 Anhören</button></div></div></div></div></div><div class="sp-card-actions"><button class="btn" id="cardMic">🎤 Sprechen</button><button class="btn secondary" id="cardWrite">✍️ Schreiben</button><button class="btn secondary" id="cardHelp">Hilfe</button></div><div id="spWriteBox" class="sp-write-box" hidden><label for="spAnswerInput">Finnisches Verb schreiben</label><div class="sp-answer-row"><input id="spAnswerInput" autocomplete="off" autocapitalize="none"><button class="btn" id="cardCheck">Kontrollieren</button></div></div><div id="spFeedback" class="sp-feedback"></div></section>`;
+ app.innerHTML=`<section class="fi-card sp-card-task"><div class="sp-task-header"><div>1. Karteikarten</div><div>${done+1} / ${g.verbs.length}</div></div><div class="fi-progress"><span style="width:${Math.round(done/g.verbs.length*100)}%"></span></div><div class="sp-flip-wrap"><div id="spFlipCard" class="sp-flip-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="sp-flip-face sp-flip-front"><div class="sp-card-image">${image(v)}</div><div class="sp-translation-box"><span>Deutsch</span><strong>${esc(v.de)}</strong></div></div><div class="sp-flip-face sp-flip-back"><div class="sp-back-grid"><div class="sp-back-image">${image(v)}</div><div class="sp-back-info"><div class="sp-card-word">${esc(v.fi)}</div><div class="sp-translation-box"><span>Deutsch</span><strong>${esc(v.de)}</strong></div><button class="btn secondary fi-audio" id="cardAudio">🔊 Anhören</button></div></div></div></div></div><div class="sp-card-actions"><button class="btn" id="cardMic">🎤 Sprechen</button><button class="btn secondary" id="cardWrite">✍️ Schreiben</button><button class="btn secondary" id="cardHelp">Hilfe</button></div><div id="spWriteBox" class="sp-write-box" hidden><label for="spAnswerInput">Finnisches Verb schreiben</label><div class="sp-answer-row"><input id="spAnswerInput" autocomplete="off" autocapitalize="none"><button class="btn" id="cardCheck">Kontrollieren</button></div></div><div id="spFeedback" class="sp-feedback"></div></section>`;
  const card=document.querySelector("#spFlipCard");card.addEventListener("click",e=>{if(!e.target.closest("button,input,a"))revealCard()});card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();revealCard()}});
  document.querySelector("#cardAudio").onclick=e=>{e.stopPropagation();speak(v.fi)};
  document.querySelector("#cardMic").onclick=()=>startMic(id);
