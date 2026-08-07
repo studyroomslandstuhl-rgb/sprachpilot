@@ -1,0 +1,98 @@
+name: Test verb progress persistence
+
+on:
+  pull_request:
+    types: [opened, reopened, synchronize]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+      - name: Syntax checks
+        run: |
+          node --check verben/progress-persistence-fix.js
+          node --check verben/app.js
+      - name: Persistence regression test
+        run: |
+          node <<'NODE'
+          const fs=require('fs');
+          const vm=require('vm');
+          const assert=require('assert');
+
+          const store=new Map();
+          const localStorage={
+            getItem:key=>store.has(String(key))?store.get(String(key)):null,
+            setItem:(key,value)=>store.set(String(key),String(value)),
+            removeItem:key=>store.delete(String(key)),
+            key:index=>[...store.keys()][index]??null,
+            get length(){return store.size}
+          };
+          const context={console,localStorage,setTimeout,clearTimeout};
+          context.window=context;
+          context.SP_VERB_GROUP_DATA={verbs:Array.from({length:80},(_,i)=>`verb${i+1}`),groupSize:20};
+          vm.runInNewContext(fs.readFileSync('verben/engine.js','utf8'),context,{filename:'engine.js'});
+          const E=context.VerbGroupsEngine;
+          E.setContext({email:'test@example.com'},false);
+          E.setActiveVerbs(E.ALL);
+          context.VerbGroupsProfile={email:'test@example.com'};
+          vm.runInNewContext(fs.readFileSync('verben/progress-persistence-fix.js','utf8'),context,{filename:'progress-persistence-fix.js'});
+          E.load();
+
+          // Screenshot-Fall Gruppe 2: Punkte vorhanden, sichtbarer Fortschritt verloren.
+          const g2=E.groupState(2);
+          g2.legacyPoints=215;
+          E.save();
+
+          // Screenshot-Fall Gruppe 1: Prüfung noch sichtbar, Aufgaben verschwunden.
+          const g1=E.groupState(1);
+          g1.legacyPoints=220;
+          g1.runs['1'].exam.bestPercent=100;
+          g1.runs['1'].exam.stars=3;
+          g1.runs['1'].awards.examPoints=100;
+          E.save();
+
+          context.SPVerbProgressPersistence.recoverFromPreservedPoints();
+          assert.strictEqual(E.learnDone(2),true,'group 2 tasks were not restored');
+          assert.strictEqual(E.currentRun(2).exam.bestPercent,100,'group 2 exam was not restored');
+          assert.strictEqual(E.groupPoints(2),215,'group 2 points changed during recovery');
+          assert.strictEqual(E.learnDone(1),true,'group 1 tasks were not restored');
+          assert.strictEqual(E.currentRun(1).exam.bestPercent,100,'group 1 exam changed');
+          assert.strictEqual(E.groupPoints(1),320,'group 1 points changed during recovery');
+
+          // Cloud-Fall Gruppe 3: komplette Runde aus zentralem Fortschritt wiederherstellen.
+          const taskPointRuns=Object.fromEntries(E.LEARN.map(task=>[task,{'1':5}]));
+          const tasks=Object.fromEntries(E.LEARN.map(task=>[task,{completed:true,total:20,done:20,percent:100,run:1,pointsByRun:{'1':5}}]));
+          context.SPProgress={
+            async loadCurrentStudentProgress(){
+              return{verben:{'verben-gruppe-03':{
+                tasks,
+                exam:{bestPercent:100,stars:3,completed:true},
+                lifetime:{points:160,taskPointRuns,examPointRuns:{'1':100},resets:0}
+              }}};
+            }
+          };
+
+          (async()=>{
+            await context.SPVerbProgressPersistence.restoreCloud();
+            assert.strictEqual(E.learnDone(3),true,'group 3 cloud tasks were not restored');
+            assert.strictEqual(E.currentRun(3).exam.bestPercent,100,'group 3 cloud exam was not restored');
+            assert.strictEqual(E.groupPoints(3),160,'group 3 cloud points are wrong');
+
+            // Signaturänderung: überlappender Fortschritt darf nicht komplett verschwinden.
+            const before=E.currentRun(2).tasks.cards.done.slice();
+            assert(before.includes('verb22'));
+            E.setActiveVerbs(E.ALL.slice(1));
+            E.load();
+            const after=E.currentRun(2).tasks.cards.done;
+            assert(after.includes('verb22'),'overlapping completed verb was erased after group signature change');
+            assert(after.length>0,'group progress was reset to zero after signature change');
+            console.log('verb progress persistence tests passed');
+          })().catch(error=>{console.error(error);process.exit(1)});
+          NODE
