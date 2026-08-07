@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Finnische Verben · SprachPilot</title>
+<link rel="preconnect" href="https://sprachpilot.b-cdn.net" crossorigin>
+<link rel="dns-prefetch" href="//sprachpilot.b-cdn.net">
+<link rel="stylesheet" href="/style.css?v=fi-verben-1">
+<style>
+:root{--fi-blue:#47abc6;--fi-soft:#eefaff;--fi-line:#d9eef7;--fi-dark:#123047;--fi-muted:#5f7180}
+body{padding:12px}
+.verb-shell{max-width:980px;margin:0 auto}
+.verb-top{background:#fff;border:1px solid var(--fi-line);border-radius:28px;padding:20px;box-shadow:0 14px 34px rgba(18,48,71,.12);margin-bottom:18px}
+.verb-head{display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap}.verb-brand{display:flex;align-items:center;gap:12px;text-decoration:none;color:inherit}.verb-brand img{width:66px;height:66px;object-fit:contain;border-radius:16px}.verb-brand h1{font-size:30px;margin:0}.verb-brand p{margin:3px 0 0;color:var(--fi-muted);font-weight:700}.verb-nav{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.verb-nav button,.verb-nav a{margin:0}
+.verb-card{background:#fff;border:1px solid var(--fi-line);border-radius:24px;padding:20px;box-shadow:0 10px 24px rgba(18,48,71,.10);margin-bottom:16px}.section-head{display:flex;justify-content:space-between;gap:10px;align-items:center;flex-wrap:wrap;margin-bottom:14px}.section-head h2{margin:0}.pill{display:inline-block;border-radius:999px;padding:6px 10px;background:var(--fi-soft);border:2px solid #84e3ff;color:#24576a;font-size:13px;font-weight:900}
+.task-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:10px}.task-card{width:100%;min-height:126px;margin:0;padding:14px;border-radius:18px;background:#fff;color:var(--fi-dark);border:2px solid var(--fi-line);box-shadow:none;text-align:left}.task-card strong{display:block;font-size:17px;margin:8px 0}.task-card span{font-size:13px;color:var(--fi-muted)}.task-card.ready{border-color:#84e3ff;background:#f6fdff}.task-card:disabled{opacity:.48;cursor:not-allowed}
+.overview-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(185px,1fr));gap:12px}.verb-item{border:2px solid var(--fi-line);border-radius:18px;overflow:hidden;background:#fff}.verb-item img{width:100%;aspect-ratio:1/1;object-fit:cover;background:#f6fdff;display:block}.verb-item-body{padding:12px}.verb-item h3{margin:0 0 4px;font-size:22px}.verb-item p{margin:0 0 9px;color:var(--fi-muted)}.audio-btn{margin:0;padding:8px 10px;font-size:14px}
+.progress-line{height:12px;background:#effaff;border-radius:999px;overflow:hidden;margin:10px 0 14px}.progress-line span{display:block;height:100%;background:linear-gradient(135deg,#47abc6,#84e3ff);width:0%}
+.flip-wrap{max-width:560px;margin:12px auto}.flip-card{position:relative;min-height:440px;border:2px solid var(--fi-line);border-radius:24px;background:#fff;overflow:hidden;cursor:pointer;display:flex;align-items:center;justify-content:center;text-align:center}.flip-card img{width:100%;height:440px;object-fit:cover;display:block}.flip-back{display:none;padding:28px}.flip-card.revealed img{display:none}.flip-card.revealed .flip-back{display:block}.flip-word{font-size:42px;font-weight:900;color:var(--fi-dark);margin-bottom:10px}.flip-meaning{font-size:21px;color:var(--fi-muted);margin-bottom:18px}.flip-help{font-size:14px;color:var(--fi-muted)}
+.card-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap;margin-top:14px}.card-actions button{margin:0}.good-btn{background:linear-gradient(135deg,#4fbd75,#2e9e4f)}.again-btn{background:#fff3e8;color:#8a4a18;border:1px solid #f2c79f;box-shadow:none}.counter{text-align:center;color:var(--fi-muted);font-weight:800;margin-top:8px}.hidden{display:none!important}
+@media(max-width:600px){.verb-brand h1{font-size:26px}.verb-brand img{width:56px;height:56px}.flip-card,.flip-card img{min-height:340px;height:340px}.flip-word{font-size:36px}.task-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.task-card{min-height:118px;padding:12px}}
+</style>
+</head>
+<body>
+<div id="accountStrip" class="account-strip"></div>
+<div class="verb-shell">
+  <header class="verb-top">
+    <div class="verb-head">
+      <a class="verb-brand" href="/finnisch/">
+        <img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo">
+        <div><h1>Finnische Verben</h1><p>Gruppe 1 · 20 Verben</p></div>
+      </a>
+      <span class="pill">🇫🇮 A1</span>
+    </div>
+    <nav class="verb-nav">
+      <a class="btn secondary" href="/finnisch/">← Startseite</a>
+      <button class="btn secondary" id="showOverview">Übersicht</button>
+      <button class="btn secondary" id="showTasks">Aufgaben</button>
+      <button class="btn danger" id="resetProgress">Fortschritt löschen</button>
+    </nav>
+  </header>
+
+  <main id="app"></main>
+  <footer>© SprachPilot</footer>
+</div>
+
+<script type="module">
+import { getActiveProfile, getActiveRole, loginUrlForCurrent, renderAccountStrip } from "/js/auth.js?v=login-main-4";
+
+const role=getActiveRole();
+const profile=getActiveProfile();
+if(!profile && role!=="teacher") location.href=loginUrlForCurrent();
+try{renderAccountStrip()}catch(e){}
+
+const VERBS=[
+  {fi:"rakastaa",de:"lieben",img:"lieben"},
+  {fi:"ostaa",de:"kaufen",img:"kaufen"},
+  {fi:"ymmärtää",de:"verstehen",img:"verstehen"},
+  {fi:"tarvita",de:"brauchen",img:"brauchen"},
+  {fi:"kuulla",de:"hören",img:"hoeren"},
+  {fi:"oppia",de:"lernen",img:"lernen"},
+  {fi:"asua",de:"wohnen",img:"wohnen"},
+  {fi:"tuoda",de:"bringen",img:"bringen"},
+  {fi:"olla",de:"sein",img:"sein"},
+  {fi:"kirjoittaa",de:"schreiben",img:"schreiben"},
+  {fi:"valokuvata",de:"fotografieren",img:"fotografieren"},
+  {fi:"soittaa",de:"telefonieren",img:"telefonieren"},
+  {fi:"kokata",de:"kochen",img:"kochen"},
+  {fi:"elää",de:"leben",img:"leben"},
+  {fi:"tulla",de:"kommen",img:"kommen"},
+  {fi:"tavata",de:"buchstabieren",img:"buchstabieren"},
+  {fi:"mennä",de:"gehen",img:"gehen"},
+  {fi:"uida",de:"schwimmen",img:"schwimmen"},
+  {fi:"etsiä",de:"suchen",img:"suchen"},
+  {fi:"tilata",de:"bestellen",img:"bestellen"}
+];
+
+const TASKS=[
+  ["cards","Aa","Karteikarten",true],
+  ["meaning","B→V","Bedeutung → Verb",false],
+  ["verbmeaning","V→B","Verb → Bedeutung",false],
+  ["listen","🔊","Hören → Verb",false],
+  ["imageverb","▣","Bild → Verb",false],
+  ["verbimage","V→▣","Verb → Bild",false],
+  ["sentence","📖","Lesen → Verb",false],
+  ["type","↔","Verbgruppe",false],
+  ["chooseform","du","Form auswählen",false],
+  ["writeform","✎","Form schreiben",false],
+  ["speakform","🎙","Form sprechen",false],
+  ["complete","…","Satz ergänzen",false],
+  ["exam","★","Gruppenprüfung",false]
+];
+
+const app=document.querySelector("#app");
+const userKey=(()=>{
+  const raw=[profile?.email,profile?.kurs,profile?.vorname,profile?.nachname].filter(Boolean).join("_")||"preview";
+  return raw.toLowerCase().replace(/[^a-z0-9äöüå_-]+/gi,"_");
+})();
+const STORAGE=`SP_FI_VERBS_G1_${userKey}`;
+let state=loadState();
+let cardIndex=0;
+let cardOrder=[];
+
+function loadState(){
+  try{return {...{known:[],seen:[]},...JSON.parse(localStorage.getItem(STORAGE)||"{}")}}catch(e){return{known:[],seen:[]}}
+}
+function saveState(){if(role==="teacher")return;localStorage.setItem(STORAGE,JSON.stringify(state))}
+function esc(v){return String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]))}
+function imageUrl(v){return `https://sprachpilot.b-cdn.net/${encodeURIComponent(v.img)}.webp`}
+function speak(text,slow=false){
+  if(!("speechSynthesis" in window))return;
+  speechSynthesis.cancel();
+  const u=new SpeechSynthesisUtterance(text);
+  u.lang="fi-FI";
+  u.rate=slow?.58:.88;
+  speechSynthesis.speak(u);
+}
+function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
+function knownPercent(){return Math.round((new Set(state.known).size/VERBS.length)*100)}
+
+function renderTasks(){
+  const p=knownPercent();
+  app.innerHTML=`
+    <section class="verb-card">
+      <div class="section-head"><h2>Gruppe 1</h2><span class="pill">${p}% Karteikarten</span></div>
+      <div class="progress-line"><span style="width:${p}%"></span></div>
+      <div class="task-grid">
+        ${TASKS.map(([id,icon,title,open])=>`<button class="task-card ${open?'ready':''}" data-task="${id}" ${open?'':'disabled'}><b>${esc(icon)}</b><strong>${esc(title)}</strong><span>${open?(p>=100?'Fertig':'Starten'):'Folgt danach'}</span></button>`).join("")}
+      </div>
+    </section>`;
+  document.querySelector('[data-task="cards"]')?.addEventListener("click",startCards);
+}
+
+function renderOverview(){
+  app.innerHTML=`
+    <section class="verb-card">
+      <div class="section-head"><h2>Übersicht</h2><span class="pill">20 Verben</span></div>
+      <div class="overview-grid">
+        ${VERBS.map(v=>`<article class="verb-item">
+          <img src="${imageUrl(v)}" alt="Bild zu ${esc(v.de)}" onerror="this.style.display='none'">
+          <div class="verb-item-body"><h3>${esc(v.fi)}</h3><p>${esc(v.de)}</p><button class="btn secondary audio-btn" data-speak="${esc(v.fi)}">🔊 Anhören</button></div>
+        </article>`).join("")}
+      </div>
+    </section>`;
+  document.querySelectorAll("[data-speak]").forEach(b=>b.addEventListener("click",()=>speak(b.dataset.speak)));
+}
+
+function startCards(){
+  cardOrder=shuffle(VERBS.map((_,i)=>i));
+  cardIndex=0;
+  renderCard();
+}
+function renderCard(){
+  if(cardIndex>=cardOrder.length){renderFinish();return}
+  const v=VERBS[cardOrder[cardIndex]];
+  const known=new Set(state.known).has(v.fi);
+  state.seen=[...new Set([...state.seen,v.fi])];saveState();
+  app.innerHTML=`
+    <section class="verb-card">
+      <div class="section-head"><div><h2>Karteikarten</h2><p class="small">Tippe auf die Karte und sprich das finnische Verb laut.</p></div><span class="pill">${cardIndex+1} / ${cardOrder.length}</span></div>
+      <div class="progress-line"><span style="width:${Math.round(cardIndex/cardOrder.length*100)}%"></span></div>
+      <div class="flip-wrap">
+        <div class="flip-card" id="flipCard" role="button" tabindex="0">
+          <img src="${imageUrl(v)}" alt="Bild zu ${esc(v.de)}" onerror="this.style.display='none';this.parentElement.classList.add('revealed')">
+          <div class="flip-back"><div class="flip-word">${esc(v.fi)}</div><div class="flip-meaning">${esc(v.de)}</div><button class="btn secondary" id="listenBtn">🔊 Anhören</button><button class="btn secondary" id="slowBtn">Langsam</button><div class="flip-help">Computerstimme · Finnisch (fi-FI)</div></div>
+        </div>
+      </div>
+      <div class="counter">${known?'Schon als sicher markiert':''}</div>
+      <div class="card-actions hidden" id="cardActions">
+        <button class="btn again-btn" id="againBtn">Noch üben</button>
+        <button class="btn good-btn" id="knownBtn">Kann ich</button>
+      </div>
+    </section>`;
+
+  const card=document.querySelector("#flipCard"),actions=document.querySelector("#cardActions");
+  const reveal=()=>{card.classList.add("revealed");actions.classList.remove("hidden")};
+  card.addEventListener("click",e=>{if(e.target.closest("button"))return;reveal()});
+  card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();reveal()}});
+  document.querySelector("#listenBtn").addEventListener("click",e=>{e.stopPropagation();speak(v.fi)});
+  document.querySelector("#slowBtn").addEventListener("click",e=>{e.stopPropagation();speak(v.fi,true)});
+  document.querySelector("#againBtn").addEventListener("click",()=>{state.known=state.known.filter(x=>x!==v.fi);saveState();cardIndex++;renderCard()});
+  document.querySelector("#knownBtn").addEventListener("click",()=>{state.known=[...new Set([...state.known,v.fi])];saveState();cardIndex++;renderCard()});
+}
+function renderFinish(){
+  const p=knownPercent();
+  app.innerHTML=`<section class="verb-card"><div style="text-align:center;padding:24px"><div style="font-size:54px">✓</div><h2>Karteikarten fertig</h2><p>${new Set(state.known).size} von 20 Verben als sicher markiert · ${p}%</p><div class="card-actions"><button class="btn" id="againAll">Noch einmal</button><button class="btn secondary" id="backTasks">Aufgaben</button></div></div></section>`;
+  document.querySelector("#againAll").addEventListener("click",startCards);
+  document.querySelector("#backTasks").addEventListener("click",renderTasks);
+}
+
+document.querySelector("#showOverview").addEventListener("click",renderOverview);
+document.querySelector("#showTasks").addEventListener("click",renderTasks);
+document.querySelector("#resetProgress").addEventListener("click",()=>{
+  if(!confirm("Finnischen Verben-Fortschritt für Gruppe 1 wirklich löschen?"))return;
+  state={known:[],seen:[]};saveState();renderTasks();
+});
+
+renderTasks();
+</script>
+<script src="/js/sp-language-switch.js?v=finnisch-basis-1"></script>
+<script src="/shared/sprachpilot-design-system.js"></script>
+</body>
+</html>
