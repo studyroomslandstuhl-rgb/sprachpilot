@@ -37,6 +37,7 @@ window.logout=logout;
 let rec=null;
 let currentQuestion=null;
 let cardSolved=false;
+let cardRevealed=false;
 const isPreview=()=>role==="teacher";
 const esc=v=>String(v??"").replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
 const norm=v=>String(v??"").trim().toLocaleLowerCase("fi-FI").normalize("NFC").replace(/[.,!?;:“”"'`´()…]/g,"").replace(/\s+/g," ");
@@ -44,11 +45,11 @@ const slug=v=>String(v||"").toLowerCase().replace(/ä/g,"ae").replace(/ö/g,"oe"
 const shuffle=a=>{a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const pickOptions=(correct,pool,n=4)=>shuffle([correct,...shuffle(pool.filter(x=>norm(x)!==norm(correct))).slice(0,n-1)]);
 
+/* Bilder: immer deutsches Ursprungsverb/Bilddatei. Beispiel rakastaa -> lieben.webp. */
 function imageCandidates(v){
- const out=[];
- try{if(typeof window.SP_VERB_IMAGE_OVERRIDE==="function"){const u=window.SP_VERB_IMAGE_OVERRIDE(v.de);if(u)out.push(u)}}catch{}
- const key=v.img||slug(v.de);
+ const key=v.img||slug(v.de),out=[];
  out.push(`https://sprachpilot.b-cdn.net/${encodeURIComponent(key)}.webp`);
+ try{if(typeof window.SP_VERB_IMAGE_OVERRIDE==="function"){const u=window.SP_VERB_IMAGE_OVERRIDE(v.de);if(u)out.push(u)}}catch{}
  out.push(`https://sprachpilot.b-cdn.net/Neu/${encodeURIComponent(key)}.webp`);
  return [...new Set(out.filter(Boolean))];
 }
@@ -94,20 +95,10 @@ const FIRST_GROUP_FORMS={
  "etsiä":["etsin","etsit","etsii","etsimme","etsitte","etsivät"],
  "tilata":["tilaan","tilaat","tilaa","tilaamme","tilaatte","tilaavat"]
 };
-function verbType(word){
- const w=String(word||"").toLocaleLowerCase("fi-FI");
- if(/(da|dä)$/.test(w))return 2;
- if(/(lla|llä|nna|nnä|rra|rrä|sta|stä)$/.test(w))return 3;
- if(/(ita|itä)$/.test(w))return 5;
- if(/(eta|etä)$/.test(w))return 6;
- if(/(ata|ätä|ota|ötä|uta|ytä)$/.test(w))return 4;
- return 1;
-}
+function verbType(word){const w=String(word||"").toLocaleLowerCase("fi-FI");if(/(da|dä)$/.test(w))return 2;if(/(lla|llä|nna|nnä|rra|rrä|sta|stä)$/.test(w))return 3;if(/(ita|itä)$/.test(w))return 5;if(/(eta|etä)$/.test(w))return 6;if(/(ata|ätä|ota|ötä|uta|ytä)$/.test(w))return 4;return 1}
 function harmonyA(word){return /[äöy]/.test(word)&&!/[aou]/.test(word)?"ä":"a"}
 function genericForms(word){
- const w=String(word||"");
- if(w==="tehdä")return["teen","teet","tekee","teemme","teette","tekevät"];
- if(w==="nähdä")return["näen","näet","näkee","näemme","näette","näkevät"];
+ const w=String(word||"");if(w==="tehdä")return["teen","teet","tekee","teemme","teette","tekevät"];if(w==="nähdä")return["näen","näet","näkee","näemme","näette","näkevät"];
  const type=verbType(w),a=harmonyA(w),vat=a==="ä"?"vät":"vat";
  if(type===2){const s=w.slice(0,-2);return[s+"n",s+"t",s,s+"mme",s+"tte",s+vat]}
  if(type===3){let s=w.slice(0,-1).replace(/ll$/,"l").replace(/nn$/,"n").replace(/rr$/,"r").replace(/st$/,"s")+"e";return[s+"n",s+"t",s+"e",s+"mme",s+"tte",s+vat]}
@@ -121,7 +112,7 @@ function personFor(v){return PERSONS[(v.index-1)%PERSONS.length]}
 
 const userSlug=()=>[profile?.email,profile?.courseCode,profile?.kurs,profile?.kursnummer,profile?.vorname,profile?.nachname].filter(Boolean).join("_").toLowerCase().replace(/[^a-z0-9äöüß]+/gi,"_")||"student";
 const storageKey=()=>`SP_FI_VERB_GROUPS_PROGRESS_${userSlug()}`;
-function blankTask(){return{done:[],wrong:{}}}
+function blankTask(total=0){return{total,done:[],queue:[],current:null,tries:0,hadWrong:false}}
 function blankRun(){return{tasks:{},awards:{tasks:{},examPoints:0,examPercent:0},exam:{bestPercent:0,stars:0,session:null},completed:false}}
 function blankGroup(){return{currentRun:1,runs:{"1":blankRun()}}}
 let state=loadState();
@@ -129,8 +120,19 @@ function loadState(){try{return JSON.parse(localStorage.getItem(storageKey())||"
 function saveState(){if(isPreview())return;try{localStorage.setItem(storageKey(),JSON.stringify(state))}catch{}}
 function groupState(id){const k=String(id);if(!state[k])state[k]=blankGroup();if(!state[k].runs)state[k].runs={"1":blankRun()};return state[k]}
 function currentRun(id){const gs=groupState(id),k=String(gs.currentRun||1);if(!gs.runs[k])gs.runs[k]=blankRun();return gs.runs[k]}
-function taskState(id,task){const run=currentRun(id);if(!run.tasks[task])run.tasks[task]=blankTask();return run.tasks[task]}
 function taskTargets(id,task){const g=GROUPS[id-1];if(!g)return[];return ["choose-form","write-form","speak-form","sentence"].includes(task)?grammarVerbs(g):g.verbs}
+function taskState(id,task){
+ const run=currentRun(id),targets=taskTargets(id,task),allowed=new Set(targets.map(v=>v.de));
+ if(!run.tasks[task])run.tasks[task]=blankTask(targets.length);
+ const st=run.tasks[task];
+ st.total=targets.length;
+ st.done=[...new Set((st.done||[]).filter(v=>allowed.has(v)))];
+ st.queue=[...new Set((st.queue||[]).filter(v=>allowed.has(v)&&!st.done.includes(v)))];
+ st.current=st.current&&allowed.has(st.current)&&!st.done.includes(st.current)?st.current:null;
+ st.tries=Math.max(0,Number(st.tries)||0);
+ st.hadWrong=!!st.hadWrong;
+ return st;
+}
 function taskPercent(id,task){const targets=taskTargets(id,task);if(!targets.length)return 100;const done=new Set(taskState(id,task).done);return Math.round(targets.filter(v=>done.has(v.de)).length*100/targets.length)}
 function taskDone(id,task){return taskPercent(id,task)>=100}
 function learnDone(id){return LEARN.every(t=>taskDone(id,t))}
@@ -138,6 +140,24 @@ function awardTask(id,task){const run=currentRun(id);if(!taskDone(id,task)||run.
 function groupPoints(id){const gs=groupState(id);return Object.values(gs.runs||{}).reduce((sum,run)=>sum+Object.values(run.awards?.tasks||{}).reduce((a,n)=>a+(Number(n)||0),0)+(Number(run.awards?.examPoints)||0),0)}
 function totalPoints(){return GROUPS.reduce((n,g)=>n+groupPoints(g.id),0)}
 function stars(p){return p>=100?3:p>=70?2:p>=50?1:0}
+
+/* Exakt wie der deutsche Standard: aktuelles Wort + Warteschlange. Falsch/Hilfe wird später wiederholt. */
+function nextVerb(groupId,task){
+ const st=taskState(groupId,task),targets=taskTargets(groupId,task);if(!st||!targets.length)return null;
+ if(st.current&&!st.done.includes(st.current))return targets.find(v=>v.de===st.current)||null;
+ if(!st.queue.length)st.queue=shuffle(targets.filter(v=>!st.done.includes(v.de)).map(v=>v.de));
+ st.current=st.queue.shift()||null;st.tries=0;st.hadWrong=false;saveState();
+ return targets.find(v=>v.de===st.current)||null;
+}
+function markWrong(groupId,task){const st=taskState(groupId,task);if(!st)return 0;st.tries+=1;st.hadWrong=true;saveState();return st.tries}
+function markRight(groupId,task){
+ const st=taskState(groupId,task),v=st?.current;if(!st||!v)return false;
+ const repeat=st.hadWrong||st.tries>0;
+ if(repeat){if(!st.done.includes(v)&&!st.queue.includes(v))st.queue.push(v)}else if(!st.done.includes(v))st.done.push(v);
+ st.current=null;st.tries=0;st.hadWrong=false;
+ if(taskPercent(groupId,task)>=100)awardTask(groupId,task);
+ saveState();return !repeat;
+}
 
 function route(){const q=new URLSearchParams(location.search),group=Math.max(0,Math.min(GROUPS.length,Number(q.get("group"))||0)),raw=q.get("task")||"",task=TASKS.some(t=>t[0]===raw)?raw:"",view=q.get("view")==="overview"?"overview":"";return{group,task,view}}
 function href(group=0,task="",view=""){const q=new URLSearchParams();if(group)q.set("group",group);if(task)q.set("task",task);if(view)q.set("view",view);return"/finnisch/verben/"+(q.toString()?"?"+q.toString():"")}
@@ -155,27 +175,35 @@ function groupPanels(selected=0){return GROUPS.map(g=>{const run=currentRun(g.id
 function renderHome(selected=0){app.innerHTML=`${previewNote()}${scoreCard(selected)}<section class="card"><div class="section-head"><h2>Gruppen</h2><span class="overview-total">${VERBS.length} Verben</span></div><div class="groups-accordion">${groupPanels(selected)}</div></section>`;if(selected)setTimeout(()=>document.querySelector(`[data-group-panel="${selected}"]`)?.scrollIntoView({behavior:"smooth",block:"start"}),80)}
 function renderOverview(){app.innerHTML=`${previewNote()}<section class="card"><div class="section-head"><h2>Übersicht</h2><span class="overview-total">${VERBS.length} Verben</span></div><div class="overview-grid">${VERBS.map(v=>`<article class="overview-verb-card">${image(v,true)}<div class="overview-verb-text"><span class="group-badge">Gruppe ${Math.floor((v.index-1)/GROUP_SIZE)+1}</span><h3>${esc(v.fi)}</h3><p>${esc(v.de)}</p><button class="audio-mini" data-action="audio" data-text="${esc(v.fi)}">🔊</button></div></article>`).join("")}</div></section>`}
 function taskProgressHtml(groupId,task){const targets=taskTargets(groupId,task),done=new Set(taskState(groupId,task).done),n=targets.filter(v=>done.has(v.de)).length,p=taskPercent(groupId,task);return`<div class="task-progress-row"><span>${n} richtig · ${Math.max(0,targets.length-n)} übrig</span><strong>${p}%</strong></div><div class="mini-progress"><div style="width:${p}%"></div></div>`}
-function nextVerb(groupId,task){const done=new Set(taskState(groupId,task).done);return taskTargets(groupId,task).find(v=>!done.has(v.de))||null}
 function grammarBox(task){if(!["verb-type","choose-form","write-form","speak-form","sentence"].includes(task))return"";const text=task==="verb-type"?"Finnische Verben werden nach ihrer Infinitiv-Endung in sechs Verbtypen eingeteilt. Achte auf die Endung des Verbs.":"Im Finnischen wird das Verb nach der Person verändert. Übe hier die Präsensform. Die Personalpronomen sind minä, sinä, hän, me, te und he.";return`<div class="question-support"><strong>Grammatik:</strong> ${esc(text)}</div>`}
 
-function wrongFeedback(groupId,task,v,solution,hint){const st=taskState(groupId,task),tries=(st.wrong[v.de]||0)+1;st.wrong[v.de]=tries;saveState();const el=document.querySelector("#feedback");if(!el)return;el.className="feedback no";if(tries===1)el.innerHTML="Noch nicht richtig.";else if(tries===2)el.innerHTML=`Hilfe: ${esc(hint||`Die Lösung beginnt mit „${String(solution).charAt(0)}“.`)}`;else el.innerHTML=`Lösung: <strong>${esc(solution)}</strong>`}
-function markRight(groupId,task,v){const st=taskState(groupId,task);if(!st.done.includes(v.de))st.done.push(v.de);delete st.wrong[v.de];saveState();awardTask(groupId,task);const el=document.querySelector("#feedback");if(el){el.className="feedback ok";el.textContent="Richtig!"}setTimeout(()=>renderTask(groupId,task),600)}
+function wrongFeedback(groupId,task,v,solution,hint){const tries=markWrong(groupId,task);const el=document.querySelector("#feedback");if(!el)return;el.className="feedback no";if(tries===1)el.innerHTML="Noch nicht richtig.";else if(tries===2)el.innerHTML=`Hilfe: ${esc(hint||`Die Lösung beginnt mit „${String(solution).charAt(0)}“.`)}`;else el.innerHTML=`Lösung: <strong>${esc(solution)}</strong>`}
+function markQuestionRight(groupId,task){const saved=markRight(groupId,task);const el=document.querySelector("#feedback");if(el){el.className="feedback ok";el.textContent=saved?"Richtig!":"Richtig – diese Aufgabe wird noch einmal wiederholt."}setTimeout(()=>renderTask(groupId,task),650)}
 function optionButtons(options){return`<div class="option-grid">${options.map(o=>`<button class="option" data-answer="${esc(o.value)}">${esc(o.label)}</button>`).join("")}</div>`}
 function imageOptionButtons(options){return`<div class="image-choice-grid">${options.map(v=>`<button class="image-option" data-answer="${esc(v.de)}">${image(v,true)}</button>`).join("")}</div>`}
 function inputBox(placeholder="Antwort schreiben"){return`<div class="answer-form"><div class="answer-row"><input id="answerInput" autocomplete="off" autocapitalize="none" placeholder="${esc(placeholder)}"><button class="btn" id="checkInput">Kontrollieren</button></div></div>`}
 function taskPage(groupId,task,body){return`<section class="card task-page"><div class="task-page-head"><div><p class="eyebrow">Gruppe ${groupId}</p><h2>${esc(TASK_TITLE[task])}</h2></div><button class="btn secondary" data-action="group" data-group="${groupId}">Zurück</button></div>${grammarBox(task)}${taskProgressHtml(groupId,task)}<div class="question-card">${body}<div id="feedback"></div></div></section>`}
 
 function renderCards(groupId){
- const task="cards",v=nextVerb(groupId,task);if(!v)return finishTask(groupId,task);cardSolved=false;currentQuestion={task,v,answer:v.fi};
- app.innerHTML=`<section class="card task-page"><div class="task-page-head"><div><p class="eyebrow">Gruppe ${groupId}</p><h2>Karteikarten</h2></div><button class="btn secondary" data-action="group" data-group="${groupId}">Zurück</button></div>${taskProgressHtml(groupId,task)}<div class="flip-wrap"><div id="verbFlipCard" class="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="flip-face flip-front">${image(v)}</div><div class="flip-face flip-back"><div class="flip-word">${esc(v.fi)}</div><div class="flip-note">Lösung</div><button type="button" class="btn secondary card-listen-btn" id="cardListenBtn">🔊 Anhören</button></div></div></div><div class="hint card-translation">Übersetzung: <b>${esc(v.de)}</b></div><div class="actions card-actions"><button id="cardMicBtn" type="button" class="btn">Sprechen</button><button id="cardWriteBtn" type="button" class="btn secondary">Schreiben</button></div><div id="cardMicStatus" class="small card-mic-status"></div><div id="cardAnswerBox" class="card-answer-box" hidden><div class="answer-row"><input id="cardAnswerInput" autocomplete="off" autocapitalize="none" placeholder="Verb schreiben"><button id="cardCheckBtn" type="button" class="btn">Kontrollieren</button></div></div><div id="cardFeedback"></div></section>`;
- const card=document.querySelector("#verbFlipCard");card.addEventListener("click",e=>{if(e.target.closest("button,input,a"))return;card.classList.add("flipped");document.querySelector("#cardMicStatus").textContent="Sprich das Verb oder schreibe es. Das Umdrehen zählt nicht als Antwort."});
- document.querySelector("#cardListenBtn").onclick=e=>{e.stopPropagation();speak(v.fi)};
+ const task="cards",v=nextVerb(groupId,task);if(!v)return finishTask(groupId,task);cardSolved=false;cardRevealed=false;currentQuestion={task,v,answer:v.fi};
+ app.innerHTML=`<section class="card task-page"><div class="task-page-head"><div><p class="eyebrow">Gruppe ${groupId}</p><h2>Karteikarten</h2></div><button class="btn secondary" data-action="group" data-group="${groupId}">Zurück</button></div>${taskProgressHtml(groupId,task)}<div class="flip-wrap"><div id="verbFlipCard" class="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="flip-face flip-front">${image(v)}</div><div class="flip-face flip-back"><div class="flip-word">${esc(v.fi)}</div><div class="flip-note">Lösung</div><button type="button" class="btn secondary card-listen-btn" id="cardListenBtn">🔊 Anhören</button></div></div></div><div class="hint card-translation">Übersetzung: <b>${esc(v.de)}</b></div><div class="actions card-actions"><button id="cardMicBtn" type="button" class="btn">Sprechen</button><button id="cardWriteBtn" type="button" class="btn secondary">Schreiben</button></div><div id="cardMicStatus" class="small card-mic-status"></div><div id="cardAnswerBox" class="card-answer-box" hidden><div class="answer-row"><input id="cardAnswerInput" autocomplete="off" autocapitalize="none" placeholder="Verb schreiben"><button id="cardCheckBtn" type="button" class="btn">Kontrollieren</button></div></div><div id="cardFeedback"></div><div id="cardAfter" class="actions card-actions"></div></section>`;
+ const card=document.querySelector("#verbFlipCard");
+ const reveal=()=>{if(cardSolved||cardRevealed)return;cardRevealed=true;card.classList.add("flipped");markWrong(groupId,task);const status=document.querySelector("#cardMicStatus");if(status)status.textContent="Als falsch gewertet. Das Verb wird später noch einmal wiederholt.";const after=document.querySelector("#cardAfter");if(after){after.innerHTML='<button type="button" class="btn" id="cardHelpNext">Weiter</button>';document.querySelector("#cardHelpNext").onclick=()=>{markRight(groupId,task);renderCards(groupId)}}};
+ card.addEventListener("click",e=>{if(!e.target.closest("button,input,a"))reveal()});
+ card.addEventListener("keydown",e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();reveal()}});
+ document.querySelector("#cardListenBtn").onclick=e=>{e.preventDefault();e.stopPropagation();speak(v.fi)};
  document.querySelector("#cardMicBtn").onclick=()=>startSpeech(value=>checkCard(groupId,value));
  document.querySelector("#cardWriteBtn").onclick=()=>{document.querySelector("#cardAnswerBox").hidden=false;document.querySelector("#cardAnswerInput").focus()};
  document.querySelector("#cardCheckBtn").onclick=()=>checkCard(groupId,document.querySelector("#cardAnswerInput").value);
  document.querySelector("#cardAnswerInput").onkeydown=e=>{if(e.key==="Enter")checkCard(groupId,e.target.value)};
 }
-function checkCard(groupId,value){if(cardSolved||!currentQuestion)return;const v=currentQuestion.v,task="cards";if(norm(value)===norm(v.fi)){cardSolved=true;const st=taskState(groupId,task);if(!st.done.includes(v.de))st.done.push(v.de);delete st.wrong[v.de];saveState();awardTask(groupId,task);document.querySelector("#verbFlipCard")?.classList.add("flipped");const fb=document.querySelector("#cardFeedback");fb.className="feedback ok";fb.textContent="Richtig!";setTimeout(()=>renderCards(groupId),600)}else{const st=taskState(groupId,task),tries=(st.wrong[v.de]||0)+1;st.wrong[v.de]=tries;saveState();const fb=document.querySelector("#cardFeedback");fb.className="feedback no";fb.innerHTML=tries===1?"Noch nicht richtig.":tries===2?`Hilfe: Das Wort beginnt mit „${esc(v.fi.charAt(0))}“.`:`Lösung: <strong>${esc(v.fi)}</strong>`}}
+function checkCard(groupId,value){
+ if(cardSolved||!currentQuestion)return;const v=currentQuestion.v,task="cards";
+ if(norm(value)===norm(v.fi)){
+  cardSolved=true;document.querySelector("#verbFlipCard")?.classList.add("flipped");const saved=markRight(groupId,task);const fb=document.querySelector("#cardFeedback");if(fb){fb.className="feedback ok";fb.textContent=saved?"Richtig!":"Richtig – das Verb wird noch einmal wiederholt."}setTimeout(()=>renderCards(groupId),650);return;
+ }
+ const tries=markWrong(groupId,task),fb=document.querySelector("#cardFeedback");if(fb){fb.className="feedback no";fb.innerHTML=tries===1?"Noch nicht richtig.":tries===2?`Hilfe: Das Wort beginnt mit „${esc(v.fi.charAt(0))}“.`:`Lösung: <strong>${esc(v.fi)}</strong>`}
+}
 function startSpeech(callback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){const el=document.querySelector("#feedback")||document.querySelector("#cardMicStatus");if(el)el.textContent="Mikrofon wird nicht unterstützt. Bitte schreibe die Antwort.";return}try{stopMic();rec=new SR();rec.lang="fi-FI";rec.interimResults=false;rec.maxAlternatives=5;rec.onresult=e=>{const vals=Array.from(e.results?.[0]||[]).map(x=>x.transcript);callback(vals[0]||"")};rec.onerror=()=>{const el=document.querySelector("#feedback")||document.querySelector("#cardMicStatus");if(el)el.textContent="Mikrofon hat nicht funktioniert. Bitte schreibe die Antwort."};rec.onend=()=>rec=null;rec.start()}catch{}}
 
 function buildQuestion(groupId,task,v){
@@ -191,9 +219,7 @@ function buildQuestion(groupId,task,v){
  return null;
 }
 function renderTask(groupId,task){
- if(task==="cards")return renderCards(groupId);
- if(task==="exam")return renderExam(groupId);
- if(taskDone(groupId,task))return finishTask(groupId,task);
+ if(task==="cards")return renderCards(groupId);if(task==="exam")return renderExam(groupId);if(taskDone(groupId,task))return finishTask(groupId,task);
  const v=nextVerb(groupId,task);if(!v)return finishTask(groupId,task);const q=buildQuestion(groupId,task,v);currentQuestion={...q,v,task};
  let media=q.image?image(q.image):q.audio?`<div class="listen-box"><button class="btn" id="playAudio">🔊 Hören</button><button class="btn secondary" id="playSlow">Langsam</button></div>`:"";
  let answer="";if(q.kind==="mc")answer=optionButtons(q.options);else if(q.kind==="images")answer=imageOptionButtons(q.options);else if(q.kind==="input")answer=inputBox("Antwort schreiben");else if(q.kind==="speech")answer=`<div class="speech-box"><div class="actions"><button class="btn" id="speakAnswer">🎤 Sprechen</button><button class="btn secondary" id="writeFallback">✍️ Schreiben</button></div><div id="speechStatus" class="small"></div><div id="writeBox" class="answer-form hidden">${inputBox("Verbform schreiben")}</div></div>`;
@@ -205,7 +231,7 @@ function renderTask(groupId,task){
  document.querySelector("#speakAnswer")?.addEventListener("click",()=>startSpeech(v=>checkTaskAnswer(groupId,task,v)));
  document.querySelector("#writeFallback")?.addEventListener("click",()=>{document.querySelector("#writeBox")?.classList.remove("hidden");setTimeout(()=>document.querySelector("#answerInput")?.focus(),20)});
 }
-function checkTaskAnswer(groupId,task,value){const q=currentQuestion;if(!q)return;if(norm(value)===norm(q.answer)){markRight(groupId,task,q.v)}else wrongFeedback(groupId,task,q.v,q.answer,q.hint)}
+function checkTaskAnswer(groupId,task,value){const q=currentQuestion;if(!q)return;if(norm(value)===norm(q.answer))markQuestionRight(groupId,task);else wrongFeedback(groupId,task,q.v,q.answer,q.hint)}
 function finishTask(groupId,task){awardTask(groupId,task);const points=Number(currentRun(groupId).awards.tasks[task])||0;app.innerHTML=`<section class="card"><div class="finish-box"><div class="finish-icon">✓</div><h2>Gut gemacht!</h2><p>${points} Punkte · Runde ${groupState(groupId).currentRun||1}</p><div class="actions"><button class="btn secondary" data-action="group" data-group="${groupId}">Zurück</button></div></div></section>`;bind()}
 
 function examQuestions(groupId){const g=GROUPS[groupId-1];return g.verbs.map((v,i)=>{const mode=i%4;if(mode===0)return buildQuestion(groupId,"meaning-to-verb",v);if(mode===1)return buildQuestion(groupId,"verb-to-meaning",v);if(mode===2)return buildQuestion(groupId,"image-to-verb",v);return buildQuestion(groupId,"verb-type",v)}).slice(0,20)}
