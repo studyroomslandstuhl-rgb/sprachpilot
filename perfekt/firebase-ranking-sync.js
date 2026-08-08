@@ -115,8 +115,10 @@ async function sync(){
 function schedule(delay=600){clearTimeout(timer);timer=setTimeout(sync,delay)}
 window.addEventListener('load',()=>schedule(700));
 window.addEventListener('pageshow',()=>schedule(500));
+window.addEventListener('pagehide',()=>schedule(0));
 document.addEventListener('click',()=>schedule(1000));
 document.addEventListener('keydown',e=>{if(e.key==='Enter')schedule(1000)});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='hidden')schedule(0)});
+new MutationObserver(()=>schedule(900)).observe(document.documentElement,{childList:true,subtree:true});
 setTimeout(()=>schedule(0),1200);
 window.SPPerfektFirebaseRankingSync={sync,schedule};
