@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_QUALITY_CONTENT_1)return;
-window.__SP_L7T1_QUALITY_CONTENT_1=true;
+if(window.__SP_L7T1_QUALITY_CONTENT_2)return;
+window.__SP_L7T1_QUALITY_CONTENT_2=true;
 
 function norm(value){return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim()}
 function fullWord(item){
@@ -15,8 +15,9 @@ function isWrongModalFallback(item){
  const answer=norm(item?.answer||'');
  return answer==='kann'&&(text.includes('schreibe das passende modalverb')||text.includes('welche form passt ich'));
 }
-function articleItems(){
- const cards=Array.isArray(window.L7T1_VOCAB)?window.L7T1_VOCAB:[];
+function articleItems(theme){
+ const cardsTask=(theme.tasks||[]).find(task=>task?.id==='karteikarten'||task?.kind==='cards'||/karteikarten/i.test(task?.title||''));
+ const cards=Array.isArray(cardsTask?.items)?cardsTask.items:[];
  const nouns=cards.filter(isNoun);
  return nouns.map(item=>{
   const singular=fullWord(item);
@@ -52,7 +53,7 @@ function ensureModalVariety(task){
 
 window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
  if(!theme||!Array.isArray(theme.tasks))return theme;
- const report={removedWrongFallbacks:[],emptyTasks:[]};
+ const report={removedWrongFallbacks:[],emptyTasks:[],articleCount:0};
  for(const task of theme.tasks){
   if(!Array.isArray(task.items))task.items=[];
   const modal=/modal|koennen|wollen|verbform/i.test(String(task.id||''));
@@ -64,17 +65,18 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
  }
  const article=theme.tasks.find(task=>task.id==='artikel-plural');
  if(article){
-  const rebuilt=articleItems();
+  const rebuilt=articleItems(theme);
   if(rebuilt.length){
    article.kind='input';
    article.title='Artikel und Plural';
    article.description='Schreibe Singular und Plural mit Artikel.';
    article.items=rebuilt;
   }
+  report.articleCount=article.items.length;
  }
  ensureModalVariety(theme.tasks.find(task=>task.id==='modalverb-waehlen'));
  report.emptyTasks=theme.tasks.filter(task=>!task.exam&&(!Array.isArray(task.items)||!task.items.length)).map(task=>task.id);
- theme.qualityRevision='l7t1-quality-content-2026-08-08';
+ theme.qualityRevision='l7t1-quality-content-2026-08-08-v2';
  window.L7T1QualityReport=report;
  return theme;
 });
