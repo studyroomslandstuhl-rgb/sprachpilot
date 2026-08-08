@@ -27,14 +27,13 @@ function groupMetadata(){
  for(let i=0;i<visible.length;i+=20){const verbs=visible.slice(i,i+20),id=String(Math.floor(i/20)+1).padStart(2,'0');out[id]={signature:'release|'+verbs.join('|'),verbs:verbs.slice(),currentRun:1,runs:{}}}
  return out
 }
-async function getProgress(){if(!window.SPProgress){try{await import('/js/progress.js?v=perfekt-firebase-ranking4')}catch{}}try{return await window.SPProgress?.loadCurrentStudentProgress?.()||{}}catch{return{}}}
+async function getProgress(){if(!window.SPProgress){try{await import('/js/progress.js?v=perfekt-firebase-ranking6')}catch{}}try{return await window.SPProgress?.loadCurrentStudentProgress?.()||{}}catch{return{}}}
 async function sync(){
  if(syncing||isPreview())return;syncing=true;
  try{
   const p=profile(),progress=await getProgress(),id=ids(p)[0];if(!id)return;
   const perfekt={...(progress.perfekt||{})};
   const actual=modulePoints(perfekt,CARRY_ID),target=Math.max(localPerfektTarget(),actual);
-  if(target<=0)return;
   const carryNeeded=Math.max(0,target-actual);
   if(carryNeeded>0){const old=perfekt[CARRY_ID]||{};perfekt[CARRY_ID]={...old,title:'Perfekt · wiederhergestellte Punkte',moduleTitle:'Perfekt',level:'A1',technicalRecovery:true,progressPercent:Number(old.progressPercent)||0,current:{...(old.current||{}),updatedAt:new Date().toISOString()},lifetime:{...(old.lifetime||{}),points:carryNeeded}}}
   else if(perfekt[CARRY_ID])perfekt[CARRY_ID]={...perfekt[CARRY_ID],lifetime:{...(perfekt[CARRY_ID].lifetime||{}),points:0}};
