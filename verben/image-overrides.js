@@ -19,6 +19,10 @@ const IMAGE_URLS=Object.freeze({
  'ausleihen':BUNNY+'Neu/ausleihen.webp',
  'anfangen':BUNNY+'Neu/anfangen.webp',
 
+ // „verzeihen“ darf nicht das Entschuldigungs-/„leidtun“-Bild benutzen.
+ // Dafür wird das semantisch passende Vergeben-Bild verwendet.
+ 'verzeihen':BUNNY+'vergeben.webp',
+
  'sich interessieren':BUNNY+'sich_interessieren_fuer.webp',
  'sich interessieren für':BUNNY+'sich_interessieren_fuer.webp',
  'sich_interessieren':BUNNY+'sich_interessieren_fuer.webp',
