@@ -1,10 +1,11 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_BUNNY_AUDIO_5)return;
-window.__SP_L7T1_BUNNY_AUDIO_5=true;
+if(window.__SP_L7T1_BUNNY_AUDIO_6)return;
+window.__SP_L7T1_BUNNY_AUDIO_6=true;
 if(!location.pathname.includes('/wortschatz/A1-Lektion-7/Thema-1/'))return;
 
-const BASES=['https://sprachpilot.b-cdn.net/audio/','https://sprachpilot.b-cdn.net/Audio/'];
+const BASE='https://sprachpilot.b-cdn.net/audio/';
+const BUNNY=/^https:\/\/sprachpilot\.b-cdn\.net\/audio\//i;
 let activeAudio=null;
 let generation=0;
 
@@ -14,9 +15,7 @@ function normalize(value){
 function slug(value,separator='_'){
  return String(value||'').trim().toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,separator).replace(new RegExp('^'+separator+'+|'+separator+'+$','g'),'');
 }
-function basename(value){
- return String(value||'').split(/[?#]/)[0].split('/').filter(Boolean).pop()||'';
-}
+function basename(value){return String(value||'').split(/[?#]/)[0].split('/').filter(Boolean).pop()||''}
 function unique(values){return[...new Set(values.filter(Boolean))]}
 function stop(){
  generation++;
@@ -62,9 +61,10 @@ function candidates(value){
   slug(normalize(raw),'_')
  ]);
  const urls=[];
- if(/^https?:\/\//i.test(raw))urls.push(raw);
- if(file&&/\.mp3$/i.test(file))BASES.forEach(base=>urls.push(base+encodeURIComponent(file)));
- BASES.forEach(base=>names.forEach(name=>urls.push(base+encodeURIComponent(name)+'.mp3')));
+ // Direkte URLs werden nur akzeptiert, wenn sie bereits auf dem SprachPilot-Bunny liegen.
+ if(BUNNY.test(raw))urls.push(raw);
+ if(file&&/\.mp3$/i.test(file))urls.push(BASE+encodeURIComponent(file));
+ names.forEach(name=>urls.push(BASE+encodeURIComponent(name)+'.mp3'));
  return unique(urls);
 }
 function errorBox(button){
@@ -75,7 +75,7 @@ function errorBox(button){
   box=document.createElement('div');
   box.className='bunny-audio-error';
   box.setAttribute('role','status');
-  box.textContent='Die Audiodatei konnte nicht geladen werden.';
+  box.textContent='Die Audiodatei konnte nicht aus Bunny Storage geladen werden.';
   scope.appendChild(box);
  }
 }
@@ -131,5 +131,5 @@ document.addEventListener('click',event=>{
  play(value,button);
 },true);
 window.addEventListener('beforeunload',stop);
-window.L7T1BunnyAudio={play,stop,candidates};
+window.L7T1BunnyAudio={play,stop,candidates,base:BASE};
 })();
