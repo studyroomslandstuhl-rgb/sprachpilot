@@ -73,7 +73,7 @@ try{
   } finally {
     URL.revokeObjectURL(url);
   }
-  await import('./sentence-a1-all.js?v=3');
+  await import('./sentence-a1-all.js?v=4');
 } catch(error){
   console.error('Finnische Verben konnten nicht geladen werden',error);
   const app=document.querySelector('#app');
