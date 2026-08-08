@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7_SCOPE_MINIMUM_2)return;
-window.__SP_L7_SCOPE_MINIMUM_2=true;
+if(window.__SP_L7_SCOPE_MINIMUM_3)return;
+window.__SP_L7_SCOPE_MINIMUM_3=true;
 
 const MIN_QUESTIONS=15;
 const T1_FOREIGN_TERMS=[
@@ -65,6 +65,16 @@ function containsForeignTerm(value){
 function isCards(task){
  return task?.id==='karteikarten'||task?.kind==='cards'||/karteikarten/i.test(task?.title||'');
 }
+
+// Nur der eigentliche Aufgabeninhalt entscheidet, ob ein Wort zu einem anderen Thema gehört.
+// Beispiele, Hinweise und Übersetzungen dürfen eine korrekte L7T1-Aufgabe nicht löschen.
+function scopePayload(item){
+ if(!item||typeof item!=='object')return item;
+ const keys=['prompt','answer','answers','word','full','term','options','tokens','rows','dialog','question','questions'];
+ const output={};
+ keys.forEach(key=>{if(item[key]!=null)output[key]=item[key]});
+ return output;
+}
 function filterThemeOne(theme){
  if(Number(document.body.dataset.theme||1)!==1)return;
  for(const task of theme.tasks||[]){
@@ -73,14 +83,12 @@ function filterThemeOne(theme){
    task.items=task.items.filter(item=>!exactForeignWord(fullWord(item))).map(prepareCardAnswers);
   }else{
    task.items=task.items.filter(item=>{
-    try{return!containsForeignTerm(JSON.stringify(item))}catch(error){return true}
+    try{return!containsForeignTerm(JSON.stringify(scopePayload(item)))}catch(error){return true}
    });
   }
  }
 }
-function variantLabel(number){
- return`Variante ${number}`;
-}
+function variantLabel(number){return`Variante ${number}`}
 function cloneVariant(item,number){
  const copy=deepCopy(item);
  const existing=String(copy.context||'').trim();
@@ -96,13 +104,30 @@ const SENTENCES=[
  ['Er kann sehr gut malen.',['Er','kann','sehr','gut','malen','.']],
  ['Wollt ihr Fahrrad fahren?',['Wollt','ihr','Fahrrad','fahren','?']]
 ];
+const MODAL_FALLBACKS=[
+ {prompt:'Ich ___ gut singen.',answer:'kann',options:['kann','will','möchte','können'],hint:'Bei „ich“ heißt die Form von „können“: kann.'},
+ {prompt:'Du ___ heute Tennis spielen. Das ist dein Plan.',answer:'willst',options:['willst','kannst','möchtest','wollen'],hint:'Bei „du“ heißt die Form von „wollen“: willst.'},
+ {prompt:'Ich ___ gern einen Tee.',answer:'möchte',options:['möchte','will','kann','möchten'],hint:'„möchte“ drückt hier einen höflichen Wunsch aus.'},
+ {prompt:'Wir ___ gut Fahrrad fahren.',answer:'können',options:['können','wollen','möchten','kann'],hint:'Bei „wir“ heißt die Form von „können“: können.'},
+ {prompt:'Ihr ___ am Wochenende Ski fahren. Das ist euer Plan.',answer:'wollt',options:['wollt','könnt','möchtet','wollen'],hint:'Bei „ihr“ heißt die Form von „wollen“: wollt.'},
+ {prompt:'___ du Klavier spielen?',answer:'Kannst',answers:['Kannst','kannst'],options:['Kannst','Willst','Möchtest','Können'],hint:'Bei „du“ heißt die Form von „können“: kannst.'},
+ {prompt:'Frau Klein ___ einen Kaffee.',answer:'möchte',options:['möchte','will','kann','möchten'],hint:'Ein höflicher Wunsch: möchte.'},
+ {prompt:'Anna und Ben ___ heute einen Film sehen. Das ist ihr Plan.',answer:'wollen',options:['wollen','können','möchten','will'],hint:'Bei „sie“ im Plural heißt die Form von „wollen“: wollen.'}
+];
 function fallbackItem(task,index){
  const kind=task?.kind||'choice';
  const sentence=SENTENCES[index%SENTENCES.length];
  if(kind==='order')return{kind:'order',prompt:'Ordne den Satz.',tokens:[...sentence[1]],answer:sentence[0],context:`Zusatzfrage ${index+1}`};
- if(kind==='input')return{kind:'input',prompt:'Schreibe das passende Modalverb.',context:`Ich ___ gut ${index%2?'singen':'malen'}.`,answer:'kann',answers:['kann'],hint:'Bei „ich“ heißt die Form „kann“.'};
- if(kind==='speak')return{kind:'speak',prompt:`Sprich einen Satz mit „${index%2?'können':'wollen'}“.`,open:true,answer:index%2?'Ich kann gut singen.':'Ich will Tennis spielen.',minWords:4};
- return{kind:'choice',prompt:`Welche Form passt? Ich ___ gut ${index%2?'singen':'malen'}.`,answer:'kann',options:['kann','will','können','wollen'],hint:'Bei „ich“ heißt die Form „kann“.',context:`Zusatzfrage ${index+1}`};
+ if(/modal|koennen|wollen|verbform/i.test(String(task?.id||''))){
+  const base=deepCopy(MODAL_FALLBACKS[index%MODAL_FALLBACKS.length]);
+  base.kind=kind==='input'?'input':'choice';
+  base.context=`Zusatzfrage ${index+1}`;
+  if(base.kind==='input')delete base.options;
+  return base;
+ }
+ if(kind==='speak')return{kind:'speak',prompt:'Sprich einen vollständigen Satz über eine Fähigkeit oder einen Plan.',open:true,answer:index%2?'Ich kann gut singen.':'Ich will Tennis spielen.',minWords:4,context:`Zusatzfrage ${index+1}`};
+ // Für fachfremde leere Aufgaben wird bewusst kein erfundener „kann“-Inhalt erzeugt.
+ return null;
 }
 function ensureMinimum(task){
  if(isCards(task))return;
@@ -110,7 +135,12 @@ function ensureMinimum(task){
  if(task.items.length>=MIN_QUESTIONS)return;
  const source=task.items.map(deepCopy);
  if(!source.length){
-  while(task.items.length<MIN_QUESTIONS)task.items.push(fallbackItem(task,task.items.length));
+  while(task.items.length<MIN_QUESTIONS){
+   const fallback=fallbackItem(task,task.items.length);
+   if(!fallback)break;
+   task.items.push(fallback);
+  }
+  if(!task.items.length)task.__spMissingContent=true;
   return;
  }
  let variant=1;
@@ -124,7 +154,7 @@ function transform(theme){
  filterThemeOne(theme);
  for(const task of theme.tasks)ensureMinimum(task);
  theme.minimumQuestions=MIN_QUESTIONS;
- theme.scopeRevision='l7-four-theme-distribution-2026-08-04-card-answer-fix';
+ theme.scopeRevision='l7t1-scope-content-filter-fix-2026-08-08';
  window.L7_THEME=theme;
  return theme;
 }
