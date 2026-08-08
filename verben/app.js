@@ -30,11 +30,10 @@ function orderedReleasedVerbs(data,all){
  const activeKeys=new Set(active.map(verbKey));
  const saved=releaseOrder(data);
  if(saved.length)return saved.filter(v=>activeKeys.has(verbKey(v)));
- // Ältere Kurse hatten noch keine gespeicherte Freigabereihenfolge. In diesem Fall
- // wird die bisherige lokale Gruppenreihenfolge bevorzugt, damit gelernte Verben
- // nicht allein durch eine technische Umgruppierung in spätere Gruppen wandern.
- const historical=window.SPVerbRegroupRecovery?.historicalOrder?.(active);
- return uniq(historical?.length?historical:active)
+ // Wichtig: Die Gruppenreihenfolge darf niemals vom individuellen Lernstand
+ // eines TN abhängen. Ohne gespeicherte Lehrer-Reihenfolge gilt deshalb für
+ // alle TN dieselbe kanonische Reihenfolge der freigegebenen Verben.
+ return uniq(all.filter(v=>activeKeys.has(verbKey(v))))
 }
 function installVerbGroups(active){
  const ordered=uniq(active);
@@ -46,7 +45,6 @@ function installVerbGroups(active){
  window.SP_VERB_RELEASE_VISIBLE={verbs:ordered.slice(),count:ordered.length,groupSize:20,partialLastGroup:ordered.length%20};
  VerbGroupsEngine.setActiveVerbs(ordered);
 
- // Sicherheitsprüfung: Ein Verb darf im aktuell gerenderten Kurs exakt einmal vorkommen.
  const seen=new Map(),duplicates=[];
  for(const group of VerbGroupsEngine.GROUPS){
   for(const verb of group.verbs){
@@ -79,11 +77,12 @@ async function init(){
  try{const raw=sessionStorage.getItem('SP_TEACHER_PREVIEW');if(raw==='1'||JSON.parse(raw||'null')?.teacherPreview===true)preview=true}catch{}
  window.VerbGroupsProfile=profile;
  VerbGroupsEngine.setContext(profile,preview);
- await install(profile,preview,storedAssignments(profile));
- loadCourseRelease(profile).then(data=>{
-  if(preview||!data)return;
-  try{install(profile,preview,data)}catch(error){console.warn('Aktualisierte Verben-Freigabe konnte nicht übernommen werden',error)}
- }).catch(error=>console.warn('Kursfreigaben konnten nicht aktualisiert werden',error))
+ // Nur ein Gruppenaufbau pro Seitenaufruf. loadCourseRelease hat selbst einen
+ // Cache/Fallback; dadurch kann eine spätere Firebase-Antwort die Gruppen nicht
+ // mitten im Lernen noch einmal umsortieren.
+ let assignments;
+ try{assignments=await loadCourseRelease(profile)}catch{assignments=storedAssignments(profile)}
+ await install(profile,preview,assignments||storedAssignments(profile))
 }
 
 init().catch(error=>{
