@@ -46,7 +46,7 @@ function installVisibleCatalog(visible){
   const byVerb=new Map(window.ALL_VERBS.map(item=>[String(item?.v||item||'').trim(),item]));
   window.ALL_VERBS=visible.map(v=>{
    const item=byVerb.get(v);
-   return typeof item==='object'&&item?{...item,v}: {v};
+   return typeof item==='object'&&item?{...item,v}:{v};
   });
  }
 }
@@ -62,10 +62,8 @@ installVisibleCatalog(visible);
 window.SP_PERFEKT_PENDING={verbs:pending.slice(),count:pending.length,needed:pending.length?GROUP_SIZE-pending.length:0};
 window.SP_PERFEKT_RELEASE_SYNC={groupSize:GROUP_SIZE,visible:visible.slice(),pending:pending.slice(),releaseOrder:ordered.slice(),mirrorsVerben:true};
 
-// app-stable.js sortiert Perfekt intern noch nach Verbtypen. Für die Gruppenansicht
-// wird dieser eine Aufbauvorgang abgefangen und durch exakt dieselben 20er-Blöcke
-// aus der Freigabereihenfolge ersetzt. Danach wird Array.prototype.push sofort
-// wieder auf die originale Funktion zurückgesetzt.
+// app-stable.js sortiert Perfekt intern noch nach Verbtypen. Nur während dieses
+// Gruppenaufbaus ersetzen wir die alten Teilgruppen durch die Freigabereihenfolge.
 const originalPush=Array.prototype.push;
 let groupBuildIntercepted=false;
 let restoreScheduled=false;
@@ -99,9 +97,10 @@ Array.prototype.push=function(...items){
 };
 
 try{
- await import('./app-stable.js?v=perfekt-release-sync1');
+ await import('./app-stable.js?v=perfekt-release-sync2');
 }finally{
- // Falls der Gruppenaufbau wegen eines frühen Fehlers gar nicht stattfand,
- // darf der temporäre Hook nicht bestehen bleiben.
- setTimeout(()=>{if(Array.prototype.push!==originalPush)Array.prototype.push=originalPush},1000);
+ // Die zweite Freigabeabfrage in app-stable kann bis zu einige Sekunden dauern.
+ // Der Hook bleibt deshalb nur als Sicherheitsnetz etwas länger aktiv und wird
+ // spätestens danach garantiert zurückgesetzt.
+ setTimeout(()=>{if(Array.prototype.push!==originalPush)Array.prototype.push=originalPush},6000);
 }
