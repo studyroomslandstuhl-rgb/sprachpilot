@@ -6,6 +6,7 @@ try{
   const pattern=/const fullCount=Math\.floor\(ordered\.length\/20\)\*20;\s*window\.SP_FI_PENDING_VERBS=ordered\.slice\(fullCount\);\s*window\.SP_FI_VERBS=ordered\.slice\(0,fullCount\);/;
   if(!pattern.test(source))throw new Error('Finnische Restgruppen-Logik wurde nicht gefunden');
   source=source.replace(pattern,'window.SP_FI_PENDING_VERBS=[];\n  window.SP_FI_VERBS=ordered.slice();');
+  source=source.replace("await import('./sentence-a1-all.js?v=5');",`await import('${location.origin}/finnisch/verben/sentence-a1-all.js?v=5');`);
   const blob=new Blob([source],{type:'text/javascript'}),url=URL.createObjectURL(blob);
   try{await import(url)}finally{URL.revokeObjectURL(url)}
 }catch(error){
