@@ -1,13 +1,14 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_EXAM_CONTENT_V2)return;
-window.__SP_VERB_EXAM_CONTENT_V2=true;
+if(window.__SP_VERB_EXAM_CONTENT_V3)return;
+window.__SP_VERB_EXAM_CONTENT_V3=true;
 
 const E=window.VerbGroupsEngine;
 if(!E)return;
 
 const originalQuestion=E.question.bind(E);
-// 20 Fragen = 20 Verben. Diese 10 prüfbaren Aufgabentypen kommen je zweimal vor.
+// 20 Fragen = genau die 20 gelernten Verben dieser Gruppe.
+// Diese 10 prüfbaren Aufgabentypen kommen je zweimal vor.
 // Karteikarten sind Lernhilfe und deshalb kein Prüfungsformat.
 const EXAM_PATTERN=[
  'exam-meaning-to-verb',
@@ -57,17 +58,17 @@ function personIndex(groupId,task,verb,override){
 function personLabel(index){return E.PERSONS?.[index]?.label||['ich','du','er/sie/es','wir','ihr','sie/Sie'][index]||'ich'}
 function formOptions(groupId,verb,index){
  const answer=E.displayForm(verb,index);
- const local=verbsFor(groupId).map(item=>E.displayForm(item,index));
- const all=(E.ALL||[]).map(item=>E.displayForm(item,index));
- return optionSet(answer,local,all,4);
+ const localVerbs=verbsFor(groupId);
+ const samePerson=localVerbs.map(item=>E.displayForm(item,index));
+ const localAllForms=localVerbs.flatMap(item=>[0,1,2,3,4,5].map(pi=>E.displayForm(item,pi)));
+ return optionSet(answer,samePerson,localAllForms,4);
 }
 function meaningOptions(groupId,verb){
  const answer=clue(verb);
  const local=verbsFor(groupId).map(clue);
- const all=(E.ALL||[]).map(clue);
- return optionSet(answer,local,all,4);
+ return optionSet(answer,local,[],4);
 }
-function verbOptions(groupId,verb){return optionSet(verb,verbsFor(groupId),E.ALL||[],4)}
+function verbOptions(groupId,verb){return optionSet(verb,verbsFor(groupId),[],4)}
 function sentenceFor(groupId,verb){
  const stored=String(window.SP_VERB_SENTENCES?.[verb]||'').trim();
  if(stored&&!/Ich lerne das Verb/i.test(stored))return stored;
@@ -121,13 +122,14 @@ E.question=function(groupId,task,verb,personOverride=null){
  };
  if(task==='exam-sentence'){
   const sentence=sentenceFor(groupId,verb);
-  return{kind:'input',prompt:'Bringe die Wörter in die richtige Reihenfolge.',answer:sentence,writeAnswer:sentence,placeholder:'Satz',examSentenceBlocks:true};
+  return{kind:'input',prompt:`Baue den Satz mit „${verb}“.`,answer:sentence,writeAnswer:sentence,placeholder:'Satz',examSentenceBlocks:true};
  }
  return originalQuestion(groupId,'write-form',verb,person);
 };
 
 E.EXAM_QUESTION_COUNT=20;
 E.EXAM_PATTERN=EXAM_PATTERN.slice();
+E.EXAM_SESSION_SCHEMA=3;
 
 function enhanceExamIntro(){
  const route=new URLSearchParams(location.search);
@@ -140,7 +142,7 @@ function enhanceExamIntro(){
  const count=verbsFor(groupId).length||20;
  const description=document.createElement('div');
  description.className='verb-exam-description';
- description.innerHTML=`<p><strong>${count} Prüfungsfragen</strong> – jedes Verb dieser Gruppe kommt genau einmal vor.</p><p>Bedeutung · Hören/Bild · Bild/Verb · Bild/Hören · Formen · Sprechen · Satz bauen</p>`;
+ description.innerHTML=`<p><strong>${count} Prüfungsfragen</strong> – jedes gelernte Verb dieser Gruppe kommt genau einmal vor.</p><p>Auch alle Antwortmöglichkeiten stammen nur aus dieser 20er-Gruppe.</p><p>Bedeutung · Hören/Bild · Bild/Verb · Bild/Hören · Formen · Sprechen · Satz bauen</p>`;
  heading.after(description);
 }
 
