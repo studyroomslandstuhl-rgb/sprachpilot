@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_UI_STANDARD_UPDATES_V4)return;
-window.__SP_VERB_UI_STANDARD_UPDATES_V4=true;
+if(window.__SP_VERB_UI_STANDARD_UPDATES_V5)return;
+window.__SP_VERB_UI_STANDARD_UPDATES_V5=true;
 const E=window.VerbGroupsEngine;
 if(!E)return;
 
@@ -17,6 +17,19 @@ function bunnyPlay(verb,button){
 }
 function sentenceSpeak(sentence){
  try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(sentence);u.lang='de-DE';u.rate=.88;speechSynthesis.speak(u)}catch(e){}
+}
+
+// Im deutschen Verbenbereich gibt es genau einen Zurück-Knopf.
+// Aufgabe -> Gruppe, Gruppe -> Verbenübersicht, Verbenübersicht -> Startseite.
+function fixSingleBackButton(){
+ const r=route(),topnav=document.querySelector('.topnav');if(!topnav)return;
+ const back=topnav.querySelector('a.btn.secondary');
+ if(back){
+  back.textContent='Zurück';
+  back.href=r.task&&r.group?`/verben/?group=${r.group}`:r.group?'/verben/':'/index.html';
+ }
+ topnav.querySelector('[data-action="group"]')?.remove();
+ document.querySelector('.task-page-head [data-action="group"]')?.remove();
 }
 
 // Beim Umdrehen einer Karte gibt es keinen Weiter-Knopf. Die Karte muss beantwortet werden.
@@ -76,9 +89,8 @@ function sentenceTokens(sentence){
  return sentence.match(/[A-Za-zÄÖÜäöüß]+(?:['’-][A-Za-zÄÖÜäöüß]+)*|\d+(?::\d+)?|[^\sA-Za-zÄÖÜäöüß\d]/g)||[];
 }
 
-// Satz bauen: EIN vorgegebener sinnvoller A1-Satz wird aus gemischten Bausteinen gebaut.
-// Der Satz kann als Hilfe komplett angehört werden. Die Hörhilfe zählt als Hilfe/Fehler,
-// damit der Satz später gemäß SprachPilot-Regel erneut kommt.
+// Satz bauen: sinnvoller A1-Satz aus gemischten Bausteinen.
+// "Satz hören" ist reine Hilfe: kein Fehler, keine Wiederholung, keine negative Wertung.
 function enhanceSentenceBlocks(){
  const r=route();if(r.task!=='sentence'||!r.group)return;
  const card=document.querySelector('.question-card');
@@ -93,7 +105,7 @@ function enhanceSentenceBlocks(){
  wrap.innerHTML='<div class="sentence-help"><button type="button" class="btn secondary" id="sentenceListen">🔊 Satz hören</button><span class="small">Hilfe</span></div><div class="sentence-built" aria-live="polite"><span class="small">Baue den Satz.</span></div><div class="sentence-bank"></div><div class="sentence-block-actions"><button type="button" class="btn" id="sentenceCheck">Kontrollieren</button><button type="button" class="btn secondary" id="sentenceReset">Zurücksetzen</button></div><div class="sentence-block-feedback"></div>';
  form.before(wrap);
  const built=wrap.querySelector('.sentence-built'),bank=wrap.querySelector('.sentence-bank'),feedback=wrap.querySelector('.sentence-block-feedback');
- let chosen=[],helpUsed=false;
+ let chosen=[];
  function draw(){
   built.innerHTML=chosen.length?chosen.map((t,i)=>`<button type="button" class="sentence-token chosen" data-chosen="${i}">${t.text}</button>`).join(''):'<span class="small">Baue den Satz.</span>';
   bank.innerHTML=source.filter(t=>!chosen.includes(t)).map(t=>`<button type="button" class="sentence-token" data-token="${t.id}">${t.text}</button>`).join('');
@@ -102,10 +114,7 @@ function enhanceSentenceBlocks(){
  }
  function value(){return chosen.map(x=>x.text).join(' ').replace(/\s+([.,!?;:])/g,'$1').trim()}
  function showWrong(n){feedback.className='sentence-block-feedback feedback no';feedback.innerHTML=n===1?'Da ist noch ein Fehler.':n===2?'Tipp: Höre den Satz und prüfe die Reihenfolge.':`Lösung: <strong>${sentence}</strong>`}
- wrap.querySelector('#sentenceListen').onclick=()=>{
-  if(!helpUsed){helpUsed=true;E.markWrong(r.group,'sentence');feedback.className='sentence-block-feedback feedback no';feedback.textContent='Hilfe genutzt. Dieser Satz wird später wiederholt.'}
-  sentenceSpeak(sentence);
- };
+ wrap.querySelector('#sentenceListen').onclick=()=>sentenceSpeak(sentence);
  wrap.querySelector('#sentenceCheck').onclick=()=>{
   const val=value();
   if(norm(val)===norm(sentence)){
@@ -121,7 +130,7 @@ function enhanceSentenceBlocks(){
  draw();
 }
 
-function enhance(){fixCardReveal();enhanceAudioChoices();enhanceSentenceBlocks()}
+function enhance(){fixSingleBackButton();fixCardReveal();enhanceAudioChoices();enhanceSentenceBlocks()}
 let scheduled=false;function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;enhance()})}
 new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
 window.addEventListener('popstate',schedule);schedule();
