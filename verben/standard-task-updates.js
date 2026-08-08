@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_STANDARD_TASK_UPDATES_V3)return;
-window.__SP_VERB_STANDARD_TASK_UPDATES_V3=true;
+if(window.__SP_VERB_STANDARD_TASK_UPDATES_V4)return;
+window.__SP_VERB_STANDARD_TASK_UPDATES_V4=true;
 const E=window.VerbGroupsEngine;
 if(!E)return;
 const MEANINGS=window.SP_VERB_A1_MEANINGS||{};
@@ -32,6 +32,14 @@ E.question=function(groupId,task,v,personOverride=null){
  if(task==='verb-to-meaning')return{kind:'mc',prompt:`Was bedeutet „${v}“?`,answer:clue(v),options:uniqueOptions(clue(v),verbs.map(clue)),image:v};
  if(task==='listen')return{kind:'images',prompt:'Höre das Verb und wähle das richtige Bild.',answer:v,options:uniqueOptions(v,verbs),audio:v};
  if(task==='change')return{kind:'mc',prompt:'Welches gehörte Verb passt zum Bild?',answer:v,options:uniqueOptions(v,verbs),image:v,audioChoices:true};
+ // Kein generischer Platzhalter „Ich lerne das Verb …“ mehr. Das Zielverb ist immer klar.
+ // Die sichtbare Aufgabe wird anschließend vom Satz-Baustein-Modul in einen vollständigen A1-Satz umgewandelt.
+ if(task==='sentence'){
+  const pi=Number.isInteger(personOverride)?personOverride:E.personFor(groupId,'sentence',v);
+  const answer=E.displayForm(v,pi);
+  const label=E.PERSONS?.[pi]?.label||['ich','du','er/sie/es','wir','ihr','sie/Sie'][pi]||'ich';
+  return{kind:'input',prompt:`Baue einen Satz mit „${v}“.`,answer,writeAnswer:answer,placeholder:`${label}: Form von ${v}`};
+ }
  return previous(groupId,task,v,personOverride);
 };
 window.SPVerbSemanticClue=clue;
