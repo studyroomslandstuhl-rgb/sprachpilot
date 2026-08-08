@@ -44,8 +44,9 @@
 L6T4ThemeScoreV3.initOverview();
 l6t4MatchedMenu();
 (function(){
- const examUrl='pruefung-ohne-audio.html?v=202607292304';
+ const examUrl='pruefung-ohne-audio.html?v=20260808-lock1';
  let running=false;
+ const unlocked=()=>typeof l6t4ExamUnlocked==='function'&&l6t4ExamUnlocked();
  const enforce=()=>{
   if(running)return;
   running=true;
@@ -53,7 +54,18 @@ l6t4MatchedMenu();
    document.querySelectorAll('#taskGrid a').forEach(link=>{
     const text=(link.textContent||'').toLowerCase();
     const href=link.getAttribute('href')||'';
-    if((text.includes('prüfung')||href.includes('task=exam'))&&href!==examUrl)link.setAttribute('href',examUrl);
+    if(!text.includes('prüfung')&&!href.includes('task=exam')&&!href.includes('pruefung'))return;
+    if(unlocked()){
+     link.setAttribute('href',examUrl);
+     link.removeAttribute('aria-disabled');
+     link.classList.remove('exam-locked','locked');
+    }else{
+     link.removeAttribute('href');
+     link.setAttribute('aria-disabled','true');
+     link.classList.add('exam-locked','locked');
+     const start=link.querySelector('.start');if(start)start.textContent='Gesperrt';
+     const desc=link.querySelector('p.small');if(desc)desc.textContent='Schließe zuerst alle anderen Aufgaben zu 100 % ab.';
+    }
    });
   }finally{
    running=false;
@@ -66,8 +78,9 @@ l6t4MatchedMenu();
   const link=event.target.closest('#taskGrid a');
   if(!link)return;
   const text=(link.textContent||'').toLowerCase(),href=link.getAttribute('href')||'';
-  if(!text.includes('prüfung')&&!href.includes('task=exam'))return;
-  event.preventDefault();event.stopImmediatePropagation();location.assign(examUrl);
+  if(!text.includes('prüfung')&&!href.includes('task=exam')&&!href.includes('pruefung'))return;
+  event.preventDefault();event.stopImmediatePropagation();
+  if(unlocked())location.assign(examUrl);
  },true);
 })();
 L6T4ThemeScoreV3.renderSummary();
