@@ -1,9 +1,9 @@
 (function(){
 'use strict';
 const TOPIC='wortschatz-a1-lektion-6-thema-4';
-const STATE_KEY='SP_L6_T4_EXAM_STANDALONE_V8';
+const STATE_KEY='SP_L6_T4_EXAM_STANDALONE_V9';
 const LEGACY_KEY='SP_L6_T4_V2_task-exam';
-const RELEASE='SP_L6_T4_EXAM_STANDALONE_RELEASE_V8';
+const RELEASE='SP_L6_T4_EXAM_STANDALONE_RELEASE_V9';
 const questions=[
  {q:'Was bedeutet „besonders“?',a:'speziell',o:['speziell','nie','langweilig','zusammen'],t:'Wortbedeutung'},
  {q:'Welcher Artikel ist richtig: ___ Hobby?',a:'das',o:['der','die','das','kein Artikel'],t:'Artikel'},
@@ -22,7 +22,18 @@ const questions=[
  {q:'Welche Antwort passt?',a:'Ich weiß es nicht.',o:['Ich weiß es nicht.','Na klar.','Oh, wie dumm!','Auf jeden Fall.'],t:'Passend reagieren',d:'Tim: Wann beginnt der Film?'}
 ];
 const app=document.getElementById('app');
-let state={index:0,correct:0,selected:'',checked:false,answers:[]};
+const shuffle=list=>{const copy=[...(list||[])];for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}return copy};
+function strictExamUnlocked(){
+ const tasks=(window.L6T4_TASKS||[]).filter(task=>!task.exam&&task.id!=='exam');
+ if(!tasks.length||typeof window.l6t4Percent!=='function')return false;
+ return tasks.every(task=>Number(task.total)>0&&window.l6t4Percent(task.key,task.total)>=100);
+}
+if(!app)return;
+if(!strictExamUnlocked()){
+ app.innerHTML='<div class="result"><div class="star" style="font-size:58px">🔒</div><h2>Prüfung gesperrt</h2><p>Schließe zuerst alle Lernaufgaben dieses Themas mit 100 % ab.</p><a class="back" href="index.html">Zur Themenübersicht</a></div>';
+ return;
+}
+let state={index:0,correct:0,selected:'',checked:false,answers:[],orders:{}};
 try{
  if(localStorage.getItem(RELEASE)!=='1'){
   [localStorage,sessionStorage].forEach(storage=>{const keys=[];for(let i=0;i<storage.length;i++){const key=String(storage.key(i)||'');if(/SP_L6_T4/i.test(key)&&/task-exam$/i.test(key))keys.push(key)}keys.forEach(key=>storage.removeItem(key))});
@@ -30,7 +41,7 @@ try{
   localStorage.setItem(RELEASE,'1');
  }
  const saved=JSON.parse(localStorage.getItem(STATE_KEY)||'null');
- if(saved&&Number.isInteger(saved.index)&&saved.index>=0)state={...state,...saved};
+ if(saved&&Number.isInteger(saved.index)&&saved.index>=0)state={...state,...saved,orders:saved.orders&&typeof saved.orders==='object'?saved.orders:{}};
 }catch(e){}
 const esc=value=>String(value??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const run=Math.min(3,Math.max(1,Number(localStorage.getItem('SP_SCORE_RUN_'+TOPIC)||1)||1));
@@ -41,10 +52,20 @@ function save(){
   localStorage.setItem(LEGACY_KEY,JSON.stringify({total:15,done:[...Array(finished).keys()],queue:[],current:null,tries:0,hadWrong:false,firstCorrect:state.correct,firstSeen:[...Array(finished).keys()]}));
  }catch(e){}
 }
+function optionsFor(index,item){
+ const key=String(index);
+ const existing=Array.isArray(state.orders?.[key])?state.orders[key]:null;
+ const valid=existing&&existing.length===item.o.length&&existing.every(option=>item.o.includes(option));
+ if(valid)return existing;
+ state.orders=state.orders&&typeof state.orders==='object'?state.orders:{};
+ state.orders[key]=shuffle(item.o);
+ save();
+ return state.orders[key];
+}
 function render(){
  if(state.index>=questions.length)return finish();
- const item=questions[state.index],percent=Math.round(state.index/questions.length*100);
- app.innerHTML=`<div class="attempt">Versuch ${run} von 3</div><div class="title"><span class="star">⭐</span><h1>Prüfung</h1></div><div class="progress-row"><span>${state.index+1} von ${questions.length}</span><strong>${percent} %</strong></div><div class="progress"><div class="bar" style="width:${percent}%"></div></div><section class="question-card"><div class="type">${esc(item.t)}</div>${item.d?`<div class="dialog">${esc(item.d)}</div>`:''}<h2 class="question">${esc(item.q)}</h2><div class="options">${item.o.map((option,index)=>{const selected=state.selected===option?' selected':'',result=state.checked?(option===item.a?' correct':state.selected===option?' wrong':''):'';return`<button class="option${selected}${result}" data-value="${esc(option)}" ${state.checked?'disabled':''}><span class="letter">${String.fromCharCode(65+index)}</span><span>${esc(option)}</span></button>`}).join('')}</div><div id="feedback" class="feedback ${state.checked?(state.selected===item.a?'ok':'bad'):''}">${state.checked?(state.selected===item.a?'Richtig.':`Nicht richtig. Lösung: ${esc(item.a)}`):''}</div><div class="actions"><button class="btn" id="action" ${!state.selected?'disabled':''}>${state.checked?'Weiter':'Kontrollieren'}</button></div></section>`;
+ const item=questions[state.index],options=optionsFor(state.index,item),percent=Math.round(state.index/questions.length*100);
+ app.innerHTML=`<div class="attempt">Versuch ${run} von 3</div><div class="title"><span class="star">⭐</span><h1>Prüfung</h1></div><div class="progress-row"><span>${state.index+1} von ${questions.length}</span><strong>${percent} %</strong></div><div class="progress"><div class="bar" style="width:${percent}%"></div></div><section class="question-card"><div class="type">${esc(item.t)}</div>${item.d?`<div class="dialog">${esc(item.d)}</div>`:''}<h2 class="question">${esc(item.q)}</h2><div class="options">${options.map((option,index)=>{const selected=state.selected===option?' selected':'',result=state.checked?(option===item.a?' correct':state.selected===option?' wrong':''):'';return`<button class="option${selected}${result}" data-value="${esc(option)}" ${state.checked?'disabled':''}><span class="letter">${String.fromCharCode(65+index)}</span><span>${esc(option)}</span></button>`}).join('')}</div><div id="feedback" class="feedback ${state.checked?(state.selected===item.a?'ok':'bad'):''}">${state.checked?(state.selected===item.a?'Richtig.':`Nicht richtig. Lösung: ${esc(item.a)}`):''}</div><div class="actions"><button class="btn" id="action" ${!state.selected?'disabled':''}>${state.checked?'Weiter':'Kontrollieren'}</button></div></section>`;
  app.querySelectorAll('.option').forEach(button=>button.addEventListener('click',()=>{if(state.checked)return;state.selected=button.dataset.value;save();render()}));
  document.getElementById('action').onclick=()=>{
   if(!state.selected)return;
