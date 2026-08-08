@@ -78,7 +78,7 @@ function enhance(){
  const wrap=document.createElement('div');wrap.className='sentence-block-builder fi-a1-sentence-builder';
  wrap.innerHTML='<div class="sentence-help"><button type="button" class="btn secondary" id="fiSentenceListen">🔊 Satz hören</button><span class="small">Hilfe</span></div><div class="sentence-built"><span class="small">Baue den Satz.</span></div><div class="sentence-bank"></div><div class="sentence-block-actions"><button type="button" class="btn" id="fiSentenceCheck">Kontrollieren</button><button type="button" class="btn secondary" id="fiSentenceReset">Zurücksetzen</button></div><div class="sentence-block-feedback"></div>';
  original.before(wrap);
- const built=wrap.querySelector('.sentence-built'),bank=wrap.querySelector('.sentence-bank'),feedback=wrap.querySelector('.sentence-block-feedback');let chosen=[],helpUsed=false;
+ const built=wrap.querySelector('.sentence-built'),bank=wrap.querySelector('.sentence-bank'),feedback=wrap.querySelector('.sentence-block-feedback');let chosen=[];
  function draw(){
   built.innerHTML=chosen.length?chosen.map((t,i)=>`<button type="button" class="sentence-token chosen" data-chosen="${i}">${t.text}</button>`).join(''):'<span class="small">Baue den Satz.</span>';
   bank.innerHTML=source.filter(t=>!chosen.includes(t)).map(t=>`<button type="button" class="sentence-token" data-token="${t.id}">${t.text}</button>`).join('');
@@ -86,10 +86,7 @@ function enhance(){
   bank.querySelectorAll('[data-token]').forEach(b=>b.onclick=()=>{const t=source.find(x=>x.id===Number(b.dataset.token));if(t){chosen.push(t);draw()}});
  }
  const value=()=>chosen.map(x=>x.text).join(' ').replace(/\s+([.,!?;:])/g,'$1').trim();
- wrap.querySelector('#fiSentenceListen').onclick=()=>{
-  if(!helpUsed){helpUsed=true;markWrong(r.group);feedback.className='sentence-block-feedback feedback no';feedback.textContent='Hilfe genutzt. Dieser Satz wird später wiederholt.'}
-  speakSentence(sentence);
- };
+ wrap.querySelector('#fiSentenceListen').onclick=()=>speakSentence(sentence);
  wrap.querySelector('#fiSentenceCheck').onclick=async()=>{
   const val=value();
   if(norm(val)===norm(sentence)){
