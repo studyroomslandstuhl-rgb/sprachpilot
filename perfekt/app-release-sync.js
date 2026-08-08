@@ -1,5 +1,5 @@
 import{getActiveProfile,getActiveRole}from'/js/auth.js?v=login-main-4';
-import{loadCourseRelease,releasedVerbs}from'/js/course-releases.js?v=verb-release-order1';
+import{loadCourseRelease,releasedVerbs}from'/js/course-releases.js?v=verb-release-order2';
 
 const GROUP_SIZE=20;
 const profile=getActiveProfile()||{};
@@ -29,14 +29,14 @@ function releaseOrder(data){
 }
 function orderedReleased(data,all){
  const active=preview?all.slice():releasedVerbs(data,all);
- const activeSet=new Set(active),seen=new Set(),out=[];
- releaseOrder(data).forEach(v=>{
-  if(activeSet.has(v)&&!seen.has(v)){seen.add(v);out.push(v)}
- });
- active.forEach(v=>{
-  if(!seen.has(v)){seen.add(v);out.push(v)}
- });
- return out;
+ if(preview)return uniq(active);
+ const activeSet=new Set(active),allowed=new Set(all);
+ const savedOrder=releaseOrder(data);
+ const explicit=savedOrder.filter(v=>allowed.has(v)&&activeSet.has(v));
+ // Die gespeicherte Lehrer-Auswahl ist die exakte Quelle. Keine zusätzlichen
+ // Verben aus allgemeinen Modul-Defaults werden an Perfekt angehängt.
+ if(savedOrder.length)return explicit;
+ return uniq(active).filter(v=>allowed.has(v));
 }
 function installVisibleCatalog(visible){
  if(window.SP_VERB_GROUP_DATA){
@@ -55,15 +55,21 @@ const completeCatalog=uniq(window.SP_VERB_GROUP_DATA?.verbs||window.VerbGroupsEn
 let assignments={};
 try{assignments=await loadCourseRelease(profile)||{}}catch{}
 const ordered=orderedReleased(assignments,completeCatalog);
-const fullCount=Math.floor(ordered.length/GROUP_SIZE)*GROUP_SIZE;
-const visible=ordered.slice(0,fullCount);
-const pending=ordered.slice(fullCount);
+const visible=ordered.slice();
 installVisibleCatalog(visible);
-window.SP_PERFEKT_PENDING={verbs:pending.slice(),count:pending.length,needed:pending.length?GROUP_SIZE-pending.length:0};
-window.SP_PERFEKT_RELEASE_SYNC={groupSize:GROUP_SIZE,visible:visible.slice(),pending:pending.slice(),releaseOrder:ordered.slice(),mirrorsVerben:true};
+window.SP_PERFEKT_PENDING={verbs:[],count:0,needed:0};
+window.SP_PERFEKT_RELEASE_SYNC={
+ groupSize:GROUP_SIZE,
+ visible:visible.slice(),
+ pending:[],
+ releaseOrder:ordered.slice(),
+ mirrorsVerben:true,
+ partialLastGroup:visible.length%GROUP_SIZE
+};
 
 // app-stable.js sortiert Perfekt intern noch nach Verbtypen. Nur während dieses
-// Gruppenaufbaus ersetzen wir die alten Teilgruppen durch die Freigabereihenfolge.
+// Gruppenaufbaus ersetzen wir die alten Teilgruppen durch dieselben 20er-Blöcke
+// wie im Verben-Bereich. Die letzte Gruppe darf weniger als 20 Verben enthalten.
 const originalPush=Array.prototype.push;
 let groupBuildIntercepted=false;
 let restoreScheduled=false;
@@ -97,10 +103,7 @@ Array.prototype.push=function(...items){
 };
 
 try{
- await import('./app-stable.js?v=perfekt-release-sync2');
+ await import('./app-stable.js?v=perfekt-release-sync3');
 }finally{
- // Die zweite Freigabeabfrage in app-stable kann bis zu einige Sekunden dauern.
- // Der Hook bleibt deshalb nur als Sicherheitsnetz etwas länger aktiv und wird
- // spätestens danach garantiert zurückgesetzt.
  setTimeout(()=>{if(Array.prototype.push!==originalPush)Array.prototype.push=originalPush},6000);
 }
