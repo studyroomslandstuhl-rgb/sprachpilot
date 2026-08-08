@@ -1,6 +1,8 @@
 import{requireLogin,getActiveProfile,getActiveRole,dashboardHref,logout}from'/js/auth.js?v=login-main-4';
 import{loadCourseRelease,moduleOpen,releasedVerbs}from'/js/course-releases.js?v=verb-release-order1';
 
+const CANONICAL_ALL=VerbGroupsEngine.ALL.slice();
+
 function storedAssignments(profile){
  try{
   const cached=JSON.parse(localStorage.getItem('SP_COURSE_RELEASES')||'null');
@@ -21,10 +23,10 @@ function orderedReleasedVerbs(data,all){
  return out
 }
 function installTwentyVerbGroups(active){
- const ordered=uniq(active).filter(v=>VerbGroupsEngine.ALL.includes(v));
+ const allowed=new Set(CANONICAL_ALL),ordered=uniq(active).filter(v=>allowed.has(v));
  const fullCount=Math.floor(ordered.length/20)*20;
  const visible=ordered.slice(0,fullCount),pending=ordered.slice(fullCount);
- const internalAll=VerbGroupsEngine.ALL,activeSet=new Set(ordered),rest=internalAll.filter(v=>!activeSet.has(v));
+ const internalAll=VerbGroupsEngine.ALL,activeSet=new Set(ordered),rest=CANONICAL_ALL.filter(v=>!activeSet.has(v));
  internalAll.splice(0,internalAll.length,...ordered,...rest);
  window.SP_VERB_PENDING={verbs:pending.slice(),count:pending.length,needed:pending.length?20-pending.length:0};
  VerbGroupsEngine.setActiveVerbs(visible)
@@ -33,8 +35,7 @@ function installTwentyVerbGroups(active){
 async function install(profile,preview,assignments){
  const data=assignments&&typeof assignments==='object'?assignments:{};
  const locked=!preview&&!moduleOpen(data,'Verben');
- const all=VerbGroupsEngine.ALL.slice();
- const active=preview?all:orderedReleasedVerbs(data,all);
+ const active=preview?CANONICAL_ALL.slice():orderedReleasedVerbs(data,CANONICAL_ALL);
  installTwentyVerbGroups(active);
  try{
   if(!preview&&window.SPVerbProgressPersistence?.restoreCloud)await window.SPVerbProgressPersistence.restoreCloud();
