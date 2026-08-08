@@ -45,19 +45,22 @@ function localPerfektTarget(){
 function displayName(p){return [p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(' ')||p.displayName||p.email||'Schüler/in'}
 
 async function getProgress(){
- if(!window.SPProgress){try{await import('/js/progress.js?v=perfekt-firebase-ranking1')}catch{}}
+ if(!window.SPProgress){try{await import('/js/progress.js?v=perfekt-firebase-ranking2')}catch{}}
  try{return await window.SPProgress?.loadCurrentStudentProgress?.()||{}}catch{return{}}
 }
 async function sync(){
  if(syncing||isPreview())return;
- const target=localPerfektTarget();
- if(target<=0)return;
  syncing=true;
  try{
   const p=profile(),progress=await getProgress(),id=ids(p)[0];
   if(!id)return;
   const perfekt={...(progress.perfekt||{})};
   const currentModule=modulePoints(perfekt);
+  const target=Math.max(localPerfektTarget(),currentModule);
+  if(target<=0)return;
+
+  // Alte lokale Perfekt-Punkte werden nur als Differenz ergänzt. Dadurch werden
+  // bereits in Firebase vorhandene Gruppenpunkte niemals doppelt gezählt.
   if(currentModule<target){
    const delta=target-currentModule;
    const old=perfekt[CARRY_ID]||{};
@@ -72,6 +75,7 @@ async function sync(){
     lifetime:{...(old.lifetime||{}),points:point(old?.lifetime?.points)+delta}
    };
   }
+
   const next={...progress,perfekt};
   const computed=calculatedAllPoints(next);
   const rankingPoints=Math.max(
@@ -102,7 +106,7 @@ async function sync(){
    localStorage.setItem('SP_POINTS_TOTAL',String(rankingPoints));
    localStorage.setItem('SP_PERFEKT_FIREBASE_POINTS_SYNC',new Date().toISOString());
   }catch{}
-  window.SP_PERFEKT_FIREBASE_SYNC={ok:true,perfektPoints:Math.max(target,modulePoints(perfekt)),rankingPoints,at:new Date().toISOString()};
+  window.SP_PERFEKT_FIREBASE_SYNC={ok:true,perfektPoints:modulePoints(perfekt),rankingPoints,at:new Date().toISOString()};
  }catch(error){
   console.warn('Perfekt-Punkte konnten nicht mit Firebase/Rangliste synchronisiert werden',error);
   window.SP_PERFEKT_FIREBASE_SYNC={ok:false,error:String(error?.message||error),at:new Date().toISOString()};
