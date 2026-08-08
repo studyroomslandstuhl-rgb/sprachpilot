@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_BUNNY_MEDIA_DATA_1)return;
-window.__SP_L7T1_BUNNY_MEDIA_DATA_1=true;
+if(window.__SP_L7T1_BUNNY_MEDIA_DATA_2)return;
+window.__SP_L7T1_BUNNY_MEDIA_DATA_2=true;
 if(!location.pathname.includes('/wortschatz/A1-Lektion-7/Thema-1/'))return;
 
 const BUNNY='https://sprachpilot.b-cdn.net/';
@@ -14,14 +14,14 @@ function mediaValue(value,type){
  const isHttp=/^https?:\/\//i.test(raw);
  const isBunny=raw.toLowerCase().startsWith(BUNNY);
  const isRoot=raw.startsWith('/');
- if(!isHttp&&!isRoot)return raw;
+ const hasPath=raw.includes('/');
+ if(!isHttp&&!isRoot&&!hasPath)return raw;
  let file='';
  if(isBunny){
-  const path=cleanPath(raw.slice(BUNNY.length));
-  file=basename(path);
+  file=basename(raw.slice(BUNNY.length));
  }else{
   file=basename(raw);
-  (type==='image'?audit.nonBunnyImages:audit.nonBunnyAudios).push(raw);
+  if(isHttp||isRoot)(type==='image'?audit.nonBunnyImages:audit.nonBunnyAudios).push(raw);
  }
  if(!file)return raw;
  (type==='image'?audit.normalizedImages:audit.normalizedAudios).push({from:raw,to:file});
