@@ -9,52 +9,37 @@
     const path = String(location.pathname || "").toLowerCase();
     return path === "/finnisch" || path.startsWith("/finnisch/");
   }
-
+  function isRootGerman() {
+    const path=String(location.pathname||"").toLowerCase();
+    return path==="/"||path==="/index.html";
+  }
+  function storedLanguage(){
+    try{return localStorage.getItem(STORAGE_KEY)==="fi"?"fi":"de"}catch(_){return"de"}
+  }
+  function rememberCurrentArea(){
+    if(!inFinnishArea())return;
+    try{localStorage.setItem(STORAGE_KEY,"fi")}catch(_){}
+  }
+  function redirectRootToFinnish(){
+    if(isRootGerman()&&storedLanguage()==="fi"){
+      location.replace("/finnisch/");
+      return true;
+    }
+    return false;
+  }
   function currentLanguage() {
-    return inFinnishArea() ? "fi" : "de";
+    return inFinnishArea() ? "fi" : storedLanguage();
   }
 
   function addStyles() {
     if (document.getElementById(STYLE_ID)) return;
-
     const style = document.createElement("style");
     style.id = STYLE_ID;
     style.textContent = `
-      #${SWITCH_ID}.sp-language-switch{
-        display:flex;
-        align-items:center;
-        margin:0;
-        flex:0 0 auto;
-      }
-      #${SWITCH_ID} .sp-language-select{
-        width:auto !important;
-        min-width:126px;
-        max-width:155px;
-        margin:0 !important;
-        padding:7px 28px 7px 10px !important;
-        border:1px solid #d9eef7 !important;
-        border-radius:10px !important;
-        background:#effaff !important;
-        color:#123047 !important;
-        font:inherit;
-        font-size:13px !important;
-        font-weight:800 !important;
-        line-height:1.2;
-        box-shadow:none !important;
-        cursor:pointer;
-      }
-      #${SWITCH_ID} .sp-language-select:focus{
-        outline:2px solid #84e3ff;
-        outline-offset:2px;
-      }
-      @media (max-width:520px){
-        #${SWITCH_ID} .sp-language-select{
-          min-width:118px;
-          max-width:132px;
-          padding-left:8px !important;
-          padding-right:24px !important;
-        }
-      }
+      #${SWITCH_ID}.sp-language-switch{display:flex;align-items:center;margin:0;flex:0 0 auto}
+      #${SWITCH_ID} .sp-language-select{width:auto!important;min-width:126px;max-width:155px;margin:0!important;padding:7px 28px 7px 10px!important;border:1px solid #d9eef7!important;border-radius:10px!important;background:#effaff!important;color:#123047!important;font:inherit;font-size:13px!important;font-weight:800!important;line-height:1.2;box-shadow:none!important;cursor:pointer}
+      #${SWITCH_ID} .sp-language-select:focus{outline:2px solid #84e3ff;outline-offset:2px}
+      @media (max-width:520px){#${SWITCH_ID} .sp-language-select{min-width:118px;max-width:132px;padding-left:8px!important;padding-right:24px!important}}
     `;
     document.head.appendChild(style);
   }
@@ -63,32 +48,19 @@
     const wrap = document.createElement("div");
     wrap.id = SWITCH_ID;
     wrap.className = "sp-language-switch";
-
     const select = document.createElement("select");
     select.id = "spLanguageSelect";
     select.className = "sp-language-select";
     select.setAttribute("aria-label", "Lernsprache wählen");
-
-    const de = document.createElement("option");
-    de.value = "de";
-    de.textContent = "🇩🇪 Deutsch";
-
-    const fi = document.createElement("option");
-    fi.value = "fi";
-    fi.textContent = "🇫🇮 Finnisch";
-
+    const de = document.createElement("option");de.value = "de";de.textContent = "🇩🇪 Deutsch";
+    const fi = document.createElement("option");fi.value = "fi";fi.textContent = "🇫🇮 Finnisch";
     select.append(de, fi);
     select.value = currentLanguage();
-
     select.addEventListener("change", () => {
       const lang = select.value === "fi" ? "fi" : "de";
-      try {
-        localStorage.setItem(STORAGE_KEY, lang);
-      } catch (_) {}
-
+      try { localStorage.setItem(STORAGE_KEY, lang); } catch (_) {}
       location.href = lang === "fi" ? "/finnisch/" : "/index.html";
     });
-
     wrap.append(select);
     return wrap;
   }
@@ -96,19 +68,15 @@
   function mount() {
     const strip = document.getElementById("accountStrip");
     if (!strip) return false;
-
     addStyles();
-
-    let links = strip.querySelector(".account-links");
+    const links = strip.querySelector(".account-links");
     if (!links) return false;
-
     const existing = document.getElementById(SWITCH_ID);
     if (existing && existing.parentElement === links) {
       const select = existing.querySelector("select");
       if (select) select.value = currentLanguage();
       return true;
     }
-
     if (existing) existing.remove();
     links.prepend(buildSwitch());
     return true;
@@ -118,28 +86,20 @@
   function scheduleMount() {
     if (scheduled) return;
     scheduled = true;
-    requestAnimationFrame(() => {
-      scheduled = false;
-      mount();
-    });
+    requestAnimationFrame(() => { scheduled = false; mount(); });
   }
 
   function init() {
+    rememberCurrentArea();
+    if(redirectRootToFinnish())return;
     mount();
-
     const observer = new MutationObserver(() => {
+      rememberCurrentArea();
       if (!document.getElementById(SWITCH_ID)) scheduleMount();
     });
-
-    observer.observe(document.documentElement, {
-      childList: true,
-      subtree: true
-    });
+    observer.observe(document.documentElement,{childList:true,subtree:true});
   }
 
-  if (document.readyState === "loading") {
-    document.addEventListener("DOMContentLoaded", init, { once: true });
-  } else {
-    init();
-  }
+  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true });
+  else init();
 })();
