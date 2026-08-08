@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_FI_POINTS_UI_V2)return;
-window.__SP_FI_POINTS_UI_V2=true;
+if(window.__SP_FI_POINTS_UI_V3)return;
+window.__SP_FI_POINTS_UI_V3=true;
 
 const LEARN=['cards','meaning-to-verb','verb-to-meaning','listen','image-to-verb','verb-to-image','verb-type','choose-form','write-form','speak-form','sentence'];
 const GROUP_SIZE=20;
@@ -42,6 +42,6 @@ function decorate(){
 }
 const style=document.createElement('style');style.textContent=`.fi-total-score{display:flex!important;align-items:center!important;justify-content:space-between!important;gap:16px!important}.fi-total-score h2{margin:0!important}.fi-total-score>span{font-weight:800;color:#596579}.fi-group-finished{border:3px solid #5fbf75!important;background:#f2fff5!important}.fi-group-finished>summary{color:#176b2a!important}.fi-finished-note{display:grid;gap:4px;margin:0 0 14px;padding:14px 16px;border:2px solid #7ccc8c;border-radius:16px;background:#effbf2;color:#176b2a}.fi-finished-note strong{font-size:1.05rem}.fi-next-run{margin:16px auto 0;display:block}.fi-round-status{font-weight:800}`;document.head.appendChild(style);
 let queued=false;function schedule(){if(queued)return;queued=true;requestAnimationFrame(()=>{queued=false;decorate()})}
-new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});window.addEventListener('pageshow',schedule);window.addEventListener('popstate',schedule);document.addEventListener('click',()=>setTimeout(schedule,80));schedule();
+new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});window.addEventListener('pageshow',schedule);window.addEventListener('popstate',schedule);window.addEventListener('SP_FI_PROGRESS_RESTORED',()=>setTimeout(schedule,0));document.addEventListener('click',()=>setTimeout(schedule,80));schedule();
 window.SPFinnishVerbPoints={totalPoints,startNext,runComplete};
 })();
