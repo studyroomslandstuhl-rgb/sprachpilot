@@ -64,6 +64,7 @@ function targetSentence(group,v){
  const idx=Math.max(0,(window.SP_FI_VERBS||[]).findIndex(x=>x.de===v.de));
  return idx%2===0?`Maria ${forms[2]} tänään.`:`Minä ${forms[0]} tänään.`;
 }
+window.SP_FI_SENTENCE_FOR_VERB=(v,group=0)=>targetSentence(group,v);
 function tokens(sentence){return sentence.match(/[A-Za-zÅÄÖåäöŠŽšž]+(?:['’-][A-Za-zÅÄÖåäöŠŽšž]+)*|\d+(?::\d+)?|[^\sA-Za-zÅÄÖåäöŠŽšž\d]/g)||[]}
 function speakSentence(sentence){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(sentence);u.lang='fi-FI';u.rate=.86;speechSynthesis.speak(u)}catch{}}
 
@@ -89,7 +90,7 @@ function enhance(){
  wrap.querySelector('#fiSentenceListen').onclick=()=>speakSentence(sentence);
  wrap.querySelector('#fiSentenceCheck').onclick=async()=>{
   const val=value();
-  if(norm(val)===norm(sentence)){
+  if(accepted.some(x=>norm(x)===norm(val))){
    feedback.className='sentence-block-feedback feedback ok';feedback.textContent='Richtig!';
    await clickOriginalSolution(original);
    return;
