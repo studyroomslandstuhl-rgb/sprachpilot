@@ -42,13 +42,19 @@ function addDone(history,runId,task,verbs){
 function historyFromState(state,history=emptyHistory()){
  for(const gs of Object.values(state?.groups||{})){
   for(const [runId,run] of Object.entries(gs?.runs||{})){
-   for(const [task,st] of Object.entries(run?.tasks||{}))addDone(history,runId,task,st?.done||[])
+   for(const [task,st] of Object.entries(run?.tasks||{})){
+    const done=st?.done||[],total=Math.max(0,Number(st?.total)||0),awarded=Number(run?.awards?.tasks?.[task]||0)>0;
+    if(done.length&&total&&done.length>=total&&!awarded&&!st?.recoveredByVerb)continue;
+    addDone(history,runId,task,done)
+   }
   }
  }
  return history
 }
 function historyFromMetadata(meta,history=emptyHistory()){
+ const current=new Set((E.GROUPS||[]).map(g=>String(g.signature||'')));
  for(const group of Object.values(meta||{})){
+  if(!current.has(String(group?.signature||'')))continue;
   for(const [runId,run] of Object.entries(group?.runs||{})){
    for(const [task,st] of Object.entries(run?.tasks||{}))addDone(history,runId,task,st?.done||[])
   }
@@ -73,10 +79,7 @@ function restoreHistory(history){
   const gs=E.groupState(group.id);if(!gs)continue;
   const groupKeys=new Map(group.verbs.map(v=>[clean(v),v]));
   let desiredRun=1;
-  if(group.verbs.length){
-   const runs=group.verbs.map(v=>Math.max(1,Number(history.maxRunByVerb[clean(v)]||1)));
-   desiredRun=Math.max(1,Math.min(3,Math.min(...runs)))
-  }
+  if(group.verbs.length){const runs=group.verbs.map(v=>Math.max(1,Number(history.maxRunByVerb[clean(v)]||1)));desiredRun=Math.max(1,Math.min(3,Math.min(...runs)))}
   gs.currentRun=Math.max(Number(gs.currentRun)||1,desiredRun);
   for(let runId=1;runId<=3;runId++){
    const source=history.runs[String(runId)];if(!source)continue;
@@ -84,9 +87,7 @@ function restoreHistory(history){
    let runChanged=false;
    for(const task of E.LEARN||[]){
     const evidence=source[task];if(!evidence)continue;
-    const st=run.tasks[task];
-    const before=new Set((st.done||[]).map(clean));
-    const merged=[];
+    const st=run.tasks[task],before=new Set((st.done||[]).map(clean)),merged=[];
     for(const verb of group.verbs){const key=clean(verb);if(before.has(key)||evidence.has(key))merged.push(groupKeys.get(key)||verb)}
     if(merged.length>(st.done||[]).length){st.done=merged;st.recoveredByVerb=true;runChanged=true;changed++}
     st.total=group.verbs.length;
