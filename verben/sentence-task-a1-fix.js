@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_SENTENCE_A1_FIX_1)return;
-window.__SP_VERB_SENTENCE_A1_FIX_1=true;
+if(window.__SP_VERB_SENTENCE_A1_FIX_2)return;
+window.__SP_VERB_SENTENCE_A1_FIX_2=true;
 const E=window.VerbGroupsEngine;
 if(!E)return;
 
@@ -86,11 +86,27 @@ window.VERB_SENTENCES=Object.assign(window.VERB_SENTENCES||{},SENTENCES);
 
 const originalQuestion=E.question.bind(E);
 const escRe=value=>String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
+const SPECIAL_FORMS={
+ 'erschrecken':['erschrecke','erschrickst','erschrickt','erschrecken','erschreckt','erschrecken'],
+ 'gelten':['gelte','giltst','gilt','gelten','geltet','gelten'],
+ 'geschehen':['geschehe','geschiehst','geschieht','geschehen','gescheht','geschehen'],
+ 'treten':['trete','trittst','tritt','treten','tretet','treten']
+};
+const FORM_BASE={
+ 'hinweisen':'weisen','auffallen':'fallen','einfallen':'fallen',
+ 'sich anziehen':'ziehen','sich ausziehen':'ziehen','sich umziehen':'ziehen',
+ 'hinzufügen':'fügen','spazieren gehen':'gehen'
+};
 function sentenceForVerb(v){return String(SENTENCES[v]||'').trim()}
+function candidateForms(v){
+ if(SPECIAL_FORMS[v])return SPECIAL_FORMS[v].slice();
+ if(FORM_BASE[v])return E.forms(FORM_BASE[v])||[];
+ return E.forms(v)||[];
+}
 function gapForVerb(v){
  const text=sentenceForVerb(v);
  if(!text)return null;
- const forms=[...new Set((E.forms(v)||[]).filter(Boolean))].sort((a,b)=>String(b).length-String(a).length);
+ const forms=[...new Set(candidateForms(v).filter(Boolean))].sort((a,b)=>String(b).length-String(a).length);
  for(const form of forms){
   const re=new RegExp(`(^|[^A-Za-zÄÖÜäöüß])(${escRe(form)})(?=$|[^A-Za-zÄÖÜäöüß])`,'i');
   const match=text.match(re);
@@ -103,10 +119,13 @@ function gapForVerb(v){
 }
 
 E.sentence=sentenceForVerb;
+window.sentenceForVerb=sentenceForVerb;
 E.question=function(groupId,task,v,personOverride=null){
  if(task==='sentence'){
   const gap=gapForVerb(v);
   if(gap)return{kind:'input',prompt:gap.prompt,answer:gap.answer,placeholder:'Verbform schreiben',sentence:gap.sentence};
+  const text=sentenceForVerb(v);
+  if(text)return{kind:'input',prompt:text,answer:'',placeholder:'Verbform schreiben',sentence:text,brokenSentence:true};
  }
  const q=originalQuestion(groupId,task,v,personOverride);
  if(task==='read-sentence'){
