@@ -11,8 +11,6 @@ function orderedReleased(data,all){
  const active=preview?all.slice():releasedVerbs(data,all);if(preview)return uniq(active);
  const activeSet=new Set(active),allowed=new Set(all),savedOrder=releaseOrder(data),explicit=savedOrder.filter(v=>allowed.has(v)&&activeSet.has(v));
  if(savedOrder.length)return explicit;
- // Ohne gespeicherte Lehrer-Reihenfolge gilt auch hier für alle TN dieselbe
- // kanonische Reihenfolge. Individueller Lernstand darf keine Gruppen sortieren.
  return uniq(all.filter(v=>activeSet.has(v)))
 }
 function installVisibleCatalog(visible){
@@ -24,10 +22,11 @@ let assignments={};try{assignments=await loadCourseRelease(profile)||{}}catch{}
 const ordered=orderedReleased(assignments,completeCatalog),visible=ordered.slice();installVisibleCatalog(visible);
 window.SP_PERFEKT_PENDING={verbs:[],count:0,needed:0};
 window.SP_PERFEKT_RELEASE_SYNC={groupSize:GROUP_SIZE,visible:visible.slice(),pending:[],releaseOrder:ordered.slice(),mirrorsVerben:true,partialLastGroup:visible.length%GROUP_SIZE};
-if(!preview){try{window.SPPerfektRegroupRecovery?.migrate?.({profile,visible})}catch(error){console.warn('Alter Perfekt-Fortschritt konnte nicht vollständig übernommen werden',error)}}
+if(!preview){
+ try{await window.SPPerfektRegroupRecovery?.migrate?.({profile,visible})}
+ catch(error){console.warn('Alter Perfekt-Fortschritt konnte nicht vollständig übernommen werden',error)}
+}
 
-// app-stable.js baut intern noch die früheren Kategorien. Während dieses einen
-// Aufbaus ersetzen wir sie durch exakt dieselben 20er-Blöcke wie bei Verben.
 const originalPush=Array.prototype.push;let groupBuildIntercepted=false,restoreScheduled=false;
 function isLegacyPerfektGroup(value){return !!(value&&typeof value==='object'&&Array.isArray(value.verbs)&&['regular','strong','middle','separable'].includes(value.category)&&typeof value.signature==='string')}
 Array.prototype.push=function(...items){
@@ -38,4 +37,4 @@ Array.prototype.push=function(...items){
  }
  return originalPush.apply(this,items)
 };
-try{await import('./app-stable.js?v=perfekt-integrity4')}finally{setTimeout(()=>{if(Array.prototype.push!==originalPush)Array.prototype.push=originalPush},6000)}
+try{await import('./app-stable.js?v=perfekt-progress-restore5')}finally{setTimeout(()=>{if(Array.prototype.push!==originalPush)Array.prototype.push=originalPush},6000)}
