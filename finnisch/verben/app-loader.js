@@ -1,5 +1,35 @@
-const SOURCE_URL='./app-standard.js?v=fi-verben-standard13-source';
+import {getActiveProfile,getActiveRole} from '/js/auth.js?v=login-main-4';
+import {loadCourseRelease,releasedVerbs} from '/js/course-releases.js?v=verb-release-order1';
+
+const uniq=list=>{const seen=new Set(),out=[];(list||[]).forEach(v=>{v=String(v||'').trim();if(v&&!seen.has(v)){seen.add(v);out.push(v)}});return out};
+function releaseOrder(data){
+ const candidates=[data?.verbReleaseOrder,data?.releases?.Verben?.wordOrder,data?.releases?.verben?.wordOrder,data?.releases?.['Verben A1']?.wordOrder,data?.releases?.['verben-A1']?.wordOrder];
+ return uniq(candidates.find(Array.isArray)||[])
+}
+function orderedReleased(data,allDe){
+ const active=releasedVerbs(data,allDe),activeSet=new Set(active),out=[],seen=new Set();
+ releaseOrder(data).forEach(v=>{if(activeSet.has(v)&&!seen.has(v)){seen.add(v);out.push(v)}});
+ active.forEach(v=>{if(!seen.has(v)){seen.add(v);out.push(v)}});
+ return out
+}
+async function prepareFinnishGroups(){
+ const all=(window.SP_FI_VERBS||[]).slice(),byDe=new Map(all.map(v=>[v.de,v]));
+ const role=String(getActiveRole()||'').toLowerCase();
+ let ordered=all;
+ if(role!=='teacher'){
+  const profile=getActiveProfile()||{};
+  let data=profile.assignments||{};
+  try{data=await loadCourseRelease(profile)||data}catch{}
+  ordered=orderedReleased(data,all.map(v=>v.de)).map(de=>byDe.get(de)).filter(Boolean);
+ }
+ const fullCount=Math.floor(ordered.length/20)*20;
+ window.SP_FI_PENDING_VERBS=ordered.slice(fullCount);
+ window.SP_FI_VERBS=ordered.slice(0,fullCount);
+}
+
+const SOURCE_URL='./app-standard.js?v=fi-verben-standard14-source';
 try{
+  await prepareFinnishGroups();
   const response=await fetch(SOURCE_URL,{cache:'no-store'});
   if(!response.ok)throw new Error(`HTTP ${response.status}`);
   let source=await response.text();
@@ -43,7 +73,7 @@ try{
   } finally {
     URL.revokeObjectURL(url);
   }
-  await import('./sentence-a1-all.js?v=2');
+  await import('./sentence-a1-all.js?v=3');
 } catch(error){
   console.error('Finnische Verben konnten nicht geladen werden',error);
   const app=document.querySelector('#app');
