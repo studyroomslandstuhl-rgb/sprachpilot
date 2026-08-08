@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_UI_STANDARD_UPDATES_V3)return;
-window.__SP_VERB_UI_STANDARD_UPDATES_V3=true;
+if(window.__SP_VERB_UI_STANDARD_UPDATES_V4)return;
+window.__SP_VERB_UI_STANDARD_UPDATES_V4=true;
 const E=window.VerbGroupsEngine;
 if(!E)return;
 
@@ -14,6 +14,9 @@ function bunnyPlay(verb,button){
   if(api){const resolved=api.resolveVerb?.(verb)||verb;if(api.play?.(resolved,false,button))return;if(api.computerSpeak?.(resolved,false))return}
   speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(verb);u.lang='de-DE';u.rate=.92;speechSynthesis.speak(u);
  }catch(e){}
+}
+function sentenceSpeak(sentence){
+ try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(sentence);u.lang='de-DE';u.rate=.88;speechSynthesis.speak(u)}catch(e){}
 }
 
 // Beim Umdrehen einer Karte gibt es keinen Weiter-Knopf. Die Karte muss beantwortet werden.
@@ -40,38 +43,72 @@ function enhanceAudioChoices(){
  });
 }
 
-// Satz bauen: kompletter Satz aus Bausteinen. Akzeptiert 1. oder 3. Person Singular.
+const A1_SENTENCES={
+ lieben:'Maria liebt ihre Familie.',
+ kaufen:'Ich kaufe Brot.',
+ verstehen:'Maria versteht die Frage.',
+ brauchen:'Ich brauche Hilfe.',
+ hören:'Maria hört Musik.',
+ lernen:'Ich lerne Deutsch.',
+ wohnen:'Maria wohnt in Berlin.',
+ bringen:'Ich bringe Wasser.',
+ sein:'Maria ist zu Hause.',
+ schreiben:'Ich schreibe eine Nachricht.',
+ fotografieren:'Maria fotografiert die Natur.',
+ telefonieren:'Maria telefoniert mit ihrer Mutter.',
+ kochen:'Ich koche Suppe.',
+ leben:'Maria lebt in Deutschland.',
+ kommen:'Der Bus kommt um acht Uhr.',
+ buchstabieren:'Ich buchstabiere meinen Namen.',
+ gehen:'Maria geht zur Schule.',
+ schwimmen:'Ich schwimme im Schwimmbad.',
+ suchen:'Maria sucht ihre Schlüssel.',
+ bestellen:'Ich bestelle einen Kaffee.'
+};
+function targetSentence(groupId,verb){
+ const special=A1_SENTENCES[verb];if(special)return special;
+ const stored=String(window.SP_VERB_SENTENCES?.[verb]||'').trim();
+ if(stored&&!/Ich lerne das Verb/i.test(stored))return stored;
+ const useThird=(Math.abs((groupId||1)+(E.GROUPS?.[groupId-1]?.verbs?.indexOf(verb)||0))%2)===0;
+ return useThird?`Maria ${E.displayForm(verb,2)}.`:`Ich ${E.displayForm(verb,0)}.`;
+}
+function sentenceTokens(sentence){
+ return sentence.match(/[A-Za-zÄÖÜäöüß]+(?:['’-][A-Za-zÄÖÜäöüß]+)*|\d+(?::\d+)?|[^\sA-Za-zÄÖÜäöüß\d]/g)||[];
+}
+
+// Satz bauen: EIN vorgegebener sinnvoller A1-Satz wird aus gemischten Bausteinen gebaut.
+// Der Satz kann als Hilfe komplett angehört werden. Die Hörhilfe zählt als Hilfe/Fehler,
+// damit der Satz später gemäß SprachPilot-Regel erneut kommt.
 function enhanceSentenceBlocks(){
  const r=route();if(r.task!=='sentence'||!r.group)return;
  const card=document.querySelector('.question-card');
- if(!card||card.dataset.fullSentenceBlocks==='1')return;
+ if(!card||card.dataset.fullSentenceBlocks==='2')return;
  const verb=E.taskState(r.group,'sentence')?.current;if(!verb)return;
- const form=document.querySelector('.question-card .answer-form');if(!form)return;
- card.dataset.fullSentenceBlocks='1';
- form.hidden=true;
- const question=card.querySelector('.question');if(question)question.textContent='Baue einen ganzen Satz. Du kannst die 1. oder 3. Person benutzen.';
- const first=E.displayForm(verb,0),third=E.displayForm(verb,2);
- const accepted=[`Ich ${first}.`,`Er ${third}.`,`Sie ${third}.`,`Es ${third}.`];
- const tokens=shuffle([
-  {id:'ich',text:'Ich'},{id:'er',text:'Er'},{id:'sie',text:'Sie'},{id:'es',text:'Es'},
-  {id:'f1',text:first},{id:'f3',text:third},{id:'dot',text:'.'}
- ]);
+ const form=card.querySelector('.answer-form');if(!form)return;
+ card.dataset.fullSentenceBlocks='2';form.hidden=true;
+ const sentence=targetSentence(r.group,verb);
+ const question=card.querySelector('.question');if(question)question.textContent='Bringe die Wörter in die richtige Reihenfolge.';
+ const source=shuffle(sentenceTokens(sentence).map((text,i)=>({id:i,text})));
  const wrap=document.createElement('div');wrap.className='sentence-block-builder';
- wrap.innerHTML='<div class="sentence-built" aria-live="polite"><span class="small">Baue den Satz.</span></div><div class="sentence-bank"></div><div class="sentence-block-actions"><button type="button" class="btn" id="sentenceCheck">Kontrollieren</button><button type="button" class="btn secondary" id="sentenceReset">Zurücksetzen</button></div><div class="sentence-block-feedback"></div>';
+ wrap.innerHTML='<div class="sentence-help"><button type="button" class="btn secondary" id="sentenceListen">🔊 Satz hören</button><span class="small">Hilfe</span></div><div class="sentence-built" aria-live="polite"><span class="small">Baue den Satz.</span></div><div class="sentence-bank"></div><div class="sentence-block-actions"><button type="button" class="btn" id="sentenceCheck">Kontrollieren</button><button type="button" class="btn secondary" id="sentenceReset">Zurücksetzen</button></div><div class="sentence-block-feedback"></div>';
  form.before(wrap);
  const built=wrap.querySelector('.sentence-built'),bank=wrap.querySelector('.sentence-bank'),feedback=wrap.querySelector('.sentence-block-feedback');
- let chosen=[];
+ let chosen=[],helpUsed=false;
  function draw(){
   built.innerHTML=chosen.length?chosen.map((t,i)=>`<button type="button" class="sentence-token chosen" data-chosen="${i}">${t.text}</button>`).join(''):'<span class="small">Baue den Satz.</span>';
-  bank.innerHTML=tokens.filter(t=>!chosen.includes(t)).map(t=>`<button type="button" class="sentence-token" data-token="${t.id}">${t.text}</button>`).join('');
+  bank.innerHTML=source.filter(t=>!chosen.includes(t)).map(t=>`<button type="button" class="sentence-token" data-token="${t.id}">${t.text}</button>`).join('');
   built.querySelectorAll('[data-chosen]').forEach(b=>b.onclick=()=>{chosen.splice(Number(b.dataset.chosen),1);draw()});
-  bank.querySelectorAll('[data-token]').forEach(b=>b.onclick=()=>{const t=tokens.find(x=>x.id===b.dataset.token);if(t&&chosen.length<3){chosen.push(t);draw()}});
+  bank.querySelectorAll('[data-token]').forEach(b=>b.onclick=()=>{const t=source.find(x=>x.id===Number(b.dataset.token));if(t){chosen.push(t);draw()}});
  }
- function value(){return chosen.map(x=>x.text).join(' ').replace(/\s+([.,!?])/g,'$1').trim()}
- function showWrong(n){feedback.className='sentence-block-feedback feedback no';feedback.innerHTML=n===1?'Da ist noch ein Fehler.':n===2?'Tipp: Subjekt – Verb – Punkt.':'Lösung zum Beispiel: <strong>'+accepted[0]+'</strong>'}
+ function value(){return chosen.map(x=>x.text).join(' ').replace(/\s+([.,!?;:])/g,'$1').trim()}
+ function showWrong(n){feedback.className='sentence-block-feedback feedback no';feedback.innerHTML=n===1?'Da ist noch ein Fehler.':n===2?'Tipp: Höre den Satz und prüfe die Reihenfolge.':`Lösung: <strong>${sentence}</strong>`}
+ wrap.querySelector('#sentenceListen').onclick=()=>{
+  if(!helpUsed){helpUsed=true;E.markWrong(r.group,'sentence');feedback.className='sentence-block-feedback feedback no';feedback.textContent='Hilfe genutzt. Dieser Satz wird später wiederholt.'}
+  sentenceSpeak(sentence);
+ };
  wrap.querySelector('#sentenceCheck').onclick=()=>{
   const val=value();
-  if(accepted.some(x=>norm(x)===norm(val))){
+  if(norm(val)===norm(sentence)){
    feedback.className='sentence-block-feedback feedback ok';feedback.textContent='Richtig!';
    const pi=E.personFor(r.group,'sentence',verb),expected=E.displayForm(verb,pi),input=form.querySelector('#answerInput'),check=form.querySelector('[data-action="check-input"]');
    if(input)input.value=expected;
@@ -80,7 +117,7 @@ function enhanceSentenceBlocks(){
   }
   showWrong(E.markWrong(r.group,'sentence'));chosen=[];draw();
  };
- wrap.querySelector('#sentenceReset').onclick=()=>{chosen=[];feedback.textContent='';feedback.className='sentence-block-feedback';draw()};
+ wrap.querySelector('#sentenceReset').onclick=()=>{chosen=[];draw()};
  draw();
 }
 
@@ -95,6 +132,7 @@ style.textContent=`
 .audio-choice-row{display:grid;gap:8px;padding:10px;border:2px solid var(--line,#d9eef7);border-radius:18px;background:#fff}
 .audio-choice-row .btn,.audio-choice-row .option{width:100%;margin:0;min-height:52px}
 .sentence-block-builder{display:grid;gap:16px;margin-top:18px}
+.sentence-help{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
 .sentence-built,.sentence-bank{min-height:72px;padding:14px;border:2px solid var(--line,#d9eef7);border-radius:18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;background:#fff}
 .sentence-built{background:#f7fbfd}
 .sentence-token{border:2px solid #b9dce7;border-radius:12px;background:#fff;padding:10px 14px;font:inherit;font-weight:800;color:#17324d;cursor:pointer}
