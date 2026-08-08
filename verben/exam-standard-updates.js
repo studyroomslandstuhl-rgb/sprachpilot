@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_EXAM_STANDARD_UPDATES_V3)return;
-window.__SP_VERB_EXAM_STANDARD_UPDATES_V3=true;
+if(window.__SP_VERB_EXAM_STANDARD_UPDATES_V4)return;
+window.__SP_VERB_EXAM_STANDARD_UPDATES_V4=true;
 const E=window.VerbGroupsEngine;if(!E)return;
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -23,17 +23,18 @@ function bunnyPlay(verb,button){
 }
 function sentenceTokens(sentence){return String(sentence||'').match(/[A-Za-zÄÖÜäöüß]+(?:['’-][A-Za-zÄÖÜäöüß]+)*|\d+(?::\d+)?|[^\sA-Za-zÄÖÜäöüß\d]/g)||[]}
 
-// Alte Prüfungen dürfen nie mit einer neuen/anderen 20er-Gruppe weiterlaufen.
-// Ebenso werden Sitzungen aus einem alten Prüfungsformat verworfen.
 function resetStaleExamSession(){
  try{
   const r=route();if(r.task!=='exam'||!r.group)return false;
   const run=E.currentRun(r.group),session=run?.exam?.session;if(!session)return false;
   const group=E.GROUPS?.[r.group-1],items=session.items;
   if(!group||!Array.isArray(items)){run.exam.session=null;E.save();setTimeout(()=>window.VerbGroupsUI?.render?.(),0);return true}
-  const groupVerbs=group.verbs||[],allowedVerbs=new Set(groupVerbs),allowedTasks=new Set(E.EXAM_PATTERN||[]);
+  const groupVerbs=[...(group.verbs||[])],allowedVerbs=new Set(groupVerbs),allowedTasks=new Set(E.EXAM_PATTERN||[]);
+  const signature=String(group.signature||groupVerbs.join('|'));
   const uniqueVerbs=new Set(items.map(item=>item?.v));
-  const valid=items.length===groupVerbs.length&&uniqueVerbs.size===groupVerbs.length&&items.every(item=>item&&allowedVerbs.has(item.v)&&allowedTasks.has(item.task));
+  const valid=items.length===groupVerbs.length&&
+    uniqueVerbs.size===groupVerbs.length&&
+    items.every(item=>item&&allowedVerbs.has(item.v)&&allowedTasks.has(item.task)&&Number(item.groupId)===Number(r.group)&&String(item.groupSignature||'')===signature);
   if(valid)return false;
   run.exam.session=null;E.save();setTimeout(()=>window.VerbGroupsUI?.render?.(),0);return true;
  }catch{return false}
@@ -102,7 +103,7 @@ document.addEventListener('click',event=>{
  }catch{openSpeechWrite()}
 },true);
 
-function enhance(){fixExamBack();if(resetStaleExamSession())return;enhanceAudioChoices();enhanceSentenceBlocks()}
+function enhance(){if(resetStaleExamSession())return;fixExamBack();enhanceAudioChoices();enhanceSentenceBlocks()}
 let scheduled=false;function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;enhance()})}
 new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
 window.addEventListener('popstate',schedule);schedule();
