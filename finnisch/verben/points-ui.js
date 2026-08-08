@@ -5,7 +5,7 @@ window.__SP_FI_POINTS_UI_V1=true;
 
 const LEARN=['cards','meaning-to-verb','verb-to-meaning','listen','image-to-verb','verb-to-image','verb-type','choose-form','write-form','speak-form','sentence'];
 const GROUP_SIZE=20;
-function profile(){try{return JSON.parse(localStorage.getItem('SP_ACTIVE_PROFILE')||'null')||window.SP_ACTIVE_PROFILE||{}}catch{return window.SP_ACTIVE_PROFILE||{}}}
+function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')||{}}catch{return{}}}
 function slug(){const p=profile();return[p.email,p.courseCode,p.kurs,p.kursnummer,p.vorname,p.nachname].filter(Boolean).join('_').toLowerCase().replace(/[^a-z0-9äöüß]+/gi,'_')||'student'}
 function key(){return`SP_FI_VERB_GROUPS_PROGRESS_${slug()}`}
 function read(){try{return JSON.parse(localStorage.getItem(key())||'{}')||{}}catch{return{}}}
