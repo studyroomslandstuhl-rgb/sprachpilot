@@ -67,6 +67,14 @@ window.SP_PERFEKT_RELEASE_SYNC={
  partialLastGroup:visible.length%GROUP_SIZE
 };
 
+// Bevor die Perfekt-App ihren internen Zustand lädt, werden alte Fortschritte
+// aus früheren Gruppensignaturen verbweise in die neuen 20er-Gruppen übernommen.
+// Bereits verdiente Punkte bleiben als Untergrenze erhalten.
+if(!preview){
+ try{window.SPPerfektRegroupRecovery?.migrate?.({profile,visible})}
+ catch(error){console.warn('Alter Perfekt-Fortschritt konnte nicht vollständig übernommen werden',error)}
+}
+
 // app-stable.js sortiert Perfekt intern noch nach Verbtypen. Nur während dieses
 // Gruppenaufbaus ersetzen wir die alten Teilgruppen durch dieselben 20er-Blöcke
 // wie im Verben-Bereich. Die letzte Gruppe darf weniger als 20 Verben enthalten.
@@ -103,7 +111,7 @@ Array.prototype.push=function(...items){
 };
 
 try{
- await import('./app-stable.js?v=perfekt-release-sync3');
+ await import('./app-stable.js?v=perfekt-regroup-recovery1');
 }finally{
  setTimeout(()=>{if(Array.prototype.push!==originalPush)Array.prototype.push=originalPush},6000);
 }
