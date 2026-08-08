@@ -5,13 +5,14 @@ window.__SP_VERB_EXAM_STANDARD_UPDATES_V2=true;
 const E=window.VerbGroupsEngine;if(!E)return;
 
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const norm=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:“”„"'`()]/g,'').replace(/\s+/g,' ');
 function route(){const q=new URLSearchParams(location.search);return{group:Number(q.get('group'))||0,task:q.get('task')||''}}
 function shuffle(a){a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function examQuestion(){
- const r=route();if(r.task!=='exam'||!r.group)return null;
- const session=E.currentRun(r.group)?.exam?.session,item=session?.items?.[session.index];
- return item?E.question(r.group,item.task,item.v,item.person):null;
+ try{
+  const r=route();if(r.task!=='exam'||!r.group)return null;
+  const session=E.currentRun(r.group)?.exam?.session,item=session?.items?.[session.index];
+  return item?E.question(r.group,item.task,item.v,item.person):null;
+ }catch{return null}
 }
 function bunnyPlay(verb,button){
  const api=window.SPVerbBunnyAllInfinitives;
