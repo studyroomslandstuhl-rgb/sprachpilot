@@ -1,0 +1,87 @@
+/* Aufgabe Satz bauen: kompakt und responsiv auf Handy und Desktop. */
+.question-card:has(.sp-sentence-builder){padding:18px 14px!important;overflow:hidden}
+.sp-sentence-builder{
+ width:100%!important;
+ max-width:560px!important;
+ margin:0 auto!important;
+ padding:4px 0 10px!important;
+ gap:16px!important;
+ box-sizing:border-box!important;
+}
+.sp-sentence-instruction{
+ max-width:520px!important;
+ font-size:clamp(24px,5vw,36px)!important;
+ line-height:1.12!important;
+ letter-spacing:-.015em!important;
+ text-wrap:balance;
+}
+.sp-sentence-instruction br{display:none!important}
+.sp-sentence-help-row{
+ width:100%!important;
+ justify-content:center!important;
+ gap:10px!important;
+ font-size:18px!important;
+}
+.sp-sentence-help-row .btn{
+ min-height:50px!important;
+ padding:9px 16px!important;
+ border-radius:17px!important;
+ font-size:18px!important;
+ line-height:1.15!important;
+}
+.sp-sentence-answer{
+ width:min(100%,460px)!important;
+ min-height:82px!important;
+ padding:12px!important;
+ gap:8px!important;
+ border-width:2px!important;
+ border-radius:20px!important;
+ font-size:20px!important;
+ box-sizing:border-box!important;
+}
+.sp-sentence-token-box{
+ width:min(100%,460px)!important;
+ min-height:112px!important;
+ padding:16px 12px!important;
+ gap:9px!important;
+ border-width:2px!important;
+ border-radius:20px!important;
+ box-sizing:border-box!important;
+}
+.sp-sentence-chip{
+ max-width:100%!important;
+ padding:10px 13px!important;
+ border-width:2px!important;
+ border-radius:14px!important;
+ font-size:20px!important;
+ line-height:1.1!important;
+ overflow-wrap:anywhere!important;
+}
+.sp-sentence-check{
+ width:min(100%,320px)!important;
+ min-width:0!important;
+ min-height:56px!important;
+ padding:10px 18px!important;
+ border-radius:18px!important;
+ font-size:21px!important;
+ line-height:1.1!important;
+}
+.sp-sentence-builder #feedback{width:min(100%,460px)!important}
+
+@media(max-width:560px){
+ .question-card:has(.sp-sentence-builder){padding:14px 10px!important}
+ .sp-sentence-builder{gap:13px!important;padding:2px 0 8px!important}
+ .sp-sentence-instruction{font-size:26px!important;line-height:1.1!important;padding:0 4px!important}
+ .sp-sentence-help-row{font-size:16px!important}
+ .sp-sentence-help-row .btn{min-height:46px!important;font-size:17px!important;padding:8px 13px!important}
+ .sp-sentence-answer{min-height:72px!important;padding:10px!important;font-size:18px!important;border-radius:17px!important}
+ .sp-sentence-token-box{min-height:96px!important;padding:13px 9px!important;gap:8px!important;border-radius:17px!important}
+ .sp-sentence-chip{font-size:18px!important;padding:9px 11px!important;border-radius:12px!important}
+ .sp-sentence-check{min-height:52px!important;font-size:19px!important;border-radius:16px!important}
+}
+
+@media(max-width:380px){
+ .sp-sentence-instruction{font-size:24px!important}
+ .sp-sentence-help-row{flex-wrap:wrap!important}
+ .sp-sentence-chip{font-size:17px!important;padding:8px 10px!important}
+}
