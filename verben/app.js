@@ -1,5 +1,5 @@
 import{requireLogin,getActiveProfile,getActiveRole,dashboardHref,logout}from'/js/auth.js?v=login-main-4';
-import{loadCourseRelease,moduleOpen,releasedVerbs}from'/js/course-releases.js?v=verb-release-order1';
+import{loadCourseRelease,moduleOpen,releasedVerbs}from'/js/course-releases.js?v=verb-release-order2';
 
 const CANONICAL_ALL=VerbGroupsEngine.ALL.slice();
 
@@ -17,26 +17,29 @@ function releaseOrder(data){
  return uniq(candidates.find(Array.isArray)||[])
 }
 function orderedReleasedVerbs(data,all){
- const active=releasedVerbs(data,all),activeSet=new Set(active),out=[],seen=new Set();
- releaseOrder(data).forEach(v=>{if(activeSet.has(v)&&!seen.has(v)){seen.add(v);out.push(v)}});
- active.forEach(v=>{if(!seen.has(v)){seen.add(v);out.push(v)}});
- return out
+ const active=releasedVerbs(data,all),activeSet=new Set(active),allowed=new Set(all);
+ const explicit=releaseOrder(data).filter(v=>allowed.has(v)&&activeSet.has(v));
+ // Sobald eine Lehrer-Reihenfolge gespeichert ist, ist sie die exakte Freigabeliste.
+ // Dadurch werden keine durch allgemeine Modul-Defaults geöffneten Zusatzverben angehängt.
+ if(releaseOrder(data).length)return explicit;
+ return uniq(active).filter(v=>allowed.has(v))
 }
-function installTwentyVerbGroups(active){
+function installVerbGroups(active){
  const allowed=new Set(CANONICAL_ALL),ordered=uniq(active).filter(v=>allowed.has(v));
- const fullCount=Math.floor(ordered.length/20)*20;
- const visible=ordered.slice(0,fullCount),pending=ordered.slice(fullCount);
  const internalAll=VerbGroupsEngine.ALL,activeSet=new Set(ordered),rest=CANONICAL_ALL.filter(v=>!activeSet.has(v));
+ // Die Freigabereihenfolge bestimmt die Gruppen. Gruppen haben maximal 20 Verben;
+ // die letzte Gruppe darf kleiner sein.
  internalAll.splice(0,internalAll.length,...ordered,...rest);
- window.SP_VERB_PENDING={verbs:pending.slice(),count:pending.length,needed:pending.length?20-pending.length:0};
- VerbGroupsEngine.setActiveVerbs(visible)
+ window.SP_VERB_PENDING={verbs:[],count:0,needed:0};
+ window.SP_VERB_RELEASE_VISIBLE={verbs:ordered.slice(),count:ordered.length,groupSize:20,partialLastGroup:ordered.length%20};
+ VerbGroupsEngine.setActiveVerbs(ordered)
 }
 
 async function install(profile,preview,assignments){
  const data=assignments&&typeof assignments==='object'?assignments:{};
  const locked=!preview&&!moduleOpen(data,'Verben');
  const active=preview?CANONICAL_ALL.slice():orderedReleasedVerbs(data,CANONICAL_ALL);
- installTwentyVerbGroups(active);
+ installVerbGroups(active);
  try{
   if(!preview&&window.SPVerbProgressPersistence?.restoreCloud)await window.SPVerbProgressPersistence.restoreCloud();
  }catch(error){console.warn('Gespeicherter Verben-Fortschritt konnte nicht wiederhergestellt werden',error)}
