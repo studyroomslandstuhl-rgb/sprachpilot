@@ -1,4 +1,4 @@
-const SOURCE_URL='./app-standard.js?v=fi-verben-standard12-source';
+const SOURCE_URL='./app-standard.js?v=fi-verben-standard13-source';
 try{
   const response=await fetch(SOURCE_URL,{cache:'no-store'});
   if(!response.ok)throw new Error(`HTTP ${response.status}`);
@@ -24,8 +24,7 @@ try{
     "function route(){const q=new URLSearchParams(location.search),raw=q.get('task')||'';return{group:Number(q.get('group'))||0,task:TASKS.some(x=>x[0]===raw)?raw:'',view:q.get('view')||''}}"
   );
 
-  // Jede Aufgabe einer 20er-Gruppe verwendet auch wirklich alle 20 Verben.
-  // Vorher wurden Konjugationsaufgaben auf die wenigen manuell hinterlegten Formen reduziert.
+  // Jede Aufgabe einer 20er-Gruppe verwendet alle 20 Verben.
   source=source.replace(
     "function targets(id,t){const g=GROUPS[id-1];if(!g)return[];return['choose-form','write-form','speak-form','sentence'].includes(t)?g.verbs.filter(v=>forms(v)):g.verbs}",
     "function targets(id,t){const g=GROUPS[id-1];if(!g)return[];return g.verbs}"
@@ -44,7 +43,7 @@ try{
   } finally {
     URL.revokeObjectURL(url);
   }
-  await import('./sentence-a1-all.js?v=1');
+  await import('./sentence-a1-all.js?v=2');
 } catch(error){
   console.error('Finnische Verben konnten nicht geladen werden',error);
   const app=document.querySelector('#app');
