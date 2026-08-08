@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_PERFEKT_REGROUP_RECOVERY_V1)return;
-window.__SP_PERFEKT_REGROUP_RECOVERY_V1=true;
+if(window.__SP_PERFEKT_REGROUP_RECOVERY_V2)return;
+window.__SP_PERFEKT_REGROUP_RECOVERY_V2=true;
 
 const GROUP_SIZE=20;
 const TASKS=['cards','inf-perfect','perfect-inf','listen','image-perfect','build','auxiliary','write','speak','sentence'];
@@ -88,7 +88,11 @@ function migrate({profile={},visible=[]}={}){
  activeVisible=uniq(visible);
  const key=stateKey(activeProfile),state=readJSON(key);
  if(!state?.groups||typeof state.groups!=='object')return{restored:0,points:preserveFloor(activeProfile,0)};
- const oldTotal=statePoints(state);
+ // Beim allerersten Lauf ist der alte Gesamtstand die Ausgangsbasis. Danach ist
+ // die gespeicherte Untergrenze maßgeblich, damit alte + migrierte Gruppen nicht
+ // bei jedem Seitenaufruf erneut zusammengezählt werden.
+ const savedFloor=pointFloor(activeProfile);
+ const oldTotal=savedFloor>0?savedFloor:statePoints(state);
  preserveFloor(activeProfile,oldTotal);
  const history=historyFromState(state);
  let restored=0;
@@ -149,7 +153,7 @@ async function syncCloud(){
  if(marker===fp)return;
  syncing=true;
  try{
-  if(!window.SPProgress)await import('/js/progress.js?v=perfekt-regroup-recovery1');
+  if(!window.SPProgress)await import('/js/progress.js?v=perfekt-regroup-recovery2');
   const api=window.SPProgress;if(!api)return;
   for(let i=0;i<activeVisible.length;i+=GROUP_SIZE){
    const verbs=activeVisible.slice(i,i+GROUP_SIZE),groupId=Math.floor(i/GROUP_SIZE)+1,sig='release|'+verbs.join('|'),gs=state.groups[sig];
