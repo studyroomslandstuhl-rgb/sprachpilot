@@ -90,7 +90,7 @@ function enhance(){
  wrap.querySelector('#fiSentenceListen').onclick=()=>speakSentence(sentence);
  wrap.querySelector('#fiSentenceCheck').onclick=async()=>{
   const val=value();
-  if(accepted.some(x=>norm(x)===norm(val))){
+  if(norm(val)===norm(sentence)){
    feedback.className='sentence-block-feedback feedback ok';feedback.textContent='Richtig!';
    await clickOriginalSolution(original);
    return;
