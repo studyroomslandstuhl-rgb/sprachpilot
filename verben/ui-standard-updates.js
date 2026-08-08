@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_UI_STANDARD_UPDATES_V5)return;
-window.__SP_VERB_UI_STANDARD_UPDATES_V5=true;
+if(window.__SP_VERB_UI_STANDARD_UPDATES_V6)return;
+window.__SP_VERB_UI_STANDARD_UPDATES_V6=true;
 const E=window.VerbGroupsEngine;
 if(!E)return;
 
@@ -56,34 +56,11 @@ function enhanceAudioChoices(){
  });
 }
 
-const A1_SENTENCES={
- lieben:'Maria liebt ihre Familie.',
- kaufen:'Ich kaufe Brot.',
- verstehen:'Maria versteht die Frage.',
- brauchen:'Ich brauche Hilfe.',
- hören:'Maria hört Musik.',
- lernen:'Ich lerne Deutsch.',
- wohnen:'Maria wohnt in Berlin.',
- bringen:'Ich bringe Wasser.',
- sein:'Maria ist zu Hause.',
- schreiben:'Ich schreibe eine Nachricht.',
- fotografieren:'Maria fotografiert die Natur.',
- telefonieren:'Maria telefoniert mit ihrer Mutter.',
- kochen:'Ich koche Suppe.',
- leben:'Maria lebt in Deutschland.',
- kommen:'Der Bus kommt um acht Uhr.',
- buchstabieren:'Ich buchstabiere meinen Namen.',
- gehen:'Maria geht zur Schule.',
- schwimmen:'Ich schwimme im Schwimmbad.',
- suchen:'Maria sucht ihre Schlüssel.',
- bestellen:'Ich bestelle einen Kaffee.'
-};
-function targetSentence(groupId,verb){
- const special=A1_SENTENCES[verb];if(special)return special;
- const stored=String(window.SP_VERB_SENTENCES?.[verb]||'').trim();
- if(stored&&!/Ich lerne das Verb/i.test(stored))return stored;
- const useThird=(Math.abs((groupId||1)+(E.GROUPS?.[groupId-1]?.verbs?.indexOf(verb)||0))%2)===0;
- return useThird?`Maria ${E.displayForm(verb,2)}.`:`Ich ${E.displayForm(verb,0)}.`;
+// Aufgabe 12 benutzt ausschließlich den zentralen, zum Verb passenden A1-Hauptsatz.
+// Es gibt hier keinen automatisch erzeugten "Ich/Maria + Verb"-Ersatz mehr.
+function targetSentence(verb){
+ const central=String(E.sentence?.(verb)||window.SP_VERB_SENTENCES?.[verb]||'').trim();
+ return central;
 }
 function sentenceTokens(sentence){
  return sentence.match(/[A-Za-zÄÖÜäöüß]+(?:['’-][A-Za-zÄÖÜäöüß]+)*|\d+(?::\d+)?|[^\sA-Za-zÄÖÜäöüß\d]/g)||[];
@@ -94,11 +71,17 @@ function sentenceTokens(sentence){
 function enhanceSentenceBlocks(){
  const r=route();if(r.task!=='sentence'||!r.group)return;
  const card=document.querySelector('.question-card');
- if(!card||card.dataset.fullSentenceBlocks==='2')return;
+ if(!card||card.dataset.fullSentenceBlocks==='3')return;
  const verb=E.taskState(r.group,'sentence')?.current;if(!verb)return;
  const form=card.querySelector('.answer-form');if(!form)return;
- card.dataset.fullSentenceBlocks='2';form.hidden=true;
- const sentence=targetSentence(r.group,verb);
+ const sentence=targetSentence(verb);
+ if(!sentence){
+  card.dataset.fullSentenceBlocks='3';
+  const question=card.querySelector('.question');
+  if(question)question.textContent=`Für „${verb}“ fehlt ein Satz. Bitte melde diesen Fehler.`;
+  return;
+ }
+ card.dataset.fullSentenceBlocks='3';form.hidden=true;
  const question=card.querySelector('.question');if(question)question.textContent='Bringe die Wörter in die richtige Reihenfolge.';
  const source=shuffle(sentenceTokens(sentence).map((text,i)=>({id:i,text})));
  const wrap=document.createElement('div');wrap.className='sentence-block-builder';
@@ -119,7 +102,8 @@ function enhanceSentenceBlocks(){
   const val=value();
   if(norm(val)===norm(sentence)){
    feedback.className='sentence-block-feedback feedback ok';feedback.textContent='Richtig!';
-   const pi=E.personFor(r.group,'sentence',verb),expected=E.displayForm(verb,pi),input=form.querySelector('#answerInput'),check=form.querySelector('[data-action="check-input"]');
+   const expected=E.question(r.group,'sentence',verb)?.answer||'';
+   const input=form.querySelector('#answerInput'),check=form.querySelector('[data-action="check-input"]');
    if(input)input.value=expected;
    if(check)check.click();
    return;
