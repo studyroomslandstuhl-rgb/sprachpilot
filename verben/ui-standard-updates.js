@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_UI_STANDARD_UPDATES_V6)return;
-window.__SP_VERB_UI_STANDARD_UPDATES_V6=true;
+if(window.__SP_VERB_UI_STANDARD_UPDATES_V7)return;
+window.__SP_VERB_UI_STANDARD_UPDATES_V7=true;
 const E=window.VerbGroupsEngine;
 if(!E)return;
 
@@ -56,8 +56,8 @@ function enhanceAudioChoices(){
  });
 }
 
-// Aufgabe 12 benutzt ausschließlich den zentralen, zum Verb passenden A1-Hauptsatz.
-// Es gibt hier keinen automatisch erzeugten "Ich/Maria + Verb"-Ersatz mehr.
+// Aufgabe 12 bleibt "Satz ergänzen". Die eigentliche Satzlogik kommt zentral aus sentence-task-a1-fix.js.
+// Hier wird bewusst kein eigener Satz und kein Satzbaustein-Fallback mehr erzeugt.
 function targetSentence(verb){
  const central=String(E.sentence?.(verb)||window.SP_VERB_SENTENCES?.[verb]||'').trim();
  return central;
@@ -65,56 +65,9 @@ function targetSentence(verb){
 function sentenceTokens(sentence){
  return sentence.match(/[A-Za-zÄÖÜäöüß]+(?:['’-][A-Za-zÄÖÜäöüß]+)*|\d+(?::\d+)?|[^\sA-Za-zÄÖÜäöüß\d]/g)||[];
 }
+function enhanceSentenceBlocks(){return}
 
-// Satz bauen: sinnvoller A1-Satz aus gemischten Bausteinen.
-// "Satz hören" ist reine Hilfe: kein Fehler, keine Wiederholung, keine negative Wertung.
-function enhanceSentenceBlocks(){
- const r=route();if(r.task!=='sentence'||!r.group)return;
- const card=document.querySelector('.question-card');
- if(!card||card.dataset.fullSentenceBlocks==='3')return;
- const verb=E.taskState(r.group,'sentence')?.current;if(!verb)return;
- const form=card.querySelector('.answer-form');if(!form)return;
- const sentence=targetSentence(verb);
- if(!sentence){
-  card.dataset.fullSentenceBlocks='3';
-  const question=card.querySelector('.question');
-  if(question)question.textContent=`Für „${verb}“ fehlt ein Satz. Bitte melde diesen Fehler.`;
-  return;
- }
- card.dataset.fullSentenceBlocks='3';form.hidden=true;
- const question=card.querySelector('.question');if(question)question.textContent='Bringe die Wörter in die richtige Reihenfolge.';
- const source=shuffle(sentenceTokens(sentence).map((text,i)=>({id:i,text})));
- const wrap=document.createElement('div');wrap.className='sentence-block-builder';
- wrap.innerHTML='<div class="sentence-help"><button type="button" class="btn secondary" id="sentenceListen">🔊 Satz hören</button><span class="small">Hilfe</span></div><div class="sentence-built" aria-live="polite"><span class="small">Baue den Satz.</span></div><div class="sentence-bank"></div><div class="sentence-block-actions"><button type="button" class="btn" id="sentenceCheck">Kontrollieren</button><button type="button" class="btn secondary" id="sentenceReset">Zurücksetzen</button></div><div class="sentence-block-feedback"></div>';
- form.before(wrap);
- const built=wrap.querySelector('.sentence-built'),bank=wrap.querySelector('.sentence-bank'),feedback=wrap.querySelector('.sentence-block-feedback');
- let chosen=[];
- function draw(){
-  built.innerHTML=chosen.length?chosen.map((t,i)=>`<button type="button" class="sentence-token chosen" data-chosen="${i}">${t.text}</button>`).join(''):'<span class="small">Baue den Satz.</span>';
-  bank.innerHTML=source.filter(t=>!chosen.includes(t)).map(t=>`<button type="button" class="sentence-token" data-token="${t.id}">${t.text}</button>`).join('');
-  built.querySelectorAll('[data-chosen]').forEach(b=>b.onclick=()=>{chosen.splice(Number(b.dataset.chosen),1);draw()});
-  bank.querySelectorAll('[data-token]').forEach(b=>b.onclick=()=>{const t=source.find(x=>x.id===Number(b.dataset.token));if(t){chosen.push(t);draw()}});
- }
- function value(){return chosen.map(x=>x.text).join(' ').replace(/\s+([.,!?;:])/g,'$1').trim()}
- function showWrong(n){feedback.className='sentence-block-feedback feedback no';feedback.innerHTML=n===1?'Da ist noch ein Fehler.':n===2?'Tipp: Höre den Satz und prüfe die Reihenfolge.':`Lösung: <strong>${sentence}</strong>`}
- wrap.querySelector('#sentenceListen').onclick=()=>sentenceSpeak(sentence);
- wrap.querySelector('#sentenceCheck').onclick=()=>{
-  const val=value();
-  if(norm(val)===norm(sentence)){
-   feedback.className='sentence-block-feedback feedback ok';feedback.textContent='Richtig!';
-   const expected=E.question(r.group,'sentence',verb)?.answer||'';
-   const input=form.querySelector('#answerInput'),check=form.querySelector('[data-action="check-input"]');
-   if(input)input.value=expected;
-   if(check)check.click();
-   return;
-  }
-  showWrong(E.markWrong(r.group,'sentence'));chosen=[];draw();
- };
- wrap.querySelector('#sentenceReset').onclick=()=>{chosen=[];draw()};
- draw();
-}
-
-function enhance(){fixSingleBackButton();fixCardReveal();enhanceAudioChoices();enhanceSentenceBlocks()}
+function enhance(){fixSingleBackButton();fixCardReveal();enhanceAudioChoices()}
 let scheduled=false;function schedule(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;enhance()})}
 new MutationObserver(schedule).observe(document.documentElement,{childList:true,subtree:true});
 window.addEventListener('popstate',schedule);schedule();
@@ -124,15 +77,7 @@ style.textContent=`
 .audio-choice-grid{display:grid!important;grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
 .audio-choice-row{display:grid;gap:8px;padding:10px;border:2px solid var(--line,#d9eef7);border-radius:18px;background:#fff}
 .audio-choice-row .btn,.audio-choice-row .option{width:100%;margin:0;min-height:52px}
-.sentence-block-builder{display:grid;gap:16px;margin-top:18px}
-.sentence-help{display:flex;align-items:center;justify-content:center;gap:10px;flex-wrap:wrap}
-.sentence-built,.sentence-bank{min-height:72px;padding:14px;border:2px solid var(--line,#d9eef7);border-radius:18px;display:flex;flex-wrap:wrap;align-items:center;justify-content:center;gap:8px;background:#fff}
-.sentence-built{background:#f7fbfd}
-.sentence-token{border:2px solid #b9dce7;border-radius:12px;background:#fff;padding:10px 14px;font:inherit;font-weight:800;color:#17324d;cursor:pointer}
-.sentence-token.chosen{background:#eef8fb}
-.sentence-block-actions{display:flex;justify-content:center;gap:10px;flex-wrap:wrap}
-.sentence-block-feedback{text-align:center}
-@media(max-width:560px){.audio-choice-grid{grid-template-columns:1fr!important}.sentence-token{padding:9px 11px}}
+@media(max-width:560px){.audio-choice-grid{grid-template-columns:1fr!important}}
 `;
 document.head.appendChild(style);
 })();
