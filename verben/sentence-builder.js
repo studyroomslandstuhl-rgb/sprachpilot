@@ -1,9 +1,21 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_SENTENCE_BUILDER_V1)return;
-window.__SP_VERB_SENTENCE_BUILDER_V1=true;
+if(window.__SP_VERB_SENTENCE_BUILDER_V2)return;
+window.__SP_VERB_SENTENCE_BUILDER_V2=true;
 const E=window.VerbGroupsEngine;
 if(!E)return;
+
+// Die bestehende Prüf-/Fehlerlogik bleibt erhalten. Für Aufgabe 12 wird nur die
+// Darstellung ersetzt; bei der dritten Hilfe wird der vollständige Satz gezeigt.
+const previousQuestion=E.question.bind(E);
+E.question=function(groupId,task,verb,personOverride=null){
+ const q=previousQuestion(groupId,task,verb,personOverride);
+ if(task==='sentence'){
+  const sentence=String(q?.sentence||E.sentence?.(verb)||window.SP_VERB_SENTENCES?.[verb]||'').trim();
+  if(sentence){q.sentence=sentence;q.writeAnswer=sentence;q.verb=verb}
+ }
+ return q
+};
 
 const route=()=>{const q=new URLSearchParams(location.search);return{group:Number(q.get('group'))||0,task:q.get('task')||''}};
 const shuffle=a=>{a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -52,6 +64,7 @@ function renderBuilder(card,data){
    const index=Number(btn.dataset.tokenIndex),item=shuffled.find(x=>x.index===index);if(!item)return;chosen.push(item);update()
   }));
  }
+ // Hörhilfe ist ausdrücklich nur Hilfe: kein markWrong(), kein Versuch, keine Wiederholung.
  card.querySelector('#spSentenceListen').addEventListener('click',()=>speak(data.sentence));
  update();
 }
