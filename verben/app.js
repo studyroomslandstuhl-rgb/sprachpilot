@@ -1,7 +1,9 @@
 import{requireLogin,getActiveProfile,getActiveRole,dashboardHref,logout}from'/js/auth.js?v=login-main-4';
-import{loadCourseRelease,moduleOpen,releasedVerbs}from'/js/course-releases.js?v=verb-release-order2';
+import{loadCourseRelease,moduleOpen,releasedVerbs}from'/js/course-releases.js?v=verb-release-order3';
 
 const CANONICAL_ALL=VerbGroupsEngine.ALL.slice();
+const verbKey=v=>String(v||'').normalize('NFC').trim().toLowerCase().replace(/\s+/g,' ');
+const CANONICAL_BY_KEY=new Map(CANONICAL_ALL.map(v=>[verbKey(v),v]));
 
 function storedAssignments(profile){
  try{
@@ -11,28 +13,50 @@ function storedAssignments(profile){
  return profile?.assignments||{}
 }
 
-function uniq(list){const seen=new Set(),out=[];(list||[]).forEach(v=>{v=String(v||'').trim();if(v&&!seen.has(v)){seen.add(v);out.push(v)}});return out}
+function uniq(list){
+ const seen=new Set(),out=[];
+ (list||[]).forEach(raw=>{
+  const key=verbKey(raw),verb=CANONICAL_BY_KEY.get(key)||String(raw||'').trim();
+  if(verb&&CANONICAL_BY_KEY.has(key)&&!seen.has(key)){seen.add(key);out.push(verb)}
+ });
+ return out
+}
 function releaseOrder(data){
  const candidates=[data?.verbReleaseOrder,data?.releases?.Verben?.wordOrder,data?.releases?.verben?.wordOrder,data?.releases?.['Verben A1']?.wordOrder,data?.releases?.['verben-A1']?.wordOrder];
  return uniq(candidates.find(Array.isArray)||[])
 }
 function orderedReleasedVerbs(data,all){
- const active=releasedVerbs(data,all),activeSet=new Set(active),allowed=new Set(all);
- const explicit=releaseOrder(data).filter(v=>allowed.has(v)&&activeSet.has(v));
- // Sobald eine Lehrer-Reihenfolge gespeichert ist, ist sie die exakte Freigabeliste.
- // Dadurch werden keine durch allgemeine Modul-Defaults geöffneten Zusatzverben angehängt.
- if(releaseOrder(data).length)return explicit;
- return uniq(active).filter(v=>allowed.has(v))
+ const active=uniq(releasedVerbs(data,all));
+ const activeKeys=new Set(active.map(verbKey));
+ const saved=releaseOrder(data);
+ if(saved.length)return saved.filter(v=>activeKeys.has(verbKey(v)));
+ // Ältere Kurse hatten noch keine gespeicherte Freigabereihenfolge. In diesem Fall
+ // wird die bisherige lokale Gruppenreihenfolge bevorzugt, damit gelernte Verben
+ // nicht allein durch eine technische Umgruppierung in spätere Gruppen wandern.
+ const historical=window.SPVerbRegroupRecovery?.historicalOrder?.(active);
+ return uniq(historical?.length?historical:active)
 }
 function installVerbGroups(active){
- const allowed=new Set(CANONICAL_ALL),ordered=uniq(active).filter(v=>allowed.has(v));
- const internalAll=VerbGroupsEngine.ALL,activeSet=new Set(ordered),rest=CANONICAL_ALL.filter(v=>!activeSet.has(v));
- // Die Freigabereihenfolge bestimmt die Gruppen. Gruppen haben maximal 20 Verben;
- // die letzte Gruppe darf kleiner sein.
+ const ordered=uniq(active);
+ const internalAll=VerbGroupsEngine.ALL,activeKeys=new Set(ordered.map(verbKey));
+ const rest=CANONICAL_ALL.filter(v=>!activeKeys.has(verbKey(v)));
+ // Freigabereihenfolge = Gruppenreihenfolge. Maximal 20 pro Gruppe; letzte Gruppe darf kleiner sein.
  internalAll.splice(0,internalAll.length,...ordered,...rest);
  window.SP_VERB_PENDING={verbs:[],count:0,needed:0};
  window.SP_VERB_RELEASE_VISIBLE={verbs:ordered.slice(),count:ordered.length,groupSize:20,partialLastGroup:ordered.length%20};
- VerbGroupsEngine.setActiveVerbs(ordered)
+ VerbGroupsEngine.setActiveVerbs(ordered);
+
+ // Sicherheitsprüfung: Ein Verb darf im aktuell gerenderten Kurs exakt einmal vorkommen.
+ const seen=new Map(),duplicates=[];
+ for(const group of VerbGroupsEngine.GROUPS){
+  for(const verb of group.verbs){
+   const key=verbKey(verb);
+   if(seen.has(key))duplicates.push({verb,firstGroup:seen.get(key),duplicateGroup:group.id});
+   else seen.set(key,group.id)
+  }
+ }
+ window.SP_VERB_GROUP_AUDIT={released:ordered.length,grouped:seen.size,duplicates,groups:VerbGroupsEngine.GROUPS.map(g=>({id:g.id,count:g.verbs.length,verbs:g.verbs.slice()}))};
+ if(duplicates.length)console.error('Doppelte Verben zwischen Gruppen verhindert',duplicates)
 }
 
 async function install(profile,preview,assignments){
