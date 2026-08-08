@@ -13,13 +13,13 @@ function identity(){const p=profile();return clean(p.studentId||p.userId||p.docI
 function topicId(groupId){return`verben-gruppe-${pad(groupId)}`}
 function setRun(groupId,run){localStorage.setItem(`SP_SCORE_RUN_${topicId(groupId)}`,String(Math.max(1,Number(run)||1)))}
 async function waitUntilReady(){for(let i=0;i<50;i++){if(window.VerbGroupsProfile&&document.querySelector('#topbar .topbar-main'))return true;await sleep(200)}return false}
-async function api(){if(window.SPProgress)return window.SPProgress;try{await import('/js/progress.js?v=verb-points-1')}catch(error){console.warn('Verben-Punktesynchronisierung nicht verfügbar',error)}return window.SPProgress||null}
+async function api(){if(window.SPProgress)return window.SPProgress;try{await import('/js/progress.js?v=verb-points-3')}catch(error){console.warn('Verben-Punktesynchronisierung nicht verfügbar',error)}return window.SPProgress||null}
 async function sync(){
  if(E.isPreview?.())return;
  if(!await waitUntilReady())return;
  const groups=E.GROUPS||[];
  if(!groups.length)return;
- const marker=`SP_VERBEN_CLOUD_SYNC_V2_${identity()}_${hash(groups.map(group=>group.signature).join('||'))}`;
+ const marker=`SP_VERBEN_CLOUD_SYNC_V3_${identity()}_${hash(groups.map(group=>group.signature).join('||'))}`;
  if(localStorage.getItem(marker)==='1')return;
  const progress=await api();
  if(!progress)return;
@@ -32,7 +32,9 @@ async function sync(){
      const item=run?.tasks?.[task];
      const done=(item?.done||[]).length;
      const total=Number(item?.total)||group.verbs.length;
-     if(!done&&!Number(run?.awards?.tasks?.[task]||0))continue;
+     const awarded=Number(run?.awards?.tasks?.[task]||0)>0;
+     if(!done&&!awarded)continue;
+     if(item?.recoveredByVerb&&done>=total&&!awarded)continue;
      await progress.recordTaskProgress({
       module:'verben',moduleTitle:'Verben',level:'A1',lesson:`Gruppe ${group.id}`,theme:`Runde ${runId}`,
       topicId:topicId(group.id),title:`Verben · Gruppe ${group.id}`,file:task,taskKey:task,
@@ -50,7 +52,7 @@ async function sync(){
    setRun(group.id,state?.currentRun||1);
   }
   localStorage.setItem(marker,'1');
- }catch(error){console.warn('Vorhandene Verben-Punkte konnten nicht vollständig übertragen werden',error)}
+ }catch(error){console.warn('Vorhandener Verben-Fortschritt konnte nicht vollständig übertragen werden',error)}
 }
 
 sync();
