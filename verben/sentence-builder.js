@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_SENTENCE_BUILDER_V2)return;
-window.__SP_VERB_SENTENCE_BUILDER_V2=true;
+if(window.__SP_VERB_SENTENCE_BUILDER_V3)return;
+window.__SP_VERB_SENTENCE_BUILDER_V3=true;
 const E=window.VerbGroupsEngine;
 if(!E)return;
 
@@ -11,8 +11,17 @@ const previousQuestion=E.question.bind(E);
 E.question=function(groupId,task,verb,personOverride=null){
  const q=previousQuestion(groupId,task,verb,personOverride);
  if(task==='sentence'){
-  const sentence=String(q?.sentence||E.sentence?.(verb)||window.SP_VERB_SENTENCES?.[verb]||'').trim();
-  if(sentence){q.sentence=sentence;q.writeAnswer=sentence;q.verb=verb}
+  let sentence=String(q?.sentence||E.sentence?.(verb)||window.SP_VERB_SENTENCES?.[verb]||'').trim();
+  if(!sentence){
+   // Reiner Sicherheitsfallback für künftig neu ergänzte Verben. Er verhindert,
+   // dass Aufgabe 12 jemals wieder zur alten Lückentext-/Eingabeansicht zurückfällt.
+   const form=E.displayForm?.(verb,0)||verb;
+   sentence=`Ich ${form}.`;
+   q.answer=form;
+   q.generatedSentenceFallback=true;
+   console.warn('Für dieses Verb fehlt noch ein eigener A1-Satz:',verb)
+  }
+  q.sentence=sentence;q.writeAnswer=sentence;q.verb=verb
  }
  return q
 };
@@ -33,7 +42,7 @@ function currentData(){
  const st=E.taskState(r.group,'sentence'),verb=st?.current;
  if(!verb)return null;
  const q=E.question(r.group,'sentence',verb);
- const sentence=String(q?.sentence||E.sentence?.(verb)||window.SP_VERB_SENTENCES?.[verb]||'').trim();
+ const sentence=String(q?.sentence||'').trim();
  if(!sentence)return null;
  const tokens=tokenise(sentence);if(!tokens.length)return null;
  return{r,verb,q,sentence,tokens}
