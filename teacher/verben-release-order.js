@@ -25,8 +25,8 @@ function normalizeOrder(draft,seed){
  return writeOrder(draft,order)
 }
 function install(){
- const draft=window.ReleaseDraft;if(!draft||draft.__verbReleaseOrderV1)return false;
- draft.__verbReleaseOrderV1=true;
+ const draft=window.ReleaseDraft;if(!draft||draft.__verbReleaseOrderV2)return false;
+ draft.__verbReleaseOrderV2=true;
  const oldOpen=draft.open;
  draft.open=function(course){
   const saved=readOrder(course||{});
@@ -50,8 +50,8 @@ function install(){
  };
  const oldRender=window.renderVerbReleaseSection;
  if(typeof oldRender==='function')window.renderVerbReleaseSection=function(){
-  const order=normalizeOrder(draft),full=Math.floor(order.length/GROUP_SIZE),pending=order.length%GROUP_SIZE;
-  const status='<div class="debug-box small"><strong>20 Verben pro Gruppe.</strong> '+full+' vollständige Gruppe'+(full===1?'':'n')+' · '+pending+' Verb'+(pending===1?'':'en')+' wartet'+(pending===1?'':'en')+' auf die nächste 20er-Gruppe. Neu freigeschaltete Verben werden immer hinten angefügt.</div>';
+  const order=normalizeOrder(draft),groups=Math.ceil(order.length/GROUP_SIZE),last=order.length?((order.length-1)%GROUP_SIZE)+1:0;
+  const status='<div class="debug-box small"><strong>Maximal 20 Verben pro Gruppe.</strong> '+order.length+' freigegeben · '+groups+' Gruppe'+(groups===1?'':'n')+(groups?(' · letzte Gruppe: '+last+' Verb'+(last===1?'':'en')):'')+'. Neu freigeschaltete Verben werden immer hinten an die letzte Gruppe angefügt. Es werden nur ausdrücklich freigegebene Verben verwendet.</div>';
   return status+oldRender.apply(this,arguments)
  };
  window.SPVerbReleaseOrder={normalize:()=>normalizeOrder(draft),read:()=>readOrder(draft.data),groupSize:GROUP_SIZE};
