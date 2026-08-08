@@ -1,12 +1,13 @@
 (function(){
 'use strict';
-if(window.__SP_FI_TRANSLATION_STANDARD_V1)return;
-window.__SP_FI_TRANSLATION_STANDARD_V1=true;
+if(window.__SP_FI_TRANSLATION_STANDARD_V2)return;
+window.__SP_FI_TRANSLATION_STANDARD_V2=true;
 
 // Geprüfte Korrekturen/Präzisierungen. Der Wert in `fi` ist immer die
 // finnische Lernform; `de` bleibt die deutsche Standardübersetzung.
 const CORRECTIONS={
   'laufen':'juosta',
+  'rennen':'juosta kovaa',
   'schreien':'kirkua',
   'möchten':'haluta',
   'sich benehmen':'käyttäytyä',
