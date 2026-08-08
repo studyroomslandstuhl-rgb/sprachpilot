@@ -1,15 +1,14 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_SENTENCE_A1_FIX_2)return;
-window.__SP_VERB_SENTENCE_A1_FIX_2=true;
+if(window.__SP_VERB_SENTENCE_A1_FIX_3)return;
+window.__SP_VERB_SENTENCE_A1_FIX_3=true;
 const E=window.VerbGroupsEngine;
 if(!E)return;
 
-// Ergänzungen für Grundverben, die in sentences.js noch keinen eigenen Satz hatten.
-// Jeder Eintrag ist ein kurzer, inhaltlich zum Verb passender Hauptsatz auf A1-Niveau.
+// Ergänzungen zu sentences.js. Aufgabe „Satz ergänzen“ benutzt für jedes Verb
+// einen echten kurzen A1-Hauptsatz. Kein „Ich lerne das Verb …“-Fallback.
 const EXTRA={
- 'lernen':'Die Kinder lernen Deutsch.',
- 'aufräumen':'Ich räume auf.',
+ 'aufräumen':'Ich räume mein Zimmer auf.',
  'einkaufen':'Wir kaufen heute ein.',
  'anrufen':'Ich rufe Anna an.',
  'fernsehen':'Wir sehen abends fern.',
@@ -77,14 +76,69 @@ const EXTRA={
  'vernichten':'Das Feuer vernichtet die Papiere.',
  'erleben':'Wir erleben einen schönen Tag.',
  'steigen':'Die Preise steigen.',
- 'sinken':'Die Temperatur sinkt.'
+ 'sinken':'Die Temperatur sinkt.',
+
+ // Nachträglich ergänzte Verben
+ 'bieten':'Der Laden bietet viele Bücher.',
+ 'bitten':'Ich bitte um Hilfe.',
+ 'nennen':'Wir nennen unseren Namen.',
+ 'sitzen':'Ich sitze auf dem Stuhl.',
+ 'treiben':'Wir treiben Sport.',
+ 'binden':'Ich binde meine Schuhe.',
+ 'brennen':'Die Kerze brennt.',
+ 'erschrecken':'Das Kind erschrickt.',
+ 'fliehen':'Die Tiere fliehen.',
+ 'fließen':'Der Fluss fließt durch die Stadt.',
+ 'frieren':'Ich friere im Winter.',
+ 'gelingen':'Der Kuchen gelingt gut.',
+ 'gelten':'Das Ticket gilt heute.',
+ 'geschehen':'Was geschieht hier?',
+ 'passieren':'Was passiert hier?',
+ 'gleichen':'Die Brüder gleichen sich.',
+ 'heben':'Ich hebe die Tasche.',
+ 'klingen':'Das Lied klingt schön.',
+ 'leiden':'Er leidet unter Kopfschmerzen.',
+ 'leihen':'Ich leihe Anna ein Buch.',
+ 'meiden':'Ich meide Stress.',
+ 'reiben':'Ich reibe den Käse.',
+ 'schaffen':'Wir schaffen das.',
+ 'scheiden':'Die Wege scheiden sich hier.',
+ 'trennen':'Ich trenne Papier und Plastik.',
+ 'teilen':'Wir teilen den Kuchen.',
+ 'schauen':'Ich schaue einen Film.',
+ 'scheinen':'Die Sonne scheint.',
+ 'schießen':'Er schießt den Ball.',
+ 'schmeißen':'Ich schmeiße den Müll weg.',
+ 'senden':'Ich sende eine E-Mail.',
+ 'treten':'Er tritt gegen den Ball.',
+ 'verzeihen':'Ich verzeihe dir.',
+ 'weisen':'Der Pfeil weist nach rechts.',
+ 'hinweisen':'Die Lehrerin weist auf den Fehler hin.',
+ 'auffallen':'Der Fehler fällt sofort auf.',
+ 'einfallen':'Mir fällt eine Idee ein.',
+ 'wiegen':'Das Paket wiegt zwei Kilo.',
+ 'zwingen':'Niemand zwingt mich.',
+ 'sich bewegen':'Ich bewege mich jeden Tag.',
+ 'sich konzentrieren':'Ich konzentriere mich auf die Aufgabe.',
+ 'sich kümmern':'Ich kümmere mich um das Kind.',
+ 'sich interessieren':'Ich interessiere mich für Musik.',
+ 'sich erinnern':'Ich erinnere mich an den Termin.',
+ 'sich anziehen':'Ich ziehe mich schnell an.',
+ 'sich ausziehen':'Das Kind zieht sich aus.',
+ 'sich umziehen':'Ich ziehe mich um.',
+ 'sich duschen':'Ich dusche mich nach dem Sport.',
+ 'sich freuen':'Ich freue mich auf das Wochenende.',
+ 'sich ärgern':'Ich ärgere mich über den Lärm.',
+ 'sich beschweren':'Ich beschwere mich über den Lärm.',
+ 'sich überlegen':'Ich überlege mir die Antwort.',
+ 'hinzufügen':'Ich füge Salz hinzu.',
+ 'spazieren gehen':'Wir gehen im Park spazieren.'
 };
 
 const SENTENCES=Object.assign({},window.VERB_SENTENCES||{},window.SP_VERB_SENTENCES||{},EXTRA);
 window.SP_VERB_SENTENCES=SENTENCES;
 window.VERB_SENTENCES=Object.assign(window.VERB_SENTENCES||{},SENTENCES);
 
-const originalQuestion=E.question.bind(E);
 const escRe=value=>String(value).replace(/[.*+?^${}()|[\]\\]/g,'\\$&');
 const SPECIAL_FORMS={
  'erschrecken':['erschrecke','erschrickst','erschrickt','erschrecken','erschreckt','erschrecken'],
@@ -118,16 +172,38 @@ function gapForVerb(v){
  return null;
 }
 
+// Letzte und globale Regel für Aufgabe „sentence“: gilt für jede Gruppe und jedes Verb.
+const previousQuestion=E.question.bind(E);
 E.sentence=sentenceForVerb;
 window.sentenceForVerb=sentenceForVerb;
 E.question=function(groupId,task,v,personOverride=null){
  if(task==='sentence'){
   const gap=gapForVerb(v);
-  if(gap)return{kind:'input',prompt:gap.prompt,answer:gap.answer,placeholder:'Verbform schreiben',sentence:gap.sentence};
-  const text=sentenceForVerb(v);
-  if(text)return{kind:'input',prompt:text,answer:'',placeholder:'Verbform schreiben',sentence:text,brokenSentence:true};
+  if(gap)return{
+   kind:'input',
+   prompt:gap.prompt,
+   answer:gap.answer,
+   writeAnswer:gap.answer,
+   placeholder:'Verbform schreiben',
+   sentence:gap.sentence,
+   verb:v
+  };
+  // Kein alter Platzhalter und kein „Ich lerne ...“. Falls ein neuer Verbdatensatz
+  // ohne Satz auftaucht, bleibt das Zielverb sichtbar statt falschen Inhalt zu erzeugen.
+  const pi=Number.isInteger(personOverride)?personOverride:0;
+  const answer=E.displayForm(v,pi);
+  return{
+   kind:'input',
+   prompt:`${E.PERSONS?.[pi]?.label||'ich'} ______ heute. (${v})`,
+   answer,
+   writeAnswer:answer,
+   placeholder:'Verbform schreiben',
+   sentence:'',
+   verb:v,
+   generatedFallback:true
+  };
  }
- const q=originalQuestion(groupId,task,v,personOverride);
+ const q=previousQuestion(groupId,task,v,personOverride);
  if(task==='read-sentence'){
   const text=sentenceForVerb(v);
   if(text)q.prompt=text;
@@ -137,6 +213,6 @@ E.question=function(groupId,task,v,personOverride=null){
 
 const missing=(E.ALL||[]).filter(v=>!sentenceForVerb(v));
 const unusable=(E.ALL||[]).filter(v=>sentenceForVerb(v)&&!gapForVerb(v));
-window.SP_VERB_SENTENCE_AUDIT={total:(E.ALL||[]).length,missing,unusable};
-if(missing.length||unusable.length)console.error('SprachPilot Verbsatz-Prüfung',{missing,unusable});
+window.SP_VERB_SENTENCE_AUDIT={version:3,total:(E.ALL||[]).length,missing,unusable,allGroups:true};
+if(missing.length||unusable.length)console.warn('SprachPilot Verbsatz-Prüfung',{missing,unusable});
 })();
