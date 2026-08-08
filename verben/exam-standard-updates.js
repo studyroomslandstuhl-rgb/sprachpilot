@@ -4,7 +4,7 @@ if(window.__SP_VERB_EXAM_STANDARD_UPDATES_V3)return;
 window.__SP_VERB_EXAM_STANDARD_UPDATES_V3=true;
 const E=window.VerbGroupsEngine;if(!E)return;
 
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function route(){const q=new URLSearchParams(location.search);return{group:Number(q.get('group'))||0,task:q.get('task')||''}}
 function shuffle(a){a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
 function examQuestion(){
@@ -26,15 +26,17 @@ function sentenceTokens(sentence){return String(sentence||'').match(/[A-Za-zÄÖ
 // Alte Prüfungen dürfen nie mit einer neuen/anderen 20er-Gruppe weiterlaufen.
 // Ebenso werden Sitzungen aus einem alten Prüfungsformat verworfen.
 function resetStaleExamSession(){
- const r=route();if(r.task!=='exam'||!r.group)return false;
- const run=E.currentRun(r.group),session=run?.exam?.session;if(!session)return false;
- const group=E.GROUPS?.[r.group-1],items=session.items;
- if(!group||!Array.isArray(items)){run.exam.session=null;E.save();setTimeout(()=>window.VerbGroupsUI?.render?.(),0);return true}
- const groupVerbs=group.verbs||[],allowedVerbs=new Set(groupVerbs),allowedTasks=new Set(E.EXAM_PATTERN||[]);
- const uniqueVerbs=new Set(items.map(item=>item?.v));
- const valid=items.length===groupVerbs.length&&uniqueVerbs.size===groupVerbs.length&&items.every(item=>item&&allowedVerbs.has(item.v)&&allowedTasks.has(item.task));
- if(valid)return false;
- run.exam.session=null;E.save();setTimeout(()=>window.VerbGroupsUI?.render?.(),0);return true;
+ try{
+  const r=route();if(r.task!=='exam'||!r.group)return false;
+  const run=E.currentRun(r.group),session=run?.exam?.session;if(!session)return false;
+  const group=E.GROUPS?.[r.group-1],items=session.items;
+  if(!group||!Array.isArray(items)){run.exam.session=null;E.save();setTimeout(()=>window.VerbGroupsUI?.render?.(),0);return true}
+  const groupVerbs=group.verbs||[],allowedVerbs=new Set(groupVerbs),allowedTasks=new Set(E.EXAM_PATTERN||[]);
+  const uniqueVerbs=new Set(items.map(item=>item?.v));
+  const valid=items.length===groupVerbs.length&&uniqueVerbs.size===groupVerbs.length&&items.every(item=>item&&allowedVerbs.has(item.v)&&allowedTasks.has(item.task));
+  if(valid)return false;
+  run.exam.session=null;E.save();setTimeout(()=>window.VerbGroupsUI?.render?.(),0);return true;
+ }catch{return false}
 }
 
 function fixExamBack(){
