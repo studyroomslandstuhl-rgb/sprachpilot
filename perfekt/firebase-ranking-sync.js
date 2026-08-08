@@ -22,11 +22,12 @@ function calculatedAllPoints(progress={}){let total=0;for(const key of MODULES)t
 function localPerfektTarget(){const recovery=window.SPPerfektRegroupRecovery;let floor=0,active=0;try{floor=point(recovery?.pointFloor?.())}catch{}try{active=point(recovery?.activePoints?.())}catch{}return Math.max(floor,active)}
 function displayName(p){return[p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(' ')||p.displayName||p.email||'Schüler/in'}
 function groupMetadata(){
+ try{const detailed=window.SPPerfektRegroupRecovery?.metadata?.();if(detailed&&Object.keys(detailed).length)return detailed}catch{}
  const visible=window.SP_PERFEKT_RELEASE_SYNC?.visible||[],out={};
- for(let i=0;i<visible.length;i+=20){const verbs=visible.slice(i,i+20),id=String(Math.floor(i/20)+1).padStart(2,'0');out[id]={signature:'release|'+verbs.join('|'),verbs:verbs.slice()}}
+ for(let i=0;i<visible.length;i+=20){const verbs=visible.slice(i,i+20),id=String(Math.floor(i/20)+1).padStart(2,'0');out[id]={signature:'release|'+verbs.join('|'),verbs:verbs.slice(),currentRun:1,runs:{}}}
  return out
 }
-async function getProgress(){if(!window.SPProgress){try{await import('/js/progress.js?v=perfekt-firebase-ranking3')}catch{}}try{return await window.SPProgress?.loadCurrentStudentProgress?.()||{}}catch{return{}}}
+async function getProgress(){if(!window.SPProgress){try{await import('/js/progress.js?v=perfekt-firebase-ranking4')}catch{}}try{return await window.SPProgress?.loadCurrentStudentProgress?.()||{}}catch{return{}}}
 async function sync(){
  if(syncing||isPreview())return;syncing=true;
  try{
@@ -34,9 +35,6 @@ async function sync(){
   const perfekt={...(progress.perfekt||{})};
   const actual=modulePoints(perfekt,CARRY_ID),target=Math.max(localPerfektTarget(),actual);
   if(target<=0)return;
-  // Der technische Wiederherstellungswert ist immer nur die fehlende Differenz.
-  // Sobald echte Gruppenpunkte nach Firebase nachgetragen werden, sinkt dieser
-  // Wert automatisch. So können dieselben Punkte nie doppelt in der Rangliste landen.
   const carryNeeded=Math.max(0,target-actual);
   if(carryNeeded>0){const old=perfekt[CARRY_ID]||{};perfekt[CARRY_ID]={...old,title:'Perfekt · wiederhergestellte Punkte',moduleTitle:'Perfekt',level:'A1',technicalRecovery:true,progressPercent:Number(old.progressPercent)||0,current:{...(old.current||{}),updatedAt:new Date().toISOString()},lifetime:{...(old.lifetime||{}),points:carryNeeded}}}
   else if(perfekt[CARRY_ID])perfekt[CARRY_ID]={...perfekt[CARRY_ID],lifetime:{...(perfekt[CARRY_ID].lifetime||{}),points:0}};
@@ -47,7 +45,7 @@ async function sync(){
   await setDoc(doc(db,'progress',id),patch,{merge:true});
   try{localStorage.setItem('SP_POINTS_TOTAL',String(rankingPoints));localStorage.setItem('SP_PERFEKT_FIREBASE_POINTS_SYNC',new Date().toISOString())}catch{}
   window.SP_PERFEKT_FIREBASE_SYNC={ok:true,perfektPoints:actual+carryNeeded,rankingPoints,at:new Date().toISOString()}
- }catch(error){console.warn('Perfekt-Punkte konnten nicht mit Firebase/Rangliste synchronisiert werden',error);window.SP_PERFEKT_FIREBASE_SYNC={ok:false,error:String(error?.message||error),at:new Date().toISOString()}}
+ }catch(error){console.warn('Perfekt-Punkte/Fortschritt konnten nicht mit Firebase/Rangliste synchronisiert werden',error);window.SP_PERFEKT_FIREBASE_SYNC={ok:false,error:String(error?.message||error),at:new Date().toISOString()}}
  finally{syncing=false}
 }
 function schedule(delay=600){clearTimeout(timer);timer=setTimeout(sync,delay)}
