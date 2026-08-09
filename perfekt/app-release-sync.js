@@ -9,8 +9,16 @@ function uniq(list){const seen=new Set(),out=[];(list||[]).forEach(value=>{const
 function releaseOrder(data){const candidates=[data?.verbReleaseOrder,data?.releases?.Verben?.wordOrder,data?.releases?.verben?.wordOrder,data?.releases?.['Verben A1']?.wordOrder,data?.releases?.['verben-A1']?.wordOrder];return uniq(candidates.find(Array.isArray)||[])}
 function orderedReleased(data,all){
  const active=preview?all.slice():releasedVerbs(data,all);if(preview)return uniq(active);
- const activeSet=new Set(active),allowed=new Set(all),savedOrder=releaseOrder(data),explicit=savedOrder.filter(v=>allowed.has(v)&&activeSet.has(v));
- if(savedOrder.length)return explicit;
+ const activeList=uniq(active),activeSet=new Set(activeList),allowed=new Set(all),savedOrder=releaseOrder(data),explicit=savedOrder.filter(v=>allowed.has(v)&&activeSet.has(v));
+ if(savedOrder.length){
+  // Bei älteren Kursen kann die gespeicherte Freigabereihenfolge unvollständig
+  // sein. Vorhandene Wörter behalten ihre Plätze; fehlende, aber freigegebene
+  // Wörter werden nur hinten ergänzt. Dadurch verschwinden keine Wörter und
+  // bestehende Perfekt-Gruppen werden nicht neu zusammengeschoben.
+  const seen=new Set(explicit);
+  for(const verb of activeList){if(allowed.has(verb)&&!seen.has(verb)){seen.add(verb);explicit.push(verb)}}
+  return uniq(explicit)
+ }
  return uniq(all.filter(v=>activeSet.has(v)))
 }
 function installVisibleCatalog(visible){
