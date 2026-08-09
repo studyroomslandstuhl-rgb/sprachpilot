@@ -1,5 +1,5 @@
 import{requireLogin,getActiveProfile,getActiveRole,dashboardHref,logout}from'/js/auth.js?v=login-main-4';
-import{loadCourseRelease,moduleOpen,releasedVerbs}from'/js/course-releases.js?v=verb-release-order3';
+import{loadCourseRelease,moduleOpen,releasedVerbs}from'/js/course-releases.js?v=verb-release-order4';
 
 const CANONICAL_ALL=VerbGroupsEngine.ALL.slice();
 const verbKey=v=>String(v||'').normalize('NFC').trim().toLowerCase().replace(/\s+/g,' ');
@@ -22,18 +22,21 @@ function uniq(list){
  return out
 }
 function releaseOrder(data){
- const candidates=[data?.verbReleaseOrder,data?.releases?.Verben?.wordOrder,data?.releases?.verben?.wordOrder,data?.releases?.['Verben A1']?.wordOrder,data?.releases?.['verben-A1']?.wordOrder];
- return uniq(candidates.find(Array.isArray)||[])
+ const candidates=[data?.verbReleaseOrder,data?.releases?.Verben?.wordOrder,data?.releases?.verben?.wordOrder,data?.releases?.['Verben A1']?.wordOrder,data?.releases?.['verben-A1']?.wordOrder]
+  .filter(Array.isArray).map(uniq).filter(list=>list.length);
+ if(!candidates.length)return[];
+ candidates.sort((a,b)=>b.length-a.length);
+ const ordered=candidates[0].slice(),seen=new Set(ordered.map(verbKey));
+ for(const list of candidates.slice(1))for(const verb of list){const key=verbKey(verb);if(!seen.has(key)){seen.add(key);ordered.push(verb)}}
+ return uniq(ordered)
 }
 function orderedReleasedVerbs(data,all){
  const active=uniq(releasedVerbs(data,all));
  const activeKeys=new Set(active.map(verbKey));
  const saved=releaseOrder(data);
  if(saved.length){
-  // Eine gespeicherte Lehrer-Reihenfolge kann bei älteren Kursen unvollständig sein.
-  // Bereits gespeicherte Verben behalten ihre Plätze; freigegebene Verben, die dort
-  // noch fehlen, werden ausschließlich hinten angefügt. So verschwinden keine
-  // freigegebenen Wörter und bestehende 20er-Gruppen werden nicht neu gemischt.
+  // Die längste vorhandene Kurs-Reihenfolge ist maßgeblich. Kürzere/stale Kopien
+  // dürfen bestehende Gruppen nicht mehr neu sortieren. Fehlende Verben kommen hinten dazu.
   const ordered=saved.filter(v=>activeKeys.has(verbKey(v)));
   const seen=new Set(ordered.map(verbKey));
   for(const verb of active){
@@ -42,9 +45,7 @@ function orderedReleasedVerbs(data,all){
   }
   return uniq(ordered)
  }
- // Wichtig: Die Gruppenreihenfolge darf niemals vom individuellen Lernstand
- // eines TN abhängen. Ohne gespeicherte Lehrer-Reihenfolge gilt deshalb für
- // alle TN dieselbe kanonische Reihenfolge der freigegebenen Verben.
+ // Ohne gespeicherte Lehrer-Reihenfolge gilt für alle TN dieselbe kanonische Reihenfolge.
  return uniq(all.filter(v=>activeKeys.has(verbKey(v))))
 }
 function installVerbGroups(active){
