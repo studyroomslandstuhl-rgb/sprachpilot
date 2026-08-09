@@ -5,8 +5,13 @@ function allVerbs(){return[...new Set((window.ALL_VERBS||[]).map(x=>x&&x.v).filt
 function paths(v){return[['enabledWords',v],['enabledWords','verben/'+v],['enabledWords','Verben/'+v],['enabledWords','verben-A1/'+v],['enabledWords','Verben A1/'+v],['releases','verben','words',v],['releases','Verben','words',v],['releases','verben-A1','words',v],['releases','Verben A1','words',v]]}
 function uniq(list){const seen=new Set(),out=[];(list||[]).forEach(v=>{v=String(v||'').trim();if(v&&!seen.has(v)){seen.add(v);out.push(v)}});return out}
 function readOrder(data){
- const candidates=[data?.verbReleaseOrder,data?.releases?.Verben?.wordOrder,data?.releases?.verben?.wordOrder,data?.releases?.['Verben A1']?.wordOrder,data?.releases?.['verben-A1']?.wordOrder];
- return uniq(candidates.find(Array.isArray)||[])
+ const candidates=[data?.verbReleaseOrder,data?.releases?.Verben?.wordOrder,data?.releases?.verben?.wordOrder,data?.releases?.['Verben A1']?.wordOrder,data?.releases?.['verben-A1']?.wordOrder]
+  .filter(Array.isArray).map(uniq).filter(list=>list.length);
+ if(!candidates.length)return[];
+ candidates.sort((a,b)=>b.length-a.length);
+ const order=candidates[0].slice(),seen=new Set(order);
+ for(const list of candidates.slice(1))for(const verb of list)if(!seen.has(verb)){seen.add(verb);order.push(verb)}
+ return uniq(order)
 }
 function writeOrder(draft,order){
  order=uniq(order);
@@ -14,19 +19,21 @@ function writeOrder(draft,order){
  draft.data.verbReleaseOrder=order.slice();
  draft.set(['releases','Verben','wordOrder'],order.slice());
  draft.set(['releases','verben','wordOrder'],order.slice());
+ draft.set(['releases','Verben A1','wordOrder'],order.slice());
+ draft.set(['releases','verben-A1','wordOrder'],order.slice());
  return order
 }
 function enabled(draft,v){return draft.getAny(paths(v),false)===true}
 function normalizeOrder(draft,seed){
  const all=allVerbs(),allowed=new Set(all),enabledSet=new Set(all.filter(v=>enabled(draft,v)));
- let order=uniq(seed||readOrder(draft.data)).filter(v=>allowed.has(v)&&enabledSet.has(v));
+ let order=uniq((seed&&seed.length?seed:readOrder(draft.data))).filter(v=>allowed.has(v)&&enabledSet.has(v));
  const seen=new Set(order);
  all.forEach(v=>{if(enabledSet.has(v)&&!seen.has(v)){seen.add(v);order.push(v)}});
  return writeOrder(draft,order)
 }
 function install(){
- const draft=window.ReleaseDraft;if(!draft||draft.__verbReleaseOrderV2)return false;
- draft.__verbReleaseOrderV2=true;
+ const draft=window.ReleaseDraft;if(!draft||draft.__verbReleaseOrderV3)return false;
+ draft.__verbReleaseOrderV3=true;
  const oldOpen=draft.open;
  draft.open=function(course){
   const saved=readOrder(course||{});
@@ -51,7 +58,7 @@ function install(){
  const oldRender=window.renderVerbReleaseSection;
  if(typeof oldRender==='function')window.renderVerbReleaseSection=function(){
   const order=normalizeOrder(draft),groups=Math.ceil(order.length/GROUP_SIZE),last=order.length?((order.length-1)%GROUP_SIZE)+1:0;
-  const status='<div class="debug-box small"><strong>Maximal 20 Verben pro Gruppe.</strong> '+order.length+' freigegeben · '+groups+' Gruppe'+(groups===1?'':'n')+(groups?(' · letzte Gruppe: '+last+' Verb'+(last===1?'':'en')):'')+'. Neu freigeschaltete Verben werden immer hinten an die letzte Gruppe angefügt. Es werden nur ausdrücklich freigegebene Verben verwendet.</div>';
+  const status='<div class="debug-box small"><strong>Maximal 20 Verben pro Gruppe.</strong> '+order.length+' freigegeben · '+groups+' Gruppe'+(groups===1?'':'n')+(groups?(' · letzte Gruppe: '+last+' Verb'+(last===1?'':'en')):'')+'. Neu freigeschaltete Verben werden immer hinten an die letzte Gruppe angefügt. Alle gespeicherten Reihenfolge-Felder werden synchron gehalten.</div>';
   return status+oldRender.apply(this,arguments)
  };
  window.SPVerbReleaseOrder={normalize:()=>normalizeOrder(draft),read:()=>readOrder(draft.data),groupSize:GROUP_SIZE};
