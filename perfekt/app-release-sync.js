@@ -30,9 +30,14 @@ function installVisibleCatalog(visible){
 }
 const completeCatalog=uniq(window.SP_VERB_GROUP_DATA?.verbs||window.VerbGroupsEngine?.ALL||[]);
 let assignments={};try{assignments=await loadCourseRelease(profile)||{}}catch{}
-const ordered=orderedReleased(assignments,completeCatalog),visible=ordered.slice();installVisibleCatalog(visible);
+let ordered=orderedReleased(assignments,completeCatalog);
+if(!preview&&window.SPStudentVerbOrderLock?.resolve){
+ try{ordered=await window.SPStudentVerbOrderLock.resolve({profile,active:ordered})}
+ catch(error){console.warn('Persönliche Gruppenreihenfolge konnte nicht wiederhergestellt werden',error)}
+}
+const visible=ordered.slice();installVisibleCatalog(visible);
 window.SP_PERFEKT_PENDING={verbs:[],count:0,needed:0};
-window.SP_PERFEKT_RELEASE_SYNC={groupSize:GROUP_SIZE,visible:visible.slice(),pending:[],releaseOrder:ordered.slice(),mirrorsVerben:true,partialLastGroup:visible.length%GROUP_SIZE};
+window.SP_PERFEKT_RELEASE_SYNC={groupSize:GROUP_SIZE,visible:visible.slice(),pending:[],releaseOrder:ordered.slice(),mirrorsVerben:true,partialLastGroup:visible.length%GROUP_SIZE,studentOrderSource:window.SP_STUDENT_VERB_ORDER_LOCK?.source||'course-order'};
 if(!preview){
  try{await window.SPPerfektRegroupRecovery?.migrate?.({profile,visible})}
  catch(error){console.warn('Alter Perfekt-Fortschritt konnte nicht vollständig übernommen werden',error)}
@@ -48,4 +53,4 @@ Array.prototype.push=function(...items){
  }
  return originalPush.apply(this,items)
 };
-try{await import('./app-stable.js?v=perfekt-progress-restore7')}finally{setTimeout(()=>{if(Array.prototype.push!==originalPush)Array.prototype.push=originalPush},6000)}
+try{await import('./app-stable.js?v=perfekt-progress-restore8')}finally{setTimeout(()=>{if(Array.prototype.push!==originalPush)Array.prototype.push=originalPush},6000)}
