@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_VERB_RUNTIME_PROGRESS_FIX_V1)return;
-window.__SP_VERB_RUNTIME_PROGRESS_FIX_V1=true;
+if(window.__SP_VERB_RUNTIME_PROGRESS_FIX_V2)return;
+window.__SP_VERB_RUNTIME_PROGRESS_FIX_V2=true;
 
 const E=window.VerbGroupsEngine;
 if(!E)return;
@@ -89,9 +89,13 @@ function restoreSnapshot(group,snapshot,pointFloor){
  return true
 }
 
-async function reconcileCloudMetadata(){
- const api=window.SPProgress;if(!api?.loadCurrentStudentProgress)return 0;
- let progress={};try{progress=await api.loadCurrentStudentProgress()||{}}catch{return 0}
+function parsedTime(value){const t=Date.parse(String(value||''));return Number.isFinite(t)?t:0}
+function cloudProgressTime(progress){return Math.max(parsedTime(progress?.lastActiveAt),parsedTime(progress?.ranking?.updatedAt),parsedTime(progress?.totals?.updatedAt),parsedTime(progress?.metadata?.verbenGroupsUpdatedAt))}
+async function reconcileCloudMetadata(localState=null){
+ const api=window.SPProgress;if(!api?.loadCurrentStudentProgress)return{changed:0,preferLocal:true,progress:{}};
+ let progress={};try{progress=await api.loadCurrentStudentProgress()||{}}catch{return{changed:0,preferLocal:true,progress:{}}}
+ const localAt=parsedTime(localState?.updatedAt),cloudAt=cloudProgressTime(progress);
+ if(localAt&&(!cloudAt||localAt>cloudAt+500))return{changed:0,preferLocal:true,progress};
  const meta=progress?.metadata?.verbenGroups||{};
  let changed=0;
  for(const group of E.GROUPS||[]){
@@ -115,15 +119,15 @@ async function reconcileCloudMetadata(){
   E.updateCompletion?.(group.id);changed++
  }
  if(changed)E.save?.();
- return changed
+ return{changed,preferLocal:false,progress}
 }
 
 // Alte Cloud-100%-Stände dürfen einen ausdrücklich zurückgesetzten aktuellen
 // Lernstand nicht wieder herstellen. Die Detail-Metadaten sind für den aktuellen
 // Stand maßgeblich; Punkte/Awards bleiben davon unberührt.
 const persistence=window.SPVerbProgressPersistence;
-if(persistence?.restoreCloud&&!persistence.__runtimeProgressFixV1){
- persistence.__runtimeProgressFixV1=true;
+if(persistence?.restoreCloud&&!persistence.__runtimeProgressFixV2){
+ persistence.__runtimeProgressFixV2=true;
  const originalRestore=persistence.restoreCloud.bind(persistence);
  persistence.restoreCloud=async function(){
   const marks=resetMarks(),snapshots={};
@@ -134,8 +138,15 @@ if(persistence?.restoreCloud&&!persistence.__runtimeProgressFixV1){
    if(snap)snapshots[group.signature]=clone(snap)
   }
   const result=await originalRestore();
-  await reconcileCloudMetadata();
+  const cloudResult=await reconcileCloudMetadata(raw);
   let protectedCount=0;
+  if(cloudResult.preferLocal&&raw?.groups){
+   for(const group of E.GROUPS||[]){
+    const snap=raw.groups?.[String(group.id)]||raw.groups?.[group.id];if(!snap)continue;
+    const points=Number(E.groupPoints?.(group.id))||0;if(restoreSnapshot(group,snap,points))protectedCount++
+   }
+   if(protectedCount)E.save?.()
+  }
   for(const group of E.GROUPS||[]){
    if(!marks[group.signature])continue;
    const points=Number(E.groupPoints?.(group.id))||0;
