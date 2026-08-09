@@ -1,26 +1,27 @@
 (function(){
 'use strict';
-if(window.__SP_PERFEKT_RUNTIME_PROGRESS_FIX_V1)return;
-window.__SP_PERFEKT_RUNTIME_PROGRESS_FIX_V1=true;
+if(window.__SP_PERFEKT_RUNTIME_PROGRESS_FIX_V2)return;
+window.__SP_PERFEKT_RUNTIME_PROGRESS_FIX_V2=true;
 
 const GROUP_SIZE=20;
 const TASKS=['cards','inf-perfect','perfect-inf','listen','image-perfect','build','auxiliary','write','speak','sentence'];
 const STATE_PREFIX='SP_PERFEKT_STABLE_';
 const BACKUP_PREFIX='SP_PERFEKT_PROGRESS_EVIDENCE_V4_';
 const RESET_PREFIX='SP_PERFEKT_MANUAL_RESETS_';
-const clone=value=>{try{return JSON.parse(JSON.stringify(value))}catch{return null}};
 const clean=value=>String(value||'').trim().toLowerCase().normalize('NFC').replace(/\s+/g,' ');
 const nativeGet=Storage.prototype.getItem;
 const nativeSet=Storage.prototype.setItem;
 const nativeParse=JSON.parse;
-let captureNextAppState=false,pendingStableKey='',appState=null,appStateKey='',activeProfile={};
+const nativeStringify=JSON.stringify;
+const clone=value=>{try{return nativeParse.call(JSON,nativeStringify.call(JSON,value))}catch{return null}};
+let captureNextAppState=true,pendingStableKey='',appState=null,appStateKey='',activeProfile={};
 
 function userSlug(profile={}){return[profile.email,profile.courseCode,profile.kurs,profile.kursnummer,profile.vorname,profile.nachname].filter(Boolean).join('_').toLowerCase().replace(/[^a-z0-9äöüß]+/gi,'_')||'student'}
 function stateKey(profile){return STATE_PREFIX+userSlug(profile)}
 function backupKey(profile){return BACKUP_PREFIX+userSlug(profile)}
 function resetKey(profile){return RESET_PREFIX+userSlug(profile)}
 function readJSON(key){try{return nativeParse.call(JSON,nativeGet.call(localStorage,key)||'null')}catch{return null}}
-function writeJSON(key,value){try{nativeSet.call(localStorage,key,JSON.stringify(value))}catch{}}
+function writeJSON(key,value){try{nativeSet.call(localStorage,key,nativeStringify.call(JSON,value))}catch{}}
 function signatureVerbs(signature){const parts=String(signature||'').split('|').map(v=>v.trim()).filter(Boolean);if(['regular','strong','middle','separable','release'].includes(parts[0]))parts.shift();return parts}
 function sameSet(a,b){const A=new Set((a||[]).map(clean)),B=new Set((b||[]).map(clean));return A.size===B.size&&[...A].every(x=>B.has(x))}
 function groupSignature(verbs){return'release|'+(verbs||[]).join('|')}
@@ -43,6 +44,12 @@ JSON.parse=function(text,reviver){
   pendingStableKey=''
  }
  return value
+};
+JSON.stringify=function(value,replacer,space){
+ if(captureNextAppState&&value&&typeof value==='object'&&value.groups&&typeof value.groups==='object'&&location.pathname.startsWith('/perfekt/')){
+  appState=value;if(!appStateKey)appStateKey=STATE_PREFIX+userSlug(activeProfile);captureNextAppState=false
+ }
+ return nativeStringify.call(JSON,value,replacer,space)
 };
 
 function mergeEvidence(current,old,verbs){
@@ -94,8 +101,8 @@ function restoreMarkedSnapshots(profile,visible,snapshots){
 }
 
 const recovery=window.SPPerfektRegroupRecovery;
-if(recovery?.migrate&&!recovery.__runtimeProgressFixV1){
- recovery.__runtimeProgressFixV1=true;
+if(recovery?.migrate&&!recovery.__runtimeProgressFixV2){
+ recovery.__runtimeProgressFixV2=true;
  const originalMigrate=recovery.migrate.bind(recovery);
  recovery.migrate=async function(args={}){
   const profile=args.profile||{},visible=[...(args.visible||[])],marks=resetMarks(profile),raw=readJSON(stateKey(profile)),snapshots={};
@@ -114,7 +121,7 @@ if(recovery?.migrate&&!recovery.__runtimeProgressFixV1){
 function activeRoute(){const q=new URLSearchParams(location.search);return{group:Math.max(0,Number(q.get('group'))||0),task:q.get('task')||''}}
 function activeGroupFromApp(groupId){const visible=window.SP_PERFEKT_RELEASE_SYNC?.visible||[],verbs=visible.slice((groupId-1)*GROUP_SIZE,groupId*GROUP_SIZE);if(!verbs.length)return null;return{id:groupId,verbs,signature:groupSignature(verbs)}}
 function appTaskState(groupId,task){const group=activeGroupFromApp(groupId);if(!group||!appState?.groups)return null;const gs=findGroupState(appState,group);if(!gs)return null;const run=gs.runs?.[String(gs.currentRun)];const st=run?.tasks?.[task];return st?{group,gs,run,st}:null}
-function persistAppState(){if(!appState||!appStateKey)return;try{nativeSet.call(localStorage,appStateKey,JSON.stringify(appState))}catch{}}
+function persistAppState(){if(!appState||!appStateKey)return;try{nativeSet.call(localStorage,appStateKey,nativeStringify.call(JSON,appState))}catch{}}
 
 let pendingAnswer=null;
 function captureAnswerAttempt(){
