@@ -29,7 +29,19 @@ function orderedReleasedVerbs(data,all){
  const active=uniq(releasedVerbs(data,all));
  const activeKeys=new Set(active.map(verbKey));
  const saved=releaseOrder(data);
- if(saved.length)return saved.filter(v=>activeKeys.has(verbKey(v)));
+ if(saved.length){
+  // Eine gespeicherte Lehrer-Reihenfolge kann bei älteren Kursen unvollständig sein.
+  // Bereits gespeicherte Verben behalten ihre Plätze; freigegebene Verben, die dort
+  // noch fehlen, werden ausschließlich hinten angefügt. So verschwinden keine
+  // freigegebenen Wörter und bestehende 20er-Gruppen werden nicht neu gemischt.
+  const ordered=saved.filter(v=>activeKeys.has(verbKey(v)));
+  const seen=new Set(ordered.map(verbKey));
+  for(const verb of active){
+   const key=verbKey(verb);
+   if(!seen.has(key)){seen.add(key);ordered.push(verb)}
+  }
+  return uniq(ordered)
+ }
  // Wichtig: Die Gruppenreihenfolge darf niemals vom individuellen Lernstand
  // eines TN abhängen. Ohne gespeicherte Lehrer-Reihenfolge gilt deshalb für
  // alle TN dieselbe kanonische Reihenfolge der freigegebenen Verben.
