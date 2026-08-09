@@ -8,10 +8,9 @@ function readOrder(data){
  const candidates=[data?.verbReleaseOrder,data?.releases?.Verben?.wordOrder,data?.releases?.verben?.wordOrder,data?.releases?.['Verben A1']?.wordOrder,data?.releases?.['verben-A1']?.wordOrder]
   .filter(Array.isArray).map(uniq).filter(list=>list.length);
  if(!candidates.length)return[];
- candidates.sort((a,b)=>b.length-a.length);
- const order=candidates[0].slice(),seen=new Set(order);
- for(const list of candidates.slice(1))for(const verb of list)if(!seen.has(verb)){seen.add(verb);order.push(verb)}
- return uniq(order)
+ const votes=new Map();
+ for(const list of candidates){const key=list.join('\u0001'),entry=votes.get(key)||{list,count:0};entry.count++;votes.set(key,entry)}
+ return [...votes.values()].sort((a,b)=>b.count-a.count||b.list.length-a.list.length)[0].list.slice()
 }
 function writeOrder(draft,order){
  order=uniq(order);
@@ -32,8 +31,8 @@ function normalizeOrder(draft,seed){
  return writeOrder(draft,order)
 }
 function install(){
- const draft=window.ReleaseDraft;if(!draft||draft.__verbReleaseOrderV3)return false;
- draft.__verbReleaseOrderV3=true;
+ const draft=window.ReleaseDraft;if(!draft||draft.__verbReleaseOrderV4)return false;
+ draft.__verbReleaseOrderV4=true;
  const oldOpen=draft.open;
  draft.open=function(course){
   const saved=readOrder(course||{});
@@ -58,7 +57,7 @@ function install(){
  const oldRender=window.renderVerbReleaseSection;
  if(typeof oldRender==='function')window.renderVerbReleaseSection=function(){
   const order=normalizeOrder(draft),groups=Math.ceil(order.length/GROUP_SIZE),last=order.length?((order.length-1)%GROUP_SIZE)+1:0;
-  const status='<div class="debug-box small"><strong>Maximal 20 Verben pro Gruppe.</strong> '+order.length+' freigegeben · '+groups+' Gruppe'+(groups===1?'':'n')+(groups?(' · letzte Gruppe: '+last+' Verb'+(last===1?'':'en')):'')+'. Neu freigeschaltete Verben werden immer hinten an die letzte Gruppe angefügt. Alle gespeicherten Reihenfolge-Felder werden synchron gehalten.</div>';
+  const status='<div class="debug-box small"><strong>Maximal 20 Verben pro Gruppe.</strong> '+order.length+' freigegeben · '+groups+' Gruppe'+(groups===1?'':'n')+(groups?(' · letzte Gruppe: '+last+' Verb'+(last===1?'':'en')):'')+'. Neu freigeschaltete Verben werden immer hinten angefügt. Abweichende alte Reihenfolge-Felder werden beim Speichern vereinheitlicht.</div>';
   return status+oldRender.apply(this,arguments)
  };
  window.SPVerbReleaseOrder={normalize:()=>normalizeOrder(draft),read:()=>readOrder(draft.data),groupSize:GROUP_SIZE};
