@@ -34,17 +34,11 @@ function orderedReleasedVerbs(data,all){
  const activeKeys=new Set(active.map(verbKey));
  const saved=releaseOrder(data);
  if(saved.length){
-  // Mehrere historische Speicherfelder können voneinander abweichen. Die Reihenfolge,
-  // die in den meisten Feldern übereinstimmt, ist maßgeblich; fehlende Verben kommen hinten dazu.
   const ordered=saved.filter(v=>activeKeys.has(verbKey(v)));
   const seen=new Set(ordered.map(verbKey));
-  for(const verb of active){
-   const key=verbKey(verb);
-   if(!seen.has(key)){seen.add(key);ordered.push(verb)}
-  }
+  for(const verb of active){const key=verbKey(verb);if(!seen.has(key)){seen.add(key);ordered.push(verb)}}
   return uniq(ordered)
  }
- // Ohne gespeicherte Lehrer-Reihenfolge gilt für alle TN dieselbe kanonische Reihenfolge.
  return uniq(all.filter(v=>activeKeys.has(verbKey(v))))
 }
 function installVerbGroups(active){
@@ -57,14 +51,18 @@ function installVerbGroups(active){
  VerbGroupsEngine.setActiveVerbs(ordered);
  const seen=new Map(),duplicates=[];
  for(const group of VerbGroupsEngine.GROUPS){for(const verb of group.verbs){const key=verbKey(verb);if(seen.has(key))duplicates.push({verb,firstGroup:seen.get(key),duplicateGroup:group.id});else seen.set(key,group.id)}}
- window.SP_VERB_GROUP_AUDIT={released:ordered.length,grouped:seen.size,duplicates,groups:VerbGroupsEngine.GROUPS.map(g=>({id:g.id,count:g.verbs.length,verbs:g.verbs.slice()}))};
+ window.SP_VERB_GROUP_AUDIT={released:ordered.length,grouped:seen.size,duplicates,groups:VerbGroupsEngine.GROUPS.map(g=>({id:g.id,count:g.verbs.length,verbs:g.verbs.slice()})),studentOrderSource:window.SP_STUDENT_VERB_ORDER_LOCK?.source||'course-order'};
  if(duplicates.length)console.error('Doppelte Verben zwischen Gruppen verhindert',duplicates)
 }
 
 async function install(profile,preview,assignments){
  const data=assignments&&typeof assignments==='object'?assignments:{};
  const locked=!preview&&!moduleOpen(data,'Verben');
- const active=preview?CANONICAL_ALL.slice():orderedReleasedVerbs(data,CANONICAL_ALL);
+ let active=preview?CANONICAL_ALL.slice():orderedReleasedVerbs(data,CANONICAL_ALL);
+ if(!preview&&window.SPStudentVerbOrderLock?.resolve){
+  try{active=await window.SPStudentVerbOrderLock.resolve({profile,active})}
+  catch(error){console.warn('Persönliche Gruppenreihenfolge konnte nicht wiederhergestellt werden',error)}
+ }
  installVerbGroups(active);
  try{if(!preview&&window.SPVerbProgressPersistence?.restoreCloud)await window.SPVerbProgressPersistence.restoreCloud()}catch(error){console.warn('Gespeicherter Verben-Fortschritt konnte nicht wiederhergestellt werden',error)}
  VerbGroupsUI.install({dashboard:dashboardHref(),logout,locked});
