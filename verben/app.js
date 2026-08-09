@@ -1,5 +1,5 @@
 import{requireLogin,getActiveProfile,getActiveRole,dashboardHref,logout}from'/js/auth.js?v=login-main-4';
-import{loadCourseRelease,moduleOpen,releasedVerbs}from'/js/course-releases.js?v=verb-release-order4';
+import{loadCourseRelease,moduleOpen,releasedVerbs}from'/js/course-releases.js?v=verb-release-order5';
 
 const CANONICAL_ALL=VerbGroupsEngine.ALL.slice();
 const verbKey=v=>String(v||'').normalize('NFC').trim().toLowerCase().replace(/\s+/g,' ');
@@ -25,18 +25,17 @@ function releaseOrder(data){
  const candidates=[data?.verbReleaseOrder,data?.releases?.Verben?.wordOrder,data?.releases?.verben?.wordOrder,data?.releases?.['Verben A1']?.wordOrder,data?.releases?.['verben-A1']?.wordOrder]
   .filter(Array.isArray).map(uniq).filter(list=>list.length);
  if(!candidates.length)return[];
- candidates.sort((a,b)=>b.length-a.length);
- const ordered=candidates[0].slice(),seen=new Set(ordered.map(verbKey));
- for(const list of candidates.slice(1))for(const verb of list){const key=verbKey(verb);if(!seen.has(key)){seen.add(key);ordered.push(verb)}}
- return uniq(ordered)
+ const votes=new Map();
+ for(const list of candidates){const key=list.map(verbKey).join('\u0001'),entry=votes.get(key)||{list,count:0};entry.count++;votes.set(key,entry)}
+ return [...votes.values()].sort((a,b)=>b.count-a.count||b.list.length-a.list.length)[0].list.slice()
 }
 function orderedReleasedVerbs(data,all){
  const active=uniq(releasedVerbs(data,all));
  const activeKeys=new Set(active.map(verbKey));
  const saved=releaseOrder(data);
  if(saved.length){
-  // Die längste vorhandene Kurs-Reihenfolge ist maßgeblich. Kürzere/stale Kopien
-  // dürfen bestehende Gruppen nicht mehr neu sortieren. Fehlende Verben kommen hinten dazu.
+  // Mehrere historische Speicherfelder können voneinander abweichen. Die Reihenfolge,
+  // die in den meisten Feldern übereinstimmt, ist maßgeblich; fehlende Verben kommen hinten dazu.
   const ordered=saved.filter(v=>activeKeys.has(verbKey(v)));
   const seen=new Set(ordered.map(verbKey));
   for(const verb of active){
@@ -52,20 +51,12 @@ function installVerbGroups(active){
  const ordered=uniq(active);
  const internalAll=VerbGroupsEngine.ALL,activeKeys=new Set(ordered.map(verbKey));
  const rest=CANONICAL_ALL.filter(v=>!activeKeys.has(verbKey(v)));
- // Freigabereihenfolge = Gruppenreihenfolge. Maximal 20 pro Gruppe; letzte Gruppe darf kleiner sein.
  internalAll.splice(0,internalAll.length,...ordered,...rest);
  window.SP_VERB_PENDING={verbs:[],count:0,needed:0};
  window.SP_VERB_RELEASE_VISIBLE={verbs:ordered.slice(),count:ordered.length,groupSize:20,partialLastGroup:ordered.length%20};
  VerbGroupsEngine.setActiveVerbs(ordered);
-
  const seen=new Map(),duplicates=[];
- for(const group of VerbGroupsEngine.GROUPS){
-  for(const verb of group.verbs){
-   const key=verbKey(verb);
-   if(seen.has(key))duplicates.push({verb,firstGroup:seen.get(key),duplicateGroup:group.id});
-   else seen.set(key,group.id)
-  }
- }
+ for(const group of VerbGroupsEngine.GROUPS){for(const verb of group.verbs){const key=verbKey(verb);if(seen.has(key))duplicates.push({verb,firstGroup:seen.get(key),duplicateGroup:group.id});else seen.set(key,group.id)}}
  window.SP_VERB_GROUP_AUDIT={released:ordered.length,grouped:seen.size,duplicates,groups:VerbGroupsEngine.GROUPS.map(g=>({id:g.id,count:g.verbs.length,verbs:g.verbs.slice()}))};
  if(duplicates.length)console.error('Doppelte Verben zwischen Gruppen verhindert',duplicates)
 }
@@ -75,9 +66,7 @@ async function install(profile,preview,assignments){
  const locked=!preview&&!moduleOpen(data,'Verben');
  const active=preview?CANONICAL_ALL.slice():orderedReleasedVerbs(data,CANONICAL_ALL);
  installVerbGroups(active);
- try{
-  if(!preview&&window.SPVerbProgressPersistence?.restoreCloud)await window.SPVerbProgressPersistence.restoreCloud();
- }catch(error){console.warn('Gespeicherter Verben-Fortschritt konnte nicht wiederhergestellt werden',error)}
+ try{if(!preview&&window.SPVerbProgressPersistence?.restoreCloud)await window.SPVerbProgressPersistence.restoreCloud()}catch(error){console.warn('Gespeicherter Verben-Fortschritt konnte nicht wiederhergestellt werden',error)}
  VerbGroupsUI.install({dashboard:dashboardHref(),logout,locked});
  window.SP_VERBEN_READY=true
 }
@@ -90,9 +79,6 @@ async function init(){
  try{const raw=sessionStorage.getItem('SP_TEACHER_PREVIEW');if(raw==='1'||JSON.parse(raw||'null')?.teacherPreview===true)preview=true}catch{}
  window.VerbGroupsProfile=profile;
  VerbGroupsEngine.setContext(profile,preview);
- // Nur ein Gruppenaufbau pro Seitenaufruf. loadCourseRelease hat selbst einen
- // Cache/Fallback; dadurch kann eine spätere Firebase-Antwort die Gruppen nicht
- // mitten im Lernen noch einmal umsortieren.
  let assignments;
  try{assignments=await loadCourseRelease(profile)}catch{assignments=storedAssignments(profile)}
  await install(profile,preview,assignments||storedAssignments(profile))
