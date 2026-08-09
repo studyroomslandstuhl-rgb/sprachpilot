@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__L6T4_ACCEPTANCE_FINAL_V1)return;
-window.__L6T4_ACCEPTANCE_FINAL_V1=true;
+if(window.__L6T4_ACCEPTANCE_FINAL_V2)return;
+window.__L6T4_ACCEPTANCE_FINAL_V2=true;
 
 const normalize=value=>String(value??'')
  .trim()
@@ -26,9 +26,7 @@ if(data){
   }
  }
  const vocabulary=data.vocabulary||data.words||[];
- for(const item of vocabulary){
-  if(normalize(item?.word)==='ich glaube')item.word='Ich glaube …';
- }
+ for(const item of vocabulary){if(normalize(item?.word)==='ich glaube')item.word='Ich glaube …'}
 }
 
 /* app.js hatte eine zweite, ältere Vergleichsfunktion. Diese ist jetzt maßgeblich. */
@@ -51,6 +49,15 @@ if(typeof window.l6t4Load==='function'&&typeof window.l6t4Save==='function'){
   window.l6t4Save(file,state);
  };
 }
+
+/* Die alte Oberfläche behauptete nach einer richtigen Korrektur noch, der Eintrag käme wieder. */
+function cleanFeedback(){
+ document.querySelectorAll('.feedback .ok').forEach(box=>{
+  if(/Der Dialog kommt am Ende noch einmal/i.test(box.textContent||''))box.textContent='Richtig. Korrektur akzeptiert.';
+ });
+}
+new MutationObserver(cleanFeedback).observe(document.documentElement,{childList:true,subtree:true});
+cleanFeedback();
 
 window.L6T4AcceptanceFinal={normalize};
 })();
