@@ -1,20 +1,26 @@
 import{getActiveProfile,getActiveRole}from'/js/auth.js?v=login-main-4';
-import{loadCourseRelease,releasedVerbs}from'/js/course-releases.js?v=verb-release-order3';
+import{loadCourseRelease,releasedVerbs}from'/js/course-releases.js?v=verb-release-order4';
 
 const GROUP_SIZE=20;
 const profile=getActiveProfile()||{};
 let preview=String(getActiveRole()||'').toLowerCase()==='teacher';
 try{const raw=sessionStorage.getItem('SP_TEACHER_PREVIEW');if(raw==='1'||JSON.parse(raw||'null')?.teacherPreview===true)preview=true}catch{}
 function uniq(list){const seen=new Set(),out=[];(list||[]).forEach(value=>{const verb=String(typeof value==='string'?value:value?.v||'').trim();if(verb&&!seen.has(verb)){seen.add(verb);out.push(verb)}});return out}
-function releaseOrder(data){const candidates=[data?.verbReleaseOrder,data?.releases?.Verben?.wordOrder,data?.releases?.verben?.wordOrder,data?.releases?.['Verben A1']?.wordOrder,data?.releases?.['verben-A1']?.wordOrder];return uniq(candidates.find(Array.isArray)||[])}
+function releaseOrder(data){
+ const candidates=[data?.verbReleaseOrder,data?.releases?.Verben?.wordOrder,data?.releases?.verben?.wordOrder,data?.releases?.['Verben A1']?.wordOrder,data?.releases?.['verben-A1']?.wordOrder]
+  .filter(Array.isArray).map(uniq).filter(list=>list.length);
+ if(!candidates.length)return[];
+ candidates.sort((a,b)=>b.length-a.length);
+ const ordered=candidates[0].slice(),seen=new Set(ordered);
+ for(const list of candidates.slice(1))for(const verb of list)if(!seen.has(verb)){seen.add(verb);ordered.push(verb)}
+ return uniq(ordered)
+}
 function orderedReleased(data,all){
  const active=preview?all.slice():releasedVerbs(data,all);if(preview)return uniq(active);
  const activeList=uniq(active),activeSet=new Set(activeList),allowed=new Set(all),savedOrder=releaseOrder(data),explicit=savedOrder.filter(v=>allowed.has(v)&&activeSet.has(v));
  if(savedOrder.length){
-  // Bei älteren Kursen kann die gespeicherte Freigabereihenfolge unvollständig
-  // sein. Vorhandene Wörter behalten ihre Plätze; fehlende, aber freigegebene
-  // Wörter werden nur hinten ergänzt. Dadurch verschwinden keine Wörter und
-  // bestehende Perfekt-Gruppen werden nicht neu zusammengeschoben.
+  // Die längste vorhandene Kurs-Reihenfolge ist maßgeblich. Kürzere/stale Kopien
+  // dürfen bestehende Gruppen nicht mehr neu sortieren. Fehlende Verben kommen hinten dazu.
   const seen=new Set(explicit);
   for(const verb of activeList){if(allowed.has(verb)&&!seen.has(verb)){seen.add(verb);explicit.push(verb)}}
   return uniq(explicit)
@@ -45,4 +51,4 @@ Array.prototype.push=function(...items){
  }
  return originalPush.apply(this,items)
 };
-try{await import('./app-stable.js?v=perfekt-progress-restore5')}finally{setTimeout(()=>{if(Array.prototype.push!==originalPush)Array.prototype.push=originalPush},6000)}
+try{await import('./app-stable.js?v=perfekt-progress-restore6')}finally{setTimeout(()=>{if(Array.prototype.push!==originalPush)Array.prototype.push=originalPush},6000)}
