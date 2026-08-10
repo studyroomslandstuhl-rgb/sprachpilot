@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const TARGET='dialoge.html?v=20260810-progress-repair1';
+const TARGET='dialoge.html?v=20260810-progress-repair2';
 const FILE='task-dialog-abc';
 const CURRENT_KEY='SP_L6_T4_V2_'+FILE;
 const LEGACY_KEYS=[
@@ -30,10 +30,19 @@ function percent(state){
 }
 function normalizeFive(state){
  if(!state)return null;
- const done=[...new Set((state.done||[]).map(Number).filter(i=>i>=0&&i<5))];
- if(percent(state)>=100)while(done.length<5)done.push(done.length);
- const current=Number.isInteger(Number(state.current))&&!done.includes(Number(state.current))?Number(state.current):null;
- const queue=[...new Set((Array.isArray(state.queue)?state.queue:[]).map(Number).filter(i=>i>=0&&i<5&&!done.includes(i)&&i!==current))];
+ const sourceTotal=Math.max(0,Number(state.total)||0);
+ const pct=percent(state);
+ let done=[];
+ if(sourceTotal===5){
+  done=[...new Set((state.done||[]).map(Number).filter(i=>i>=0&&i<5))];
+ }else{
+  const doneCount=pct>=100?5:Math.max(0,Math.min(5,Math.floor(pct*5/100)));
+  done=[...Array(doneCount).keys()];
+ }
+ const current=sourceTotal===5&&Number.isInteger(Number(state.current))&&!done.includes(Number(state.current))?Number(state.current):null;
+ const queue=sourceTotal===5
+  ?[...new Set((Array.isArray(state.queue)?state.queue:[]).map(Number).filter(i=>i>=0&&i<5&&!done.includes(i)&&i!==current))]
+  :[...Array(5).keys()].filter(i=>!done.includes(i));
  return {...state,total:5,done,queue,current,tries:Number(state.tries)||0,hadWrong:!!state.hadWrong};
 }
 function strongestState(){
