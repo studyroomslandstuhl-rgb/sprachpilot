@@ -20,6 +20,7 @@ function isPreview(){const role=String(getActiveRole()||localStorage.getItem('SP
 function isTopic(v){return !!(v&&typeof v==='object'&&!Array.isArray(v)&&(v.lifetime||v.tasks||v.exam||v.current||v.progressPercent!=null))}
 function modulePoints(mod={},exclude=''){let total=0;for(const[key,topic]of Object.entries(mod||{})){if(key===exclude||key==='state'||key==='progress'||key==='totals'||!isTopic(topic))continue;total+=point(topic?.lifetime?.points)}return total}
 function allModulePoints(progress={}){let total=0;for(const key of MODULES)total+=modulePoints(progress[key]||{});return total}
+function globalPoints(progress={}){return Math.max(point(progress?.ranking?.points),point(progress?.totals?.points),point(progress?.pointsTotal),point(progress?.lifetimePoints),point(progress?.punkteGesamt),point(localStorage.getItem('SP_POINTS_TOTAL')))}
 function runPoints(run){return Object.values(run?.awards?.tasks||{}).reduce((sum,n)=>sum+(Number(n)||0),0)+(Number(run?.awards?.examPoints)||0)}
 function impliedLocalPoints(){
  let total=0;
@@ -52,18 +53,26 @@ async function sync(){
  if(syncing||isPreview()||!E?.GROUPS?.length)return;syncing=true;
  try{
   const p=profile(),progress=await getProgress(),id=ids(p)[0];if(!id)return;
+  const previousGlobal=globalPoints(progress),previousComputed=allModulePoints(progress);
+  const previousCarry=point(progress?.verben?.[CARRY_ID]?.lifetime?.points);
+  const previousRecovery=progress?.metadata?.pointRecovery||{};
+  let appliedCarry=point(previousRecovery.verbenApplied);
+  if(!appliedCarry&&previousCarry>0&&previousGlobal<=previousComputed)appliedCarry=previousCarry;
   const target=Math.max(point(E.totalPoints?.()),impliedLocalPoints());
   try{window.SPVerbRegroupRecovery?.preserveFloor?.(target)}catch{}
   const verben={...(progress.verben||{})},actual=modulePoints(verben,CARRY_ID),carryNeeded=Math.max(0,target-actual);
   if(carryNeeded>0){const old=verben[CARRY_ID]||{};verben[CARRY_ID]={...old,title:'Verben · wiederhergestellte Punkte',moduleTitle:'Verben',level:'A1',technicalRecovery:true,progressPercent:Number(old.progressPercent)||0,current:{...(old.current||{}),updatedAt:new Date().toISOString()},lifetime:{...(old.lifetime||{}),points:carryNeeded}}}
   else if(verben[CARRY_ID])verben[CARRY_ID]={...verben[CARRY_ID],lifetime:{...(verben[CARRY_ID].lifetime||{}),points:0}};
-  const metadata={...(progress.metadata||{}),verbenGroups:groupMetadata()};
+  const carryDelta=Math.max(0,carryNeeded-appliedCarry);
+  const nowIso=new Date().toISOString();
+  const pointRecovery={...previousRecovery,verbenApplied:Math.max(appliedCarry,carryNeeded),verbenLastDelta:carryDelta,verbenUpdatedAt:nowIso};
+  const metadata={...(progress.metadata||{}),verbenGroups:groupMetadata(),pointRecovery};
   const next={...progress,verben,metadata},computed=allModulePoints(next);
-  const rankingPoints=Math.max(computed,point(progress?.ranking?.points),point(progress?.totals?.points),point(progress?.pointsTotal),point(progress?.lifetimePoints),point(progress?.punkteGesamt),point(localStorage.getItem('SP_POINTS_TOTAL')));
-  const c=course(p),patch={verben,metadata,ranking:{...(progress.ranking||{}),points:rankingPoints,updatedAt:new Date().toISOString()},totals:{...(progress.totals||{}),points:rankingPoints,updatedAt:new Date().toISOString()},lifetimePoints:rankingPoints,pointsTotal:rankingPoints,punkteGesamt:rankingPoints,studentId:id,userId:id,docId:id,canonicalStudentId:id,aliasIds:ids(p),studentName:displayName(p),email:p.email||progress.email||'',kurs:c||progress.kurs||'',kursnummer:c||progress.kursnummer||'',courseCode:c||progress.courseCode||'',lastActive:serverTimestamp(),updatedAt:serverTimestamp(),lastActiveAt:new Date().toISOString(),lastPage:location.pathname};
+  const rankingPoints=Math.max(computed,previousGlobal+carryDelta);
+  const c=course(p),patch={verben,metadata,ranking:{...(progress.ranking||{}),points:rankingPoints,updatedAt:nowIso},totals:{...(progress.totals||{}),points:rankingPoints,updatedAt:nowIso},lifetimePoints:rankingPoints,pointsTotal:rankingPoints,punkteGesamt:rankingPoints,studentId:id,userId:id,docId:id,canonicalStudentId:id,aliasIds:ids(p),studentName:displayName(p),email:p.email||progress.email||'',kurs:c||progress.kurs||'',kursnummer:c||progress.kursnummer||'',courseCode:c||progress.courseCode||'',lastActive:serverTimestamp(),updatedAt:serverTimestamp(),lastActiveAt:nowIso,lastPage:location.pathname};
   await setDoc(doc(db,'progress',id),patch,{merge:true});
-  try{localStorage.setItem('SP_POINTS_TOTAL',String(rankingPoints));localStorage.setItem('SP_VERBEN_FIREBASE_POINTS_SYNC',new Date().toISOString())}catch{}
-  window.SP_VERBEN_FIREBASE_SYNC={ok:true,verbenPoints:actual+carryNeeded,rankingPoints,at:new Date().toISOString()}
+  try{localStorage.setItem('SP_POINTS_TOTAL',String(rankingPoints));localStorage.setItem('SP_VERBEN_FIREBASE_POINTS_SYNC',nowIso)}catch{}
+  window.SP_VERBEN_FIREBASE_SYNC={ok:true,verbenPoints:actual+carryNeeded,recoveryAdded:carryDelta,rankingPoints,at:nowIso}
  }catch(error){console.warn('Verben-Punkte konnten nicht mit Firebase/Rangliste synchronisiert werden',error);window.SP_VERBEN_FIREBASE_SYNC={ok:false,error:String(error?.message||error),at:new Date().toISOString()}}
  finally{syncing=false}
 }
