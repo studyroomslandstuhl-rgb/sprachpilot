@@ -22,6 +22,9 @@ html,body{
   background:linear-gradient(180deg,#f4effb 0%,#fbf9ff 48%,#fff 100%)!important;
   color:var(--text)!important;
 }
+/* Früh verfügbare Größenbegrenzung: verhindert ein großes Logo, bevor sp-header.css nachgeladen ist. */
+.sp-header__logo{width:66px;height:66px;overflow:hidden}
+.sp-header__logo img{width:52px;height:52px;object-fit:contain;display:block}
 .sp-header{background:#b397e1!important}
 .l7-topbar,.l7-card,.l7-module,.l7-question-card,.l7-learning{
   border-color:var(--line)!important;
