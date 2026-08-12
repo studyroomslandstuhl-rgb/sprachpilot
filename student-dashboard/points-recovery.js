@@ -11,7 +11,12 @@ function profile(){return getActiveProfile()||{} }
 function course(p=profile()){return String(p.courseCode||p.kurs||p.kursnummer||p.course||p.courseDocId||localStorage.getItem('SP_COURSE_CODE')||'').trim()}
 function mail(p=profile()){return String(p.email||'').trim().toLowerCase()}
 function fallbackId(p=profile()){const c=norm(p.courseDocId||course(p)||'kurs'),person=norm(mail(p)||p.vorname||p.firstName||p.name||'student');return c&&person?c+'_'+person:''}
-function baseIds(p=profile()){return uniq([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem('SP_STUDENT_ID'),fallbackId(p)]).filter(id=>id&&id!=='guest')}
+function baseIds(p=profile()){
+ const explicit=uniq([p.docId,p.studentId,p.userId,p.uid,p.id,fallbackId(p)]).filter(id=>id&&id!=='guest');
+ const local=String(localStorage.getItem('SP_STUDENT_ID')||'').trim();
+ if(local&&(!explicit.length||explicit.includes(local)))explicit.push(local);
+ return uniq(explicit);
+}
 function isStudent(){const r=String(getActiveRole()||localStorage.getItem('SP_LOGIN_ROLE')||'student').toLowerCase();return r!=='teacher'&&r!=='lehrer'&&r!=='admin'}
 function isTopic(key,value){return !TECH.has(key)&&!!(value&&typeof value==='object'&&!Array.isArray(value)&&(value.lifetime||value.tasks||value.exam||value.current||value.progressPercent!=null||value.pointsTotal!=null))}
 function maxMap(a={},b={}){const out={...(a||{})};for(const[k,v]of Object.entries(b||{}))out[k]=Math.max(num(out[k]),num(v));return out}
@@ -52,7 +57,6 @@ function mergeProgress(base={},incoming={}){
  out.metadata={...(base.metadata||{}),...(incoming.metadata||{})};
  return out;
 }
-function modulePoints(record={}){let total=0;for(const m of MODULES){for(const[k,t]of Object.entries(record[m]||{})){if(!isTopic(k,t))continue;total+=Math.max(num(t?.lifetime?.points),num(t?.pointsTotal),num(t?.points))}}return total}
 function aggregatePoints(r={}){return Math.max(num(r.ranking?.points),num(r.totals?.points),num(r.pointsTotal),num(r.lifetimePoints),num(r.punkteGesamt),num(r.points))}
 function localFloor(ids){const localId=String(localStorage.getItem('SP_STUDENT_ID')||'');if(!localId||!ids.includes(localId))return 0;return num(localStorage.getItem('SP_POINTS_TOTAL'))}
 async function collectDocs(p){
@@ -72,6 +76,6 @@ export async function repairDashboardPoints(){
  const computed=Object.values(breakdown).reduce((a,b)=>a+b,0),corrected=Math.max(computed,aggregate,localFloor(ids));
  const nowIso=new Date().toISOString();
  const patch={};for(const m of MODULES)if(merged[m]&&Object.keys(merged[m]).length)patch[m]=merged[m];
- patch.ranking={...(merged.ranking||{}),points:corrected,updatedAt:nowIso};patch.totals={...(merged.totals||{}),points:corrected,updatedAt:nowIso};patch.pointsTotal=corrected;patch.lifetimePoints=corrected;patch.punkteGesamt=corrected;patch.studentId=canonical;patch.userId=canonical;patch.docId=canonical;patch.canonicalStudentId=canonical;patch.aliasIds=[...aliases];patch.email=p.email||merged.email||'';patch.kurs=course(p)||merged.kurs||'';patch.kursnummer=course(p)||merged.kursnummer||'';patch.courseCode=course(p)||merged.courseCode||'';patch.updatedAt=serverTimestamp();patch.lastActive=serverTimestamp();patch.metadata={...(merged.metadata||{}),pointAudit:{...(merged.metadata?.pointAudit||{}),version:2,lastRepairAt:nowIso,sourceIds:rows.map(r=>r.id),computedPoints:computed,aggregateFloor:aggregate,correctedPoints:corrected,breakdown}};
+ patch.ranking={...(merged.ranking||{}),points:corrected,updatedAt:nowIso};patch.totals={...(merged.totals||{}),points:corrected,updatedAt:nowIso};patch.pointsTotal=corrected;patch.lifetimePoints=corrected;patch.punkteGesamt=corrected;patch.studentId=canonical;patch.userId=canonical;patch.docId=canonical;patch.canonicalStudentId=canonical;patch.aliasIds=[...aliases];patch.email=p.email||merged.email||'';patch.kurs=course(p)||merged.kurs||'';patch.kursnummer=course(p)||merged.kursnummer||'';patch.courseCode=course(p)||merged.courseCode||'';patch.updatedAt=serverTimestamp();patch.lastActive=serverTimestamp();patch.metadata={...(merged.metadata||{}),pointAudit:{...(merged.metadata?.pointAudit||{}),version:3,lastRepairAt:nowIso,sourceIds:rows.map(r=>r.id),computedPoints:computed,aggregateFloor:aggregate,correctedPoints:corrected,breakdown}};
  try{await setDoc(doc(db,'progress',canonical),patch,{merge:true});localStorage.setItem('SP_STUDENT_ID',canonical);localStorage.setItem('SP_POINTS_OWNER_ID',canonical);localStorage.setItem('SP_POINTS_TOTAL',String(corrected));localStorage.setItem('SP_POINTS_AUDIT_LAST',JSON.stringify({at:nowIso,corrected,computed,aggregate,sources:rows.map(r=>r.id),breakdown}));window.SP_POINTS_AUDIT={ok:true,corrected,computed,aggregate,sources:rows.map(r=>r.id),breakdown};return window.SP_POINTS_AUDIT}catch(error){window.SP_POINTS_AUDIT={ok:false,error:String(error?.message||error),corrected,computed,aggregate,breakdown};return window.SP_POINTS_AUDIT}
 }
