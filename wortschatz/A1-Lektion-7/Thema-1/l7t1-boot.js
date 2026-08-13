@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t1-grammar1';
+const version='l7t1-polish1';
 
 function load(src){
  return new Promise((resolve,reject)=>{
@@ -23,7 +23,9 @@ Promise.resolve(window.L7_THEME_READY)
  .then(()=>{installBunnyImages();return load(`../shared/l7-answer-normalization.js?v=${version}`)})
  .then(()=>{
   if(page==='theme'){
-   return load(`../shared/l7-theme-standard.js?v=${version}`).then(()=>window.L7ThemeStandard.render(theme));
+   return load(`../shared/l7-theme-standard.js?v=${version}`)
+    .then(()=>load(`l7t1-l6-layout.js?v=${version}`))
+    .then(()=>{window.L7ThemeStandard.render(theme);window.L7T1L6Layout?.run?.()});
   }
   if(window.L7S)window.L7S.header=()=>'';
   return load(`../shared/l7-ui.js?v=${version}`)
@@ -31,9 +33,15 @@ Promise.resolve(window.L7_THEME_READY)
    .then(()=>load(`l7t1-conjugation-ui.js?v=${version}`))
    .then(()=>load(`l7t1-tasks-2-4-ui.js?v=${version}`))
    .then(()=>load(`l7t1-grammar-ui.js?v=${version}`))
+   .then(()=>load(`l7t1-ability-ui.js?v=${version}`))
    .then(()=>{
     installBunnyImages();
-    return window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'));
+    return load(`l7t1-l6-layout.js?v=${version}`);
+   })
+   .then(()=>{
+    const result=window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'));
+    window.L7T1L6Layout?.run?.();
+    return result;
    });
  })
  .catch(error=>{
