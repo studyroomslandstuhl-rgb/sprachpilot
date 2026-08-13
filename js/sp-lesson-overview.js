@@ -203,10 +203,13 @@ export async function renderLessonOverview(config){
   const profile=activeProfile();
 
   function draw(releaseData={},progress={},releaseReady=false,progressReady=false){
+    const teacherAccess=activeRole()==="teacher";
     const cards=(config.themes||[]).map(theme=>{
-      const open=releaseReady&&typeof releaseData.themeOpen==="function"
-        ?releaseData.themeOpen(releaseData.data,config.module||"wortschatz",config.lessonId,theme.id)
-        :true;
+      const open=teacherAccess
+        ?true
+        :(releaseReady&&typeof releaseData.themeOpen==="function"
+          ?releaseData.themeOpen(releaseData.data,config.module||"wortschatz",config.lessonId,theme.id)
+          :false);
       const topic=progressReady?findTopicProgress(progress,config,theme):{};
       const started=progressReady?themeStarted(topic,theme):false;
       const allComplete=progressReady?themeAllComplete(topic,theme):false;
@@ -224,7 +227,7 @@ export async function renderLessonOverview(config){
     bindHeader(root);
   }
 
-  // Sofort darstellen. Firebase, Netzwerk und Fortschritt dürfen die Seite nie blockieren.
+  // Sofort darstellen. Schüler bleiben bis zur bestätigten Kursfreigabe gesperrt.
   draw();
 
   const timeoutMs=Number(config.loadTimeoutMs||3500);
