@@ -57,11 +57,14 @@ function transform(theme){
   item.infinitive=infinitive;
   item.perfect=perfect;
   item.overviewLabel=`${infinitive} - ${perfect}`;
+  if(!item.word)item.word=infinitive;
+  if(!item.audio)item.audio=infinitive;
+  item.full=item.overviewLabel;
   item.type='verb';
   item.category='verb';
   item.translations={...(item.translations&&typeof item.translations==='object'?item.translations:{}),...rowTranslations(translations)};
  });
- theme.perfectOverviewRevision='l7-perfect-overview-2026-08-13-v1';
+ theme.perfectOverviewRevision='l7-perfect-overview-2026-08-13-v2';
  window.L7_THEME=theme;
  return theme;
 }
