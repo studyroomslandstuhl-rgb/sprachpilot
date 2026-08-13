@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t1-optional-ellipsis1';
+const version='l7t1-bunny-direct4';
 
 function load(src){
  return new Promise((resolve,reject)=>{
@@ -14,10 +14,13 @@ function load(src){
   document.body.appendChild(script);
  });
 }
+function installBunnyImages(){
+ try{return window.L7T1BunnyImages?.installRenderer?.()||false}catch(e){console.warn('L7T1 Bunny renderer',e);return false}
+}
 
 Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
- .then(()=>load(`../shared/l7-answer-normalization.js?v=${version}`))
+ .then(()=>{installBunnyImages();return load(`../shared/l7-answer-normalization.js?v=${version}`)})
  .then(()=>{
   if(page==='theme'){
    return load(`../shared/l7-theme-standard.js?v=${version}`).then(()=>window.L7ThemeStandard.render(theme));
@@ -26,7 +29,10 @@ Promise.resolve(window.L7_THEME_READY)
   return load(`../shared/l7-ui.js?v=${version}`)
    .then(()=>load('../shared/l7-external-links.js?v=1'))
    .then(()=>load(`l7t1-conjugation-ui.js?v=${version}`))
-   .then(()=>window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task')));
+   .then(()=>{
+    installBunnyImages();
+    return window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'));
+   });
  })
  .catch(error=>{
   console.error(error);
