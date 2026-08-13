@@ -111,9 +111,9 @@ function itemSemantic(item){
 function candidates(file,alt='',context=''){
  const raw=basename(file);
  return unique([
+  ...mappedList(keyFromFile(raw)),
   ...mappedList(alt),
   ...mappedList(context),
-  ...mappedList(keyFromFile(raw)),
   raw
  ]);
 }
@@ -124,7 +124,7 @@ function resolveFile(file,alt='',context=''){
 function resolveItem(item){
  const current=basename(item?.image||item?.img||'');
  const semantic=itemSemantic(item);
- return mappedList(semantic)[0]||mappedList(keyFromFile(current))[0]||current;
+ return mappedList(keyFromFile(current))[0]||mappedList(semantic)[0]||current;
 }
 function url(file){return CDN+encodeURIComponent(basename(file))}
 function escapeAttr(value){return String(value||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -146,6 +146,11 @@ function nextCandidate(img){
  }
  return false;
 }
+function showFallback(img){
+ img.hidden=true;
+ const fallback=img.nextElementSibling;
+ if(fallback?.classList?.contains('l7-image-fallback')||fallback?.classList?.contains('image-fallback')||fallback?.classList?.contains('sp-overview-word__fallback'))fallback.hidden=false;
+}
 function patchImage(img){
  if(!(img instanceof HTMLImageElement)||!img.closest('#app'))return;
  if(img.closest('.l7-brand,.brand,.topbar,.l7-topbar,.sp-header'))return;
@@ -158,12 +163,7 @@ function patchImage(img){
  img.dataset.l7t1Signature=signature;
  img.dataset.l7t1Candidates=JSON.stringify(list);
  img.dataset.l7t1Pos='0';
- img.onerror=function(){
-  if(nextCandidate(this))return;
-  this.hidden=true;
-  const fallback=this.nextElementSibling;
-  if(fallback?.classList?.contains('l7-image-fallback')||fallback?.classList?.contains('image-fallback')||fallback?.classList?.contains('sp-overview-word__fallback'))fallback.hidden=false;
- };
+ img.onerror=function(){if(!nextCandidate(this))showFallback(this)};
  img.onload=function(){
   this.hidden=false;
   const fallback=this.nextElementSibling;
@@ -180,8 +180,9 @@ function patchTheme(theme){
   seen.add(value);
   if(Array.isArray(value)){value.forEach(walk);return}
   const mapped=resolveItem(value);
-  const hasSemantic=!!itemSemantic(value);
-  if(mapped&&hasSemantic){
+  const hasImageSlot=('image' in value)||('img' in value);
+  const looksLikeVocab=!!(value.word||value.full||value.term)&&('meaning' in value||'plural' in value||'article' in value);
+  if(mapped&&(hasImageSlot||looksLikeVocab)){
    if('image' in value||!('img' in value))value.image=mapped;
    if('img' in value)value.img=mapped;
   }
@@ -207,7 +208,7 @@ function installRenderer(){
 
 window.L7T1BunnyImages={
  uploaded:UPLOADED.slice(),map:MAP,candidates,resolveFile,resolveItem,patchAll,patchImage,patchTheme,imageHtml,installRenderer,
- fail(img){if(!nextCandidate(img))img.hidden=true}
+ fail(img){if(!nextCandidate(img))showFallback(img)}
 };
 
 window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
