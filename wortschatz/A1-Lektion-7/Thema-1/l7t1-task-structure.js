@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_TASK_STRUCTURE_3)return;
-window.__SP_L7T1_TASK_STRUCTURE_3=true;
+if(window.__SP_L7T1_TASK_STRUCTURE_4)return;
+window.__SP_L7T1_TASK_STRUCTURE_4=true;
 
 const REMOVE_IDS=new Set([
  'partnerinterview',
@@ -100,6 +100,12 @@ function modalChoiceTask(verbTask,politeTask){
  }
  return output;
 }
+function forceFirstFour(tasks){
+ const ids=['karteikarten','bild-erklaerung-wort','artikel-plural','nomen-verben-verbinden'];
+ const first=ids.map(id=>tasks.find(task=>task?.id===id)).filter(Boolean);
+ const selected=new Set(first);
+ return [...first,...tasks.filter(task=>!selected.has(task))];
+}
 function transform(theme){
  if(!theme||!Array.isArray(theme.tasks))throw new Error('Die L7T1-Aufgabenstruktur konnte nicht geladen werden.');
  let tasks=[...theme.tasks];
@@ -123,13 +129,7 @@ function transform(theme){
  }
 
  tasks=tasks.filter(task=>!REMOVE_IDS.has(task?.id));
-
- const combinations=tasks.find(task=>task.id==='nomen-verben-verbinden');
- if(combinations){
-  tasks=removeTasks(tasks,'nomen-verben-verbinden');
-  modalIndex=tasks.findIndex(task=>task.id==='koennen-wollen-formen');
-  tasks.splice(Math.max(0,modalIndex),0,combinations);
- }
+ tasks=forceFirstFour(tasks);
 
  const exam=tasks.find(task=>task?.exam||task?.id==='pruefung');
  if(exam){
@@ -140,7 +140,7 @@ function transform(theme){
 
  tasks.forEach((task,index)=>{task.order=index+1});
  theme.tasks=tasks;
- theme.contentRevision='l7t1-confirmed-task-merges-2026-08-01-v3';
+ theme.contentRevision='l7t1-tasks-2-4-order-2026-08-13-v4';
  window.L7_THEME=theme;
  return theme;
 }
