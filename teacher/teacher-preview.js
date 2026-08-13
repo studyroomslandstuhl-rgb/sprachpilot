@@ -8,6 +8,7 @@ const TeacherPreview = {
     const lastName=t.lastName || t.nachname || "";
     const course=preview.courseCode || preview.kurs || (preview.allAccess ? "ALLE" : "Lehrer-Vorschau");
     const openAssignments={releaseMode:"all",defaultLocked:false,enabledModules:{"Fragen A1":true,"Wortschatz":true,"Verben A1":true}};
+    const assignments=preview.allAccess?{...openAssignments,...(preview.assignments||{})}:{...(preview.assignments||{})};
     return {
       vorname:firstName,
       nachname:lastName,
@@ -17,9 +18,10 @@ const TeacherPreview = {
       kurs:course,
       kursnummer:course,
       courseCode:course,
+      courseDocId:preview.courseDocId||"",
       muttersprache:"Deutsch",
-      assignments:{...openAssignments,...(preview.assignments||{})},
-      releases:preview.releases || {},
+      assignments,
+      releases:preview.releases || assignments.releases || {},
       role:"teacher",
       loginRole:"teacher",
       isTeacher:true,
@@ -60,15 +62,36 @@ const TeacherPreview = {
       c.__docId,c.docId,c.id,c.courseCode,c.code,c.kurs,c.kursnummer,c.name,c.courseName
     ].map(v=>String(v||"").trim()).includes(needle)) || {id:needle,name:needle,courseCode:needle};
     const code=String(course.courseCode||course.code||course.kurs||course.kursnummer||course.id||course.name||needle).trim();
+    const docId=String(course.__docId||course.docId||course.id||code).trim();
+    const releases=course.releases||course.release||{};
+    const assignments={
+      id:docId,
+      courseDocId:docId,
+      courseCode:code,
+      kurs:code,
+      kursnummer:code,
+      releaseMode:course.releaseMode||"locked",
+      defaultLocked:course.defaultLocked!==false,
+      enabledModules:course.enabledModules||{},
+      enabledLessons:course.enabledLessons||{},
+      enabledThemes:course.enabledThemes||{},
+      enabledTasks:course.enabledTasks||{},
+      enabledWords:course.enabledWords||{},
+      enabledSets:course.enabledSets||{},
+      releases,
+      settings:course.settings||{},
+      verbenA1AssessmentEnabled:course.verbenA1AssessmentEnabled
+    };
 
     this.activate({
       teacherPreview:true,
-      allAccess:true,
+      allAccess:false,
+      courseDocId:docId,
       courseCode:code,
       kurs:code,
       name:course.courseName||course.name||code,
-      releases:course.releases||course.release||{},
-      assignments:{releaseMode:"all",defaultLocked:false,enabledModules:{"Fragen A1":true,"Wortschatz":true,"Verben A1":true}},
+      releases,
+      assignments,
       startedAt:new Date().toISOString()
     });
 
