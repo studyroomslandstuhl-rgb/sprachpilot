@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t1-polish3';
+const version='l7t1-polish4';
 
 function load(src){
  return new Promise((resolve,reject)=>{
@@ -36,6 +36,7 @@ Promise.resolve(window.L7_THEME_READY)
    .then(()=>load(`l7t1-ability-ui.js?v=${version}`))
    .then(()=>load(`l7t1-sms-modal-ui.js?v=${version}`))
    .then(()=>{
+    window.L7T1SoundTask?.installUI?.();
     installBunnyImages();
     return load(`l7t1-l6-layout.js?v=${version}`);
    })
