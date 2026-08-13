@@ -4,6 +4,7 @@ const TeacherPreview = {
   },
   previewUser(preview){
     const t=this.teacherProfile();
+    const studentView=!preview.allAccess;
     const firstName=t.firstName || t.vorname || t.name || "Lehrer";
     const lastName=t.lastName || t.nachname || "";
     const course=preview.courseCode || preview.kurs || (preview.allAccess ? "ALLE" : "Lehrer-Vorschau");
@@ -22,19 +23,21 @@ const TeacherPreview = {
       muttersprache:"Deutsch",
       assignments,
       releases:preview.releases || assignments.releases || {},
-      role:"teacher",
-      loginRole:"teacher",
-      isTeacher:true,
-      isStudent:false,
-      teacherPreview:true,
+      role:studentView?"student":"teacher",
+      loginRole:studentView?"student":"teacher",
+      isTeacher:!studentView,
+      isStudent:studentView,
+      teacherPreview:!studentView,
+      studentCoursePreview:studentView,
       allAccess:!!preview.allAccess,
       previewOnly:true
     };
   },
   activate(preview){
-    localStorage.setItem("SP_ACTIVE_ROLE","teacher");
-    localStorage.setItem("SP_LOGIN_ROLE","teacher");
-    localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
+    const role=preview.allAccess?"teacher":"student";
+    localStorage.setItem("SP_ACTIVE_ROLE",role);
+    localStorage.setItem("SP_LOGIN_ROLE",role);
+    localStorage.setItem("SP_LOGIN_CONTEXT",preview.allAccess?"teacher":"teacher-student-preview");
     localStorage.removeItem("SP_STUDENT_PROFILE");
     localStorage.removeItem("SP_STUDENT_ID");
     localStorage.removeItem("SP_KEEP_LOGGED_IN");
@@ -104,9 +107,10 @@ const TeacherPreview = {
     sessionStorage.removeItem("SP_TEACHER_MODE_WAS_ACTIVE");
     sessionStorage.removeItem("SP_PREVIEW_COURSE");
     const p=(()=>{try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||"null")}catch(e){return null}})();
-    if(p && p.teacherPreview) localStorage.removeItem("SP_USER_PROFILE");
+    if(p && (p.teacherPreview||p.studentCoursePreview||p.previewOnly)) localStorage.removeItem("SP_USER_PROFILE");
     localStorage.setItem("SP_ACTIVE_ROLE","teacher");
     localStorage.setItem("SP_LOGIN_ROLE","teacher");
+    localStorage.setItem("SP_LOGIN_CONTEXT","teacher");
     location.href="/teacher/index.html";
   }
 };
