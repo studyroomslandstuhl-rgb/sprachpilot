@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_WIE_GUT_EMOJIS_1)return;
-window.__SP_L7T1_WIE_GUT_EMOJIS_1=true;
+if(window.__SP_L7T1_WIE_GUT_EMOJIS_2)return;
+window.__SP_L7T1_WIE_GUT_EMOJIS_2=true;
 
 const LEVEL_EMOJIS=Object.freeze({
  'gar nicht':'😭',
@@ -34,30 +34,62 @@ function starEmoji(value){
  if(filled>=1&&filled<=4)return ORDERED[filled-1];
  return null;
 }
+function replaceStarsInText(value){
+ let text=String(value??'');
+ text=text.replace(/([1-4])\s*(?:Sterne?|Stars?)/gi,(all,n)=>ORDERED[Number(n)-1]);
+ text=text.replace(/[★⭐☆](?:\s*[★⭐☆]){0,3}/gu,run=>starEmoji(run)||run);
+ return text;
+}
 function convert(value){
- if(typeof value==='string')return starEmoji(value)||value;
+ if(typeof value==='string')return starEmoji(value)||replaceStarsInText(value);
  if(Array.isArray(value))return value.map(convert);
  if(!value||typeof value!=='object')return value;
  const out={...value};
- ['label','text','value','answer','word'].forEach(key=>{if(key in out)out[key]=convert(out[key])});
+ ['label','text','value','answer','word','prompt','context','hint','meaning'].forEach(key=>{if(key in out)out[key]=convert(out[key])});
  if(Array.isArray(out.options))out.options=out.options.map(convert);
  if(Array.isArray(out.answers))out.answers=out.answers.map(convert);
  return out;
 }
+function resolveEmoji(item){
+ const direct=[item?.answer,item?.level,item?.rating,item?.score,item?.stars,item?.value,item?.text,item?.label];
+ for(const value of direct){
+  const result=starEmoji(value);
+  if(result)return result;
+ }
+ for(const value of item?.answers||[]){
+  const result=starEmoji(value);
+  if(result)return result;
+ }
+ return null;
+}
 function polishTask(task){
  if(!task)return;
+ task.kind='choice';
  task.description='Wähle das passende Emoji.';
- task.items=(task.items||[]).map(item=>convert(item));
+ task.items=(task.items||[]).map(original=>{
+  const item=convert(original);
+  const answer=resolveEmoji(item)||starEmoji(original?.answer)||item.answer;
+  return{
+   ...item,
+   kind:'choice',
+   answer,
+   answers:answer?[answer]:item.answers,
+   options:[...ORDERED],
+   noHelp:true,
+   noAudio:true
+  };
+ });
  task.emojiScale={...LEVEL_EMOJIS};
+ task.emojiOnly=true;
 }
 function transform(theme){
  if(!theme||!Array.isArray(theme.tasks))return theme;
  const tasks=[...theme.tasks];
  const wieIndex=tasks.findIndex(task=>task?.id==='faehigkeiten-abstufen'||/^wie gut\??$/i.test(String(task?.title||'').trim()));
- const abilityIndex=tasks.findIndex(task=>task?.id==='faehigkeit-saetze-schreiben');
  if(wieIndex>=0){
   const wie=tasks[wieIndex];
   polishTask(wie);
+  const abilityIndex=tasks.findIndex(task=>task?.id==='faehigkeit-saetze-schreiben');
   if(abilityIndex>=0){
    tasks.splice(wieIndex,1);
    const target=tasks.findIndex(task=>task?.id==='faehigkeit-saetze-schreiben');
@@ -67,7 +99,7 @@ function transform(theme){
  tasks.forEach((task,index)=>{task.order=index+1});
  theme.tasks=tasks;
  theme.abilityEmojis={...LEVEL_EMOJIS};
- theme.wieGutEmojiRevision='l7t1-wie-gut-emojis-2026-08-13-v1';
+ theme.wieGutEmojiRevision='l7t1-wie-gut-emojis-2026-08-13-v2';
  window.L7_THEME=theme;
  return theme;
 }
