@@ -39,6 +39,11 @@ if(PERFORMANCE_SYNC_OFF){
   window.SP_NO_FIREBASE_SYNC=true;
   window.SP_PERFORMANCE_MODE=true;
 }
+if(FULL_FIREBASE&&SP_USER){
+  import("/js/account-progress-sync.js?v=1")
+    .then(module=>module.startAccountProgressSync())
+    .catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error));
+}
 function shouldInstallGlobalHeader(){
   if(IS_WORTSCHATZ_LESSON_OVERVIEW)return false;
   if(IS_WORTSCHATZ_EXERCISE)return true;
