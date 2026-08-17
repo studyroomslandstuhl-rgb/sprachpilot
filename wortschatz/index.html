@@ -5,7 +5,31 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SprachPilot - Wortschatz</title>
 <style>
-*{box-sizing:border-box;margin:0;padding:0}:root{--sp-blue:#47ABC6;--sp-blue-dark:#2F7F96;--sp-baby:#84E3FF;--sp-light:#EAFBFF;--sp-soft:#F6FDFF;--sp-dark:#123047;--sp-muted:#5F7180;--sp-line:#D9EEF7;--sp-white:#FFFFFF;--sp-green:#2E9E4F;--sp-red:#E74C3C;--sp-shadow:0 12px 28px rgba(18,48,71,.10)}body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#E8FBFF 0,#F6FDFF 54%,#FFFFFF 100%);color:var(--sp-dark);padding:18px;overflow-x:hidden}.page{max-width:1120px;margin:0 auto}.topbar{width:100%;background:linear-gradient(135deg,var(--sp-blue),var(--sp-blue-dark));border-radius:22px;padding:18px 20px;box-shadow:var(--sp-shadow);display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px}.brand{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--sp-white);min-width:0}.logo{width:58px;height:58px;flex:0 0 58px;border-radius:16px;background:white;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.65)}.logo img{width:48px;height:48px;object-fit:contain;border-radius:12px}.brand-text{min-width:0}.brand-text h1{font-size:32px;line-height:1.05;color:var(--sp-white);font-weight:900;letter-spacing:0}.brand-text p{font-size:16px;color:#EAFBFF;margin-top:3px}.account-tools{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}.account-pill,.account-link{border:2px solid rgba(255,255,255,.65);background:rgba(255,255,255,.92);color:#064961;border-radius:16px;padding:11px 15px;font-size:16px;font-weight:900;line-height:1;text-decoration:none;white-space:nowrap}.account-pill{max-width:330px;overflow:hidden;text-overflow:ellipsis}.account-btn{font:inherit;cursor:pointer}.back-wrap{text-align:center;margin:14px 0 18px}.back{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:#EFFAFF;color:var(--sp-dark);font-weight:900;padding:12px 18px;border-radius:14px;border:1px solid var(--sp-line);min-height:46px}.card{background:white;border-radius:22px;padding:20px;box-shadow:var(--sp-shadow);border:1px solid var(--sp-line);margin-bottom:18px}.status{background:#E8F9F0;border-left:5px solid var(--sp-green);padding:12px 14px;border-radius:12px;margin-bottom:18px;font-weight:800;line-height:1.35}.status.no{background:#FFEDED;border-left-color:var(--sp-red)}.level-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin-bottom:14px}.level-title{font-size:30px;font-weight:900;color:var(--sp-blue-dark);line-height:1}.book-title{color:var(--sp-muted);font-size:16px}.lessons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;min-height:96px}.lesson-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;text-align:center;border-radius:16px;min-height:96px;padding:16px 12px;font-size:19px;font-weight:900;background:linear-gradient(135deg,var(--sp-blue),var(--sp-baby));color:var(--sp-dark);box-shadow:0 8px 18px rgba(18,48,71,.13);transition:transform .18s ease,box-shadow .18s ease}.lesson-btn:hover{transform:translateY(-3px);box-shadow:0 12px 24px rgba(18,48,71,.18)}.lesson-btn span{display:block;margin-top:8px;font-size:13px;color:#24576A;font-weight:900}.empty{grid-column:1/-1;min-height:96px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--sp-line);border-radius:16px;color:var(--sp-muted);font-weight:800;background:#F7FDFF}.skeleton{position:relative;overflow:hidden;color:transparent;background:#EAF6FA;box-shadow:none}.skeleton:after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);animation:shine 1.2s infinite}@keyframes shine{to{transform:translateX(100%)}}footer{text-align:center;color:var(--sp-muted);margin-top:24px;font-size:14px}@media(max-width:900px){.topbar{align-items:flex-start;flex-direction:column}.account-tools{justify-content:flex-start}.lessons{grid-template-columns:repeat(2,minmax(0,1fr))}.brand-text h1{font-size:28px}}@media(max-width:520px){body{padding:10px}.topbar{border-radius:18px;padding:14px}.logo{width:50px;height:50px;flex-basis:50px}.logo img{width:42px;height:42px}.brand-text h1{font-size:25px}.brand-text p{font-size:14px}.account-pill,.account-link{width:100%;text-align:center}.lessons{grid-template-columns:1fr}.card{padding:16px}.level-head{display:block}.book-title{margin-top:6px}}
+*{box-sizing:border-box;margin:0;padding:0}
+:root{--sp-blue:#47ABC6;--sp-blue-dark:#2F7F96;--sp-baby:#84E3FF;--sp-light:#EAFBFF;--sp-soft:#F6FDFF;--sp-dark:#123047;--sp-muted:#5F7180;--sp-line:#D9EEF7;--sp-white:#FFFFFF;--sp-green:#2E9E4F;--sp-red:#E74C3C;--sp-shadow:0 12px 28px rgba(18,48,71,.10)}
+body{min-height:100vh;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(180deg,#E8FBFF 0,#F6FDFF 54%,#FFFFFF 100%);color:var(--sp-dark);padding:18px;overflow-x:hidden}
+.page{max-width:1120px;margin:0 auto}
+.topbar{width:100%;background:linear-gradient(135deg,var(--sp-blue),var(--sp-blue-dark));border-radius:22px;padding:18px 20px;box-shadow:var(--sp-shadow);display:flex;align-items:center;justify-content:space-between;gap:18px;margin-bottom:16px}
+.brand{display:flex;align-items:center;gap:14px;text-decoration:none;color:var(--sp-white);min-width:0}
+.logo{width:58px;height:58px;flex:0 0 58px;border-radius:16px;background:white;display:flex;align-items:center;justify-content:center;border:2px solid rgba(255,255,255,.65)}
+.logo img{width:48px;height:48px;object-fit:contain;border-radius:12px}
+.brand-text{min-width:0}.brand-text h1{font-size:32px;line-height:1.05;color:var(--sp-white);font-weight:900;letter-spacing:0}.brand-text p{font-size:16px;color:#EAFBFF;margin-top:3px}
+.account-tools{display:flex;align-items:center;justify-content:flex-end;gap:10px;flex-wrap:wrap}
+.account-pill,.account-link{border:2px solid rgba(255,255,255,.65);background:rgba(255,255,255,.92);color:#064961;border-radius:16px;padding:11px 15px;font-size:16px;font-weight:900;line-height:1;text-decoration:none;white-space:nowrap}
+.account-pill{max-width:330px;overflow:hidden;text-overflow:ellipsis}.account-btn{font:inherit;cursor:pointer}
+.back-wrap{text-align:center;margin:14px 0 18px}.back{display:inline-flex;align-items:center;justify-content:center;text-decoration:none;background:#EFFAFF;color:var(--sp-dark);font-weight:900;padding:12px 18px;border-radius:14px;border:1px solid var(--sp-line);min-height:46px}
+.card{background:white;border-radius:22px;padding:20px;box-shadow:var(--sp-shadow);border:1px solid var(--sp-line);margin-bottom:18px}
+.status{background:#E8F9F0;border-left:5px solid var(--sp-green);padding:12px 14px;border-radius:12px;margin-bottom:18px;font-weight:800;line-height:1.35}.status.no{background:#FFEDED;border-left-color:var(--sp-red)}
+.level-head{display:flex;align-items:end;justify-content:space-between;gap:14px;margin-bottom:14px}.level-title{font-size:30px;font-weight:900;color:var(--sp-blue-dark);line-height:1}.book-title{color:var(--sp-muted);font-size:16px}
+.lessons{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;min-height:96px}
+.lesson-btn{display:flex;flex-direction:column;align-items:center;justify-content:center;text-decoration:none;text-align:center;border-radius:16px;min-height:96px;padding:16px 12px;font-size:19px;font-weight:900;background:linear-gradient(135deg,var(--lesson-btn-main,var(--sp-blue)),var(--lesson-btn-soft,var(--sp-baby)));color:var(--lesson-btn-ink,var(--sp-dark));border:2px solid var(--lesson-btn-line,transparent);box-shadow:0 8px 18px rgba(18,48,71,.13);transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.lesson-btn:hover{transform:translateY(-3px);box-shadow:0 12px 24px rgba(18,48,71,.18)}
+.lesson-btn span{display:block;margin-top:8px;font-size:13px;color:var(--lesson-btn-sub,#24576A);font-weight:900}
+.empty{grid-column:1/-1;min-height:96px;display:flex;align-items:center;justify-content:center;border:1px dashed var(--sp-line);border-radius:16px;color:var(--sp-muted);font-weight:800;background:#F7FDFF}
+.skeleton{position:relative;overflow:hidden;color:transparent;background:#EAF6FA;box-shadow:none;border-color:transparent}.skeleton:after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(255,255,255,.7),transparent);animation:shine 1.2s infinite}@keyframes shine{to{transform:translateX(100%)}}
+footer{text-align:center;color:var(--sp-muted);margin-top:24px;font-size:14px}
+@media(max-width:900px){.topbar{align-items:flex-start;flex-direction:column}.account-tools{justify-content:flex-start}.lessons{grid-template-columns:repeat(2,minmax(0,1fr))}.brand-text h1{font-size:28px}}
+@media(max-width:520px){body{padding:10px}.topbar{border-radius:18px;padding:14px}.logo{width:50px;height:50px;flex-basis:50px}.logo img{width:42px;height:42px}.brand-text h1{font-size:25px}.brand-text p{font-size:14px}.account-pill,.account-link{width:100%;text-align:center}.lessons{grid-template-columns:1fr}.card{padding:16px}.level-head{display:block}.book-title{margin-top:6px}}
 </style>
 </head>
 <body>
@@ -43,7 +67,19 @@
 <script type="module">
 import { loadCourseRelease } from "/js/course-releases.js?v=release-core-20260701b";
 import { logout, dashboardHref } from "/js/auth.js?v=20260709-login-fix";
+
 const LEVELS={A1:"a1Lessons",A2:"a2Lessons",B1:"b1Lessons"};
+const A1_LESSON_COLORS={
+  6:{main:'#FFB6C1',soft:'#FFF0F4',line:'#F3C2CC',ink:'#6F3041',sub:'#8A3A4F'},
+  7:{main:'#B397E1',soft:'#F4EFFB',line:'#D9CCEF',ink:'#4F3A6C',sub:'#5F477F'},
+  8:{main:'#8DBFEA',soft:'#EEF6FD',line:'#C9DFF2',ink:'#173A56',sub:'#4E7FA8'},
+  9:{main:'#D9ED9A',soft:'#F7FBEA',line:'#E4EEBE',ink:'#3F4C16',sub:'#5E7428'},
+  10:{main:'#F4A3A3',soft:'#FDF1F1',line:'#F3C9C9',ink:'#572F2F',sub:'#8F5555'},
+  11:{main:'#F6D78B',soft:'#FDF8EC',line:'#F3E2B7',ink:'#5C4715',sub:'#8C6E26'},
+  12:{main:'#9EDFE3',soft:'#EEF9FA',line:'#CAE9EB',ink:'#24545A',sub:'#447D82'},
+  13:{main:'#D7A3E4',soft:'#FAF1FC',line:'#E8CBEF',ink:'#4E2D56',sub:'#7A4F86'},
+  14:{main:'#93D0B3',soft:'#EDF8F2',line:'#C7E5D7',ink:'#2E5947',sub:'#447860'}
+};
 function safe(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
 function readJson(key,fallback={}){try{return JSON.parse(localStorage.getItem(key)||"null")||fallback}catch(e){return fallback}}
 function profile(){return readJson("SP_USER_PROFILE",readJson("SP_STUDENT_PROFILE",null))}
@@ -78,7 +114,30 @@ function setAccount(){
 }
 function setStatus(text,bad=false){const box=document.getElementById("assignmentStatus");box.className="status"+(bad?" no":"");box.innerHTML=text}
 function renderSkeleton(){Object.values(LEVELS).forEach(id=>{const box=document.getElementById(id);box.innerHTML="";for(let i=0;i<4;i++){const el=document.createElement("div");el.className="lesson-btn skeleton";el.textContent="Lektion";box.appendChild(el)}})}
-function renderLevel(level,target,data){const box=document.getElementById(target);box.innerHTML="";for(let i=1;i<=14;i++){const lesson=`${level}-Lektion-${i}`;if(!lessonReleased(data,lesson))continue;const a=document.createElement("a");a.className="lesson-btn";a.href=`./${lesson}/`;a.innerHTML=`Lektion ${i}<span>Offen</span>`;box.appendChild(a)}if(!box.children.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="Noch nicht freigeschaltet";box.appendChild(empty)}}
+function applyLessonColor(a,level,number){
+  if(level!=="A1")return;
+  const color=A1_LESSON_COLORS[number];
+  if(!color)return;
+  a.style.setProperty('--lesson-btn-main',color.main);
+  a.style.setProperty('--lesson-btn-soft',color.soft);
+  a.style.setProperty('--lesson-btn-line',color.line);
+  a.style.setProperty('--lesson-btn-ink',color.ink);
+  a.style.setProperty('--lesson-btn-sub',color.sub);
+}
+function renderLevel(level,target,data){
+  const box=document.getElementById(target);box.innerHTML="";
+  for(let i=1;i<=14;i++){
+    const lesson=`${level}-Lektion-${i}`;
+    if(!lessonReleased(data,lesson))continue;
+    const a=document.createElement("a");
+    a.className="lesson-btn";
+    a.href=`./${lesson}/`;
+    a.innerHTML=`Lektion ${i}<span>Offen</span>`;
+    applyLessonColor(a,level,i);
+    box.appendChild(a)
+  }
+  if(!box.children.length){const empty=document.createElement("div");empty.className="empty";empty.textContent="Noch nicht freigeschaltet";box.appendChild(empty)}
+}
 function render(data,source="cache"){
   Object.entries(LEVELS).forEach(([level,target])=>renderLevel(level,target,data||{}));
   const p=profile();
