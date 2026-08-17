@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T2_TASKS_V4)return;
-window.__SP_L7T2_TASKS_V4=true;
+if(window.__SP_L7T2_TASKS_V5)return;
+window.__SP_L7T2_TASKS_V5=true;
 
 const FORMS=[
  {v:'lernen',p:'gelernt',img:'lernen.webp',group:'t',parts:['ge','lern','t'],wrong:['gelernen','lernt','gelernet','gelernt'],en:'learned'},
@@ -38,17 +38,10 @@ const TRANSLATIONS={
  pl:{lernen:'nauczył(a) się',machen:'zrobił(a)',schreiben:'napisał(a)',hören:'słuchał(a)',spielen:'grał(a)',sehen:'zobaczył(a)',lesen:'przeczytał(a)',kaufen:'kupił(a)',sprechen:'mówił(a)',arbeiten:'pracował(a)',treffen:'spotkał(a)',frühstücken:'jadł(a) śniadanie',schlafen:'spał(a)',kochen:'gotował(a)',essen:'jadł(a)',trinken:'pił(a)',sagen:'powiedział(a)',leben:'żył(a)',kosten:'kosztował(a)',grillen:'grillował(a)',suchen:'szukał(a)',wohnen:'mieszkał(a)'},
  ku:{lernen:'hîn bû',machen:'kir',schreiben:'nivîsand',hören:'guhdarî kir',spielen:'lîst',sehen:'dît',lesen:'xwend',kaufen:'kirî',sprechen:'axivî',arbeiten:'xebitî',treffen:'hevdît',frühstücken:'taşt xwar',schlafen:'razayî',kochen:'pijand',essen:'xwar',trinken:'vexwar',sagen:'got',leben:'jiya',kosten:'biha bû',grillen:'li ser agir pijand',suchen:'lê geriya',wohnen:'niştecih bû'}
 };
-
-function lang(){
- let p={};try{p=JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{}}catch(e){}
- const raw=String(p.motherLanguageCode||p.muttersprache||p.motherLanguage||p.language||localStorage.getItem('SP_MOTHER_LANGUAGE')||'en').toLowerCase();
- if(/russ|^ru/.test(raw))return'ru';if(/türk|turk|^tr/.test(raw))return'tr';if(/ukrain|^uk|^ua/.test(raw))return'uk';if(/arab|^ar/.test(raw))return'ar';if(/japan|^ja/.test(raw))return'ja';if(/rum|roman|^ro/.test(raw))return'ro';if(/pol|^pl/.test(raw))return'pl';if(/kurd|kurm|^ku/.test(raw))return'ku';return'en'
-}
+function lang(){let p={};try{p=JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{}}catch(e){}const raw=String(p.motherLanguageCode||p.muttersprache||p.motherLanguage||p.language||localStorage.getItem('SP_MOTHER_LANGUAGE')||'en').toLowerCase();if(/russ|^ru/.test(raw))return'ru';if(/türk|turk|^tr/.test(raw))return'tr';if(/ukrain|^uk|^ua/.test(raw))return'uk';if(/arab|^ar/.test(raw))return'ar';if(/japan|^ja/.test(raw))return'ja';if(/rum|roman|^ro/.test(raw))return'ro';if(/pol|^pl/.test(raw))return'pl';if(/kurd|kurm|^ku/.test(raw))return'ku';return'en'}
 function translation(x){const l=lang();return l==='en'?x.en:(TRANSLATIONS[l]?.[x.v]||x.en)}
 
-const CARD_ITEMS=FORMS.map(x=>({
- kind:'cards',image:x.img,word:`hat ${x.p}`,answer:`hat ${x.p}`,answers:[`hat ${x.p}`],meaning:translation(x),example:`${x.v} – hat ${x.p}`,audio:`hat ${x.p}`,prompt:x.v,hint:'Nenne das Hilfsverb und das Partizip II.'
-}));
+const CARD_ITEMS=FORMS.map(x=>({kind:'cards',image:x.img,word:`hat ${x.p}`,answer:`hat ${x.p}`,answers:[`hat ${x.p}`],meaning:translation(x),example:`${x.v} – hat ${x.p}`,audio:`hat ${x.p}`,prompt:x.v,hint:'Nenne das Hilfsverb und das Partizip II.'}));
 const CHOICE_ITEMS=FORMS.map(x=>({kind:'choice',prompt:x.v,answer:x.p,options:x.wrong,hint:'Achte auf das Partizip II.'}));
 const MEMORY_PAIRS=FORMS.map((x,index)=>({id:`paar-${index+1}`,infinitive:x.v,perfekt:x.p}));
 const SYLLABLE_ITEMS=FORMS.map(x=>({kind:'order',prompt:x.v,answer:x.p,tokens:x.parts,hint:'Baue das Partizip II.'}));
@@ -63,13 +56,11 @@ function transform(theme){
  const memory={...old[2],kind:'memory-pairs',title:'Memory',description:'Finde passende Paare.',items:MEMORY_PAIRS,spL7T2Memory:true};
  const syllables={...old[5],kind:'order',title:'Partizip II bauen',description:'Baue das Partizip II.',items:SYLLABLE_ITEMS,spL7T2Syllables:true};
  const endings={...old[3],kind:'endings-write',title:'Endung -t oder -en?',description:'Ordne die Verben zu.',items:ENDING_ITEMS,spL7T2Endings:true};
- const write={...old[7],kind:'input',title:'Partizip II schreiben',description:'Schreibe die Partizip-II-Formen mit Hilfsverb.',items:WRITE_ITEMS};
- const rest=old.slice(8);
- theme.tasks=[cards,choice,memory,syllables,endings,write,...rest];
+ const write={...old[7],kind:'input',title:'Partizip II schreiben',description:'Schreibe die Partizip-II-Formen mit Hilfsverb.',items:WRITE_ITEMS,spL7T2Write:true};
+ theme.tasks=[cards,choice,memory,syllables,endings,write,...old.slice(8)];
  theme.tasks.forEach((task,index)=>task.order=index+1);
- theme.contentRevision='l7t2-standard-short-all-verbs-20260817-v4';
- window.L7_THEME=theme;
- return theme;
+ theme.contentRevision='l7t2-standard-short-all-verbs-20260817-v5';
+ window.L7_THEME=theme;return theme
 }
 window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(transform);
 })();
