@@ -20,9 +20,13 @@ function apply(){
   el.style.setProperty('--lesson-btn-line',c.line);
   el.style.setProperty('--lesson-btn-ink',c.ink);
   el.style.setProperty('--lesson-btn-sub',c.sub);
+  el.style.setProperty('background',`linear-gradient(135deg,${c.main},${c.soft})`,'important');
+  el.style.setProperty('border-color',c.line,'important');
+  el.style.setProperty('color',c.ink,'important');
+  const sub=el.querySelector('span');if(sub)sub.style.setProperty('color',c.sub,'important');
  });
 }
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',apply);else apply();
 new MutationObserver(()=>apply()).observe(document.documentElement,{childList:true,subtree:true});
-setTimeout(apply,100);setTimeout(apply,500);setTimeout(apply,1400);
+setTimeout(apply,50);setTimeout(apply,250);setTimeout(apply,900);
 })();
