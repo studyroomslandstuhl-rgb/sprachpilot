@@ -1,12 +1,12 @@
 (function(){
 'use strict';
-if(window.__SP_L7T2_LISTENING_L6T4_V2)return;
-window.__SP_L7T2_LISTENING_L6T4_V2=true;
+if(window.__SP_L7T2_LISTENING_L6T4_V3)return;
+window.__SP_L7T2_LISTENING_L6T4_V3=true;
 
 const AUDIO_BASE='https://sprachpilot.b-cdn.net/audio/';
 
 function install(){
-  if(!window.L7||!window.L7S||window.L7.__l7t2ListeningL6T4V2)return false;
+  if(!window.L7||!window.L7S||window.L7.__l7t2ListeningL6T4V3)return false;
   const S=window.L7S;
   const raw=window.L7.renderTaskPage.bind(window.L7);
   const esc=S.esc;
@@ -22,9 +22,9 @@ function install(){
   function progress(theme,task){const st=load(theme,task),p=Math.round(st.done.length/Math.max(1,task.items.length)*100);return`<div class="task-progress-row sp-listen-progress"><span>${st.done.length} fehlerfrei · ${task.items.length-st.done.length} übrig</span><strong>${p}%</strong></div><div class="l7-progress"><span style="width:${p}%"></span></div>`}
   function feedback(theme,task,index){
     const st=load(theme,task),tries=Number(st.tries||0),item=task.items[index];
-    if(tries===1)return'<div class="l7-no">Noch nicht richtig. Höre den Tagesrückblick noch einmal und prüfe alle drei Antworten.</div>';
+    if(tries===1)return'<div class="l7-no">Noch nicht richtig.</div>';
     if(tries===2)return'<div class="l7-hint"><strong>Hinweis:</strong> Achte genau auf Personen, Zeiten und Aktivitäten.</div>';
-    if(tries>=3)return`<div class="l7-no"><strong>Lösungen:</strong>${item.questions.map((q,i)=>`<br>${i+1}. ${esc(q[2])}`).join('')}<br>Dieser Tagesrückblick kommt später noch einmal.</div>`;
+    if(tries>=3)return`<div class="l7-no"><strong>Lösungen:</strong>${item.questions.map((q,i)=>`<br>${i+1}. ${esc(q[2])}`).join('')}<br>Wähle die Antworten jetzt selbst. Dieser Tagesrückblick kommt später noch einmal.</div>`;
     return'';
   }
   function question(theme,task,index,item,qIndex){
@@ -63,14 +63,8 @@ function install(){
     if(!item||!item.questions.every((q,i)=>String(st.answers[key(index,i)]||'').trim()))return;
     const correct=item.questions.every((q,i)=>S.norm(st.answers[key(index,i)])===S.norm(q[2]));
     S.attempt(theme,task.id,task.items.length,index,correct);
-    if(!correct){
-      S.wrong(theme,task.id,task.items.length);
-      clearChoices(theme,task,index);
-      return render(theme,task.id);
-    }
-    clearChoices(theme,task,index);
-    S.right(theme,task.id,task.items.length);
-    setTimeout(()=>render(theme,task.id),350);
+    if(!correct){S.wrong(theme,task.id,task.items.length);clearChoices(theme,task,index);return render(theme,task.id)}
+    clearChoices(theme,task,index);S.right(theme,task.id,task.items.length);setTimeout(()=>render(theme,task.id),350)
   }
 
   if(!document.getElementById('sp-l7t2-listening-l6t4-style')){
@@ -83,8 +77,8 @@ function install(){
   }
 
   window.L7.renderTaskPage=function(theme,id){const task=taskById(id);if(task?.spL7T2Listening)return render(Number(theme),id);return raw(theme,id)};
-  window.L7.__l7t2ListeningL6T4V2=true;
-  return true;
+  window.L7.__l7t2ListeningL6T4V3=true;
+  return true
 }
 
 window.L7T2ListeningL6T4UI={install};
