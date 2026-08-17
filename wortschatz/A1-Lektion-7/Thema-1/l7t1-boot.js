@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t1-polish7';
+const version='l7t1-polish8';
 
 function load(src){
  return new Promise((resolve,reject)=>{
@@ -33,9 +33,7 @@ function resetLegacyHelpState(){
     try{
      const state=JSON.parse(store.getItem(key)||'null');
      if(!state||typeof state!=='object')return;
-     state.tries=0;
-     state.hadWrong=false;
-     store.setItem(key,JSON.stringify(state));
+     state.tries=0;state.hadWrong=false;store.setItem(key,JSON.stringify(state));
     }catch(e){}
    });
   });
@@ -57,18 +55,17 @@ Promise.resolve(window.L7_THEME_READY)
    .then(()=>load('../shared/l7-external-links.js?v=1'))
    .then(()=>load(`l7t1-conjugation-ui.js?v=${version}`))
    .then(()=>load(`l7t1-tasks-2-4-ui.js?v=${version}`))
+   .then(()=>load(`l7t1-perfekt-ui.js?v=1`))
+   .then(()=>{window.L7T1PerfektUI?.install?.()})
    .then(()=>load(`l7t1-grammar-ui.js?v=${version}`))
    .then(()=>load(`l7t1-ability-ui.js?v=${version}`))
    .then(()=>load(`l7t1-sms-modal-ui.js?v=${version}`))
    .then(()=>{
-    window.L7T1SoundTask?.installUI?.();
-    installBunnyImages();
-    return load(`l7t1-l6-layout.js?v=${version}`);
+    window.L7T1SoundTask?.installUI?.();installBunnyImages();return load(`l7t1-l6-layout.js?v=${version}`);
    })
    .then(()=>{
     const result=window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'));
-    window.L7T1L6Layout?.run?.();
-    return result;
+    window.L7T1L6Layout?.run?.();return result;
    });
  })
  .catch(error=>{
