@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_ABILITY_UI_2)return;
-window.__SP_L7T1_ABILITY_UI_2=true;
+if(window.__SP_L7T1_ABILITY_UI_3)return;
+window.__SP_L7T1_ABILITY_UI_3=true;
 if(!window.L7||!window.L7S)return;
 
 const S=window.L7S;
@@ -41,17 +41,24 @@ function clearDraft(theme,task,total,index){
  delete state.answers[draftKey(index)];S.save(theme,task.id,state,false);
 }
 function activityImage(item){
- const src=fileUrl(item.image);
- if(!src)return'';
- return `<div class="sp-ability-image"><img src="${esc(src)}" alt="${esc(item.activity||'Aktivität')}" loading="eager" decoding="async" onerror="this.hidden=true"></div>`;
+ const activity=String(item?.activity||'Aktivität').trim();
+ const resolver=window.L7T1BunnyImages;
+ const semanticItem={...item,full:activity,word:activity};
+ const file=resolver?.resolveItem?.(semanticItem)||item?.image||'';
+ if(!file)return'';
+ if(resolver?.imageHtml){
+  return `<div class="sp-ability-image">${resolver.imageHtml(file,activity)}</div>`;
+ }
+ const src=fileUrl(file);
+ return src?`<div class="sp-ability-image"><img src="${esc(src)}" alt="${esc(activity)}" loading="eager" decoding="async"></div>`:'';
 }
 function abilityHelp(item,tries){
  const n=Number(tries||0);
  if(n<=0)return'';
- if(n===1)return'<div class="l7-no">Noch nicht richtig. Versuche es noch einmal.</div>';
+ if(n===1)return'<div class="l7-no">Da ist noch ein Fehler.</div>';
  if(n===2){
   const level=String(item.level||'Abstufung').trim();
-  return `<div class="l7-hint"><strong>Hinweis:</strong> Baue den Satz so: Person + richtige Form von „können“ + ${esc(level)} + Aktivität.</div>`;
+  return `<div class="l7-hint"><strong>Tipp:</strong> Person + richtige Form von „können“ + ${esc(level)} + Aktivität.</div>`;
  }
  return `<div class="l7-no"><strong>Lösung:</strong> ${esc(item.answer||'')}<br>Gib die richtige Antwort selbst ein. Die Aufgabe kommt später erneut.</div>`;
 }
@@ -68,7 +75,7 @@ function renderAbility(theme,id){
  const value=String(state.answers?.[draftKey(index)]||'');
  current={theme,task,total,index,item};
  const root=document.getElementById('app');
- root.innerHTML=`<div class="l7-page"><section class="l7-card">${progressHtml(theme,task,total)}<div class="l7-instruction">${esc(task.description)}</div><div id="spAbilityTask" class="l7-question-card"><div class="sp-ability-cue"><div class="sp-ability-subject">${esc(item.subject)}</div><div class="sp-ability-emoji" role="img" aria-label="${esc(item.level)}">${esc(item.emoji)}</div>${activityImage(item)}</div><div class="sp-ability-answer"><input id="spAbilityInput" autocomplete="off" autocapitalize="sentences" value="${esc(value)}" placeholder="Schreibe den vollständigen Satz."><button type="button" class="l7-btn" id="spCheckAbility">Prüfen</button></div><div id="spAbilityFeedback">${abilityHelp(item,state.tries||0)}</div></div></section><footer>© SprachPilot</footer></div>`;
+ root.innerHTML=`<div class="l7-page"><section class="l7-card">${progressHtml(theme,task,total)}<div class="l7-instruction">${esc(task.description)}</div><div id="spAbilityTask" class="l7-question-card"><div class="sp-ability-cue"><div class="sp-ability-subject">${esc(item.subject)}</div><div class="sp-ability-emoji" role="img" aria-label="${esc(item.level)}">${esc(item.emoji)}</div>${activityImage(item)}</div><div class="sp-ability-answer"><input id="spAbilityInput" autocomplete="off" autocapitalize="sentences" value="${esc(value)}" placeholder="Schreibe hier die Antwort"><button type="button" class="l7-btn" id="spCheckAbility">Prüfen</button></div><div id="spAbilityFeedback">${abilityHelp(item,state.tries||0)}</div></div></section><footer>© SprachPilot</footer></div>`;
  const input=document.getElementById('spAbilityInput');
  input?.addEventListener('input',event=>saveDraft(theme,task,total,index,event.target.value));
  const check=()=>{
@@ -84,13 +91,16 @@ function renderAbility(theme,id){
  document.getElementById('spCheckAbility')?.addEventListener('click',check);
  input?.addEventListener('keydown',event=>{if(event.key==='Enter')check()});
  input?.focus();
- window.L7T1BunnyImages?.patchAll?.(root);
+ resolverPatch(root);
+}
+function resolverPatch(root){
+ try{window.L7T1BunnyImages?.installRenderer?.();window.L7T1BunnyImages?.patchAll?.(root)}catch(error){console.warn('L7T1 ability image patch',error)}
 }
 
 const style=document.createElement('style');
 style.id='sp-l7t1-ability-ui-style';
 style.textContent=`
-.sp-ability-cue{display:grid;grid-template-columns:minmax(100px,auto) 76px 190px;gap:18px;align-items:center;justify-content:center;margin:8px auto 24px}.sp-ability-subject{font-size:30px;font-weight:950;color:var(--dark);text-align:center}.sp-ability-emoji{font-size:58px;line-height:1;text-align:center}.sp-ability-image{width:170px;height:170px;border-radius:20px;overflow:hidden;background:var(--soft);display:grid;place-items:center}.sp-ability-image img{width:100%;height:100%;object-fit:contain;display:block}.sp-ability-answer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;max-width:720px;margin:0 auto}.sp-ability-answer input{width:100%;box-sizing:border-box;padding:15px 17px;border:2px solid var(--line);border-radius:14px;background:#fff;color:var(--dark);font:inherit;font-size:19px}@media(max-width:650px){.sp-ability-cue{grid-template-columns:1fr 70px;gap:12px}.sp-ability-image{grid-column:1/-1;width:min(170px,55vw);height:min(170px,55vw);justify-self:center}.sp-ability-subject{font-size:26px}.sp-ability-answer{grid-template-columns:1fr}.sp-ability-emoji{font-size:50px}}
+.sp-ability-cue{display:grid;grid-template-columns:minmax(100px,auto) 76px 190px;gap:18px;align-items:center;justify-content:center;margin:8px auto 24px}.sp-ability-subject{font-size:30px;font-weight:950;color:var(--dark);text-align:center}.sp-ability-emoji{font-size:58px;line-height:1;text-align:center}.sp-ability-image{width:170px;height:170px;border-radius:20px;overflow:hidden;background:var(--soft);display:grid;place-items:center}.sp-ability-image>.l7-image{width:100%;height:100%;margin:0;display:grid;place-items:center}.sp-ability-image>.l7-image img,.sp-ability-image>img{width:100%;height:100%;object-fit:contain;display:block}.sp-ability-image .l7-image-fallback{width:100%;height:100%;box-sizing:border-box;display:grid;place-items:center;text-align:center;padding:12px}.sp-ability-answer{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:10px;max-width:720px;margin:0 auto}.sp-ability-answer input{width:100%;box-sizing:border-box;padding:15px 17px;border:2px solid var(--line);border-radius:14px;background:#fff;color:var(--dark);font:inherit;font-size:19px}@media(max-width:650px){.sp-ability-cue{grid-template-columns:1fr 70px;gap:12px}.sp-ability-image{grid-column:1/-1;width:min(170px,55vw);height:min(170px,55vw);justify-self:center}.sp-ability-subject{font-size:26px}.sp-ability-answer{grid-template-columns:1fr}.sp-ability-emoji{font-size:50px}}
 `;
 document.head.appendChild(style);
 
