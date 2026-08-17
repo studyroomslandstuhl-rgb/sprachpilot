@@ -1,15 +1,15 @@
 (function(){
 'use strict';
-if(window.__SP_L7T2_ENDINGS_UI_V2)return;
-window.__SP_L7T2_ENDINGS_UI_V2=true;
+if(window.__SP_L7T2_ENDINGS_UI_V3)return;
+window.__SP_L7T2_ENDINGS_UI_V3=true;
 
 function install(){
- if(!window.L7||!window.L7S||window.L7.__l7t2EndingsV2)return false;
+ if(!window.L7||!window.L7S||window.L7.__l7t2EndingsV3)return false;
  const S=window.L7S,raw=window.L7.renderTaskPage.bind(window.L7);
  let selected=null,feedback='';
  function taskById(id){return S.task(id)}
  function nextTask(task){const tasks=S.T.tasks||[];return tasks[tasks.findIndex(x=>x.id===task.id)+1]||null}
- function data(theme,task){const st=S.load(theme,task.id,task.items.length);st.answers=st.answers||{};st.answers.placements=st.answers.placements||{};st.answers.drafts=st.answers.drafts||{};st.answers.tries=st.answers.tries||{};return st}
+ function data(theme,task){const st=S.load(theme,task.id,task.items.length);st.answers=st.answers||{};st.answers.placements=st.answers.placements||{};st.answers.drafts=st.answers.drafts||{};st.answers.tries=st.answers.tries||{};st.answers.needsCleanRepeat=st.answers.needsCleanRepeat||{};return st}
  function progress(theme,task){const st=data(theme,task),p=Math.round(st.done.length/Math.max(1,task.items.length)*100);return`<div class="l7-progress-row"><span>${st.done.length} von ${task.items.length} fertig</span><strong>${p}%</strong></div><div class="l7-progress"><span style="width:${p}%"></span></div>`}
  function finish(theme,task){const root=document.getElementById('app'),next=nextTask(task);root.innerHTML=`<div class="l7-page">${S.header(theme,task.title)}<section class="l7-card l7-finish"><div>✓</div><h2>Gut gemacht!</h2><p>Aufgabe abgeschlossen.</p><div class="l7-actions"><a class="l7-btn secondary" href="index.html#task-${S.esc(task.id)}">Zur Übersicht</a>${next?`<a class="l7-btn" href="task.html?task=${encodeURIComponent(next.id)}">Nächste Aufgabe</a>`:''}</div></section><footer>© SprachPilot</footer></div>`}
  function itemHtml(theme,task,index,placed){
@@ -51,35 +51,25 @@ function install(){
  }
  function place(theme,task,index,group){
   if(!Number.isInteger(index)||!task.items[index]||(group!=='t'&&group!=='en'))return;
-  const st=data(theme,task);
-  st.answers.placements[index]=group;
-  S.save(theme,task.id,st,false);
-  selected=null;
-  feedback='';
-  render(theme,task.id);
-  setTimeout(()=>document.querySelector(`[data-ending-input="${index}"]`)?.focus(),30)
+  const st=data(theme,task);st.answers.placements[index]=group;S.save(theme,task.id,st,false);selected=null;feedback='';render(theme,task.id);setTimeout(()=>document.querySelector(`[data-ending-input="${index}"]`)?.focus(),30)
  }
  function check(theme,task,index,value){
   const item=task.items[index],st=data(theme,task);if(!item||!String(value||'').trim())return;
   st.answers.drafts[index]=String(value);
-  const group=st.answers.placements[index];
-  const groupOk=group===item.group;
-  const formOk=S.norm(value)===S.norm(item.participle);
+  const group=st.answers.placements[index],groupOk=group===item.group,formOk=S.norm(value)===S.norm(item.participle);
   if(!groupOk||!formOk){
-   const n=Number(st.answers.tries[index]||0)+1;st.answers.tries[index]=n;S.save(theme,task.id,st,false);
+   const n=Number(st.answers.tries[index]||0)+1;st.answers.tries[index]=n;st.answers.needsCleanRepeat[index]=true;S.save(theme,task.id,st,false);
    let text='Noch nicht richtig.';
-   if(n===2)text=!groupOk?'Prüfe die Zuordnung: Gehört das Partizip zu -t oder -en?':'Prüfe die Form des Partizips II.';
-   if(n>=3)text=`Lösung: ${item.infinitive} → ${item.participle} · Gruppe ${item.group==='t'?'-t':'-en'}. Du kannst das Verb jetzt in die andere Spalte verschieben.`;
-   feedback=`<div class="${n>=2?'l7-hint':'l7-no'}">${S.esc(text)}</div>`;
-   return render(theme,task.id)
+   if(n===2)text=!groupOk?'Hinweis: Prüfe, ob das Partizip auf -t oder -en endet.':'Hinweis: Achte auf die richtige Partizip-II-Form.';
+   if(n>=3)text=`Lösung: ${item.infinitive} → ${item.participle} · ${item.group==='t'?'-t':'-en'}. Ordne das Verb selbst richtig zu und schreibe die Form.`;
+   feedback=`<div class="${n===2?'l7-hint':'l7-no'}">${S.esc(text)}</div>`;return render(theme,task.id)
   }
-  if(!st.done.includes(index))st.done.push(index);
-  delete st.answers.drafts[index];delete st.answers.tries[index];st.current=null;
-  S.save(theme,task.id,st,true);
-  selected=null;feedback='<div class="l7-ok">Richtig!</div>';
-  render(theme,task.id)
+  if(st.answers.needsCleanRepeat[index]){
+   delete st.answers.needsCleanRepeat[index];delete st.answers.placements[index];delete st.answers.drafts[index];delete st.answers.tries[index];S.save(theme,task.id,st,false);selected=null;feedback='<div class="l7-ok">Richtig. Dieses Verb kommt später noch einmal.</div>';return render(theme,task.id)
+  }
+  if(!st.done.includes(index))st.done.push(index);delete st.answers.drafts[index];delete st.answers.tries[index];delete st.answers.placements[index];st.current=null;S.save(theme,task.id,st,true);selected=null;feedback='<div class="l7-ok">Richtig!</div>';render(theme,task.id)
  }
- const style=document.createElement('style');style.id='sp-l7t2-endings-style-v2';style.textContent=`
+ const style=document.createElement('style');style.id='sp-l7t2-endings-style-v3';style.textContent=`
  .sp-ending-source{display:flex;flex-wrap:wrap;gap:7px;padding:10px;margin:8px 0 14px;border:1px solid var(--line);border-radius:15px;background:var(--soft)}
  .sp-ending-chip{appearance:none;border:1px solid var(--line);border-radius:10px;background:#fff;color:var(--dark);font:inherit;font-weight:850;font-size:14px;padding:7px 10px;cursor:grab;line-height:1.1}.sp-ending-chip:active{cursor:grabbing}.sp-ending-chip.selected{outline:3px solid rgba(91,61,135,.2);border-color:var(--main)}.sp-ending-chip.placed{cursor:grab}.sp-ending-chip.done{background:#e8f8ee;border-color:#52a56d;cursor:default}
  .sp-ending-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}.sp-ending-zone{min-height:190px;border:2px dashed var(--line);border-radius:17px;padding:10px;background:#fff}.sp-ending-zone h2{text-align:center;margin:0 0 8px;font-size:25px}.sp-ending-zone>div{display:grid;gap:7px}
@@ -88,7 +78,7 @@ function install(){
  @media(max-width:720px){.sp-ending-grid{grid-template-columns:1fr}.sp-ending-row{grid-template-columns:110px minmax(0,1fr)}}@media(max-width:430px){.sp-ending-row{grid-template-columns:1fr}.sp-ending-write{display:grid;grid-template-columns:1fr auto}}
  `;document.head.appendChild(style);
  window.L7.renderTaskPage=function(theme,id){const task=taskById(id);if(task?.spL7T2Endings){selected=null;feedback='';return render(Number(theme),id)}return raw(theme,id)};
- window.L7.__l7t2EndingsV2=true;return true
+ window.L7.__l7t2EndingsV3=true;return true
  }
  window.L7T2EndingsUI={install};
 })();
