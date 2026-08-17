@@ -1,5 +1,6 @@
 import '/js/progress.js?v=11';
 import '/js/point-delta-bridge.js?v=2';
+import '/js/ranking-mirror.js?v=1';
 import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-safe.js?v=5';
 export { accountProgressReady };
 
