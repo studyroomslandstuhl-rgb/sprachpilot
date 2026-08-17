@@ -10,5 +10,9 @@ try{
   const aliases=await import('./progress-alias-unifier.js?v=2');
   await aliases.unifyProgressAliases();
 }catch(error){console.warn('Fortschritts-Aliasse konnten nicht vereinheitlicht werden',error)}
+try{
+  const recovery=await import('./points-raise-only.js?v=1');
+  await recovery.raiseOwnPointsFromEvidence();
+}catch(error){console.warn('Erhaltene Punkte konnten nicht angehoben werden',error)}
 await import('./dashboard-sync-fixed.js?v=12');
 await import('./ranking-points-fixed.js?v=2');
