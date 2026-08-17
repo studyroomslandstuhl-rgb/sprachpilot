@@ -1,5 +1,5 @@
 import { db, doc, getDoc, collection, query, where, getDocs, limit } from '/js/firebase.js';
-import { getActiveProfile } from '/js/auth.js';
+import { getActiveProfile, getActiveRole } from '/js/auth.js';
 
 const REPORT_KEY='SP_ACCOUNT_PROGRESS_RESCUE_REPORT';
 const L3T1_KEY='SP_A1_L3_T1_FULL_UPDATE_V1';
@@ -25,6 +25,7 @@ function parse(v,f={}){try{return JSON.parse(v||'null')||f}catch(e){return f}}
 function uniq(a){return [...new Set((a||[]).filter(Boolean).map(String))]}
 function norm(s){return String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 function profile(){return getActiveProfile()||parse(localStorage.getItem('SP_USER_PROFILE'),{})||parse(localStorage.getItem('SP_STUDENT_PROFILE'),{})||{}}
+function isStudent(){const p=profile(),role=String(getActiveRole?.()||localStorage.getItem('SP_LOGIN_ROLE')||'').toLowerCase();return role==='student'&&!p.teacherPreview&&!p.isTeacher&&!!(p.studentId||p.userId||p.docId||p.uid||p.email)}
 function course(p=profile()){return p.courseDocId||p.courseCode||p.kurs||p.kursnummer||p.course||localStorage.getItem('SP_COURSE_CODE')||''}
 function ids(p=profile()){
  const mail=String(p.email||'').trim().toLowerCase(),fallback=norm((course(p)||'kurs')+'_'+(mail||p.vorname||p.firstName||'student'));
@@ -39,11 +40,12 @@ function topicNumbers(key,topic){
 function clamp(v){return Math.max(0,Math.min(100,Math.round(Number(v)||0)))}
 function taskPercent(t={}){return Math.max(clamp(t.percent??t.progress??0),t.completed?100:0)}
 function completed(t={}){return !!t.completed||taskPercent(t)>=100}
-function taskState(total){return{total,queue:[],done:[...Array(total).keys()],current:null,tries:0,hadWrong:false,completed:true,percent:100}}
+function taskState(total,done=total){total=Math.max(1,Number(total)||1);done=Math.max(0,Math.min(total,Number(done)||0));return{total,queue:[...Array(total).keys()].filter(i=>i>=done),done:[...Array(done).keys()],current:null,tries:0,hadWrong:false,completed:done>=total,percent:Math.round(done/total*100)}}
+function stateFromCloudTask(t={}){const pct=taskPercent(t),doneRaw=Array.isArray(t.done)?t.done.length:Number(t.done)||0,total=Math.max(1,Number(t.total)||doneRaw||((t.completed||pct>=100)?1:0)),done=Math.max(0,Math.min(total,doneRaw||((t.completed||pct>=100)?total:Math.round(total*pct/100))));return done>0?taskState(total,done):null}
+function stateStrength(v){const done=Array.isArray(v?.done)?v.done.length:0,total=Math.max(1,Number(v?.total)||1);return done*100000+Math.round(done/total*100)*1000+(v?.completed?10000000:0)}
 function setIfStronger(key,value){
- const raw=JSON.stringify(value),old=parse(localStorage.getItem(key),null);
- const oldDone=Array.isArray(old?.done)?old.done.length:0,newDone=Array.isArray(value?.done)?value.done.length:0;
- if(!old||newDone>oldDone||value?.completed&&!old?.completed){localStorage.setItem(key,raw);return true}
+ const old=parse(localStorage.getItem(key),null);
+ if(!old||stateStrength(value)>stateStrength(old)){localStorage.setItem(key,JSON.stringify(value));return true}
  return false;
 }
 async function collect(){
@@ -57,9 +59,9 @@ async function collect(){
  return rows;
 }
 function rescueL3T1(topic,report){
- const taskEntries=Object.entries(topic.tasks||{}),state=parse(localStorage.getItem(L3T1_KEY),{});state.doneTasks=state.doneTasks&&typeof state.doneTasks==='object'?state.doneTasks:{};
+ const state=parse(localStorage.getItem(L3T1_KEY),{});state.doneTasks=state.doneTasks&&typeof state.doneTasks==='object'?state.doneTasks:{};
  let changed=false;
- for(const[file,t]of taskEntries){if(completed(t)&&state.doneTasks[file]!==true){state.doneTasks[file]=true;changed=true;report.l3t1.push(file)}}
+ for(const[file,t]of Object.entries(topic.tasks||{})){if(completed(t)&&state.doneTasks[file]!==true){state.doneTasks[file]=true;changed=true;report.l3t1.push(file)}}
  const examPct=Math.max(clamp(topic.exam?.bestPercent),clamp(topic.exam?.percent));
  if((topic.exam?.completed||examPct>=100)&&state.doneTasks['pruefung.html']!==true){state.doneTasks['pruefung.html']=true;changed=true;report.l3t1.push('pruefung.html')}
  if(changed)localStorage.setItem(L3T1_KEY,JSON.stringify(state));
@@ -70,23 +72,35 @@ function rescueL3T2(topic,report){
  for(const[file,t]of Object.entries(topic.tasks||{})){
   if(!completed(t))continue;
   const total=L3T2_TOTALS[file];if(!total)continue;
-  if(setIfStronger('SP_TASK_STATE_'+file,taskState(total))){changed=true;report.l3t2.push(file)}
+  if(setIfStronger('SP_TASK_STATE_'+file,taskState(total,total))){changed=true;report.l3t2.push(file)}
  }
  const examPct=Math.max(clamp(topic.exam?.bestPercent),clamp(topic.exam?.percent));
- if((topic.exam?.completed||examPct>=100)&&setIfStronger('SP_TASK_STATE_pruefung.html',taskState(L3T2_TOTALS['pruefung.html']))){changed=true;report.l3t2.push('pruefung.html')}
+ if((topic.exam?.completed||examPct>=100)&&setIfStronger('SP_TASK_STATE_pruefung.html',taskState(L3T2_TOTALS['pruefung.html'],L3T2_TOTALS['pruefung.html']))){changed=true;report.l3t2.push('pruefung.html')}
+ return changed;
+}
+function rescueL6T1(topic,report){
+ let changed=false;
+ for(const[file,t]of Object.entries(topic.tasks||{})){
+  const state=stateFromCloudTask(t);if(!state)continue;
+  for(const mode of ['BOOK_','EXTRA_']){
+   if(setIfStronger('SP_L6_T1_V1_'+mode+file,state)){changed=true;report.l6t1.push(mode+file)}
+  }
+ }
  return changed;
 }
 export async function rescueLegacyProgress(){
- const rows=await collect();const report={at:new Date().toISOString(),docs:rows.map(r=>r.id),l3t1:[],l3t2:[],changed:false};
+ if(!isStudent())return{active:false,reason:'not-student'};
+ const rows=await collect();const report={at:new Date().toISOString(),docs:rows.map(r=>r.id),l3t1:[],l3t2:[],l6t1:[],changed:false};
  for(const row of rows){
   for(const[key,topic]of Object.entries(row.data?.wortschatz||{})){
    if(!topic||typeof topic!=='object')continue;
    const nums=topicNumbers(key,topic);
    if(nums.lesson==='3'&&nums.theme==='1')report.changed=rescueL3T1(topic,report)||report.changed;
    if(nums.lesson==='3'&&nums.theme==='2')report.changed=rescueL3T2(topic,report)||report.changed;
+   if(nums.lesson==='6'&&nums.theme==='1')report.changed=rescueL6T1(topic,report)||report.changed;
   }
  }
- report.l3t1=uniq(report.l3t1);report.l3t2=uniq(report.l3t2);
+ report.l3t1=uniq(report.l3t1);report.l3t2=uniq(report.l3t2);report.l6t1=uniq(report.l6t1);
  try{localStorage.setItem(REPORT_KEY,JSON.stringify(report))}catch(e){}
  try{window.SP_PROGRESS_RESCUE_REPORT=report;window.dispatchEvent(new CustomEvent('SP_PROGRESS_RESCUE_DONE',{detail:report}))}catch(e){}
  return report;
