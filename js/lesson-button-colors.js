@@ -2,9 +2,9 @@ const path=String(location.pathname||'');
 const match=path.match(/\/wortschatz\/A1-Lektion-(3|4|5)(?:\/|$)/i);
 if(match&&!document.getElementById('sp-lesson-button-colors')){
   const palette={
-    '3':{main:'#A8DEC0',soft:'#F0FAF5',line:'#C8E8D5',ink:'#28523A',hover:'#91CEAD'},
-    '4':{main:'#F4C29B',soft:'#FFF6EF',line:'#F1D7C1',ink:'#604126',hover:'#EDB383'},
-    '5':{main:'#F3DC8D',soft:'#FFFBEF',line:'#EBDDAD',ink:'#594817',hover:'#EAD172'}
+    '3':{main:'#F6B46B',soft:'#FFF4E8',line:'#F3D0AA',ink:'#6D3D10',hover:'#EEA353'},
+    '4':{main:'#F6D96B',soft:'#FFF9DC',line:'#EADF9F',ink:'#5E4D00',hover:'#ECCA4D'},
+    '5':{main:'#29B8B3',soft:'#E8FBFA',line:'#BFECE9',ink:'#0F5F5B',hover:'#20A29D'}
   }[match[1]];
   const style=document.createElement('style');
   style.id='sp-lesson-button-colors';
@@ -49,11 +49,6 @@ if(match&&!document.getElementById('sp-lesson-button-colors')){
       background-image:none!important;
       color:var(--sp-lesson-ink)!important;
       border-color:var(--sp-lesson-line)!important;
-    }
-    .danger-btn,
-    .btn.danger-btn,
-    .logout{
-      --sp-lesson-main:initial;
     }
   `;
   document.head.appendChild(style);
