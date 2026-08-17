@@ -1,4 +1,4 @@
-import { startAccountProgressSync } from "/js/account-progress-sync-safe.js?v=3";
+import { startAccountProgressSync } from "/js/account-progress-sync-safe.js?v=4";
 
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(location.pathname)){
   import('/wortschatz/lesson-colors-pastel.js?v=2').catch(()=>{});
