@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_ABILITY_UI_1)return;
-window.__SP_L7T1_ABILITY_UI_1=true;
+if(window.__SP_L7T1_ABILITY_UI_2)return;
+window.__SP_L7T1_ABILITY_UI_2=true;
 if(!window.L7||!window.L7S)return;
 
 const S=window.L7S;
@@ -43,7 +43,17 @@ function clearDraft(theme,task,total,index){
 function activityImage(item){
  const src=fileUrl(item.image);
  if(!src)return'';
- return `<div class="sp-ability-image"><img src="${esc(src)}" alt="" loading="eager" decoding="async" onerror="this.hidden=true"></div>`;
+ return `<div class="sp-ability-image"><img src="${esc(src)}" alt="${esc(item.activity||'Aktivität')}" loading="eager" decoding="async" onerror="this.hidden=true"></div>`;
+}
+function abilityHelp(item,tries){
+ const n=Number(tries||0);
+ if(n<=0)return'';
+ if(n===1)return'<div class="l7-no">Noch nicht richtig. Versuche es noch einmal.</div>';
+ if(n===2){
+  const level=String(item.level||'Abstufung').trim();
+  return `<div class="l7-hint"><strong>Hinweis:</strong> Baue den Satz so: Person + richtige Form von „können“ + ${esc(level)} + Aktivität.</div>`;
+ }
+ return `<div class="l7-no"><strong>Lösung:</strong> ${esc(item.answer||'')}<br>Gib die richtige Antwort selbst ein. Die Aufgabe kommt später erneut.</div>`;
 }
 function renderAbility(theme,id){
  theme=Number(theme);
@@ -57,9 +67,8 @@ function renderAbility(theme,id){
  const item=task.items?.[index]||{};
  const value=String(state.answers?.[draftKey(index)]||'');
  current={theme,task,total,index,item};
- const wrong=state.tries?'<div class="l7-no">Noch nicht richtig.</div>':'';
  const root=document.getElementById('app');
- root.innerHTML=`<div class="l7-page"><section class="l7-card">${progressHtml(theme,task,total)}<div class="l7-instruction">${esc(task.description)}</div><div id="spAbilityTask" class="l7-question-card"><div class="sp-ability-cue"><div class="sp-ability-subject">${esc(item.subject)}</div><div class="sp-ability-emoji" role="img" aria-label="${esc(item.level)}">${esc(item.emoji)}</div>${activityImage(item)}</div><div class="sp-ability-answer"><input id="spAbilityInput" autocomplete="off" autocapitalize="sentences" value="${esc(value)}"><button type="button" class="l7-btn" id="spCheckAbility">Prüfen</button></div><div id="spAbilityFeedback">${wrong}</div></div></section><footer>© SprachPilot</footer></div>`;
+ root.innerHTML=`<div class="l7-page"><section class="l7-card">${progressHtml(theme,task,total)}<div class="l7-instruction">${esc(task.description)}</div><div id="spAbilityTask" class="l7-question-card"><div class="sp-ability-cue"><div class="sp-ability-subject">${esc(item.subject)}</div><div class="sp-ability-emoji" role="img" aria-label="${esc(item.level)}">${esc(item.emoji)}</div>${activityImage(item)}</div><div class="sp-ability-answer"><input id="spAbilityInput" autocomplete="off" autocapitalize="sentences" value="${esc(value)}" placeholder="Schreibe den vollständigen Satz."><button type="button" class="l7-btn" id="spCheckAbility">Prüfen</button></div><div id="spAbilityFeedback">${abilityHelp(item,state.tries||0)}</div></div></section><footer>© SprachPilot</footer></div>`;
  const input=document.getElementById('spAbilityInput');
  input?.addEventListener('input',event=>saveDraft(theme,task,total,index,event.target.value));
  const check=()=>{
