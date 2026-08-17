@@ -1,10 +1,10 @@
 (function(){
 'use strict';
-if(window.__SP_L7T2_HELP_STANDARD_V2)return;
-window.__SP_L7T2_HELP_STANDARD_V2=true;
+if(window.__SP_L7T2_HELP_STANDARD_V3)return;
+window.__SP_L7T2_HELP_STANDARD_V3=true;
 
 function install(){
- if(!window.L7||!window.L7S||window.L7.__l7t2HelpStandardV2)return false;
+ if(!window.L7||!window.L7S||window.L7.__l7t2HelpStandardV3)return false;
  const S=window.L7S,root=document.getElementById('app');
  const raw=window.L7.renderTaskPage.bind(window.L7);
  let busy=false,patchQueued=false;
@@ -35,11 +35,11 @@ function install(){
    if(q.includes('objekt'))return'Frage: Wen oder was?';
    return'Lies den Satz genau.'
   }
-  if(id==='saetze')return'Das Hilfsverb steht auf Position 2, das Partizip II steht am Satzende.';
+  if(id==='saetze')return'Das Hilfsverb steht auf Position 2. Zeit, Ort oder Objekt können auch vor dem Subjekt stehen.';
   if(id==='saetze-schreiben')return'Achte auf Hilfsverb, Partizip II, Großschreibung und Satzzeichen.';
   if(id==='dialoge')return'Achte auf den Zusammenhang im Dialog und auf die passende Partizip-II-Form.';
   if(id==='text-umschreiben')return'Setze jedes Verb ins Perfekt: Hilfsverb auf Position 2, Partizip II am Satzende.';
-  if(id==='lesen')return'Lies den Text noch einmal und achte auf Personen, Zeiten und Aktivitäten.';
+  if(id==='lesen')return'Lies den Text noch einmal und achte besonders auf Reihenfolge, vorher und nachher.';
   return'Lies die Aufgabe noch einmal.'
  }
  function solutionFor(id,t,item){
@@ -87,11 +87,20 @@ function install(){
   busy=true;setFeedback(`<div class="l7-ok">Richtig.${repeat?' Die Aufgabe kommt später noch einmal.':''}</div>`);rerender(520)
  }
  function exact(a,b){return String(a||'').replace(/\s+/g,' ').trim()===String(b||'').replace(/\s+/g,' ').trim()}
+ function normOrder(value){return String(value||'').toLocaleLowerCase('de-DE').replace(/[.?!]+$/,'').replace(/\s+/g,' ').trim()}
  function stop(event){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation()}
 
  function checkListen(event,t){const i=index(t);if(i==null)return;const input=document.getElementById('spListenInput'),v=String(input?.value||'').trim();if(!v)return;stop(event);const item=t.items[i];if(S.norm(v)===S.norm(item.answer))markRight(t,i,[`listen:${i}`]);else markWrong(t,i)}
  function checkGrammar(event,t,button){const i=index(t);if(i==null)return;stop(event);const item=t.items[i];if(S.norm(button.dataset.grammarAnswer)===S.norm(item.answer))markRight(t,i);else markWrong(t,i)}
- function checkOrder(event,t){const i=index(t);if(i==null)return;stop(event);const st=state(t),arr=Array.isArray(st.answers[`order:${i}`])?st.answers[`order:${i}`]:[],value=arr.map(x=>x.token).join(' '),target=String(t.items[i].sentence||'').replace(/[.?!]$/,'');if(value===target)markRight(t,i,[`order:${i}`]);else markWrong(t,i)}
+ function checkOrder(event,t){
+  const i=index(t);if(i==null)return;stop(event);
+  const st=state(t),item=t.items[i],arr=Array.isArray(st.answers[`order:${i}`])?st.answers[`order:${i}`]:[];
+  const value=arr.map(x=>x.token).join(' ');
+  const accepted=[item.sentence,...(item.acceptedSentences||[])].filter(Boolean);
+  const allTokensUsed=arr.length===(item.tokens||[]).length;
+  const ok=allTokensUsed&&accepted.some(sentence=>normOrder(sentence)===normOrder(value));
+  if(ok)markRight(t,i,[`order:${i}`]);else markWrong(t,i)
+ }
  function checkSentence(event,t){const i=index(t);if(i==null)return;const input=document.getElementById('spSentenceInput'),v=input?.value||'';if(!String(v).trim())return;stop(event);if(exact(v,t.items[i].answer))markRight(t,i,[`write:${i}`]);else markWrong(t,i)}
  function checkDialog(event,t,button){const i=index(t);if(i==null)return;stop(event);if(S.norm(button.dataset.dialogAnswer)===S.norm(t.items[i].answer))markRight(t,i);else markWrong(t,i)}
  function checkRewrite(event,t){const i=index(t);if(i==null)return;const input=document.getElementById('spRewrite'),v=input?.value||'';if(!String(v).trim())return;stop(event);if(exact(v,t.items[i].perfect))markRight(t,i,['rewrite']);else markWrong(t,i)}
@@ -135,7 +144,7 @@ function install(){
 
  if(root)new MutationObserver(queuePatch).observe(root,{childList:true,subtree:true,characterData:true});
  window.L7.renderTaskPage=function(th,id){const result=raw(th,id);queuePatch();return result};
- window.L7.__l7t2HelpStandardV2=true;queuePatch();return true
+ window.L7.__l7t2HelpStandardV3=true;queuePatch();return true
 }
 window.L7T2HelpStandard={install};
 })();
