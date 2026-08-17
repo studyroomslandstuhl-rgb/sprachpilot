@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_WIE_GUT_EMOJIS_5)return;
-window.__SP_L7T1_WIE_GUT_EMOJIS_5=true;
+if(window.__SP_L7T1_WIE_GUT_EMOJIS_6)return;
+window.__SP_L7T1_WIE_GUT_EMOJIS_6=true;
 
 const LEVEL_EMOJIS=Object.freeze({
  'gar nicht':'😭',
@@ -11,6 +11,24 @@ const LEVEL_EMOJIS=Object.freeze({
 });
 const EMOJI_LEVELS=Object.freeze(Object.fromEntries(Object.entries(LEVEL_EMOJIS).map(([level,emoji])=>[emoji,level])));
 const ORDERED=['😭','🙁','🙂','🤩'];
+
+const UNIQUE_ROWS=Object.freeze([
+ ['Lena','backen','gut'],
+ ['Tom','singen','sehr gut'],
+ ['Mia','reiten','nicht so gut'],
+ ['Paul','Klavier spielen','gar nicht'],
+ ['Anna','malen','sehr gut'],
+ ['Du','Ski fahren','gut'],
+ ['Wir','Tennis spielen','nicht so gut'],
+ ['Ihr','Gitarre spielen','sehr gut'],
+ ['Omar','jonglieren','gar nicht'],
+ ['Die Kinder','Fahrrad fahren','gut'],
+ ['Sofia','fotografieren','sehr gut'],
+ ['Ich','Französisch sprechen','nicht so gut'],
+ ['Jonas','einen Handstand machen','gar nicht'],
+ ['Nina','lesen','gut'],
+ ['Amir','schreiben','sehr gut']
+]);
 
 function norm(value){
  return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/\s+/g,' ');
@@ -35,23 +53,6 @@ function starEmoji(value){
  if(filled>=1&&filled<=4)return ORDERED[filled-1];
  return null;
 }
-function resolveEmoji(item){
- const direct=[item?.emoji,item?.level,item?.rating,item?.score,item?.stars,item?.value,item?.text,item?.label];
- for(const value of direct){
-  const result=starEmoji(value);
-  if(result)return result;
- }
- const prompt=String(item?.prompt||'');
- const promptEmoji=ORDERED.find(emoji=>prompt.includes(emoji));
- if(promptEmoji)return promptEmoji;
- const parts=prompt.split('/').map(value=>value.trim()).filter(Boolean);
- return starEmoji(parts[2]||'');
-}
-function sentenceCandidate(item){
- const values=[item?.answer,...(Array.isArray(item?.answers)?item.answers:[]),item?.solution,item?.sentence,item?.text];
- const sentence=values.map(value=>String(value||'').trim()).find(value=>/\b(?:kann|kannst|können|könnt)\b/i.test(value)&&value.split(/\s+/).length>=4);
- return sentence||'';
-}
 function modalFor(subject){
  const value=norm(subject);
  if(value==='ich')return'kann';
@@ -61,51 +62,33 @@ function modalFor(subject){
  if(/^die\s+(?:kinder|schuler|schueler|freunde|eltern|leute|personen)\b/.test(value))return'können';
  return'kann';
 }
-function cueParts(item){
- const prompt=String(item?.prompt||'').trim();
- const parts=prompt.split('/').map(value=>value.trim()).filter(Boolean);
- const subject=String(item?.subject||parts[0]||'').trim();
- const activity=String(item?.activity||parts[1]||'').trim();
- const emoji=resolveEmoji(item)||'';
- const level=String(item?.level||EMOJI_LEVELS[emoji]||'').trim();
- return{subject,activity,emoji,level};
-}
-function buildSentence(item){
- const{subject,activity,level}=cueParts(item);
- if(subject&&activity&&level)return`${subject} ${modalFor(subject)} ${level} ${activity}.`;
- const existing=sentenceCandidate(item);
- return existing||String(item?.answer||'').trim();
-}
 function cleanAnswers(answer){
  return [...new Set([answer,answer.replace(/[.!?]+$/,'')].map(value=>String(value||'').trim()).filter(Boolean))];
+}
+function buildUniqueItems(){
+ return UNIQUE_ROWS.map(([subject,activity,level])=>{
+  const emoji=LEVEL_EMOJIS[level];
+  const answer=`${subject} ${modalFor(subject)} ${level} ${activity}.`;
+  return{
+   kind:'input',
+   subject,
+   activity,
+   level,
+   emoji,
+   prompt:`${subject} / ${activity} / ${emoji}`,
+   answer,
+   answers:cleanAnswers(answer),
+   hint:`Baue den Satz so: Person + richtige Form von „können“ + ${level} + Aktivität.`,
+   noAudio:true
+  };
+ });
 }
 function polishTask(task){
  if(!task)return;
  task.kind='input';
  task.title='Wie gut?';
  task.description='Schreibe einen vollständigen Satz mit „können“.';
- task.items=(task.items||[]).map(original=>{
-  const item={...original};
-  const{subject,activity,emoji,level}=cueParts(item);
-  const answer=buildSentence(item);
-  const prompt=[subject,activity,emoji].filter(Boolean).join(' / ')||String(item.prompt||'').trim();
-  const output={
-   ...item,
-   kind:'input',
-   prompt,
-   subject,
-   activity,
-   emoji,
-   level,
-   answer,
-   answers:cleanAnswers(answer),
-   hint:`Baue den Satz so: Person + richtige Form von „können“ + ${level||'Abstufung'} + Aktivität.`,
-   noAudio:true
-  };
-  delete output.options;
-  delete output.noHelp;
-  return output;
- });
+ task.items=buildUniqueItems();
  task.emojiScale={...LEVEL_EMOJIS};
  task.emojiOnly=false;
 }
@@ -126,7 +109,7 @@ function transform(theme){
  tasks.forEach((task,index)=>{task.order=index+1});
  theme.tasks=tasks;
  theme.abilityEmojis={...LEVEL_EMOJIS};
- theme.wieGutEmojiRevision='l7t1-wie-gut-emojis-only-2026-08-17-v5';
+ theme.wieGutEmojiRevision='l7t1-wie-gut-unique-2026-08-17-v6';
  window.L7_THEME=theme;
  return theme;
 }
