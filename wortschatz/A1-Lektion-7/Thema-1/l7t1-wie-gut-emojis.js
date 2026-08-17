@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_WIE_GUT_EMOJIS_3)return;
-window.__SP_L7T1_WIE_GUT_EMOJIS_3=true;
+if(window.__SP_L7T1_WIE_GUT_EMOJIS_4)return;
+window.__SP_L7T1_WIE_GUT_EMOJIS_4=true;
 
 const LEVEL_EMOJIS=Object.freeze({
  'gar nicht':'😭',
@@ -65,20 +65,19 @@ function cueParts(item){
  const parts=prompt.split('/').map(value=>value.trim()).filter(Boolean);
  const subject=String(item?.subject||parts[0]||'').trim();
  const activity=String(item?.activity||parts[1]||'').trim();
- const emoji=resolveEmoji(item)||starEmoji(parts[2]||'')||'';
- const level=String(item?.level||EMOJI_LEVELS[emoji]||'').trim();
+ const promptEmoji=ORDERED.find(emoji=>prompt.includes(emoji))||starEmoji(parts[2]||'')||'';
+ const emoji=promptEmoji||resolveEmoji(item)||'';
+ const level=String(promptEmoji?EMOJI_LEVELS[promptEmoji]:(item?.level||EMOJI_LEVELS[emoji]||'')).trim();
  return{subject,activity,emoji,level};
 }
 function buildSentence(item){
- const existing=sentenceCandidate(item);
- if(existing)return existing;
  const{subject,activity,level}=cueParts(item);
- if(!subject||!activity||!level)return String(item?.answer||'').trim();
- return`${subject} ${modalFor(subject)} ${level} ${activity}.`;
+ if(subject&&activity&&level)return`${subject} ${modalFor(subject)} ${level} ${activity}.`;
+ const existing=sentenceCandidate(item);
+ return existing||String(item?.answer||'').trim();
 }
-function cleanAnswers(item,answer){
- const values=[answer,answer.replace(/[.!?]+$/,''),...(Array.isArray(item?.answers)?item.answers:[])];
- return [...new Set(values.map(value=>String(value||'').trim()).filter(value=>/\b(?:kann|kannst|können|könnt)\b/i.test(value)))];
+function cleanAnswers(answer){
+ return [...new Set([answer,answer.replace(/[.!?]+$/,'')].map(value=>String(value||'').trim()).filter(Boolean))];
 }
 function polishTask(task){
  if(!task)return;
@@ -95,7 +94,7 @@ function polishTask(task){
    kind:'input',
    prompt,
    answer,
-   answers:cleanAnswers(item,answer),
+   answers:cleanAnswers(answer),
    hint:`Baue den Satz so: Person + richtige Form von „können“ + ${level||'Abstufung'} + Aktivität.`,
    noAudio:true
   };
@@ -123,7 +122,7 @@ function transform(theme){
  tasks.forEach((task,index)=>{task.order=index+1});
  theme.tasks=tasks;
  theme.abilityEmojis={...LEVEL_EMOJIS};
- theme.wieGutEmojiRevision='l7t1-wie-gut-sentence-fix-2026-08-17-v3';
+ theme.wieGutEmojiRevision='l7t1-wie-gut-sentence-fix-2026-08-17-v4';
  window.L7_THEME=theme;
  return theme;
 }
