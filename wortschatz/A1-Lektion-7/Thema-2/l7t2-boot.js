@@ -3,10 +3,17 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t2-standard-v8';
+const version='l7t2-standard-v9';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 function currentTask(){const id=new URLSearchParams(location.search).get('task');return window.L7S?.task?.(id)||null}
-function concise(){if(page!=='task')return;const task=currentTask();if(task?.spL7T2Write)document.querySelectorAll('.l7-answer-box label').forEach(label=>label.textContent='Antwort')}
+function concise(){
+ if(page!=='task')return;
+ const task=currentTask();
+ if(!task?.spL7T2Write)return;
+ document.querySelectorAll('.l7-answer-box label').forEach(label=>{
+  if(label.textContent!=='Antwort')label.textContent='Antwort';
+ });
+}
 function addPolish(){
  if(document.getElementById('sp-l7t2-standard-polish'))return;
  const style=document.createElement('style');style.id='sp-l7t2-standard-polish';style.textContent=`
