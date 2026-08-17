@@ -1,10 +1,10 @@
 (function(){
 'use strict';
-if(window.__SP_L7T2_HELP_STANDARD_V1)return;
-window.__SP_L7T2_HELP_STANDARD_V1=true;
+if(window.__SP_L7T2_HELP_STANDARD_V2)return;
+window.__SP_L7T2_HELP_STANDARD_V2=true;
 
 function install(){
- if(!window.L7||!window.L7S||window.L7.__l7t2HelpStandardV1)return false;
+ if(!window.L7||!window.L7S||window.L7.__l7t2HelpStandardV2)return false;
  const S=window.L7S,root=document.getElementById('app');
  const raw=window.L7.renderTaskPage.bind(window.L7);
  let busy=false,patchQueued=false;
@@ -14,12 +14,14 @@ function install(){
  function taskId(){return String(new URLSearchParams(location.search).get('task')||'')}
  function task(){return S.task(taskId())}
  function state(t){const st=S.load(theme(),t.id,t.items.length);st.answers=st.answers||{};return st}
- function index(t){const st=state(t);return Number.isInteger(st.current)?st.current:null}
- function esc(v){return S.esc(v)}
- function setFeedback(html){
-  const box=document.getElementById('spFeedback');if(!box)return;
-  if(box.innerHTML!==html)box.innerHTML=html
+ function index(t){
+  const st=state(t);if(Number.isInteger(st.current))return st.current;
+  const i=t.items.findIndex((item,pos)=>!st.done.includes(pos));
+  if(i<0)return null;
+  st.current=i;S.save(theme(),t.id,st,false);return i
  }
+ function esc(v){return S.esc(v)}
+ function setFeedback(html){const box=document.getElementById('spFeedback');if(!box)return;if(box.innerHTML!==html)box.innerHTML=html}
  function first(){return'<div class="l7-no">Noch nicht richtig.</div>'}
  function hint(text){return`<div class="l7-hint"><strong>Hinweis:</strong> ${esc(text)}</div>`}
  function solution(text,action='Gib die richtige Antwort selbst ein.'){return`<div class="l7-no"><strong>Lösung:</strong> ${text}<br>${action} Die Aufgabe kommt später erneut.</div>`}
@@ -87,47 +89,29 @@ function install(){
  function exact(a,b){return String(a||'').replace(/\s+/g,' ').trim()===String(b||'').replace(/\s+/g,' ').trim()}
  function stop(event){event.preventDefault();event.stopPropagation();event.stopImmediatePropagation()}
 
- function checkListen(event,t){
-  const i=index(t);if(i==null)return;const input=document.getElementById('spListenInput'),v=String(input?.value||'').trim();if(!v)return;
-  stop(event);const item=t.items[i];if(S.norm(v)===S.norm(item.answer))markRight(t,i,[`listen:${i}`]);else markWrong(t,i)
- }
- function checkGrammar(event,t,button){
-  const i=index(t);if(i==null)return;stop(event);const item=t.items[i];if(S.norm(button.dataset.grammarAnswer)===S.norm(item.answer))markRight(t,i);else markWrong(t,i)
- }
- function checkOrder(event,t){
-  const i=index(t);if(i==null)return;stop(event);const st=state(t),arr=Array.isArray(st.answers[`order:${i}`])?st.answers[`order:${i}`]:[],value=arr.map(x=>x.token).join(' '),target=String(t.items[i].sentence||'').replace(/[.?!]$/,'');if(value===target)markRight(t,i,[`order:${i}`]);else markWrong(t,i)
- }
- function checkSentence(event,t){
-  const i=index(t);if(i==null)return;const input=document.getElementById('spSentenceInput'),v=input?.value||'';if(!String(v).trim())return;stop(event);if(exact(v,t.items[i].answer))markRight(t,i,[`write:${i}`]);else markWrong(t,i)
- }
- function checkDialog(event,t,button){
-  const i=index(t);if(i==null)return;stop(event);if(S.norm(button.dataset.dialogAnswer)===S.norm(t.items[i].answer))markRight(t,i);else markWrong(t,i)
- }
- function checkRewrite(event,t){
-  const i=index(t);if(i==null)return;const input=document.getElementById('spRewrite'),v=input?.value||'';if(!String(v).trim())return;stop(event);if(exact(v,t.items[i].perfect))markRight(t,i,['rewrite']);else markWrong(t,i)
- }
+ function checkListen(event,t){const i=index(t);if(i==null)return;const input=document.getElementById('spListenInput'),v=String(input?.value||'').trim();if(!v)return;stop(event);const item=t.items[i];if(S.norm(v)===S.norm(item.answer))markRight(t,i,[`listen:${i}`]);else markWrong(t,i)}
+ function checkGrammar(event,t,button){const i=index(t);if(i==null)return;stop(event);const item=t.items[i];if(S.norm(button.dataset.grammarAnswer)===S.norm(item.answer))markRight(t,i);else markWrong(t,i)}
+ function checkOrder(event,t){const i=index(t);if(i==null)return;stop(event);const st=state(t),arr=Array.isArray(st.answers[`order:${i}`])?st.answers[`order:${i}`]:[],value=arr.map(x=>x.token).join(' '),target=String(t.items[i].sentence||'').replace(/[.?!]$/,'');if(value===target)markRight(t,i,[`order:${i}`]);else markWrong(t,i)}
+ function checkSentence(event,t){const i=index(t);if(i==null)return;const input=document.getElementById('spSentenceInput'),v=input?.value||'';if(!String(v).trim())return;stop(event);if(exact(v,t.items[i].answer))markRight(t,i,[`write:${i}`]);else markWrong(t,i)}
+ function checkDialog(event,t,button){const i=index(t);if(i==null)return;stop(event);if(S.norm(button.dataset.dialogAnswer)===S.norm(t.items[i].answer))markRight(t,i);else markWrong(t,i)}
+ function checkRewrite(event,t){const i=index(t);if(i==null)return;const input=document.getElementById('spRewrite'),v=input?.value||'';if(!String(v).trim())return;stop(event);if(exact(v,t.items[i].perfect))markRight(t,i,['rewrite']);else markWrong(t,i)}
  function checkReading(event,t){
-  const i=index(t);if(i==null)return;stop(event);const st=state(t),item=t.items[i],keys=[],values=[];let q=0,complete=true,correct=true;
-  (item.tf||[]).forEach(([,answer])=>{const key=`read:${i}:${q++}`,v=String(st.answers[key]??'');keys.push(key);values.push(v);if(!v)complete=false;if(v!==String(answer))correct=false});
-  (item.abc||[]).forEach(([,options,answer])=>{const key=`read:${i}:${q++}`,v=String(st.answers[key]??'');keys.push(key);values.push(v);if(!v)complete=false;if(v!==answer)correct=false});
+  const i=index(t);if(i==null)return;stop(event);const st=state(t),item=t.items[i],keys=[];let q=0,complete=true,correct=true;
+  (item.tf||[]).forEach(([,answer])=>{const key=`read:${i}:${q++}`,v=String(st.answers[key]??'');keys.push(key);if(!v)complete=false;if(v!==String(answer))correct=false});
+  (item.abc||[]).forEach(([,options,answer])=>{const key=`read:${i}:${q++}`,v=String(st.answers[key]??'');keys.push(key);if(!v)complete=false;if(v!==answer)correct=false});
   if(!complete)return;
   if(correct)markRight(t,i,keys);else markWrong(t,i)
  }
  function checkHaben(event,t){
   stop(event);const st=state(t);st.answers.habenHelpTries=st.answers.habenHelpTries||{};st.answers.habenNeedsCleanRepeat=st.answers.habenNeedsCleanRepeat||{};
-  let touched=false,wrong=false,repeatCorrect=false,cleanCorrect=false;
+  let touched=false,wrong=false,repeatCorrect=false;
   t.items.forEach((item,i)=>{
    if(st.done.includes(i))return;
    const input=document.querySelector(`[data-haben="${i}"]`),v=String(input?.value||'').trim();if(!v)return;touched=true;
    if(S.norm(v)===S.norm(item.form)){
-    if(st.answers.habenNeedsCleanRepeat[i]){
-     delete st.answers.habenNeedsCleanRepeat[i];delete st.answers.habenHelpTries[i];delete st.answers[`haben:${i}`];repeatCorrect=true;
-    }else{
-     st.done.push(i);delete st.answers.habenHelpTries[i];delete st.answers[`haben:${i}`];cleanCorrect=true;
-    }
-   }else{
-    st.answers.habenHelpTries[i]=Number(st.answers.habenHelpTries[i]||0)+1;st.answers.habenNeedsCleanRepeat[i]=true;wrong=true
-   }
+    if(st.answers.habenNeedsCleanRepeat[i]){delete st.answers.habenNeedsCleanRepeat[i];delete st.answers.habenHelpTries[i];delete st.answers[`haben:${i}`];repeatCorrect=true}
+    else{st.done.push(i);delete st.answers.habenHelpTries[i];delete st.answers[`haben:${i}`]}
+   }else{st.answers.habenHelpTries[i]=Number(st.answers.habenHelpTries[i]||0)+1;st.answers.habenNeedsCleanRepeat[i]=true;wrong=true}
   });
   if(!touched)return;
   st.current=null;S.save(theme(),t.id,st,true);
@@ -151,7 +135,7 @@ function install(){
 
  if(root)new MutationObserver(queuePatch).observe(root,{childList:true,subtree:true,characterData:true});
  window.L7.renderTaskPage=function(th,id){const result=raw(th,id);queuePatch();return result};
- window.L7.__l7t2HelpStandardV1=true;queuePatch();return true
+ window.L7.__l7t2HelpStandardV2=true;queuePatch();return true
 }
 window.L7T2HelpStandard={install};
 })();
