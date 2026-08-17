@@ -1,17 +1,17 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_PERFEKT_UI_V1)return;
-window.__SP_L7T1_PERFEKT_UI_V1=true;
+if(window.__SP_L7T1_PERFEKT_UI_V2)return;
+window.__SP_L7T1_PERFEKT_UI_V2=true;
 
 function install(){
- if(!window.L7||!window.L7S||window.L7.__perfektMemoryV1)return false;
+ if(!window.L7||!window.L7S||window.L7.__perfektMemoryV2)return false;
  const S=window.L7S;
  const raw=window.L7.renderTaskPage.bind(window.L7);
  let openCards=[];
  let busy=false;
  let feedback='';
 
- function esc(v){return S.esc(v)}
+ function esc(value){return S.esc(value)}
  function task(){return S.task('perfekt-memory')}
  function nextTask(t){const tasks=S.T.tasks||[];return tasks[tasks.findIndex(x=>x.id===t.id)+1]||null}
  function allCards(t){return (t.items||[]).flatMap((pair,index)=>[
@@ -38,12 +38,19 @@ function install(){
    document.querySelectorAll('[data-memory-id]').forEach(button=>button.addEventListener('click',()=>pick(theme,cards,button.dataset.memoryId)));
  }
  function pick(theme,cards,id){
-   if(busy)return;const t=task(),total=t.items.length,st=S.load(theme,t.id,total),done=new Set(st.done.map(Number)),card=cards.find(x=>x.id===id);if(!card||done.has(card.pair)||openCards.some(x=>x.id===id))return;
+   if(busy)return;
+   const t=task(),total=t.items.length,st=S.load(theme,t.id,total),done=new Set(st.done.map(Number)),card=cards.find(x=>x.id===id);
+   if(!card||done.has(card.pair)||openCards.some(x=>x.id===id))return;
    openCards.push(card);feedback='';render(theme);
    if(openCards.length<2)return;
    const[a,b]=openCards;
    if(a.pair===b.pair&&a.id!==b.id){
-     busy=true;const fresh=S.load(theme,t.id,total);if(!fresh.done.map(Number).includes(a.pair))fresh.done.push(a.pair);fresh.current=null;fresh.tries=0;fresh.hadWrong=false;S.attempt(theme,t.id,total,a.pair,true);S.save(theme,t.id,fresh,true);feedback='<div class="l7-ok">Richtiges Paar!</div>';
+     busy=true;
+     const fresh=S.load(theme,t.id,total);
+     if(!fresh.done.map(Number).includes(a.pair))fresh.done.push(a.pair);
+     fresh.current=null;fresh.tries=0;fresh.hadWrong=false;
+     S.save(theme,t.id,fresh,true);
+     feedback='<div class="l7-ok">Richtiges Paar!</div>';
      setTimeout(()=>{openCards=[];busy=false;render(theme)},420);
    }else{
      busy=true;feedback='<div class="l7-no">Das passt noch nicht zusammen.</div>';render(theme);
@@ -55,7 +62,7 @@ function install(){
  .sp-perfekt-memory-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px;margin:20px 0}.sp-perfekt-memory-card{min-height:112px;border:2px solid var(--line);border-radius:16px;background:var(--soft,#f7f4fb);color:var(--dark);font:inherit;font-weight:900;cursor:pointer;padding:12px;display:flex;flex-direction:column;align-items:center;justify-content:center;gap:7px;transition:transform .15s ease,border-color .15s ease,background .15s ease}.sp-perfekt-memory-card:hover{transform:translateY(-2px);border-color:var(--main,#7b5aa6)}.sp-perfekt-memory-card strong{font-size:20px}.sp-perfekt-memory-card span{font-size:12px;opacity:.7}.sp-perfekt-memory-card.selected{outline:3px solid rgba(91,61,135,.22);background:#fff}.sp-perfekt-memory-card.done{background:#e8f8ee;border-color:#52a56d;color:#245c36}@media(max-width:760px){.sp-perfekt-memory-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}@media(max-width:520px){.sp-perfekt-memory-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:9px}.sp-perfekt-memory-card{min-height:92px}.sp-perfekt-memory-card strong{font-size:17px}}
  `;document.head.appendChild(style);
  window.L7.renderTaskPage=function(theme,id){if(id==='perfekt-memory'){openCards=[];busy=false;feedback='';return render(Number(theme))}return raw(theme,id)};
- window.L7.__perfektMemoryV1=true;
+ window.L7.__perfektMemoryV2=true;
  return true
  }
 
