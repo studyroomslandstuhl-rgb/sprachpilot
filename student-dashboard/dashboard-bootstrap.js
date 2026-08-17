@@ -4,6 +4,10 @@ try{
 }catch(error){
   console.warn('Account-Fortschritt vor Dashboard konnte nicht synchronisiert werden',error);
 }
+try{
+  const rescue=await import('/js/progress-rescue-legacy.js?v=1');
+  await rescue.rescueLegacyProgress();
+}catch(error){console.warn('Alte Lektionsfortschritte konnten nicht vollständig rekonstruiert werden',error)}
 import { repairDashboardPointsSafe } from './points-recovery-safe.js?v=2';
 try{await repairDashboardPointsSafe()}catch(error){console.warn('Punkte-Sicherheitsprüfung vor Dashboard fehlgeschlagen',error)}
 try{
