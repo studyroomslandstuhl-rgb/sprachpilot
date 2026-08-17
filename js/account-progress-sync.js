@@ -2,7 +2,7 @@ import { db, doc, getDoc, setDoc, serverTimestamp } from "/js/firebase.js";
 import { getActiveProfile, getActiveRole } from "/js/auth.js";
 
 const FIELD="clientProgressStateV1";
-const VERSION=1;
+const VERSION=2;
 const OWNER_KEY="SP_ACCOUNT_PROGRESS_OWNER";
 const TRACKED_KEY="SP_ACCOUNT_PROGRESS_TRACKED";
 const META_PREFIX="SP_ACCOUNT_PROGRESS_META_";
@@ -22,6 +22,7 @@ let activeStudentId="";
 let meta={};
 let tracked=new Set();
 let dirty=new Set();
+let hydratedRemote=new Map();
 let flushTimer=null;
 let flushPromise=null;
 let readyResolve=()=>{};
@@ -79,7 +80,7 @@ function knownProgressKey(key){
   const k=String(key||"");
   if(k==="A1_ACTIVE_SESSION")return true;
   if(/^A1_(?!STUDENTS_)/i.test(k))return true;
-  if(/^SP_(?:L\d(?:_|$)|SCORE_RUN_|POINTS_TOTAL$|TASK_|EXAM_|VERBS?_|FRAGEN_|WORTSCHATZ_|PERFEKT_|GRAMMATIK_|LESSON_|THEME_|RUN_|STARS?_)/i.test(k))return true;
+  if(/^SP_(?:L\d+(?:_|$)|SCORE_RUN_|POINTS_TOTAL$|TASK_|EXAM_|VERBS?_|FRAGEN_|WORTSCHATZ_|PERFEKT_|GRAMMATIK_|LESSON_|THEME_|RUN_|STARS?_)/i.test(k))return true;
   if(/(?:progress|fortschritt|score|punkte|points|stars|attempt|completed|done|learned|known|unknown|unsure)/i.test(k)&&/^(?:SP_|A1_)/i.test(k))return true;
   return false;
 }
@@ -160,7 +161,7 @@ function entryFromLocal(key,ts=now()){
   const value=localStorage.getItem(key);
   return value===null?{key,value:null,deleted:true,updatedAt:ts}:{key,value:String(value),deleted:false,updatedAt:ts};
 }
-function markLocal(key,value,deleted=false){
+function markLocal(key,value){
   if(!started||hydrating||applyingRemote||!isStudent())return;
   if(!eligible(key,value,true))return;
   const ts=now();meta[key]=ts;tracked.add(key);dirty.add(key);saveMeta();saveTracked();scheduleFlush();
@@ -169,13 +170,13 @@ function patchStorage(){
   if(patched)return;patched=true;
   Storage.prototype.setItem=function(key,value){
     const result=nativeSet.apply(this,arguments);
-    try{if(this===localStorage)markLocal(String(key||""),String(value??""),false)}catch(e){}
+    try{if(this===localStorage)markLocal(String(key||""),String(value??""))}catch(e){}
     return result;
   };
   Storage.prototype.removeItem=function(key){
     const old=this===localStorage?this.getItem(key):null;
     const result=nativeRemove.apply(this,arguments);
-    try{if(this===localStorage&&eligible(String(key||""),old,true))markLocal(String(key||""),old,true)}catch(e){}
+    try{if(this===localStorage&&eligible(String(key||""),old,true))markLocal(String(key||""),old)}catch(e){}
     return result;
   };
 }
@@ -189,9 +190,11 @@ function scanLocal(){
 }
 async function readRemote(){
   const merged=new Map();
+  let successfulReads=0;
   for(const id of candidates().slice(0,5)){
     try{
       const snap=await getDoc(doc(db,"progress",id));
+      successfulReads++;
       if(!snap.exists())continue;
       const data=snap.data()||{};
       for(const [key,entry] of remoteEntries(data[FIELD])){
@@ -199,10 +202,11 @@ async function readRemote(){
       }
     }catch(e){console.warn("Account-Fortschritt konnte nicht gelesen werden",id,e)}
   }
+  if(!successfulReads)throw new Error("Kein Fortschrittsdokument konnte sicher gelesen werden.");
   return merged;
 }
 function applyRemote(remote,local){
-  let changed=false,restored=0,removed=0,seeded=0;
+  let changed=false,restored=0,removed=0,seeded=0,remoteStamp=0;
   const all=new Set([...remote.keys(),...local.keys(),...tracked]);
   const timestamp=now();
   for(const key of all){
@@ -211,7 +215,7 @@ function applyRemote(remote,local){
     const localValue=localStorage.getItem(key);
     const localTs=Math.max(0,Number(meta[key])||0);
     if(re){
-      const remoteTs=Math.max(0,Number(re.updatedAt)||0);
+      const remoteTs=Math.max(0,Number(re.updatedAt)||0);remoteStamp=Math.max(remoteStamp,remoteTs);
       let remoteWins=remoteTs>localTs;
       if(localTs===0&&localValue!==null&&!re.deleted&&localValue!==re.value){remoteWins=strength(re.value)>=strength(localValue)}
       if(localTs===0&&localValue===null)remoteWins=true;
@@ -232,7 +236,7 @@ function applyRemote(remote,local){
     }
   }
   saveMeta();saveTracked();
-  return{changed,restored,removed,seeded};
+  return{changed,restored,removed,seeded,remoteStamp};
 }
 function buildMap(entries){
   const list=[...entries.values()].filter(entry=>entry&&entry.key&&!denied(entry.key)).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));
@@ -254,9 +258,12 @@ async function flush(){
   flushPromise=(async()=>{
     try{
       const ref=doc(db,"progress",activeStudentId);
-      let current={};
-      try{const snap=await getDoc(ref);if(snap.exists())current=snap.data()||{}}catch(e){}
+      const snap=await getDoc(ref);
+      const current=snap.exists()?snap.data()||{}:{};
       const entries=remoteEntries(current[FIELD]);
+      for(const [key,entry] of hydratedRemote){
+        const old=entries.get(key);if(!old||entry.updatedAt>old.updatedAt)entries.set(key,entry);
+      }
       for(const key of keys){
         if(denied(key))continue;
         const ts=Math.max(Number(meta[key])||0,now());
@@ -266,6 +273,7 @@ async function flush(){
       }
       const map=buildMap(entries);
       await setDoc(ref,{[FIELD]:map,clientProgressStateVersion:VERSION,clientProgressStateUpdatedAt:serverTimestamp()},{merge:true});
+      hydratedRemote=remoteEntries(map);
       saveMeta();saveTracked();
       try{window.dispatchEvent(new CustomEvent("SP_ACCOUNT_PROGRESS_SYNCED",{detail:{studentId:activeStudentId,keys:keys.length}}))}catch(e){}
       return{keys:keys.length};
@@ -281,7 +289,7 @@ function scheduleFlush(){clearTimeout(flushTimer);flushTimer=setTimeout(()=>flus
 function shouldReloadAfterRestore(result){return !!(result?.changed&&exercisePath())}
 function reloadOnce(result){
   if(!shouldReloadAfterRestore(result))return;
-  const signature=`${activeStudentId}:${result.restored}:${result.removed}:${[...tracked].length}`;
+  const signature=`${activeStudentId}:${result.remoteStamp||0}:${result.restored}:${result.removed}:${tracked.size}`;
   const key="SP_ACCOUNT_PROGRESS_RELOAD";
   if(sessionStorage.getItem(key)===signature)return;
   sessionStorage.setItem(key,signature);
@@ -298,6 +306,7 @@ export async function startAccountProgressSync(options={}){
   meta=loadMeta(activeStudentId);
   try{
     const remote=await readRemote();
+    hydratedRemote=new Map(remote);
     const local=scanLocal();
     const result=applyRemote(remote,local);
     hydrating=false;
