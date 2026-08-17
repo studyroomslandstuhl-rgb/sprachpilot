@@ -63,7 +63,7 @@ footer{text-align:center;color:var(--sp-muted);margin-top:24px;font-size:14px}
 </section>
 <footer>© SprachPilot</footer>
 </div>
-<script type="module" src="/js/account-progress-autostart.js?v=1"></script>
+<script type="module" src="/js/account-progress-autostart.js?v=2"></script>
 <script type="module">
 import { loadCourseRelease } from "/js/course-releases.js?v=release-core-20260701b";
 import { logout, dashboardHref } from "/js/auth.js?v=20260709-login-fix";
@@ -73,12 +73,12 @@ const A1_LESSON_COLORS={
   6:{main:'#FFB6C1',soft:'#FFF0F4',line:'#F3C2CC',ink:'#6F3041',sub:'#8A3A4F'},
   7:{main:'#B397E1',soft:'#F4EFFB',line:'#D9CCEF',ink:'#4F3A6C',sub:'#5F477F'},
   8:{main:'#8DBFEA',soft:'#EEF6FD',line:'#C9DFF2',ink:'#173A56',sub:'#4E7FA8'},
-  9:{main:'#D9ED9A',soft:'#F7FBEA',line:'#E4EEBE',ink:'#3F4C16',sub:'#5E7428'},
+  9:{main:'#E7EFCB',soft:'#F8FAF0',line:'#D9E2B9',ink:'#46522C',sub:'#66723F'},
   10:{main:'#F4A3A3',soft:'#FDF1F1',line:'#F3C9C9',ink:'#572F2F',sub:'#8F5555'},
   11:{main:'#F6D78B',soft:'#FDF8EC',line:'#F3E2B7',ink:'#5C4715',sub:'#8C6E26'},
   12:{main:'#9EDFE3',soft:'#EEF9FA',line:'#CAE9EB',ink:'#24545A',sub:'#447D82'},
   13:{main:'#D7A3E4',soft:'#FAF1FC',line:'#E8CBEF',ink:'#4E2D56',sub:'#7A4F86'},
-  14:{main:'#93D0B3',soft:'#EDF8F2',line:'#C7E5D7',ink:'#2E5947',sub:'#447860'}
+  14:{main:'#C6DED2',soft:'#F2F8F5',line:'#B9D3C6',ink:'#365B4A',sub:'#557867'}
 };
 function safe(s){return String(s||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;")}
 function readJson(key,fallback={}){try{return JSON.parse(localStorage.getItem(key)||"null")||fallback}catch(e){return fallback}}
