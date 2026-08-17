@@ -41,7 +41,7 @@ if(PERFORMANCE_SYNC_OFF){
   window.SP_PERFORMANCE_MODE=true;
 }
 if(FULL_FIREBASE&&SP_USER){
-  import("/js/account-progress-sync.js?v=3")
+  import("/js/account-progress-sync.js?v=4")
     .then(module=>module.startAccountProgressSync())
     .catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error));
 }
@@ -147,7 +147,7 @@ if(FULL_FIREBASE){
   if(!LIGHT_FIREBASE_PAGE)setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).catch(()=>{})},1500);
   if(!IS_L6T3){
     const scoringDelay=IS_L5?1800:300;
-    setTimeout(()=>{import("/js/scoring.js?v=10").catch(()=>{})},scoringDelay);
+    setTimeout(()=>{import("/js/scoring.js?v=11").catch(()=>{})},scoringDelay);
   }
 }
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){setTimeout(()=>import("/wortschatz/index-release-lock.js?v=12").catch(()=>{}),900)}
