@@ -2,6 +2,7 @@ import "/js/session-restore.js?v=1";
 import { requireLogin, logout } from "/js/auth.js";
 import { installSpHeader } from "/js/sp-header.js?v=theme-standard2";
 const path=location.pathname;
+if(/\/wortschatz\/A1-Lektion-(?:3|4|5)(?:\/|$)/i.test(path))import("/js/lesson-button-colors.js?v=1").catch(()=>{});
 const IS_L6T3_PATH=path.includes("/wortschatz/A1-Lektion-6/Thema-3/");
 if(!IS_L6T3_PATH){
   import("/js/sp-teacher-unlocked.js?v=1").catch(()=>{});
