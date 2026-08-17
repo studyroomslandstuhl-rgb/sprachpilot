@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_ABILITY_UI_3)return;
-window.__SP_L7T1_ABILITY_UI_3=true;
+if(window.__SP_L7T1_ABILITY_UI_4)return;
+window.__SP_L7T1_ABILITY_UI_4=true;
 if(!window.L7||!window.L7S)return;
 
 const S=window.L7S;
@@ -10,6 +10,7 @@ const CDN='https://sprachpilot.b-cdn.net/';
 let current=null;
 
 function esc(value){return S.esc(value)}
+function norm(value){return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').replace(/\s+/g,' ').trim()}
 function fileUrl(file){
  const value=String(file||'').trim();
  if(!value)return'';
@@ -40,11 +41,34 @@ function clearDraft(theme,task,total,index){
  const state=S.load(theme,task.id,total);state.answers=state.answers||{};
  delete state.answers[draftKey(index)];S.save(theme,task.id,state,false);
 }
+function activityAliases(activity){
+ const value=norm(activity);
+ const aliases=[value];
+ const stripped=value.replace(/\s+(spielen|fahren)$/,'').trim();
+ if(stripped&&stripped!==value)aliases.push(stripped);
+ if(value==='gitarre spielen')aliases.push('gitarre');
+ if(value==='klavier spielen')aliases.push('klavier');
+ if(value==='tennis spielen')aliases.push('tennis');
+ if(value==='ski fahren')aliases.push('ski');
+ if(value==='fahrrad fahren')aliases.push('fahrrad');
+ return [...new Set(aliases)];
+}
+function vocabImage(activity){
+ const aliases=activityAliases(activity);
+ const cards=Array.isArray(window.L7T1_VOCAB)?window.L7T1_VOCAB:[];
+ for(const card of cards){
+  const text=norm([card?.full,card?.word,card?.term,card?.answer].filter(Boolean).join(' ')).replace(/^(der|die|das)\s+/,'');
+  if(!aliases.some(alias=>text===alias||text.includes(alias)||alias.includes(text)))continue;
+  const resolved=window.L7T1BunnyImages?.resolveItem?.(card)||card?.image||card?.img||'';
+  if(resolved)return resolved;
+ }
+ return'';
+}
 function activityImage(item){
  const activity=String(item?.activity||'Aktivität').trim();
  const resolver=window.L7T1BunnyImages;
  const semanticItem={...item,full:activity,word:activity};
- const file=resolver?.resolveItem?.(semanticItem)||item?.image||'';
+ const file=vocabImage(activity)||resolver?.resolveItem?.(semanticItem)||item?.image||'';
  if(!file)return'';
  if(resolver?.imageHtml){
   return `<div class="sp-ability-image">${resolver.imageHtml(file,activity)}</div>`;
