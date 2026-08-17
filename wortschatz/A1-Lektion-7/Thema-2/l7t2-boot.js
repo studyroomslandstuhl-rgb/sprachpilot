@@ -40,7 +40,7 @@ Promise.resolve(window.L7_THEME_READY)
    .then(()=>load(`l7t2-memory-ui.js?v=2`))
    .then(()=>load(`l7t2-endings-ui.js?v=2`))
    .then(()=>load(`l7t2-advanced-ui.js?v=1`))
-   .then(()=>load(`l7t2-listening-l6t4-ui.js?v=1`))
+   .then(()=>load(`l7t2-listening-l6t4-ui.js?v=2`))
    .then(()=>{
     window.L7T2MemoryUI?.install?.();
     window.L7T2EndingsUI?.install?.();
