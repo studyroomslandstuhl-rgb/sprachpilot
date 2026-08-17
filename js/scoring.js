@@ -1,5 +1,5 @@
 import '/js/progress.js?v=11';
-import '/js/point-delta-bridge.js?v=1';
+import '/js/point-delta-bridge.js?v=2';
 
 const RULES={
   taskPoints(run){run=Number(run)||1;if(run===1)return 5;if(run===2)return 10;if(run===3)return 15;return 0},
