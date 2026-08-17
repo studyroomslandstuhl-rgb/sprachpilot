@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_TASKS_2_4_UI_1)return;
-window.__SP_L7T1_TASKS_2_4_UI_1=true;
+if(window.__SP_L7T1_TASKS_2_4_UI_2)return;
+window.__SP_L7T1_TASKS_2_4_UI_2=true;
 if(!window.L7||!window.L7S)return;
 
 const S=window.L7S;
@@ -25,7 +25,7 @@ function finish(theme,task){
  root.innerHTML=`<div class="l7-page">${S.header(theme,task.title)}<section class="l7-card l7-finish"><div>✓</div><h2>Aufgabe abgeschlossen</h2><p>Du hast alle Aufgaben richtig gelöst.</p><div class="l7-actions"><a class="l7-btn secondary" href="index.html#task-${esc(task.id)}">Zur Übersicht</a>${next?`<a class="l7-btn" href="task.html?task=${encodeURIComponent(next.id)}">Nächste Aufgabe</a>`:''}</div></section><footer>© SprachPilot</footer></div>`;
 }
 function correctAndContinue(delay=500){
- const{theme,task,total,index}=current;
+ const{theme,task,total}=current;
  const before=S.load(theme,task.id,total);
  const repeat=before.hadWrong||before.tries>0;
  S.right(theme,task.id,total);
@@ -73,13 +73,20 @@ function clearNounDrafts(){
  S.save(theme,task.id,state,false);
 }
 function normalizePlural(value){return S.norm(value).replace(/^die\s+/,'die ')}
+function nounImage(item){
+ const label=String(item?.word||item?.singularAnswer||'Nomen').trim();
+ const resolved=window.L7T1BunnyImages?.resolveItem?.(item)||item?.image||item?.img||'';
+ if(!resolved)return'';
+ if(window.L7T1BunnyImages?.imageHtml)return window.L7T1BunnyImages.imageHtml(resolved,label||'Nomen');
+ return S.image(resolved,label||'Nomen');
+}
 function renderNounPlural(theme,task,total,index,state,item){
  const root=document.getElementById('app');
  const singular=draftValue(state,index,'singular');
  const plural=draftValue(state,index,'plural');
  const wrong=Number(state.tries||0)>0?'<div class="l7-no">Noch nicht richtig. Prüfe beide Felder.</div>':'';
  current={theme,task,total,index,kind:'noun-plural'};
- root.innerHTML=`<div class="l7-page">${S.header(theme,task.title)}<section class="l7-card">${progressHtml(theme,task,total)}<div class="l7-instruction">${esc(task.description)}</div><div id="spSpecialTask" class="l7-question-card"><p class="eyebrow">Aufgabe ${state.done.length+1} von ${total}</p>${item.image?S.image(item.image,'Nomen'):''}<div class="sp-noun-plural-inputs"><label>Nomen mit Artikel<input id="spNounSingular" autocomplete="off" placeholder="z. B. das Buch" value="${esc(singular)}"></label><label>Plural<input id="spNounPlural" autocomplete="off" placeholder="z. B. die Bücher" value="${esc(plural)}"></label></div><div class="l7-actions"><button type="button" class="l7-btn" id="spCheckNounPlural">Prüfen</button></div><div id="spSpecialFeedback">${wrong}</div></div></section><footer>© SprachPilot</footer></div>`;
+ root.innerHTML=`<div class="l7-page">${S.header(theme,task.title)}<section class="l7-card">${progressHtml(theme,task,total)}<div class="l7-instruction">${esc(task.description)}</div><div id="spSpecialTask" class="l7-question-card"><p class="eyebrow">Aufgabe ${state.done.length+1} von ${total}</p>${nounImage(item)}<div class="sp-noun-plural-inputs"><label>Nomen mit Artikel<input id="spNounSingular" autocomplete="off" placeholder="z. B. das Buch" value="${esc(singular)}"></label><label>Plural<input id="spNounPlural" autocomplete="off" placeholder="z. B. die Bücher" value="${esc(plural)}"></label></div><div class="l7-actions"><button type="button" class="l7-btn" id="spCheckNounPlural">Prüfen</button></div><div id="spSpecialFeedback">${wrong}</div></div></section><footer>© SprachPilot</footer></div>`;
  const singularInput=document.getElementById('spNounSingular');
  const pluralInput=document.getElementById('spNounPlural');
  singularInput?.addEventListener('input',event=>saveDraft(theme,task,total,index,'singular',event.target.value));
@@ -100,6 +107,7 @@ function renderNounPlural(theme,task,total,index,state,item){
  };
  document.getElementById('spCheckNounPlural')?.addEventListener('click',check);
  [singularInput,pluralInput].forEach(input=>input?.addEventListener('keydown',event=>{if(event.key==='Enter')check()}));
+ window.L7T1BunnyImages?.patchAll?.(root);
 }
 
 function renderSpecial(theme,id){
