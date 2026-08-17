@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T2_CONTENT_FINAL_V1)return;
-window.__SP_L7T2_CONTENT_FINAL_V1=true;
+if(window.__SP_L7T2_CONTENT_FINAL_V2)return;
+window.__SP_L7T2_CONTENT_FINAL_V2=true;
 
 function byId(theme,id){return theme?.tasks?.find(task=>task?.id===id)}
 
@@ -12,6 +12,11 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
       present:'Am Samstag frühstückt Lara um acht Uhr und hört Musik. Danach lernt sie Deutsch und schreibt einen kurzen Text. Am Mittag trifft sie ihre Freundin Mia. Sie trinken Kaffee und kaufen ein Buch. Am Nachmittag machen sie Hausaufgaben. Am Abend kocht Lara Suppe, liest im Buch und sieht einen Film.',
       perfect:'Am Samstag hat Lara um acht Uhr gefrühstückt und Musik gehört. Danach hat sie Deutsch gelernt und einen kurzen Text geschrieben. Am Mittag hat sie ihre Freundin Mia getroffen. Sie haben Kaffee getrunken und ein Buch gekauft. Am Nachmittag haben sie Hausaufgaben gemacht. Am Abend hat Lara Suppe gekocht, im Buch gelesen und einen Film gesehen.'
     };
+  }
+
+  const sentenceWrite=byId(theme,'saetze-schreiben');
+  if(sentenceWrite?.items?.length>=15){
+    sentenceWrite.items[14]={cue:'das Buch – gestern – zehn Euro – kosten',answer:'Das Buch hat gestern zehn Euro gekostet.'};
   }
 
   const reading=byId(theme,'lesen');
@@ -57,7 +62,7 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
     };
   }
 
-  theme.contentRevision='l7t2-standard-20260817-v7';
+  theme.contentRevision='l7t2-standard-20260817-v8';
   window.L7_THEME=theme;
   return theme;
 });
