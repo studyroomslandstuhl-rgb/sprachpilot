@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T2_FIRST_TASKS_V2)return;
-window.__SP_L7T2_FIRST_TASKS_V2=true;
+if(window.__SP_L7T2_FIRST_TASKS_V3)return;
+window.__SP_L7T2_FIRST_TASKS_V3=true;
 
 const FORMS=[
  ['lernen','gelernt',['gelernen','lernt','gelernet','gelernt'],'lernen.webp'],
@@ -30,20 +30,18 @@ const FORMS=[
 
 const CARD_ITEMS=FORMS.map(([infinitive,participle,,image])=>({
  kind:'cards',
- infinitive,
- participle,
  image,
- prompt:'Wie heißt das Verb im Perfekt?',
+ word:`hat ${participle}`,
  answer:`hat ${participle}`,
  answers:[`hat ${participle}`,`er hat ${participle}`,`sie hat ${participle}`],
+ meaning:'Perfekt mit haben',
  example:`${infinitive} – hat ${participle}`,
- hint:'Das Hilfsverb ist „hat“. Ergänze danach das richtige Partizip II.'
+ audio:`hat ${participle}`,
+ prompt:'Wie heißt das Verb im Perfekt?',
+ hint:'Nenne das Hilfsverb und das Partizip II.'
 }));
 
-const CHOICE_ITEMS=FORMS.map(([infinitive,answer,options])=>({
- kind:'choice',prompt:infinitive,context:'Welche Perfektform ist richtig?',answer,options,
- hint:'Achte auf die richtige Form des Partizips II.'
-}));
+const CHOICE_ITEMS=FORMS.map(([infinitive,answer,options])=>({kind:'choice',prompt:infinitive,context:'Welche Perfektform ist richtig?',answer,options,hint:'Achte auf die richtige Form des Partizips II.'}));
 
 const MEMORY_PAIRS=[
  ['machen','gemacht'],['spielen','gespielt'],['lesen','gelesen'],['arbeiten','gearbeitet'],
@@ -54,13 +52,12 @@ const MEMORY_PAIRS=[
 function transform(theme){
  if(!theme||!Array.isArray(theme.tasks)||theme.tasks.length<3)return theme;
  const tasks=[...theme.tasks];
- const cards={...tasks[0],kind:'cards',title:'Karteikarten',description:'Sieh dir das Bild an und nenne das Verb im Perfekt mit haben, zum Beispiel: hat gearbeitet.',items:CARD_ITEMS,spL7T2ImageCards:true};
- const choice={...tasks[1],kind:'choice',title:'Perfektform finden',description:'Du siehst einen Infinitiv. Wähle aus vier ähnlichen Formen die richtige Perfektform.',items:CHOICE_ITEMS,spL7T2Choice:true};
- const memory={...tasks[2],kind:'memory-pairs',title:'Infinitiv & Perfekt – Memory',description:'Finde die passenden Paare: Infinitiv und Partizip II.',items:MEMORY_PAIRS,spL7T2Memory:true};
- tasks[0]=cards;tasks[1]=choice;tasks[2]=memory;
+ tasks[0]={...tasks[0],kind:'cards',title:'Karteikarten',description:'Sieh dir das Bild an und nenne die Perfektform mit Hilfsverb.',items:CARD_ITEMS};
+ tasks[1]={...tasks[1],kind:'choice',title:'Perfektform finden',description:'Du siehst einen Infinitiv. Wähle aus vier ähnlichen Formen die richtige Perfektform.',items:CHOICE_ITEMS,spL7T2Choice:true};
+ tasks[2]={...tasks[2],kind:'memory-pairs',title:'Infinitiv & Perfekt – Memory',description:'Finde die passenden Paare: Infinitiv und Partizip II.',items:MEMORY_PAIRS,spL7T2Memory:true};
  tasks.forEach((task,index)=>task.order=index+1);
  theme.tasks=tasks;
- theme.contentRevision='l7t2-first-three-20260817-v2';
+ theme.contentRevision='l7t2-first-three-20260817-v3';
  window.L7_THEME=theme;
  return theme;
 }
