@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_BUNNY_IMAGES_4)return;
-window.__SP_L7T1_BUNNY_IMAGES_4=true;
+if(window.__SP_L7T1_BUNNY_IMAGES_5)return;
+window.__SP_L7T1_BUNNY_IMAGES_5=true;
 if(!location.pathname.includes('/wortschatz/A1-Lektion-7/Thema-1/'))return;
 
 const CDN='https://sprachpilot.b-cdn.net/';
@@ -44,7 +44,6 @@ const MAP=Object.freeze({
  'übung':['uebung.webp'], 'uebung':['uebung.webp'], 'die übung':['uebung.webp'], 'die uebung':['uebung.webp'],
  'übungen':['uebung.webp'], 'uebungen':['uebung.webp'],
  'unterricht':['unterricht.webp'], 'der unterricht':['unterricht.webp'],
-
  'auf jeden fall':['auf_jeden_fall.webp'],
  'auf keinen fall':['auf_keinen_fall.webp'],
  'nach hause':['nach_hause.webp'],
@@ -57,7 +56,6 @@ const MAP=Object.freeze({
  'fertig':['fertig.webp'], 'fertig sein':['fertig.webp'],
  'prima':['prima.webp'],
  'test':['test.webp'], 'der test':['test.webp'],
-
  'spiel':['spiel.webp','spielen.webp','spiel_machen.webp'],
  'das spiel':['spiel.webp','spielen.webp','spiel_machen.webp'],
  'film':['film.webp','sehen.webp','fernsehen.webp'],
@@ -87,6 +85,14 @@ function keyFromFile(value){
  return basename(value).replace(/\.(webp|png|jpe?g|gif|svg)$/i,'').replace(/_/g,' ')
   .replace(/ae/g,'ä').replace(/oe/g,'ö').replace(/ue/g,'ü');
 }
+function slugFile(value){
+ let text=String(value||'').trim();
+ if(!text)return'';
+ text=text.replace(/^(der|die|das)\s+/i,'').toLowerCase()
+  .replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss')
+  .replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+ return text?text+'.webp':'';
+}
 function mappedList(value){
  const text=norm(value);
  if(!text)return[];
@@ -108,13 +114,18 @@ function itemSemantic(item){
  return [item.full,full,item.term,item.answer,item.prompt,item.context,item.meaning,item.label,item.solution]
   .filter(Boolean).join(' ');
 }
+function itemWord(item){
+ return String(item?.full||item?.word||item?.term||item?.singularAnswer||'').trim();
+}
 function candidates(file,alt='',context=''){
  const raw=basename(file);
+ const guess=slugFile(alt)||slugFile(context);
  return unique([
   ...mappedList(keyFromFile(raw)),
   ...mappedList(alt),
   ...mappedList(context),
-  raw
+  raw,
+  guess
  ]);
 }
 function resolveFile(file,alt='',context=''){
@@ -124,7 +135,8 @@ function resolveFile(file,alt='',context=''){
 function resolveItem(item){
  const current=basename(item?.image||item?.img||'');
  const semantic=itemSemantic(item);
- return mappedList(keyFromFile(current))[0]||mappedList(semantic)[0]||current;
+ const word=itemWord(item);
+ return mappedList(keyFromFile(current))[0]||mappedList(word)[0]||mappedList(semantic)[0]||current||slugFile(word);
 }
 function url(file){return CDN+encodeURIComponent(basename(file))}
 function escapeAttr(value){return String(value||'').replace(/&/g,'&amp;').replace(/"/g,'&quot;').replace(/</g,'&lt;').replace(/>/g,'&gt;')}
@@ -181,7 +193,7 @@ function patchTheme(theme){
   if(Array.isArray(value)){value.forEach(walk);return}
   const mapped=resolveItem(value);
   const hasImageSlot=('image' in value)||('img' in value);
-  const looksLikeVocab=!!(value.word||value.full||value.term)&&('meaning' in value||'plural' in value||'article' in value);
+  const looksLikeVocab=!!(value.word||value.full||value.term||value.singularAnswer)&&('meaning' in value||'plural' in value||'article' in value||value.kind==='noun-plural');
   if(mapped&&(hasImageSlot||looksLikeVocab)){
    if('image' in value||!('img' in value))value.image=mapped;
    if('img' in value)value.img=mapped;
@@ -202,7 +214,7 @@ function installRenderer(){
  const S=window.L7S;
  if(!S)return false;
  S.image=imageHtml;
- S.__l7t1BunnyImagesV4=true;
+ S.__l7t1BunnyImagesV5=true;
  return true;
 }
 
