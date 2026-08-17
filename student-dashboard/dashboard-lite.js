@@ -1,12 +1,14 @@
 import { db, doc, getDoc, setDoc, collection, query, where, getDocs, limit, serverTimestamp } from '/js/firebase.js';
 import { getActiveProfile, logout } from '/js/auth.js';
+import { loadCourseRelease, themeOpen } from '/js/course-releases.js?v=release-core-20260701b';
 import '/shared/points-recalculator.js?v=1';
 
 const $=id=>document.getElementById(id);
-const CACHE='SP_STUDENT_DASHBOARD_LITE_V1';
+const CACHE='SP_STUDENT_DASHBOARD_LITE_V2';
 const VERIFIED_VERSION=2;
 const POINT_MODULES=['fragen','wortschatz','verben','perfekt','grammatik'];
-let ownProgress={}, roster=[], statsBusy=false, rankingBusy=false, hydrateBusy=false;
+let ownProgress={},roster=[],statsBusy=false,rankingBusy=false,hydrateBusy=false;
+let releaseData=readJSON('SP_COURSE_RELEASES',null)||profile().assignments||{};
 
 function readJSON(k,f=null){try{return JSON.parse(localStorage.getItem(k)||'null')??f}catch(e){return f}}
 function point(v){const n=Number(v);return Number.isFinite(n)?Math.max(0,n):0}
@@ -27,11 +29,47 @@ function recoverablePoints(r={}){return Math.max(storedPoints(r),evidencePoints(
 function taskPct(t={}){const total=Number(t.total||0),done=Array.isArray(t.done)?t.done.length:Number(t.done||0);return Math.max(clamp(t.percent??t.progress??0),t.completed?100:0,total>0?clamp(done/total*100):0)}
 function topicPct(t={}){const tasks=Object.values(t.tasks||{}).filter(x=>x&&typeof x==='object');if(tasks.length)return clamp(tasks.reduce((s,x)=>s+taskPct(x),0)/tasks.length);return Math.max(clamp(t.progressPercent??t.current?.percent??0),t.completed===true?100:0)}
 function isTopic(t){return !!(t&&typeof t==='object'&&!Array.isArray(t)&&(t.tasks||t.exam||t.current||t.lifetime||t.progressPercent!=null||t.lesson||t.theme||t.title))}
-function topicKey(key,t={}){const l=String(t.lesson||t.lektion||'').match(/\d+/)?.[0]||'',th=String(t.theme||t.thema||'').match(/\d+/)?.[0]||'';return l||th?`${l}|${th}`:clean(t.topicId||t.themeId||key)}
+function topicRef(key,t={}){
+ const lessonRaw=String(t.lesson??t.lektion??'');
+ const themeRaw=String(t.theme??t.thema??'');
+ const text=[key,t.topicId,t.themeId,t.title,lessonRaw,themeRaw].filter(Boolean).join(' ');
+ const lm=lessonRaw.match(/\d+/)||text.match(/(?:a1[-_ ]*)?lektion[-_ ]*(\d+)/i)||text.match(/(?:^|[-_ ])l(\d+)(?=[-_ ]|$)/i);
+ const tm=themeRaw.match(/\d+/)||text.match(/thema[-_ ]*(\d+)/i)||text.match(/(?:^|[-_ ])t(\d+)(?=[-_ ]|$)/i);
+ const lesson=Number(Array.isArray(lm)?(lm[1]||lm[0]):0)||0;
+ const theme=Number(Array.isArray(tm)?(tm[1]||tm[0]):0)||0;
+ if(!lesson||!theme)return null;
+ return{lesson:`A1-Lektion-${lesson}`,theme:`Thema-${theme}`,sig:`${lesson}|${theme}`,lessonNo:lesson,themeNo:theme};
+}
 function strongerTopic(a={},b={}){return topicPct(a)>=topicPct(b)?a:b}
-function mergeProgress(a={},b={}){const out={...b,...a},wa={...(b.wortschatz||{})};for(const[k,t]of Object.entries(a.wortschatz||{})){if(!isTopic(t)){if(!(k in wa))wa[k]=t;continue}const sig=topicKey(k,t),existingKey=Object.keys(wa).find(x=>isTopic(wa[x])&&topicKey(x,wa[x])===sig);if(existingKey)wa[existingKey]=strongerTopic(t,wa[existingKey]);else wa[k]=t}out.wortschatz=wa;out.metadata={...(b.metadata||{}),...(a.metadata||{})};for(const m of ['verben','perfekt','fragen','grammatik'])out[m]={...(b[m]||{}),...(a[m]||{})};out.ranking={...(b.ranking||{}),...(a.ranking||{}),points:Math.max(point(a.ranking?.points),point(b.ranking?.points))};out.totals={...(b.totals||{}),...(a.totals||{}),points:Math.max(point(a.totals?.points),point(b.totals?.points))};out.pointsTotal=Math.max(point(a.pointsTotal),point(b.pointsTotal));out.lifetimePoints=Math.max(point(a.lifetimePoints),point(b.lifetimePoints));out.punkteGesamt=Math.max(point(a.punkteGesamt),point(b.punkteGesamt));return out}
-function stats(r={}){const topics=new Map();for(const[k,t]of Object.entries(r.wortschatz||{})){if(!isTopic(t)||t.technicalRecovery===true)continue;const sig=topicKey(k,t),old=topics.get(sig);topics.set(sig,old?strongerTopic(t,old):t)}const list=[...topics.values()],started=list.filter(t=>topicPct(t)>0||Object.keys(t.tasks||{}).length||t.exam?.attempted),avg=started.length?clamp(started.reduce((s,t)=>s+topicPct(t),0)/started.length):0,done=list.filter(t=>topicPct(t)>=100).length;let stars=0;for(const mod of POINT_MODULES)for(const t of Object.values(r[mod]||{}))if(isTopic(t))stars+=point(t.exam?.stars);return{avg,done,totalThemes:list.length,points:Math.max(recoverablePoints(r),point(localStorage.getItem('SP_POINTS_TOTAL'))),stars}}
-function renderStats(s,cache=true){const p=profile();$('userPill').textContent=name(p)+(course(p)?' · '+course(p):'');$('totalCircle').style.setProperty('--p',s.avg||0);$('totalCircle').innerHTML='<span>'+Number(s.avg||0)+'%</span>';$('totalFill').style.width=Number(s.avg||0)+'%';$('summaryText').textContent=s.totalThemes?`${s.done} von ${s.totalThemes} Themen fertig`:'Noch kein Themenfortschritt gespeichert.';$('pointsTotal').textContent=Number(s.points||0);$('starsTotal').textContent=Number(s.stars||0);$('doneTotal').textContent=Number(s.done||0);$('lastUpdated').textContent='Aktualisiert: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});if(cache){try{localStorage.setItem(CACHE,JSON.stringify(s));localStorage.setItem('SP_POINTS_TOTAL',String(s.points||0))}catch(e){}}}
+function mergeProgress(a={},b={}){const out={...b,...a},wa={...(b.wortschatz||{})};for(const[k,t]of Object.entries(a.wortschatz||{})){if(!isTopic(t)){if(!(k in wa))wa[k]=t;continue}const ref=topicRef(k,t),existingKey=ref?Object.keys(wa).find(x=>isTopic(wa[x])&&topicRef(x,wa[x])?.sig===ref.sig):null;if(existingKey)wa[existingKey]=strongerTopic(t,wa[existingKey]);else wa[k]=t}out.wortschatz=wa;out.metadata={...(b.metadata||{}),...(a.metadata||{})};for(const m of ['verben','perfekt','fragen','grammatik'])out[m]={...(b[m]||{}),...(a[m]||{})};out.ranking={...(b.ranking||{}),...(a.ranking||{}),points:Math.max(point(a.ranking?.points),point(b.ranking?.points))};out.totals={...(b.totals||{}),...(a.totals||{}),points:Math.max(point(a.totals?.points),point(b.totals?.points))};out.pointsTotal=Math.max(point(a.pointsTotal),point(b.pointsTotal));out.lifetimePoints=Math.max(point(a.lifetimePoints),point(b.lifetimePoints));out.punkteGesamt=Math.max(point(a.punkteGesamt),point(b.punkteGesamt));return out}
+function hasReleaseData(d){return !!(d&&typeof d==='object'&&(d.enabledThemes||d.enabledTasks||d.releases||d.releaseMode||d.defaultLocked!==undefined))}
+function parseReleaseKey(key){const text=String(key||'');const lm=text.match(/A1-Lektion-(\d+)/i),tm=text.match(/Thema-(\d+)/i);if(!lm||!tm)return null;return{lesson:`A1-Lektion-${Number(lm[1])}`,theme:`Thema-${Number(tm[1])}`,sig:`${Number(lm[1])}|${Number(tm[1])}`}}
+function releasedThemeRefs(){
+ const map=new Map();
+ for(const[k,v]of Object.entries(releaseData?.enabledThemes||{})){if(v!==true)continue;const ref=parseReleaseKey(k);if(ref)map.set(ref.sig,ref)}
+ for(const[k,v]of Object.entries(releaseData?.enabledTasks||{})){if(v!==true)continue;const ref=parseReleaseKey(k);if(ref)map.set(ref.sig,ref)}
+ for(const alias of ['Wortschatz','wortschatz']){
+  const lessons=releaseData?.releases?.[alias]?.lessons||{};
+  for(const[lessonKey,lessonData]of Object.entries(lessons)){
+   for(const[themeKey,themeData]of Object.entries(lessonData?.themes||{})){
+    if(themeData?.enabled!==true)continue;
+    const ref=parseReleaseKey(`${lessonKey}/${themeKey}`);if(ref)map.set(ref.sig,ref)
+   }
+  }
+ }
+ return map;
+}
+function progressThemeMap(r={}){const map=new Map();for(const[k,t]of Object.entries(r.wortschatz||{})){if(!isTopic(t)||t.technicalRecovery===true)continue;const ref=topicRef(k,t);if(!ref)continue;const old=map.get(ref.sig);map.set(ref.sig,{ref,topic:old?strongerTopic(t,old.topic):t})}return map}
+function refIsReleased(ref){if(!ref)return false;if(!hasReleaseData(releaseData))return true;try{return themeOpen(releaseData,'Wortschatz',ref.lesson,ref.theme)}catch(e){return false}}
+function learningTopics(r={}){
+ const progress=progressThemeMap(r),released=releasedThemeRefs(),out=[];
+ if(released.size){for(const ref of released.values())out.push({ref,topic:progress.get(ref.sig)?.topic||{}});return out}
+ for(const item of progress.values())if(refIsReleased(item.ref))out.push(item);
+ return out;
+}
+function starsTotal(r={}){let total=0;const seenW=new Set();for(const[k,t]of Object.entries(r.wortschatz||{})){if(!isTopic(t))continue;const ref=topicRef(k,t),sig=ref?.sig||clean(k);if(seenW.has(sig))continue;seenW.add(sig);total+=point(t.exam?.stars)}for(const mod of ['fragen','verben','perfekt','grammatik'])for(const t of Object.values(r[mod]||{}))if(isTopic(t))total+=point(t.exam?.stars);return total}
+function stats(r={}){const list=learningTopics(r),avg=list.length?clamp(list.reduce((s,x)=>s+topicPct(x.topic),0)/list.length):0,done=list.filter(x=>topicPct(x.topic)>=100).length;return{avg,done,totalThemes:list.length,points:Math.max(recoverablePoints(r),point(localStorage.getItem('SP_POINTS_TOTAL'))),stars:starsTotal(r)}}
+function renderStats(s,cache=true){const p=profile();$('userPill').textContent=name(p)+(course(p)?' · '+course(p):'');$('totalCircle').style.setProperty('--p',s.avg||0);$('totalCircle').innerHTML='<span>'+Number(s.avg||0)+'%</span>';$('totalFill').style.width=Number(s.avg||0)+'%';$('summaryText').textContent=s.totalThemes?`${s.done} von ${s.totalThemes} freigegebenen Themen fertig`:'Noch keine Themen freigegeben.';$('pointsTotal').textContent=Number(s.points||0);$('starsTotal').textContent=Number(s.stars||0);$('doneTotal').textContent=Number(s.done||0);$('lastUpdated').textContent='Aktualisiert: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});if(cache){try{localStorage.setItem(CACHE,JSON.stringify(s));localStorage.setItem('SP_POINTS_TOTAL',String(s.points||0))}catch(e){}}}
 
 async function directProgress(id){try{const s=await getDoc(doc(db,'progress',id));return s.exists()?s.data()||{}:null}catch(e){return null}}
 async function ownLoad(){const p=profile(),candidates=ids(p).slice(0,2);let merged={};const first=await withTimeout(Promise.all(candidates.map(directProgress)),6500).catch(()=>[]);for(const r of first)if(r)merged=mergeProgress(r,merged);if((!Object.keys(merged).length||recoverablePoints(merged)===0||!Object.keys(merged.wortschatz||{}).length)&&p.email){try{const s=await withTimeout(getDocs(query(collection(db,'progress'),where('email','==',String(p.email).trim().toLowerCase()),limit(8))),6500);for(const d of s.docs)merged=mergeProgress(d.data()||{},merged)}catch(e){}}return merged}
@@ -57,5 +95,6 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 window.addEventListener('SP_POINT_DELTA_APPLIED',()=>setTimeout(refreshOwn,80));
 const cached=readJSON(CACHE,null);if(cached)renderStats(cached,false);else renderStats({avg:0,done:0,totalThemes:0,points:point(localStorage.getItem('SP_POINTS_TOTAL')),stars:0},false);
 refreshOwn();loadRanking();
+loadCourseRelease(profile()).then(data=>{releaseData=data||releaseData;try{localStorage.setItem('SP_COURSE_RELEASES',JSON.stringify(releaseData||{}))}catch(e){};setTimeout(refreshOwn,50)}).catch(()=>{});
 setInterval(refreshOwn,45000);
 setInterval(loadRanking,90000);
