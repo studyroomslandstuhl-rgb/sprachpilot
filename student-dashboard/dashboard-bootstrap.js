@@ -1,4 +1,3 @@
 // Dashboard lädt sofort und bleibt beim normalen Öffnen lesend.
-// Große Fortschrittsdokumente anderer Teilnehmer werden nur einzeln im Hintergrund
-// zur einmaligen Ranglisten-Migration gelesen.
-await import('./dashboard-lite.js?v=2');
+// Lernstand zählt nur aktuell freigegebene Themen; Rangliste bleibt leichtgewichtig.
+await import('./dashboard-lite.js?v=3');
