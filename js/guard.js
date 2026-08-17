@@ -40,7 +40,7 @@ if(PERFORMANCE_SYNC_OFF){
   window.SP_PERFORMANCE_MODE=true;
 }
 if(FULL_FIREBASE&&SP_USER){
-  import("/js/account-progress-sync.js?v=2")
+  import("/js/account-progress-sync.js?v=3")
     .then(module=>module.startAccountProgressSync())
     .catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error));
 }
