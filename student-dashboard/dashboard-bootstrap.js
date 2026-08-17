@@ -1,5 +1,5 @@
 try{
-  const accountSync=await import('/js/account-progress-sync.js?v=1');
+  const accountSync=await import('/js/account-progress-sync.js?v=2');
   await accountSync.startAccountProgressSync({reload:false});
 }catch(error){
   console.warn('Account-Fortschritt vor Dashboard konnte nicht synchronisiert werden',error);
