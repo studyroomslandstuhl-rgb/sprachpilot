@@ -1,12 +1,12 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_FINAL_POLISH_3)return;
-window.__SP_L7T1_FINAL_POLISH_3=true;
+if(window.__SP_L7T1_FINAL_POLISH_4)return;
+window.__SP_L7T1_FINAL_POLISH_4=true;
 
 const LEVELS=Object.freeze({'gar nicht':'😭','nicht so gut':'🙁','gut':'🙂','sehr gut':'🤩'});
 
 const ABILITY_ROWS=[
- ['Maria','gar nicht','kochen','kochen.webp','Maria kann gar nicht kochen.'],
+ ['Maria','gar nicht','backen','backen.webp','Maria kann gar nicht backen.'],
  ['Du','nicht so gut','Tennis spielen','tennis_spielen.webp','Du kannst nicht so gut Tennis spielen.'],
  ['Sofia','gut','singen','lied.webp','Sofia kann gut singen.'],
  ['Paul','sehr gut','Ski fahren','ski_fahren.webp','Paul kann sehr gut Ski fahren.'],
@@ -35,7 +35,7 @@ const SMS_ROWS=[
  {messages:[['Sofia','Ich möchte am Samstag ins Kino.','left'],['Mila','Ich will auch. Kaufen wir Karten?','right']],trueFalsePrompt:'Sofia hat einen Wunsch.',trueFalseAnswer:'Richtig',abcPrompt:'Was heißt „Ich möchte ins Kino“?',abcAnswer:'Sofia hat einen Wunsch.',abcOptions:['Sofia hat einen Wunsch.','Sofia hat einen festen Plan.','Sofia sagt: Ich kann das.']},
  {messages:[['Jonas','Ich kann morgen nicht pünktlich sein. Der Bus kommt spät.','left'],['Lehrer','Okay. Danke für die Information.','right']],trueFalsePrompt:'Jonas will zu spät kommen.',trueFalseAnswer:'Falsch',abcPrompt:'Was heißt „Ich kann morgen nicht pünktlich sein“?',abcAnswer:'Der Bus ist spät. Es geht nicht.',abcOptions:['Der Bus ist spät. Es geht nicht.','Jonas will zu spät kommen.','Jonas möchte zu spät kommen.']},
  {messages:[['Nina','Wollt ihr am Samstag Tennis spielen?','left'],['Omar','Ja. Wir wollen um 15 Uhr spielen.','right']],trueFalsePrompt:'Omar hat einen Plan für 15 Uhr.',trueFalseAnswer:'Richtig',abcPrompt:'Was heißt „Wir wollen um 15 Uhr spielen“?',abcAnswer:'Das ist ihr Plan.',abcOptions:['Das ist ihr Plan.','Sie können sehr gut Tennis.','Sie fragen höflich.']},
- {messages:[['Kellner','Möchten Sie etwas essen?','left'],['Maria','Ja, ich möchte einen Kuchen.','right']],trueFalsePrompt:'Maria hat einen Wunsch.',trueFalseAnswer:'Richtig',abcPrompt:'Was heißt „Ich möchte einen Kuchen“?',abcAnswer:'Maria sagt ihren Wunsch höflich.',abcOptions:['Maria sagt ihren Wunsch höflich.','Maria kann Kuchen essen.','Maria plant das für morgen.']}
+ {messages:[['Kellner','Möchten Sie etwas essen?','left'],['Maria','Ja, ich möchte einen Kuchen.','right']],trueFalsePrompt:'Maria hat einen Wunsch.',trueFalseAnswer:'Richtig',abcPrompt:'Was heißt „Ich möchte einen Kuchen“?',abcAnswer:'Maria sagt ihren Wunsch höflich.',abcOptions:['Maria sagt ihren Wunsch höflich.','Maria kann Kuchen backen.','Maria plant das für morgen.']}
 ];
 
 const EXAM_ROWS=[
@@ -50,8 +50,8 @@ const EXAM_ROWS=[
  {examType:'Bedeutung von können',prompt:'Mia sagt: „Ich kann heute nicht kommen.“ Was heißt das?',answer:'Heute geht es nicht.',options:['Heute geht es nicht.','Mia will nicht kommen.','Mia sagt einen Wunsch höflich.','Mia kann sehr gut kommen.']},
  {examType:'Bedeutung von wollen',prompt:'Paul sagt: „Ich will heute Gitarre üben.“ Was heißt das?',answer:'Das ist Pauls Plan.',options:['Das ist Pauls Plan.','Paul kann sehr gut spielen.','Paul bestellt höflich.','Paul ist krank.']},
  {examType:'Wie gut?',prompt:'Welches Emoji bedeutet „gar nicht“?',answer:'😭',options:['😭','🙁','🙂','🤩']},
- {examType:'Satzstellung',prompt:'Welcher Satz ist richtig?',answer:'Maria kann gut kochen.',options:['Maria kann gut kochen.','Maria gut kann kochen.','Maria kann kochen gut.','Kann Maria gut kochen.']},
- {examType:'Frage',prompt:'Welche Frage ist richtig?',answer:'Kann Maria gut kochen?',options:['Kann Maria gut kochen?','Maria kann gut kochen?','Kann gut Maria kochen?','Maria gut kann kochen?']},
+ {examType:'Satzstellung',prompt:'Welcher Satz ist richtig?',answer:'Maria kann gut backen.',options:['Maria kann gut backen.','Maria gut kann backen.','Maria kann backen gut.','Kann Maria gut backen.']},
+ {examType:'Frage',prompt:'Welche Frage ist richtig?',answer:'Kann Maria gut backen?',options:['Kann Maria gut backen?','Maria kann gut backen?','Kann gut Maria backen?','Maria gut kann backen?']},
  {examType:'Redemittel',prompt:'Was bedeutet „auf keinen Fall“?',answer:'ganz sicher nicht',options:['ganz sicher nicht','vielleicht','ein bisschen','sehr gut']},
  {examType:'Bedeutung von möchten',prompt:'Maria sagt: „Ich möchte einen Kuchen.“ Was heißt das?',answer:'Maria sagt ihren Wunsch höflich.',options:['Maria sagt ihren Wunsch höflich.','Maria kann Kuchen backen.','Maria hat einen festen Plan.','Maria will auf keinen Fall Kuchen.']}
 ];
@@ -85,7 +85,7 @@ function transform(theme){
  tasks.forEach((task,index)=>{task.order=index+1});
  theme.tasks=tasks;
  theme.abilityEmojis={...LEVELS};
- theme.finalPolishRevision='l7t1-final-polish-2026-08-13-v3';
+ theme.finalPolishRevision='l7t1-final-polish-2026-08-17-v4';
  window.L7_THEME=theme;
  return theme;
 }
