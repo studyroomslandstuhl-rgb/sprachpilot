@@ -1,8 +1,8 @@
-import { db, doc, getDoc, setDoc, serverTimestamp } from '/js/firebase.js';
+import { db, doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs, limit } from '/js/firebase.js';
 import { getActiveProfile, getActiveRole } from '/js/auth.js';
 
 const FIELD='clientProgressStateV1';
-const VERSION=3;
+const VERSION=4;
 const OWNER_KEY='SP_ACCOUNT_PROGRESS_OWNER';
 const TRACKED_KEY='SP_ACCOUNT_PROGRESS_TRACKED';
 const INTERNAL_PREFIX='SP_ACCOUNT_PROGRESS_';
@@ -39,13 +39,65 @@ function scanLocal(){const out=new Map();for(let i=0;i<localStorage.length;i++){
 function safeSet(k,v){applying=true;try{nativeSet.call(localStorage,k,String(v))}finally{applying=false}}
 function safeRemove(k){applying=true;try{nativeRemove.call(localStorage,k)}finally{applying=false}}
 function saveTracking(){try{nativeSet.call(localStorage,OWNER_KEY,activeId);nativeSet.call(localStorage,TRACKED_KEY,JSON.stringify([...tracked]))}catch(e){}}
-async function readRemote(){const entries=new Map(),aliases=new Set(ids()),docs=[];let reads=0;for(const id of ids().slice(0,8)){try{const s=await getDoc(doc(db,'progress',id));reads++;if(!s.exists())continue;const data=s.data()||{};docs.push({id,data});aliases.add(id);uniq(data.aliasIds||[]).forEach(a=>aliases.add(a));[data.canonicalStudentId,data.studentId,data.userId,data.docId].filter(Boolean).forEach(a=>aliases.add(String(a)));for(const[k,e]of remoteEntries(data[FIELD])){const old=entries.get(k);if(!old||e.updatedAt>=old.updatedAt)entries.set(k,e)}}catch(e){console.warn('Account-Fortschritt konnte nicht gelesen werden',id,e)}}if(!reads)throw new Error('Cloud-Fortschritt konnte nicht sicher gelesen werden.');return{entries,aliases,docs}}
+
+function absorbRemoteRow(id,data,entries,aliases,docs,queue,seenDocs){
+ if(!id||seenDocs.has(id))return;
+ seenDocs.add(id);docs.push({id,data:data||{}});aliases.add(String(id));
+ const linked=uniq([...(data?.aliasIds||[]),data?.canonicalStudentId,data?.studentId,data?.userId,data?.docId]);
+ linked.forEach(a=>{aliases.add(a);if(!seenDocs.has(a))queue.push(a)});
+ for(const[k,e]of remoteEntries(data?.[FIELD])){const old=entries.get(k);if(!old||e.updatedAt>=old.updatedAt)entries.set(k,e)}
+}
+async function readRemote(){
+ const entries=new Map(),aliases=new Set(ids()),docs=[],queue=ids().slice(),seenLookups=new Set(),seenDocs=new Set();let successfulReads=0;
+ while(queue.length&&seenLookups.size<40){
+  const id=String(queue.shift()||'');if(!id||seenLookups.has(id))continue;seenLookups.add(id);
+  try{const s=await getDoc(doc(db,'progress',id));successfulReads++;if(s.exists())absorbRemoteRow(s.id||id,s.data()||{},entries,aliases,docs,queue,seenDocs)}catch(e){console.warn('Account-Fortschritt konnte nicht gelesen werden',id,e)}
+ }
+ const mail=String(profile().email||'').trim().toLowerCase();
+ if(mail){
+  try{
+   const snap=await getDocs(query(collection(db,'progress'),where('email','==',mail),limit(20)));successfulReads++;
+   for(const d of snap.docs)absorbRemoteRow(d.id,d.data()||{},entries,aliases,docs,queue,seenDocs);
+   while(queue.length&&seenLookups.size<60){const id=String(queue.shift()||'');if(!id||seenLookups.has(id))continue;seenLookups.add(id);try{const s=await getDoc(doc(db,'progress',id));successfulReads++;if(s.exists())absorbRemoteRow(s.id||id,s.data()||{},entries,aliases,docs,queue,seenDocs)}catch(e){}}
+  }catch(e){console.warn('Fortschritts-Aliasse konnten nicht per E-Mail gesucht werden',e)}
+ }
+ if(!successfulReads)throw new Error('Cloud-Fortschritt konnte nicht sicher gelesen werden.');
+ return{entries,aliases,docs}
+}
 function buildMap(entries){const list=[...entries.values()].filter(e=>e&&e.key&&!denied(e.key)).sort((a,b)=>(b.updatedAt||0)-(a.updatedAt||0));const out={};let chars=0,count=0;for(const e of list){const len=e.deleted?0:String(e.value||'').length,est=len+String(e.key).length+80;if(len>MAX_ENTRY_CHARS||count>=MAX_ENTRIES||chars+est>MAX_TOTAL_CHARS)continue;out[enc(e.key)]={key:e.key,value:e.deleted?null:String(e.value??''),deleted:!!e.deleted,updatedAt:Number(e.updatedAt)||Date.now()};chars+=est;count++}return out}
 function markDirty(key,oldValue=null){if(!started||hydrating||applying||!isStudent()||denied(key))return;const current=localStorage.getItem(key);if(current===null&&oldValue===null)return;if(current!==null&&!eligible(key,current))return;tracked.add(key);dirty.add(key);saveTracking();scheduleFlush()}
 function patchStorage(){if(patched)return;patched=true;Storage.prototype.setItem=function(k,v){const r=nativeSet.apply(this,arguments);try{if(this===localStorage)markDirty(String(k||''))}catch(e){}return r};Storage.prototype.removeItem=function(k){const old=this===localStorage?this.getItem(k):null;const r=nativeRemove.apply(this,arguments);try{if(this===localStorage&&old!==null&&eligible(String(k||''),old))markDirty(String(k||''),old)}catch(e){}return r}}
 async function flush(){if(flushPromise)return flushPromise;if(!started||hydrating||!activeId||!isStudent()||!dirty.size)return null;const keys=[...dirty];dirty.clear();flushPromise=(async()=>{try{const ref=doc(db,'progress',activeId),snap=await getDoc(ref),current=snap.exists()?snap.data()||{}:{},entries=remoteEntries(current[FIELD]);for(const[k,e]of remoteCache){const old=entries.get(k);if(!old||e.updatedAt>old.updatedAt)entries.set(k,e)}const ts=Date.now();for(const key of keys){const value=localStorage.getItem(key);entries.set(key,{key,value:value===null?null:String(value),deleted:value===null,updatedAt:ts});tracked.add(key)}const map=buildMap(entries);await setDoc(ref,{[FIELD]:map,clientProgressStateVersion:VERSION,clientProgressStateUpdatedAt:serverTimestamp()},{merge:true});remoteCache=remoteEntries(map);saveTracking();try{window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_SYNCED',{detail:{studentId:activeId,keys:keys.length}}))}catch(e){}return{ok:true}}catch(error){keys.forEach(k=>dirty.add(k));console.warn('Account-Fortschritt konnte nicht gespeichert werden',error);scheduleFlush(1800);return{ok:false,error}}finally{flushPromise=null}})();return flushPromise}
 function scheduleFlush(delay=FLUSH_DELAY){clearTimeout(flushTimer);flushTimer=setTimeout(()=>flush(),delay)}
-function recoverLegacyL4L5(docs){const prefixes={'4|1':'SP_L4_T1_V2','4|2':'SP_L4_T2_FINAL_V3','4|3':'SP_L4_T3_V2','5|1':'SP_L5_T1_V1','5|2':'SP_L5_T2_V1','5|3':'SP_L5_T3_V2'};let restored=0;for(const row of docs||[]){for(const topic of Object.values(row.data?.wortschatz||{})){if(!topic||typeof topic!=='object'||!topic.tasks)continue;const lesson=String(topic.lesson||topic.lektion||'').match(/\d+/)?.[0]||'',theme=String(topic.theme||topic.thema||'').match(/\d+/)?.[0]||'',prefix=prefixes[lesson+'|'+theme];if(!prefix)continue;for(const[file,t]of Object.entries(topic.tasks||{})){if(!t||typeof t!=='object')continue;const total=Math.max(1,Number(t.total)||Number(t.done)||1),done=Math.max(0,Math.min(total,Number(t.done)||((t.completed||Number(t.percent)>=100)?total:Math.round(total*(Number(t.percent)||0)/100))));if(done<=0)continue;const key=prefix+'_'+file,state={total,done:[...Array(done).keys()],queue:[...Array(total).keys()].slice(done),current:null,tries:0,hadWrong:false};const raw=JSON.stringify(state),local=localStorage.getItem(key);if(local===null||strength(raw)>strength(local)){safeSet(key,raw);tracked.add(key);dirty.add(key);restored++}}}}return restored}
+function topicNumbers(key,topic){
+ const text=[key,topic?.topicId,topic?.themeId,topic?.title,topic?.lesson,topic?.lektion,topic?.theme,topic?.thema].filter(Boolean).join(' ');
+ const directLesson=String(topic?.lesson||topic?.lektion||'').match(/\d+/)?.[0]||'';
+ const directTheme=String(topic?.theme||topic?.thema||'').match(/\d+/)?.[0]||'';
+ const lesson=directLesson||(text.match(/lektion[-_\s]*(\d+)/i)?.[1]||'');
+ const theme=directTheme||(text.match(/thema[-_\s]*(\d+)/i)?.[1]||'');
+ return{lesson,theme}
+}
+function recoverLegacyL4L5(docs){
+ const prefixes={'4|1':'SP_L4_T1_V2','4|2':'SP_L4_T2_FINAL_V3','4|3':'SP_L4_T3_V2','5|1':'SP_L5_T1_V1','5|2':'SP_L5_T2_V1','5|3':'SP_L5_T3_V2'};let restored=0;
+ for(const row of docs||[]){
+  for(const[key,topic]of Object.entries(row.data?.wortschatz||{})){
+   if(!topic||typeof topic!=='object'||!topic.tasks)continue;
+   const nums=topicNumbers(key,topic),prefix=prefixes[nums.lesson+'|'+nums.theme];if(!prefix)continue;
+   for(const[file,t]of Object.entries(topic.tasks||{})){
+    if(!t||typeof t!=='object')continue;
+    const pct=Math.max(0,Math.min(100,Number(t.percent??t.progress??0)||0));
+    const total=Math.max(1,Number(t.total)||Number(t.done)||1);
+    const done=Math.max(0,Math.min(total,Number(t.done)||((t.completed||pct>=100)?total:Math.round(total*pct/100))));
+    if(done<=0)continue;
+    const doneIndexes=[...Array(done).keys()],queue=[...Array(total).keys()].filter(i=>!doneIndexes.includes(i));
+    const state={total,done:doneIndexes,queue,current:null,tries:0,hadWrong:false};
+    const localKey=prefix+'_'+file,raw=JSON.stringify(state),local=localStorage.getItem(localKey);
+    if(local===null||strength(raw)>strength(local)){safeSet(localKey,raw);tracked.add(localKey);dirty.add(localKey);restored++}
+   }
+  }
+ }
+ return restored
+}
 
 export async function startAccountProgressSync(options={}){
  if(started)return accountProgressReady;started=true;patchStorage();
@@ -56,14 +108,14 @@ export async function startAccountProgressSync(options={}){
   const remote=await readRemote();remoteCache=new Map(remote.entries);
   const sameAccount=!oldOwner||oldOwner===activeId||candidateIds.includes(oldOwner)||remote.aliases.has(oldOwner);
   if(oldOwner&&!sameAccount){for(const key of tracked){if(!denied(key))safeRemove(key)}tracked.clear()}
-  const localBefore=scanLocal();let restored=0;
+  let restored=0;
   for(const[key,e]of remote.entries){if(e.deleted)continue;const local=localStorage.getItem(key);if(local===null||strength(e.value)>strength(local)){safeSet(key,e.value);restored++;tracked.add(key)}else if(local!==e.value){dirty.add(key);tracked.add(key)}}
   restored+=recoverLegacyL4L5(remote.docs);
   const localAfter=scanLocal();for(const[key,value]of localAfter){if(!remote.entries.has(key)||strength(value)>strength(remote.entries.get(key)?.value)){dirty.add(key);tracked.add(key)}}
   activeId=candidateIds.find(id=>remote.aliases.has(id))||activeId;saveTracking();hydrating=false;
   if(dirty.size)await flush();
-  try{window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_READY',{detail:{studentId:activeId,restored,sameAccount}}))}catch(e){}
-  readyResolve({active:true,studentId:activeId,restored,sameAccount});
+  try{window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_READY',{detail:{studentId:activeId,restored,sameAccount,sourceDocs:remote.docs.length}}))}catch(e){}
+  readyResolve({active:true,studentId:activeId,restored,sameAccount,sourceDocs:remote.docs.length});
   return accountProgressReady;
  }catch(error){hydrating=false;console.warn('Account-Fortschritt wurde aus Sicherheitsgründen nicht verändert, weil die Cloud nicht sicher gelesen werden konnte.',error);readyResolve({active:false,error:String(error?.message||error)});return accountProgressReady}
 }
