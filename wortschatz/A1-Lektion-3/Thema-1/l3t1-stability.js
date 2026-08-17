@@ -1,6 +1,6 @@
 (function(){
-  if(window.__SP_L3T1_STABILITY_V3)return;
-  window.__SP_L3T1_STABILITY_V3=true;
+  if(window.__SP_L3T1_STABILITY_V4)return;
+  window.__SP_L3T1_STABILITY_V4=true;
 
   function readJson(key,fallback){try{return JSON.parse(localStorage.getItem(key)||'null')??fallback}catch(e){return fallback}}
   function writeJson(key,value){try{localStorage.setItem(key,JSON.stringify(value))}catch(e){}}
@@ -25,19 +25,22 @@
         task.bad=[...new Set((Array.isArray(task.bad)?task.bad:[]).filter(id=>ids.has(id)&&!task.done.includes(id)))];
         const oldStandard=readJson('SP_TASK_STATE_'+file,{});
         const oldStandardComplete=oldStandard&&oldStandard.completed===true&&Number(oldStandard.total||0)===total;
-        if(task.done.length===0&&oldStandardComplete)task.done=wordIds.slice();
+        const rescuedComplete=state.doneTasks[file]===true;
+        // Ein bereits als abgeschlossen belegter Task (z. B. aus Firebase-Rettung)
+        // wird in die aktuelle Wortgruppe zurückübersetzt und niemals wieder auf 0 gesetzt.
+        if(task.done.length===0&&(oldStandardComplete||rescuedComplete))task.done=wordIds.slice();
         state.tasks[file]=task;
-        const complete=task.done.length>=total;
+        const complete=rescuedComplete||task.done.length>=total;
         if(!complete){delete state.doneTasks[file];allVocabDone=false}
         else state.doneTasks[file]=true;
         writeJson('SP_TASK_STATE_'+file,{
           total,
           queue:[],
-          done:task.done.slice(),
+          done:complete?wordIds.slice():task.done.slice(),
           current:null,
           tries:0,
           completed:complete,
-          percent:total?Math.round(task.done.length/total*100):0
+          percent:complete?100:(total?Math.round(task.done.length/total*100):0)
         });
       });
 
