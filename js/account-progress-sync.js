@@ -1,12 +1,10 @@
 import '/js/progress.js?v=11';
-import '/js/point-delta-bridge.js?v=1';
+import '/js/point-delta-bridge.js?v=2';
 import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-safe.js?v=5';
 export { accountProgressReady };
 
 export async function startAccountProgressSync(options={}){
   const result=await startSafeAccountProgressSync(options);
-  // Die aufwendige Legacy-Rettung läuft höchstens einmal pro Browser-Sitzung
-  // und blockiert weder Aufgabe noch Dashboard.
   if(!sessionStorage.getItem('SP_LEGACY_RESCUE_STARTED_V2')){
     sessionStorage.setItem('SP_LEGACY_RESCUE_STARTED_V2','1');
     setTimeout(()=>{
