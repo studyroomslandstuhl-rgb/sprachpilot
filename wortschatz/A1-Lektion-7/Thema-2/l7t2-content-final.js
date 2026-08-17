@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T2_CONTENT_FINAL_V4)return;
-window.__SP_L7T2_CONTENT_FINAL_V4=true;
+if(window.__SP_L7T2_CONTENT_FINAL_V5)return;
+window.__SP_L7T2_CONTENT_FINAL_V5=true;
 
 function byId(theme,id){return theme?.tasks?.find(task=>task?.id===id)}
 function permutations(values){
@@ -69,66 +69,66 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
       {
         text:'Gestern war Samstag. Nina hat bis acht Uhr geschlafen und um neun Uhr gefrühstückt. Danach hat sie ihre Freundin Sara getroffen. Sie haben zusammen Kaffee getrunken und ein Buch gekauft. Am Nachmittag haben sie Musik gehört. Am Abend hat Nina mit Sara Pizza gebacken. Später hat Nina noch einen Brief geschrieben und einen Film gesehen.',
         tf:[
-          ['Als Nina Sara getroffen hat, hatte sie schon gefrühstückt.',true],
-          ['Bevor Nina und Sara Pizza gebacken haben, haben sie Musik gehört.',true],
-          ['Nina hat den Film gesehen, bevor sie Sara getroffen hat.',false]
+          ['Zuerst hat Nina gefrühstückt. Dann hat sie Sara getroffen.',true],
+          ['Am Nachmittag haben Nina und Sara Pizza gebacken.',false],
+          ['Der Film war nach dem Brief.',true]
         ],
         abc:[
-          ['Was hat Nina direkt nach dem Frühstück gemacht?',['Sara getroffen','einen Film gesehen','Pizza gebacken'],'Sara getroffen'],
-          ['Was war später?',['Pizza backen','Musik hören','frühstücken'],'Pizza backen'],
-          ['Welche Aktivität war am Ende des Tages?',['einen Film sehen','Kaffee trinken','ein Buch kaufen'],'einen Film sehen']
+          ['Was war zuerst?',['frühstücken','Sara treffen','einen Film sehen'],'frühstücken'],
+          ['Was war nach der Musik?',['Pizza backen','frühstücken','ein Buch kaufen'],'Pizza backen'],
+          ['Was war zuletzt?',['einen Film sehen','Kaffee trinken','ein Buch kaufen'],'einen Film sehen']
         ]
       },
       {
         text:'Am Montag hat Omar früh gefrühstückt. Danach hat er bis zum Nachmittag gearbeitet. In der Pause hat er mit einer Freundin gesprochen. Nach der Arbeit hat Omar Brot und Milch gekauft. Zu Hause hat er Suppe gekocht, Brot gegessen und Tee getrunken. Am Abend hat er noch einen Film gesehen.',
         tf:[
-          ['Als Omar Brot und Milch gekauft hat, war seine Arbeit schon vorbei.',true],
-          ['Omar hat Suppe gekocht, bevor er Brot und Milch gekauft hat.',false],
-          ['Der Film war die letzte genannte Aktivität des Tages.',true]
+          ['Zuerst hat Omar gefrühstückt. Dann hat er gearbeitet.',true],
+          ['Nach der Arbeit hat Omar zuerst einen Film gesehen.',false],
+          ['Der Film war am Abend.',true]
         ],
         abc:[
-          ['Was hat Omar unmittelbar nach der Arbeit gemacht?',['eingekauft','einen Film gesehen','gefrühstückt'],'eingekauft'],
-          ['Wann hat Omar mit einer Freundin gesprochen?',['in der Arbeitspause','nach dem Film','vor dem Frühstück'],'in der Arbeitspause'],
-          ['Welche Reihenfolge passt zum Text?',['arbeiten → einkaufen → kochen → Film sehen','einkaufen → arbeiten → Film sehen → kochen','Film sehen → frühstücken → arbeiten → einkaufen'],'arbeiten → einkaufen → kochen → Film sehen']
+          ['Was war nach der Arbeit?',['Brot und Milch kaufen','einen Film sehen','frühstücken'],'Brot und Milch kaufen'],
+          ['Was war vor dem Film?',['Suppe kochen','frühstücken','arbeiten'],'Suppe kochen'],
+          ['Was war zuerst?',['frühstücken','einkaufen','Film sehen'],'frühstücken']
         ]
       },
       {
         text:'Am Mittwoch hat Anna einen langen Tag gehabt. Am Vormittag hat sie Deutsch gelernt und einen Test geschrieben. Danach hat sie mit ihrer Lehrerin gesprochen. Am Nachmittag hat Anna ihre Hausaufgaben gemacht und ein Buch gelesen. Später hat sie ihre Schwester getroffen. Zusammen haben sie Musik gehört und Tee getrunken.',
         tf:[
-          ['Als Anna ihre Hausaufgaben gemacht hat, war der Test schon geschrieben.',true],
-          ['Anna hat ihre Schwester getroffen, bevor sie mit der Lehrerin gesprochen hat.',false],
-          ['Musik hören und Tee trinken waren nach dem Treffen mit der Schwester.',true]
+          ['Der Test war am Vormittag.',true],
+          ['Anna hat ihre Schwester vor den Hausaufgaben getroffen.',false],
+          ['Musik und Tee waren am Ende.',true]
         ],
         abc:[
-          ['Was kam nach dem Test?',['mit der Lehrerin sprechen','die Schwester treffen','Tee trinken'],'mit der Lehrerin sprechen'],
-          ['Was war früher?',['Hausaufgaben machen','die Schwester treffen','Musik hören'],'Hausaufgaben machen'],
-          ['Welche Reihenfolge passt zum Text?',['Test → Lehrerin → Hausaufgaben → Schwester','Schwester → Test → Hausaufgaben → Lehrerin','Hausaufgaben → Test → Schwester → Lehrerin'],'Test → Lehrerin → Hausaufgaben → Schwester']
+          ['Was war nach dem Test?',['mit der Lehrerin sprechen','die Schwester treffen','Tee trinken'],'mit der Lehrerin sprechen'],
+          ['Was war vor dem Treffen mit der Schwester?',['Hausaufgaben machen','Musik hören','Tee trinken'],'Hausaufgaben machen'],
+          ['Was war zuletzt?',['Musik hören und Tee trinken','Deutsch lernen','einen Test schreiben'],'Musik hören und Tee trinken']
         ]
       },
       {
         text:'Am Sonntag hat Familie Kaya lange gefrühstückt. Danach haben die Eltern in der Küche gearbeitet und die Kinder haben ein Spiel gespielt. Am Mittag haben alle zusammen gegrillt und gegessen. Später hat der Vater seinen Schlüssel gesucht. Die Mutter hat ein Buch gelesen. Am Abend haben sie noch lange gesprochen und Musik gehört.',
         tf:[
-          ['Als der Vater seinen Schlüssel gesucht hat, hatte die Familie schon gegessen.',true],
-          ['Die Mutter hat gelesen, bevor die Familie gegrillt hat.',false],
-          ['Am Abend waren Frühstück und Mittagessen schon vorbei.',true]
+          ['Das Frühstück war vor dem Grillen.',true],
+          ['Der Vater hat den Schlüssel vor dem Essen gesucht.',false],
+          ['Am Abend hat Familie Kaya Musik gehört.',true]
         ],
         abc:[
-          ['Was war vor dem Suchen nach dem Schlüssel?',['grillen und essen','Musik hören','lange sprechen'],'grillen und essen'],
-          ['Welche Aktivität gehört zum Abend?',['sprechen und Musik hören','frühstücken und spielen','grillen und essen'],'sprechen und Musik hören'],
-          ['Welche Reihenfolge passt zum Text?',['frühstücken → spielen/arbeiten → grillen → Schlüssel suchen → sprechen','Schlüssel suchen → frühstücken → grillen → Musik hören','grillen → frühstücken → spielen → Schlüssel suchen'],'frühstücken → spielen/arbeiten → grillen → Schlüssel suchen → sprechen']
+          ['Was war nach dem Frühstück?',['arbeiten und spielen','grillen und essen','Musik hören'],'arbeiten und spielen'],
+          ['Was war nach dem Essen?',['den Schlüssel suchen','frühstücken','ein Spiel spielen'],'den Schlüssel suchen'],
+          ['Was war am Ende?',['sprechen und Musik hören','grillen und essen','frühstücken'],'sprechen und Musik hören']
         ]
       },
       {
         text:'Lea hat am Freitag bis 16 Uhr gearbeitet. Danach hat sie ihre Freundin Mina getroffen. Sie haben zuerst Kaffee getrunken und lange gesprochen. Dann haben sie Brot gekauft. Zu Hause hat Lea Salat gemacht und Mina hat Suppe gekocht. Nach dem Essen haben sie Musik gehört und einen Film gesehen. Mina hat später noch einen Brief geschrieben.',
         tf:[
-          ['Als Lea Mina getroffen hat, war Leas Arbeitstag schon vorbei.',true],
-          ['Lea und Mina haben Brot gekauft, bevor sie Kaffee getrunken haben.',false],
-          ['Mina hat den Brief geschrieben, nachdem sie den Film gesehen hat.',true]
+          ['Lea hat Mina nach der Arbeit getroffen.',true],
+          ['Brot kaufen war vor Kaffee trinken.',false],
+          ['Der Brief war nach dem Film.',true]
         ],
         abc:[
-          ['Was haben Lea und Mina nach dem Treffen zuerst gemacht?',['Kaffee getrunken und gesprochen','Brot gekauft','einen Film gesehen'],'Kaffee getrunken und gesprochen'],
-          ['Was war direkt vor Musik und Film?',['das Essen','die Arbeit','der Brief'],'das Essen'],
-          ['Welche Aktivität war zuletzt?',['einen Brief schreiben','Brot kaufen','Suppe kochen'],'einen Brief schreiben']
+          ['Was war zuerst nach dem Treffen?',['Kaffee trinken und sprechen','Brot kaufen','einen Film sehen'],'Kaffee trinken und sprechen'],
+          ['Was war vor Musik und Film?',['essen','arbeiten','Brief schreiben'],'essen'],
+          ['Was war zuletzt?',['einen Brief schreiben','Brot kaufen','Suppe kochen'],'einen Brief schreiben']
         ]
       }
     ];
@@ -167,7 +167,7 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
     ];
   }
 
-  theme.contentRevision='l7t2-standard-20260817-v12';
+  theme.contentRevision='l7t2-standard-20260817-v13';
   window.L7_THEME=theme;
   return theme;
 });
