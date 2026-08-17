@@ -13,8 +13,8 @@ function ids(p=profile()){
  return uniq([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem('SP_STUDENT_ID'),fallback]);
 }
 function taskStrength(t={}){return clamp(t.percent||0)*10000+(t.completed?1000000:0)+Math.max(0,Number(t.done)||0)*100+Math.max(0,Number(t.total)||0)}
-function mergeTask(a={},b={}){const stronger=taskStrength(a)>=taskStrength(b)?a:b,weaker=stronger===a?b:a;return{...weaker,...stronger,percent:Math.max(clamp(a.percent),clamp(b.percent)),completed:!!(a.completed||b.completed),done:Math.max(Number(a.done||0),Number(b.done||0)),total:Math.max(Number(a.total||0),Number(b.total||0)),pointsByRun:{...(a.pointsByRun||{}),...(b.pointsByRun||{})}}}
-function topicStrength(t={}){const tasks=Object.values(t.tasks||{});return clamp(t.progressPercent||t.current?.percent||0)*100000+tasks.reduce((s,x)=>s+taskStrength(x),0)+(t.exam?.attempted?50000:0)+Math.max(0,Number(t.exam?.bestPercent||t.exam?.percent||0))*1000}
+function mergeTask(a={},b={}){const stronger=taskStrength(a)>=taskStrength(b)?a:b,weaker=stronger===a?b:a;return{...weaker,...stronger,percent:Math.max(clamp(a.percent),clamp(b.percent)),completed:!!(a.completed||b.completed),done:Math.max(Number(a.done||0),Number(b.done||0)),total:Math.max(Number(a.total||0),Number(b.total||0)),points:Math.max(Number(a.points||0),Number(b.points||0)),pointsByRun:{...(a.pointsByRun||{}),...(b.pointsByRun||{})}}}
+function topicStrength(t={}){const tasks=Object.values(t.tasks||{});return clamp(t.progressPercent||t.current?.percent||0)*100000+tasks.reduce((s,x)=>s+taskStrength(x),0)+(t.exam?.attempted?50000:0)+Math.max(0,Number(t.exam?.bestPercent||t.exam?.percent||0))*1000+Math.max(0,Number(t?.lifetime?.points||0))}
 function mergeTopic(a={},b={}){
  const stronger=topicStrength(a)>=topicStrength(b)?a:b,weaker=stronger===a?b:a,out={...weaker,...stronger};
  const tasks={...(weaker.tasks||{})};for(const[k,v]of Object.entries(stronger.tasks||{}))tasks[k]=mergeTask(tasks[k]||{},v||{});out.tasks=tasks;
@@ -23,12 +23,14 @@ function mergeTopic(a={},b={}){
  out.totalTasks=Math.max(Number(a.totalTasks||a.current?.totalTasks||0),Number(b.totalTasks||b.current?.totalTasks||0),Object.keys(tasks).length);
  out.current={...(weaker.current||{}),...(stronger.current||{}),percent:out.progressPercent,completedTasks:out.completedTasks,totalTasks:out.totalTasks};
  const ae=a.exam||{},be=b.exam||{};out.exam={...ae,...be,bestPercent:Math.max(Number(ae.bestPercent||ae.percent||0),Number(be.bestPercent||be.percent||0)),percent:Math.max(Number(ae.percent||0),Number(be.percent||0)),stars:Math.max(Number(ae.stars||0),Number(be.stars||0)),attempted:!!(ae.attempted||be.attempted),completed:!!(ae.completed||be.completed)};
- out.lifetime={...(a.lifetime||{}),...(b.lifetime||{})};
+ out.technicalRecovery=!!(a.technicalRecovery||b.technicalRecovery);
+ const al=a.lifetime||{},bl=b.lifetime||{};out.lifetime={...al,...bl,points:Math.max(Number(al.points||0),Number(bl.points||0)),taskPointRuns:{...(al.taskPointRuns||{}),...(bl.taskPointRuns||{})},examPointRuns:{...(al.examPointRuns||{}),...(bl.examPointRuns||{})}};
  return out;
 }
 function mergeProgress(base={},incoming={}){
  const out={...base,...incoming};
  for(const m of MODULES){const mod={...(base[m]||{})};for(const[k,t]of Object.entries(incoming[m]||{})){if(t&&typeof t==='object'&&!Array.isArray(t)&&(t.tasks||t.current||t.lifetime||t.progressPercent!=null||t.exam))mod[k]=mergeTopic(mod[k]||{},t);else if(!(k in mod))mod[k]=t}out[m]=mod}
+ out.metadata={...(base.metadata||{}),...(incoming.metadata||{})};
  if(base.finnischVerben||incoming.finnischVerben)out.finnischVerben={...(base.finnischVerben||{}),...(incoming.finnischVerben||{})};
  return out;
 }
@@ -38,7 +40,7 @@ async function collect(){const p=profile(),queue=ids(p).slice(),seen=new Set(),r
 export async function unifyProgressAliases(){
  const rows=await collect();if(!rows.length)return{ok:false,reason:'no-progress-docs'};
  let merged={};const allIds=new Set(ids());for(const row of rows){allIds.add(row.id);uniq(row.data.aliasIds||[]).forEach(x=>allIds.add(x));merged=mergeProgress(merged,row.data)}
- const patch={};for(const m of MODULES)if(merged[m]&&Object.keys(merged[m]).length)patch[m]=merged[m];if(merged.finnischVerben)patch.finnischVerben=merged.finnischVerben;
+ const patch={};for(const m of MODULES)if(merged[m]&&Object.keys(merged[m]).length)patch[m]=merged[m];if(merged.metadata)patch.metadata=merged.metadata;if(merged.finnischVerben)patch.finnischVerben=merged.finnischVerben;
  if(!Object.keys(patch).length)return{ok:false,reason:'no-progress-content'};
  patch.aliasIds=[...allIds];
  await Promise.all([...allIds].map(id=>setDoc(doc(db,'progress',id),patch,{merge:true}).catch(()=>null)));
