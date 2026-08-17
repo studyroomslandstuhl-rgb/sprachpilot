@@ -7,8 +7,8 @@ try{
 import { repairDashboardPointsSafe } from './points-recovery-safe.js?v=2';
 try{await repairDashboardPointsSafe()}catch(error){console.warn('Punkte-Sicherheitsprüfung vor Dashboard fehlgeschlagen',error)}
 try{
-  const aliases=await import('./progress-alias-unifier.js?v=1');
+  const aliases=await import('./progress-alias-unifier.js?v=2');
   await aliases.unifyProgressAliases();
 }catch(error){console.warn('Fortschritts-Aliasse konnten nicht vereinheitlicht werden',error)}
-await import('./dashboard-sync-fixed.js?v=11');
+await import('./dashboard-sync-fixed.js?v=12');
 await import('./ranking-points-fixed.js?v=2');
