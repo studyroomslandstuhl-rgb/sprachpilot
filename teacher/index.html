@@ -17,16 +17,10 @@
 <script>
 (function(){
   function safeText(value){return String(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-  function showLoadProblem(message){
-    var app=document.getElementById("app");
-    if(!app)return;
-    var current=app.textContent||"";
-    if(!/Dashboard wird geladen/.test(current))return;
-    app.innerHTML='<div class="card warning-card"><h2>Lehrer-Dashboard lädt nicht vollständig</h2><p>'+safeText(message||"Eine Datei oder Firebase antwortet gerade nicht.")+'</p><div class="toolbar"><button onclick="location.reload()">Neu laden</button><a class="btn secondary" href="login.html">Zum Lehrerlogin</a><a class="btn secondary" href="/index.html">Zur Startseite</a></div></div>';
-  }
-  window.addEventListener("error",function(e){showLoadProblem(e.message||"JavaScript-Fehler beim Laden.");});
-  window.addEventListener("unhandledrejection",function(e){var reason=e.reason&&e.reason.message?e.reason.message:e.reason;showLoadProblem(reason||"Firebase-Abfrage wurde abgebrochen.");});
-  window.__teacherLoadWatch=setTimeout(function(){showLoadProblem("Das Dashboard hat ungewöhnlich lange geladen. Bitte neu laden oder erneut einloggen.");},45000);
+  function showLoadProblem(message){var app=document.getElementById("app");if(!app)return;var current=app.textContent||"";if(!/Dashboard wird geladen/.test(current))return;app.innerHTML='<div class="card warning-card"><h2>Lehrer-Dashboard lädt nicht vollständig</h2><p>'+safeText(message||"Eine Datei oder Firebase antwortet gerade nicht.")+'</p><div class="toolbar"><button onclick="location.reload()">Neu laden</button><a class="btn secondary" href="login.html">Zum Lehrerlogin</a><a class="btn secondary" href="/index.html">Zur Startseite</a></div></div>'}
+  window.addEventListener("error",function(e){showLoadProblem(e.message||"JavaScript-Fehler beim Laden.")});
+  window.addEventListener("unhandledrejection",function(e){var reason=e.reason&&e.reason.message?e.reason.message:e.reason;showLoadProblem(reason||"Firebase-Abfrage wurde abgebrochen.")});
+  window.__teacherLoadWatch=setTimeout(function(){showLoadProblem("Das Dashboard hat ungewöhnlich lange geladen. Bitte neu laden oder erneut einloggen.")},45000);
 })();
 </script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
@@ -37,11 +31,11 @@
 <script src="../verben/verb-additions.js?v=requested-verbs-1"></script>
 <script src="courses.js?v=teacher-safe-20260701c"></script>
 <script src="course-lock-default.js?v=teacher-safe-20260701c"></script>
-<script src="students.js?v=teacher-safe-20260702a"></script>
+<script src="students.js?v=progress-alias2"></script>
 <script src="course-fallback.js?v=teacher-safe-20260701c"></script>
 <script src="/shared/points-recalculator.js?v=1"></script>
 <script src="analytics.js?v=teacher-safe-20260704a"></script>
-<script src="points-audit-fix.js?v=4"></script>
+<script src="points-audit-fix.js?v=5"></script>
 <script src="analytics-release-status-fix.js?v=1"></script>
 <script src="analytics-release-strict.js?v=1"></script>
 <script src="teacher-preview.js?v=teacher-release-preview2"></script>
@@ -57,15 +51,7 @@
 <script src="dashboard-fast-load.js?v=1"></script>
 <script src="dashboard-enhancements.js?v=teacher-safe-20260701c"></script>
 <script>
-window.addEventListener("load",function(){
-  setTimeout(function(){
-    var app=document.getElementById("app");
-    if(window.__teacherLoadWatch)clearTimeout(window.__teacherLoadWatch);
-    if(app && /Dashboard wird geladen/.test(app.textContent||"")){
-      app.innerHTML='<div class="card warning-card"><h2>Lehrer-Dashboard lädt nicht vollständig</h2><p>Bitte neu laden oder erneut einloggen. Wenn das wieder passiert, ist Firebase/Auth noch nicht fertig verbunden.</p><div class="toolbar"><button onclick="location.reload()">Neu laden</button><a class="btn secondary" href="login.html">Zum Lehrerlogin</a><a class="btn secondary" href="/index.html">Zur Startseite</a></div></div>';
-    }
-  },46000);
-});
+window.addEventListener("load",function(){setTimeout(function(){var app=document.getElementById("app");if(window.__teacherLoadWatch)clearTimeout(window.__teacherLoadWatch);if(app&&/Dashboard wird geladen/.test(app.textContent||"")){app.innerHTML='<div class="card warning-card"><h2>Lehrer-Dashboard lädt nicht vollständig</h2><p>Bitte neu laden oder erneut einloggen. Wenn das wieder passiert, ist Firebase/Auth noch nicht fertig verbunden.</p><div class="toolbar"><button onclick="location.reload()">Neu laden</button><a class="btn secondary" href="login.html">Zum Lehrerlogin</a><a class="btn secondary" href="/index.html">Zur Startseite</a></div></div>'}},46000)});
 </script>
 <script defer src="../js/performance-boot.js?v=20260709b"></script>
 <script src="/shared/sprachpilot-design-system.js"></script>
