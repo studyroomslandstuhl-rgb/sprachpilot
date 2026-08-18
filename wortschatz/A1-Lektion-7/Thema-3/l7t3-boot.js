@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-wrong-at-end1';
+const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-reading-queue2';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 function addOrderPolish(){
  if(page!=='task')return;
@@ -37,12 +37,14 @@ Promise.resolve(window.L7_THEME_READY)
    .then(()=>load('../shared/l7-listen-participle-bunny-fix.js?v=1'))
    .then(()=>load('l7t3-special-ui.js?v=2'))
    .then(()=>load('l7t3-help-standard.js?v=1'))
+   .then(()=>load('../shared/l7-reading-queue-fix.js?v=1'))
    .then(()=>{
     window.L7T2MemoryUI?.install?.();
     window.L7T2EndingsUI?.install?.();
     window.L7T2AdvancedUI?.install?.();
     window.L7T3SpecialUI?.install?.();
     window.L7T3HelpStandard?.install?.();
+    window.L7ReadingQueueFix?.install?.();
     const result=window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'));window.L7T3CardImages?.patchAll?.(document);return result;
    });
  })
