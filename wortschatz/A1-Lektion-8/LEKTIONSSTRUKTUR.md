@@ -21,7 +21,9 @@ Berufe, männliche/weibliche Berufsformen, Arbeitsorte, berufliche Situation, se
 
 ## Thema 2 · Ausbildung, Zeit und Bewerbung
 
-Wann + Perfekt → vor; Seit wann/Wie lange schon + Präsens → seit; Wie lange + Perfekt → Dauer ohne Präposition. Ausbildung, Praktikum, beruflicher Werdegang, formelle A1-Bewerbung, Lesen/Hören und biografische Informationen.
+Zu Beginn wird der Zeitwortschatz aus L5T2 wiederholt: die Sekunde – die Sekunden, die Minute – die Minuten, die Stunde – die Stunden, der Tag – die Tage, die Woche – die Wochen, der Monat – die Monate, das Jahr – die Jahre. Dafür werden dieselben Bunny-Bilder und Wortaudios wie in L5T2 wiederverwendet. Direkt danach folgen eine eigene Artikel-/Plural-Aufgabe und eine Transferaufgabe, in der alle sieben Zeitwörter im Singular und Plural mit `seit` und `vor` im Dativ angewendet werden, z. B. `seit einer Woche`, `vor einem Monat`, `seit zwei Tagen`, `vor drei Jahren`.
+
+Danach: Wann + Perfekt → vor; Seit wann/Wie lange schon + Präsens → seit; Wie lange + Perfekt → Dauer ohne Präposition. Ausbildung, Praktikum, beruflicher Werdegang, formelle A1-Bewerbung, Lesen/Hören und biografische Informationen.
 
 ## Thema 3 · Meine Arbeit früher
 
