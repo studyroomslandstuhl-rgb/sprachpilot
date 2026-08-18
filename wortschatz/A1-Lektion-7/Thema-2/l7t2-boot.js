@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t2-central-score2';
+const version='l7t2-wrong-at-end1';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 function currentTask(){const id=new URLSearchParams(location.search).get('task');return window.L7S?.task?.(id)||null}
 function concise(){if(page!=='task')return;const task=currentTask();if(!task?.spL7T2Write)return;document.querySelectorAll('.l7-answer-box label').forEach(label=>{if(label.textContent!=='Antwort')label.textContent='Antwort'})}
