@@ -19,66 +19,35 @@ body{
     linear-gradient(135deg,var(--lesson-main),var(--lesson-main-light));
 }
 
-/* Früh verfügbare Größenbegrenzung: verhindert ein großes Logo, bevor sp-header.css nachgeladen ist. */
 .sp-header__logo{width:66px;height:66px;overflow:hidden}
 .sp-header__logo img{width:52px;height:52px;object-fit:contain;display:block}
 .sp-header{background:var(--lesson-main)!important}
 
-#taskGrid .module{
-  display:flex!important;
-  visibility:visible!important;
-  opacity:1!important;
-}
+#taskGrid .module{display:flex!important;visibility:visible!important;opacity:1!important}
+#taskGrid .module>*{visibility:visible!important;opacity:1!important}
+.module .num,.module .icon,.progress-main .small,footer{color:var(--lesson-main-dark)!important}
+.module .start{background:var(--lesson-soft)!important;color:var(--lesson-main-dark)!important;border-color:var(--lesson-line)!important}
+.progress .bar{background:linear-gradient(135deg,var(--lesson-main-dark),var(--lesson-main))}
 
-#taskGrid .module>*{
-  visibility:visible!important;
-  opacity:1!important;
-}
+.progress-card{align-items:center!important}
+.sp-l7-score-slot{flex:0 0 285px;align-self:stretch;display:flex}
+.sp-l7-score-card{width:100%;border:2px solid var(--lesson-line);border-radius:18px;background:var(--lesson-soft);padding:15px 17px;display:flex;flex-direction:column;justify-content:center;gap:5px;color:var(--lesson-text)}
+.sp-l7-score-label{font-size:14px;font-weight:900;color:var(--lesson-main-dark)}
+.sp-l7-score-total{font-size:27px;line-height:1.05;font-weight:950;color:var(--lesson-main-dark)}
+.sp-l7-score-card .small{color:var(--lesson-muted)!important}
+.sp-l7-score-sync{font-size:12px!important;margin-top:2px}
 
-.module .num,
-.module .icon,
-.progress-main .small,
-footer{
-  color:var(--lesson-main-dark)!important;
-}
+.module.exam-locked{opacity:.58!important;background:#f1eef5!important;border-style:dashed!important;border-color:#cfc5dc!important;pointer-events:none!important;box-shadow:none!important}
+.module.exam-locked .start{background:#ece7f1!important;color:#756b80!important;border-color:#d7cfdf!important}
 
-.module .start{
-  background:var(--lesson-soft)!important;
-  color:var(--lesson-main-dark)!important;
-  border-color:var(--lesson-line)!important;
-}
+.sp-teacher-preview-note{margin-bottom:18px;padding:16px 18px;border:2px solid #ead56c;border-radius:18px;background:#fff9d8;color:#49375f;font-size:18px;font-weight:900;line-height:1.35}
 
-.progress .bar{
-  background:linear-gradient(135deg,var(--lesson-main-dark),var(--lesson-main));
+@media(max-width:850px){
+ .progress-card{align-items:flex-start!important;flex-wrap:wrap}
+ .sp-l7-score-slot{flex:1 1 100%;width:100%}
 }
-
-.module.exam-locked{
-  opacity:.58!important;
-  background:#f1eef5!important;
-  border-style:dashed!important;
-  border-color:#cfc5dc!important;
-  pointer-events:none!important;
-  box-shadow:none!important;
-}
-
-.module.exam-locked .start{
-  background:#ece7f1!important;
-  color:#756b80!important;
-  border-color:#d7cfdf!important;
-}
-
-.sp-teacher-preview-note{
-  margin-bottom:18px;
-  padding:16px 18px;
-  border:2px solid #ead56c;
-  border-radius:18px;
-  background:#fff9d8;
-  color:#49375f;
-  font-size:18px;
-  font-weight:900;
-  line-height:1.35;
-}
-
 @media(max-width:700px){
-  .sp-teacher-preview-note{font-size:16px}
+ .sp-teacher-preview-note{font-size:16px}
+ .sp-l7-score-slot{width:100%;flex-basis:auto}
+ .sp-l7-score-total{font-size:24px}
 }
