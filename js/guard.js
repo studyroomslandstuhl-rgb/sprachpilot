@@ -23,6 +23,7 @@ const IS_L6T2=path.includes("/wortschatz/A1-Lektion-6/Thema-2/");
 const IS_L6T3=IS_L6T3_PATH;
 const IS_L6T4=path.includes("/wortschatz/A1-Lektion-6/Thema-4/");
 const IS_L7=path.includes("/wortschatz/A1-Lektion-7/");
+const IS_L7_THEME_OVERVIEW=IS_L7&&IS_WORTSCHATZ_THEME_OVERVIEW;
 const HAS_OWN_PROGRESS_SYSTEM=IS_L3T2||IS_L5||IS_L6T2||IS_L6T3||IS_L6T4||IS_L7;
 const IS_WORTSCHATZ_TASK_PAGE=IS_WORTSCHATZ_EXERCISE&&!IS_WORTSCHATZ_THEME_OVERVIEW;
 const NEEDS_EXAM_UNLOCK_FIX=IS_WORTSCHATZ_TASK_PAGE&&!IS_L3T1&&!HAS_OWN_PROGRESS_SYSTEM&&!IS_L6T2;
@@ -54,7 +55,7 @@ if(IS_L3T1){import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-stability.js?v=3").cat
 if(IS_L3T2){import("/wortschatz/A1-Lektion-3/Thema-2/l3t2-task-fix.js?v=3").catch(()=>{})}
 if(IS_L6T2){import("/wortschatz/A1-Lektion-6/Thema-2/l6t2-stability.js?v=1").catch(()=>{})}
 if(IS_L6T3){import("/wortschatz/A1-Lektion-6/Thema-3/l6t3-theme-score-v2.js?v=3").catch(()=>{})}
-if((IS_L6T4||IS_L7)&&!PERFORMANCE_SYNC_OFF){import(IS_L7?"/js/progress.js?v=l7-central-score1":"/js/progress.js?v=l6t4-build1").catch(()=>{})}
+if((IS_L6T4||IS_L7_THEME_OVERVIEW)&&!PERFORMANCE_SYNC_OFF){import(IS_L7?"/js/progress.js?v=l7-central-score2":"/js/progress.js?v=l6t4-build1").catch(()=>{})}
 if(USES_STANDARD_PROGRESS){import("/js/sp-progress-standard.js?v=4").catch(()=>{})}
 if(NEEDS_EXAM_UNLOCK_FIX&&!PERFORMANCE_SYNC_OFF){setTimeout(()=>import("/js/exam-unlock-fix.js?v=4").catch(()=>{}),120)}
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
