@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t2-standard-v13';
+const version='l7t2-standard-v14';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 function currentTask(){const id=new URLSearchParams(location.search).get('task');return window.L7S?.task?.(id)||null}
 function concise(){
@@ -25,7 +25,9 @@ function addPolish(){
 }
 Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
+ .then(()=>load('../shared/l7-exam-gate.js?v=1'))
  .then(()=>{
+  window.SPL7StrictExamGate?.install?.();
   window.L7T2CardImages?.installRenderer?.();
   return load(`l7t2-bunny-audio.js?v=2`)
  })
