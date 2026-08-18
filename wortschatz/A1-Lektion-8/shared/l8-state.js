@@ -1,7 +1,16 @@
 (function(){'use strict';
 const clean=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_').replace(/^_+|_+$/g,'');
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')||{}}catch(e){return{}}}
-function preview(){const r=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();if(r==='teacher')return true;return sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}
+function preview(){
+ const r=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();
+ const context=String(localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase();
+ const p=profile();
+ const explicitPreview=p.previewOnly===true||p.teacherPreview===true||p.studentCoursePreview===true;
+ if(['student','schueler','schüler'].includes(r)&&context!=='teacher-student-preview'&&!explicitPreview)return false;
+ if(['teacher','lehrer','admin','owner'].includes(r))return true;
+ if(context!=='teacher-student-preview'||!explicitPreview)return false;
+ return !!(sessionStorage.getItem('SP_TEACHER_PREVIEW')||localStorage.getItem('SP_TEACHER_PREVIEW'))
+}
 function pid(){const p=profile();return clean(p.uid||p.userId||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_'))||'student'}
 const key=(theme,task)=>`${preview()?'SP_L8_PREVIEW':'SP_L8'}_${pid()}_T${theme}_${task}`;
 function blank(total){return{total,done:[],review:{},tries:{},firstSeen:[],firstCorrect:0,answers:{},updatedAt:new Date().toISOString()}}
