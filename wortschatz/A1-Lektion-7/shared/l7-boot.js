@@ -3,12 +3,13 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7-theme-standard4';
+const version='l7-theme-standard5';
 function load(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.body.appendChild(script)})}
 Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
  .then(()=>load(`../shared/l7-theme-score.js?v=1`))
- .then(()=>{if([2,3,4].includes(theme))return load('../shared/l7-exam-gate.js?v=1').then(()=>window.SPL7StrictExamGate?.install?.())})
+ .then(()=>{if([2,3,4].includes(theme))return load('../shared/l7-exam-gate.js?v=2').then(()=>window.SPL7StrictExamGate?.install?.())})
+ .then(()=>{if(theme===4)window.L7T4BunnyMedia?.install?.()})
  .then(()=>{
    if(page==='theme')return load(`../shared/l7-theme-standard.js?v=${version}`).then(()=>window.L7ThemeStandard.render(theme));
    if(window.L7S)window.L7S.header=()=>'';
