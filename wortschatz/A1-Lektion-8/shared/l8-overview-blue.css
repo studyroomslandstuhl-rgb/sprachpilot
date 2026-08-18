@@ -1,0 +1,22 @@
+:root{
+ --lesson-main:#8DBFEA;
+ --lesson-main-dark:#4E7FA8;
+ --lesson-dark:#4E7FA8;
+ --lesson-main-light:#DCECF9;
+ --lesson-soft:#EEF6FD;
+ --lesson-line:#C9DFF2;
+ --lesson-bg:#F7FBFF;
+ --lesson-text:#173A56;
+ --lesson-muted:#5F7180;
+ --lesson-shadow:0 12px 28px rgba(78,127,168,.16);
+ --l8-main:#8DBFEA;
+ --l8-dark:#4E7FA8;
+ --l8-soft:#EEF6FD;
+ --l8-line:#C9DFF2;
+ --l8-bg:#F7FBFF;
+ --l8-ink:#173A56;
+}
+body{background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.42) 310px,rgba(255,255,255,.1)),linear-gradient(135deg,#8DBFEA,#DCECF9)!important}
+.sp-header{background:#8DBFEA!important}
+.l8-progress-circle{box-shadow:0 12px 26px rgba(78,127,168,.18)!important}
+.l8-input:focus,textarea.l8-input:focus{outline-color:rgba(141,191,234,.28)!important}
