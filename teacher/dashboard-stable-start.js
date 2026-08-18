@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_TEACHER_STABLE_START_V1)return;
-window.__SP_TEACHER_STABLE_START_V1=true;
+if(window.__SP_TEACHER_STABLE_START_V2)return;
+window.__SP_TEACHER_STABLE_START_V2=true;
 
 try{if(typeof window.startTeacherDashboard==='function')document.removeEventListener('DOMContentLoaded',window.startTeacherDashboard)}catch(e){}
 
@@ -18,9 +18,8 @@ function accessProblem(access,user){
 function stableStart(){
  const app=document.getElementById('app');
  const activeRole=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();
- if(activeRole==='student'){
-  TeacherEnv.clearStudentPreviewState();
-  show('<div class="card warning-card"><h2>Schüler-Login aktiv</h2><p>Du bist gerade als Schüler/in angemeldet.</p><div class="toolbar"><a class="btn" href="/student-dashboard/index.html">Zum Schüler-Dashboard</a><a class="btn secondary" href="/index.html">Zur Startseite</a></div></div>');
+ if(activeRole==='student'||activeRole==='schueler'||activeRole==='schüler'){
+  location.replace('/student-dashboard/index.html');
   return;
  }
  const auth=TeacherEnv.auth();
