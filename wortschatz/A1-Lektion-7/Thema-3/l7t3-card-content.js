@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T3_CARD_CONTENT_V3)return;
-window.__SP_L7T3_CARD_CONTENT_V3=true;
+if(window.__SP_L7T3_CARD_CONTENT_V4)return;
+window.__SP_L7T3_CARD_CONTENT_V4=true;
 
 const FORMS=[
  {v:'gehen',p:'gegangen',aux:'ist',img:'gehen.webp',audio:'gehen.mp3',tr:{en:'went',ru:'пошёл / пошла',tr:'gitti',uk:'пішов / пішла',ar:'ذهب',ja:'行った',ro:'a mers',pl:'poszedł / poszła',ku:'çû'}},
@@ -9,7 +9,7 @@ const FORMS=[
  {v:'kommen',p:'gekommen',aux:'ist',img:'kommen.webp',audio:'kommen.mp3',tr:{en:'came',ru:'пришёл / пришла',tr:'geldi',uk:'прийшов / прийшла',ar:'جاء',ja:'来た',ro:'a venit',pl:'przyszedł / przyszła',ku:'hat'}},
  {v:'fliegen',p:'geflogen',aux:'ist',img:'fliegen.webp',audio:'fliegen.mp3',tr:{en:'flew',ru:'полетел / полетела',tr:'uçtu',uk:'полетів / полетіла',ar:'طار',ja:'飛んだ',ro:'a zburat',pl:'poleciał / poleciała',ku:'firî'}},
  {v:'wandern',p:'gewandert',aux:'ist',img:'wandern.webp',audio:'wandern.mp3',tr:{en:'hiked',ru:'ходил / ходила в поход',tr:'yürüyüş yaptı',uk:'ходив / ходила в похід',ar:'تنزّه مشيًا',ja:'ハイキングした',ro:'a făcut drumeție',pl:'wędrował / wędrowała',ku:'meşiya'}},
- {v:'spazieren gehen',p:'spazieren gegangen',aux:'ist',img:'spazieren_gehen.webp',audio:'spazieren_gehen.mp3',tr:{en:'went for a walk',ru:'пошёл / пошла гулять',tr:'yürüyüşe çıktı',uk:'пішов / пішла гуляти',ar:'ذهب في نزهة',ja:'散歩に行った',ro:'a ieșit la plimbare',pl:'poszedł / poszła na spacer',ku:'çû gerê'}},
+ {v:'spazieren gehen',p:'spazieren gegangen',aux:'ist',img:'spazierengehen.webp',audio:'spazieren_gehen.mp3',perfectAudio:'spazieren_gegangen.mp3',tr:{en:'went for a walk',ru:'пошёл / пошла гулять',tr:'yürüyüşe çıktı',uk:'пішов / пішла гуляти',ar:'ذهب في نزهة',ja:'散歩に行った',ro:'a ieșit la plimbare',pl:'poszedł / poszła na spacer',ku:'çû gerê'}},
  {v:'bleiben',p:'geblieben',aux:'ist',img:'bleiben.webp',audio:'bleiben.mp3',tr:{en:'stayed',ru:'остался / осталась',tr:'kaldı',uk:'залишився / залишилася',ar:'بقي',ja:'残った',ro:'a rămas',pl:'został / została',ku:'ma'}},
  {v:'schwimmen',p:'geschwommen',aux:'ist',img:'schwimmen.webp',audio:'schwimmen.mp3',tr:{en:'swam',ru:'плавал / плавала',tr:'yüzdü',uk:'плавав / плавала',ar:'سبح',ja:'泳いだ',ro:'a înotat',pl:'pływał / pływała',ku:'avjenî kir'}},
  {v:'tanzen',p:'getanzt',aux:'hat',img:'tanzen.webp',audio:'tanzen.mp3',tr:{en:'danced',ru:'танцевал / танцевала',tr:'dans etti',uk:'танцював / танцювала',ar:'رقص',ja:'踊った',ro:'a dansat',pl:'tańczył / tańczyła',ku:'reqisî'}},
@@ -23,8 +23,8 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
  const cards=task(theme);
  if(cards){
   const lang=language();cards.id='karteikarten';cards.title='Karteikarten';cards.description='Lern die Wörter.';cards.kind='cards';
-  cards.items=FORMS.map(x=>({kind:'cards',type:'verb',category:'verb',infinitive:x.v,perfect:`${x.aux} ${x.p}`,image:x.img,word:`${x.aux} ${x.p}`,answer:`${x.aux} ${x.p}`,answers:[`${x.aux} ${x.p}`],translations:{...x.tr},meaning:x.tr[lang]||x.tr.en,translationLabel:LABELS[lang]||LABELS.en,example:`${x.v} – ${x.aux} ${x.p}`,audio:`${x.aux} ${x.p}`,audioFile:x.audio,prompt:x.v,hint:'Nenne das Hilfsverb und das Partizip II.'}));
+  cards.items=FORMS.map(x=>({kind:'cards',type:'verb',category:'verb',infinitive:x.v,perfect:`${x.aux} ${x.p}`,image:x.img,word:`${x.aux} ${x.p}`,answer:`${x.aux} ${x.p}`,answers:[`${x.aux} ${x.p}`],translations:{...x.tr},meaning:x.tr[lang]||x.tr.en,translationLabel:LABELS[lang]||LABELS.en,example:`${x.v} – ${x.aux} ${x.p}`,audio:`${x.aux} ${x.p}`,audioFile:x.audio,perfectAudioFile:x.perfectAudio||'',prompt:x.v,hint:'Nenne das Hilfsverb und das Partizip II.'}));
  }
- theme.contentRevision='l7t3-card-standard-20260818-v3';window.L7_THEME=theme;return theme;
+ theme.contentRevision='l7t3-card-standard-20260818-v4';window.L7_THEME=theme;return theme;
 });
 })();
