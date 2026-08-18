@@ -4,12 +4,7 @@
   function parse(v){try{return JSON.parse(v||'null')}catch(e){return null}}
   function valid(p){return !!(p&&typeof p==='object'&&(p.studentId||p.userId||p.email)&&(p.kurs||p.kursnummer||p.courseCode))}
   function role(p){return String(p?.loginRole||p?.role||p?.type||p?.accountType||'').trim().toLowerCase()}
-  function previewProfile(p){
-    if(!p||typeof p!=='object')return false;
-    if(p.previewOnly===true||p.teacherPreview===true||p.studentCoursePreview===true)return true;
-    const context=String(localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase();
-    return context==='teacher-student-preview';
-  }
+  function previewProfile(p){return !!(p&&typeof p==='object'&&(p.previewOnly===true||p.teacherPreview===true||p.studentCoursePreview===true))}
   function realStudent(p){
     if(!valid(p)||previewProfile(p))return false;
     const r=role(p);
