@@ -1,9 +1,14 @@
 (function(){
 'use strict';
-if(window.__SP_L7T3_BUNNY_AUDIO_V2)return;
-window.__SP_L7T3_BUNNY_AUDIO_V2=true;
+if(window.__SP_L7T3_BUNNY_AUDIO_V3)return;
+window.__SP_L7T3_BUNNY_AUDIO_V3=true;
 if(!location.pathname.includes('/wortschatz/A1-Lektion-7/Thema-3/'))return;
 const BASE='https://sprachpilot.b-cdn.net/audio/',BUNNY=/^https:\/\/sprachpilot\.b-cdn\.net\/audio\//i;let activeAudio=null,generation=0;
+const EXACT_AUDIO=Object.freeze({
+ 'spazieren gehen':'spazieren_gehen.mp3',
+ 'spazieren gegangen':'spazieren_gegangen.mp3',
+ 'ist spazieren gegangen':'spazieren_gegangen.mp3'
+});
 const PERFECT_TO_INFINITIVE=Object.freeze({
  gegangen:'gehen',gefahren:'fahren',gekommen:'kommen',geflogen:'fliegen',gewandert:'wandern','spazieren gegangen':'spazieren_gehen',geblieben:'bleiben',geschwommen:'schwimmen',getanzt:'tanzen',gebacken:'backen',
  gelernt:'lernen',gemacht:'machen',geschrieben:'schreiben',gehört:'hören',gespielt:'spielen',gesehen:'sehen',gelesen:'lesen',gekauft:'kaufen',gesprochen:'sprechen',gearbeitet:'arbeiten',getroffen:'treffen',gefrühstückt:'frühstücken',geschlafen:'schlafen',gekocht:'kochen',gegessen:'essen',getrunken:'trinken',gesagt:'sagen',gelebt:'leben',gekostet:'kosten',gegrillt:'grillen',gesucht:'suchen',gewohnt:'wohnen'
@@ -15,7 +20,15 @@ function unique(values){return[...new Set(values.filter(Boolean))]}
 function stop(){generation++;try{activeAudio?.pause()}catch(e){}if(activeAudio){try{activeAudio.src=''}catch(e){}activeAudio=null}try{window.speechSynthesis?.cancel?.()}catch(e){}document.querySelectorAll('.bunny-audio-playing').forEach(button=>button.classList.remove('bunny-audio-playing'))}
 function sourceText(button){const direct=button?.dataset?.audioFile||button?.dataset?.audioInfinitive||button?.dataset?.bunnyInfinitive||button?.dataset?.audio||button?.dataset?.text||'';if(direct)return String(direct).trim();const scope=button?.closest?.('.flip-face,.l7-learning,.l7-question-card,.question-card,.card')||document;return String(scope.querySelector('.flip-word,.word,h2,h3')?.textContent||'').trim()}
 function infinitiveFor(value){const text=String(value||'').trim().toLowerCase().replace(/^(ich\s+)?(habe|hast|hat|haben|habt|bin|bist|ist|sind|seid)\s+/,'').replace(/[.!?]+$/,'').trim();return PERFECT_TO_INFINITIVE[text]||''}
-function candidates(value){const raw=String(value||'').trim(),file=basename(raw),stem=file.replace(/\.mp3$/i,''),plain=raw.replace(/\.mp3$/i,'').replace(/^(ich\s+)?(habe|hast|hat|haben|habt|bin|bist|ist|sind|seid)\s+/i,'').trim(),infinitive=infinitiveFor(raw)||infinitiveFor(stem),names=unique([stem,slug(stem,'_'),slug(stem,'-'),plain,slug(plain,'_'),slug(plain,'-'),infinitive,slug(infinitive,'_'),slug(infinitive,'-'),slug(normalize(raw),'_')]),urls=[];if(BUNNY.test(raw))urls.push(raw);if(file&&/\.mp3$/i.test(file))urls.push(BASE+encodeURIComponent(file));names.forEach(name=>{if(name)urls.push(BASE+encodeURIComponent(name)+'.mp3')});return unique(urls)}
+function candidates(value){
+ const raw=String(value||'').trim(),normalized=normalize(raw),file=basename(raw),stem=file.replace(/\.mp3$/i,''),plain=raw.replace(/\.mp3$/i,'').replace(/^(ich\s+)?(habe|hast|hat|haben|habt|bin|bist|ist|sind|seid)\s+/i,'').trim(),infinitive=infinitiveFor(raw)||infinitiveFor(stem),urls=[];
+ const exact=EXACT_AUDIO[String(raw).toLowerCase()]||EXACT_AUDIO[normalized]||EXACT_AUDIO[String(plain).toLowerCase()]||EXACT_AUDIO[normalize(plain)];
+ if(exact)urls.push(BASE+encodeURIComponent(exact));
+ if(BUNNY.test(raw))urls.push(raw);
+ if(file&&/\.mp3$/i.test(file))urls.push(BASE+encodeURIComponent(file));
+ const names=unique([stem,slug(stem,'_'),slug(stem,'-'),plain,slug(plain,'_'),slug(plain,'-'),infinitive,slug(infinitive,'_'),slug(infinitive,'-'),slug(normalized,'_')]);
+ names.forEach(name=>{if(name)urls.push(BASE+encodeURIComponent(name)+'.mp3')});return unique(urls)
+}
 function errorBox(button){if(!button)return;const scope=button.closest('.l7-audio,.flip-face,.l7-learning,.l7-question-card,.question-card,.card')||button.parentElement;if(!scope)return;let box=scope.querySelector('.bunny-audio-error');if(!box){box=document.createElement('div');box.className='bunny-audio-error';box.setAttribute('role','status');box.textContent='Die B1-Deutsch-Audiodatei konnte nicht geladen werden.';scope.appendChild(box)}}
 function clearError(button){const scope=button?.closest?.('.l7-audio,.flip-face,.l7-learning,.l7-question-card,.question-card,.card')||button?.parentElement;scope?.querySelector('.bunny-audio-error')?.remove()}
 function play(value,button,done,fail){stop();clearError(button);const token=generation,urls=candidates(value);let index=0;function next(){if(token!==generation)return;if(index>=urls.length){button?.classList.remove('bunny-audio-playing');errorBox(button);fail?.();return}const audio=new Audio(urls[index++]);activeAudio=audio;audio.preload='auto';button?.classList.add('bunny-audio-playing');let failed=false;const bad=()=>{if(failed||token!==generation)return;failed=true;try{audio.pause();audio.src=''}catch(e){}if(activeAudio===audio)activeAudio=null;next()};audio.addEventListener('error',bad,{once:true});audio.addEventListener('ended',()=>{if(token!==generation)return;if(activeAudio===audio)activeAudio=null;button?.classList.remove('bunny-audio-playing');done?.()},{once:true});const promise=audio.play();if(promise&&typeof promise.catch==='function')promise.catch(bad)}next()}
