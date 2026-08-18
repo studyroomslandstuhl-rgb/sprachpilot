@@ -15,127 +15,37 @@ const ledgerKey=theme=>`SP_THEME_SCORE_A1_L7_T${Number(theme)}_V${VERSION}_${pid
 const preview=()=>window.L7S?.preview?.()===true;
 const blankRun=()=>({tasks:{},examBestPercent:0,examPoints:0,examStars:0,completed:false,startedAt:now(),updatedAt:now()});
 const blankLedger=theme=>({version:VERSION,theme:Number(theme),themeKey:`A1-L7-T${Number(theme)}`,currentRun:Math.max(1,Math.min(3,Number(localStorage.getItem(runKey(theme)))||1)),runs:{},pending:{tasks:{},exams:{}},advanceAfterPerfect:false,migrated:false,updatedAt:now()});
-
 function practiceTasks(){return (window.L7_THEME?.tasks||[]).filter(task=>task&&!task.exam)}
 function examTask(){return (window.L7_THEME?.tasks||[]).find(task=>task?.exam)||null}
 function calculateLifetime(ledger){let total=0;for(const run of Object.values(ledger.runs||{})){for(const item of Object.values(run.tasks||{}))total+=Math.max(0,Number(item.points)||0);total+=Math.max(0,Number(run.examPoints)||0)}return total}
-function normalize(theme,value){
- const ledger=value&&typeof value==='object'?value:blankLedger(theme);
- ledger.version=VERSION;ledger.theme=Number(theme);ledger.themeKey=`A1-L7-T${Number(theme)}`;
- ledger.currentRun=Math.max(1,Math.min(3,Number(ledger.currentRun)||Number(localStorage.getItem(runKey(theme)))||1));
- ledger.runs=ledger.runs&&typeof ledger.runs==='object'?ledger.runs:{};
- for(let run=1;run<=ledger.currentRun;run++)ledger.runs[String(run)]={...blankRun(),...(ledger.runs[String(run)]||{}),tasks:{...((ledger.runs[String(run)]||{}).tasks||{})}};
- ledger.pending=ledger.pending&&typeof ledger.pending==='object'?ledger.pending:{tasks:{},exams:{}};
- ledger.pending.tasks=ledger.pending.tasks&&typeof ledger.pending.tasks==='object'?ledger.pending.tasks:{};
- ledger.pending.exams=ledger.pending.exams&&typeof ledger.pending.exams==='object'?ledger.pending.exams:{};
- ledger.lifetimePoints=calculateLifetime(ledger);
- return ledger;
-}
+function normalize(theme,value){const ledger=value&&typeof value==='object'?value:blankLedger(theme);ledger.version=VERSION;ledger.theme=Number(theme);ledger.themeKey=`A1-L7-T${Number(theme)}`;ledger.currentRun=Math.max(1,Math.min(3,Number(ledger.currentRun)||Number(localStorage.getItem(runKey(theme)))||1));ledger.runs=ledger.runs&&typeof ledger.runs==='object'?ledger.runs:{};for(let run=1;run<=ledger.currentRun;run++)ledger.runs[String(run)]={...blankRun(),...(ledger.runs[String(run)]||{}),tasks:{...((ledger.runs[String(run)]||{}).tasks||{})}};ledger.pending=ledger.pending&&typeof ledger.pending==='object'?ledger.pending:{tasks:{},exams:{}};ledger.pending.tasks=ledger.pending.tasks&&typeof ledger.pending.tasks==='object'?ledger.pending.tasks:{};ledger.pending.exams=ledger.pending.exams&&typeof ledger.pending.exams==='object'?ledger.pending.exams:{};ledger.lifetimePoints=calculateLifetime(ledger);return ledger}
 function read(theme){try{return normalize(theme,JSON.parse(localStorage.getItem(ledgerKey(theme))||'null'))}catch(e){return normalize(theme,null)}}
-function write(theme,ledger){
- ledger=normalize(theme,ledger);ledger.updatedAt=now();ledger.lifetimePoints=calculateLifetime(ledger);
- if(!preview()){
-  localStorage.setItem(ledgerKey(theme),JSON.stringify(ledger));
-  localStorage.setItem(runKey(theme),String(ledger.currentRun));
- }
- try{window.dispatchEvent(new CustomEvent('l7-theme-score-change',{detail:{theme:Number(theme),summary:summaryFrom(theme,ledger)}}))}catch(e){}
- return ledger;
-}
+function write(theme,ledger){ledger=normalize(theme,ledger);ledger.updatedAt=now();ledger.lifetimePoints=calculateLifetime(ledger);if(!preview()){localStorage.setItem(ledgerKey(theme),JSON.stringify(ledger));localStorage.setItem(runKey(theme),String(ledger.currentRun))}try{window.dispatchEvent(new CustomEvent('l7-theme-score-change',{detail:{theme:Number(theme),summary:summaryFrom(theme,ledger)}}))}catch(e){}return ledger}
 function runData(ledger,run=ledger.currentRun){const key=String(run);if(!ledger.runs[key])ledger.runs[key]=blankRun();return ledger.runs[key]}
 function statePercent(state){const total=Math.max(0,Number(state?.total)||0),done=Array.isArray(state?.done)?state.done.length:Number(state?.done)||0;return total?clamp(done/total*100):0}
 function titleFor(id){return window.L7_THEME?.tasks?.find(task=>task?.id===id)?.title||id}
-
-function recordTask(theme,id,state){
- if(preview())return read(theme);
- const task=window.L7_THEME?.tasks?.find(item=>item?.id===id);if(!task||task.exam)return read(theme);
- const ledger=read(theme),run=ledger.currentRun,data=runData(ledger,run),percent=statePercent(state),old=data.tasks[id]||{};
- const completed=!!old.completed||percent>=100;
- data.tasks[id]={...old,id,file:`task.html?task=${id}`,title:titleFor(id),percent:Math.max(Number(old.percent)||0,percent),completed,points:completed?Math.max(Number(old.points)||0,taskPoints(run)):Number(old.points)||0,total:Math.max(Number(old.total)||0,Number(state?.total)||0),done:Math.max(Number(old.done)||0,Array.isArray(state?.done)?state.done.length:Number(state?.done)||0),updatedAt:now()};
- data.updatedAt=now();ledger.pending.tasks[`${run}:${id}`]=true;return write(theme,ledger);
-}
-function recordExam(theme,id,state){
- if(preview())return read(theme);
- const task=window.L7_THEME?.tasks?.find(item=>item?.id===id);if(!task||!task.exam)return read(theme);
- const total=Math.max(0,Number(state?.total)||0),finished=total>0&&Array.isArray(state?.done)&&state.done.length>=total;if(!finished)return read(theme);
- const ledger=read(theme),run=ledger.currentRun,data=runData(ledger,run),percent=total?clamp(Number(state.firstCorrect||0)/total*100):0,stars=percent>=100?3:percent>=70?2:percent>=50?1:0;
- if(percent>=Number(data.examBestPercent||0)){data.examBestPercent=percent;data.examPoints=Math.round(examMax(run)*percent/100);data.examStars=Math.max(Number(data.examStars)||0,stars)}
- data.completed=Number(data.examBestPercent||0)>=100;data.updatedAt=now();ledger.pending.exams[String(run)]=true;if(data.completed&&run<3)ledger.advanceAfterPerfect=true;return write(theme,ledger);
-}
-function recordState(theme,id,state){
- const task=window.L7_THEME?.tasks?.find(item=>item?.id===id);if(!task)return read(theme);
- return task.exam?recordExam(theme,id,state):recordTask(theme,id,state);
-}
-
-function legacyPid(){
- const p=window.L7S?.profile?.()||{};
- return [p.email,p.kurs,p.kursnummer,p.courseCode,p.vorname,p.firstName,p.nachname,p.lastName].filter(Boolean).join('_').toLowerCase().replace(/[^a-z0-9äöüß]+/gi,'_')||'student';
-}
-function clearVisible(theme){
- if(preview())return;
- const prefixes=[`SP_L7_${pid()}_T${theme}_`,`SP_L7_${legacyPid()}_T${theme}_`,`SP_L7_student_T${theme}_`],remove=[];
- for(let i=0;i<localStorage.length;i++){
-  const key=String(localStorage.key(i)||'');
-  if(prefixes.some(prefix=>key.startsWith(prefix))||key.startsWith(`SP_L7_EXAM_SYNCED_T${theme}_`))remove.push(key);
- }
- remove.forEach(key=>localStorage.removeItem(key));
-}
-function migrate(theme){
- if(preview()||!window.L7S)return read(theme);
- let ledger=read(theme);if(ledger.migrated)return ledger;
- for(const task of practiceTasks()){
-  const total=Array.isArray(task.items)?task.items.length:0;if(!total)continue;
-  const state=window.L7S.load(theme,task.id,total);if(statePercent(state)>0)recordTask(theme,task.id,state);
- }
- const exam=examTask();if(exam&&Array.isArray(exam.items)&&exam.items.length){const state=window.L7S.load(theme,exam.id,exam.items.length);if(state.done?.length>=exam.items.length)recordExam(theme,exam.id,state)}
- ledger=read(theme);ledger.migrated=true;return write(theme,ledger);
-}
-function advanceIfNeeded(theme){
- if(preview())return false;
- const ledger=read(theme),run=ledger.currentRun,data=runData(ledger,run);
- if(!ledger.advanceAfterPerfect||run>=3||Number(data.examBestPercent||0)<100)return false;
- ledger.currentRun=run+1;runData(ledger,ledger.currentRun);ledger.advanceAfterPerfect=false;clearVisible(theme);write(theme,ledger);return true;
-}
-function summaryFrom(theme,ledger){
- ledger=normalize(theme,ledger);const data=runData(ledger),runTaskPoints=Object.values(data.tasks||{}).reduce((sum,item)=>sum+(Number(item.points)||0),0),runExamPoints=Number(data.examPoints)||0;
- return{theme:Number(theme),currentRun:ledger.currentRun,label:ledger.currentRun===1?'Versuch 1 von 3':`Wiederholung ${ledger.currentRun} von 3`,runTaskPoints,runExamPoints,examBestPercent:Number(data.examBestPercent)||0,runPoints:runTaskPoints+runExamPoints,lifetimePoints:Number(ledger.lifetimePoints)||0,pending:!!(Object.keys(ledger.pending.tasks||{}).length||Object.keys(ledger.pending.exams||{}).length),preview:preview()};
-}
+function recordTask(theme,id,state){if(preview())return read(theme);const task=window.L7_THEME?.tasks?.find(item=>item?.id===id);if(!task||task.exam)return read(theme);const ledger=read(theme),run=ledger.currentRun,data=runData(ledger,run),percent=statePercent(state),old=data.tasks[id]||{},completed=!!old.completed||percent>=100;data.tasks[id]={...old,id,file:`task.html?task=${id}`,title:titleFor(id),percent:Math.max(Number(old.percent)||0,percent),completed,points:completed?Math.max(Number(old.points)||0,taskPoints(run)):Number(old.points)||0,total:Math.max(Number(old.total)||0,Number(state?.total)||0),done:Math.max(Number(old.done)||0,Array.isArray(state?.done)?state.done.length:Number(state?.done)||0),updatedAt:now()};data.updatedAt=now();ledger.pending.tasks[`${run}:${id}`]=true;return write(theme,ledger)}
+function recordExam(theme,id,state){if(preview())return read(theme);const task=window.L7_THEME?.tasks?.find(item=>item?.id===id);if(!task||!task.exam)return read(theme);const total=Math.max(0,Number(state?.total)||0),finished=total>0&&Array.isArray(state?.done)&&state.done.length>=total;if(!finished)return read(theme);const ledger=read(theme),run=ledger.currentRun,data=runData(ledger,run),percent=total?clamp(Number(state.firstCorrect||0)/total*100):0,stars=percent>=100?3:percent>=70?2:percent>=50?1:0;if(percent>=Number(data.examBestPercent||0)){data.examBestPercent=percent;data.examPoints=Math.round(examMax(run)*percent/100);data.examStars=Math.max(Number(data.examStars)||0,stars)}data.completed=Number(data.examBestPercent||0)>=100;data.updatedAt=now();ledger.pending.exams[String(run)]=true;if(data.completed&&run<3)ledger.advanceAfterPerfect=true;return write(theme,ledger)}
+function recordState(theme,id,state){const task=window.L7_THEME?.tasks?.find(item=>item?.id===id);if(!task)return read(theme);return task.exam?recordExam(theme,id,state):recordTask(theme,id,state)}
+function legacyPid(){const p=window.L7S?.profile?.()||{};return [p.email,p.kurs,p.kursnummer,p.courseCode,p.vorname,p.firstName,p.nachname,p.lastName].filter(Boolean).join('_').toLowerCase().replace(/[^a-z0-9äöüß]+/gi,'_')||'student'}
+function clearVisible(theme){if(preview())return;const prefixes=[`SP_L7_${pid()}_T${theme}_`,`SP_L7_${legacyPid()}_T${theme}_`,`SP_L7_student_T${theme}_`],remove=[];for(let i=0;i<localStorage.length;i++){const key=String(localStorage.key(i)||'');if(prefixes.some(prefix=>key.startsWith(prefix))||key.startsWith(`SP_L7_EXAM_SYNCED_T${theme}_`))remove.push(key)}remove.forEach(key=>localStorage.removeItem(key))}
+function migrate(theme){if(preview()||!window.L7S)return read(theme);let ledger=read(theme);if(ledger.migrated)return ledger;for(const task of practiceTasks()){const total=Array.isArray(task.items)?task.items.length:0;if(!total)continue;const state=window.L7S.load(theme,task.id,total);if(statePercent(state)>0)recordTask(theme,task.id,state)}const exam=examTask();if(exam&&Array.isArray(exam.items)&&exam.items.length){const state=window.L7S.load(theme,exam.id,exam.items.length);if(state.done?.length>=exam.items.length)recordExam(theme,exam.id,state)}ledger=read(theme);ledger.migrated=true;return write(theme,ledger)}
+function advanceIfNeeded(theme){if(preview())return false;const ledger=read(theme),run=ledger.currentRun,data=runData(ledger,run);if(!ledger.advanceAfterPerfect||run>=3||Number(data.examBestPercent||0)<100)return false;ledger.currentRun=run+1;runData(ledger,ledger.currentRun);ledger.advanceAfterPerfect=false;clearVisible(theme);write(theme,ledger);return true}
+function summaryFrom(theme,ledger){ledger=normalize(theme,ledger);const data=runData(ledger),runTaskPoints=Object.values(data.tasks||{}).reduce((sum,item)=>sum+(Number(item.points)||0),0),runExamPoints=Number(data.examPoints)||0;return{theme:Number(theme),currentRun:ledger.currentRun,label:ledger.currentRun===1?'Versuch 1 von 3':`Wiederholung ${ledger.currentRun} von 3`,runTaskPoints,runExamPoints,examBestPercent:Number(data.examBestPercent)||0,runPoints:runTaskPoints+runExamPoints,lifetimePoints:Number(ledger.lifetimePoints)||0,pending:!!(Object.keys(ledger.pending.tasks||{}).length||Object.keys(ledger.pending.exams||{}).length),preview:preview()}}
 function summary(theme){return summaryFrom(theme,read(theme))}
-function summaryHtml(theme){
- const s=summary(theme);
- if(s.preview)return'<div class="sp-l7-score-card"><div class="sp-l7-score-label">Lehrer-Vorschau</div><div class="sp-l7-score-total">Keine Punkte</div><div class="small">Teilnehmerpunkte werden nicht gespeichert.</div></div>';
- return `<div class="sp-l7-score-card"><div class="sp-l7-score-label">${s.label}</div><div class="sp-l7-score-total">${s.lifetimePoints} Punkte</div><div class="small">Aufgaben: ${s.runTaskPoints} · Prüfung: ${s.runExamPoints}${s.examBestPercent?` · Prüfung ${s.examBestPercent}%`:''}</div>${s.pending?'<div class="small sp-l7-score-sync">Synchronisierung beim Öffnen dieses Themas.</div>':''}</div>`;
-}
+function summaryHtml(theme){const s=summary(theme);if(s.preview)return'<div class="sp-l7-score-card"><div class="sp-l7-score-label">Lehrer-Vorschau</div><div class="sp-l7-score-total">Keine Punkte</div><div class="small">Teilnehmerpunkte werden nicht gespeichert.</div></div>';return `<div class="sp-l7-score-card"><div class="sp-l7-score-label">${s.label}</div><div class="sp-l7-score-total">${s.lifetimePoints} Punkte</div><div class="small">Aufgaben: ${s.runTaskPoints} · Prüfung: ${s.runExamPoints}${s.examBestPercent?` · Prüfung ${s.examBestPercent}%`:''}</div>${s.pending?'<div class="small sp-l7-score-sync">Synchronisierung beim Öffnen dieses Themas.</div>':''}</div>`}
 function renderSummary(theme){const target=document.getElementById('scoreSummary');if(target)target.innerHTML=summaryHtml(theme)}
-async function ensureApi(){if(window.SPProgress?.recordTaskProgress)return window.SPProgress;try{await import('/js/progress.js?v=l7-theme-ledger1')}catch(e){return null}return window.SPProgress||null}
-async function syncFirebase(theme){
- theme=Number(theme);if(document.body.dataset.page!=='theme'||preview()||syncing)return false;
- const ledger=read(theme),taskKeys=Object.keys(ledger.pending.tasks||{}),examKeys=Object.keys(ledger.pending.exams||{});if(!taskKeys.length&&!examKeys.length){renderSummary(theme);return true}
- const api=await ensureApi();if(!api)return false;syncing=true;let ok=true;
+async function ensureApi(){
  try{
-  for(const key of taskKeys){
-   const split=key.indexOf(':'),run=Math.max(1,Math.min(3,Number(key.slice(0,split))||1)),id=key.slice(split+1),item=runData(ledger,run).tasks[id];
-   if(!item){delete ledger.pending.tasks[key];continue}
-   localStorage.setItem(runKey(theme),String(run));
-   const result=await api.recordTaskProgress({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:7,theme,topicId:topicId(theme),title:`A1 Lektion 7 · Thema ${theme}`,file:`task.html?task=${id}`,taskKey:id,taskTitle:item.title||id,total:item.total||1,done:item.done||0,percent:item.percent||0,completed:!!item.completed});
-   if(result)delete ledger.pending.tasks[key];else ok=false;
-  }
-  for(const key of examKeys){
-   const run=Math.max(1,Math.min(3,Number(key)||1)),data=runData(ledger,run);if(data.examBestPercent<=0){delete ledger.pending.exams[key];continue}
-   localStorage.setItem(runKey(theme),String(run));
-   const result=await api.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:7,theme,topicId:topicId(theme),title:`A1 Lektion 7 · Thema ${theme}`,percent:data.examBestPercent,scorePercent:data.examBestPercent,stars:data.examStars||0});
-   if(result)delete ledger.pending.exams[key];else ok=false;
-  }
- }catch(e){ok=false;console.warn('L7 Themenpunkte konnten nicht synchronisiert werden',e)}
- finally{localStorage.setItem(runKey(theme),String(ledger.currentRun));write(theme,ledger);syncing=false;renderSummary(theme)}
- return ok;
+  if(!window.SPProgress?.recordTaskProgress)await import('/js/progress.js?v=l7-theme-ledger1');
+  await import('/js/point-delta-bridge.js?v=2');
+  await import('/js/ranking-mirror.js?v=2');
+ }catch(e){console.warn('L7 Firebase-Punktesystem konnte nicht geladen werden',e)}
+ return window.SPProgress?.recordTaskProgress?window.SPProgress:null;
 }
-function resetPractice(theme){
- if(preview()){alert('In der Lehrer-Vorschau wird kein Teilnehmerfortschritt gespeichert.');return false}
- if(!confirm(`Fortschritte in Lektion 7 · Thema ${theme} löschen? Bereits verdiente Punkte bleiben erhalten.`))return false;
- clearVisible(theme);location.href='index.html?reset='+Date.now();return true;
-}
+async function syncFirebase(theme){theme=Number(theme);if(document.body.dataset.page!=='theme'||preview()||syncing)return false;const ledger=read(theme),taskKeys=Object.keys(ledger.pending.tasks||{}),examKeys=Object.keys(ledger.pending.exams||{});if(!taskKeys.length&&!examKeys.length){renderSummary(theme);return true}const api=await ensureApi();if(!api)return false;syncing=true;let ok=true;try{for(const key of taskKeys){const split=key.indexOf(':'),run=Math.max(1,Math.min(3,Number(key.slice(0,split))||1)),id=key.slice(split+1),item=runData(ledger,run).tasks[id];if(!item){delete ledger.pending.tasks[key];continue}localStorage.setItem(runKey(theme),String(run));const result=await api.recordTaskProgress({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:7,theme,topicId:topicId(theme),title:`A1 Lektion 7 · Thema ${theme}`,file:`task.html?task=${id}`,taskKey:id,taskTitle:item.title||id,total:item.total||1,done:item.done||0,percent:item.percent||0,completed:!!item.completed});if(result)delete ledger.pending.tasks[key];else ok=false}for(const key of examKeys){const run=Math.max(1,Math.min(3,Number(key)||1)),data=runData(ledger,run);if(data.examBestPercent<=0){delete ledger.pending.exams[key];continue}localStorage.setItem(runKey(theme),String(run));const result=await api.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:7,theme,topicId:topicId(theme),title:`A1 Lektion 7 · Thema ${theme}`,percent:data.examBestPercent,scorePercent:data.examBestPercent,stars:data.examStars||0});if(result)delete ledger.pending.exams[key];else ok=false}}catch(e){ok=false;console.warn('L7 Themenpunkte konnten nicht synchronisiert werden',e)}finally{localStorage.setItem(runKey(theme),String(ledger.currentRun));write(theme,ledger);syncing=false;renderSummary(theme)}return ok}
+function resetPractice(theme){if(preview()){alert('In der Lehrer-Vorschau wird kein Teilnehmerfortschritt gespeichert.');return false}if(!confirm(`Fortschritte in Lektion 7 · Thema ${theme} löschen? Bereits verdiente Punkte bleiben erhalten.`))return false;clearVisible(theme);location.href='index.html?reset='+Date.now();return true}
 function initOverview(theme){theme=Number(theme);migrate(theme);advanceIfNeeded(theme);renderSummary(theme);setTimeout(()=>syncFirebase(theme),120);return summary(theme)}
-
 window.L7ThemeScore={version:VERSION,read,write,recordTask,recordExam,recordState,migrate,advanceIfNeeded,summary,summaryHtml,renderSummary,syncFirebase,resetPractice,initOverview,taskPoints,examMax,ledgerKey,topicId};
 window.addEventListener('l7-theme-score-change',event=>{const theme=Number(event.detail?.theme||document.body.dataset.theme||0);if(theme)renderSummary(theme)});
 const queued=window.SP_L7_LOCAL_SCORE_QUEUE||[];window.SP_L7_LOCAL_SCORE_QUEUE=[];for(const item of queued){try{recordState(Number(item.theme),item.id,item.state)}catch(e){}}
