@@ -1,13 +1,15 @@
 (function(){
 'use strict';
-if(window.__SP_TEACHER_PROGRESS_DOCID_FIX_V1)return;
-window.__SP_TEACHER_PROGRESS_DOCID_FIX_V1=true;
-if(!window.Students)return;
+if(window.__SP_TEACHER_PROGRESS_DOCID_FIX_V2)return;
+window.__SP_TEACHER_PROGRESS_DOCID_FIX_V2=true;
+if(typeof Students==='undefined')return;
 Students.list=async function(){
  const database=this.database();
  if(!database){TeacherEnv?.note?.('Schüler nicht geladen: Firestore ist nicht verbunden.');return []}
  try{
-  const snap=await database.collection('students').get();
+  let snap;
+  try{snap=await database.collection('students').get({source:'server'})}
+  catch(serverError){snap=await database.collection('students').get()}
   return snap.docs.map(d=>({...(d.data()||{}),id:d.id,docId:d.id,__docId:d.id}));
  }catch(e){TeacherEnv?.note?.('Schüler konnten nicht geladen werden',e);return []}
 };
