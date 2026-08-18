@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-requested-v5';
+const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-requested-v6';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 function addOrderPolish(){
  if(page!=='task')return;
@@ -34,6 +34,7 @@ Promise.resolve(window.L7_THEME_READY)
    .then(()=>load('../Thema-2/l7t2-memory-ui.js?v=4'))
    .then(()=>load('../Thema-2/l7t2-endings-ui.js?v=3'))
    .then(()=>load('../Thema-2/l7t2-advanced-ui.js?v=1'))
+   .then(()=>load('../shared/l7-listen-participle-bunny-fix.js?v=1'))
    .then(()=>load('l7t3-special-ui.js?v=2'))
    .then(()=>load('l7t3-help-standard.js?v=1'))
    .then(()=>{
