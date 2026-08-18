@@ -1,0 +1,1 @@
+(function(){'use strict';function start(){if(window.L8_T2_TIME_REVIEW_PENDING||!window.L8_THEME||!window.L8S||!window.L8UI){setTimeout(start,30);return}if(document.body.dataset.page==='theme')window.L8UI.themeOverview();else window.L8UI.taskPage()}if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();})();
