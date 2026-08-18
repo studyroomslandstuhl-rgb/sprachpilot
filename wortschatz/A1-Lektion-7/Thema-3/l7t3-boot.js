@@ -3,11 +3,13 @@
 const theme=Number(document.body.dataset.theme||3);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t3-bunny-standard-v1';
+const version='l7t3-bunny-standard-v2';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
+ .then(()=>load('../shared/l7-exam-gate.js?v=1'))
  .then(()=>{
+  window.SPL7StrictExamGate?.install?.();
   window.L7T3CardImages?.installRenderer?.();
   return load(`l7t3-bunny-audio.js?v=1`)
  })
