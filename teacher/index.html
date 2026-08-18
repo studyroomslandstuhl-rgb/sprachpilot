@@ -14,28 +14,19 @@
   <main id="app"><div class="card">Dashboard wird geladen …</div></main>
   <footer>© SprachPilot</footer>
 </div>
-<script>
-(function(){
-  function safeText(value){return String(value||"").replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");}
-  function showLoadProblem(message){var app=document.getElementById("app");if(!app)return;var current=app.textContent||"";if(!/Dashboard wird geladen/.test(current))return;app.innerHTML='<div class="card warning-card"><h2>Lehrer-Dashboard lädt nicht vollständig</h2><p>'+safeText(message||"Eine Datei oder Firebase antwortet gerade nicht.")+'</p><div class="toolbar"><button onclick="location.reload()">Neu laden</button><a class="btn secondary" href="login.html">Zum Lehrerlogin</a><a class="btn secondary" href="/index.html">Zur Startseite</a></div></div>'}
-  window.addEventListener("error",function(e){showLoadProblem(e.message||"JavaScript-Fehler beim Laden.")});
-  window.addEventListener("unhandledrejection",function(e){var reason=e.reason&&e.reason.message?e.reason.message:e.reason;showLoadProblem(reason||"Firebase-Abfrage wurde abgebrochen.")});
-  window.__teacherLoadWatch=setTimeout(function(){showLoadProblem("Das Dashboard hat ungewöhnlich lange geladen. Bitte neu laden oder erneut einloggen.")},45000);
-})();
-</script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-<script src="../js/firebase-config.js?v=teacher-stable-20260818"></script>
+<script src="../js/firebase-config.js?v=teacher-stable-20260818b"></script>
 <script src="../verben/data.js?v=verb-groups-2"></script>
 <script src="../verben/verb-additions.js?v=requested-verbs-1"></script>
-<script src="courses.js?v=teacher-stable-20260818"></script>
-<script src="course-lock-default.js?v=teacher-stable-20260818"></script>
+<script src="courses.js?v=teacher-stable-20260818b"></script>
+<script src="course-lock-default.js?v=teacher-stable-20260818b"></script>
 <script src="students.js?v=progress-alias2"></script>
-<script src="course-fallback.js?v=teacher-stable-20260818"></script>
+<script src="course-fallback.js?v=teacher-stable-20260818b"></script>
 <script src="/shared/points-recalculator.js?v=1"></script>
 <script src="progress-server-source.js?v=1"></script>
-<script src="analytics.js?v=teacher-stable-20260818"></script>
+<script src="analytics.js?v=teacher-stable-20260818b"></script>
 <script src="analytics-release-status-fix.js?v=1"></script>
 <script src="analytics-release-strict.js?v=1"></script>
 <script src="teacher-preview.js?v=teacher-release-preview2"></script>
@@ -44,16 +35,13 @@
 <script src="verben-release-order.js?v=4"></script>
 <script src="l6t3-release-catalog.js?v=1"></script>
 <script src="irregular-verbs-release.js?v=1"></script>
-<script src="release-course-code-fix.js?v=teacher-stable-20260818"></script>
-<script src="release-parent-rules.js?v=teacher-stable-20260818"></script>
-<script src="app.js?v=teacher-stable-20260818"></script>
+<script src="release-course-code-fix.js?v=teacher-stable-20260818b"></script>
+<script src="release-parent-rules.js?v=teacher-stable-20260818b"></script>
+<script src="app.js?v=teacher-stable-20260818b"></script>
 <script src="teacher-pending-warning-filter.js?v=1"></script>
 <script src="dashboard-fast-load.js?v=2"></script>
 <script src="dashboard-enhancements.js?v=2"></script>
 <script src="dashboard-stable-start.js?v=1"></script>
-<script>
-window.addEventListener("load",function(){setTimeout(function(){var app=document.getElementById("app");if(window.__teacherLoadWatch)clearTimeout(window.__teacherLoadWatch);if(app&&/Dashboard wird geladen/.test(app.textContent||"")){app.innerHTML='<div class="card warning-card"><h2>Lehrer-Dashboard lädt nicht vollständig</h2><p>Bitte neu laden oder erneut einloggen. Wenn das wieder passiert, ist Firebase/Auth noch nicht fertig verbunden.</p><div class="toolbar"><button onclick="location.reload()">Neu laden</button><a class="btn secondary" href="login.html">Zum Lehrerlogin</a><a class="btn secondary" href="/index.html">Zur Startseite</a></div></div>'}},46000)});
-</script>
 <script defer src="../js/performance-boot.js?v=20260709b"></script>
 <script src="/shared/sprachpilot-design-system.js"></script>
 </body>
