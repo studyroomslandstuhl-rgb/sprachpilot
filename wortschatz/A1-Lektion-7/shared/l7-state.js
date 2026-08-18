@@ -119,6 +119,7 @@ function scheduleWrongAdvance(theme,id,total,i){
   if(s.current!==i||!s.hadWrong)return;
   if(!s.done.includes(i)&&!s.queue.includes(i))s.queue.push(i);
   s.current=null;s.tries=0;s.hadWrong=false;save(theme,id,s);
+  index(theme,id,total);
   try{
    const activeId=new URLSearchParams(location.search).get('task');
    if(String(activeId||'')===String(id)&&window.L7?.renderTaskPage)window.L7.renderTaskPage(Number(theme),id)
