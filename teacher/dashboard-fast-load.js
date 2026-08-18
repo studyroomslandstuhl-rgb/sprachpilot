@@ -57,18 +57,19 @@
     };
   }
 
-  if(window.Students){
-    ['list','progressList'].forEach(name=>{
-      if(typeof Students[name]!=='function')return;
-      const old=Students[name].bind(Students);
-      Students[name]=async function(){
-        const key='SP_TEACHER_'+name.toUpperCase()+'_CACHE';
-        const cache=readCached(key);
-        if(fresh(cache,60000))return cache.value||[];
-        const value=await old();
-        writeCached(key,value||[]);
-        return value||[];
-      };
-    });
+  if(window.Students&&typeof Students.list==='function'){
+    const old=Students.list.bind(Students);
+    Students.list=async function(){
+      const key='SP_TEACHER_LIST_CACHE';
+      const cache=readCached(key);
+      if(fresh(cache,60000))return cache.value||[];
+      const value=await old();
+      writeCached(key,value||[]);
+      return value||[];
+    };
   }
+
+  // Fortschritt wird absichtlich NICHT gecacht. Bei jedem Dashboard-Render
+  // soll die aktuelle Firestore-Version geladen werden.
+  try{sessionStorage.removeItem('SP_TEACHER_PROGRESSLIST_CACHE')}catch(e){}
 })();
