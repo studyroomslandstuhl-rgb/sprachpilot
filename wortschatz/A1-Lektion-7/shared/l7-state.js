@@ -81,26 +81,15 @@ function load(theme,task,total){
 }
 function task(id){return T.tasks.find(x=>x.id===id)}
 function topic(theme){return`wortschatz-a1-lektion-7-thema-${theme}`}
-function run(theme){return Math.max(1,Number(localStorage.getItem('SP_SCORE_RUN_'+topic(theme))||1)||1)}
+function run(theme){try{return Number(window.L7ThemeScore?.summary?.(theme)?.currentRun)||Math.max(1,Number(localStorage.getItem('SP_SCORE_RUN_'+topic(theme))||1)||1)}catch(e){return Math.max(1,Number(localStorage.getItem('SP_SCORE_RUN_'+topic(theme))||1)||1)}}
 function sync(theme,id,s){
  if(preview())return;
  try{
-  const t=task(id),total=s.total,done=s.done.length,pct=total?Math.round(done/total*100):0;
-  if(!t)return;
-  if(t.exam){
-   if(pct<100)return;
-   const first=total?Math.round(Number(s.firstCorrect||0)/total*100):0;
-   const mark=`SP_L7_EXAM_SYNCED_T${theme}_R${run(theme)}_${first}`;
-   if(localStorage.getItem(mark)==='1')return;
-   const p={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:7,theme,topicId:topic(theme),title:`A1 Lektion 7 · Thema ${theme}`,percent:first,scorePercent:first,score:Number(s.firstCorrect)||0,maxScore:total,stars:first>=100?3:first>=70?2:first>=50?1:0};
-   if(window.SPProgress?.recordExamResult)Promise.resolve(SPProgress.recordExamResult(p)).then(()=>localStorage.setItem(mark,'1'));
-   else(window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[]).push({method:'recordExamResult',payload:p});
-   return
-  }
-  const p={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:7,theme,topicId:topic(theme),title:`A1 Lektion 7 · Thema ${theme}`,file:`task.html?task=${id}`,taskTitle:t.title,percent:pct,done,total,completed:pct>=100};
-  if(window.SPProgress?.recordTaskProgress)SPProgress.recordTaskProgress(p);
-  else(window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[]).push({method:'recordTaskProgress',payload:p})
- }catch(e){console.warn('L7 sync',e)}
+  const copy=JSON.parse(JSON.stringify(s));
+  if(window.L7ThemeScore?.recordState){window.L7ThemeScore.recordState(theme,id,copy);return}
+  window.SP_L7_LOCAL_SCORE_QUEUE=window.SP_L7_LOCAL_SCORE_QUEUE||[];
+  window.SP_L7_LOCAL_SCORE_QUEUE.push({theme:Number(theme),id:String(id),state:copy});
+ }catch(e){console.warn('L7 lokaler Themenstand',e)}
 }
 function save(theme,id,s,doSync=true){
  const normalized=normalizeState(s,s.total);
@@ -134,12 +123,11 @@ function dash(){return String(localStorage.getItem('SP_LOGIN_ROLE')||'').toLower
 function header(theme,title,reset=false){const p=profile(),name=[p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join(' ')||(preview()?'Lehrer-Vorschau':'Schüler/in');return`<header class="l7-topbar"><div class="l7-top-main"><a class="l7-brand" href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"><div><h1>SprachPilot</h1><p>Lektion 7 · Thema ${theme} · ${esc(title)}</p></div></a><div class="l7-account"><span>${esc(name)}</span><a href="${dash()}">Dashboard</a><a href="/profile/index.html">Profil</a></div></div><nav><a class="l7-btn secondary" href="../index.html">← Lektion 7</a><a class="l7-btn secondary" href="index.html">Themenübersicht</a>${reset?'<button class="l7-btn danger" id="resetTheme">Fortschritte löschen</button>':''}</nav></header>`}
 function reset(theme){
  if(preview()){alert('In der Lehrer-Vorschau wird kein Teilnehmerfortschritt gespeichert.');return}
+ if(window.L7ThemeScore?.resetPractice)return window.L7ThemeScore.resetPractice(theme);
  if(!confirm(`Fortschritte in Lektion 7 · Thema ${theme} löschen? Bereits verdiente Punkte bleiben erhalten.`))return;
- const suffix=`_T${theme}_`,keys=[];
- for(let i=0;i<localStorage.length;i++){const x=localStorage.key(i);if((String(x).startsWith('SP_L7_')&&String(x).includes(suffix))||String(x).startsWith(`SP_L7_EXAM_SYNCED_T${theme}_`))keys.push(x)}
+ const prefixes=[`SP_L7_${pid()}_T${theme}_`,`SP_L7_${legacyPid()}_T${theme}_`,`SP_L7_student_T${theme}_`],keys=[];
+ for(let i=0;i<localStorage.length;i++){const x=String(localStorage.key(i)||'');if(prefixes.some(prefix=>x.startsWith(prefix)))keys.push(x)}
  keys.forEach(x=>localStorage.removeItem(x));
- const p={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:7,theme,topicId:topic(theme),title:`A1 Lektion 7 · Thema ${theme}`};
- if(window.SPProgress?.recordThemeReset)SPProgress.recordThemeReset(p);else(window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[]).push({method:'recordThemeReset',payload:p});
  location.href='index.html?reset='+Date.now()
 }
 function mic(item,ok,tech){
@@ -154,5 +142,5 @@ function mic(item,ok,tech){
  rec.onend=()=>{rec=null;if(!got&&!bad)tech('Ich konnte nichts erkennen. Bitte schreibe.')};
  try{rec.start()}catch(e){tech('Das Mikrofon konnte nicht gestartet werden. Bitte schreibe.')}
 }
-window.L7S={T,esc,norm,shuffle,profile,preview,load,save,index,attempt,wrong,right,pct,allDone,image,say,header,reset,mic,task,pid};
+window.L7S={T,esc,norm,shuffle,profile,preview,load,save,index,attempt,wrong,right,pct,allDone,image,say,header,reset,mic,task,pid,run};
 })();
