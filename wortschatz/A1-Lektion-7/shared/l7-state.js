@@ -4,6 +4,7 @@ const T=window.L7_THEME;
 const CDN='https://sprachpilot.b-cdn.net/';
 let rec=null;
 let cachedPid='';
+const wrongAdvanceTimers=new Map();
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=v=>String(v??'').trim().toLowerCase().replace(/[.,!?;:“”"'`´()]/g,'').replace(/\s+/g,' ');
 const shuffle=a=>{a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
@@ -37,9 +38,9 @@ function pid(){
 }
 function st(){return localStorage}
 function k(theme,task){return`${preview()?'SP_L7_PREVIEW':'SP_L7'}_${pid()}_T${theme}_${task}`}
-function empty(total){return{total,done:[],queue:shuffle([...Array(total).keys()]),current:null,tries:0,hadWrong:false,firstSeen:[],firstCorrect:0,answers:{}}}
+function empty(total){return{total,done:[],queue:shuffle([...Array(total).keys()]),current:null,tries:0,hadWrong:false,wrongTries:{},firstSeen:[],firstCorrect:0,answers:{}}}
 function valid(x,total){return!!(x&&x.total===total&&Array.isArray(x.done)&&Array.isArray(x.queue))}
-function normalizeState(x,total){return{...empty(total),...x,total,done:Array.isArray(x?.done)?x.done:[],queue:Array.isArray(x?.queue)?x.queue:[],firstSeen:Array.isArray(x?.firstSeen)?x.firstSeen:[],firstCorrect:Number(x?.firstCorrect||0),answers:x?.answers&&typeof x.answers==='object'?x.answers:{}}}
+function normalizeState(x,total){return{...empty(total),...x,total,done:Array.isArray(x?.done)?x.done:[],queue:Array.isArray(x?.queue)?x.queue:[],wrongTries:x?.wrongTries&&typeof x.wrongTries==='object'?x.wrongTries:{},firstSeen:Array.isArray(x?.firstSeen)?x.firstSeen:[],firstCorrect:Number(x?.firstCorrect||0),answers:x?.answers&&typeof x.answers==='object'?x.answers:{}}}
 function scoreState(x){return(x.done?.length||0)*100000+(x.current!=null?1000:0)+(x.firstSeen?.length||0)*10+(x.queue?.length?1:0)}
 function identityMatch(key){
  if(preview())return true;
@@ -98,20 +99,52 @@ function save(theme,id,s,doSync=true){
 }
 function index(theme,id,total){
  const s=load(theme,id,total);
+ if(s.done.length>=total)return null;
  if(s.current==null){
+  while(s.queue.length&&s.done.includes(s.queue[0]))s.queue.shift();
   if(!s.queue.length&&s.done.length<total)s.queue=shuffle([...Array(total).keys()].filter(i=>!s.done.includes(i)));
+  while(s.queue.length&&s.done.includes(s.queue[0]))s.queue.shift();
+  if(!s.queue.length)return null;
   s.current=s.queue.shift();s.tries=0;s.hadWrong=false;save(theme,id,s)
  }
  return s.current
 }
 function attempt(theme,id,total,i,ok){const s=load(theme,id,total);if(!s.firstSeen.includes(i)){s.firstSeen.push(i);if(ok)s.firstCorrect++}save(theme,id,s,false)}
-function wrong(theme,id,total){const s=load(theme,id,total);s.tries++;s.hadWrong=true;save(theme,id,s);return s.tries}
+function scheduleWrongAdvance(theme,id,total,i){
+ const key=`${theme}:${id}`;
+ if(wrongAdvanceTimers.has(key))clearTimeout(wrongAdvanceTimers.get(key));
+ const timer=setTimeout(()=>{
+  wrongAdvanceTimers.delete(key);
+  const s=load(theme,id,total);
+  if(s.current!==i||!s.hadWrong)return;
+  if(!s.done.includes(i)&&!s.queue.includes(i))s.queue.push(i);
+  s.current=null;s.tries=0;s.hadWrong=false;save(theme,id,s);
+  try{
+   const activeId=new URLSearchParams(location.search).get('task');
+   if(String(activeId||'')===String(id)&&window.L7?.renderTaskPage)window.L7.renderTaskPage(Number(theme),id)
+  }catch(e){}
+ },850);
+ wrongAdvanceTimers.set(key,timer)
+}
+function wrong(theme,id,total){
+ const s=load(theme,id,total),i=s.current;
+ if(i==null)return 0;
+ const previous=Math.max(Number(s.wrongTries?.[i]||0),s.hadWrong?Number(s.tries||0):0);
+ const count=previous+1;
+ s.wrongTries=s.wrongTries||{};s.wrongTries[i]=count;s.tries=count;s.hadWrong=true;
+ if(!s.done.includes(i)&&!s.queue.includes(i))s.queue.push(i);
+ save(theme,id,s);
+ scheduleWrongAdvance(theme,id,total,i);
+ return count
+}
 function right(theme,id,total,free=false){
  const s=load(theme,id,total),i=s.current;
+ const timerKey=`${theme}:${id}`;
+ if(wrongAdvanceTimers.has(timerKey)){clearTimeout(wrongAdvanceTimers.get(timerKey));wrongAdvanceTimers.delete(timerKey)}
  if(i!=null){
-  if(free){if(!s.done.includes(i))s.done.push(i)}
+  if(free){if(!s.done.includes(i))s.done.push(i);if(s.wrongTries)delete s.wrongTries[i]}
   else if(s.hadWrong||s.tries>0){if(!s.done.includes(i)&&!s.queue.includes(i))s.queue.push(i)}
-  else if(!s.done.includes(i))s.done.push(i)
+  else if(!s.done.includes(i)){s.done.push(i);if(s.wrongTries)delete s.wrongTries[i]}
  }
  s.current=null;s.tries=0;s.hadWrong=false;save(theme,id,s)
 }
