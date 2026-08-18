@@ -17,10 +17,10 @@
   function formatDate(v){const d=tsValue(v);if(!d||Number.isNaN(d.getTime()))return "noch nicht sichtbar";return d.toLocaleString("de-DE",{day:"2-digit",month:"2-digit",year:"2-digit",hour:"2-digit",minute:"2-digit"})}
   function topicRecords(progressDoc={}){
     const out=[];
-    ["fragen","wortschatz","verben","grammatik"].forEach(moduleKey=>{
+    ["fragen","wortschatz","verben","perfekt","grammatik"].forEach(moduleKey=>{
       const mod=progressDoc[moduleKey]||{};
       Object.entries(mod).forEach(([key,topic])=>{
-        if(!topic||typeof topic!=="object"||Array.isArray(topic))return;
+        if(!topic||typeof topic!=="object"||Array.isArray(topic)||topic.technicalRecovery===true)return;
         if(!(topic.tasks||topic.exam||topic.current||topic.lifetime||topic.progressPercent||topic.title))return;
         out.push({moduleKey,key,topic});
       });
@@ -32,17 +32,27 @@
   }
   function overallPercent(s){
     const p=s.progressDoc||{};
-    if(p.totals&&p.totals.progressPercent!==undefined)return percent(p.totals.progressPercent);
     const topics=topicRecords(p).map(x=>percent(x.topic.progressPercent??x.topic.current?.percent??0));
     if(topics.length)return percent(topics.reduce((a,b)=>a+b,0)/topics.length);
+    if(p.totals&&p.totals.progressPercent!==undefined)return percent(p.totals.progressPercent);
     const verben=(p.verben||{});return percent(verben.progress??s.verbenFortschritt??0);
   }
-  function pointsTotal(s){const p=s.progressDoc||{};return Math.max(num(p.lifetimePoints),num(p.pointsTotal),num(p.punkteGesamt),num(p.totals?.points))}
+  function evidencePoints(progressDoc={}){
+    try{return Math.max(0,num(window.SPPointRecalculator?.calculate?.(progressDoc)?.total))}catch(e){return 0}
+  }
+  function pointsTotal(s){
+    const p=s.progressDoc||{};
+    try{
+      if(window.SPTeacherPointRecovery?.safePoints)return Math.round(num(window.SPTeacherPointRecovery.safePoints(p)));
+    }catch(e){}
+    const stored=Math.max(num(p.lifetimePoints),num(p.pointsTotal),num(p.punkteGesamt),num(p.points),num(p.ranking?.points),num(p.totals?.points));
+    return Math.round(Math.max(stored,evidencePoints(p)));
+  }
   function lastActive(s){const p=s.progressDoc||{};return p.lastActive||p.lastActiveAt||p.updatedAt||p.lastLogin||s.lastActive||s.lastLogin||s.updatedAt}
   function taskBadges(s){
     const topics=topicRecords(s.progressDoc||{});
     if(!topics.length)return `<span class="pill warn">noch kein Aufgabenfortschritt</span>`;
-    return topics.slice(0,8).map(({moduleKey,key,topic})=>{
+    return topics.slice(0,10).map(({moduleKey,key,topic})=>{
       const p=percent(topic.progressPercent??topic.current?.percent??0);
       const tasks=Object.values(topic.tasks||{}).filter(t=>t&&typeof t==="object");
       const done=tasks.filter(t=>t.completed||percent(t.percent)>=100).length;
@@ -50,16 +60,17 @@
       const title=topic.title||topic.themeTitle||key;
       const label=`${title}: ${p}%${total?` · ${done}/${total}`:""}`;
       return `<span class="pill ${p>=100?"ok":p>0?"warn":""}">${safe(label)}</span>`;
-    }).join(" ") + (topics.length>8?` <span class="pill">+${topics.length-8} weitere</span>`:"");
+    }).join(" ") + (topics.length>10?` <span class="pill">+${topics.length-10} weitere</span>`:"");
   }
   function detailsHtml(s){
     const topics=topicRecords(s.progressDoc||{});
     if(!topics.length)return `<div class="small">Noch keine Detaildaten.</div>`;
-    return `<details class="progress-details"><summary>Details ansehen</summary><div class="detail-list">${topics.map(({key,topic})=>{
+    return `<details class="progress-details"><summary>Details ansehen</summary><div class="detail-list">${topics.map(({moduleKey,key,topic})=>{
       const p=percent(topic.progressPercent??topic.current?.percent??0);
       const tasks=Object.values(topic.tasks||{}).filter(t=>t&&typeof t==="object");
       const rows=tasks.length?tasks.map(t=>`<div class="small">${safe(t.title||t.file||t.key)}: <b>${percent(t.percent)}%</b>${t.completed?" · fertig":""}</div>`).join(""):`<div class="small">Keine einzelnen Aufgaben gespeichert.</div>`;
-      return `<div class="detail-topic"><b>${safe(topic.title||topic.themeTitle||key)} · ${p}%</b>${rows}</div>`;
+      const moduleLabel=moduleKey==="perfekt"?"Perfekt":moduleKey==="verben"?"Verben":moduleKey==="wortschatz"?"Wortschatz":moduleKey==="fragen"?"Fragen":"Grammatik";
+      return `<div class="detail-topic"><b>${safe(moduleLabel)} · ${safe(topic.title||topic.themeTitle||key)} · ${p}%</b>${rows}</div>`;
     }).join("")}</div></details>`;
   }
   function installAnalytics(){
@@ -85,6 +96,7 @@
     Analytics.courseCard=function(courseName,students,courseData){
       const count=students.length;
       const avg=count?Math.round(students.reduce((sum,s)=>sum+overallPercent(s),0)/count):0;
+      const totalPoints=students.reduce((sum,s)=>sum+pointsTotal(s),0);
       const course=courseData||{id:courseName,name:courseName};
       const title=Courses.displayName(course);
       const code=Courses.code(course)||courseName;
@@ -93,7 +105,7 @@
       const safeDocId=String(docId).replace(/'/g,"\\'");
       const unassigned=course.__unassigned;
       return `<section class="course-card ${unassigned?"course-unassigned":""}">
-        <div class="course-head"><div><div class="course-title">${safe(title)}</div><div class="small"><b>${count} Teilnehmer</b> · Durchschnitt Fortschritt: ${avg}% · Kurscode: ${safe(code)}${unassigned?" · Lehrer-Zuordnung fehlt":""}</div></div><div class="course-actions">${unassigned?`<button onclick="Courses.assignToMe('${safeDocId}')">Mir zuweisen</button>`:""}<button onclick="TeacherPreview.open('${safeCode}')">SprachPilot</button><button class="secondary" onclick="TeacherApp.openReleaseEditor('${safeCode}',window.__SP_COURSES||[])">Freigabe</button><button class="danger" onclick="Courses.remove('${safeDocId}')">Kurs löschen</button></div></div>
+        <div class="course-head"><div><div class="course-title">${safe(title)}</div><div class="small"><b>${count} Teilnehmer</b> · Durchschnitt Fortschritt: ${avg}% · Punkte gesamt: ${totalPoints} · Kurscode: ${safe(code)}${unassigned?" · Lehrer-Zuordnung fehlt":""}</div></div><div class="course-actions">${unassigned?`<button onclick="Courses.assignToMe('${safeDocId}')">Mir zuweisen</button>`:""}<button onclick="TeacherPreview.open('${safeCode}')">SprachPilot</button><button class="secondary" onclick="TeacherApp.openReleaseEditor('${safeCode}',window.__SP_COURSES||[])">Freigabe</button><button class="danger" onclick="Courses.remove('${safeDocId}')">Kurs löschen</button></div></div>
         ${unassigned?`<div class="debug-box small">Dieser Kurs hat keine Lehrer-Zuordnung. Wenn das dein Kurs ist, klicke einmal auf <b>Mir zuweisen</b>. Danach bleibt er korrekt in deinem Dashboard.</div>`:""}
         ${this.progressBar(avg)}
         <div class="student-table-wrap"><table class="student-table"><thead><tr><th>Schüler</th><th>Gesamtfortschritt</th><th>Punkte</th><th>Zuletzt aktiv</th><th>Aufgabenfortschritt</th><th>Aktionen</th></tr></thead><tbody>${students.map(s=>this.studentRow(s)).join("")||`<tr><td colspan="6">Noch keine Schüler in diesem Kurs.</td></tr>`}</tbody></table></div>
