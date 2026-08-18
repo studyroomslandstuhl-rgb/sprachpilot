@@ -118,8 +118,11 @@ function scheduleWrongAdvance(theme,id,total,i){
   const s=load(theme,id,total);
   if(s.current!==i||!s.hadWrong)return;
   if(!s.done.includes(i)&&!s.queue.includes(i))s.queue.push(i);
-  s.current=null;s.tries=0;s.hadWrong=false;save(theme,id,s);
-  index(theme,id,total);
+  while(s.queue.length&&s.done.includes(s.queue[0]))s.queue.shift();
+  if(!s.queue.length&&s.done.length<total)s.queue=shuffle([...Array(total).keys()].filter(n=>!s.done.includes(n)));
+  while(s.queue.length&&s.done.includes(s.queue[0]))s.queue.shift();
+  s.current=s.queue.length?s.queue.shift():null;
+  s.tries=0;s.hadWrong=false;save(theme,id,s);
   try{
    const activeId=new URLSearchParams(location.search).get('task');
    if(String(activeId||'')===String(id)&&window.L7?.renderTaskPage)window.L7.renderTaskPage(Number(theme),id)
