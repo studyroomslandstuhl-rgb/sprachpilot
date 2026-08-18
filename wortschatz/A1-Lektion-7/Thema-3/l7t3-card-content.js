@@ -1,8 +1,8 @@
 (function(){
 'use strict';
-if(window.__SP_L7T3_CARD_CONTENT_V4)return;
-window.__SP_L7T3_CARD_CONTENT_V4=true;
-
+if(window.__SP_L7T3_CARD_CONTENT_V5)return;
+window.__SP_L7T3_CARD_CONTENT_V5=true;
+const BUNNY_AUDIO='https://sprachpilot.b-cdn.net/audio/';
 const FORMS=[
  {v:'gehen',p:'gegangen',aux:'ist',img:'gehen.webp',audio:'gehen.mp3',tr:{en:'went',ru:'пошёл / пошла',tr:'gitti',uk:'пішов / пішла',ar:'ذهب',ja:'行った',ro:'a mers',pl:'poszedł / poszła',ku:'çû'}},
  {v:'fahren',p:'gefahren',aux:'ist',img:'fahren.webp',audio:'fahren.mp3',tr:{en:'went / traveled by vehicle',ru:'поехал / поехала',tr:'araçla gitti',uk:'поїхав / поїхала',ar:'ذهب بالمركبة',ja:'乗り物で行った',ro:'a mers cu un mijloc de transport',pl:'pojechał / pojechała',ku:'bi wesayitê çû'}},
@@ -23,8 +23,8 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
  const cards=task(theme);
  if(cards){
   const lang=language();cards.id='karteikarten';cards.title='Karteikarten';cards.description='Lern die Wörter.';cards.kind='cards';
-  cards.items=FORMS.map(x=>({kind:'cards',type:'verb',category:'verb',infinitive:x.v,perfect:`${x.aux} ${x.p}`,image:x.img,word:`${x.aux} ${x.p}`,answer:`${x.aux} ${x.p}`,answers:[`${x.aux} ${x.p}`],translations:{...x.tr},meaning:x.tr[lang]||x.tr.en,translationLabel:LABELS[lang]||LABELS.en,example:`${x.v} – ${x.aux} ${x.p}`,audio:`${x.aux} ${x.p}`,audioFile:x.audio,perfectAudioFile:x.perfectAudio||'',prompt:x.v,hint:'Nenne das Hilfsverb und das Partizip II.'}));
+  cards.items=FORMS.map(x=>({kind:'cards',type:'verb',category:'verb',infinitive:x.v,perfect:`${x.aux} ${x.p}`,image:x.img,word:`${x.aux} ${x.p}`,answer:`${x.aux} ${x.p}`,answers:[`${x.aux} ${x.p}`],translations:{...x.tr},meaning:x.tr[lang]||x.tr.en,translationLabel:LABELS[lang]||LABELS.en,example:`${x.v} – ${x.aux} ${x.p}`,audio:x.perfectAudio?BUNNY_AUDIO+x.perfectAudio:`${x.aux} ${x.p}`,audioFile:x.audio,perfectAudioFile:x.perfectAudio||'',prompt:x.v,hint:'Nenne das Hilfsverb und das Partizip II.'}));
  }
- theme.contentRevision='l7t3-card-standard-20260818-v4';window.L7_THEME=theme;return theme;
+ theme.contentRevision='l7t3-card-standard-20260818-v5';window.L7_THEME=theme;return theme;
 });
 })();
