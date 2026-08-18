@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t2-central-score1';
+const version='l7t2-central-score2';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 function currentTask(){const id=new URLSearchParams(location.search).get('task');return window.L7S?.task?.(id)||null}
 function concise(){if(page!=='task')return;const task=currentTask();if(!task?.spL7T2Write)return;document.querySelectorAll('.l7-answer-box label').forEach(label=>{if(label.textContent!=='Antwort')label.textContent='Antwort'})}
@@ -11,13 +11,22 @@ function addPolish(){if(document.getElementById('sp-l7t2-standard-polish'))retur
 Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
  .then(()=>load('../shared/l7-theme-score.js?v=1'))
- .then(()=>load('../shared/l7-exam-gate.js?v=1'))
+ .then(()=>load('../shared/l7-exam-gate.js?v=2'))
  .then(()=>{window.SPL7StrictExamGate?.install?.();window.L7T2CardImages?.installRenderer?.();return load(`l7t2-bunny-audio.js?v=2`)})
  .then(()=>{
   window.L7T2BunnyAudio?.install?.();
-  if(page==='theme')return load(`../shared/l7-theme-standard.js?v=l7-theme-standard4`).then(()=>window.L7ThemeStandard.render(theme));
+  if(page==='theme')return load(`../shared/l7-theme-standard.js?v=l7-theme-standard6`).then(()=>window.L7ThemeStandard.render(theme));
   if(window.L7S)window.L7S.header=()=>'';addPolish();const observer=new MutationObserver(()=>concise());if(root)observer.observe(root,{childList:true,subtree:true});
-  return load(`../shared/l7-ui.js?v=${version}`).then(()=>load('../shared/l7-external-links.js?v=1')).then(()=>load(`l7t2-memory-ui.js?v=4`)).then(()=>load(`l7t2-endings-ui.js?v=3`)).then(()=>load(`l7t2-advanced-ui.js?v=1`)).then(()=>load(`l7t2-listening-l6t4-ui.js?v=3`)).then(()=>load(`l7t2-writing-variants-ui.js?v=1`)).then(()=>load(`l7t2-help-standard.js?v=3`)).then(()=>{window.L7T2MemoryUI?.install?.();window.L7T2EndingsUI?.install?.();window.L7T2AdvancedUI?.install?.();window.L7T2ListeningL6T4UI?.install?.();window.L7T2HelpStandard?.install?.();const result=window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'));concise();window.L7T2CardImages?.patchAll?.(document);return result});
+  return load(`../shared/l7-ui.js?v=${version}`)
+   .then(()=>load('../shared/l7-external-links.js?v=1'))
+   .then(()=>load(`l7t2-memory-ui.js?v=4`))
+   .then(()=>load(`l7t2-endings-ui.js?v=3`))
+   .then(()=>load(`l7t2-advanced-ui.js?v=1`))
+   .then(()=>load('../shared/l7-listen-participle-bunny-fix.js?v=1'))
+   .then(()=>load(`l7t2-listening-l6t4-ui.js?v=3`))
+   .then(()=>load(`l7t2-writing-variants-ui.js?v=1`))
+   .then(()=>load(`l7t2-help-standard.js?v=3`))
+   .then(()=>{window.L7T2MemoryUI?.install?.();window.L7T2EndingsUI?.install?.();window.L7T2AdvancedUI?.install?.();window.L7T2ListeningL6T4UI?.install?.();window.L7T2HelpStandard?.install?.();const result=window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'));concise();window.L7T2CardImages?.patchAll?.(document);return result});
  })
- .catch(error=>{console.error(error);if(root)root.innerHTML='<section class="card"><h2>Die Inhalte konnten nicht geladen werden.</h2><p>Bitte lade die Seite neu.</p><button class="btn" onclick="location.reload()">Neu laden</button></section>'});
+ .catch(error=>{console.error(error);if(root)root.innerHTML='<section class="card"><h2>Die Inhalte konnten nicht geladen werden.</h2><p>Bitte lade die Seite neu oder aktualisiere deinen Browser.</p><button class="btn" onclick="location.reload()">Neu laden</button></section>'});
 })();
