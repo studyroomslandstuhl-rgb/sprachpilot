@@ -29,7 +29,7 @@ const THEME_EMOJIS=Object.freeze({
   }),
   4:Object.freeze({'karteikarten':'🃏','artikel':'🧩','plural-sprechen':'🎤','wort-bedeutung':'💡','redemittel-ordnen':'🧩','lesen-richtig-falsch':'✅','lesen-abc':'🔤','informationen-markieren':'🖍️','ueberschrift':'📰','rechtschreibung':'✍️','informationen-schreiben':'📝','hoeren-sekretariat':'🎧','hoerdialog-ordnen':'🧩','telefonluecken':'☎️','telefonat-sprechen':'📞','dialog-deutschkurs':'💬','dialog-schulausflug':'🚌','dialog-treffpunkt':'📍','entschuldigung-schule':'📝','nachricht-deutschkurs':'💌','entschuldigung-pruefen':'✅','eigener-dialog':'🗣️'})
 });
-function esc(value){if(window.L7S?.esc)return L7S.esc(value);return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char]))}
+function esc(value){if(window.L7S?.esc)return L7S.esc(value);return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
 function taskHref(task){return `task.html?task=${encodeURIComponent(task.id)}&v=${VERSION}`}
 function percentage(theme,task){try{return Number(L7S.pct(theme,task.id,task.items.length))||0}catch(error){return 0}}
 function fallbackEmoji(task){const text=`${task?.id||''} ${task?.title||''}`.toLowerCase();if(/prüfung|pruefung|exam/.test(text))return'⭐';if(/karte/.test(text))return'🃏';if(/hör|hoer|audio/.test(text))return'🎧';if(/sprech|interview/.test(text))return'🎤';if(/les/.test(text))return'📖';if(/bild/.test(text))return'🖼️';if(/dialog|frage|antwort/.test(text))return'💬';if(/ordnen|sortier|silben/.test(text))return'🧩';if(/wähl|waehl|prüf|pruef/.test(text))return'✅';if(/schreib|satz/.test(text))return'✍️';if(/zeit|uhr/.test(text))return'⏰';return'📝'}
