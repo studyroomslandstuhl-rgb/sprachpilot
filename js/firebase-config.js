@@ -25,13 +25,32 @@
 
     window.auth = window.auth || firebase.auth();
     window.db = window.db || firebase.firestore();
+
+    const isTeacherArea = /(^|\/)teacher(\/|$)/i.test(location.pathname || "");
+
+    // Im Lehrerbereich muss die bestehende E-Mail/Passwort-Sitzung erhalten bleiben.
+    // Eine anonyme Anmeldung würde den authentifizierten Lehrer ersetzen und danach
+    // fälschlich "Kein Lehrerzugang" auslösen.
     window.spCompatAuthReady = new Promise(function(resolve){
+      let finished = false;
       const stop = window.auth.onAuthStateChanged(function(user){
-        if(user){try{stop()}catch(e){} resolve(user);}
+        if(finished) return;
+        if(user || isTeacherArea){
+          finished = true;
+          try{stop()}catch(e){}
+          resolve(user || null);
+          return;
+        }
+        // Außerhalb des Lehrerbereichs dürfen ältere Seiten weiterhin anonym arbeiten.
+        finished = true;
+        try{stop()}catch(e){}
+        window.auth.signInAnonymously()
+          .then(function(result){ resolve(result && result.user ? result.user : window.auth.currentUser || null); })
+          .catch(function(error){
+            console.warn("Firebase Anonymous Auth konnte nicht gestartet werden:", error);
+            resolve(null);
+          });
       });
-    });
-    window.auth.signInAnonymously().catch(function(error){
-      console.warn("Firebase Anonymous Auth konnte nicht gestartet werden:", error);
     });
 
     window.dispatchEvent(new CustomEvent("TeacherFirebaseReady", {
