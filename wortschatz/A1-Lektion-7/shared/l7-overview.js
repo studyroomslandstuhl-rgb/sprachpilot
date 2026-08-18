@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7_OVERVIEW_STANDARD_1)return;
-window.__SP_L7_OVERVIEW_STANDARD_1=true;
+if(window.__SP_L7_OVERVIEW_STANDARD_2)return;
+window.__SP_L7_OVERVIEW_STANDARD_2=true;
 
 const CDN='https://sprachpilot.b-cdn.net/';
 const AUDIO_DIRS=[CDN+'audio/',CDN+'Audio/'];
@@ -40,6 +40,7 @@ function stopAudio(){
  document.querySelectorAll('audio').forEach(audio=>{try{audio.pause();audio.currentTime=0;}catch(e){}});
 }
 function fallbackSpeak(text,generation){
+ if([3,4].includes(themeNumber()))return;
  if(generation!==playGeneration||!('speechSynthesis'in window))return;
  try{speechSynthesis.cancel();const utterance=new SpeechSynthesisUtterance(text);utterance.lang='de-DE';utterance.rate=.84;speechSynthesis.speak(utterance)}catch(e){}
 }
