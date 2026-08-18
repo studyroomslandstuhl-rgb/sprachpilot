@@ -6,7 +6,7 @@ Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
  .then(()=>load('../shared/l7-theme-score.js?v=1'))
  .then(()=>load('../shared/l7-exam-gate.js?v=1'))
- .then(()=>{window.SPL7StrictExamGate?.install?.();window.L7T3CardImages?.installRenderer?.();return load('l7t3-bunny-audio.js?v=2')})
+ .then(()=>{window.SPL7StrictExamGate?.install?.();window.L7T3CardImages?.installRenderer?.();return load('l7t3-bunny-audio.js?v=3')})
  .then(()=>{
   window.L7T3BunnyAudio?.install?.();
   if(page==='theme')return load('../shared/l7-theme-standard.js?v=l7-theme-standard5').then(()=>window.L7ThemeStandard.render(theme));
