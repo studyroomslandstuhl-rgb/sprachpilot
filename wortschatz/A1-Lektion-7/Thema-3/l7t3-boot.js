@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-requested-v3';
+const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-requested-v4';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
@@ -13,10 +13,10 @@ Promise.resolve(window.L7_THEME_READY)
   if(window.L7S)window.L7S.header=()=>'';
   return load(`../shared/l7-ui.js?v=${version}`)
    .then(()=>load('../shared/l7-external-links.js?v=1'))
-   .then(()=>load('../Thema-2/l7t2-memory-ui.js?v=3'))
+   .then(()=>load('../Thema-2/l7t2-memory-ui.js?v=4'))
    .then(()=>load('../Thema-2/l7t2-endings-ui.js?v=3'))
    .then(()=>load('../Thema-2/l7t2-advanced-ui.js?v=1'))
-   .then(()=>load('l7t3-special-ui.js?v=1'))
+   .then(()=>load('l7t3-special-ui.js?v=2'))
    .then(()=>load('l7t3-help-standard.js?v=1'))
    .then(()=>{
     window.L7T2MemoryUI?.install?.();
