@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7-theme-standard2';
+const version='l7-theme-standard3';
 
 function load(src){
   return new Promise((resolve,reject)=>{
@@ -17,6 +17,9 @@ function load(src){
 
 Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
+ .then(()=>{
+   if([2,3,4].includes(theme))return load('../shared/l7-exam-gate.js?v=1').then(()=>window.SPL7StrictExamGate?.install?.());
+ })
  .then(()=>{
    if(page==='theme'){
      return load(`../shared/l7-theme-standard.js?v=${version}`)
