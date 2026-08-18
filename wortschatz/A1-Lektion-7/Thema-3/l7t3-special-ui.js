@@ -1,8 +1,8 @@
 (function(){
 'use strict';
-if(window.__SP_L7T3_SPECIAL_UI_V1)return;window.__SP_L7T3_SPECIAL_UI_V1=true;
+if(window.__SP_L7T3_SPECIAL_UI_V2)return;window.__SP_L7T3_SPECIAL_UI_V2=true;
 function install(){
- if(!window.L7||!window.L7S||window.L7.__l7t3SpecialV1)return false;
+ if(!window.L7||!window.L7S||window.L7.__l7t3SpecialV2)return false;
  const S=window.L7S,raw=window.L7.renderTaskPage.bind(window.L7);let feedback='';
  const esc=S.esc;
  function task(id){return S.task(id)}
@@ -29,15 +29,54 @@ function install(){
   const check=()=>{const x=S.load(theme,t.id,t.items.length),sel=Number(x.answers?.[`errSel:${index}`]),v=String(x.answers?.[`errInput:${index}`]||'').trim();if(!Number.isInteger(sel)||!v)return;const word=words[sel]||'',selectionOk=normToken(word)===normToken(item.wrongWord),formOk=S.norm(v)===S.norm(item.answer);S.attempt(theme,t.id,t.items.length,index,selectionOk&&formOk);if(selectionOk&&formOk){delete x.answers[`errSel:${index}`];delete x.answers[`errInput:${index}`];save(theme,t,x,false);feedback='<div class="l7-ok">Richtig.</div>';S.right(theme,t.id,t.items.length);setTimeout(()=>{feedback='';renderError(theme,t)},400)}else{S.wrong(theme,t.id,t.items.length);const n=S.load(theme,t.id,t.items.length).tries||0;feedback=!selectionOk&&n===2?`<div class="l7-hint"><strong>Hinweis:</strong> Suche den Fehler bei ${esc(item.errorType)}.</div>`:help(n,item);renderError(theme,t)}};
   document.getElementById('spErrorCheck')?.addEventListener('click',check);input?.addEventListener('keydown',e=>{if(e.key==='Enter')check()})
  }
- function clozeState(theme,t){const st=S.load(theme,t.id,t.items.length);st.answers=st.answers||{};return st}
+ function clozeState(theme,t){const st=S.load(theme,t.id,t.items.length);st.answers=st.answers||{};st.answers.clozeTries=st.answers.clozeTries||{};st.answers.clozeRepeat=st.answers.clozeRepeat||{};return st}
+ function clozeMessage(st,t,i){
+  if(st.done.includes(i))return'';
+  const tries=Number(st.answers?.clozeTries?.[i]||0),answer=t.items[i]?.answer||'';
+  if(tries===1)return'<small class="sp-cloze-msg error">Noch nicht richtig.</small>';
+  if(tries===2)return'<small class="sp-cloze-msg hint"><strong>Hinweis:</strong> Prüfe das Subjekt und die passende Form von haben oder sein.</small>';
+  if(tries>=3)return`<small class="sp-cloze-msg solution"><strong>Lösung:</strong> ${esc(answer)}<br>Trage die Form selbst ein.</small>`;
+  return''
+ }
  function renderCloze(theme,t){
-  const st=clozeState(theme,t);if(st.done.length>=t.items.length)return finish(theme,t);const parts=t.clozeParts||[],answers=t.items.map(x=>x.answer);let html='';for(let i=0;i<answers.length;i++){const done=st.done.includes(i),value=done?answers[i]:String(st.answers[`cloze:${i}`]||'');html+=esc(parts[i]||'')+`<input class="sp-cloze-input ${done?'done':''}" data-cloze="${i}" ${done?'disabled':''} value="${esc(value)}" autocomplete="off">`}html+=esc(parts[answers.length]||'');
+  const st=clozeState(theme,t);if(st.done.length>=t.items.length)return finish(theme,t);
+  const parts=t.clozeParts||[],answers=t.items.map(x=>x.answer);let html='';
+  for(let i=0;i<answers.length;i++){
+   const done=st.done.includes(i),tries=Number(st.answers.clozeTries?.[i]||0),value=done?answers[i]:String(st.answers[`cloze:${i}`]||''),wrong=!done&&tries>0;
+   html+=esc(parts[i]||'')+`<span class="sp-cloze-slot"><input class="sp-cloze-input ${done?'done':''} ${wrong?'wrong':''}" data-cloze="${i}" ${done?'disabled':''} value="${esc(value)}" autocomplete="off" aria-describedby="spClozeMsg${i}"><span id="spClozeMsg${i}" class="sp-cloze-message-wrap">${clozeMessage(st,t,i)}</span></span>`
+  }
+  html+=esc(parts[answers.length]||'');
   document.getElementById('app').innerHTML=shell(theme,t,`<div class="sp-big-cloze">${html}</div><button class="l7-btn sp-full" id="spClozeCheck">Prüfen</button><div id="spFeedback">${feedback}</div>`);
   document.querySelectorAll('[data-cloze]').forEach(input=>input.addEventListener('input',()=>{const x=clozeState(theme,t);x.answers[`cloze:${input.dataset.cloze}`]=input.value;save(theme,t,x,false)}));
-  document.getElementById('spClozeCheck')?.addEventListener('click',()=>{const x=clozeState(theme,t);x.answers.clozeTries=x.answers.clozeTries||{};x.answers.clozeRepeat=x.answers.clozeRepeat||{};let wrongs=[],changed=false;t.items.forEach((item,i)=>{if(x.done.includes(i))return;const v=String(x.answers[`cloze:${i}`]||'').trim();if(!v)return;if(S.norm(v)===S.norm(item.answer)){if(x.answers.clozeRepeat[i]){delete x.answers.clozeRepeat[i];delete x.answers[`cloze:${i}`];x.answers.clozeTries[i]=0;changed=true}else{x.done.push(i);delete x.answers[`cloze:${i}`];delete x.answers.clozeTries[i];changed=true}}else{x.answers.clozeTries[i]=Number(x.answers.clozeTries[i]||0)+1;x.answers.clozeRepeat[i]=true;wrongs.push(i)}});x.current=null;save(theme,t,x,true);if(wrongs.length){const max=Math.max(...wrongs.map(i=>Number(x.answers.clozeTries[i]||0)));feedback=max>=3?`<div class="l7-no"><strong>Lösungen für die noch falschen Lücken:</strong> ${wrongs.map(i=>`${i+1}: ${esc(t.items[i].answer)}`).join(' · ')}<br>Trage sie selbst ein. Danach müssen diese Lücken noch einmal fehlerfrei gelöst werden.</div>`:max===2?'<div class="l7-hint"><strong>Hinweis:</strong> Achte auf das Subjekt: bin/bist/ist/sind/seid oder habe/hast/hat/haben/habt.</div>':'<div class="l7-no">Noch nicht alles richtig.</div>'}else if(changed)feedback='<div class="l7-ok">Richtig.</div>';renderCloze(theme,t)})
+  document.getElementById('spClozeCheck')?.addEventListener('click',()=>{
+   const x=clozeState(theme,t);let wrongCount=0,changed=false,repeatCorrect=false;
+   t.items.forEach((item,i)=>{
+    if(x.done.includes(i))return;
+    const v=String(x.answers[`cloze:${i}`]||'').trim();if(!v)return;
+    if(S.norm(v)===S.norm(item.answer)){
+     if(x.answers.clozeRepeat[i]){
+      delete x.answers.clozeRepeat[i];delete x.answers[`cloze:${i}`];x.answers.clozeTries[i]=0;repeatCorrect=true;changed=true
+     }else{
+      x.done.push(i);delete x.answers[`cloze:${i}`];delete x.answers.clozeTries[i];changed=true
+     }
+    }else{
+     x.answers.clozeTries[i]=Number(x.answers.clozeTries[i]||0)+1;x.answers.clozeRepeat[i]=true;wrongCount++
+    }
+   });
+   x.current=null;save(theme,t,x,true);
+   if(wrongCount)feedback='';
+   else if(repeatCorrect)feedback='<div class="l7-ok">Richtig korrigiert. Diese Lücken müssen noch einmal fehlerfrei eingegeben werden.</div>';
+   else if(changed)feedback='<div class="l7-ok">Richtig.</div>';
+   renderCloze(theme,t)
+  })
  }
- const style=document.createElement('style');style.textContent=`.sp-sein-title{text-align:center;font-size:34px;font-weight:950;margin:8px}.sp-sein-table{display:grid;gap:8px;max-width:620px;margin:12px auto 18px}.sp-sein-row{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--soft)}.sp-sein-row input{padding:11px;border:2px solid var(--line);border-radius:10px;font:inherit}.sp-sein-row.done{background:#eaf8ee}.sp-error-sentence{display:flex;flex-wrap:wrap;gap:7px;margin:20px 0}.sp-error-sentence button{border:2px solid var(--line);background:#fff;border-radius:10px;padding:9px 11px;font:inherit;font-weight:800}.sp-error-sentence button.selected{border-color:var(--main);background:var(--soft);outline:3px solid rgba(91,61,135,.18)}.sp-big-cloze{font-size:20px;line-height:2.25;padding:18px;border:2px solid var(--line);border-radius:18px;background:#fff;margin-bottom:16px}.sp-cloze-input{display:inline-block;width:92px;margin:0 5px;padding:7px 8px;border:2px solid var(--line);border-radius:9px;font:inherit}.sp-cloze-input.done{background:#eaf8ee;border-color:#52a56d}@media(max-width:520px){.sp-sein-row{grid-template-columns:82px 1fr}.sp-big-cloze{font-size:17px;line-height:2.45}.sp-cloze-input{width:82px}}`;document.head.appendChild(style);
- window.L7.renderTaskPage=function(theme,id){const t=task(id);if(t?.spL7T3Kind==='sein'){feedback='';return renderSein(Number(theme),t)}if(t?.spL7T3Kind==='error'){feedback='';return renderError(Number(theme),t)}if(t?.spL7T3Kind==='cloze'){feedback='';return renderCloze(Number(theme),t)}return raw(theme,id)};window.L7.__l7t3SpecialV1=true;return true
+ const style=document.createElement('style');style.id='sp-l7t3-special-style-v2';style.textContent=`
+ .sp-sein-title{text-align:center;font-size:34px;font-weight:950;margin:8px}.sp-sein-table{display:grid;gap:8px;max-width:620px;margin:12px auto 18px}.sp-sein-row{display:grid;grid-template-columns:120px 1fr;gap:12px;align-items:center;padding:10px;border:1px solid var(--line);border-radius:14px;background:var(--soft)}.sp-sein-row input{padding:11px;border:2px solid var(--line);border-radius:10px;font:inherit}.sp-sein-row.done{background:#eaf8ee}
+ .sp-error-sentence{display:flex;flex-wrap:wrap;gap:7px;margin:20px 0}.sp-error-sentence button{border:2px solid var(--line);background:#fff;border-radius:10px;padding:9px 11px;font:inherit;font-weight:800}.sp-error-sentence button.selected{border-color:var(--main);background:var(--soft);outline:3px solid rgba(91,61,135,.18)}
+ .sp-big-cloze{font-size:20px;line-height:2.25;padding:18px;border:2px solid var(--line);border-radius:18px;background:#fff;margin-bottom:16px}.sp-cloze-slot{display:inline-flex;flex-direction:column;vertical-align:middle;align-items:stretch;margin:4px 5px;line-height:1.2;min-width:104px;max-width:210px}.sp-cloze-input{display:block;width:100%;box-sizing:border-box;padding:7px 8px;border:2px solid var(--line);border-radius:9px;font:inherit;background:#fff}.sp-cloze-input.done{background:#eaf8ee;border-color:#52a56d}.sp-cloze-input.wrong{background:#fff0f0;border-color:#c93d3d;color:#8b1f1f;box-shadow:0 0 0 2px rgba(201,61,61,.08)}.sp-cloze-message-wrap{display:block;min-height:0}.sp-cloze-msg{display:block;margin-top:4px;font-size:11px;line-height:1.25;font-weight:800;text-align:left}.sp-cloze-msg.error,.sp-cloze-msg.solution{color:#a12626}.sp-cloze-msg.hint{color:#765600}
+ @media(max-width:520px){.sp-sein-row{grid-template-columns:82px 1fr}.sp-big-cloze{font-size:17px;line-height:2.2}.sp-cloze-slot{min-width:92px;max-width:165px}.sp-cloze-msg{font-size:10px}}
+ `;if(!document.getElementById(style.id))document.head.appendChild(style);
+ window.L7.renderTaskPage=function(theme,id){const t=task(id);if(t?.spL7T3Kind==='sein'){feedback='';return renderSein(Number(theme),t)}if(t?.spL7T3Kind==='error'){feedback='';return renderError(Number(theme),t)}if(t?.spL7T3Kind==='cloze'){feedback='';return renderCloze(Number(theme),t)}return raw(theme,id)};window.L7.__l7t3SpecialV2=true;return true
  }
  window.L7T3SpecialUI={install};
 })();
