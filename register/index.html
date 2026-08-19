@@ -1,51 +1,11 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SprachPilot – Registrierung</title><link rel="stylesheet" href="../style.css"></head><body><div class="container"><section class="hero"><a href="/index.html" style="text-decoration:none;color:inherit"><div class="logo-wrap"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></div><h1>SprachPilot</h1></a><p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p></section><section class="card"><h2>Schülerkonto sichern</h2><p class="small">Neue Schüler und bestehende SprachPilot-Schüler richten hier einmalig ein sicheres Konto ein. Dein Lernstand wird erst nach bestätigter E-Mail mit deiner persönlichen Firebase-Konto-ID verbunden.</p><form id="registerForm"><div class="two"><div><label>Vorname *</label><input id="fname" required autocomplete="given-name"></div><div><label>Nachname *</label><input id="lname" required autocomplete="family-name"></div></div><label>E-Mail *</label><input id="email" type="email" required autocomplete="email" inputmode="email" placeholder="name@email.com"><label>E-Mail wiederholen *</label><input id="emailConfirm" type="email" required autocomplete="off" inputmode="email" placeholder="E-Mail noch einmal eingeben"><p class="small">Bitte prüfe deine E-Mail genau. An diese Adresse wird die Bestätigung für dein persönliches Konto gesendet.</p><label>Passwort *</label><input id="password" type="password" required minlength="8" autocomplete="new-password" placeholder="Mindestens 8 Zeichen"><label>Passwort wiederholen *</label><input id="passwordConfirm" type="password" required minlength="8" autocomplete="new-password" placeholder="Passwort noch einmal eingeben"><label>Muttersprache *</label><select id="motherLanguage" required>
-        <option value="">Bitte auswählen</option>
-        <option>Albanisch</option>
-        <option>Amharisch</option>
-        <option>Arabisch</option>
-        <option>Armenisch</option>
-        <option>Aserbaidschanisch</option>
-        <option>Bengalisch</option>
-        <option>Bosnisch</option>
-        <option>Bulgarisch</option>
-        <option>Chinesisch</option>
-        <option>Dari</option>
-        <option>Deutsch</option>
-        <option>Englisch</option>
-        <option>Farsi/Persisch</option>
-        <option>Französisch</option>
-        <option>Georgisch</option>
-        <option>Griechisch</option>
-        <option>Hindi</option>
-        <option>Italienisch</option>
-        <option>Japanisch</option>
-        <option>Kasachisch</option>
-        <option>Kroatisch</option>
-        <option>Kurdisch</option>
-        <option>Paschtu</option>
-        <option>Polnisch</option>
-        <option>Portugiesisch</option>
-        <option>Rumänisch</option>
-        <option>Russisch</option>
-        <option>Serbisch</option>
-        <option>Somali</option>
-        <option>Spanisch</option>
-        <option>Tamil</option>
-        <option>Thai</option>
-        <option>Tigrinya</option>
-        <option>Tschechisch</option>
-        <option>Türkisch</option>
-        <option>Ukrainisch</option>
-        <option>Ungarisch</option>
-        <option>Urdu</option>
-        <option>Usbekisch</option>
-        <option>Vietnamesisch</option>
-      </select><label>Kurscode *</label><input id="course" required autocomplete="off" autocapitalize="characters" placeholder="z. B. GLK-68"><button class="success" type="button" id="registerBtn" onclick="doRegister()">Sicheres Konto einrichten</button><button class="success" type="button" id="finishBtn" style="display:none" onclick="finishRegistration()">Nach E-Mail-Bestätigung abschließen</button><a class="btn secondary" href="../login/">Ich habe schon ein sicheres Konto</a><div id="registerResult"></div></form></section><footer>© SprachPilot</footer></div><script type="module">
+<option value="">Bitte auswählen</option><option>Albanisch</option><option>Amharisch</option><option>Arabisch</option><option>Armenisch</option><option>Aserbaidschanisch</option><option>Bengalisch</option><option>Bosnisch</option><option>Bulgarisch</option><option>Chinesisch</option><option>Dari</option><option>Deutsch</option><option>Englisch</option><option>Farsi/Persisch</option><option>Französisch</option><option>Georgisch</option><option>Griechisch</option><option>Hindi</option><option>Italienisch</option><option>Japanisch</option><option>Kasachisch</option><option>Kroatisch</option><option>Kurdisch</option><option>Paschtu</option><option>Polnisch</option><option>Portugiesisch</option><option>Rumänisch</option><option>Russisch</option><option>Serbisch</option><option>Somali</option><option>Spanisch</option><option>Tamil</option><option>Thai</option><option>Tigrinya</option><option>Tschechisch</option><option>Türkisch</option><option>Ukrainisch</option><option>Ungarisch</option><option>Urdu</option><option>Usbekisch</option><option>Vietnamesisch</option>
+</select><label>Kurscode *</label><input id="course" required autocomplete="off" autocapitalize="characters" placeholder="z. B. GLK-68"><button class="success" type="button" id="registerBtn" onclick="doRegister()">Sicheres Konto einrichten</button><button class="success" type="button" id="finishBtn" style="display:none" onclick="finishRegistration()">Nach E-Mail-Bestätigung abschließen</button><a class="btn secondary" href="../login/">Ich habe schon ein sicheres Konto</a><div id="registerResult"></div></form></section><footer>© SprachPilot</footer></div><script type="module">
 import { registerStudent, finishPendingStudentRegistration, hasPendingStudentRegistration, $, safeText } from "../js/student-identity.js?v=identity4";
-
 function showMsg(html){const result=$("registerResult");if(result)result.innerHTML=html}
 function normalizedEmail(value){return String(value||"").trim().toLowerCase()}
 function showFinishButton(show=true){const b=$("finishBtn");if(b)b.style.display=show?"block":"none"}
+function openStartSoon(){setTimeout(()=>{location.href="/index.html"},700)}
 
 window.doRegister=async function(){
   const btn=$("registerBtn"),vorname=$("fname")?.value.trim()||"",nachname=$("lname")?.value.trim()||"";
@@ -61,6 +21,12 @@ window.doRegister=async function(){
     if(btn){btn.disabled=true;btn.textContent="Konto wird vorbereitet..."}
     showMsg('<div class="ok">Kurscode und sichere Anmeldung werden geprüft...</div>');
     const result=await registerStudent({vorname,nachname,email,password,muttersprache,kurs});
+    if(result?.activated){
+      showFinishButton(false);
+      showMsg('<div class="ok"><b>Das sichere Schülerkonto ist aktiviert.</b><br>Die E-Mail war bereits als bestätigtes Firebase-Konto vorhanden. Das Schülerprofil wurde sicher derselben Konto-ID zugeordnet.</div>');
+      openStartSoon();
+      return;
+    }
     if(result?.verificationRequired){
       showFinishButton(true);
       showMsg('<div class="ok"><b>Bestätigungs-E-Mail wurde gesendet.</b><br>Öffne die E-Mail und bestätige deine Adresse. Danach komm zurück und klicke auf „Nach E-Mail-Bestätigung abschließen“. Dein altes Profil und deine Punkte werden bis dahin nicht verändert.</div>');
@@ -72,9 +38,10 @@ window.doRegister=async function(){
     if(message==="COURSE_NOT_FOUND")showMsg(`<div class="no">Dieser Kurscode existiert nicht: ${safeText(kurs)}</div>`);
     else if(message==="RESERVED_COURSE_CODE")showMsg('<div class="no">Dieser Kurscode ist für Lehrkräfte reserviert. Schüler können sich damit nicht registrieren.</div>');
     else if(message==="WEAK_STUDENT_PASSWORD")showMsg('<div class="no">Das Passwort muss mindestens 8 Zeichen lang sein.</div>');
-    else if(code==="auth/email-already-in-use")showMsg('<div class="no"><b>Für diese E-Mail existiert bereits ein Firebase-Konto.</b><br>Bitte gehe zum Login. Wenn du das Passwort nicht mehr weißt, benutze dort „Passwort vergessen“. Ein vorhandenes altes Schülerprofil wird nach erfolgreichem, bestätigtem Login sicher mit diesem Konto verbunden.</div>');
+    else if(code==="auth/invalid-credential"||code==="auth/wrong-password")showMsg('<div class="no"><b>Für diese E-Mail gibt es bereits ein Firebase-Konto, aber das Passwort stimmt nicht.</b><br>Das kann auch dein Lehrerkonto sein. Verwende dasselbe Passwort oder setze es über den Schüler-Login zurück.</div>');
     else if(code==="auth/weak-password")showMsg('<div class="no">Bitte wähle ein stärkeres Passwort.</div>');
     else if(code==="auth/invalid-email")showMsg('<div class="no">Bitte gib eine gültige E-Mail-Adresse ein.</div>');
+    else if(message==="STUDENT_AUTH_OWNERSHIP_MISMATCH")showMsg('<div class="no"><b>Aktivierung aus Sicherheitsgründen gestoppt.</b><br>Dieses Schülerprofil ist bereits mit einer anderen Firebase-Konto-ID verbunden. Es wurden keine Lernstände verändert.</div>');
     else showMsg(`<div class="no">Registrierung nicht möglich: ${safeText(message||code||"Unbekannter Fehler")}</div>`);
   }finally{if(btn){btn.disabled=false;btn.textContent="Sicheres Konto einrichten"}}
 }
@@ -86,7 +53,7 @@ window.finishRegistration=async function(){
     showMsg('<div class="ok">E-Mail-Bestätigung und Profilbesitz werden geprüft...</div>');
     await finishPendingStudentRegistration();
     showMsg('<div class="ok"><b>Das sichere Schülerkonto ist aktiviert.</b><br>Dein Profil und dein bisheriger Lernstand sind jetzt eindeutig deiner Konto-ID zugeordnet.</div>');
-    setTimeout(()=>{location.href="/index.html"},700);
+    openStartSoon();
   }catch(err){
     console.error(err);
     const message=String(err?.message||"");
