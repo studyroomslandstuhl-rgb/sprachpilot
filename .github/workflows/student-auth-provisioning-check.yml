@@ -1,0 +1,35 @@
+name: Validate student auth provisioning
+
+on:
+  pull_request:
+    paths:
+      - 'teacher/student-auth-provisioning-core.js'
+      - 'teacher/student-auth-provisioning.js'
+      - 'teacher/index.html'
+      - 'scripts/test-student-auth-provisioning-core.mjs'
+      - 'scripts/test-student-auth-provisioning-safety.mjs'
+      - '.github/workflows/student-auth-provisioning-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  provisioning:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Check provisioning JavaScript syntax
+        run: |
+          node --check teacher/student-auth-provisioning-core.js
+          node --check teacher/student-auth-provisioning.js
+          node --check scripts/test-student-auth-provisioning-core.mjs
+          node --check scripts/test-student-auth-provisioning-safety.mjs
+      - name: Test provisioning classification and password generation
+        run: node scripts/test-student-auth-provisioning-core.mjs
+      - name: Test provisioning safety contract
+        run: node scripts/test-student-auth-provisioning-safety.mjs
