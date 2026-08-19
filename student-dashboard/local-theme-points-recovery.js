@@ -4,8 +4,8 @@ import '/js/point-delta-bridge.js?v=2';
 const clean=value=>String(value||'').trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_').replace(/^_+|_+$/g,'');
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')||{}}catch(e){return{}}}
 function currentPids(){
- const p=profile(),derived=clean(p.uid||p.userId||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_'));
- return new Set([derived,clean(localStorage.getItem('SP_L7_STABLE_PID'))].filter(Boolean));
+ const p=profile(),fallback=[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_');
+ return new Set([p.uid,p.userId,p.id,p.email,fallback].map(clean).filter(Boolean));
 }
 function ledgers(){
  const pids=currentPids(),out=[];
