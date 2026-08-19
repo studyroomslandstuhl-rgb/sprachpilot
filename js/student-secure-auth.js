@@ -59,7 +59,13 @@ export async function sendStudentVerification(user=auth.currentUser){
 
 export async function resetSecureStudentPassword(email){
   await settleInitialAuth();
-  await sendPasswordResetEmail(auth,normalizedEmail(email));
+  const preferredUrl=new URL('/login/',location.origin).href;
+  try{
+    await sendPasswordResetEmail(auth,normalizedEmail(email),{url:preferredUrl,handleCodeInApp:false});
+  }catch(error){
+    if(error?.code!=='auth/unauthorized-continue-uri')throw error;
+    await sendPasswordResetEmail(auth,normalizedEmail(email));
+  }
 }
 
 export async function secureStudentSignOut(){
