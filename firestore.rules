@@ -15,8 +15,6 @@ service cloud.firestore {
       return signedIn() ? request.auth.token.get('email', '').lower().trim() : '';
     }
 
-    // E-Mail ist ausschließlich ein einmaliger Migrationsschlüssel für einen
-    // DIREKTEN Dokumentabruf alter, noch nicht UID-gebundener Daten.
     function legacyVerifiedEmail(data) {
       return verifiedUser() &&
         data.get('authUid', '') == '' &&
@@ -39,15 +37,21 @@ service cloud.firestore {
       return signedIn() && exists(/databases/$(database)/documents/teachers/$(request.auth.uid));
     }
 
+    function teacherSecurityReady() {
+      return exists(/databases/$(database)/documents/settings/teacherSecurity) &&
+        get(/databases/$(database)/documents/settings/teacherSecurity).data.get('teacherSecurityVersion', 0) >= 2 &&
+        get(/databases/$(database)/documents/settings/teacherSecurity).data.get('generation', '') != '';
+    }
+
+    // Alte teacher-Dokumente stammen aus einer Zeit, in der jeder angemeldete Client
+    // diese Collection beschreiben konnte. Sie werden deshalb NICHT automatisch
+    // vertraut. Nur eine nach dem Cutover vom Owner gesetzte, zufällige Generation gilt.
     function approvedTeacher() {
-      return teacherRecordExists() &&
+      return teacherRecordExists() && teacherSecurityReady() &&
         get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('active', true) == true &&
-        (
-          get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('owner', false) == true ||
-          get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('admin', false) == true ||
-          get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('approved', false) == true ||
-          get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('isTeacher', false) == true
-        );
+        get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('securityApprovedV2', false) == true &&
+        get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('securityApprovalGeneration', '') ==
+          get(/databases/$(database)/documents/settings/teacherSecurity).data.get('generation', '');
     }
 
     function isTeacher() {
@@ -117,9 +121,6 @@ service cloud.firestore {
     }
 
     match /studentLookups/{lookupId} {
-      // Lookup-Dokumente sind niemals für Schüler auflistbar. Ein verifizierter
-      // Schüler darf nur einen bereits bekannten direkten Schlüssel lesen, der
-      // exakt seine eigene Firebase-E-Mail trägt.
       allow get: if isTeacher() || (
         verifiedUser() && resource.data.get('email', '').lower().trim() == authEmail()
       );
@@ -129,17 +130,13 @@ service cloud.firestore {
     }
 
     match /students/{studentId} {
-      // Direkter Abruf: UID-Eigentümer oder einmalige Alt-Migration per verifizierter E-Mail.
       allow get: if isTeacher() || ownsStudentData(resource.data) || legacyVerifiedEmail(resource.data);
-      // Collection-Queries für Schüler sind ausschließlich über die eigene UID zulässig.
-      // E-Mail-basierte Studentensuchen können damit nicht mehr autorisiert werden.
       allow list: if isTeacher() || (
         verifiedUser() && resource.data.get('authUid', '') == request.auth.uid
       );
 
       allow create: if isTeacher() || (
-        verifiedUser() &&
-        reasonableSize() &&
+        verifiedUser() && reasonableSize() &&
         request.resource.data.get('authUid', '') == request.auth.uid &&
         request.resource.data.get('authEmail', '').lower().trim() == authEmail() &&
         request.resource.data.get('email', '').lower().trim() == authEmail()
@@ -162,15 +159,12 @@ service cloud.firestore {
 
     match /progress/{studentId} {
       allow get: if isTeacher() || progressOwnedByUser(resource.data, studentId);
-      // Der neue Schüler-Sync benötigt keine Collection-Queries mehr. Falls eine
-      // Altseite doch listet, darf sie ausschließlich UID-gebundene eigene Zeilen sehen.
       allow list: if isTeacher() || (
         verifiedUser() && resource.data.get('authUid', '') == request.auth.uid
       );
 
       allow create: if isTeacher() || (
-        verifiedUser() &&
-        reasonableSize() &&
+        verifiedUser() && reasonableSize() &&
         progressCreateBindingSafe(request.resource.data) &&
         progressOwnedByUser(request.resource.data, studentId)
       );
@@ -186,16 +180,20 @@ service cloud.firestore {
     }
 
     match /teachers/{teacherId} {
-      allow read: if isTeacher() || (signedIn() && teacherId == request.auth.uid);
-      allow create, update: if isTeacher() && reasonableSize();
-      allow delete: if isTeacher();
+      // Jede angemeldete Person darf nur ihr eigenes Lehrerprofil direkt lesen.
+      // Auflisten und Freigaben sind ausschließlich Owner-Aufgaben.
+      allow get: if ownerEmail() || (signedIn() && teacherId == request.auth.uid);
+      allow list: if ownerEmail();
+      allow create, update: if ownerEmail() && reasonableSize();
+      allow delete: if ownerEmail();
     }
 
     match /teachers_pending/{teacherId} {
-      allow read: if isTeacher() || (signedIn() && teacherId == request.auth.uid);
+      allow get: if ownerEmail() || (signedIn() && teacherId == request.auth.uid);
+      allow list: if ownerEmail();
       allow create: if signedIn() && teacherId == request.auth.uid && reasonableSize();
-      allow update: if isTeacher() && reasonableSize();
-      allow delete: if isTeacher();
+      allow update: if ownerEmail() && reasonableSize();
+      allow delete: if ownerEmail();
     }
 
     match /teacherInvites/{inviteId} {
@@ -221,8 +219,15 @@ service cloud.firestore {
 
     match /settings/{settingId} {
       allow read: if signedIn();
-      allow create, update: if isTeacher() && reasonableSize();
-      allow delete: if isTeacher();
+      // Die Lehrer-Vertrauensgeneration darf nur ein Owner setzen/rotieren.
+      allow create, update: if reasonableSize() && (
+        (settingId == 'teacherSecurity' && ownerEmail()) ||
+        (settingId != 'teacherSecurity' && isTeacher())
+      );
+      allow delete: if (
+        (settingId == 'teacherSecurity' && ownerEmail()) ||
+        (settingId != 'teacherSecurity' && isTeacher())
+      );
     }
 
     match /diagnostics/{docId} {
