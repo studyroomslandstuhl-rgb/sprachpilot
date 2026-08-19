@@ -41,7 +41,7 @@
         <option>Usbekisch</option>
         <option>Vietnamesisch</option>
       </select><label>Kurscode *</label><input id="course" required autocomplete="off" autocapitalize="characters" placeholder="z. B. GLK-68"><button class="success" type="button" id="registerBtn" onclick="doRegister()">Registrieren</button><a class="btn secondary" href="../login/">Ich habe schon ein Profil</a><div id="registerResult"></div></form></section><footer>© SprachPilot</footer></div><script type="module">
-import { registerStudent, $, safeText } from "../js/student-identity.js?v=identity1";
+import { registerStudent, $, safeText } from "../js/student-identity.js?v=identity3";
 
 function showMsg(html){
   const result=$("registerResult");
@@ -90,6 +90,8 @@ window.doRegister = async function(){
       showMsg('<div class="no">Dieses Profil existiert schon. Bitte einloggen.</div>');
     }else if(err.message==="RESERVED_COURSE_CODE"){
       showMsg('<div class="no">Dieser Kurscode ist für Lehrkräfte reserviert. Schüler können sich damit nicht registrieren.</div>');
+    }else if(err.message==="LOCAL_PROGRESS_ISOLATION_FAILED"){
+      showMsg('<div class="no"><b>Das Profil wurde angelegt, aber der Browserwechsel wurde aus Sicherheitsgründen gestoppt.</b><br>Auf diesem Browser liegen noch Lernstände eines anderen Profils. Es wurden keine Punkte vermischt. Bitte Browser-Speicher nicht löschen und anschließend über „Ich habe schon ein Profil“ mit der gerade registrierten E-Mail und dem Kurscode einloggen.</div>');
     }else if(String(err.message||"").includes("Missing or insufficient permissions")){
       showMsg('<div class="no">Firebase-Regeln blockieren die Registrierung.</div>');
     }else{
