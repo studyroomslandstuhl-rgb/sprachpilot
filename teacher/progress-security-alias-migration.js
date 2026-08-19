@@ -6,6 +6,21 @@
   function core(){return window.ProgressSecurityAliasCore||null}
   function serverTimestamp(){return firebase.firestore.FieldValue.serverTimestamp()}
 
+  async function markReady(ready,details={}){
+    const database=db();if(!database)throw new Error('FIRESTORE_NOT_AVAILABLE');
+    await database.collection('settings').doc('studentSecurity').set({
+      progressAliasReady:ready===true,
+      progressAliasVersion:1,
+      progressAliasStudents:Number(details.students||0),
+      progressAliasDocuments:Number(details.progress||0),
+      progressAliasAssigned:Number(details.assigned||0),
+      progressAliasFailures:Number(details.failures||0),
+      progressAliasStatus:String(details.status||'').slice(0,80),
+      progressAliasVerifiedAt:ready===true?serverTimestamp():null,
+      progressAliasUpdatedAt:serverTimestamp()
+    },{merge:true});
+  }
+
   async function loadState(){
     const database=db(),resolver=core();
     if(!database)throw new Error('FIRESTORE_NOT_AVAILABLE');
@@ -112,15 +127,74 @@
   }
 
   async function backfillAndVerify(){
-    const backfillResult=await backfill();
-    const verification=await verify();
-    if(!verification.ok){
-      const error=new Error('PROGRESS_ALIAS_VERIFICATION_FAILED');
-      error.verification=verification;
+    try{
+      await markReady(false,{status:'progress-alias-running'});
+      const backfillResult=await backfill();
+      const verification=await verify();
+      if(!verification.ok){
+        const error=new Error('PROGRESS_ALIAS_VERIFICATION_FAILED');
+        error.verification=verification;
+        throw error;
+      }
+      await markReady(true,{
+        students:verification.students,progress:verification.progress,
+        assigned:verification.assigned,failures:0,status:'verified'
+      });
+      return{ok:true,backfill:backfillResult,verification};
+    }catch(error){
+      const failures=error?.verification?.failures||error?.failures||error?.indexErrors||[];
+      try{await markReady(false,{failures:failures.length,status:error?.message||'failed'})}catch(e){}
       throw error;
     }
-    return{ok:true,backfill:backfillResult,verification};
   }
 
-  window.ProgressSecurityAliasMigration={analyze,backfill,verify,backfillAndVerify};
+  function render(text,ok=true){
+    let box=document.getElementById('sp-progress-alias-result');
+    if(!box){
+      box=document.createElement('div');box.id='sp-progress-alias-result';
+      box.style.cssText='position:fixed;right:16px;bottom:16px;z-index:100001;max-width:600px;padding:14px;border-radius:12px;background:#fff;border:2px solid #2e7d32;box-shadow:0 8px 30px rgba(0,0,0,.18);white-space:pre-wrap;font:14px/1.4 system-ui';
+      document.body.appendChild(box);
+    }
+    box.style.borderColor=ok?'#2e7d32':'#b3261e';box.textContent=text;
+  }
+
+  async function runUi(){
+    render('Historische Fortschritts-IDs werden eindeutig geprüft …',true);
+    try{
+      const result=await backfillAndVerify();
+      render(`Fortschritts-Sicherheit vollständig.\nSchüler: ${result.verification.students}\nFortschrittsdokumente: ${result.verification.progress}\nEindeutig zugeordnet: ${result.verification.assigned}\nFehler/Kollisionen: 0\nStatus: BEREIT`,true);
+      window.SP_PROGRESS_ALIAS_MIGRATION=result;
+      return result;
+    }catch(error){
+      const failures=error?.verification?.failures||error?.failures||error?.indexErrors||[];
+      render(`Fortschritts-Sicherheit NICHT bereit.\nFehler: ${error?.message||error}\nNicht eindeutige/ungültige Zuordnungen: ${failures.length}\nDer Sicherheits-Cutover wurde blockiert.`,false);
+      window.SP_PROGRESS_ALIAS_MIGRATION={ok:false,error,failures};
+      throw error;
+    }
+  }
+
+  function wrapSecurityButtons(){
+    if(!window.StudentSecurityLookup){setTimeout(wrapSecurityButtons,100);return}
+    const lookup=document.getElementById('sp-security-lookup-btn');
+    if(lookup&&!lookup.dataset.progressAliasWrapped){
+      lookup.dataset.progressAliasWrapped='1';
+      lookup.textContent='Schüler-Sicherheit vollständig prüfen';
+      lookup.onclick=async()=>{
+        try{await runUi();await window.StudentSecurityLookup.runUi()}
+        catch(error){try{await window.StudentSecurityLookup.setReady(false,{status:'progress-alias-failed'})}catch(e){}}
+      };
+    }
+    const cutover=document.getElementById('sp-security-cutover-btn');
+    if(cutover&&!cutover.dataset.progressAliasWrapped){
+      cutover.dataset.progressAliasWrapped='1';
+      cutover.onclick=async()=>{
+        try{await runUi();await window.StudentSecurityLookup.runCutoverUi()}
+        catch(error){try{await window.StudentSecurityLookup.setReady(false,{status:'progress-alias-failed'})}catch(e){}}
+      };
+    }
+  }
+
+  window.ProgressSecurityAliasMigration={analyze,backfill,verify,backfillAndVerify,runUi,markReady};
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(wrapSecurityButtons,0));
+  else setTimeout(wrapSecurityButtons,0);
 })();
