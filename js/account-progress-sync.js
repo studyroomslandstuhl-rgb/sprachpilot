@@ -1,6 +1,7 @@
 import '/js/progress.js?v=11';
 import '/js/point-delta-bridge.js?v=2';
 import '/js/ranking-mirror.js?v=2';
+import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity1';
 import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-safe.js?v=5';
 export { accountProgressReady };
 
@@ -15,6 +16,10 @@ function invalidateOldL5Confirmations(){
 
 export async function startAccountProgressSync(options={}){
   invalidateOldL5Confirmations();
+  // Bevor Fortschritt gelesen oder geschrieben wird, muss eindeutig feststehen,
+  // welches Firestore-Schülerdokument die unveränderliche technische Identität ist.
+  // Die Normalisierung ergänzt nur Identitäts-Metadaten und löscht keine Lernstände.
+  try{await normalizeStudentIdentity(null,{silent:true})}catch(e){console.warn('Schüleridentität konnte vor dem Fortschritt-Sync noch nicht normalisiert werden',e)}
   const result=await startSafeAccountProgressSync(options);
   if(!sessionStorage.getItem('SP_LEGACY_RESCUE_STARTED_V2')){
     sessionStorage.setItem('SP_LEGACY_RESCUE_STARTED_V2','1');
