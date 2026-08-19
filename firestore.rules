@@ -87,6 +87,31 @@ service cloud.firestore {
       );
     }
 
+    function progressCreateBindingSafe(data) {
+      return data.get('authUid', '') == '' || (
+        data.get('authUid', '') == request.auth.uid &&
+        (
+          data.get('authEmail', '') == '' ||
+          data.get('authEmail', '').lower().trim() == authEmail()
+        )
+      );
+    }
+
+    function progressUpdateBindingSafe() {
+      return (
+        resource.data.get('authUid', '') == '' &&
+        (
+          request.resource.data.get('authUid', '') == '' ||
+          request.resource.data.get('authUid', '') == request.auth.uid
+        )
+      ) || (
+        resource.data.get('authUid', '') != '' &&
+        resource.data.get('authUid', '') == request.auth.uid &&
+        request.resource.data.get('authUid', '') == resource.data.get('authUid', '') &&
+        request.resource.data.get('authEmail', '').lower().trim() == resource.data.get('authEmail', '').lower().trim()
+      );
+    }
+
     match /courses/{courseId} {
       allow read: if signedIn();
       allow create, update: if isTeacher() && reasonableSize();
@@ -125,11 +150,13 @@ service cloud.firestore {
       allow create: if isTeacher() || (
         verifiedUser() &&
         reasonableSize() &&
+        progressCreateBindingSafe(request.resource.data) &&
         progressOwnedByUser(request.resource.data, studentId)
       );
 
       allow update: if isTeacher() || (
         reasonableSize() &&
+        progressUpdateBindingSafe() &&
         progressOwnedByUser(resource.data, studentId) &&
         progressOwnedByUser(request.resource.data, studentId)
       );
