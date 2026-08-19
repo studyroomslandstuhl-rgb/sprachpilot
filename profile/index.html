@@ -47,10 +47,14 @@
 
 <script type="module">
 import { requireLogin, updateStudentProfile, $, safeText, renderAccountStrip, logout } from "../js/auth.js?v=step21"; window.logout=logout;
+import { normalizeStudentIdentity } from "../js/student-identity.js?v=identity1";
 import { startGlobalSync, refreshActiveProfileFromCloud, saveProfileToCloud } from "../js/global-sync.js?v=2";
 
 let p=requireLogin();
-if(p) renderAccountStrip();
+if(p){
+  try{p=await normalizeStudentIdentity(p,{silent:true})||p}catch(e){console.warn("Schüleridentität konnte noch nicht normalisiert werden",e)}
+  renderAccountStrip();
+}
 try{await startGlobalSync();p=await refreshActiveProfileFromCloud(p)||p;}catch(e){console.warn("Profil-Sync nicht verfügbar",e)}
 function fill(profile){if(!profile)return;$("fname").value=profile.vorname||profile.firstName||"";$("lname").value=profile.nachname||profile.lastName||"";$("email").value=profile.email||"";$("motherLanguage").value=profile.muttersprache||profile.motherLanguage||"";$("course").value=profile.kurs||profile.courseCode||profile.kursnummer||"";}
 fill(p);
@@ -61,6 +65,7 @@ window.saveProfile=async function(){
   result.innerHTML='<div class="ok">Profil wird gespeichert...</div>';
 
   try{
+    p=await normalizeStudentIdentity(p,{silent:true})||p;
     const newP=await updateStudentProfile({
       vorname:$("fname").value,
       nachname:$("lname").value,
