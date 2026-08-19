@@ -1,5 +1,5 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SprachPilot – Login</title><link rel="stylesheet" href="../style.css"></head><body><div class="container"><section class="hero"><a href="/index.html" style="text-decoration:none;color:inherit"><div class="logo-wrap"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></div><h1>SprachPilot</h1></a><p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p></section><section class="card"><h2>Schüler-Login</h2><p class="small">Logge dich mit E-Mail und Kurscode ein.</p><label>E-Mail *</label><input id="loginEmail" type="email" required placeholder="name@email.com"><label>Kurscode *</label><input id="loginCourse" required placeholder="z. B. GLK-68"><button class="success" onclick="studentLogin()">Einloggen</button><a class="btn secondary" href="../register/">Neu registrieren</a><a class="btn secondary" href="../">Zur Startseite</a><div id="loginResult"></div></section><footer>© SprachPilot</footer></div><script type="module">
-import { loginStudent, $, safeText, getRedirectTarget } from "../js/student-identity.js?v=identity1";
+import { loginStudent, $, safeText, getRedirectTarget } from "../js/student-identity.js?v=identity3";
 function withTimeout(promise,ms){return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error("AUTH_TIMEOUT")),ms))])}
 window.studentLogin=async function(){
   const email=$("loginEmail").value.trim().toLowerCase(),kurs=$("loginCourse").value.trim(),result=$("loginResult");
@@ -13,6 +13,7 @@ window.studentLogin=async function(){
     if(err.message==="AUTH_TIMEOUT") result.innerHTML='<div class="no"><b>Login dauert zu lange.</b><br>Bitte die Seite hart neu laden und noch einmal einloggen. Firebase blockiert nicht mehr endlos; falls es wieder passiert, liegt es an Firestore-Regeln oder Verbindung.</div>';
     else if(err.message==="COURSE_NOT_FOUND") result.innerHTML=`<div class="no">Dieser Kurscode existiert nicht: ${safeText(kurs)}</div>`;
     else if(err.message==="STUDENT_NOT_FOUND") result.innerHTML='<div class="no">Profil nicht gefunden. Bitte zuerst registrieren.</div>';
+    else if(err.message==="LOCAL_PROGRESS_ISOLATION_FAILED") result.innerHTML='<div class="no"><b>Login aus Sicherheitsgründen gestoppt.</b><br>Auf diesem Browser liegen noch Lernstände eines anderen Profils, die gerade nicht sicher getrennt werden konnten. Es wurden keine Punkte einem anderen Schüler zugeordnet. Bitte Browser-Speicher nicht löschen und den Login noch einmal versuchen.</div>';
     else result.innerHTML='<div class="no">Login nicht möglich. Bitte Kurscode, Profil und Firebase-Regeln prüfen.</div>';
   }
 }
