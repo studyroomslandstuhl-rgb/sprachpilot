@@ -20,6 +20,7 @@ LEARNING_ROOTS = (
     "verben",
     "verben-A1",
     "verben-bereich",
+    "irregulaere-verben",
     "perfekt",
     "grammatik",
     "finnisch",
