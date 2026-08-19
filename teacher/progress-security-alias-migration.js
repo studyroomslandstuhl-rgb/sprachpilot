@@ -5,6 +5,7 @@
   function db(){try{return Students?.database?.()||firebase.firestore()}catch(e){return null}}
   function core(){return window.ProgressSecurityAliasCore||null}
   function serverTimestamp(){return firebase.firestore.FieldValue.serverTimestamp()}
+  function arrayUnion(){return firebase.firestore.FieldValue.arrayUnion.apply(firebase.firestore.FieldValue,arguments)}
 
   async function markReady(ready,details={}){
     const database=db();if(!database)throw new Error('FIRESTORE_NOT_AVAILABLE');
@@ -79,15 +80,22 @@
     const progressId=String(assignment.progressId||progress.__docId||progress.id||'').trim();
     const studentId=String(assignment.studentId||'').trim();
     if(!progressId||!studentId)return null;
-
-    // Direkter kanonischer Pfad: Die strikten Regeln prüfen den Eigentümer über
-    // students/{progressId}. Das große Fortschrittsdokument muss dafür nicht verändert werden.
     if(progressId===studentId)return null;
-
-    // Historischer Alias: Nur canonicalStudentId wird benötigt. aliasIds liegen ausschließlich
-    // im Schülerdokument; Versions-/Zeitfelder im progress-Dokument sind für die Regeln unnötig.
     if(String(progress.canonicalStudentId||'').trim()===studentId)return null;
     return{canonicalStudentId:studentId};
+  }
+
+  function studentAliasWritePlan(analysis){
+    const writes=[];
+    for(const student of analysis.students||[]){
+      const id=analysis.resolver.studentIdOf(student);if(!id)continue;
+      const required=analysis.aliasPlan.get(id)||[];
+      const current=analysis.resolver.uniq(Array.isArray(student.aliasIds)?student.aliasIds:[]);
+      const currentSet=new Set(current);
+      const missing=required.filter(alias=>!currentSet.has(alias));
+      if(missing.length)writes.push({studentId:id,missing,required,currentWasArray:Array.isArray(student.aliasIds)});
+    }
+    return writes;
   }
 
   async function commitOperations(database,operations,batchSize=350){
@@ -101,18 +109,32 @@
     return written;
   }
 
+  async function verifyStudentAliasesOnServer(database,aliasWrites){
+    const failures=[];
+    for(const item of aliasWrites||[]){
+      const ref=database.collection('students').doc(item.studentId);
+      let snap;
+      try{snap=await ref.get({source:'server'})}catch(error){snap=await ref.get()}
+      const aliases=new Set(Array.isArray(snap.data()?.aliasIds)?snap.data().aliasIds:[]);
+      for(const alias of item.missing){
+        if(!aliases.has(alias))failures.push({type:'student-alias-persistence-failed',studentId:item.studentId,progressId:alias});
+      }
+    }
+    return failures;
+  }
+
   async function backfill(){
     const analysis=await analyze();
     if(!analysis.resolution.ok)throw migrationError(analysis);
 
-    const operations=[],now=serverTimestamp();
-    for(const student of analysis.students){
-      const id=analysis.resolver.studentIdOf(student);if(!id)continue;
-      const aliases=analysis.aliasPlan.get(id)||[];
-      const current=analysis.resolver.uniq(Array.isArray(student.aliasIds)?student.aliasIds:[]).sort();
-      if(JSON.stringify(current)!==JSON.stringify(aliases)){
-        const ref=analysis.database.collection('students').doc(id);
-        operations.push(batch=>batch.set(ref,{aliasIds:aliases,progressAliasVersion:1,progressAliasUpdatedAt:now},{merge:true}));
+    const operations=[];
+    const aliasWrites=studentAliasWritePlan(analysis);
+    for(const item of aliasWrites){
+      const ref=analysis.database.collection('students').doc(item.studentId);
+      if(item.currentWasArray){
+        operations.push(batch=>batch.update(ref,{aliasIds:arrayUnion(...item.missing)}));
+      }else{
+        operations.push(batch=>batch.set(ref,{aliasIds:item.required},{merge:true}));
       }
     }
 
@@ -127,10 +149,17 @@
     }
 
     const written=await commitOperations(analysis.database,operations);
+    const persistenceFailures=await verifyStudentAliasesOnServer(analysis.database,aliasWrites);
+    if(persistenceFailures.length){
+      const error=new Error('PROGRESS_ALIAS_STUDENT_PERSISTENCE_FAILED');
+      error.verification={failures:persistenceFailures};
+      throw error;
+    }
     return{
       students:analysis.students.length,
       progress:analysis.progress.length,
       assigned:analysis.resolution.assignments.length,
+      aliasWrites:aliasWrites.length,
       operations:operations.length,
       written
     };
@@ -227,7 +256,10 @@
     }
   }
 
-  window.ProgressSecurityAliasMigration={analyze,backfill,verify,backfillAndVerify,runUi,markReady,collectErrorItems,describeErrorItem,progressOwnershipPatch};
+  window.ProgressSecurityAliasMigration={
+    analyze,backfill,verify,backfillAndVerify,runUi,markReady,collectErrorItems,describeErrorItem,
+    progressOwnershipPatch,studentAliasWritePlan,verifyStudentAliasesOnServer
+  };
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(wrapSecurityButtons,0));
   else setTimeout(wrapSecurityButtons,0);
 })();
