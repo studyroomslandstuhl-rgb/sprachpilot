@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t2-stable-help4';
+const version='l7t2-stable-help5';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 function currentTask(){const id=new URLSearchParams(location.search).get('task');return window.L7S?.task?.(id)||null}
 function concise(){if(page!=='task')return;const task=currentTask();if(!task?.spL7T2Write)return;document.querySelectorAll('.l7-answer-box label').forEach(label=>{if(label.textContent!=='Antwort')label.textContent='Antwort'})}
@@ -12,6 +12,7 @@ function installStableWrongAnswerFlow(){
  const S=window.L7S;
  if(!S||S.__l7t2StableWrongAnswerFlow)return;
  const rawWrong=typeof S.wrong==='function'?S.wrong.bind(S):null;
+ const rawRight=typeof S.right==='function'?S.right.bind(S):null;
  S.wrong=function(th,id,total){
   if(Number(th)!==2){return rawWrong?rawWrong(th,id,total):0}
   const st=S.load(th,id,total),index=st.current;
@@ -27,6 +28,26 @@ function installStableWrongAnswerFlow(){
   // bis die richtige Antwort selbst eingegeben/gewählt wurde.
   S.save(th,id,st,true);
   return count
+ };
+ S.right=function(th,id,total,free=false){
+  if(Number(th)!==2){return rawRight?rawRight(th,id,total,free):undefined}
+  const st=S.load(th,id,total),index=st.current;
+  if(index!=null){
+   st.wrongTries=st.wrongTries||{};
+   if(free){
+    if(!st.done.includes(index))st.done.push(index);
+   }else if(st.hadWrong||Number(st.tries||0)>0){
+    if(!st.done.includes(index)&&!st.queue.includes(index))st.queue.push(index);
+   }else if(!st.done.includes(index)){
+    st.done.push(index);
+   }
+   // Eine spätere Wiederholung beginnt wieder mit Versuch 1 statt mit einer alten Fehlerzahl.
+   delete st.wrongTries[index];
+  }
+  st.current=null;
+  st.tries=0;
+  st.hadWrong=false;
+  S.save(th,id,st,true)
  };
  S.__l7t2StableWrongAnswerFlow=true;
 }
