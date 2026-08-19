@@ -17,7 +17,29 @@
     return h.toString(16).padStart(8,'0');
   }
 
-  function backupId(kind,path){return `student-collision-v${REPAIR_VERSION}-${kind}-${hash(path)}`}
+  function uniqueBackupSuffix(){
+    try{if(globalThis.crypto?.randomUUID)return globalThis.crypto.randomUUID().replace(/-/g,'')}
+    catch(e){}
+    try{
+      const bytes=new Uint8Array(12);globalThis.crypto?.getRandomValues?.(bytes);
+      const random=[...bytes].map(b=>b.toString(16).padStart(2,'0')).join('');
+      if(random)return random;
+    }catch(e){}
+    return `${Date.now().toString(36)}-${Math.random().toString(36).slice(2,14)}`;
+  }
+
+  function backupId(kind,path){
+    return `student-collision-v${REPAIR_VERSION}-${kind}-${hash(path)}-${uniqueBackupSuffix()}`;
+  }
+
+  function markStage(error,stage){
+    if(error&&typeof error==='object'&&!error.repairStage)error.repairStage=stage;
+    return error;
+  }
+
+  async function runStage(stage,fn){
+    try{return await fn()}catch(error){throw markStage(error,stage)}
+  }
 
   async function readState(){
     const db=database(),c=core();
@@ -38,21 +60,15 @@
   }
 
   async function saveBackup(db,{kind,path,groupKey='',canonicalId='',snapshot=null,exists=true}){
+    // Wichtig: Die aktuell zurückgestellten Produktionsregeln erlauben Schreiben in
+    // diagnostics, aber historische Regeln konnten diagnostics-Reads blockieren.
+    // Deshalb bekommt jede Sicherung eine neue, kollisionsarme ID und wird ohne
+    // vorheriges get() geschrieben. Ein erfolgreiches set() ist die Server-Bestätigung.
     const ref=db.collection('diagnostics').doc(backupId(kind,path));
-    const old=await ref.get();
-    if(!old.exists){
-      await ref.set({
-        backupType:'student-collision-repair',repairVersion:REPAIR_VERSION,kind,path,groupKey,canonicalId,
-        sourceExists:exists===true,snapshot:snapshot||null,backedUpAt:now()
-      });
-    }else{
-      const data=old.data()||{};
-      if(data.backupType!=='student-collision-repair'||Number(data.repairVersion||0)!==REPAIR_VERSION||text(data.path)!==path){
-        throw new Error('COLLISION_BACKUP_ID_CONFLICT:'+path);
-      }
-    }
-    const verify=await ref.get();
-    if(!verify.exists)throw new Error('COLLISION_BACKUP_VERIFY_FAILED:'+path);
+    await ref.set({
+      backupType:'student-collision-repair',repairVersion:REPAIR_VERSION,kind,path,groupKey,canonicalId,
+      sourceExists:exists===true,snapshot:snapshot||null,backedUpAt:now(),backupNonce:ref.id
+    });
     return ref.id;
   }
 
@@ -201,30 +217,30 @@
   }
 
   async function repair(){
-    const state=await readState(),c=core(),r=resolver();
+    const state=await runStage('Ausgangsdaten lesen',()=>readState()),c=core(),r=resolver();
     const plan=c.plan(state.students,state.progress,r);
     if(plan.duplicateCount===0){
       const security=await remainingSecurityCheck();
       return{ok:true,alreadyRepaired:true,groups:plan.groups.length,duplicates:0,security};
     }
 
-    await setStatus(state.db,'backup-running',{groups:plan.groups.length,duplicates:plan.duplicateCount});
-    const backups=await backupPlan(state,plan);
-    await setStatus(state.db,'identity-repair-running',{groups:plan.groups.length,duplicates:plan.duplicateCount});
+    await runStage('Reparaturstatus vor Sicherung setzen',()=>setStatus(state.db,'backup-running',{groups:plan.groups.length,duplicates:plan.duplicateCount}));
+    const backups=await runStage('Sicherungskopien schreiben',()=>backupPlan(state,plan));
+    await runStage('Reparaturstatus vor Identitätsbereinigung setzen',()=>setStatus(state.db,'identity-repair-running',{groups:plan.groups.length,duplicates:plan.duplicateCount}));
 
     try{
-      await applyStudentIdentityBatch(state,plan);
-      await verifyStudentIdentityRepair(state,plan);
+      await runStage('Doppelte Schülerprofile bereinigen',()=>applyStudentIdentityBatch(state,plan));
+      await runStage('Bereinigte Schüleridentitäten prüfen',()=>verifyStudentIdentityRepair(state,plan));
     }catch(error){
       try{await rollbackStudents(state,plan)}catch(rollbackError){error.rollbackError=rollbackError}
       try{await setStatus(state.db,'identity-repair-failed',{groups:plan.groups.length,duplicates:plan.duplicateCount})}catch(e){}
       throw error;
     }
 
-    await setStatus(state.db,'progress-merge-running',{groups:plan.groups.length,duplicates:plan.duplicateCount});
-    const progress=await writeMergedProgress(state,plan);
+    await runStage('Reparaturstatus vor Fortschrittszusammenführung setzen',()=>setStatus(state.db,'progress-merge-running',{groups:plan.groups.length,duplicates:plan.duplicateCount}));
+    const progress=await runStage('Fortschritt sicher zusammenführen',()=>writeMergedProgress(state,plan));
     const security=await remainingSecurityCheck();
-    await state.db.collection('settings').doc(SETTINGS_DOC).set({
+    await runStage('Reparaturabschluss speichern',()=>state.db.collection('settings').doc(SETTINGS_DOC).set({
       historicalCollisionRepairVersion:REPAIR_VERSION,
       historicalCollisionRepairStatus:'complete',
       historicalCollisionRepairComplete:true,
@@ -233,7 +249,7 @@
       historicalCollisionRepairBackups:backups.length,
       historicalCollisionRepairCompletedAt:now(),
       historicalCollisionRepairUpdatedAt:now()
-    },{merge:true});
+    },{merge:true}));
     return{ok:true,groups:plan.groups.length,duplicates:plan.duplicateCount,backups,progress,security};
   }
 
@@ -248,7 +264,7 @@
   }
 
   async function runUi(){
-    const ok=root.confirm('Die zwei historischen Doppelprofile von Alona Vakulenko und Shilan Mohamad sicher reparieren?\n\nVor jeder Änderung werden unveränderliche Sicherungskopien in Firestore/diagnostics angelegt. Alte Fortschrittsdokumente werden NICHT gelöscht.');
+    const ok=root.confirm('Die zwei historischen Doppelprofile von Alona Vakulenko und Shilan Mohamad sicher reparieren?\n\nVor jeder Änderung werden eindeutige Sicherungskopien in Firestore/diagnostics angelegt. Alte Fortschrittsdokumente werden NICHT gelöscht.');
     if(!ok)return;
     const button=document.getElementById('sp-student-collision-repair-btn');if(button)button.disabled=true;
     render('Sicherung und Reparatur werden geprüft …',true);
@@ -263,7 +279,9 @@
       return result;
     }catch(error){
       console.error('Historische Doppelprofil-Reparatur fehlgeschlagen',error);
-      render(`Reparatur gestoppt.\nFehler: ${error?.message||error}\n\nEs wird kein Sicherheits-Cutover freigegeben. Vorhandene Sicherungen bleiben erhalten.`,false);
+      const stage=error?.repairStage?`\nPhase: ${error.repairStage}`:'';
+      const rollback=error?.rollbackError?`\nRollback-Hinweis: ${error.rollbackError?.message||error.rollbackError}`:'';
+      render(`Reparatur gestoppt.\nFehler: ${error?.message||error}${stage}${rollback}\n\nEs wird kein Sicherheits-Cutover freigegeben. Bereits erfolgreich geschriebene Sicherungen bleiben erhalten.`,false);
       root.SP_STUDENT_COLLISION_REPAIR={ok:false,error};
       throw error;
     }finally{if(button)button.disabled=false}

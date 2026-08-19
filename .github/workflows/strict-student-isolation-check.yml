@@ -35,6 +35,7 @@ on:
       - 'scripts/test-progress-security-alias-reporting.mjs'
       - 'scripts/test-progress-security-collision-diagnostics.mjs'
       - 'scripts/test-student-collision-repair-core.mjs'
+      - 'scripts/test-student-collision-backup-permissions.mjs'
       - 'scripts/test-private-query-boundaries.mjs'
       - 'scripts/test-secure-access-gate.mjs'
       - '.github/workflows/strict-student-isolation-check.yml'
@@ -89,6 +90,7 @@ jobs:
           node --check scripts/test-progress-security-alias-reporting.mjs
           node --check scripts/test-progress-security-collision-diagnostics.mjs
           node --check scripts/test-student-collision-repair-core.mjs
+          node --check scripts/test-student-collision-backup-permissions.mjs
           node --check scripts/test-private-query-boundaries.mjs
           node --check scripts/test-secure-access-gate.mjs
           python3 -m py_compile scripts/inject-learning-auth-gate.py
@@ -104,6 +106,9 @@ jobs:
 
       - name: Test targeted historical student collision repair
         run: node scripts/test-student-collision-repair-core.mjs
+
+      - name: Test rollback-rules collision backup path
+        run: node scripts/test-student-collision-backup-permissions.mjs
 
       - name: Test private query boundaries
         run: node scripts/test-private-query-boundaries.mjs
