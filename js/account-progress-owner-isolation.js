@@ -166,7 +166,7 @@ export async function isolateLocalProgressOwner(){
   const recovery=restoreCurrentQuarantine(ids);
   try{
     localStorage.setItem(OWNER_KEY,current);
-    if(!same)localStorage.setItem(TRACKED_KEY,JSON.stringify(localProgressEntries().map(([key])=>key));
+    if(!same)localStorage.setItem(TRACKED_KEY,JSON.stringify(localProgressEntries().map(([key])=>key)));
   }catch(e){}
 
   const result={
