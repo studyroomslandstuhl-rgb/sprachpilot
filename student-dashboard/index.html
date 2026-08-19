@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Schüler-Dashboard · SprachPilot</title>
 <style>
+html:not([data-sp-dashboard-auth="ok"]){visibility:hidden!important}
 :root{--blue:#47ABC6;--dark:#123047;--line:#D9EEF7;--muted:#5F7180}
 *{box-sizing:border-box}
 body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(180deg,#E8FBFF,#fff);color:var(--dark)}
@@ -40,7 +41,7 @@ body{margin:0;font-family:Arial,sans-serif;background:linear-gradient(180deg,#E8
 <div class="sectionTitle"><h2>Rangliste im Kurs</h2><div class="sectionActions"><span class="live" id="rankingStatus">wird automatisch aktualisiert</span><button class="navbtn" id="rankingBtn" type="button">Jetzt aktualisieren</button></div></div>
 <section class="card leader" id="leaderboard"><div class="empty">Rangliste wird geladen …</div></section>
 </div>
-<script type="module" src="dashboard-bootstrap.js?v=22"></script>
+<script type="module" src="dashboard-bootstrap.js?v=23"></script>
 <script defer src="../js/performance-boot.js?v=20260709b"></script>
 </body>
 </html>
