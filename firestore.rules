@@ -15,8 +15,12 @@ service cloud.firestore {
       return signedIn() ? request.auth.token.get('email', '').lower().trim() : '';
     }
 
-    function sameVerifiedEmail(data) {
+    // E-Mail ist ausschließlich ein einmaliger Migrationsschlüssel für alte,
+    // noch NICHT an eine UID gebundene Dokumente. Sobald authUid existiert,
+    // entscheidet nur noch die UID.
+    function legacyVerifiedEmail(data) {
       return verifiedUser() &&
+        data.get('authUid', '') == '' &&
         data.get('email', '').lower().trim() == authEmail();
     }
 
@@ -63,9 +67,7 @@ service cloud.firestore {
     }
 
     function legacyStudentClaimAllowed() {
-      return verifiedUser() &&
-        resource.data.get('authUid', '') == '' &&
-        sameVerifiedEmail(resource.data) &&
+      return legacyVerifiedEmail(resource.data) &&
         request.resource.data.get('authUid', '') == request.auth.uid &&
         request.resource.data.get('authEmail', '').lower().trim() == authEmail() &&
         request.resource.data.diff(resource.data).affectedKeys().hasOnly([
@@ -76,12 +78,12 @@ service cloud.firestore {
     function progressOwnedByUser(data, studentId) {
       return verifiedUser() && (
         data.get('authUid', '') == request.auth.uid ||
-        sameVerifiedEmail(data) ||
         ownsStudentId(studentId) ||
         (
           data.get('canonicalStudentId', '') != '' &&
           ownsStudentId(data.get('canonicalStudentId', ''))
-        )
+        ) ||
+        legacyVerifiedEmail(data)
       );
     }
 
@@ -92,7 +94,7 @@ service cloud.firestore {
     }
 
     match /students/{studentId} {
-      allow read: if isTeacher() || ownsStudentData(resource.data) || sameVerifiedEmail(resource.data);
+      allow read: if isTeacher() || ownsStudentData(resource.data) || legacyVerifiedEmail(resource.data);
 
       allow create: if isTeacher() || (
         verifiedUser() &&
@@ -108,7 +110,8 @@ service cloud.firestore {
           (
             ownsStudentData(resource.data) &&
             request.resource.data.get('authUid', '') == resource.data.get('authUid', '') &&
-            request.resource.data.get('authEmail', '').lower().trim() == resource.data.get('authEmail', '').lower().trim()
+            request.resource.data.get('authEmail', '').lower().trim() == resource.data.get('authEmail', '').lower().trim() &&
+            request.resource.data.get('email', '').lower().trim() == resource.data.get('email', '').lower().trim()
           )
         )
       );
