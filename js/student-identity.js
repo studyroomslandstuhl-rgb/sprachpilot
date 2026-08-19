@@ -62,6 +62,15 @@ function persistProfile(profile){
   localStorage.setItem('SP_USER_ROLE','student');
   localStorage.setItem('SP_STUDENT_ID',profile.canonicalStudentId||profile.docId||profile.studentId||profile.userId||'');
 }
+async function isolateActivatedStudent(){
+  try{
+    const module=await import('/js/account-progress-owner-isolation.js?v=1');
+    return await module.isolateLocalProgressOwner();
+  }catch(error){
+    console.warn('Lokaler Fortschritt konnte beim Kontowechsel noch nicht getrennt werden',error);
+    return null;
+  }
+}
 
 export async function normalizeStudentIdentity(inputProfile=null,{silent=false}={}){
   const local=inputProfile||readProfile();
@@ -151,10 +160,14 @@ export async function normalizeStudentIdentity(inputProfile=null,{silent=false}=
 
 export async function registerStudent(payload){
   const profile=await legacyRegisterStudent(payload);
-  return await normalizeStudentIdentity(profile);
+  const normalized=await normalizeStudentIdentity(profile);
+  await isolateActivatedStudent();
+  return normalized;
 }
 
 export async function loginStudent(email,kurs){
   const profile=await legacyLoginStudent(email,kurs);
-  return await normalizeStudentIdentity(profile);
+  const normalized=await normalizeStudentIdentity(profile);
+  await isolateActivatedStudent();
+  return normalized;
 }
