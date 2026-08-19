@@ -2,7 +2,7 @@
 'use strict';
 if(window.L7ThemeStandard)return;
 
-const VERSION='l7-theme-standard6';
+const VERSION='l7-theme-standard7';
 const COMMON_EMOJIS=Object.freeze({'karteikarten':'🃏','bild-erklaerung-wort':'🖼️','artikel-plural':'🔤','infinitiv-partizip':'🔁','memory':'🧠','partizip-waehlen':'✅','partizip-schreiben':'✍️','fehler-korrigieren':'🛠️','saetze-ordnen':'🧩','saetze-bilden':'✍️','ja-nein-fragen':'💬','w-fragen':'❓','bildimpulse':'🖼️','fragen-antworten':'💬','eigene-saetze':'✍️'});
 const THEME_EMOJIS=Object.freeze({
   1:Object.freeze({'karteikarten':'🃏','bild-erklaerung-wort':'🖼️','artikel-plural':'🔤','koennen-formen':'💪','wollen-formen':'🎯','verbform-waehlen':'✅','aussagen-ordnen':'🧩','ja-nein-fragen':'💬','w-fragen':'❓','faehigkeiten-abstufen':'📊','bildimpulse':'🖼️','fragen-antworten':'💬','partnerinterview':'🎤','wollen-moechten':'⚖️','dialoge-ergaenzen':'💬','hoeren-wuensche':'🎧','eigene-faehigkeiten':'💪','eigene-plaene':'📅'}),
@@ -36,9 +36,10 @@ function fallbackEmoji(task){const text=`${task?.id||''} ${task?.title||''}`.toL
 function taskEmoji(theme,task){if(task?.exam)return'⭐';const id=String(task?.id||'').toLowerCase();return THEME_EMOJIS[theme]?.[id]||COMMON_EMOJIS[id]||fallbackEmoji(task)}
 function taskCard(theme,task,number){const percent=percentage(theme,task),locked=!!task.exam&&!L7S.allDone(theme),emoji=taskEmoji(theme,task);if(locked)return `<div id="task-${esc(task.id)}" class="module exam-locked" aria-disabled="true"><div class="num">${number}. ${esc(task.title)}</div><div class="icon exam-icon">⭐</div><p>Prüfung wird freigeschaltet, wenn alle Lernaufgaben 100% erreicht haben.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">gesperrt</div><div class="start">Prüfung gesperrt</div></div>`;return `<a id="task-${esc(task.id)}" class="module ${percent>=100?'done':''}" href="${taskHref(task)}"><div class="num">${number}. ${esc(task.title)}</div><div class="icon ${task.exam?'exam-icon':''}">${esc(emoji)}</div><p>${esc(task.description||'Aufgabe bearbeiten.')}</p><div class="progress"><div class="bar" style="width:${percent}%"></div></div><div class="small">${percent}%</div><div class="start">${percent>=100?'Fertig':'Starten'}</div></a>`}
 function previewNote(){if(!window.L7S?.preview?.())return'';return '<div class="sp-teacher-preview-note">Lehrer-Vorschau: Es werden keine Teilnehmerpunkte und keine Teilnehmerfortschritte gespeichert.</div>'}
+async function reconcile(theme){try{await import('/wortschatz/A1-Lektion-7/shared/l7-score-reconcile.js?v=1');await window.SPL7ScoreReconcile?.run?.(theme)}catch(error){console.warn('L7 Punktabgleich',error)}}
 async function render(themeNumber){
  const theme=Number(themeNumber),root=document.getElementById('app'),data=window.L7_THEME;if(!root||!data||!window.L7S)return;
- try{await window.L7ThemeScore?.initOverview?.(theme)}catch(error){console.warn('L7 Themenpunkte',error)}
+ try{await window.L7ThemeScore?.initOverview?.(theme);await reconcile(theme)}catch(error){console.warn('L7 Themenpunkte',error)}
  const tasks=Array.isArray(data.tasks)?data.tasks:[],percentages=tasks.map(task=>percentage(theme,task)),average=percentages.length?Math.round(percentages.reduce((sum,value)=>sum+value,0)/percentages.length):0,completed=percentages.filter(value=>value>=100).length;
  const score=window.L7ThemeScore?.summaryHtml?.(theme)||'<div class="sp-l7-score-card"><div class="sp-l7-score-label">Punkte</div><div class="sp-l7-score-total">0 Punkte</div></div>';
  root.innerHTML=`${previewNote()}<section class="card progress-card"><div class="circle" id="totalCircle">${average}%</div><div class="progress-main"><h2>Dein Fortschritt</h2><p class="small" id="totalText">${completed} / ${tasks.length} Aufgaben abgeschlossen</p><div class="progress"><div class="bar" id="totalBar" style="width:${average}%"></div></div><p class="small">${esc(data.goal||'Wortschatz und Grammatik üben.')}</p></div><div class="sp-l7-score-slot" id="scoreSummary">${score}</div></section><section class="grid" id="taskGrid">${tasks.map((task,index)=>taskCard(theme,task,index+1)).join('')}</section><footer>© SprachPilot</footer>`;
