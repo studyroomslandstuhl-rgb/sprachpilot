@@ -15,6 +15,7 @@ on:
       - 'js/secure-access-gate.js'
       - 'js/guard.js'
       - 'teacher/student-security-lookup.js'
+      - 'teacher/student-security-lookup-details.js'
       - 'teacher/progress-security-alias-core.js'
       - 'teacher/progress-security-alias-migration.js'
       - 'teacher/progress-security-collision-diagnostics.js'
@@ -42,6 +43,7 @@ on:
       - 'scripts/test-progress-security-collision-diagnostics.mjs'
       - 'scripts/test-student-collision-repair-core.mjs'
       - 'scripts/test-student-collision-backup-permissions.mjs'
+      - 'scripts/test-student-security-lookup-details.mjs'
       - 'scripts/test-legacy-progress-resolution-core.mjs'
       - 'scripts/test-archived-progress-resolver.mjs'
       - 'scripts/test-one-time-duplicate-incident-core.mjs'
@@ -88,6 +90,7 @@ jobs:
           node --check js/secure-access-gate.js
           node --check js/guard.js
           node --check teacher/student-security-lookup.js
+          node --check teacher/student-security-lookup-details.js
           node --check teacher/progress-security-alias-core.js
           node --check teacher/progress-security-alias-migration.js
           node --check teacher/progress-security-collision-diagnostics.js
@@ -109,6 +112,7 @@ jobs:
           node --check scripts/test-progress-security-collision-diagnostics.mjs
           node --check scripts/test-student-collision-repair-core.mjs
           node --check scripts/test-student-collision-backup-permissions.mjs
+          node --check scripts/test-student-security-lookup-details.mjs
           node --check scripts/test-legacy-progress-resolution-core.mjs
           node --check scripts/test-archived-progress-resolver.mjs
           node --check scripts/test-one-time-duplicate-incident-core.mjs
@@ -136,6 +140,9 @@ jobs:
 
       - name: Test rollback-rules collision backup path
         run: node scripts/test-student-collision-backup-permissions.mjs
+
+      - name: Test detailed student lookup failures
+        run: node scripts/test-student-security-lookup-details.mjs
 
       - name: Test final legacy progress resolution plan
         run: node scripts/test-legacy-progress-resolution-core.mjs
