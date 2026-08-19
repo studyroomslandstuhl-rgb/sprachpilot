@@ -57,10 +57,10 @@ if(IS_L3T1){import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-stability.js?v=3").cat
 if(IS_L3T2){import("/wortschatz/A1-Lektion-3/Thema-2/l3t2-task-fix.js?v=3").catch(()=>{})}
 if(IS_L6T2){import("/wortschatz/A1-Lektion-6/Thema-2/l6t2-stability.js?v=1").catch(()=>{})}
 if(IS_L6T3){import("/wortschatz/A1-Lektion-6/Thema-3/l6t3-theme-score-v2.js?v=3").catch(()=>{})}
-if((IS_L6T4||IS_L7_THEME_OVERVIEW||IS_L8_THEME_OVERVIEW)&&!PERFORMANCE_SYNC_OFF){import(IS_L7?"/js/progress.js?v=l7-central-score2":IS_L8?"/js/progress.js?v=l8-central-score1":"/js/progress.js?v=l6t4-build1").catch(()=>{})}
+if((IS_L6T4||IS_L7_THEME_OVERVIEW||IS_L8_THEME_OVERVIEW)&&!PERFORMANCE_SYNC_OFF){import(IS_L7?"/js/progress.js?v=l7-central-score3":IS_L8?"/js/progress.js?v=l8-central-score2":"/js/progress.js?v=l6t4-build1").catch(()=>{})}
 if(USES_STANDARD_PROGRESS){import("/js/sp-progress-standard.js?v=4").catch(()=>{})}
 if(NEEDS_EXAM_UNLOCK_FIX&&!PERFORMANCE_SYNC_OFF){setTimeout(()=>import("/js/exam-unlock-fix.js?v=4").catch(()=>{}),120)}
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
-if(FULL_FIREBASE){if(!LIGHT_FIREBASE_PAGE)setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).catch(()=>{})},1500);if(!IS_L6T3&&!IS_L7&&!IS_L8){const scoringDelay=IS_L5?1800:300;setTimeout(()=>{import("/js/scoring.js?v=13").catch(()=>{})},scoringDelay)}}
+if(FULL_FIREBASE){if(!LIGHT_FIREBASE_PAGE)setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).catch(()=>{})},1500);if(!IS_L6T3&&!IS_L7&&!IS_L8){const scoringDelay=IS_L5?1800:300;setTimeout(()=>{import("/js/scoring.js?v=14").catch(()=>{})},scoringDelay)}}
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){setTimeout(()=>import("/wortschatz/index-release-lock.js?v=12").catch(()=>{}),900)}
 if(!PERFORMANCE_SYNC_OFF&&IS_FRAGEN_EXERCISE){setTimeout(()=>import("/js/fragen-progress-sync.js?v=3").catch(()=>{}),2400);import("/fragen-A1/scoring-bridge.js?v=3").catch(()=>{})}
