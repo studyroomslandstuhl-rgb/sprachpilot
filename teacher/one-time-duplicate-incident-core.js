@@ -6,7 +6,7 @@
   const GROUPS=[
     {
       key:'alona-vakulenko-b174698',name:'Alona Vakulenko',canonicalId:'b174698_alona_vakulenko_1996-12-06',
-      duplicateStudentIds:['a1_alona_vakulenko_1996-12-06','kurs_student'],backupGroupKey:'alona-vakulenko-b174698',useRepairBackups:true,
+      duplicateStudentIds:['a1_alona_vakulenko_1996-12-06','kurs_student'],
       profiles:[
         {profileId:'b174698_alona_vakulenko_1996-12-06',memberProgressIds:['b174698_alona_vakulenko_1996-12-06'],allowMissing:true},
         {profileId:'a1_alona_vakulenko_1996-12-06',memberProgressIds:['a1_alona_vakulenko_1996-12-06']},
@@ -15,7 +15,7 @@
     },
     {
       key:'shilan-mohamad-b174698',name:'Shilan Mohamad',canonicalId:'B174698_shilan_mohamad_1999-01-24',
-      duplicateStudentIds:['z-b-a1-07_shilan_mohamad_1999-01-24'],backupGroupKey:'shilan-mohamad-b174698',useRepairBackups:true,
+      duplicateStudentIds:['z-b-a1-07_shilan_mohamad_1999-01-24'],
       profiles:[
         {profileId:'B174698_shilan_mohamad_1999-01-24',memberProgressIds:['B174698_shilan_mohamad_1999-01-24','b174698-shilan-mohammad1010-gmail-com']},
         {profileId:'z-b-a1-07_shilan_mohamad_1999-01-24',memberProgressIds:['z-b-a1-07_shilan_mohamad_1999-01-24']}
@@ -23,7 +23,7 @@
     },
     {
       key:'vlad-nemohushchyi-b174698',name:'Vlad Nemohushchyi',canonicalId:'b174698_777vonychka777-gmail-com',
-      duplicateStudentIds:['b174698_vlad_nemohushchyi'],backupGroupKey:'',useRepairBackups:false,
+      duplicateStudentIds:['b174698_vlad_nemohushchyi'],
       profiles:[
         {profileId:'b174698_777vonychka777-gmail-com',memberProgressIds:['b174698_777vonychka777-gmail-com','b174698-777vonychka777-gmail-com']},
         {profileId:'b174698_vlad_nemohushchyi',memberProgressIds:['b174698_vlad_nemohushchyi']}
@@ -47,31 +47,9 @@
     const stored=storedPoints(row);if(stored>0)return stored;
     try{return positive(recalculator?.calculate?.(row)?.total)}catch(e){return 0}
   }
-  function enrichBackupProgress(doc={}){
-    const path=text(doc.path);if(doc.kind!=='progress'||!path.startsWith('progress/'))return null;
-    const id=path.slice('progress/'.length);return{...(doc.snapshot||{}),__docId:id,id};
-  }
-  function repairBackupRows(backups=[],group){
-    if(!group.useRepairBackups)return[];
-    const candidates=(backups||[]).filter(doc=>doc?.backupType==='student-collision-repair'&&text(doc.groupKey)===group.backupGroupKey&&doc.kind==='progress');
-    const byPath=new Map();
-    for(const doc of candidates){
-      const row=enrichBackupProgress(doc);if(!row)continue;
-      const id=progressId(row);if(!byPath.has(id))byPath.set(id,row);
-    }
-    return [...byPath.values()];
-  }
   function currentRowsForGroup(progressRows=[],group){
     const ids=new Set(group.profiles.flatMap(p=>p.memberProgressIds));
     return (progressRows||[]).filter(row=>ids.has(progressId(row))||text(row.canonicalStudentId)===group.canonicalId);
-  }
-  function sourceRowsForPoints(progressRows=[],backups=[],group){
-    const backupRows=repairBackupRows(backups,group);
-    if(group.useRepairBackups){
-      if(!backupRows.length)throw new Error('INCIDENT_ORIGINAL_BACKUPS_MISSING:'+group.key);
-      return backupRows;
-    }
-    return currentRowsForGroup(progressRows,group);
   }
   function profilePointBreakdown(sourceRows=[],group,recalculator=null){
     const byId=new Map((sourceRows||[]).map(row=>[progressId(row),row]).filter(([id])=>id));
@@ -97,7 +75,7 @@
     out.pointsTotal=points;out.lifetimePoints=points;out.punkteGesamt=points;out.points=points;
     return out;
   }
-  function buildGroupPlan({group,students=[],progressRows=[],backups=[],mergeFn,recalculator=null}){
+  function buildGroupPlan({group,students=[],progressRows=[],mergeFn,recalculator=null}){
     const byStudent=new Map((students||[]).map(s=>[studentId(s),s]).filter(([id])=>id));
     const canonicalStudent=byStudent.get(group.canonicalId);
     if(!canonicalStudent)throw new Error('INCIDENT_CANONICAL_STUDENT_MISSING:'+group.canonicalId);
@@ -106,20 +84,21 @@
     if(Number(currentCanonical?.oneTimeDuplicateIncidentVersion||0)>=VERSION){
       return{group,alreadyDone:true,canonicalStudent,currentCanonical};
     }
-    const pointSourceRows=sourceRowsForPoints(progressRows,backups,group);
+
+    // Einmalige Incident-Reparatur: Die früheren Altfortschrittsdokumente wurden bewusst
+    // nicht gelöscht. Sie sind deshalb die einzige Punktquelle; diagnostics wird weder
+    // benötigt noch gelesen. Alias-Kopien innerhalb EINES Profils zählen nur mit ihrem
+    // höchsten Punktestand, verschiedene Doppelprofile werden anschließend addiert.
+    const pointSourceRows=currentRows;
     const breakdown=profilePointBreakdown(pointSourceRows,group,recalculator);
-    const baseSum=breakdown.reduce((sum,x)=>sum+x.points,0);
-    const previousMergeBaseline=pointSourceRows.reduce((m,row)=>Math.max(m,pointValue(row,recalculator)),0);
-    const currentCanonicalPoints=pointValue(currentCanonical||{},recalculator);
-    const postRepairDelta=group.useRepairBackups?Math.max(0,currentCanonicalPoints-previousMergeBaseline):0;
-    const targetPoints=baseSum+postRepairDelta;
+    const targetPoints=breakdown.reduce((sum,x)=>sum+x.points,0);
 
     const contentRows=[];const seen=new Set();
-    for(const row of [...pointSourceRows,...currentRows]){const id=progressId(row);const key=id+'|'+JSON.stringify(stripInternal(row));if(seen.has(key))continue;seen.add(key);contentRows.push(row)}
+    for(const row of currentRows){const id=progressId(row);const key=id+'|'+JSON.stringify(stripInternal(row));if(seen.has(key))continue;seen.add(key);contentRows.push(row)}
     let merged=mergeRows(contentRows,mergeFn);
     if(currentCanonical)merged=mergeFn(merged,{...stripInternal(currentCanonical),id:group.canonicalId});
     merged=applyTotalPoints(stripInternal(merged),targetPoints);
-    const sourceIds=uniq([...pointSourceRows.map(progressId),...currentRows.map(progressId)]);
+    const sourceIds=uniq(currentRows.map(progressId));
     const aliasIds=uniq([...(Array.isArray(canonicalStudent.aliasIds)?canonicalStudent.aliasIds:[]),...group.duplicateStudentIds,...sourceIds]).filter(id=>id!==group.canonicalId);
     merged.canonicalStudentId=group.canonicalId;merged.docId=group.canonicalId;merged.studentId=group.canonicalId;merged.userId=group.canonicalId;
     merged.aliasIds=uniq([...(Array.isArray(merged.aliasIds)?merged.aliasIds:[]),...aliasIds]);
@@ -130,11 +109,11 @@
     merged.oneTimeDuplicateIncidentProfilePoints=Object.fromEntries(breakdown.map(x=>[x.profileId,x.points]));
     merged.oneTimeDuplicateIncidentMergedFrom=sourceIds;
     return{
-      group,alreadyDone:false,canonicalStudent,currentCanonical,pointSourceRows,currentRows,breakdown,baseSum,postRepairDelta,targetPoints,
+      group,alreadyDone:false,canonicalStudent,currentCanonical,pointSourceRows,currentRows,breakdown,targetPoints,
       mergedProgress:merged,sourceIds,archiveIds:sourceIds.filter(id=>id&&id!==group.canonicalId),aliasIds,
       duplicateStudents:group.duplicateStudentIds.map(id=>byStudent.get(id)).filter(Boolean)
     };
   }
 
-  root.OneTimeDuplicateIncidentCore={VERSION,GROUPS,text,uniq,progressId,studentId,stripInternal,positive,storedPoints,pointValue,enrichBackupProgress,repairBackupRows,currentRowsForGroup,sourceRowsForPoints,profilePointBreakdown,mergeRows,applyTotalPoints,buildGroupPlan};
+  root.OneTimeDuplicateIncidentCore={VERSION,GROUPS,text,uniq,progressId,studentId,stripInternal,positive,storedPoints,pointValue,currentRowsForGroup,profilePointBreakdown,mergeRows,applyTotalPoints,buildGroupPlan};
 })(typeof window!=='undefined'?window:globalThis);
