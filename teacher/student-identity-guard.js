@@ -30,7 +30,34 @@
         aliasIds:aliases,
         identityVersion:1
       };
-      return originalUpdate(studentId,safeData);
+
+      const result=await originalUpdate(studentId,safeData);
+
+      // Fortschritts-Metadaten folgen einer Lehrer-Korrektur sofort. Lernstände,
+      // Aufgaben, Prüfungen und Punkte werden dabei nicht angefasst.
+      try{
+        const database=Students.database?.();
+        if(database){
+          const course=String(safeData.kurs||safeData.kursnummer||safeData.courseCode||current.kurs||current.kursnummer||current.courseCode||'').trim();
+          const email=String(safeData.email||current.email||'').trim().toLowerCase();
+          const patch={
+            canonicalStudentId:studentId,
+            docId:studentId,
+            studentId,
+            userId:studentId,
+            aliasIds:aliases,
+            identityVersion:1,
+            updatedAt:firebase.firestore.FieldValue.serverTimestamp()
+          };
+          if(email)patch.email=email;
+          if(course){patch.kurs=course;patch.kursnummer=course;patch.courseCode=course;}
+          await database.collection('progress').doc(studentId).set(patch,{merge:true});
+        }
+      }catch(error){
+        TeacherEnv?.note?.('Fortschritts-Metadaten konnten nach der Schülerkorrektur noch nicht aktualisiert werden',error);
+      }
+
+      return result;
     };
 
     Students.__stableIdentityGuardV1=true;
