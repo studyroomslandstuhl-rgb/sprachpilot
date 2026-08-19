@@ -1,0 +1,97 @@
+rules_version = '2';
+
+// TEMPORÄRE ÜBERGANGSREGELN NUR FÜR DIE STUDENT-LOOKUP-MIGRATION.
+//
+// Zweck:
+// - Produktionszustand der bisherigen Kompatibilitätsregeln beibehalten.
+// - Zusätzlich studentLookups für angemeldete Benutzer freigeben, damit das
+//   Lehrer-Dashboard die Lookup-Migration einmalig aufbauen und verifizieren kann.
+//
+// NICHT als Endzustand verwenden.
+// Nach erfolgreicher Lookup-Migration und bestätigtem Owner-Firebase-Auth-Konto
+// müssen die strikten firestore.rules veröffentlicht werden.
+
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    function signedIn() {
+      return request.auth != null;
+    }
+
+    function reasonableSize() {
+      return request.resource.data.size() < 200;
+    }
+
+    match /courses/{courseId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /students/{studentId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /progress/{studentId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if false;
+    }
+
+    // Einziger zusätzlicher Übergangsblock gegenüber den bisher veröffentlichten
+    // Kompatibilitätsregeln. Er ist erforderlich, weil student-security-lookup.js
+    // bestehende Lookups liest, neue Lookups schreibt und veraltete Schlüssel entfernt.
+    match /studentLookups/{lookupId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /teachers/{teacherId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /teacherInvites/{inviteId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /courseInvites/{inviteId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /releases/{releaseId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /assignments/{assignmentId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /settings/{settingId} {
+      allow read: if signedIn();
+      allow create, update: if signedIn() && reasonableSize();
+      allow delete: if signedIn();
+    }
+
+    match /diagnostics/{docId} {
+      allow read, create, update: if signedIn() && reasonableSize();
+      allow delete: if false;
+    }
+
+    match /{document=**} {
+      allow read, write: if false;
+    }
+  }
+}
