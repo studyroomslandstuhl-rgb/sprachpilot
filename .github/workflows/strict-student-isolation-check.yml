@@ -9,8 +9,12 @@ on:
       - 'js/student-identity.js'
       - 'js/session-restore.js'
       - 'js/account-progress-sync.js'
+      - 'js/account-progress-sync-safe.js'
       - 'js/account-progress-autostart.js'
       - 'js/learning-auth-gate.js'
+      - 'teacher/student-security-lookup.js'
+      - 'teacher/student-identity-guard.js'
+      - 'teacher/index.html'
       - 'login/index.html'
       - 'register/index.html'
       - 'scripts/test-firestore-student-isolation.mjs'
@@ -46,8 +50,11 @@ jobs:
           node --check js/student-identity.js
           node --check js/session-restore.js
           node --check js/account-progress-sync.js
+          node --check js/account-progress-sync-safe.js
           node --check js/account-progress-autostart.js
           node --check js/learning-auth-gate.js
+          node --check teacher/student-security-lookup.js
+          node --check teacher/student-identity-guard.js
           node --check scripts/test-firestore-student-isolation.mjs
 
       - name: Test Firestore UID isolation in emulator
