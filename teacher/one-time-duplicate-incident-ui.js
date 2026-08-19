@@ -17,7 +17,7 @@
     const yes=root.confirm('Doppelte Profile in diesem einmaligen Alt-Daten-Vorfall zusammenführen?\n\nFür Alona, Shilan und Vlad wird genau ein Profil behalten. Fortschritte werden zusammengeführt. Punktestände verschiedener Doppelprofile werden EINMALIG addiert. Alias-Kopien desselben Profils werden nicht doppelt gezählt. Vorher werden Sicherungen erstellt. Alte Fortschrittsdokumente werden archiviert, nicht gelöscht. Diese Sonderaktion kann wegen eines Versionsmarkers nicht ein zweites Mal Punkte addieren.');
     if(!yes)return;
     button.disabled=true;
-    render('Originaldaten und Sicherungen werden geprüft. Die einmalige Doppelprofil-Zusammenführung läuft …',true);
+    render('Vorhandene Schüler- und Fortschrittsdaten werden geprüft. Die einmalige Doppelprofil-Zusammenführung läuft …',true);
     try{
       const result=await root.OneTimeDuplicateIncident.runOnce();
       render(root.OneTimeDuplicateIncident.summary(result)+'\n\nAls Nächstes wird die normale Restbereinigung fortgesetzt.',true);
@@ -26,7 +26,11 @@
     }catch(error){
       console.error('Einmalige Doppelprofil-Zusammenführung fehlgeschlagen',error);
       const done=Array.isArray(error?.incidentResults)?error.incidentResults.map(x=>x.name).join(', '):'';
-      render(`Einmalige Doppelprofil-Zusammenführung gestoppt.\nFehler: ${error?.message||error}${done?`\nBereits sicher abgeschlossene Gruppen: ${done}`:''}\n\nDie Restbereinigung und der Sicherheits-Cutover bleiben blockiert. Bereits gesetzte Einmal-Marker verhindern eine doppelte Punkteaddition bei einem erneuten Versuch.`,false);
+      const phase=error?.incidentStage?`\nPhase: ${error.incidentStage}`:'';
+      const protection=done
+        ?'Bereits abgeschlossene Gruppen besitzen ihren Einmal-Marker und werden bei einem neuen Versuch nicht erneut addiert.'
+        :'Es wurde in diesem Versuch keine Gruppe als abgeschlossen bestätigt; die Restbereinigung bleibt gesperrt.';
+      render(`Einmalige Doppelprofil-Zusammenführung gestoppt.\nFehler: ${error?.message||error}${phase}${done?`\nBereits sicher abgeschlossene Gruppen: ${done}`:''}\n\n${protection}\nDie Restbereinigung und der Sicherheits-Cutover bleiben blockiert.`,false);
       button.disabled=false;
       throw error;
     }
