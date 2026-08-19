@@ -13,22 +13,25 @@
     return root.Students.mergeProgressRows(a,b);
   }
   function recalculator(){return root.SPPointRecalculator||null}
+  function markStage(error,stage){if(error&&typeof error==='object'&&!error.incidentStage)error.incidentStage=stage;return error}
+  async function stage(name,fn){try{return await fn()}catch(error){throw markStage(error,name)}}
 
   async function loadState(){
     const db=database(),c=core();
     if(!db)throw new Error('FIRESTORE_NOT_AVAILABLE');
     if(!c)throw new Error('INCIDENT_CORE_MISSING');
-    const [studentsSnap,progressSnap,backupSnap,settingsSnap]=await Promise.all([
+    // diagnostics absichtlich NICHT lesen: die zurückgestellten Produktionsregeln
+    // blockieren historische diagnostics-Reads. Die noch vorhandenen progress-Dokumente
+    // sind die Quelle der einmaligen Incident-Reparatur.
+    const [studentsSnap,progressSnap,settingsSnap]=await Promise.all([
       db.collection('students').get(),
       db.collection('progress').get(),
-      db.collection('diagnostics').where('backupType','==','student-collision-repair').get(),
       db.collection('settings').doc(SETTINGS).get()
     ]);
     return{
       db,
       students:studentsSnap.docs.map(d=>({...(d.data()||{}),__docId:d.id})),
       progress:progressSnap.docs.map(d=>({...(d.data()||{}),__docId:d.id})),
-      backups:backupSnap.docs.map(d=>({...(d.data()||{}),__docId:d.id})),
       settings:settingsSnap.exists?settingsSnap.data()||{}:{}
     };
   }
@@ -68,9 +71,10 @@
     for(const row of plan.currentRows){
       if(core().progressId(row)===plan.group.canonicalId)continue;
       const progressUid=text(row?.authUid);
-      if(progressUid&&progressUid!==canonicalUid)throw new Error('INCIDENT_PROGRESS_UID_CONFLICT:'+core().progressId(row));
+      if(progressUid&&duplicateUidConflict(progressUid,canonicalUid))throw new Error('INCIDENT_PROGRESS_UID_CONFLICT:'+core().progressId(row));
     }
   }
+  function duplicateUidConflict(progressUid,canonicalUid){return !!progressUid&&progressUid!==canonicalUid}
 
   async function setStatus(db,status,extra={}){
     await db.collection('settings').doc(SETTINGS).set({
@@ -83,12 +87,12 @@
 
   async function applyGroup(state,group){
     const c=core(),plan=c.buildGroupPlan({
-      group,students:state.students,progressRows:state.progress,backups:state.backups,
+      group,students:state.students,progressRows:state.progress,
       mergeFn,recalculator:recalculator()
     });
     if(plan.alreadyDone)return{groupKey:group.key,name:group.name,alreadyDone:true,points:Number(plan.currentCanonical?.oneTimeDuplicateIncidentPoints||c.storedPoints(plan.currentCanonical||{}))};
     validateBindings(plan);
-    const backups=await backupPlan(state,plan);
+    const backups=await stage('Sicherungskopien schreiben: '+group.name,()=>backupPlan(state,plan));
     const batch=state.db.batch(),now=stamp(),currentIds=new Set(plan.currentRows.map(c.progressId));
     batch.set(state.db.collection('progress').doc(group.canonicalId),{
       ...plan.mergedProgress,
@@ -115,11 +119,11 @@
       updatedAt:now
     },{merge:true});
     for(const duplicate of plan.duplicateStudents){batch.delete(state.db.collection('students').doc(c.studentId(duplicate)))}
-    await batch.commit();
-    await verifyGroup(state.db,plan);
+    await stage('Kanonisches Profil und Fortschritte schreiben: '+group.name,()=>batch.commit());
+    await stage('Ergebnis prüfen: '+group.name,()=>verifyGroup(state.db,plan));
     return{
       groupKey:group.key,name:group.name,alreadyDone:false,points:plan.targetPoints,
-      profilePoints:plan.breakdown,deltaAfterEarlierRepair:plan.postRepairDelta,
+      profilePoints:plan.breakdown,
       backups:backups.length,archived:plan.archiveIds.filter(id=>currentIds.has(id)).length,
       deletedDuplicateStudents:plan.duplicateStudents.length
     };
@@ -133,7 +137,8 @@
     if(Number(data.oneTimeDuplicateIncidentVersion||0)<c.VERSION)throw new Error('INCIDENT_MARKER_MISSING:'+plan.group.key);
     if(c.storedPoints(data)!==plan.targetPoints)throw new Error('INCIDENT_POINTS_VERIFY_FAILED:'+plan.group.key);
     if(data.securityArchived===true)throw new Error('INCIDENT_CANONICAL_ARCHIVED:'+plan.group.key);
-    const aliases=new Set(Array.isArray((await db.collection('students').doc(plan.group.canonicalId).get()).data()?.aliasIds)?(await db.collection('students').doc(plan.group.canonicalId).get()).data().aliasIds:[]);
+    const studentSnap=await db.collection('students').doc(plan.group.canonicalId).get();
+    const aliases=new Set(Array.isArray(studentSnap.data()?.aliasIds)?studentSnap.data().aliasIds:[]);
     for(const id of plan.group.duplicateStudentIds){if(!aliases.has(id))throw new Error('INCIDENT_ALIAS_MISSING:'+id)}
     for(const id of plan.archiveIds){
       if(!plan.currentRows.some(row=>c.progressId(row)===id))continue;
@@ -148,24 +153,24 @@
   }
 
   async function runOnce(){
-    let state=await loadState(),c=core();
+    let state=await stage('Ausgangsdaten lesen',()=>loadState()),c=core();
     if(Number(state.settings.oneTimeDuplicateIncidentVersion||0)>=c.VERSION&&state.settings.oneTimeDuplicateIncidentStatus==='complete'){
       return{ok:true,alreadyComplete:true,groups:[],version:c.VERSION};
     }
-    await setStatus(state.db,'running',{oneTimeDuplicateIncidentComplete:false});
+    await stage('Einmalaktion als laufend markieren',()=>setStatus(state.db,'running',{oneTimeDuplicateIncidentComplete:false}));
     const results=[];
     try{
       for(const group of c.GROUPS){
-        state=await loadState();
-        const result=await applyGroup(state,group);results.push(result);
+        state=await stage('Daten vor Gruppe neu laden: '+group.name,()=>loadState());
+        const result=await stage('Gruppe verarbeiten: '+group.name,()=>applyGroup(state,group));results.push(result);
       }
       const totalPoints=results.reduce((sum,r)=>sum+Number(r.points||0),0);
-      await setStatus(state.db,'complete',{
+      await stage('Einmalaktion abschließen',()=>setStatus(state.db,'complete',{
         oneTimeDuplicateIncidentComplete:true,
         oneTimeDuplicateIncidentGroups:results.length,
         oneTimeDuplicateIncidentTotalCanonicalPoints:totalPoints,
         oneTimeDuplicateIncidentCompletedAt:stamp()
-      });
+      }));
       return{ok:true,alreadyComplete:false,groups:results,version:c.VERSION,totalCanonicalPoints:totalPoints};
     }catch(error){
       try{await setStatus(state.db,'failed',{oneTimeDuplicateIncidentComplete:false,oneTimeDuplicateIncidentError:String(error?.message||error).slice(0,180)})}catch(e){}
