@@ -4,9 +4,9 @@ import '/js/ranking-mirror.js?v=2';
 import { authReady } from '/js/firebase.js';
 import { getActiveProfile } from '/js/auth.js';
 import { currentFirebaseUser } from '/js/student-secure-auth.js?v=1';
-import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity4';
+import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity5';
 import { isolateLocalProgressOwner } from '/js/account-progress-owner-isolation.js?v=3';
-import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-safe.js?v=5';
+import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-safe.js?v=6';
 export { accountProgressReady };
 
 function invalidateOldL5Confirmations(){
@@ -39,8 +39,6 @@ function refreshAfterProgressPreparation(result,isolation){
 export async function startAccountProgressSync(options={}){
   invalidateOldL5Confirmations();
   try{await authReady}catch(e){}
-  // Harte Schranke: Ein lokales Profil allein darf niemals einen Cloud-Sync auslösen.
-  // Die aktive, verifizierte Firebase-UID muss exakt zum gebundenen Schülerprofil passen.
   if(!secureStudentOwner()){
     console.error('Account-Fortschritt-Sync blockiert: keine passende verifizierte Schüler-UID.');
     return blockedSecureResult();
