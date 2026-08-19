@@ -66,7 +66,6 @@ async function ensureAuth(){
   if(auth.currentUser)return auth.currentUser;
   try{await initialAuthState}catch(e){}
   if(auth.currentUser)return auth.currentUser;
-  if(IS_TEACHER_PATH)return null;
   if(!signInFlight){
     signInFlight=signInAnonymously(auth).then(cred=>{
       try{window.SP_FIREBASE_AUTH_MODE="anonymous";delete window.SP_FIREBASE_AUTH_ERROR}catch(e){}
@@ -84,7 +83,7 @@ export const authReady=ensureAuth();
 
 async function waitAuthRequired(){
   const user=await ensureAuth();
-  if(!user&&!IS_TEACHER_PATH){
+  if(!user){
     const error=new Error("Firebase-Anmeldung ist nicht bereit. Die Synchronisierung wird später erneut versucht.");
     error.code="sp/auth-not-ready";
     throw error;
