@@ -1,4 +1,4 @@
-import { getActiveProfile, getActiveRole } from '/js/auth.js?v=owner-isolation2';
+import { getActiveProfile, getActiveRole } from '/js/auth.js?v=owner-isolation3';
 
 const OWNER_KEY='SP_ACCOUNT_PROGRESS_OWNER';
 const TRACKED_KEY='SP_ACCOUNT_PROGRESS_TRACKED';
@@ -59,6 +59,33 @@ function eligible(key,value){
   if(/(?:progress|fortschritt|score|punkte|points|stars|attempt|completed|done|learned|known|unknown|unsure)/i.test(k)&&/^(?:SP_|A1_)/i.test(k))return true;
   return progressObject(parse(raw,null));
 }
+function strength(raw){
+  if(raw==null)return 0;
+  const parsed=parse(String(raw),null);
+  if(typeof parsed==='number')return Math.max(0,parsed);
+  const numeric=Number(raw);
+  if(!parsed||typeof parsed!=='object')return Number.isFinite(numeric)?Math.max(0,numeric):0;
+  let score=0,seen=new Set();
+  function walk(value,depth=0){
+    if(!value||typeof value!=='object'||depth>4||seen.has(value))return;
+    seen.add(value);
+    if(Array.isArray(value)){score+=value.length*10;return}
+    for(const [keyRaw,item] of Object.entries(value)){
+      const key=String(keyRaw).toLowerCase();
+      if(Array.isArray(item)){
+        if(/done|known|learned|completed|firstseen|assessed/.test(key))score+=item.length*10000;
+        else if(/queue/.test(key))score+=Math.max(0,1000-item.length);
+        else score+=item.length*10;
+      }else if(typeof item==='number'&&Number.isFinite(item)){
+        if(/percent|progress/.test(key))score+=Math.max(0,item)*1000;
+        else if(/correct|done|completed|score|points|stars|attempt/.test(key))score+=Math.max(0,item)*100;
+      }else if(typeof item==='boolean'&&item&&/completed|finished|done|passed/.test(key))score+=100000;
+      else if(item&&typeof item==='object')walk(item,depth+1);
+    }
+  }
+  walk(parsed);
+  return score;
+}
 function localProgressEntries(){
   const out=[];
   for(let i=0;i<localStorage.length;i++){
@@ -70,7 +97,10 @@ function localProgressEntries(){
 }
 function quarantineKey(owner,key){return `${QUARANTINE_PREFIX}${enc(owner)}_${enc(key)}`}
 function saveQuarantine(owner,key,value){
-  localStorage.setItem(quarantineKey(owner,key),JSON.stringify({owner:String(owner),key:String(key),value:String(value),savedAt:Date.now()}));
+  const qKey=quarantineKey(owner,key),existing=parse(localStorage.getItem(qKey),null);
+  if(existing&&existing.value!==undefined&&strength(existing.value)>=strength(value))return qKey;
+  localStorage.setItem(qKey,JSON.stringify({owner:String(owner),key:String(key),value:String(value),savedAt:Date.now()}));
+  return qKey;
 }
 function quarantineCurrentLocal(owner){
   let moved=0,failed=0;
@@ -92,17 +122,21 @@ function quarantineRecords(){
   return out;
 }
 function restoreCurrentQuarantine(ids){
-  let restored=0;
+  let restored=0,kept=0;
   for(const item of quarantineRecords()){
     const {qKey,record}=item;
     if(!sameOwner(record.owner,ids))continue;
     try{
-      const existing=localStorage.getItem(record.key);
-      if(existing===null){localStorage.setItem(record.key,String(record.value));restored++}
-      localStorage.removeItem(qKey);
+      const existing=localStorage.getItem(record.key),archivedStrength=strength(record.value),existingStrength=strength(existing);
+      if(existing===null||archivedStrength>existingStrength){
+        localStorage.setItem(record.key,String(record.value));
+        restored++;
+      }else kept++;
+      const finalValue=localStorage.getItem(record.key);
+      if(finalValue!==null&&strength(finalValue)>=archivedStrength)localStorage.removeItem(qKey);
     }catch(e){}
   }
-  return restored;
+  return{restored,kept};
 }
 
 export async function isolateLocalProgressOwner(){
@@ -129,7 +163,7 @@ export async function isolateLocalProgressOwner(){
     try{localStorage.setItem(TRACKED_KEY,'[]')}catch(e){}
   }
 
-  const restored=restoreCurrentQuarantine(ids);
+  const recovery=restoreCurrentQuarantine(ids);
   try{
     localStorage.setItem(OWNER_KEY,current);
     if(!same)localStorage.setItem(TRACKED_KEY,JSON.stringify(localProgressEntries().map(([key])=>key));
@@ -138,7 +172,8 @@ export async function isolateLocalProgressOwner(){
   const result={
     active:true,currentId:current,oldOwner,sameAccount:same,
     switchedAccount:!!(oldOwner&&!same),blocked:false,
-    quarantined:quarantined.moved,quarantineFailed:0,restored
+    quarantined:quarantined.moved,quarantineFailed:0,
+    restored:recovery.restored,keptLocal:recovery.kept
   };
   try{window.SP_ACCOUNT_PROGRESS_OWNER_ISOLATION=result;window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_OWNER_ISOLATED',{detail:result}))}catch(e){}
   return result;
