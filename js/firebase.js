@@ -5,6 +5,7 @@ import {
   getFirestore,
   doc as firestoreDoc,
   getDoc as firestoreGetDoc,
+  getDocFromServer as firestoreGetDocFromServer,
   setDoc as firestoreSetDoc,
   updateDoc as firestoreUpdateDoc,
   deleteDoc as firestoreDeleteDoc,
@@ -14,6 +15,7 @@ import {
   query as firestoreQuery,
   where as firestoreWhere,
   getDocs as firestoreGetDocs,
+  getDocsFromServer as firestoreGetDocsFromServer,
   limit as firestoreLimit,
   orderBy as firestoreOrderBy,
   arrayUnion,
@@ -37,45 +39,67 @@ const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
 
-let authReadyResolved=false;
-export const authReady = new Promise(resolve=>{
-  function done(user){
-    if(authReadyResolved)return;
-    authReadyResolved=true;
-    resolve(user||auth.currentUser||null);
-  }
+const IS_TEACHER_PATH=/^\/teacher(?:\/|$)/i.test(location.pathname||"");
+let signInFlight=null;
+let initialStateSettled=false;
+const initialAuthState=new Promise(resolve=>{
   let stop=null;
+  const finish=user=>{
+    if(initialStateSettled)return;
+    initialStateSettled=true;
+    try{if(stop)stop()}catch(e){}
+    resolve(user||auth.currentUser||null);
+  };
   try{
-    stop=onAuthStateChanged(auth,user=>{
-      if(user){try{if(stop)stop()}catch(e){}done(user)}
-    },err=>{
-      console.warn("Firebase Auth State konnte nicht gelesen werden",err);
-      try{if(stop)stop()}catch(e){}
-      done(null);
+    stop=onAuthStateChanged(auth,user=>finish(user||null),error=>{
+      console.warn("Firebase Auth State konnte nicht gelesen werden",error);
+      finish(auth.currentUser||null);
     });
-  }catch(e){
-    console.warn("Firebase Auth State Start fehlgeschlagen",e);
-    done(null);
+  }catch(error){
+    console.warn("Firebase Auth State Start fehlgeschlagen",error);
+    finish(auth.currentUser||null);
   }
-  setTimeout(()=>done(auth.currentUser||null),2500);
+  setTimeout(()=>finish(auth.currentUser||null),5000);
 });
 
-signInAnonymously(auth).then(cred=>{
-  try{window.SP_FIREBASE_AUTH_MODE="anonymous"}catch(e){}
-}).catch(e=>{
-  console.warn("Firebase Anonymous Auth konnte nicht gestartet werden; Firestore wird ohne blockierendes Warten versucht",e);
-  try{window.SP_FIREBASE_AUTH_MODE="none";window.SP_FIREBASE_AUTH_ERROR=e&&e.message?e.message:String(e)}catch(x){}
-});
-
-async function waitAuthNonBlocking(){
-  try{await authReady}catch(e){}
+async function ensureAuth(){
+  if(auth.currentUser)return auth.currentUser;
+  try{await initialAuthState}catch(e){}
+  if(auth.currentUser)return auth.currentUser;
+  if(IS_TEACHER_PATH)return null;
+  if(!signInFlight){
+    signInFlight=signInAnonymously(auth).then(cred=>{
+      try{window.SP_FIREBASE_AUTH_MODE="anonymous";delete window.SP_FIREBASE_AUTH_ERROR}catch(e){}
+      return cred?.user||auth.currentUser||null;
+    }).catch(error=>{
+      try{window.SP_FIREBASE_AUTH_MODE="none";window.SP_FIREBASE_AUTH_ERROR=error?.message||String(error)}catch(e){}
+      console.warn("Firebase Anonymous Auth konnte nicht hergestellt werden",error);
+      throw error;
+    }).finally(()=>{signInFlight=null});
+  }
+  return signInFlight;
 }
-export async function getDoc(...args){await waitAuthNonBlocking();return firestoreGetDoc(...args)}
-export async function setDoc(...args){await waitAuthNonBlocking();return firestoreSetDoc(...args)}
-export async function updateDoc(...args){await waitAuthNonBlocking();return firestoreUpdateDoc(...args)}
-export async function deleteDoc(...args){await waitAuthNonBlocking();return firestoreDeleteDoc(...args)}
-export async function addDoc(...args){await waitAuthNonBlocking();return firestoreAddDoc(...args)}
-export async function getDocs(...args){await waitAuthNonBlocking();return firestoreGetDocs(...args)}
+
+export const authReady=ensureAuth();
+
+async function waitAuthRequired(){
+  const user=await ensureAuth();
+  if(!user&&!IS_TEACHER_PATH){
+    const error=new Error("Firebase-Anmeldung ist nicht bereit. Die Synchronisierung wird später erneut versucht.");
+    error.code="sp/auth-not-ready";
+    throw error;
+  }
+  return user;
+}
+
+export async function getDoc(...args){await waitAuthRequired();return firestoreGetDoc(...args)}
+export async function getDocFromServer(...args){await waitAuthRequired();return firestoreGetDocFromServer(...args)}
+export async function setDoc(...args){await waitAuthRequired();return firestoreSetDoc(...args)}
+export async function updateDoc(...args){await waitAuthRequired();return firestoreUpdateDoc(...args)}
+export async function deleteDoc(...args){await waitAuthRequired();return firestoreDeleteDoc(...args)}
+export async function addDoc(...args){await waitAuthRequired();return firestoreAddDoc(...args)}
+export async function getDocs(...args){await waitAuthRequired();return firestoreGetDocs(...args)}
+export async function getDocsFromServer(...args){await waitAuthRequired();return firestoreGetDocsFromServer(...args)}
 
 function spBuildQuery(path, constraints = []) {
   const ref = firestoreCollection(db, String(path));
@@ -92,7 +116,8 @@ function spCompatDoc(path, id) {
     ref,
     _ref: ref,
 
-    async get() {
+    async get(options={}) {
+      if(options?.source==="server")return getDocFromServer(ref);
       return getDoc(ref);
     },
 
@@ -125,13 +150,15 @@ function spCompatCollection(path, constraints = []) {
     },
 
     async add(data) {
-      await waitAuthNonBlocking();
+      await waitAuthRequired();
       return firestoreAddDoc(firestoreCollection(db, String(path)), data);
     },
 
-    async get() {
-      await waitAuthNonBlocking();
-      return firestoreGetDocs(spBuildQuery(path, constraints));
+    async get(options={}) {
+      await waitAuthRequired();
+      const ref=spBuildQuery(path, constraints);
+      if(options?.source==="server")return firestoreGetDocsFromServer(ref);
+      return firestoreGetDocs(ref);
     },
 
     where(field, operator, value) {
@@ -161,16 +188,19 @@ const compatDb = {
 window.spDb = db;
 window.spAuth = auth;
 window.spAuthReady = authReady;
+window.spEnsureFirebaseAuth = ensureAuth;
 window.db = compatDb;
 
 window.spFirebase = {
   app,
   auth,
   authReady,
+  ensureAuth,
   db,
   compatDb,
   doc: firestoreDoc,
   getDoc,
+  getDocFromServer,
   setDoc,
   updateDoc,
   deleteDoc,
@@ -180,6 +210,7 @@ window.spFirebase = {
   query: firestoreQuery,
   where: firestoreWhere,
   getDocs,
+  getDocsFromServer,
   limit: firestoreLimit,
   orderBy: firestoreOrderBy,
   arrayUnion,
