@@ -8,7 +8,7 @@
       key:'alona-vakulenko-b174698',name:'Alona Vakulenko',canonicalId:'b174698_alona_vakulenko_1996-12-06',
       duplicateStudentIds:['a1_alona_vakulenko_1996-12-06','kurs_student'],
       profiles:[
-        {profileId:'b174698_alona_vakulenko_1996-12-06',memberProgressIds:['b174698_alona_vakulenko_1996-12-06'],allowMissing:true},
+        {profileId:'b174698_alona_vakulenko_1996-12-06',memberProgressIds:['b174698_alona_vakulenko_1996-12-06'],allowMissing:true,ignoreForPointSum:true},
         {profileId:'a1_alona_vakulenko_1996-12-06',memberProgressIds:['a1_alona_vakulenko_1996-12-06']},
         {profileId:'kurs_student',memberProgressIds:['kurs_student']}
       ]
@@ -57,8 +57,8 @@
     for(const profile of group.profiles){
       const rows=profile.memberProgressIds.map(id=>byId.get(id)).filter(Boolean);
       if(!rows.length&&!profile.allowMissing)throw new Error('INCIDENT_PROFILE_PROGRESS_MISSING:'+group.key+':'+profile.profileId);
-      const points=rows.reduce((m,row)=>Math.max(m,pointValue(row,recalculator)),0);
-      breakdown.push({profileId:profile.profileId,points,memberProgressIds:profile.memberProgressIds.filter(id=>byId.has(id))});
+      const points=profile.ignoreForPointSum?0:rows.reduce((m,row)=>Math.max(m,pointValue(row,recalculator)),0);
+      breakdown.push({profileId:profile.profileId,points,ignoredSynthetic:profile.ignoreForPointSum===true,memberProgressIds:profile.memberProgressIds.filter(id=>byId.has(id))});
     }
     return breakdown;
   }
@@ -85,10 +85,10 @@
       return{group,alreadyDone:true,canonicalStudent,currentCanonical};
     }
 
-    // Einmalige Incident-Reparatur: Die früheren Altfortschrittsdokumente wurden bewusst
-    // nicht gelöscht. Sie sind deshalb die einzige Punktquelle; diagnostics wird weder
-    // benötigt noch gelesen. Alias-Kopien innerhalb EINES Profils zählen nur mit ihrem
-    // höchsten Punktestand, verschiedene Doppelprofile werden anschließend addiert.
+    // Die alten progress-Dokumente wurden bewusst nicht gelöscht und sind die Incident-Quelle.
+    // Alias-Kopien innerhalb eines Profils zählen nur einmal (Maximum), echte Doppelprofile
+    // werden addiert. Alonas kanonisches Fortschrittsdokument entstand erst durch die frühere
+    // Reparatur und wird daher nur für Inhalte, nicht nochmals als eigener Punktestand gezählt.
     const pointSourceRows=currentRows;
     const breakdown=profilePointBreakdown(pointSourceRows,group,recalculator);
     const targetPoints=breakdown.reduce((sum,x)=>sum+x.points,0);
