@@ -4,6 +4,7 @@ on:
   pull_request:
     paths:
       - 'firestore.rules'
+      - 'firestore.transition-student-lookups.rules'
       - 'firebase.json'
       - 'js/student-secure-auth.js'
       - 'js/student-identity.js'
@@ -48,6 +49,7 @@ on:
       - 'scripts/test-one-time-duplicate-incident-safety.mjs'
       - 'scripts/test-one-time-incident-rollback-rules.mjs'
       - 'scripts/test-one-time-incident-students-scope.mjs'
+      - 'scripts/test-student-lookups-transition-rules.mjs'
       - 'scripts/test-private-query-boundaries.mjs'
       - 'scripts/test-secure-access-gate.mjs'
       - '.github/workflows/strict-student-isolation-check.yml'
@@ -115,6 +117,7 @@ jobs:
           node --check scripts/test-one-time-duplicate-incident-safety.mjs
           node --check scripts/test-one-time-incident-rollback-rules.mjs
           node --check scripts/test-one-time-incident-students-scope.mjs
+          node --check scripts/test-student-lookups-transition-rules.mjs
           node --check scripts/test-private-query-boundaries.mjs
           node --check scripts/test-secure-access-gate.mjs
           python3 -m py_compile scripts/inject-learning-auth-gate.py
@@ -163,3 +166,6 @@ jobs:
 
       - name: Test one-time incident against rollback production rules
         run: npx firebase emulators:exec --only firestore --project demo-one-time-rollback "node scripts/test-one-time-incident-rollback-rules.mjs"
+
+      - name: Test temporary studentLookups transition rules
+        run: npx firebase emulators:exec --only firestore --project demo-sprachpilot-student-lookups-transition "node scripts/test-student-lookups-transition-rules.mjs"
