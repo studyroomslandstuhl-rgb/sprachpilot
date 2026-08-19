@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-reading-queue2';
+const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-reading-queue3';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 function addOrderPolish(){
  if(page!=='task')return;
@@ -21,12 +21,12 @@ function addOrderPolish(){
 }
 Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
- .then(()=>load('../shared/l7-theme-score.js?v=1'))
+ .then(()=>load('../shared/l7-theme-score.js?v=2'))
  .then(()=>load('../shared/l7-exam-gate.js?v=2'))
  .then(()=>{window.SPL7StrictExamGate?.install?.();window.L7T3CardImages?.installRenderer?.();return load('l7t3-bunny-audio.js?v=3')})
  .then(()=>{
   window.L7T3BunnyAudio?.install?.();
-  if(page==='theme')return load('../shared/l7-theme-standard.js?v=l7-theme-standard6').then(()=>window.L7ThemeStandard.render(theme));
+  if(page==='theme')return load('../shared/l7-theme-standard.js?v=l7-theme-standard7').then(()=>window.L7ThemeStandard.render(theme));
   if(window.L7S)window.L7S.header=()=>'';
   addOrderPolish();
   return load(`../shared/l7-ui.js?v=${version}`)
@@ -37,7 +37,7 @@ Promise.resolve(window.L7_THEME_READY)
    .then(()=>load('../shared/l7-listen-participle-bunny-fix.js?v=1'))
    .then(()=>load('l7t3-special-ui.js?v=2'))
    .then(()=>load('l7t3-help-standard.js?v=1'))
-   .then(()=>load('../shared/l7-reading-queue-fix.js?v=1'))
+   .then(()=>load('../shared/l7-reading-queue-fix.js?v=2'))
    .then(()=>{
     window.L7T2MemoryUI?.install?.();
     window.L7T2EndingsUI?.install?.();
