@@ -26,7 +26,7 @@ service cloud.firestore {
     }
 
     function ownerEmail() {
-      return signedIn() && authEmail() in [
+      return verifiedUser() && authEmail() in [
         'studyroomslandstuhl@gmail.com',
         'alicekrekoten@gmail.com',
         'alisa.krekoten@gmail.com'
@@ -65,12 +65,57 @@ service cloud.firestore {
         get(/databases/$(database)/documents/students/$(studentId)).data.get('authUid', '') == request.auth.uid;
     }
 
+    function studentAliasAllowed(canonicalId, progressId) {
+      return ownsStudentId(canonicalId) && (
+        progressId == canonicalId ||
+        progressId in get(/databases/$(database)/documents/students/$(canonicalId)).data.get('aliasIds', [])
+      );
+    }
+
+    function progressTargetAllowed(data, progressId) {
+      let canonical = data.get('canonicalStudentId', '');
+      return ownsStudentId(progressId) ||
+        (canonical != '' && studentAliasAllowed(canonical, progressId));
+    }
+
+    function studentIdentityStable(studentId) {
+      return request.resource.data.get('authUid', '') == resource.data.get('authUid', '') &&
+        request.resource.data.get('authEmail', '').lower().trim() == resource.data.get('authEmail', '').lower().trim() &&
+        request.resource.data.get('email', '').lower().trim() == resource.data.get('email', '').lower().trim() &&
+        resource.data.get('canonicalStudentId', studentId) == studentId &&
+        request.resource.data.get('canonicalStudentId', studentId) == studentId &&
+        resource.data.get('docId', studentId) == studentId &&
+        request.resource.data.get('docId', studentId) == studentId &&
+        resource.data.get('studentId', studentId) == studentId &&
+        request.resource.data.get('studentId', studentId) == studentId &&
+        resource.data.get('userId', studentId) == studentId &&
+        request.resource.data.get('userId', studentId) == studentId &&
+        request.resource.data.get('aliasIds', [studentId]).hasOnly(
+          resource.data.get('aliasIds', []).concat([studentId])
+        ) &&
+        request.resource.data.get('aliasIds', [studentId]).hasAll(
+          resource.data.get('aliasIds', [])
+        ) &&
+        studentId in request.resource.data.get('aliasIds', [studentId]);
+    }
+
+    function studentCreateIdentitySafe(studentId) {
+      return request.resource.data.get('canonicalStudentId', studentId) == studentId &&
+        request.resource.data.get('docId', studentId) == studentId &&
+        request.resource.data.get('studentId', studentId) == studentId &&
+        request.resource.data.get('userId', studentId) == studentId &&
+        request.resource.data.get('aliasIds', [studentId]).hasOnly([studentId]);
+    }
+
     function studentCourseKey(studentId) {
       return get(/databases/$(database)/documents/students/$(studentId)).data.get(
         'courseDocId',
         get(/databases/$(database)/documents/students/$(studentId)).data.get(
           'courseCode',
-          get(/databases/$(database)/documents/students/$(studentId)).data.get('kurs', '')
+          get(/databases/$(database)/documents/students/$(studentId)).data.get(
+            'kurs',
+            get(/databases/$(database)/documents/students/$(studentId)).data.get('kursnummer', '')
+          )
         )
       );
     }
@@ -95,14 +140,9 @@ service cloud.firestore {
         ]);
     }
 
-    function progressOwnedByUser(data, studentId) {
+    function progressOwnedByUser(data, progressId) {
       return verifiedUser() && (
-        data.get('authUid', '') == request.auth.uid ||
-        ownsStudentId(studentId) ||
-        (
-          data.get('canonicalStudentId', '') != '' &&
-          ownsStudentId(data.get('canonicalStudentId', ''))
-        ) ||
+        progressTargetAllowed(data, progressId) ||
         legacyVerifiedEmail(data)
       );
     }
@@ -149,12 +189,11 @@ service cloud.firestore {
 
     match /students/{studentId} {
       allow get: if isTeacher() || ownsStudentData(resource.data) || legacyVerifiedEmail(resource.data);
-      allow list: if isTeacher() || (
-        verifiedUser() && resource.data.get('authUid', '') == request.auth.uid
-      );
+      allow list: if isTeacher() || ownsStudentData(resource.data);
 
       allow create: if isTeacher() || (
         verifiedUser() && reasonableSize() &&
+        studentCreateIdentitySafe(studentId) &&
         request.resource.data.get('authUid', '') == request.auth.uid &&
         request.resource.data.get('authEmail', '').lower().trim() == authEmail() &&
         request.resource.data.get('email', '').lower().trim() == authEmail()
@@ -165,9 +204,7 @@ service cloud.firestore {
           legacyStudentClaimAllowed() ||
           (
             ownsStudentData(resource.data) &&
-            request.resource.data.get('authUid', '') == resource.data.get('authUid', '') &&
-            request.resource.data.get('authEmail', '').lower().trim() == resource.data.get('authEmail', '').lower().trim() &&
-            request.resource.data.get('email', '').lower().trim() == resource.data.get('email', '').lower().trim()
+            studentIdentityStable(studentId)
           )
         )
       );
@@ -175,23 +212,21 @@ service cloud.firestore {
       allow delete: if isTeacher();
     }
 
-    match /progress/{studentId} {
-      allow get: if isTeacher() || progressOwnedByUser(resource.data, studentId);
-      allow list: if isTeacher() || (
-        verifiedUser() && resource.data.get('authUid', '') == request.auth.uid
-      );
+    match /progress/{progressId} {
+      allow get: if isTeacher() || progressOwnedByUser(resource.data, progressId);
+      allow list: if isTeacher();
 
       allow create: if isTeacher() || (
         verifiedUser() && reasonableSize() &&
         progressCreateBindingSafe(request.resource.data) &&
-        progressOwnedByUser(request.resource.data, studentId)
+        progressTargetAllowed(request.resource.data, progressId)
       );
 
       allow update: if isTeacher() || (
         reasonableSize() &&
         progressUpdateBindingSafe() &&
-        progressOwnedByUser(resource.data, studentId) &&
-        progressOwnedByUser(request.resource.data, studentId)
+        progressTargetAllowed(resource.data, progressId) &&
+        progressTargetAllowed(request.resource.data, progressId)
       );
 
       allow delete: if isTeacher();
