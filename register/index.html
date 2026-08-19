@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SprachPilot – Registrierung</title><link rel="stylesheet" href="../style.css"></head><body><div class="container"><section class="hero"><a href="/index.html" style="text-decoration:none;color:inherit"><div class="logo-wrap"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></div><h1>SprachPilot</h1></a><p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p></section><section class="card"><h2>Schüler registrieren</h2><p class="small">Du brauchst nur deinen Namen, deine E-Mail, deine Muttersprache und den Kurscode deiner Lehrkraft.</p><form id="registerForm"><div class="two"><div><label>Vorname *</label><input id="fname" required></div><div><label>Nachname *</label><input id="lname" required></div></div><label>E-Mail *</label><input id="email" type="email" required placeholder="name@email.com"><label>Muttersprache *</label><select id="motherLanguage" required>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SprachPilot – Registrierung</title><link rel="stylesheet" href="../style.css"></head><body><div class="container"><section class="hero"><a href="/index.html" style="text-decoration:none;color:inherit"><div class="logo-wrap"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></div><h1>SprachPilot</h1></a><p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p></section><section class="card"><h2>Schüler registrieren</h2><p class="small">Du brauchst deinen Namen, deine E-Mail, deine Muttersprache und den Kurscode deiner Lehrkraft.</p><form id="registerForm"><div class="two"><div><label>Vorname *</label><input id="fname" required autocomplete="given-name"></div><div><label>Nachname *</label><input id="lname" required autocomplete="family-name"></div></div><label>E-Mail *</label><input id="email" type="email" required autocomplete="email" inputmode="email" placeholder="name@email.com"><label>E-Mail wiederholen *</label><input id="emailConfirm" type="email" required autocomplete="off" inputmode="email" placeholder="E-Mail noch einmal eingeben"><p class="small">Bitte prüfe deine E-Mail genau. Sie wird später für deinen Login benutzt.</p><label>Muttersprache *</label><select id="motherLanguage" required>
         <option value="">Bitte auswählen</option>
         <option>Albanisch</option>
         <option>Amharisch</option>
@@ -40,24 +40,35 @@
         <option>Urdu</option>
         <option>Usbekisch</option>
         <option>Vietnamesisch</option>
-      </select><label>Kurscode *</label><input id="course" required placeholder="z. B. GLK-68"><button class="success" type="button" id="registerBtn" onclick="doRegister()">Registrieren</button><a class="btn secondary" href="../login/">Ich habe schon ein Profil</a><div id="registerResult"></div></form></section><footer>© SprachPilot</footer></div><script type="module">
+      </select><label>Kurscode *</label><input id="course" required autocomplete="off" autocapitalize="characters" placeholder="z. B. GLK-68"><button class="success" type="button" id="registerBtn" onclick="doRegister()">Registrieren</button><a class="btn secondary" href="../login/">Ich habe schon ein Profil</a><div id="registerResult"></div></form></section><footer>© SprachPilot</footer></div><script type="module">
 import { registerStudent, $, safeText } from "../js/student-identity.js?v=identity1";
 
 function showMsg(html){
   const result=$("registerResult");
   if(result) result.innerHTML=html;
 }
+function normalizedEmail(value){return String(value||"").trim().toLowerCase()}
 
 window.doRegister = async function(){
   const btn=$("registerBtn");
   const vorname=$("fname")?.value.trim() || "";
   const nachname=$("lname")?.value.trim() || "";
-  const email=$("email")?.value.trim().toLowerCase() || "";
+  const email=normalizedEmail($("email")?.value);
+  const emailConfirm=normalizedEmail($("emailConfirm")?.value);
   const muttersprache=$("motherLanguage")?.value || "";
   const kurs=$("course")?.value.trim() || "";
 
-  if(!vorname || !nachname || !email || !muttersprache || !kurs){
+  if(!vorname || !nachname || !email || !emailConfirm || !muttersprache || !kurs){
     showMsg('<div class="no">Bitte alle Felder ausfüllen.</div>');
+    return;
+  }
+  if(email!==emailConfirm){
+    showMsg('<div class="no"><b>Die E-Mail-Adressen sind nicht gleich.</b><br>Bitte prüfe beide E-Mail-Felder.</div>');
+    $("emailConfirm")?.focus();
+    return;
+  }
+  if(!$("email")?.checkValidity() || !$("emailConfirm")?.checkValidity()){
+    showMsg('<div class="no">Bitte gib eine gültige E-Mail-Adresse ein.</div>');
     return;
   }
 
