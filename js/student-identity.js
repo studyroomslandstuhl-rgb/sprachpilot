@@ -232,12 +232,31 @@ export async function registerStudent(payload){
   const courseLoaded=await loadAllowedCourse(pending.kurs);
   pending.courseDocId=courseLoaded.id;pending.courseCode=courseLoaded.courseCode;
 
-  const user=await createSecureStudentCredential(pending.email,password);
+  let user=null,existingFirebaseAccount=false;
+  try{
+    user=await createSecureStudentCredential(pending.email,password);
+  }catch(error){
+    if(error?.code!=='auth/email-already-in-use')throw error;
+    // Eine E-Mail kann bereits ein Lehrerkonto besitzen. In diesem Fall wird keine
+    // zweite Firebase-Identität erzeugt; dieselbe verifizierte UID bekommt zusätzlich
+    // das Schülerprofil für den angegebenen Kurs.
+    user=await signInSecureStudent(pending.email,password);
+    existingFirebaseAccount=true;
+  }
+
   pending.uid=user.uid;pending.createdAt=Date.now();
   writeJson(PENDING_KEY,pending);
-  await sendStudentVerification(user);
-  clearActivatedStudentSession();
-  return{verificationRequired:true,email:pending.email};
+
+  if(user.emailVerified!==true){
+    await sendStudentVerification(user);
+    clearActivatedStudentSession();
+    return{verificationRequired:true,email:pending.email,existingFirebaseAccount};
+  }
+
+  // Bereits verifizierte Firebase-Konten (z. B. Lehrkraft + Schüler mit gleicher
+  // E-Mail) können das Schülerprofil sofort sicher an dieselbe UID binden.
+  const profile=await finishPendingStudentRegistration();
+  return{verificationRequired:false,activated:true,email:pending.email,profile,existingFirebaseAccount};
 }
 
 export async function finishPendingStudentRegistration(){
