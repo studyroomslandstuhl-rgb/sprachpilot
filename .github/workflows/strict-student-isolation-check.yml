@@ -46,6 +46,7 @@ on:
       - 'scripts/test-archived-progress-resolver.mjs'
       - 'scripts/test-one-time-duplicate-incident-core.mjs'
       - 'scripts/test-one-time-duplicate-incident-safety.mjs'
+      - 'scripts/test-one-time-incident-rollback-rules.mjs'
       - 'scripts/test-private-query-boundaries.mjs'
       - 'scripts/test-secure-access-gate.mjs'
       - '.github/workflows/strict-student-isolation-check.yml'
@@ -111,6 +112,7 @@ jobs:
           node --check scripts/test-archived-progress-resolver.mjs
           node --check scripts/test-one-time-duplicate-incident-core.mjs
           node --check scripts/test-one-time-duplicate-incident-safety.mjs
+          node --check scripts/test-one-time-incident-rollback-rules.mjs
           node --check scripts/test-private-query-boundaries.mjs
           node --check scripts/test-secure-access-gate.mjs
           python3 -m py_compile scripts/inject-learning-auth-gate.py
@@ -153,3 +155,6 @@ jobs:
 
       - name: Test archived progress teacher-only isolation in emulator
         run: npx firebase emulators:exec --only firestore --project demo-sprachpilot-archived-progress "node scripts/test-firestore-archived-progress-isolation.mjs"
+
+      - name: Test one-time incident against rollback production rules
+        run: npx firebase emulators:exec --only firestore --project demo-one-time-rollback "node scripts/test-one-time-incident-rollback-rules.mjs"
