@@ -22,6 +22,9 @@ on:
       - 'teacher/student-collision-repair.js'
       - 'teacher/legacy-progress-resolution-core.js'
       - 'teacher/legacy-progress-resolution.js'
+      - 'teacher/one-time-duplicate-incident-core.js'
+      - 'teacher/one-time-duplicate-incident.js'
+      - 'teacher/one-time-duplicate-incident-ui.js'
       - 'teacher/student-identity-guard.js'
       - 'teacher/index.html'
       - 'student-dashboard/dashboard-bootstrap.js'
@@ -41,6 +44,7 @@ on:
       - 'scripts/test-student-collision-backup-permissions.mjs'
       - 'scripts/test-legacy-progress-resolution-core.mjs'
       - 'scripts/test-archived-progress-resolver.mjs'
+      - 'scripts/test-one-time-duplicate-incident-core.mjs'
       - 'scripts/test-private-query-boundaries.mjs'
       - 'scripts/test-secure-access-gate.mjs'
       - '.github/workflows/strict-student-isolation-check.yml'
@@ -88,6 +92,9 @@ jobs:
           node --check teacher/student-collision-repair.js
           node --check teacher/legacy-progress-resolution-core.js
           node --check teacher/legacy-progress-resolution.js
+          node --check teacher/one-time-duplicate-incident-core.js
+          node --check teacher/one-time-duplicate-incident.js
+          node --check teacher/one-time-duplicate-incident-ui.js
           node --check teacher/student-identity-guard.js
           node --check student-dashboard/dashboard-bootstrap.js
           node --check student-dashboard/dashboard-lite.js
@@ -101,6 +108,7 @@ jobs:
           node --check scripts/test-student-collision-backup-permissions.mjs
           node --check scripts/test-legacy-progress-resolution-core.mjs
           node --check scripts/test-archived-progress-resolver.mjs
+          node --check scripts/test-one-time-duplicate-incident-core.mjs
           node --check scripts/test-private-query-boundaries.mjs
           node --check scripts/test-secure-access-gate.mjs
           python3 -m py_compile scripts/inject-learning-auth-gate.py
@@ -125,6 +133,9 @@ jobs:
 
       - name: Test final legacy progress resolution plan
         run: node scripts/test-legacy-progress-resolution-core.mjs
+
+      - name: Test one-time duplicate profile point consolidation
+        run: node scripts/test-one-time-duplicate-incident-core.mjs
 
       - name: Test private query boundaries
         run: node scripts/test-private-query-boundaries.mjs
