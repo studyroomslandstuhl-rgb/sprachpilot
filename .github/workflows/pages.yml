@@ -31,6 +31,7 @@ jobs:
         run: |
           mkdir -p _site
           rsync -a --exclude='.git' --exclude='.github' --exclude='_site' ./ _site/
+          python scripts/inject-learning-auth-gate.py _site
           python - <<'PY'
           from pathlib import Path
           import re
