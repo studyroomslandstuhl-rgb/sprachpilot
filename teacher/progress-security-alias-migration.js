@@ -49,6 +49,32 @@
     return error;
   }
 
+  function collectErrorItems(error){
+    const lists=[error?.verification?.failures,error?.indexErrors,error?.failures];
+    const result=[],seen=new Set();
+    for(const list of lists){
+      if(!Array.isArray(list))continue;
+      for(const item of list){
+        const key=JSON.stringify(item||{});
+        if(seen.has(key))continue;
+        seen.add(key);result.push(item||{});
+      }
+    }
+    return result;
+  }
+
+  function describeErrorItem(item={}){
+    const type=String(item.type||item.reason||'unbekannter-fehler');
+    const parts=[];
+    if(item.alias)parts.push('Alias '+item.alias);
+    if(item.studentId)parts.push('Schüler '+item.studentId);
+    if(item.otherStudentId)parts.push('anderer Schüler '+item.otherStudentId);
+    if(item.progressId)parts.push('Fortschritt '+item.progressId);
+    if(item.authUid)parts.push('UID '+item.authUid);
+    if(Array.isArray(item.candidates)&&item.candidates.length)parts.push('Kandidaten '+item.candidates.join(', '));
+    return parts.length?`${type}: ${parts.join(' · ')}`:type;
+  }
+
   async function commitOperations(database,operations,batchSize=350){
     let written=0;
     for(let i=0;i<operations.length;i+=batchSize){
@@ -142,7 +168,7 @@
       });
       return{ok:true,backfill:backfillResult,verification};
     }catch(error){
-      const failures=error?.verification?.failures||error?.failures||error?.indexErrors||[];
+      const failures=collectErrorItems(error);
       try{await markReady(false,{failures:failures.length,status:error?.message||'failed'})}catch(e){}
       throw error;
     }
@@ -166,8 +192,10 @@
       window.SP_PROGRESS_ALIAS_MIGRATION=result;
       return result;
     }catch(error){
-      const failures=error?.verification?.failures||error?.failures||error?.indexErrors||[];
-      render(`Fortschritts-Sicherheit NICHT bereit.\nFehler: ${error?.message||error}\nNicht eindeutige/ungültige Zuordnungen: ${failures.length}\nDer Sicherheits-Cutover wurde blockiert.`,false);
+      const failures=collectErrorItems(error);
+      const details=failures.slice(0,10).map((item,index)=>`${index+1}. ${describeErrorItem(item)}`).join('\n');
+      const more=failures.length>10?`\n… plus ${failures.length-10} weitere`:'';
+      render(`Fortschritts-Sicherheit NICHT bereit.\nFehler: ${error?.message||error}\nNicht eindeutige/ungültige Zuordnungen: ${failures.length}${details?`\n\nDetails:\n${details}${more}`:''}\n\nDer Sicherheits-Cutover wurde blockiert.`,false);
       window.SP_PROGRESS_ALIAS_MIGRATION={ok:false,error,failures};
       throw error;
     }
@@ -194,7 +222,7 @@
     }
   }
 
-  window.ProgressSecurityAliasMigration={analyze,backfill,verify,backfillAndVerify,runUi,markReady};
+  window.ProgressSecurityAliasMigration={analyze,backfill,verify,backfillAndVerify,runUi,markReady,collectErrorItems,describeErrorItem};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(wrapSecurityButtons,0));
   else setTimeout(wrapSecurityButtons,0);
 })();
