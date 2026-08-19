@@ -19,9 +19,9 @@ function ids(p=profile()){
  const course=p.courseCode||p.kurs||p.kursnummer||p.courseDocId||p.course||'kurs';
  const mail=String(p.email||'').trim().toLowerCase();
  const fallback=norm(course+'_'+(mail||p.vorname||p.firstName||'student'));
- return uniq([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem('SP_STUDENT_ID'),fallback]);
+ return uniq([p.canonicalStudentId,p.docId,p.studentId,p.userId,p.uid,p.id,...(Array.isArray(p.aliasIds)?p.aliasIds:[]),localStorage.getItem('SP_STUDENT_ID'),fallback]);
 }
-function canonicalId(p=profile()){return String(p.docId||p.studentId||p.userId||localStorage.getItem('SP_STUDENT_ID')||ids(p)[0]||'').trim()}
+function canonicalId(p=profile()){return String(p.canonicalStudentId||p.docId||p.studentId||p.userId||localStorage.getItem('SP_STUDENT_ID')||ids(p)[0]||'').trim()}
 function maxRuns(a={},b={}){const out={};for(const k of new Set([...Object.keys(a||{}),...Object.keys(b||{})]))out[k]=Math.max(point(a?.[k]),point(b?.[k]));return out}
 function maxTaskRuns(a={},b={}){const out={};for(const k of new Set([...Object.keys(a||{}),...Object.keys(b||{})]))out[k]=maxRuns(a?.[k]||{},b?.[k]||{});return out}
 function taskStrength(t={}){return clamp(t.percent||0)*10000+(t.completed?1000000:0)+Math.max(0,Number(t.done)||0)*100+Math.max(0,Number(t.total)||0)}
@@ -60,10 +60,19 @@ function mergeProgress(base={},incoming={}){
 async function serverDoc(id){try{return await getDocFromServer(doc(db,'progress',id))}catch(e){return getDoc(doc(db,'progress',id))}}
 async function serverDocs(ref){try{return await getDocsFromServer(ref)}catch(e){return getDocs(ref)}}
 async function collect(){
- const p=profile(),queue=ids(p).slice(),seen=new Set(),rows=[];
+ const p=profile(),initialIds=ids(p),queue=initialIds.slice(),trustedAliases=new Set(initialIds),seen=new Set(),rows=[];
  while(queue.length&&seen.size<70){
   const id=String(queue.shift()||'');if(!id||seen.has(id))continue;seen.add(id);
-  try{const s=await serverDoc(id);if(!s.exists())continue;const data=s.data()||{};if(!sameCourse(data,p))continue;rows.push({id:s.id||id,data});uniq([...(data.aliasIds||[]),data.canonicalStudentId,data.studentId,data.userId,data.docId]).forEach(a=>{if(!seen.has(a))queue.push(a)})}catch(e){}
+  try{
+   const s=await serverDoc(id);if(!s.exists())continue;const data=s.data()||{};
+   // Explizit verknüpfte Alias-Dokumente gehören zu diesem Schüler und müssen auch
+   // nach einer Kurskorrektur erhalten bleiben. Nur zufällig gefundene Dokumente
+   // werden weiterhin strikt nach dem aktuellen Kurs gefiltert.
+   if(!trustedAliases.has(id)&&!sameCourse(data,p))continue;
+   rows.push({id:s.id||id,data});
+   const linked=uniq([...(data.aliasIds||[]),data.canonicalStudentId,data.studentId,data.userId,data.docId]);
+   linked.forEach(a=>{trustedAliases.add(a);if(!seen.has(a))queue.push(a)});
+  }catch(e){}
  }
  const mail=String(p.email||'').trim().toLowerCase();
  if(mail){try{const s=await serverDocs(query(collection(db,'progress'),where('email','==',mail),limit(40)));for(const d of s.docs){if(rows.some(r=>r.id===d.id))continue;const data=d.data()||{};if(!sameCourse(data,p))continue;rows.push({id:d.id,data})}}catch(e){}}
@@ -71,7 +80,7 @@ async function collect(){
 }
 function storedPoints(row={}){return Math.max(point(row.ranking?.points),point(row.totals?.points),point(row.pointsTotal),point(row.lifetimePoints),point(row.punkteGesamt))}
 function evidencePoints(progress={}){try{return point(window.SPPointRecalculator?.calculate?.(progress)?.total)}catch(e){return 0}}
-function stampKey(id){return 'SP_PROGRESS_ALIAS_UNIFIER_V3_'+norm(id)}
+function stampKey(id){return 'SP_PROGRESS_ALIAS_UNIFIER_V4_'+norm(id)}
 export async function unifyProgressAliases(options={}){
  const p=profile(),canonical=canonicalId(p);if(!canonical)return{ok:false,reason:'no-canonical-id'};
  const key=stampKey(canonical),last=Number(sessionStorage.getItem(key)||0);if(!options.force&&last&&Date.now()-last<RUN_CACHE_MS)return{ok:true,skipped:true,canonical};
@@ -82,10 +91,10 @@ export async function unifyProgressAliases(options={}){
  const verified=evidencePoints({...merged,...patch});const points=Math.max(bestStored,verified);
  const course=String(p.courseCode||p.kurs||p.kursnummer||p.course||'').trim(),courseDocId=String(p.courseDocId||'').trim(),mail=String(p.email||'').trim().toLowerCase();
  patch.studentId=canonical;patch.userId=canonical;patch.docId=canonical;patch.canonicalStudentId=canonical;patch.aliasIds=[...allIds];patch.studentName=[p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(' ').trim()||p.displayName||p.email||'Schüler/in';patch.email=mail;patch.kurs=course;patch.kursnummer=course;patch.courseCode=course;if(courseDocId)patch.courseDocId=courseDocId;
- patch.totals={...(merged.totals||{}),points};patch.ranking={...(merged.ranking||{}),points,updatedAt:new Date().toISOString()};patch.pointsTotal=points;patch.lifetimePoints=points;patch.punkteGesamt=points;patch.updatedAt=serverTimestamp();patch.metadata={...(patch.metadata||{}),aliasRepair:{version:3,canonical,sourceDocs:rows.map(r=>r.id),at:new Date().toISOString(),verifiedPoints:verified,preservedPoints:points}};
+ patch.totals={...(merged.totals||{}),points};patch.ranking={...(merged.ranking||{}),points,updatedAt:new Date().toISOString()};patch.pointsTotal=points;patch.lifetimePoints=points;patch.punkteGesamt=points;patch.updatedAt=serverTimestamp();patch.metadata={...(patch.metadata||{}),aliasRepair:{version:4,canonical,sourceDocs:rows.map(r=>r.id),at:new Date().toISOString(),verifiedPoints:verified,preservedPoints:points}};
  await setDoc(doc(db,'progress',canonical),patch,{merge:true});
  try{
-  const studentPatch={studentId:canonical,userId:canonical,docId:canonical,email:mail,kurs:course,kursnummer:course,courseCode:course,rankingPoints:points,pointsTotal:points,updatedAt:serverTimestamp()};
+  const studentPatch={studentId:canonical,userId:canonical,docId:canonical,canonicalStudentId:canonical,aliasIds:[...allIds],email:mail,kurs:course,kursnummer:course,courseCode:course,rankingPoints:points,pointsTotal:points,updatedAt:serverTimestamp()};
   if(courseDocId)studentPatch.courseDocId=courseDocId;
   await setDoc(doc(db,'students',canonical),studentPatch,{merge:true});
  }catch(e){}
