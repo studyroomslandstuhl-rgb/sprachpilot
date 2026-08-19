@@ -62,7 +62,6 @@
 
   function validateTarget(student,mapping){
     if(!student)throw new Error('LEGACY_TARGET_STUDENT_MISSING:'+mapping.studentId);
-    if(text(student.authUid))throw new Error('LEGACY_TARGET_ALREADY_AUTH_BOUND:'+mapping.studentId);
     if(mapping.expectedName&&nameOf(student)!==mapping.expectedName)throw new Error('LEGACY_TARGET_NAME_MISMATCH:'+mapping.studentId);
     if(mapping.expectedEmail&&emailOf(student)!==mapping.expectedEmail)throw new Error('LEGACY_TARGET_EMAIL_MISMATCH:'+mapping.studentId);
     if(mapping.expectedCourse&&!courses(student).includes(mapping.expectedCourse))throw new Error('LEGACY_TARGET_COURSE_MISMATCH:'+mapping.studentId);
@@ -78,7 +77,8 @@
   function mergeVlad(canonical,duplicate){
     if(!canonical)throw new Error('VLAD_CANONICAL_MISSING');
     if(!duplicate)return null;
-    if(text(canonical.authUid)||text(duplicate.authUid))throw new Error('VLAD_AUTH_BOUND');
+    const canonicalUid=text(canonical.authUid),duplicateUid=text(duplicate.authUid);
+    if(duplicateUid&&(canonicalUid!==duplicateUid))throw new Error('VLAD_AUTH_BINDING_CONFLICT');
     if(emailOf(canonical)!==VLAD.expectedEmail||emailOf(duplicate)!==VLAD.expectedEmail)throw new Error('VLAD_EMAIL_MISMATCH');
     if(!courses(canonical).includes(VLAD.expectedCourse)||!courses(duplicate).includes(VLAD.expectedCourse))throw new Error('VLAD_COURSE_MISMATCH');
     const merged={...stripInternal(canonical)};
@@ -100,10 +100,6 @@
     merged.identityVersion=Math.max(2,Number(merged.identityVersion||0));
     merged.legacyResolutionVersion=1;
     merged.legacyResolutionKey='vlad-b174698';
-    delete merged.authUid;
-    delete merged.authEmail;
-    delete merged.authVersion;
-    delete merged.authLinkedAt;
     return merged;
   }
 
@@ -138,7 +134,6 @@
         if(option.value==='archive')continue;
         const target=byStudent.get(option.value);
         if(!target)throw new Error('MANUAL_TARGET_MISSING:'+option.value);
-        if(text(target.authUid))throw new Error('MANUAL_TARGET_AUTH_BOUND:'+option.value);
       }
     }
 
