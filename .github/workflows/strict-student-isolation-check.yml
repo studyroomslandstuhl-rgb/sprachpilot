@@ -18,6 +18,7 @@ on:
       - 'teacher/student-security-lookup-details.js'
       - 'teacher/student-security-lookup-exclusions.js'
       - 'teacher/legacy-lookup-resolution.js'
+      - 'teacher/owner-auth-readiness.js'
       - 'teacher/progress-security-alias-core.js'
       - 'teacher/progress-security-alias-migration.js'
       - 'teacher/progress-security-collision-diagnostics.js'
@@ -49,6 +50,7 @@ on:
       - 'scripts/test-student-security-lookup-details.mjs'
       - 'scripts/test-student-security-lookup-exclusions.mjs'
       - 'scripts/test-legacy-lookup-resolution.mjs'
+      - 'scripts/test-owner-auth-readiness.mjs'
       - 'scripts/test-legacy-progress-resolution-core.mjs'
       - 'scripts/test-archived-progress-resolver.mjs'
       - 'scripts/test-one-time-duplicate-incident-core.mjs'
@@ -98,6 +100,7 @@ jobs:
           node --check teacher/student-security-lookup-details.js
           node --check teacher/student-security-lookup-exclusions.js
           node --check teacher/legacy-lookup-resolution.js
+          node --check teacher/owner-auth-readiness.js
           node --check teacher/progress-security-alias-core.js
           node --check teacher/progress-security-alias-migration.js
           node --check teacher/progress-security-collision-diagnostics.js
@@ -123,6 +126,7 @@ jobs:
           node --check scripts/test-student-security-lookup-details.mjs
           node --check scripts/test-student-security-lookup-exclusions.mjs
           node --check scripts/test-legacy-lookup-resolution.mjs
+          node --check scripts/test-owner-auth-readiness.mjs
           node --check scripts/test-legacy-progress-resolution-core.mjs
           node --check scripts/test-archived-progress-resolver.mjs
           node --check scripts/test-one-time-duplicate-incident-core.mjs
@@ -159,6 +163,9 @@ jobs:
 
       - name: Test manual legacy lookup resolution plan
         run: node scripts/test-legacy-lookup-resolution.mjs
+
+      - name: Test owner Firebase auth readiness
+        run: node scripts/test-owner-auth-readiness.mjs
 
       - name: Test final legacy progress resolution plan
         run: node scripts/test-legacy-progress-resolution-core.mjs
