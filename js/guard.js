@@ -8,8 +8,13 @@ if(!IS_L6T3_PATH){import("/js/sp-teacher-unlocked.js?v=1").catch(()=>{});import(
 window.logout=logout;
 const SP_USER=requireLogin();
 const qs=new URLSearchParams(location.search);
-if(qs.has("nofirebase"))localStorage.setItem("SP_NO_FIREBASE_SYNC","1");
-if(qs.has("firebase"))localStorage.removeItem("SP_NO_FIREBASE_SYNC");
+// Diagnosemodus darf nie dauerhaft im Browser gespeichert bleiben.
+const HAD_LEGACY_NO_FIREBASE=localStorage.getItem("SP_NO_FIREBASE_SYNC")==="1";
+localStorage.removeItem("SP_NO_FIREBASE_SYNC");
+if(HAD_LEGACY_NO_FIREBASE)sessionStorage.setItem("SP_SYNC_RECOVERY_NEEDED","1");
+if(qs.has("nofirebase"))sessionStorage.setItem("SP_NO_FIREBASE_SYNC_SESSION","1");
+else sessionStorage.removeItem("SP_NO_FIREBASE_SYNC_SESSION");
+if(qs.has("firebase")){sessionStorage.removeItem("SP_NO_FIREBASE_SYNC_SESSION");sessionStorage.removeItem("SP_SYNC_RECOVERY_NEEDED")}
 const IS_WORTSCHATZ_EXERCISE=/\/wortschatz\/A\d-Lektion-\d+\/Thema-\d+\//.test(path);
 const IS_WORTSCHATZ_THEME_OVERVIEW=/\/wortschatz\/A\d-Lektion-\d+\/Thema-\d+\/?(?:index\.html)?$/i.test(path);
 const IS_WORTSCHATZ_LESSON_OVERVIEW=/\/wortschatz\/A\d-Lektion-\d+\/?(?:index\.html)?$/i.test(path);
@@ -31,11 +36,16 @@ const IS_WORTSCHATZ_TASK_PAGE=IS_WORTSCHATZ_EXERCISE&&!IS_WORTSCHATZ_THEME_OVERV
 const NEEDS_EXAM_UNLOCK_FIX=IS_WORTSCHATZ_TASK_PAGE&&!IS_L3T1&&!HAS_OWN_PROGRESS_SYSTEM&&!IS_L6T2;
 const USES_STANDARD_PROGRESS=(IS_WORTSCHATZ_TASK_PAGE&&!IS_L3T1&&!HAS_OWN_PROGRESS_SYSTEM)||IS_FRAGEN_EXERCISE;
 const LIGHT_FIREBASE_PAGE=IS_WORTSCHATZ_EXERCISE||IS_FRAGEN_EXERCISE||IS_VERBEN_EXERCISE||IS_PERFEKT_EXERCISE;
-const NO_FIREBASE_SYNC=qs.has("nofirebase")||localStorage.getItem("SP_NO_FIREBASE_SYNC")==="1";
+const NO_FIREBASE_SYNC=qs.has("nofirebase")||sessionStorage.getItem("SP_NO_FIREBASE_SYNC_SESSION")==="1";
 const PERFORMANCE_SYNC_OFF=NO_FIREBASE_SYNC;
 const FULL_FIREBASE=!PERFORMANCE_SYNC_OFF;
 if(PERFORMANCE_SYNC_OFF){window.spCanWriteFirebaseProgress=()=>false;window.SP_NO_FIREBASE_SYNC=true;window.SP_PERFORMANCE_MODE=true}
-if(FULL_FIREBASE&&SP_USER&&!IS_L7&&!IS_L8){import("/js/account-progress-sync.js?v=4").then(module=>module.startAccountProgressSync()).catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error))}
+let aliasRepairPromise=Promise.resolve(null);
+if(FULL_FIREBASE&&SP_USER){
+ aliasRepairPromise=import("/student-dashboard/progress-alias-unifier.js?v=3").then(module=>module.unifyProgressAliases()).catch(error=>{console.warn("Verteilte Schüler-Fortschritte konnten noch nicht zusammengeführt werden",error);return null});
+ window.SP_PROGRESS_ALIAS_READY=aliasRepairPromise;
+}
+if(FULL_FIREBASE&&SP_USER&&!IS_L7&&!IS_L8){aliasRepairPromise.finally(()=>import("/js/account-progress-sync.js?v=5").then(module=>module.startAccountProgressSync()).catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error)))}
 function shouldInstallGlobalHeader(){if(IS_WORTSCHATZ_LESSON_OVERVIEW)return false;if(IS_WORTSCHATZ_EXERCISE)return true;return !document.querySelector(".topbar")&&!document.querySelector("header.topbar")}
 function installHeaderOnce(){if(!SP_USER)return;if(!shouldInstallGlobalHeader())return;try{installSpHeader()}catch(e){}}
 function setStar(el){if(el&&el.textContent!=="⭐")el.textContent="⭐"}
@@ -52,13 +62,13 @@ if(!IS_L3T1&&!IS_L5&&!IS_L6T3){try{let iconTimer=null;new MutationObserver(()=>{
 window.addEventListener("SP_PROFILE_SYNCED",()=>setTimeout(installHeaderOnce,0));
 function delayedImport(src,delay){setTimeout(()=>import(src).catch(()=>{}),delay)}
 if(IS_L6T3){delayedImport("/js/microphone-fallback.js?v=1",1200);delayedImport("/js/back-button-fix.js?v=4",1600);delayedImport("/js/sp-help-flow.js?v=1",1800)}else{import("/js/microphone-fallback.js?v=1").catch(()=>{});import("/js/back-button-fix.js?v=4").catch(()=>{});import("/js/sp-help-flow.js?v=1").catch(()=>{})}
-if(!IS_L6T2)import("/js/release-helper.js?v=11").catch(()=>{});
+if(!IS_L6T2)import("/js/release-helper.js?v=12").catch(()=>{});
 if(IS_L3T1){import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-stability.js?v=3").catch(()=>{});import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-image-fix.js?v=3").catch(()=>{})}
 if(IS_L3T2){import("/wortschatz/A1-Lektion-3/Thema-2/l3t2-task-fix.js?v=3").catch(()=>{})}
 if(IS_L6T2){import("/wortschatz/A1-Lektion-6/Thema-2/l6t2-stability.js?v=1").catch(()=>{})}
 if(IS_L6T3){import("/wortschatz/A1-Lektion-6/Thema-3/l6t3-theme-score-v2.js?v=3").catch(()=>{})}
-if((IS_L6T4||IS_L7_THEME_OVERVIEW||IS_L8_THEME_OVERVIEW)&&!PERFORMANCE_SYNC_OFF){import(IS_L7?"/js/progress.js?v=l7-central-score3":IS_L8?"/js/progress.js?v=l8-central-score2":"/js/progress.js?v=l6t4-build1").catch(()=>{})}
-if(USES_STANDARD_PROGRESS){import("/js/sp-progress-standard.js?v=4").catch(()=>{})}
+if((IS_L6T4||IS_L7_THEME_OVERVIEW||IS_L8_THEME_OVERVIEW)&&!PERFORMANCE_SYNC_OFF){import(IS_L7?"/js/progress.js?v=l7-central-score4":IS_L8?"/js/progress.js?v=l8-central-score3":"/js/progress.js?v=l6t4-build2").catch(()=>{})}
+if(USES_STANDARD_PROGRESS){import("/js/sp-progress-standard.js?v=5").catch(()=>{})}
 if(NEEDS_EXAM_UNLOCK_FIX&&!PERFORMANCE_SYNC_OFF){setTimeout(()=>import("/js/exam-unlock-fix.js?v=4").catch(()=>{}),120)}
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
 if(FULL_FIREBASE){if(!LIGHT_FIREBASE_PAGE)setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).catch(()=>{})},1500);if(!IS_L6T3&&!IS_L7&&!IS_L8){const scoringDelay=IS_L5?1800:300;setTimeout(()=>{import("/js/scoring.js?v=14").catch(()=>{})},scoringDelay)}}
