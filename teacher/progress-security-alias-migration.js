@@ -75,6 +75,21 @@
     return parts.length?`${type}: ${parts.join(' · ')}`:type;
   }
 
+  function progressOwnershipPatch(progress={},assignment={}){
+    const progressId=String(assignment.progressId||progress.__docId||progress.id||'').trim();
+    const studentId=String(assignment.studentId||'').trim();
+    if(!progressId||!studentId)return null;
+
+    // Direkter kanonischer Pfad: Die strikten Regeln prüfen den Eigentümer über
+    // students/{progressId}. Das große Fortschrittsdokument muss dafür nicht verändert werden.
+    if(progressId===studentId)return null;
+
+    // Historischer Alias: Nur canonicalStudentId wird benötigt. aliasIds liegen ausschließlich
+    // im Schülerdokument; Versions-/Zeitfelder im progress-Dokument sind für die Regeln unnötig.
+    if(String(progress.canonicalStudentId||'').trim()===studentId)return null;
+    return{canonicalStudentId:studentId};
+  }
+
   async function commitOperations(database,operations,batchSize=350){
     let written=0;
     for(let i=0;i<operations.length;i+=batchSize){
@@ -105,20 +120,10 @@
     for(const progress of analysis.progress){
       const progressId=analysis.resolver.progressIdOf(progress),assignment=byProgress.get(progressId);
       if(!assignment)continue;
-      const aliases=analysis.aliasPlan.get(assignment.studentId)||[];
-      const patch={
-        canonicalStudentId:assignment.studentId,
-        aliasIds:aliases,
-        progressAliasVersion:1,
-        progressAliasUpdatedAt:now
-      };
-      const sameCanonical=String(progress.canonicalStudentId||'').trim()===assignment.studentId;
-      const currentAliases=analysis.resolver.uniq(Array.isArray(progress.aliasIds)?progress.aliasIds:[]).sort();
-      const sameAliases=JSON.stringify(currentAliases)===JSON.stringify(aliases);
-      if(!sameCanonical||!sameAliases||Number(progress.progressAliasVersion||0)<1){
-        const ref=analysis.database.collection('progress').doc(progressId);
-        operations.push(batch=>batch.set(ref,patch,{merge:true}));
-      }
+      const patch=progressOwnershipPatch(progress,assignment);
+      if(!patch)continue;
+      const ref=analysis.database.collection('progress').doc(progressId);
+      operations.push(batch=>batch.set(ref,patch,{merge:true}));
     }
 
     const written=await commitOperations(analysis.database,operations);
@@ -222,7 +227,7 @@
     }
   }
 
-  window.ProgressSecurityAliasMigration={analyze,backfill,verify,backfillAndVerify,runUi,markReady,collectErrorItems,describeErrorItem};
+  window.ProgressSecurityAliasMigration={analyze,backfill,verify,backfillAndVerify,runUi,markReady,collectErrorItems,describeErrorItem,progressOwnershipPatch};
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(wrapSecurityButtons,0));
   else setTimeout(wrapSecurityButtons,0);
 })();
