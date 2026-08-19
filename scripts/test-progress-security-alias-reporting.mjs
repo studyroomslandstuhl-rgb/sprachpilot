@@ -34,4 +34,26 @@ function ok(condition,message){if(!condition)throw new Error(message)}
   ok(items.length===1&&items[0].reason==='orphan-progress','verification failures must be reported');
 }
 
+// Große kanonische Fortschrittsdokumente dürfen für die Sicherheitsmigration gar nicht
+// neu geschrieben werden. Die Eigentümerschaft wird über students/{progressId} geprüft.
+{
+  const hugeDirect={__docId:'student-a',fragen:{veryLarge:'x'}};
+  const patch=migration.progressOwnershipPatch(hugeDirect,{progressId:'student-a',studentId:'student-a'});
+  ok(patch===null,'direct canonical progress must require zero writes');
+}
+
+// Bei einem historischen Alias wird ausschließlich canonicalStudentId benötigt.
+// aliasIds/Versions-/Zeitfelder dürfen das große progress-Dokument nicht aufblasen.
+{
+  const patch=migration.progressOwnershipPatch({__docId:'old-student-a'},{progressId:'old-student-a',studentId:'student-a'});
+  ok(JSON.stringify(patch)===JSON.stringify({canonicalStudentId:'student-a'}),'alias progress must receive only canonicalStudentId');
+  ok(!('aliasIds' in patch)&&!('progressAliasVersion' in patch)&&!('progressAliasUpdatedAt' in patch),'unnecessary indexed fields leaked into progress patch');
+}
+
+// Bereits korrekt kanonisch markierte Alias-Dokumente werden ebenfalls nicht erneut geschrieben.
+{
+  const patch=migration.progressOwnershipPatch({__docId:'old-student-a',canonicalStudentId:'student-a'},{progressId:'old-student-a',studentId:'student-a'});
+  ok(patch===null,'already canonical alias progress must not be rewritten');
+}
+
 console.log('Progress security alias reporting tests passed.');
