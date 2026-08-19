@@ -69,7 +69,7 @@ function clearActivatedStudentSession(){
 }
 async function isolateActivatedStudent(){
   try{
-    const module=await import('/js/account-progress-owner-isolation.js?v=2');
+    const module=await import('/js/account-progress-owner-isolation.js?v=3');
     const result=await module.isolateLocalProgressOwner();
     if(result?.blocked){
       // Der neue Login wird verworfen. Lernstände und der bisherige Besitzer bleiben
