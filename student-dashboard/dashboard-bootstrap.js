@@ -19,4 +19,5 @@ if(activeRole()==='teacher'&&!legitimatePreview){
   location.replace('/teacher/index.html');
 }else{
   await import('./dashboard-lite.js?v=5');
+  import('./local-theme-points-recovery.js?v=1').catch(error=>console.warn('Lokale Themenpunkte konnten noch nicht geprüft werden',error));
 }
