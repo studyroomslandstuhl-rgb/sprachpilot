@@ -5,7 +5,16 @@ const clean=value=>String(value||'').trim().toLowerCase().replace(/[^a-z0-9äö�
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')||{}}catch(e){return{}}}
 function currentPids(){
  const p=profile(),fallback=[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_');
- return new Set([p.uid,p.userId,p.id,p.email,fallback].map(clean).filter(Boolean));
+ const aliases=Array.isArray(p.aliasIds)?p.aliasIds:[];
+ const runtimeAliases=Array.isArray(window.SP_PROGRESS_ALIAS_UNIFIER?.aliases)?window.SP_PROGRESS_ALIAS_UNIFIER.aliases:[];
+ const values=[
+  p.canonicalStudentId,p.docId,p.studentId,p.userId,p.uid,p.id,p.email,fallback,
+  ...aliases,...runtimeAliases,
+  localStorage.getItem('SP_STUDENT_ID'),
+  localStorage.getItem('SP_ACCOUNT_PROGRESS_OWNER'),
+  localStorage.getItem('SP_L7_STABLE_PID')
+ ];
+ return new Set(values.map(clean).filter(Boolean));
 }
 function ledgers(){
  const pids=currentPids(),out=[];
@@ -44,6 +53,7 @@ async function recoverOne(entry,api){
 }
 async function recover(){
  const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();if(['teacher','lehrer','admin','owner'].includes(role))return 0;
+ try{if(window.SP_PROGRESS_ALIAS_READY)await window.SP_PROGRESS_ALIAS_READY}catch(e){}
  const api=window.SPProgress;if(!api?.recordTaskProgress)return 0;let recovered=0;
  for(const entry of ledgers()){try{recovered+=await recoverOne(entry,api)}catch(e){console.warn('Lokale Themenpunkte konnten noch nicht synchronisiert werden',entry.key,e)}}
  if(recovered>0){try{window.dispatchEvent(new CustomEvent('SP_POINT_DELTA_APPLIED',{detail:{type:'local-theme-recovery',recovered}}))}catch(e){}}
