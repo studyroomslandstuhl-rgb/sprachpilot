@@ -1,8 +1,8 @@
 import '/js/progress.js?v=11';
 import '/js/point-delta-bridge.js?v=2';
 import '/js/ranking-mirror.js?v=2';
-import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity2';
-import { isolateLocalProgressOwner } from '/js/account-progress-owner-isolation.js?v=2';
+import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity3';
+import { isolateLocalProgressOwner } from '/js/account-progress-owner-isolation.js?v=3';
 import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-safe.js?v=5';
 export { accountProgressReady };
 
