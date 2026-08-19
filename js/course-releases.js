@@ -1,4 +1,4 @@
-import { db, doc, getDoc, getDocFromServer, collection, query, where, getDocs, getDocsFromServer, limit } from "./firebase.js";
+import { db, doc, getDocFromServer, collection, query, where, getDocsFromServer, limit } from "./firebase.js";
 
 function profileFromStorage(){try{return JSON.parse(localStorage.getItem("SP_USER_PROFILE")||localStorage.getItem("SP_STUDENT_PROFILE")||"null")||{}}catch(e){return {}}}
 function uniq(list){return [...new Set((list||[]).filter(Boolean))]}
@@ -8,11 +8,15 @@ function variants(value){const v=clean(value);if(!v)return [];return [v,v.toUppe
 function isTeacher(){const role=String(localStorage.getItem("SP_LOGIN_ROLE")||localStorage.getItem("SP_ACTIVE_ROLE")||"").toLowerCase();const p=profileFromStorage();return role==="teacher"||role==="lehrer"||p.role==="teacher"||p.teacherPreview===true||p.isTeacher===true}
 function hasReleaseData(d){return !!(d&&typeof d==="object"&&(d.enabledModules||d.enabledLessons||d.enabledThemes||d.enabledTasks||d.enabledWords||d.enabledSets||d.releases||d.releaseMode||d.defaultLocked!==undefined||d.verbenA1AssessmentEnabled!==undefined))}
 function withTimeout(promise,ms,fallback=null){return Promise.race([Promise.resolve(promise),new Promise(resolve=>setTimeout(()=>resolve(fallback),ms))])}
-function activeCourseValues(profile=profileFromStorage()){return uniq([profile.courseCode,profile.kurs,profile.kursnummer,profile.course,localStorage.getItem("SP_COURSE_CODE")].flatMap(variants)).map(norm).filter(Boolean)}
+function profileCourseRaw(profile=profileFromStorage()){
+ const direct=[profile.courseCode,profile.kurs,profile.kursnummer,profile.course].filter(v=>clean(v));
+ return direct.length?direct:[localStorage.getItem("SP_COURSE_CODE")].filter(v=>clean(v))
+}
+function activeCourseValues(profile=profileFromStorage()){return uniq(profileCourseRaw(profile).flatMap(variants)).map(norm).filter(Boolean)}
 function rowCourseValues(data={},id=""){return uniq([id,data.id,data.courseDocId,data.courseId,data.courseCode,data.kurs,data.kursnummer,data.code,data.name,data.courseName].flatMap(variants)).map(norm).filter(Boolean)}
 function matchesActiveCourse(data={},id="",profile=profileFromStorage()){const wanted=activeCourseValues(profile);if(!wanted.length)return true;const got=rowCourseValues(data,id);return got.some(v=>wanted.includes(v))}
 export function courseCodes(profile=profileFromStorage()){
- const primary=[profile.courseCode,profile.kurs,profile.kursnummer,profile.course,localStorage.getItem("SP_COURSE_CODE")];
+ const primary=profileCourseRaw(profile);
  const secondary=[profile.courseDocId,profile.courseId,profile.courseName,profile.code];
  return uniq([...primary,...secondary].flatMap(variants))
 }
@@ -39,7 +43,7 @@ function cachedRelease(profile=profileFromStorage()){
  for(const data of candidates){
   if(!active.length)return data;
   const own=rowCourseValues(data,data?.id||"");
-  if(own.some(v=>active.includes(v)))return data;
+  if(own.length){if(own.some(v=>active.includes(v)))return data;continue}
   if(marker&&active.includes(marker))return data;
  }
  return {}
@@ -48,7 +52,7 @@ export async function loadCourseRelease(profile=profileFromStorage()){
  if(isTeacher())return {releaseMode:"all",defaultLocked:false,teacherPreview:true};
  const fallback=cachedRelease(profile);
  const lookup=(async()=>{
-  const primary=uniq([profile.courseCode,profile.kurs,profile.kursnummer,profile.course,localStorage.getItem("SP_COURSE_CODE")].flatMap(variants));
+  const primary=uniq(profileCourseRaw(profile).flatMap(variants));
   const secondary=uniq([profile.courseDocId,profile.courseId,profile.courseName,profile.code].flatMap(variants));
   for(const code of [...primary,...secondary]){const d=await readCourseDoc(code,profile);if(hasReleaseData(d))return rememberRelease(profile,d)}
   const fields=["courseCode","kurs","kursnummer","code","name","courseName","courseDocId","courseId"];
