@@ -142,10 +142,12 @@ service cloud.firestore {
     }
 
     function progressOwnedByUser(data, progressId) {
-      return verifiedUser() && (
-        progressTargetAllowed(data, progressId) ||
-        legacyVerifiedEmail(data)
-      );
+      return verifiedUser() &&
+        data.get('securityArchived', false) != true &&
+        (
+          progressTargetAllowed(data, progressId) ||
+          legacyVerifiedEmail(data)
+        );
     }
 
     function progressCreateBindingSafe(data) {
@@ -219,12 +221,15 @@ service cloud.firestore {
 
       allow create: if isTeacher() || (
         verifiedUser() && reasonableSize() &&
+        request.resource.data.get('securityArchived', false) != true &&
         progressCreateBindingSafe(request.resource.data) &&
         progressTargetAllowed(request.resource.data, progressId)
       );
 
       allow update: if isTeacher() || (
         reasonableSize() &&
+        resource.data.get('securityArchived', false) != true &&
+        request.resource.data.get('securityArchived', false) != true &&
         progressUpdateBindingSafe() &&
         progressTargetAllowed(resource.data, progressId) &&
         progressTargetAllowed(request.resource.data, progressId)
@@ -233,8 +238,6 @@ service cloud.firestore {
       allow delete: if isTeacher();
     }
 
-    // Ausschließlich für die sichtbare Kursrangliste. Diese Dokumente enthalten
-    // absichtlich KEINE E-Mail, Aufgaben, Prüfungen oder Fortschrittsdetails.
     match /studentRankings/{studentId} {
       allow read: if verifiedUser();
       allow create: if isTeacher() || (
