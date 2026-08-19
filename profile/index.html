@@ -5,9 +5,10 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>SprachPilot – Profil</title>
 <link rel="stylesheet" href="../style.css">
+<style>html:not([data-sp-profile-auth="ok"]){visibility:hidden!important}</style>
 </head>
 <body>
-<div id="accountStrip" class="account-strip"></div><div class="container">
+<div class="container">
 <section class="hero">
   <a href="/index.html" style="text-decoration:none;color:inherit">
     <div class="logo-wrap"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></div>
@@ -18,15 +19,15 @@
 
 <section class="card">
   <h2>Meine Daten</h2>
-  <p class="small">Du kannst deine Daten ändern. Der Kurscode bleibt fest.</p>
+  <p class="small">Vorname, Nachname und Muttersprache kannst du ändern. E-Mail und Kurs gehören zu deiner sicheren Anmeldung und sind hier nicht änderbar.</p>
 
   <div class="two">
     <div><label>Vorname *</label><input id="fname"></div>
     <div><label>Nachname *</label><input id="lname"></div>
   </div>
 
-  <label>E-Mail *</label>
-  <input id="email" type="email">
+  <label>E-Mail</label>
+  <input id="email" type="email" disabled>
 
   <label>Muttersprache *</label>
   <select id="motherLanguage">
@@ -38,6 +39,7 @@
   <input id="course" disabled>
 
   <button class="success" onclick="saveProfile()">Speichern</button>
+  <a class="btn secondary" href="/student-dashboard/">Zum Dashboard</a>
   <a class="btn secondary" href="../">Zur Startseite</a>
   <div id="result"></div>
 </section>
@@ -46,34 +48,46 @@
 </div>
 
 <script type="module">
-import { requireLogin, updateStudentProfile, $, safeText, renderAccountStrip, logout } from "../js/auth.js?v=step21"; window.logout=logout;
-import { normalizeStudentIdentity } from "../js/student-identity.js?v=identity1";
-import { startGlobalSync, refreshActiveProfileFromCloud, saveProfileToCloud } from "../js/global-sync.js?v=2";
+import '/js/session-restore.js?v=4';
+import { db, doc, setDoc, serverTimestamp } from '/js/firebase.js';
+import { verifySecureAccess } from '/js/secure-access-gate.js?v=1';
+import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity5';
 
-let p=requireLogin();
-if(p){
-  try{p=await normalizeStudentIdentity(p,{silent:true})||p}catch(e){console.warn("Schüleridentität konnte noch nicht normalisiert werden",e)}
-  renderAccountStrip();
+const $=id=>document.getElementById(id);
+const safeText=s=>String(s||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;');
+const access=await verifySecureAccess({allowTeacher:false,redirect:true,mark:false});
+if(!access?.ok||access.type!=='student')throw new Error('SECURE_STUDENT_PROFILE_ACCESS_REQUIRED');
+
+let p=await normalizeStudentIdentity(access.profile,{silent:true})||access.profile;
+if(String(p?.authUid||'')!==String(access.uid||''))throw new Error('PROFILE_UID_MISMATCH');
+
+function canonicalId(profile={}){return String(profile.canonicalStudentId||profile.docId||profile.studentId||profile.userId||'').trim()}
+function fill(profile){
+  if(!profile)return;
+  $('fname').value=profile.vorname||profile.firstName||'';
+  $('lname').value=profile.nachname||profile.lastName||'';
+  $('email').value=profile.authEmail||profile.email||'';
+  $('motherLanguage').value=profile.muttersprache||profile.motherLanguage||'';
+  $('course').value=profile.kurs||profile.courseCode||profile.kursnummer||'';
 }
-try{await startGlobalSync();p=await refreshActiveProfileFromCloud(p)||p;}catch(e){console.warn("Profil-Sync nicht verfügbar",e)}
-function fill(profile){if(!profile)return;$("fname").value=profile.vorname||profile.firstName||"";$("lname").value=profile.nachname||profile.lastName||"";$("email").value=profile.email||"";$("motherLanguage").value=profile.muttersprache||profile.motherLanguage||"";$("course").value=profile.kurs||profile.courseCode||profile.kursnummer||"";}
+function persist(profile){
+  const json=JSON.stringify(profile);
+  localStorage.setItem('SP_USER_PROFILE',json);
+  localStorage.setItem('SP_STUDENT_PROFILE',json);
+}
 fill(p);
-window.addEventListener("SP_PROFILE_SYNCED",e=>{p=e.detail.profile;fill(p);renderAccountStrip();});
+document.documentElement.dataset.spProfileAuth='ok';
 
 window.saveProfile=async function(){
-  const result=$("result");
+  const result=$('result'),vorname=$('fname').value.trim(),nachname=$('lname').value.trim(),muttersprache=$('motherLanguage').value;
+  if(!vorname||!nachname||!muttersprache){result.innerHTML='<div class="no">Bitte Vorname, Nachname und Muttersprache ausfüllen.</div>';return}
   result.innerHTML='<div class="ok">Profil wird gespeichert...</div>';
-
   try{
-    p=await normalizeStudentIdentity(p,{silent:true})||p;
-    const newP=await updateStudentProfile({
-      vorname:$("fname").value,
-      nachname:$("lname").value,
-      email:$("email").value,
-      muttersprache:$("motherLanguage").value
-    });
-    await saveProfileToCloud(newP);
-    result.innerHTML='<div class="ok">Gespeichert. Die Änderung wird zentral mit allen Geräten synchronisiert.</div>';
+    const id=canonicalId(p);if(!id)throw new Error('STUDENT_ID_MISSING');
+    if(String(p.authUid||'')!==String(access.uid||''))throw new Error('STUDENT_UID_MISMATCH');
+    await setDoc(doc(db,'students',id),{vorname,nachname,muttersprache,updatedAt:serverTimestamp()},{merge:true});
+    p={...p,vorname,nachname,muttersprache};persist(p);
+    result.innerHTML='<div class="ok">Gespeichert.</div>';
   }catch(err){
     console.error(err);
     result.innerHTML='<div class="no">Profil konnte nicht gespeichert werden: '+safeText(err.message||err)+'</div>';
