@@ -1,4 +1,4 @@
-import '/js/progress.js?v=local-standard-recovery1';
+import '/js/progress.js?v=local-standard-recovery2';
 
 const PATTERNS=[
   [/^SP_L4_T1_V2_(.+)$/i,4,1],
@@ -13,6 +13,13 @@ const PATTERNS=[
   [/^SP_L6_T4_V2_(.+)$/i,6,4]
 ];
 function parse(v,f=null){try{return JSON.parse(v||'null')??f}catch(e){return f}}
+function clean(v){return String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
+function profile(){return parse(localStorage.getItem('SP_USER_PROFILE'),null)||parse(localStorage.getItem('SP_STUDENT_PROFILE'),null)||{}}
+function currentIds(){
+ const p=profile(),course=p.courseCode||p.kurs||p.kursnummer||p.courseDocId||p.course||'kurs',mail=String(p.email||'').trim().toLowerCase(),fallback=clean(course+'_'+(mail||p.vorname||p.firstName||'student'));
+ return new Set([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem('SP_STUDENT_ID'),fallback,...(window.SP_PROGRESS_ALIAS_UNIFIER?.aliases||[])].filter(Boolean).map(String))
+}
+function ownerMatches(){const owner=String(localStorage.getItem('SP_ACCOUNT_PROGRESS_OWNER')||'').trim();return !owner||currentIds().has(owner)}
 function clamp(v){return Math.max(0,Math.min(100,Math.round(Number(v)||0)))}
 function statePercent(st={}){
  if(!st||typeof st!=='object')return 0;
@@ -51,6 +58,7 @@ function topicId(lesson,theme){return`wortschatz-a1-lektion-${lesson}-thema-${th
 async function recover(){
  const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();if(['teacher','lehrer','admin','owner'].includes(role))return{ok:false,reason:'teacher'};
  try{if(window.SP_PROGRESS_ALIAS_READY)await window.SP_PROGRESS_ALIAS_READY}catch(e){}
+ if(!ownerMatches())return{ok:false,reason:'local-progress-belongs-to-different-student'};
  const api=window.SPProgress;if(!api?.recordTaskProgress)return{ok:false,reason:'progress-api-missing'};
  const entries=collect();let synced=0,completed=0;
  for(const entry of entries){
