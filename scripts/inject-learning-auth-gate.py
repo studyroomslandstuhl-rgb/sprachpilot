@@ -33,17 +33,26 @@ AUTH_MARKERS = (
     "requireLogin(",
 )
 
-GATE_TAG = '<script type="module" src="/js/learning-auth-gate.js?v=1"></script>'
+# Ungeschützte Seiten werden bis zur bestätigten Sitzung unsichtbar gehalten.
+# So kann ein direkter Link die Aufgabe nicht kurz anzeigen, bevor die Weiterleitung greift.
+GATE_BLOCK = (
+    '<style id="sp-learning-auth-hide">'
+    'html:not([data-sp-learning-auth="ok"]){visibility:hidden!important}'
+    '</style>\n'
+    '<script type="module" src="/js/learning-auth-gate.js?v=1"></script>'
+)
 
 
 def inject(html: str) -> tuple[str, bool]:
     if any(marker in html for marker in AUTH_MARKERS):
         return html, False
+    if "</head>" in html:
+        return html.replace("</head>", GATE_BLOCK + "\n</head>", 1), True
     if "</body>" in html:
-        return html.replace("</body>", GATE_TAG + "\n</body>", 1), True
+        return html.replace("</body>", GATE_BLOCK + "\n</body>", 1), True
     if "</html>" in html:
-        return html.replace("</html>", GATE_TAG + "\n</html>", 1), True
-    return html + "\n" + GATE_TAG + "\n", True
+        return html.replace("</html>", GATE_BLOCK + "\n</html>", 1), True
+    return html + "\n" + GATE_BLOCK + "\n", True
 
 
 def main(site_arg: str = "_site") -> int:
