@@ -9,6 +9,7 @@
   function studentIdOf(student={}){return text(student.__docId||student.canonicalStudentId||student.docId||student.studentId||student.userId||student.id)}
   function progressIdOf(progress={}){return text(progress.__docId||progress.id)}
   function identityValues(data={}){return uniq([data.canonicalStudentId,data.docId,data.studentId,data.userId])}
+  function isArchivedProgress(progress={}){return progress.securityArchived===true}
 
   function indexStudents(students=[]){
     const byId=new Map(),byAlias=new Map(),byUid=new Map(),byEmailCourse=new Map(),byEmail=new Map();
@@ -58,6 +59,7 @@
   function resolveProgress(progress,index){
     const progressId=progressIdOf(progress),evidence=new Map();
     if(!progressId)return{ok:false,reason:'progress-id-missing',progressId:''};
+    if(isArchivedProgress(progress))return{ok:true,archived:true,progressId};
 
     addEvidence(evidence,index.byAlias.get(progressId),'path');
     for(const value of identityValues(progress))addEvidence(evidence,index.byAlias.get(value),'identity:'+value);
@@ -102,14 +104,16 @@
   }
 
   function resolveOwnership(students=[],progressDocs=[]){
-    const index=indexStudents(students);
-    if(index.errors.length)return{ok:false,indexErrors:index.errors,assignments:[],failures:[]};
+    const index=indexStudents(students),archived=[];
+    for(const progress of progressDocs){if(isArchivedProgress(progress))archived.push(progressIdOf(progress))}
+    if(index.errors.length)return{ok:false,indexErrors:index.errors,assignments:[],failures:[],archived,index};
     const assignments=[],failures=[];
     for(const progress of progressDocs){
+      if(isArchivedProgress(progress))continue;
       const result=resolveProgress(progress,index);
       if(result.ok)assignments.push(result);else failures.push(result);
     }
-    return{ok:failures.length===0,indexErrors:[],assignments,failures,index};
+    return{ok:failures.length===0,indexErrors:[],assignments,failures,archived,index};
   }
 
   function buildAliasPlan(students=[],assignments=[]){
@@ -127,7 +131,7 @@
   }
 
   root.ProgressSecurityAliasCore={
-    text,email,uniq,courseValues,studentIdOf,progressIdOf,identityValues,
+    text,email,uniq,courseValues,studentIdOf,progressIdOf,identityValues,isArchivedProgress,
     indexStudents,resolveProgress,resolveOwnership,buildAliasPlan
   };
 })(typeof window!=='undefined'?window:globalThis);
