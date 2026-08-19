@@ -67,7 +67,11 @@
   }
   function sourceRowsForPoints(progressRows=[],backups=[],group){
     const backupRows=repairBackupRows(backups,group);
-    return backupRows.length?backupRows:currentRowsForGroup(progressRows,group);
+    if(group.useRepairBackups){
+      if(!backupRows.length)throw new Error('INCIDENT_ORIGINAL_BACKUPS_MISSING:'+group.key);
+      return backupRows;
+    }
+    return currentRowsForGroup(progressRows,group);
   }
   function profilePointBreakdown(sourceRows=[],group,recalculator=null){
     const byId=new Map((sourceRows||[]).map(row=>[progressId(row),row]).filter(([id])=>id));
