@@ -43,9 +43,6 @@ service cloud.firestore {
         get(/databases/$(database)/documents/settings/teacherSecurity).data.get('generation', '') != '';
     }
 
-    // Alte teacher-Dokumente stammen aus einer Zeit, in der jeder angemeldete Client
-    // diese Collection beschreiben konnte. Sie werden deshalb NICHT automatisch
-    // vertraut. Nur eine nach dem Cutover vom Owner gesetzte, zufällige Generation gilt.
     function approvedTeacher() {
       return teacherRecordExists() && teacherSecurityReady() &&
         get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('active', true) == true &&
@@ -66,6 +63,27 @@ service cloud.firestore {
       return verifiedUser() &&
         exists(/databases/$(database)/documents/students/$(studentId)) &&
         get(/databases/$(database)/documents/students/$(studentId)).data.get('authUid', '') == request.auth.uid;
+    }
+
+    function studentCourseKey(studentId) {
+      return get(/databases/$(database)/documents/students/$(studentId)).data.get(
+        'courseDocId',
+        get(/databases/$(database)/documents/students/$(studentId)).data.get(
+          'courseCode',
+          get(/databases/$(database)/documents/students/$(studentId)).data.get('kurs', '')
+        )
+      );
+    }
+
+    function rankingWriteSafe(studentId) {
+      return verifiedUser() && ownsStudentId(studentId) &&
+        request.resource.data.keys().hasOnly([
+          'studentId','authUid','displayName','courseKey','points','version','updatedAt'
+        ]) &&
+        request.resource.data.get('studentId', '') == studentId &&
+        request.resource.data.get('authUid', '') == request.auth.uid &&
+        request.resource.data.get('courseKey', '') == studentCourseKey(studentId) &&
+        request.resource.data.get('points', -1) >= 0;
     }
 
     function legacyStudentClaimAllowed() {
@@ -179,9 +197,21 @@ service cloud.firestore {
       allow delete: if isTeacher();
     }
 
+    // Ausschließlich für die sichtbare Kursrangliste. Diese Dokumente enthalten
+    // absichtlich KEINE E-Mail, Aufgaben, Prüfungen oder Fortschrittsdetails.
+    match /studentRankings/{studentId} {
+      allow read: if verifiedUser();
+      allow create: if isTeacher() || (
+        reasonableSize() && rankingWriteSafe(studentId)
+      );
+      allow update: if isTeacher() || (
+        reasonableSize() && rankingWriteSafe(studentId) &&
+        (resource.data.get('authUid', '') == '' || resource.data.get('authUid', '') == request.auth.uid)
+      );
+      allow delete: if isTeacher();
+    }
+
     match /teachers/{teacherId} {
-      // Jede angemeldete Person darf nur ihr eigenes Lehrerprofil direkt lesen.
-      // Auflisten und Freigaben sind ausschließlich Owner-Aufgaben.
       allow get: if ownerEmail() || (signedIn() && teacherId == request.auth.uid);
       allow list: if ownerEmail();
       allow create, update: if ownerEmail() && reasonableSize();
@@ -219,7 +249,6 @@ service cloud.firestore {
 
     match /settings/{settingId} {
       allow read: if signedIn();
-      // Die Lehrer-Vertrauensgeneration darf nur ein Owner setzen/rotieren.
       allow create, update: if reasonableSize() && (
         (settingId == 'teacherSecurity' && ownerEmail()) ||
         (settingId != 'teacherSecurity' && isTeacher())
