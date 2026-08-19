@@ -45,6 +45,7 @@ on:
       - 'scripts/test-legacy-progress-resolution-core.mjs'
       - 'scripts/test-archived-progress-resolver.mjs'
       - 'scripts/test-one-time-duplicate-incident-core.mjs'
+      - 'scripts/test-one-time-duplicate-incident-safety.mjs'
       - 'scripts/test-private-query-boundaries.mjs'
       - 'scripts/test-secure-access-gate.mjs'
       - '.github/workflows/strict-student-isolation-check.yml'
@@ -109,6 +110,7 @@ jobs:
           node --check scripts/test-legacy-progress-resolution-core.mjs
           node --check scripts/test-archived-progress-resolver.mjs
           node --check scripts/test-one-time-duplicate-incident-core.mjs
+          node --check scripts/test-one-time-duplicate-incident-safety.mjs
           node --check scripts/test-private-query-boundaries.mjs
           node --check scripts/test-secure-access-gate.mjs
           python3 -m py_compile scripts/inject-learning-auth-gate.py
@@ -136,6 +138,9 @@ jobs:
 
       - name: Test one-time duplicate profile point consolidation
         run: node scripts/test-one-time-duplicate-incident-core.mjs
+
+      - name: Test one-time duplicate profile safety contract
+        run: node scripts/test-one-time-duplicate-incident-safety.mjs
 
       - name: Test private query boundaries
         run: node scripts/test-private-query-boundaries.mjs
