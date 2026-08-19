@@ -86,15 +86,12 @@ service cloud.firestore {
     }
 
     match /courses/{courseId} {
-      // Kursdaten dürfen für Kurscode-Prüfung gelesen werden. Schreiben nur Lehrkräfte.
       allow read: if signedIn();
       allow create, update: if isTeacher() && reasonableSize();
       allow delete: if isTeacher();
     }
 
     match /students/{studentId} {
-      // Schüler sehen nur ihr eigenes UID-gebundenes Profil. Für die einmalige
-      // Migration darf eine verifizierte E-Mail nur ihr eigenes altes Profil lesen.
       allow read: if isTeacher() || ownsStudentData(resource.data) || sameVerifiedEmail(resource.data);
 
       allow create: if isTeacher() || (
@@ -120,8 +117,6 @@ service cloud.firestore {
     }
 
     match /progress/{studentId} {
-      // Auch alte Alias-Fortschrittsdokumente bleiben erreichbar, aber nur wenn
-      // sie über UID, verifizierte E-Mail oder canonicalStudentId zum selben Schüler gehören.
       allow read: if isTeacher() || progressOwnedByUser(resource.data, studentId);
 
       allow create: if isTeacher() || (
@@ -136,19 +131,20 @@ service cloud.firestore {
         progressOwnedByUser(request.resource.data, studentId)
       );
 
-      // Lernfortschritt wird absichtlich niemals clientseitig gelöscht.
       allow delete: if isTeacher();
     }
 
     match /teachers/{teacherId} {
       allow read: if isTeacher() || (signedIn() && teacherId == request.auth.uid);
-      allow create, update, delete: if isTeacher() && reasonableSize();
+      allow create, update: if isTeacher() && reasonableSize();
+      allow delete: if isTeacher();
     }
 
     match /teachers_pending/{teacherId} {
       allow read: if isTeacher() || (signedIn() && teacherId == request.auth.uid);
       allow create: if signedIn() && teacherId == request.auth.uid && reasonableSize();
-      allow update, delete: if isTeacher();
+      allow update: if isTeacher() && reasonableSize();
+      allow delete: if isTeacher();
     }
 
     match /teacherInvites/{inviteId} {
@@ -162,17 +158,20 @@ service cloud.firestore {
 
     match /releases/{releaseId} {
       allow read: if signedIn();
-      allow create, update, delete: if isTeacher() && reasonableSize();
+      allow create, update: if isTeacher() && reasonableSize();
+      allow delete: if isTeacher();
     }
 
     match /assignments/{assignmentId} {
       allow read: if signedIn();
-      allow create, update, delete: if isTeacher() && reasonableSize();
+      allow create, update: if isTeacher() && reasonableSize();
+      allow delete: if isTeacher();
     }
 
     match /settings/{settingId} {
       allow read: if signedIn();
-      allow create, update, delete: if isTeacher() && reasonableSize();
+      allow create, update: if isTeacher() && reasonableSize();
+      allow delete: if isTeacher();
     }
 
     match /diagnostics/{docId} {
