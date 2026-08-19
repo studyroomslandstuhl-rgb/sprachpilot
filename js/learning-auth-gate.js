@@ -1,13 +1,6 @@
-import '/js/session-restore.js?v=3';
-import { requireLogin } from '/js/auth.js?v=login-gate1';
+import '/js/session-restore.js?v=4';
+import { verifySecureAccess } from '/js/secure-access-gate.js?v=1';
 
-// Ein Lernlink darf nie als anonymer Gast geöffnet werden.
-// requireLogin() merkt sich den vollständigen Pfad inkl. Query/Hash und führt
-// nach erfolgreichem Schüler-Login genau zu dieser Seite zurück.
-const user = requireLogin();
-
-if (user) {
-  try {
-    document.documentElement.dataset.spLearningAuth = 'ok';
-  } catch (e) {}
-}
+// Die Deployment-Injektion hält das Dokument unsichtbar. Erst eine echte Firebase-
+// Sitzung mit passender UID (oder eine echte Lehrer-Firebase-Sitzung) gibt es frei.
+await verifySecureAccess({allowTeacher:true,redirect:true,mark:true});

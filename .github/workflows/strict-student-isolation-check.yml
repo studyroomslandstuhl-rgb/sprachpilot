@@ -1,0 +1,94 @@
+name: Validate strict student UID isolation
+
+on:
+  pull_request:
+    paths:
+      - 'firestore.rules'
+      - 'firebase.json'
+      - 'js/student-secure-auth.js'
+      - 'js/student-identity.js'
+      - 'js/session-restore.js'
+      - 'js/account-progress-sync.js'
+      - 'js/account-progress-sync-safe.js'
+      - 'js/account-progress-autostart.js'
+      - 'js/learning-auth-gate.js'
+      - 'js/secure-access-gate.js'
+      - 'js/guard.js'
+      - 'teacher/student-security-lookup.js'
+      - 'teacher/progress-security-alias-core.js'
+      - 'teacher/progress-security-alias-migration.js'
+      - 'teacher/student-identity-guard.js'
+      - 'teacher/index.html'
+      - 'student-dashboard/dashboard-bootstrap.js'
+      - 'student-dashboard/dashboard-lite.js'
+      - 'student-dashboard/progress-alias-unifier.js'
+      - 'student-dashboard/index.html'
+      - 'profile/index.html'
+      - 'login/index.html'
+      - 'register/index.html'
+      - 'scripts/inject-learning-auth-gate.py'
+      - 'scripts/test-firestore-student-isolation.mjs'
+      - 'scripts/test-progress-security-alias-core.mjs'
+      - 'scripts/test-private-query-boundaries.mjs'
+      - 'scripts/test-secure-access-gate.mjs'
+      - '.github/workflows/strict-student-isolation-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Set up Java for Firestore emulator
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install isolated Firebase test dependencies
+        run: npm install --no-save firebase@10.12.5 @firebase/rules-unit-testing@3.0.3 firebase-tools@13.15.1
+
+      - name: Check JavaScript and Python syntax
+        run: |
+          node --check js/student-secure-auth.js
+          node --check js/student-identity.js
+          node --check js/session-restore.js
+          node --check js/account-progress-sync.js
+          node --check js/account-progress-sync-safe.js
+          node --check js/account-progress-autostart.js
+          node --check js/learning-auth-gate.js
+          node --check js/secure-access-gate.js
+          node --check js/guard.js
+          node --check teacher/student-security-lookup.js
+          node --check teacher/progress-security-alias-core.js
+          node --check teacher/progress-security-alias-migration.js
+          node --check teacher/student-identity-guard.js
+          node --check student-dashboard/dashboard-bootstrap.js
+          node --check student-dashboard/dashboard-lite.js
+          node --check student-dashboard/progress-alias-unifier.js
+          node --check scripts/test-firestore-student-isolation.mjs
+          node --check scripts/test-progress-security-alias-core.mjs
+          node --check scripts/test-private-query-boundaries.mjs
+          node --check scripts/test-secure-access-gate.mjs
+          python3 -m py_compile scripts/inject-learning-auth-gate.py
+
+      - name: Test progress ownership resolver
+        run: node scripts/test-progress-security-alias-core.mjs
+
+      - name: Test private query boundaries
+        run: node scripts/test-private-query-boundaries.mjs
+
+      - name: Test secure access gate
+        run: node scripts/test-secure-access-gate.mjs
+
+      - name: Test Firestore UID isolation in emulator
+        run: npx firebase emulators:exec --only firestore --project demo-sprachpilot-student-isolation "node scripts/test-firestore-student-isolation.mjs"

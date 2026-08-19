@@ -1,12 +1,14 @@
 import { db, doc, getDoc, getDocFromServer, setDoc, collection, query, where, getDocs, getDocsFromServer, limit, serverTimestamp } from '/js/firebase.js';
-import { getActiveProfile, logout } from '/js/auth.js';
+import { getActiveProfile } from '/js/auth.js';
+import { logoutSecureStudent } from '/js/student-identity.js?v=identity5';
 import { loadCourseRelease, themeOpen } from '/js/course-releases.js?v=release-core-20260701b';
 import '/shared/points-recalculator.js?v=1';
 
 const $=id=>document.getElementById(id);
-const CACHE='SP_STUDENT_DASHBOARD_LITE_V2';
-const VERIFIED_VERSION=3;
+const CACHE='SP_STUDENT_DASHBOARD_LITE_V3';
 const POINT_MODULES=['fragen','wortschatz','verben','perfekt','grammatik'];
+const RANKING_COLLECTION='studentRankings';
+const RANKING_VERSION=1;
 let ownProgress={},roster=[],statsBusy=false,rankingBusy=false;
 let releaseData=readJSON('SP_COURSE_RELEASES',null)||profile().assignments||{};
 
@@ -19,8 +21,14 @@ function esc(s){return String(s||'').replace(/[&<>'"]/g,m=>({'&':'&amp;','<':'&l
 function withTimeout(p,ms){return Promise.race([p,new Promise((_,reject)=>setTimeout(()=>reject(new Error('timeout')),ms))])}
 function profile(){return getActiveProfile()||readJSON('SP_USER_PROFILE',readJSON('SP_STUDENT_PROFILE',{}))||{}}
 function course(p=profile()){return String(p.courseCode||p.kurs||p.kursnummer||p.course||p.courseDocId||localStorage.getItem('SP_COURSE_CODE')||'').trim()}
+function courseKey(p=profile()){return String(p.courseDocId||p.courseCode||p.kurs||p.kursnummer||p.course||localStorage.getItem('SP_COURSE_CODE')||'').trim()}
 function name(r=profile()){return [r.vorname||r.firstName||r.name,r.nachname||r.lastName].filter(Boolean).join(' ').trim()||r.studentName||r.displayName||r.email||'Schüler/in'}
-function ids(r=profile()){const c=course(r)||'kurs',mail=String(r.email||'').trim().toLowerCase(),fallback=clean(c+'_'+(mail||r.vorname||r.firstName||'student'));return uniq([localStorage.getItem('SP_STUDENT_ID'),r.docId,r.studentId,r.userId,r.uid,r.id,fallback])}
+function rankingName(r=profile()){return [r.vorname||r.firstName||r.name,r.nachname||r.lastName].filter(Boolean).join(' ').trim()||r.studentName||r.displayName||'Schüler/in'}
+function ids(r=profile()){
+ const c=course(r)||'kurs',mail=String(r.email||'').trim().toLowerCase(),fallback=clean(c+'_'+(mail||r.vorname||r.firstName||'student'));
+ return uniq([r.canonicalStudentId,r.docId,r.studentId,r.userId,r.id,...(Array.isArray(r.aliasIds)?r.aliasIds:[]),localStorage.getItem('SP_STUDENT_ID'),fallback]);
+}
+function canonicalId(r=profile()){return String(r.canonicalStudentId||r.docId||r.studentId||r.userId||localStorage.getItem('SP_STUDENT_ID')||ids(r)[0]||'').trim()}
 function storedPoints(r={}){return Math.max(point(r.rankingPoints),point(r.ranking?.points),point(r.totals?.points),point(r.pointsTotal),point(r.lifetimePoints),point(r.punkteGesamt),point(r.points))}
 function technicalFor(r={},module){let best=0;for(const t of Object.values(r?.[module]||{})){if(t&&typeof t==='object'&&t.technicalRecovery===true)best=Math.max(best,point(t?.lifetime?.points))}if(module==='verben')best=Math.max(best,point(r?.metadata?.pointRecovery?.verbenApplied));return best}
 function groupFor(r={},module){const key=module==='verben'?'verbenGroups':module==='perfekt'?'perfektGroups':'';if(!key)return 0;let total=0;for(const g of Object.values(r?.metadata?.[key]||{})){try{total+=point(window.SPPointRecalculator?.groupPoints?.(g)?.points)}catch(e){}}return total}
@@ -60,22 +68,46 @@ function renderStats(s,cache=true,source='server'){const p=profile();$('userPill
 async function serverDoc(ref){try{return await getDocFromServer(ref)}catch(e){return getDoc(ref)}}
 async function serverDocs(ref){try{return await getDocsFromServer(ref)}catch(e){return getDocs(ref)}}
 async function directProgress(id){try{const s=await serverDoc(doc(db,'progress',id));return s.exists()?s.data()||{}:null}catch(e){return null}}
-async function ownLoad(){const p=profile(),candidates=ids(p).slice(0,5);let merged={};const first=await withTimeout(Promise.all(candidates.map(directProgress)),10000).catch(()=>[]);for(const r of first)if(r)merged=mergeProgress(r,merged);if(p.email){try{const s=await withTimeout(serverDocs(query(collection(db,'progress'),where('email','==',String(p.email).trim().toLowerCase()),limit(20))),10000);for(const d of s.docs)merged=mergeProgress(d.data()||{},merged)}catch(e){}}return merged}
-async function mirrorStudent(row,total,studentDocId=null){const id=studentDocId||row.docId||row.id||row.studentId||row.userId;if(!id||!total)return;const c=course(row)||course();try{await setDoc(doc(db,'students',String(id)),{studentId:row.studentId||row.userId||id,userId:row.userId||row.studentId||id,studentName:name(row),email:row.email||'',kurs:c,kursnummer:c,courseCode:c,rankingPoints:total,pointsTotal:total,rankingMirrorVersion:VERIFIED_VERSION,rankingUpdatedAt:serverTimestamp()},{merge:true})}catch(e){}}
-async function refreshOwn(){if(statsBusy)return;statsBusy=true;try{const r=await ownLoad();ownProgress=r&&Object.keys(r).length?r:{};const s=stats(ownProgress);renderStats(s,true,'server');if(s.points>0)mirrorStudent(profile(),s.points,profile().docId||profile().studentId||profile().userId||ids()[0])}catch(e){const cached=readJSON(CACHE,null);if(cached)renderStats(cached,false,'cache');else renderStats(stats(ownProgress),false,'cache')}finally{statsBusy=false}}
-function identity(r={}){return String(r.email||'').trim().toLowerCase()||String(r.studentId||r.userId||r.uid||r.canonicalStudentId||r.id||r.docId||name(r)).trim().toLowerCase()}
-function mergeStudent(a={},b={}){const out={...a,...b};out.id=a.id||b.id;out.docId=a.docId||b.docId||out.id;out.studentName=a.studentName||b.studentName||name(out);out.email=a.email||b.email||'';out.rankingPoints=Math.max(storedPoints(a),storedPoints(b),recoverablePoints(a),recoverablePoints(b));return out}
-function mergeRoster(rows){const map=new Map();for(const r of rows){const k=identity(r);if(!k)continue;map.set(k,map.has(k)?mergeStudent(map.get(k),r):r)}return [...map.values()]}
-async function rosterQuery(field,value){if(!value)return[];try{const s=await serverDocs(query(collection(db,'students'),where(field,'==',value),limit(100)));return s.docs.map(d=>({...d.data(),id:d.id,docId:d.id}))}catch(e){return[]}}
-async function progressCourseQuery(field,value){if(!value)return[];try{const s=await serverDocs(query(collection(db,'progress'),where(field,'==',value),limit(100)));return s.docs.map(d=>({...d.data(),id:d.id,docId:d.id,rankingPoints:recoverablePoints(d.data()||{})}))}catch(e){return[]}}
-async function loadRoster(){const c=course();if(!c)return[];const [studentSets,progressSets]=await withTimeout(Promise.all([Promise.all(['kurs','kursnummer','courseCode','course','courseDocId'].map(f=>rosterQuery(f,c))),Promise.all(['kurs','kursnummer','courseCode'].map(f=>progressCourseQuery(f,c)))]),12000).catch(()=>[[],[]]);return mergeRoster([...(studentSets||[]).flat(),...(progressSets||[]).flat()])}
-function rankPoints(r={}){return Math.max(point(r.rankingPoints),storedPoints(r),recoverablePoints(r))}
-function drawRoster(status=''){const current={...profile(),...ownProgress,rankingPoints:Math.max(recoverablePoints(ownProgress),point(localStorage.getItem('SP_POINTS_TOTAL')))};const rows=mergeRoster(roster.concat(current)).filter(r=>name(r)&&!['teacher','lehrer','admin'].includes(String(r.role||r.loginRole||'').toLowerCase())).sort((a,b)=>rankPoints(b)-rankPoints(a)||name(a).localeCompare(name(b),'de')).slice(0,50);$('leaderboard').innerHTML=rows.length?rows.map((r,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div><b>${esc(name(r))}</b></div><div class="points"><b>${rankPoints(r)}</b> Punkte</div></div>`).join(''):'<div class="empty">Noch keine Teilnehmer gefunden.</div>';$('rankingStatus').textContent=status||('Serverstand '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}))}
+async function ownLoad(){
+ const candidates=ids(profile()).slice(0,30),first=await withTimeout(Promise.all(candidates.map(directProgress)),12000).catch(()=>[]);let merged={};
+ for(const r of first)if(r)merged=mergeProgress(r,merged);
+ return merged;
+}
+async function mirrorRanking(total){
+ const p=profile(),id=canonicalId(p),uid=String(p.authUid||'').trim(),key=courseKey(p);
+ if(!id||!uid||!key)return;
+ const payload={studentId:id,authUid:uid,displayName:rankingName(p),courseKey:key,points:point(total),version:RANKING_VERSION,updatedAt:serverTimestamp()};
+ try{await setDoc(doc(db,RANKING_COLLECTION,id),payload,{merge:true})}catch(e){console.warn('Eigene Ranglistenzeile konnte nicht aktualisiert werden',e)}
+}
+async function refreshOwn(){
+ if(statsBusy)return;statsBusy=true;
+ try{const r=await ownLoad();ownProgress=r&&Object.keys(r).length?r:{};const s=stats(ownProgress);renderStats(s,true,'server');await mirrorRanking(s.points)}
+ catch(e){const cached=readJSON(CACHE,null);if(cached)renderStats(cached,false,'cache');else renderStats(stats(ownProgress),false,'cache')}
+ finally{statsBusy=false}
+}
+function identity(r={}){return String(r.studentId||r.id||r.authUid||r.displayName||'').trim().toLowerCase()}
+function mergeRanking(a={},b={}){return{...a,...b,studentId:a.studentId||b.studentId||a.id||b.id,displayName:a.displayName||b.displayName||'Schüler/in',points:Math.max(point(a.points),point(b.points))}}
+function mergeRoster(rows){const map=new Map();for(const r of rows){const k=identity(r);if(!k)continue;map.set(k,map.has(k)?mergeRanking(map.get(k),r):r)}return [...map.values()]}
+async function loadRoster(){
+ const key=courseKey();if(!key)return[];
+ try{const s=await withTimeout(serverDocs(query(collection(db,RANKING_COLLECTION),where('courseKey','==',key),limit(100))),10000);return mergeRoster(s.docs.map(d=>({...d.data(),id:d.id})))}catch(e){return[]}
+}
+function rankPoints(r={}){return point(r.points)}
+function drawRoster(status=''){
+ const p=profile(),current={studentId:canonicalId(p),authUid:p.authUid,displayName:rankingName(p),courseKey:courseKey(p),points:Math.max(recoverablePoints(ownProgress),point(localStorage.getItem('SP_POINTS_TOTAL')))};
+ const rows=mergeRoster(roster.concat(current)).filter(r=>r.displayName).sort((a,b)=>rankPoints(b)-rankPoints(a)||String(a.displayName).localeCompare(String(b.displayName),'de')).slice(0,50);
+ $('leaderboard').innerHTML=rows.length?rows.map((r,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div><b>${esc(r.displayName||'Schüler/in')}</b></div><div class="points"><b>${rankPoints(r)}</b> Punkte</div></div>`).join(''):'<div class="empty">Noch keine Teilnehmer gefunden.</div>';
+ $('rankingStatus').textContent=status||('Serverstand '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
+}
 async function loadRanking(){if(rankingBusy)return;rankingBusy=true;try{$('rankingStatus').textContent='Rangliste wird vom Server geladen …';roster=await loadRoster();drawRoster()}catch(e){drawRoster('Serververbindung langsam · erneut versuchen')}finally{rankingBusy=false}}
 function refresh(){refreshOwn();loadRanking()}
+async function dashboardLogout(){
+ const btn=$('logoutBtn');if(btn)btn.disabled=true;
+ try{await logoutSecureStudent();location.href='/index.html'}catch(error){console.error('Sichere Abmeldung fehlgeschlagen',error);if(btn)btn.disabled=false;try{alert('Abmeldung konnte nicht vollständig abgeschlossen werden. Bitte erneut versuchen.')}catch(e){}}
+}
 
 $('rankingBtn')?.addEventListener('click',()=>loadRanking());
-$('logoutBtn')?.addEventListener('click',()=>logout());
+$('logoutBtn')?.addEventListener('click',dashboardLogout);
 window.addEventListener('pageshow',()=>setTimeout(refresh,60));
 window.addEventListener('online',()=>setTimeout(refresh,100));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(refresh,60)});

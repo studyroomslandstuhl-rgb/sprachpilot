@@ -1,8 +1,8 @@
-import { db, doc, getDoc, setDoc, serverTimestamp, collection, query, where, getDocs, limit } from '/js/firebase.js';
+import { db, doc, getDoc, setDoc, serverTimestamp } from '/js/firebase.js';
 import { getActiveProfile, getActiveRole } from '/js/auth.js';
 
 const FIELD='clientProgressStateV1';
-const VERSION=5;
+const VERSION=6;
 const OWNER_KEY='SP_ACCOUNT_PROGRESS_OWNER';
 const TRACKED_KEY='SP_ACCOUNT_PROGRESS_TRACKED';
 const INTERNAL_PREFIX='SP_ACCOUNT_PROGRESS_';
@@ -23,11 +23,15 @@ function uniq(a){return [...new Set((a||[]).filter(Boolean).map(String))]}
 function clean(v){return String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 function profile(){return getActiveProfile()||parse(localStorage.getItem('SP_USER_PROFILE'),null)||parse(localStorage.getItem('SP_STUDENT_PROFILE'),null)||{}}
 function role(){return String(getActiveRole?.()||localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase()}
-function isStudent(){const p=profile();return role()==='student'&&!!(p.studentId||p.userId||p.docId||p.uid||p.email)&&!p.teacherPreview&&!p.isTeacher}
+function isStudent(){const p=profile();return role()==='student'&&!!(p.studentId||p.userId||p.docId||p.canonicalStudentId||p.email)&&!p.teacherPreview&&!p.isTeacher}
 function course(p=profile()){return p.courseDocId||p.courseCode||p.kurs||p.kursnummer||p.course||localStorage.getItem('SP_COURSE_CODE')||''}
 function ids(p=profile()){
  const fallback=clean(`${course(p)||'kurs'}_${String(p.email||p.vorname||p.firstName||'student').trim().toLowerCase()}`);
- return uniq([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem('SP_STUDENT_ID'),fallback]);
+ return uniq([
+  p.canonicalStudentId,p.docId,p.studentId,p.userId,p.id,
+  ...(Array.isArray(p.aliasIds)?p.aliasIds:[]),
+  localStorage.getItem('SP_STUDENT_ID'),fallback
+ ]);
 }
 function denied(key){
  const k=String(key||'');
@@ -110,18 +114,19 @@ function absorbRemoteRow(id,data,entries,aliases,docs,queue,seenDocs){
  mergeBest(entries,positiveEntries(data?.[FIELD]));
 }
 async function readRemote(){
- const entries=new Map(),aliases=new Set(ids()),docs=[],queue=ids().slice(),seenLookups=new Set(),seenDocs=new Set();let successfulReads=0;
- while(queue.length&&seenLookups.size<40){
-  const id=String(queue.shift()||'');if(!id||seenLookups.has(id))continue;seenLookups.add(id);
-  try{const s=await getDoc(doc(db,'progress',id));successfulReads++;if(s.exists())absorbRemoteRow(s.id||id,s.data()||{},entries,aliases,docs,queue,seenDocs)}catch(e){console.warn('Account-Fortschritt konnte nicht gelesen werden',id,e)}
- }
- const mail=String(profile().email||'').trim().toLowerCase();
- if(mail){
+ const seedIds=ids(),entries=new Map(),aliases=new Set(seedIds),docs=[],queue=seedIds.slice(),seenLookups=new Set(),seenDocs=new Set();
+ let successfulReads=0;
+ // Keine Collection-/E-Mail-Suche: Es werden ausschließlich kanonische und bereits
+ // am Profil/Progress gespeicherte Alias-IDs direkt gelesen. Firestore kann dadurch
+ // jeden einzelnen Zugriff serverseitig dem verifizierten Eigentümer zuordnen.
+ while(queue.length&&seenLookups.size<80){
+  const id=String(queue.shift()||'');
+  if(!id||seenLookups.has(id))continue;
+  seenLookups.add(id);
   try{
-   const snap=await getDocs(query(collection(db,'progress'),where('email','==',mail),limit(30)));successfulReads++;
-   for(const d of snap.docs)absorbRemoteRow(d.id,d.data()||{},entries,aliases,docs,queue,seenDocs);
-   while(queue.length&&seenLookups.size<70){const id=String(queue.shift()||'');if(!id||seenLookups.has(id))continue;seenLookups.add(id);try{const s=await getDoc(doc(db,'progress',id));successfulReads++;if(s.exists())absorbRemoteRow(s.id||id,s.data()||{},entries,aliases,docs,queue,seenDocs)}catch(e){}}
-  }catch(e){console.warn('Fortschritts-Aliasse konnten nicht per E-Mail gesucht werden',e)}
+   const s=await getDoc(doc(db,'progress',id));successfulReads++;
+   if(s.exists())absorbRemoteRow(s.id||id,s.data()||{},entries,aliases,docs,queue,seenDocs);
+  }catch(e){console.warn('Account-Fortschritt konnte für Alias nicht gelesen werden',id,e)}
  }
  if(!successfulReads)throw new Error('Cloud-Fortschritt konnte nicht sicher gelesen werden.');
  return{entries,aliases,docs};
@@ -156,7 +161,6 @@ async function flush(){
    for(const key of keys){
     const value=localStorage.getItem(key);if(value===null||!eligible(key,value))continue;
     const old=entries.get(key),newStrength=strength(value),oldStrength=old?strength(old.value):-1;
-    // Fortschritt ist monoton: ein schwächerer/leer gewordener Zustand überschreibt nie einen stärkeren Cloud-Stand.
     if(old&&newStrength<oldStrength)continue;
     entries.set(key,{key,value:String(value),deleted:false,updatedAt:ts});tracked.add(key);
    }
@@ -202,8 +206,7 @@ function localKeysFor(lesson,theme,file){
  const lt=`${lesson}|${theme}`;
  const prefix={
   '4|1':'SP_L4_T1_V2_','4|2':'SP_L4_T2_FINAL_V3_','4|3':'SP_L4_T3_V2_',
-  '5|1':'SP_L5_T1_V1_','5|2':'SP_L5_T2_V1_','5|3':'SP_L5_T3_V2_',
-  '6|2':'SP_L6_T2_V1_','6|3':'SP_L6_T3_V1_'
+  '5|1':'SP_L5_T1_V1_','5|2':'SP_L5_T2_V1_','5|3':'SP_L5_T3_V2_','6|2':'SP_L6_T2_V1_','6|3':'SP_L6_T3_V1_'
  }[lt];
  if(prefix)return[prefix+file];
  if(lt==='6|1')return['SP_L6_T1_V1_'+(localStorage.getItem('SP_L6_T1_EXTRA_WEATHER')==='1'?'EXTRA_':'BOOK_')+file];
@@ -240,7 +243,6 @@ export async function startAccountProgressSync(){
  try{
   const remote=await readRemote();remoteCache=new Map(remote.entries);
   const sameAccount=!oldOwner||oldOwner===activeId||candidateIds.includes(oldOwner)||remote.aliases.has(oldOwner);
-  // Niemals mehr lokale Fortschritte wegen einer ID-/Alias-Abweichung löschen.
   let restored=0;
   for(const[key,e]of remote.entries){
    const local=localStorage.getItem(key);

@@ -24,7 +24,7 @@ globalThis.btoa=value=>Buffer.from(String(value),'binary').toString('base64');
 let source=fs.readFileSync(new URL('../js/account-progress-owner-isolation.js',import.meta.url),'utf8');
 source=source.replace(
   /^import\s+\{\s*getActiveProfile,\s*getActiveRole\s*\}\s+from\s+['"][^'"]+['"];?\s*/,
-  "const getActiveProfile=()=>globalThis.__SP_TEST_PROFILE; const getActiveRole=()=>\"student\";\n"
+  'const getActiveProfile=()=>globalThis.__SP_TEST_PROFILE; const getActiveRole=()=>"student";\n'
 );
 globalThis.__SP_TEST_PROFILE=activeProfile;
 const moduleUrl='data:text/javascript;base64,'+Buffer.from(source).toString('base64');
@@ -50,7 +50,6 @@ function quarantineKeys(){
   return keys;
 }
 
-// A ist aktiv.
 setProfile('student-a');
 localStorage.setItem(OWNER,'student-a');
 localStorage.setItem(TASK,full);
@@ -60,7 +59,6 @@ assert.equal(result.blocked,false);
 assert.equal(localStorage.getItem(OWNER),'student-a');
 assert.equal(localStorage.getItem(TASK),full);
 
-// Wechsel A -> B: A wird archiviert, B bekommt keine A-Daten.
 setProfile('student-b');
 result=await isolateLocalProgressOwner();
 assert.equal(result.switchedAccount,true);
@@ -70,11 +68,8 @@ assert.equal(localStorage.getItem(TASK),null);
 assert.equal(localStorage.getItem(POINTS),null);
 assert.ok(quarantineKeys().length>=2);
 
-// B arbeitet lokal.
 localStorage.setItem(TASK,partial);
 localStorage.setItem(POINTS,'10');
-
-// Wechsel B -> A: B wird archiviert, A vollständig wiederhergestellt.
 setProfile('student-a');
 result=await isolateLocalProgressOwner();
 assert.equal(result.blocked,false);
@@ -82,7 +77,6 @@ assert.equal(localStorage.getItem(OWNER),'student-a');
 assert.equal(localStorage.getItem(TASK),full);
 assert.equal(localStorage.getItem(POINTS),'50');
 
-// Stärkeres Archiv muss einen schwächeren lokalen Stand schlagen.
 setProfile('student-b');
 localStorage.setItem(OWNER,'student-b');
 localStorage.setItem(TASK,weak);
@@ -92,8 +86,7 @@ assert.equal(result.blocked,false);
 assert.equal(localStorage.getItem(TASK),partial);
 assert.equal(localStorage.getItem(POINTS),'10');
 
-// Fehlerfall: Kann der alte Stand nicht dauerhaft archiviert werden,
-// darf der Besitzer nicht wechseln und der alte Stand darf nicht verschwinden.
+// Kann der alte Stand nicht dauerhaft archiviert werden, darf der Besitzer nicht wechseln.
 globalThis.localStorage=new MemoryStorage();
 setProfile('student-c');
 localStorage.setItem(OWNER,'student-c');
@@ -105,22 +98,38 @@ assert.equal(result.blocked,true);
 assert.equal(localStorage.getItem(OWNER),'student-c');
 assert.equal(localStorage.getItem(TASK),full);
 
-// Die übergeordnete Sync-Schicht muss bei blockierter Isolation vor jedem
-// Cloud-Aufruf zurückkehren.
+// Die übergeordnete Sync-Schicht muss sowohl bei fehlender UID-Übereinstimmung
+// als auch bei blockierter lokaler Isolation vor jedem Cloud-Aufruf zurückkehren.
 globalThis.localStorage=new MemoryStorage();
 globalThis.sessionStorage=new MemoryStorage();
 globalThis.location={pathname:'/student-dashboard/index.html',search:'',reload(){throw new Error('unexpected reload')}};
 globalThis.__SP_SAFE_SYNC_CALLS=0;
+globalThis.__SP_TEST_SYNC_PROFILE={secureAuth:true,authUid:'student-d'};
+globalThis.__SP_TEST_FIREBASE_USER={uid:'student-d',isAnonymous:false,emailVerified:true};
+
 let syncSource=fs.readFileSync(new URL('../js/account-progress-sync.js',import.meta.url),'utf8');
 syncSource=syncSource
   .replace(/^import\s+['"]\/js\/(?:progress|point-delta-bridge|ranking-mirror)\.js[^'"]*['"];?\s*$/gm,'')
-  .replace(/^import\s+\{\s*normalizeStudentIdentity\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,'const normalizeStudentIdentity=async()=>({});')
+  .replace(/^import\s+\{\s*authReady\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,'const authReady=Promise.resolve();')
+  .replace(/^import\s+\{\s*getActiveProfile\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,'const getActiveProfile=()=>globalThis.__SP_TEST_SYNC_PROFILE;')
+  .replace(/^import\s+\{\s*currentFirebaseUser\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,'const currentFirebaseUser=()=>globalThis.__SP_TEST_FIREBASE_USER;')
+  .replace(/^import\s+\{\s*normalizeStudentIdentity\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,'const normalizeStudentIdentity=async()=>globalThis.__SP_TEST_SYNC_PROFILE;')
   .replace(/^import\s+\{\s*isolateLocalProgressOwner\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,"const isolateLocalProgressOwner=async()=>({active:true,blocked:true,currentId:'student-d',oldOwner:'student-c'});")
-  .replace(/^import\s+\{\s*accountProgressReady,\s*startAccountProgressSync\s+as\s+startSafeAccountProgressSync\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,"const accountProgressReady=Promise.resolve(); const startSafeAccountProgressSync=async()=>{globalThis.__SP_SAFE_SYNC_CALLS++;return {active:true}};");
+  .replace(/^import\s+\{\s*accountProgressReady,\s*startAccountProgressSync\s+as\s+startSafeAccountProgressSync\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,'const accountProgressReady=Promise.resolve(); const startSafeAccountProgressSync=async()=>{globalThis.__SP_SAFE_SYNC_CALLS++;return {active:true}};');
 const syncUrl='data:text/javascript;base64,'+Buffer.from(syncSource).toString('base64');
 const syncModule=await import(syncUrl);
-const blockedSync=await syncModule.startAccountProgressSync();
-assert.equal(blockedSync.blocked,true);
+
+const blockedIsolation=await syncModule.startAccountProgressSync();
+assert.equal(blockedIsolation.blocked,true);
+assert.equal(blockedIsolation.reason,'LOCAL_OWNER_ISOLATION_BLOCKED');
 assert.equal(globalThis.__SP_SAFE_SYNC_CALLS,0);
 
-console.log('Account progress owner isolation and blocked-sync tests passed.');
+// Selbst ein korrekt aussehendes lokales Profil darf nicht synchronisieren,
+// wenn die aktive Firebase-UID einem anderen Schüler gehört.
+globalThis.__SP_TEST_FIREBASE_USER={uid:'student-x',isAnonymous:false,emailVerified:true};
+const blockedUid=await syncModule.startAccountProgressSync();
+assert.equal(blockedUid.blocked,true);
+assert.equal(blockedUid.reason,'SECURE_STUDENT_AUTH_REQUIRED');
+assert.equal(globalThis.__SP_SAFE_SYNC_CALLS,0);
+
+console.log('Account progress owner isolation, UID gate and blocked-sync tests passed.');

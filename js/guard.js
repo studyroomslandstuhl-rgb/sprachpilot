@@ -1,12 +1,17 @@
-import "/js/session-restore.js?v=3";
-import { requireLogin, logout } from "/js/auth.js";
+import "/js/session-restore.js?v=4";
+import { logout } from "/js/auth.js";
+import { verifySecureAccess } from "/js/secure-access-gate.js?v=1";
 import { installSpHeader } from "/js/sp-header.js?v=theme-standard2";
+
+const SECURE_ACCESS=await verifySecureAccess({allowTeacher:true,redirect:true,mark:true});
+const SP_USER=SECURE_ACCESS?.profile||null;
+const IS_SECURE_STUDENT=SECURE_ACCESS?.type==='student';
+
 const path=location.pathname;
 if(/\/wortschatz\/A1-Lektion-(?:3|4|5)(?:\/|$)/i.test(path))import("/js/lesson-button-colors.js?v=2").catch(()=>{});
 const IS_L6T3_PATH=path.includes("/wortschatz/A1-Lektion-6/Thema-3/");
 if(!IS_L6T3_PATH){import("/js/sp-teacher-unlocked.js?v=1").catch(()=>{});import("/js/sp-assets.js?v=4").catch(()=>{});import("/js/sp-image-guard.js?v=5").catch(()=>{})}
 window.logout=logout;
-const SP_USER=requireLogin();
 const qs=new URLSearchParams(location.search);
 // Diagnosemodus darf nie dauerhaft im Browser gespeichert bleiben.
 const HAD_LEGACY_NO_FIREBASE=localStorage.getItem("SP_NO_FIREBASE_SYNC")==="1";
@@ -41,13 +46,13 @@ const PERFORMANCE_SYNC_OFF=NO_FIREBASE_SYNC;
 const FULL_FIREBASE=!PERFORMANCE_SYNC_OFF;
 if(PERFORMANCE_SYNC_OFF){window.spCanWriteFirebaseProgress=()=>false;window.SP_NO_FIREBASE_SYNC=true;window.SP_PERFORMANCE_MODE=true}
 let aliasRepairPromise=Promise.resolve(null);
-if(FULL_FIREBASE&&SP_USER){
- aliasRepairPromise=import("/student-dashboard/progress-alias-unifier.js?v=4").then(module=>module.unifyProgressAliases()).catch(error=>{console.warn("Verteilte Schüler-Fortschritte konnten noch nicht zusammengeführt werden",error);return null});
+if(FULL_FIREBASE&&IS_SECURE_STUDENT){
+ aliasRepairPromise=import("/student-dashboard/progress-alias-unifier.js?v=6").then(module=>module.unifyProgressAliases()).catch(error=>{console.warn("Verteilte Schüler-Fortschritte konnten noch nicht zusammengeführt werden",error);return null});
  window.SP_PROGRESS_ALIAS_READY=aliasRepairPromise;
 }
-if(FULL_FIREBASE&&SP_USER&&!IS_L7&&!IS_L8){aliasRepairPromise.finally(()=>import("/js/account-progress-sync.js?v=5").then(module=>module.startAccountProgressSync()).catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error)))}
+if(FULL_FIREBASE&&IS_SECURE_STUDENT&&!IS_L7&&!IS_L8){aliasRepairPromise.finally(()=>import("/js/account-progress-sync.js?v=8").then(module=>module.startAccountProgressSync()).catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error)))}
 function shouldInstallGlobalHeader(){if(IS_WORTSCHATZ_LESSON_OVERVIEW)return false;if(IS_WORTSCHATZ_EXERCISE)return true;return !document.querySelector(".topbar")&&!document.querySelector("header.topbar")}
-function installHeaderOnce(){if(!SP_USER)return;if(!shouldInstallGlobalHeader())return;try{installSpHeader()}catch(e){}}
+function installHeaderOnce(){if(!SECURE_ACCESS?.ok)return;if(!shouldInstallGlobalHeader())return;try{installSpHeader()}catch(e){}}
 function setStar(el){if(el&&el.textContent!=="⭐")el.textContent="⭐"}
 function normalizeExamIcons(){document.querySelectorAll(".exam-icon").forEach(setStar);document.querySelectorAll("a,button,.module,.task-card").forEach(el=>{const text=String(el.textContent||""),href=String(el.getAttribute?.("href")||"");if(!/Prüfung|Pruefung/i.test(text)&&!/pruefung|exam/i.test(href))return;setStar(el.querySelector?.(".icon,.big-icon"))})}
 let overviewProbe=null;

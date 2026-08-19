@@ -1,10 +1,10 @@
 #!/usr/bin/env python3
-"""Inject a lightweight login gate into every deployed learning HTML page.
+"""Enforce a verified Firebase access gate on every deployed learning HTML page.
 
-The source lessons may use different historical guard/progress systems. This script
-adds authentication only where no existing login guard is present. It runs against
-`_site` during GitHub Pages deployment, so one forgotten HTML file cannot become a
-public task merely because its source omitted `/js/guard.js`.
+All learning pages are hidden before content can render. Pages already loading the
+central /js/guard.js rely on that guard to confirm the verified Firebase UID. Any
+other learning page receives /js/learning-auth-gate.js directly. This runs only
+against the generated _site tree during Pages deployment.
 """
 
 from __future__ import annotations
@@ -26,34 +26,46 @@ LEARNING_ROOTS = (
     "finnisch",
 )
 
-# Any of these means the page already performs (or imports) the central auth check.
-AUTH_MARKERS = (
-    "/js/learning-auth-gate.js",
+CENTRAL_GUARD_MARKERS = (
     "/js/guard.js",
-    "/js/guard-v10.js",
-    "requireLogin(",
+    "/js/learning-auth-gate.js",
 )
 
-# Ungeschützte Seiten werden bis zur bestätigten Sitzung unsichtbar gehalten.
-# So kann ein direkter Link die Aufgabe nicht kurz anzeigen, bevor die Weiterleitung greift.
-GATE_BLOCK = (
+HIDE_STYLE = (
     '<style id="sp-learning-auth-hide">'
     'html:not([data-sp-learning-auth="ok"]){visibility:hidden!important}'
-    '</style>\n'
-    '<script type="module" src="/js/learning-auth-gate.js?v=1"></script>'
+    '</style>'
 )
+GATE_SCRIPT = '<script type="module" src="/js/learning-auth-gate.js?v=2"></script>'
 
 
-def inject(html: str) -> tuple[str, bool]:
-    if any(marker in html for marker in AUTH_MARKERS):
-        return html, False
+def insert_before_head_end(html: str, block: str) -> str:
     if "</head>" in html:
-        return html.replace("</head>", GATE_BLOCK + "\n</head>", 1), True
+        return html.replace("</head>", block + "\n</head>", 1)
     if "</body>" in html:
-        return html.replace("</body>", GATE_BLOCK + "\n</body>", 1), True
+        return html.replace("</body>", block + "\n</body>", 1)
     if "</html>" in html:
-        return html.replace("</html>", GATE_BLOCK + "\n</html>", 1), True
-    return html + "\n" + GATE_BLOCK + "\n", True
+        return html.replace("</html>", block + "\n</html>", 1)
+    return html + "\n" + block + "\n"
+
+
+def inject(html: str) -> tuple[str, str]:
+    has_hide = 'id="sp-learning-auth-hide"' in html
+    has_central_guard = any(marker in html for marker in CENTRAL_GUARD_MARKERS)
+    has_secure_gate = "/js/learning-auth-gate.js" in html
+
+    blocks: list[str] = []
+    if not has_hide:
+        blocks.append(HIDE_STYLE)
+    # A page that does not load the new central guard must receive the secure
+    # Firebase UID gate even when it contains an old inline requireLogin() call.
+    if not has_central_guard and not has_secure_gate:
+        blocks.append(GATE_SCRIPT)
+
+    if not blocks:
+        return html, "already-secure"
+    mode = "hide-only" if has_central_guard else "secure-gate"
+    return insert_before_head_end(html, "\n".join(blocks)), mode
 
 
 def main(site_arg: str = "_site") -> int:
@@ -61,8 +73,9 @@ def main(site_arg: str = "_site") -> int:
     if not site.exists():
         raise SystemExit(f"Site directory does not exist: {site}")
 
-    protected_existing: list[str] = []
-    injected: list[str] = []
+    already_secure: list[str] = []
+    hide_only: list[str] = []
+    gate_injected: list[str] = []
     unreadable: list[str] = []
     scanned = 0
 
@@ -75,33 +88,39 @@ def main(site_arg: str = "_site") -> int:
             rel = path.relative_to(site).as_posix()
             try:
                 html = path.read_text(encoding="utf-8")
-            except Exception as exc:  # deployment audit must make failures visible
+            except Exception as exc:
                 unreadable.append(f"{rel}: {exc}")
                 continue
 
-            updated, changed = inject(html)
-            if changed:
+            updated, mode = inject(html)
+            if updated != html:
                 path.write_text(updated, encoding="utf-8")
-                injected.append(rel)
+            if mode == "already-secure":
+                already_secure.append(rel)
+            elif mode == "hide-only":
+                hide_only.append(rel)
             else:
-                protected_existing.append(rel)
+                gate_injected.append(rel)
 
     report = {
-        "version": 1,
+        "version": 2,
         "scanned_html": scanned,
-        "already_protected": len(protected_existing),
-        "gate_injected": len(injected),
+        "already_secure": len(already_secure),
+        "guard_pages_hidden": len(hide_only),
+        "secure_gate_injected": len(gate_injected),
         "unreadable": unreadable,
-        "injected_paths": injected,
+        "guard_pages_hidden_paths": hide_only,
+        "secure_gate_injected_paths": gate_injected,
     }
     report_path = site / "learning-auth-audit.json"
     report_path.write_text(json.dumps(report, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
 
     print(
-        "Learning auth audit:",
+        "Learning secure auth audit:",
         f"scanned={scanned}",
-        f"already_protected={len(protected_existing)}",
-        f"injected={len(injected)}",
+        f"already_secure={len(already_secure)}",
+        f"guard_pages_hidden={len(hide_only)}",
+        f"secure_gate_injected={len(gate_injected)}",
         f"unreadable={len(unreadable)}",
     )
 
