@@ -15,6 +15,10 @@ const env=await initializeTestEnvironment({projectId,firestore:{rules}});
 
 const A={uid:'uid-a',email:'alice.student@example.com'};
 const B={uid:'uid-b',email:'bob.student@example.com'};
+// Absichtlicher Angriffstest: andere UID behauptet dieselbe E-Mail wie A.
+// Firebase Auth verhindert dies normalerweise bereits; die Rules dürfen sich
+// nach der UID-Bindung trotzdem niemals auf die E-Mail verlassen.
+const X={uid:'uid-x',email:A.email};
 const T={uid:'uid-teacher',email:'teacher@example.com'};
 
 function verified(user){return env.authenticatedContext(user.uid,{email:user.email,email_verified:true})}
@@ -37,24 +41,27 @@ try{
 
   const adb=verified(A).firestore();
   const bdb=verified(B).firestore();
+  const xdb=verified(X).firestore();
   const tdb=verified(T).firestore();
   const aub=unverified(A).firestore();
   const anon=env.unauthenticatedContext().firestore();
 
-  // 1) Gebundene Schülerdaten: A->A erlaubt, B->A verboten.
+  // 1) Gebundene Schülerdaten: A->A erlaubt, jede andere UID -> A verboten.
   await assertSucceeds(getDoc(doc(adb,'students','student-a')));
   await assertFails(getDoc(doc(bdb,'students','student-a')));
+  await assertFails(getDoc(doc(xdb,'students','student-a')));
   await assertSucceeds(getDoc(doc(bdb,'students','student-b')));
   await assertFails(getDoc(doc(adb,'students','student-b')));
   await assertFails(getDoc(doc(aub,'students','student-a')));
 
-  // 2) Eigene Updates sind erlaubt, authUid/authEmail bleiben unveränderlich.
+  // 2) Eigene Updates sind erlaubt; UID, Auth-E-Mail und Login-E-Mail bleiben unveränderlich.
   await assertSucceeds(updateDoc(doc(adb,'students','student-a'),{vorname:'Alice'}));
   await assertFails(updateDoc(doc(adb,'students','student-a'),{authUid:B.uid}));
   await assertFails(updateDoc(doc(adb,'students','student-a'),{authEmail:B.email}));
+  await assertFails(updateDoc(doc(adb,'students','student-a'),{email:B.email}));
   await assertFails(deleteDoc(doc(adb,'students','student-a')));
 
-  // 3) Altes ungebundenes Profil: nur dieselbe verifizierte E-Mail darf lesen/beanspruchen.
+  // 3) Altes ungebundenes Profil: nur dieselbe verifizierte E-Mail darf einmalig beanspruchen.
   await assertSucceeds(getDoc(doc(adb,'students','legacy-a')));
   await assertFails(getDoc(doc(bdb,'students','legacy-a')));
   await assertFails(getDoc(doc(aub,'students','legacy-a')));
@@ -63,6 +70,9 @@ try{
   await assertSucceeds(updateDoc(doc(adb,'students','legacy-a'),{authUid:A.uid,authEmail:A.email,authVersion:2,authLinkedAt:new Date()}));
   await assertSucceeds(updateDoc(doc(adb,'students','legacy-a'),{nachname:'Sicher'}));
   await assertFails(getDoc(doc(bdb,'students','legacy-a')));
+  // Nach der Bindung gewinnt die UID: selbst X mit identischer E-Mail wird abgewiesen.
+  await assertFails(getDoc(doc(xdb,'students','legacy-a')));
+  await assertFails(updateDoc(doc(xdb,'students','legacy-a'),{nachname:'Angriff'}));
 
   // 4) Neue Profile können nur für die eigene verifizierte UID/E-Mail erstellt werden.
   await assertSucceeds(setDoc(doc(adb,'students','student-a-new'),{authUid:A.uid,authEmail:A.email,email:A.email,kurs:'KURS-A'}));
@@ -73,11 +83,14 @@ try{
   // 5) Fortschritt: A sieht/schreibt nur A, inklusive alter Alias-Dokumente.
   await assertSucceeds(getDoc(doc(adb,'progress','student-a')));
   await assertFails(getDoc(doc(bdb,'progress','student-a')));
+  await assertFails(getDoc(doc(xdb,'progress','student-a')));
   await assertFails(getDoc(doc(adb,'progress','student-b')));
   await assertSucceeds(updateDoc(doc(adb,'progress','student-a'),{points:55}));
   await assertFails(updateDoc(doc(bdb,'progress','student-a'),{points:999}));
+  await assertFails(updateDoc(doc(xdb,'progress','student-a'),{points:999}));
   await assertSucceeds(getDoc(doc(adb,'progress','alias-a')));
   await assertFails(getDoc(doc(bdb,'progress','alias-a')));
+  await assertFails(getDoc(doc(xdb,'progress','alias-a')));
   await assertSucceeds(getDoc(doc(adb,'progress','legacy-progress-a')));
   await assertFails(getDoc(doc(bdb,'progress','legacy-progress-a')));
   await assertFails(setDoc(doc(adb,'progress','fake-b-alias'),{canonicalStudentId:'student-b',points:999}));
@@ -88,6 +101,7 @@ try{
   await assertFails(getDocs(collection(adb,'students')));
   await assertSucceeds(getDocs(query(collection(adb,'students'),where('email','==',A.email))));
   await assertFails(getDocs(query(collection(bdb,'students'),where('email','==',A.email))));
+  await assertFails(getDocs(query(collection(xdb,'students'),where('email','==',A.email))));
   await assertSucceeds(getDocs(query(collection(adb,'progress'),where('email','==',A.email))));
   await assertFails(getDocs(query(collection(bdb,'progress'),where('email','==',A.email))));
 
