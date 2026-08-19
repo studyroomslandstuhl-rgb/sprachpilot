@@ -47,6 +47,7 @@ on:
       - 'scripts/test-one-time-duplicate-incident-core.mjs'
       - 'scripts/test-one-time-duplicate-incident-safety.mjs'
       - 'scripts/test-one-time-incident-rollback-rules.mjs'
+      - 'scripts/test-one-time-incident-students-scope.mjs'
       - 'scripts/test-private-query-boundaries.mjs'
       - 'scripts/test-secure-access-gate.mjs'
       - '.github/workflows/strict-student-isolation-check.yml'
@@ -113,6 +114,7 @@ jobs:
           node --check scripts/test-one-time-duplicate-incident-core.mjs
           node --check scripts/test-one-time-duplicate-incident-safety.mjs
           node --check scripts/test-one-time-incident-rollback-rules.mjs
+          node --check scripts/test-one-time-incident-students-scope.mjs
           node --check scripts/test-private-query-boundaries.mjs
           node --check scripts/test-secure-access-gate.mjs
           python3 -m py_compile scripts/inject-learning-auth-gate.py
@@ -143,6 +145,9 @@ jobs:
 
       - name: Test one-time duplicate profile safety contract
         run: node scripts/test-one-time-duplicate-incident-safety.mjs
+
+      - name: Test one-time incident Students lexical scope
+        run: node scripts/test-one-time-incident-students-scope.mjs
 
       - name: Test private query boundaries
         run: node scripts/test-private-query-boundaries.mjs
