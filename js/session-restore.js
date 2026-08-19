@@ -10,6 +10,16 @@
     const r=role(p);
     return !['teacher','lehrer','admin','owner','superadmin'].includes(r);
   }
+  function storedRole(){return String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||localStorage.getItem('SP_LOGIN_CONTEXT')||'').trim().toLowerCase()}
+  function teacherSession(){
+    const r=storedRole();
+    return ['teacher','lehrer','admin','owner','superadmin'].includes(r)||
+      localStorage.getItem('SP_TEACHER_MODE')==='1'||
+      !!localStorage.getItem('SP_TEACHER_PROFILE')||
+      !!localStorage.getItem('SP_TEACHER_ID')||
+      !!localStorage.getItem('SP_TEACHER_EMAIL');
+  }
+  function keepLoggedIn(){return localStorage.getItem('SP_KEEP_LOGGED_IN')==='1'}
   function norm(v){return String(v||'').trim().toLowerCase().replace(/\s+/g,'')}
   function course(p){return String(p?.courseCode||p?.kurs||p?.kursnummer||p?.course||'').trim()}
   function assignmentCourses(a={}){return [a.courseCode,a.kurs,a.kursnummer,a.course,a.courseDocId,a.id,a.code].map(norm).filter(Boolean)}
@@ -50,8 +60,17 @@
   function saveBackups(p){if(!realStudent(p))return;p=sanitizeCourseState(p);const s=JSON.stringify(p);try{BACKUP_KEYS.forEach(k=>localStorage.setItem(k,s));sessionStorage.setItem('SP_PROFILE_SESSION_BACKUP',s);sessionStorage.setItem('SP_STUDENT_PROFILE_SESSION_BACKUP',s)}catch(e){}}
   function persistProfile(p){try{const s=JSON.stringify(p);localStorage.setItem('SP_USER_PROFILE',s);localStorage.setItem('SP_STUDENT_PROFILE',s)}catch(e){}}
   function restore(){
+    // Eine aktive Lehrersitzung darf niemals von einem alten Schüler-Backup überschrieben werden.
+    if(teacherSession())return null;
+
     let p=firstValid(PROFILE_KEYS,localStorage);
     if(p){if(realStudent(p)){p=sanitizeCourseState(p);enforceStudentRole(p);persistProfile(p);saveBackups(p)}return p}
+
+    // Backup-Restore ist nur erlaubt, wenn der Schüler ausdrücklich als eingeloggt markiert war.
+    // `logout()` entfernt SP_KEEP_LOGGED_IN. Dadurch kann ein altes Backup nach Abmelden
+    // nicht mehr unbemerkt eine neue Schüler-Sitzung erzeugen.
+    if(!keepLoggedIn())return null;
+
     p=firstRealStudent(BACKUP_KEYS,localStorage)||firstRealStudent(['SP_PROFILE_SESSION_BACKUP','SP_STUDENT_PROFILE_SESSION_BACKUP'],sessionStorage);
     if(p){
       try{
@@ -61,7 +80,7 @@
         localStorage.setItem('SP_KEEP_LOGGED_IN','1');
         localStorage.setItem('SP_LOGIN_ROLE','student');
         localStorage.setItem('SP_ACTIVE_ROLE','student');
-        if(p.studentId||p.userId)localStorage.setItem('SP_STUDENT_ID',p.studentId||p.userId)
+        if(p.canonicalStudentId||p.studentId||p.userId)localStorage.setItem('SP_STUDENT_ID',p.canonicalStudentId||p.studentId||p.userId)
       }catch(e){}
       return p
     }
@@ -69,6 +88,6 @@
   }
   restore();
   window.addEventListener('storage',restore);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)restore();else{const p=firstRealStudent(PROFILE_KEYS,localStorage);if(p)saveBackups(p)}});
-  window.addEventListener('pagehide',()=>{const p=firstRealStudent(PROFILE_KEYS,localStorage);if(p)saveBackups(p)});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden)restore();else{const p=firstRealStudent(PROFILE_KEYS,localStorage);if(p&&!teacherSession())saveBackups(p)}});
+  window.addEventListener('pagehide',()=>{const p=firstRealStudent(PROFILE_KEYS,localStorage);if(p&&!teacherSession())saveBackups(p)});
 })();
