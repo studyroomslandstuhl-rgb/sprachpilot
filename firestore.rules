@@ -15,9 +15,8 @@ service cloud.firestore {
       return signedIn() ? request.auth.token.get('email', '').lower().trim() : '';
     }
 
-    // E-Mail ist ausschließlich ein einmaliger Migrationsschlüssel für alte,
-    // noch NICHT an eine UID gebundene Dokumente. Sobald authUid existiert,
-    // entscheidet nur noch die UID.
+    // E-Mail ist ausschließlich ein einmaliger Migrationsschlüssel für einen
+    // DIREKTEN Dokumentabruf alter, noch nicht UID-gebundener Daten.
     function legacyVerifiedEmail(data) {
       return verifiedUser() &&
         data.get('authUid', '') == '' &&
@@ -56,8 +55,7 @@ service cloud.firestore {
     }
 
     function ownsStudentData(data) {
-      return verifiedUser() &&
-        data.get('authUid', '') == request.auth.uid;
+      return verifiedUser() && data.get('authUid', '') == request.auth.uid;
     }
 
     function ownsStudentId(studentId) {
@@ -118,8 +116,26 @@ service cloud.firestore {
       allow delete: if isTeacher();
     }
 
+    match /studentLookups/{lookupId} {
+      // Lookup-Dokumente sind niemals für Schüler auflistbar. Ein verifizierter
+      // Schüler darf nur einen bereits bekannten direkten Schlüssel lesen, der
+      // exakt seine eigene Firebase-E-Mail trägt.
+      allow get: if isTeacher() || (
+        verifiedUser() && resource.data.get('email', '').lower().trim() == authEmail()
+      );
+      allow list: if isTeacher();
+      allow create, update: if isTeacher() && reasonableSize();
+      allow delete: if isTeacher();
+    }
+
     match /students/{studentId} {
-      allow read: if isTeacher() || ownsStudentData(resource.data) || legacyVerifiedEmail(resource.data);
+      // Direkter Abruf: UID-Eigentümer oder einmalige Alt-Migration per verifizierter E-Mail.
+      allow get: if isTeacher() || ownsStudentData(resource.data) || legacyVerifiedEmail(resource.data);
+      // Collection-Queries für Schüler sind ausschließlich über die eigene UID zulässig.
+      // E-Mail-basierte Studentensuchen können damit nicht mehr autorisiert werden.
+      allow list: if isTeacher() || (
+        verifiedUser() && resource.data.get('authUid', '') == request.auth.uid
+      );
 
       allow create: if isTeacher() || (
         verifiedUser() &&
@@ -145,7 +161,12 @@ service cloud.firestore {
     }
 
     match /progress/{studentId} {
-      allow read: if isTeacher() || progressOwnedByUser(resource.data, studentId);
+      allow get: if isTeacher() || progressOwnedByUser(resource.data, studentId);
+      // Der neue Schüler-Sync benötigt keine Collection-Queries mehr. Falls eine
+      // Altseite doch listet, darf sie ausschließlich UID-gebundene eigene Zeilen sehen.
+      allow list: if isTeacher() || (
+        verifiedUser() && resource.data.get('authUid', '') == request.auth.uid
+      );
 
       allow create: if isTeacher() || (
         verifiedUser() &&
