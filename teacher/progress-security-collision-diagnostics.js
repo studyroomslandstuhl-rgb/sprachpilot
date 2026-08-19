@@ -15,6 +15,9 @@
     return text(value);
   }
   function shortUid(value){const v=text(value);return v?v.length<=10?v:'…'+v.slice(-8):'—'}
+  function normalizedWords(value){
+    return lower(value).normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,' ').trim().split(/\s+/).filter(w=>w.length>=3);
+  }
 
   function connectedGroups(items=[]){
     const parent=new Map();
@@ -86,22 +89,129 @@
     return lines.join('\n');
   }
 
+  function progressModules(progress={}){
+    const names=[];
+    for(const key of ['fragen','wortschatz','verben','perfekt','grammatik']){
+      const value=progress[key];
+      if(value&&typeof value==='object'&&Object.keys(value).length)names.push(key);
+    }
+    return names;
+  }
+
+  function progressPointHints(progress={}){
+    return uniq([
+      progress.pointsTotal!=null?`pointsTotal=${progress.pointsTotal}`:'',
+      progress.lifetimePoints!=null?`lifetimePoints=${progress.lifetimePoints}`:'',
+      progress.punkteGesamt!=null?`punkteGesamt=${progress.punkteGesamt}`:'',
+      progress.ranking?.points!=null?`ranking=${progress.ranking.points}`:'',
+      progress.totals?.points!=null?`totals=${progress.totals.points}`:''
+    ]);
+  }
+
+  function exactCandidateHints(progress={},students=[],resolver=null){
+    const pid=progressId(progress,resolver),mail=lower(progress.email||progress.authEmail),courses=new Set(courseValues(progress).map(lower));
+    const identities=new Set(uniq([pid,...identityValues(progress),...(Array.isArray(progress.aliasIds)?progress.aliasIds:[])]));
+    const pName=uniq([progress.vorname,progress.nachname,progress.name,progress.displayName]).join(' ');
+    const pWords=new Set(normalizedWords(pid+' '+pName));
+    const hints=[];
+    for(const student of students){
+      const sid=studentId(student,resolver);if(!sid)continue;
+      const reasons=[];
+      const aliases=uniq([sid,...identityValues(student),...(Array.isArray(student.aliasIds)?student.aliasIds:[])]);
+      if(aliases.some(value=>identities.has(value)))reasons.push('Identitäts-/Alias-Treffer');
+      const smail=lower(student.email||student.authEmail),scourses=courseValues(student).map(lower);
+      if(mail&&smail===mail){
+        reasons.push('gleiche E-Mail');
+        if(courses.size&&scourses.some(c=>courses.has(c)))reasons.push('gleiche E-Mail + Kurs');
+      }
+      const sName=uniq([student.vorname,student.nachname]).join(' '),sWords=normalizedWords(sid+' '+sName);
+      const overlap=sWords.filter(w=>pWords.has(w));
+      if(overlap.length>=2)reasons.push('ID-/Namenshinweis: '+uniq(overlap).join(', '));
+      if(reasons.length)hints.push({studentId:sid,name:sName,email:smail||'—',courses:courseValues(student),reasons:uniq(reasons)});
+    }
+    return hints;
+  }
+
+  function summarizeProgress(progress={},students=[],resolver=null){
+    const id=progressId(progress,resolver);
+    return{
+      id,
+      name:uniq([progress.vorname,progress.nachname,progress.name,progress.displayName]).join(' '),
+      email:lower(progress.email||progress.authEmail)||'—',
+      courses:courseValues(progress),
+      authBound:!!text(progress.authUid),
+      authUid:shortUid(progress.authUid),
+      canonical:text(progress.canonicalStudentId)||'—',
+      docIdField:text(progress.docId)||'—',
+      studentIdField:text(progress.studentId)||'—',
+      userIdField:text(progress.userId)||'—',
+      aliases:uniq(Array.isArray(progress.aliasIds)?progress.aliasIds:[]),
+      modules:progressModules(progress),
+      points:progressPointHints(progress),
+      createdAt:timestampText(progress.createdAt),
+      updatedAt:timestampText(progress.updatedAt||progress.identityUpdatedAt||progress.progressAliasUpdatedAt),
+      candidates:exactCandidateHints(progress,students,resolver)
+    };
+  }
+
+  function formatProgress(summary,failure={}){
+    const lines=[];
+    lines.push(`Fortschritt: ${summary.id}`);
+    lines.push(`Problem: ${failure.reason||failure.type||'unbekannt'}`);
+    if(summary.name)lines.push(`Name im Fortschritt: ${summary.name}`);
+    lines.push(`E-Mail: ${summary.email}`);
+    lines.push(`Kurs: ${summary.courses.join(', ')||'—'}`);
+    lines.push(`Firebase-UID: ${summary.authBound?'GEBUNDEN '+summary.authUid:'NICHT GEBUNDEN'}`);
+    lines.push(`canonicalStudentId: ${summary.canonical}`);
+    lines.push(`docId/studentId/userId: ${summary.docIdField} / ${summary.studentIdField} / ${summary.userIdField}`);
+    lines.push(`Aliase: ${summary.aliases.join(', ')||'—'}`);
+    lines.push(`Module mit Daten: ${summary.modules.join(', ')||'—'}`);
+    lines.push(`Punkte-Hinweise: ${summary.points.join(', ')||'—'}`);
+    if(summary.createdAt||summary.updatedAt)lines.push(`Zeit: erstellt ${summary.createdAt||'—'} · aktualisiert ${summary.updatedAt||'—'}`);
+    if(Array.isArray(failure.candidates)&&failure.candidates.length)lines.push(`Resolver-Kandidaten: ${failure.candidates.join(', ')}`);
+    if(summary.candidates.length){
+      lines.push('Exakte/strukturelle Schülerhinweise:');
+      summary.candidates.slice(0,12).forEach(c=>lines.push(`  - ${c.studentId}${c.name?' ('+c.name+')':''} · ${c.email} · ${c.courses.join(', ')||'—'} · ${c.reasons.join('; ')}`));
+    }else{
+      lines.push('Exakte/strukturelle Schülerhinweise: keine');
+    }
+    return lines.join('\n');
+  }
+
   function buildReport(analysis,items=[],lookupRows=[]){
     const resolver=analysis?.resolver||root.ProgressSecurityAliasCore||null;
     const students=analysis?.students||[],progressDocs=analysis?.progress||[];
     const byId=new Map(students.map(s=>[studentId(s,resolver),s]));
+    const progressById=new Map(progressDocs.map(p=>[progressId(p,resolver),p]));
     const groups=connectedGroups(items);
     const out=['READ-ONLY KONFLIKTANALYSE','Es wurde nichts gelöscht, zusammengeführt oder umgebunden.',''];
-    groups.forEach((ids,index)=>{
-      out.push(`GRUPPE ${index+1}: ${ids.join(' ↔ ')}`);
-      for(const id of ids){
-        const student=byId.get(id);
-        if(!student){out.push(`\nDokument: ${id}\nSchülerdokument nicht gefunden.`);continue}
-        out.push('\n'+formatStudent(summarizeStudent(student,progressDocs,resolver,lookupRows)));
+
+    out.push(`FORTSCHRITTSPROBLEME: ${items.filter(item=>item.progressId).length}`);
+    items.filter(item=>item.progressId).forEach((item,index)=>{
+      const progress=progressById.get(text(item.progressId));
+      out.push(`\nPROBLEM ${index+1}`);
+      if(!progress){
+        out.push(`Fortschritt: ${item.progressId}\nProblem: ${item.reason||item.type||'unbekannt'}\nDokument wurde in der geladenen Fortschrittsliste nicht gefunden.`);
+      }else{
+        out.push(formatProgress(summarizeProgress(progress,students,resolver),item));
       }
-      out.push('');
     });
-    out.push('Entscheidung: noch KEINE automatische Zusammenführung. Ein gebundenes Firebase-Konto, eindeutige Lookups und vorhandene Fortschritts-IDs werden zuerst gemeinsam bewertet.');
+    out.push('');
+
+    if(groups.length){
+      out.push(`SCHÜLER-KONFLIKTGRUPPEN: ${groups.length}`);
+      groups.forEach((ids,index)=>{
+        out.push(`\nGRUPPE ${index+1}: ${ids.join(' ↔ ')}`);
+        for(const id of ids){
+          const student=byId.get(id);
+          if(!student){out.push(`\nDokument: ${id}\nSchülerdokument nicht gefunden.`);continue}
+          out.push('\n'+formatStudent(summarizeStudent(student,progressDocs,resolver,lookupRows)));
+        }
+      });
+      out.push('');
+    }
+
+    out.push('Entscheidung: noch KEINE automatische Zuordnung oder Löschung. Orphan-Fortschritte werden nur dann übernommen, wenn die gespeicherten Daten eine eindeutige Identität belegen; ansonsten bleiben sie separat gesichert.');
     return out.join('\n');
   }
 
@@ -118,7 +228,7 @@
     let box=document.getElementById('sp-progress-collision-diagnostics');
     if(!box){
       box=document.createElement('div');box.id='sp-progress-collision-diagnostics';
-      box.style.cssText='position:fixed;left:10px;right:10px;top:5vh;z-index:100010;max-height:86vh;overflow:auto;padding:16px;border-radius:12px;background:#fff;border:3px solid #b3261e;box-shadow:0 12px 40px rgba(0,0,0,.28);white-space:pre-wrap;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#13293d';
+      box.style.cssText='position:fixed;left:10px;right:10px;top:3vh;z-index:100010;max-height:92vh;overflow:auto;padding:16px;border-radius:12px;background:#fff;border:3px solid #b3261e;box-shadow:0 12px 40px rgba(0,0,0,.28);white-space:pre-wrap;font:13px/1.45 ui-monospace,SFMono-Regular,Menlo,monospace;color:#13293d';
       const close=document.createElement('button');close.type='button';close.textContent='Schließen';close.style.cssText='position:sticky;top:0;float:right;margin:0 0 8px 12px;padding:8px 12px';close.onclick=()=>box.remove();box.appendChild(close);
       const textBox=document.createElement('div');textBox.id='sp-progress-collision-diagnostics-text';box.appendChild(textBox);
       document.body.appendChild(box);
@@ -161,12 +271,12 @@
     if(typeof document==='undefined')return;
     if(!root.ProgressSecurityAliasMigration||!root.StudentSecurityLookup){setTimeout(install,100);return}
     const check=document.getElementById('sp-security-lookup-btn');
-    if(check&&!check.dataset.readonlyDiagnostics){check.dataset.readonlyDiagnostics='1';check.onclick=()=>runFullCheck().catch(()=>{});}
+    if(check&&!check.dataset.readonlyDiagnostics){check.dataset.readonlyDiagnostics='2';check.onclick=()=>runFullCheck().catch(()=>{});}
     const cutover=document.getElementById('sp-security-cutover-btn');
-    if(cutover&&!cutover.dataset.readonlyDiagnostics){cutover.dataset.readonlyDiagnostics='1';cutover.onclick=()=>runCutover().catch(()=>{});}
+    if(cutover&&!cutover.dataset.readonlyDiagnostics){cutover.dataset.readonlyDiagnostics='2';cutover.onclick=()=>runCutover().catch(()=>{});}
   }
 
-  root.ProgressSecurityCollisionDiagnostics={connectedGroups,relatedProgress,summarizeStudent,formatStudent,buildReport,showForError,runFullCheck,runCutover,install};
+  root.ProgressSecurityCollisionDiagnostics={connectedGroups,relatedProgress,summarizeStudent,formatStudent,summarizeProgress,formatProgress,exactCandidateHints,buildReport,showForError,runFullCheck,runCutover,install};
   if(typeof document!=='undefined'){
     if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>setTimeout(install,150));
     else setTimeout(install,150);
