@@ -3,7 +3,6 @@ import {
   collection, query, where, getDocs, limit
 } from './firebase.js';
 import {
-  findStudentByEmailAndCourse,
   makeStudentId,
   loadCourse,
   getActiveProfile,
@@ -24,6 +23,9 @@ import {
 export { $, safeText, getRedirectTarget };
 
 const PENDING_KEY='SP_PENDING_SECURE_STUDENT_REGISTRATION_V1';
+const LOOKUP_COLLECTION='studentLookups';
+const SECURITY_SETTINGS_DOC='studentSecurity';
+const LOOKUP_VERSION=1;
 const RESERVED_COURSE_CODES=new Set(['ALLE','ALLEE','ALL_ACCESS','LEHRER','TEACHER']);
 
 function uniq(values){return [...new Set((values||[]).filter(Boolean).map(v=>String(v).trim()).filter(Boolean))]}
@@ -50,27 +52,69 @@ function candidateIds(p={}){
 function courseVariants(course,courseDocId=''){
   return uniq([course,String(course||'').toLowerCase(),String(course||'').toUpperCase(),courseDocId,String(courseDocId||'').toLowerCase(),String(courseDocId||'').toUpperCase()]);
 }
+function lookupIds(email,course,courseDocId=''){
+  const mail=normEmail(email);
+  if(!mail)return[];
+  return uniq(courseVariants(course,courseDocId).map(value=>makeStudentId(mail,value)));
+}
+function courseMatches(data={},course,courseDocId=''){
+  const wanted=new Set(courseVariants(course,courseDocId).map(v=>String(v).trim().toLowerCase()));
+  return [data.kurs,data.courseCode,data.kursnummer,data.courseDocId,data.course]
+    .some(value=>wanted.has(String(value||'').trim().toLowerCase()));
+}
+async function securityLookupReady(){
+  try{
+    const snap=await getDoc(doc(db,'settings',SECURITY_SETTINGS_DOC));
+    const data=snap.exists()?snap.data()||{}:{};
+    return data.studentLookupReady===true&&Number(data.studentLookupVersion||0)>=LOOKUP_VERSION;
+  }catch(e){return false}
+}
+async function assertSecurityLookupReady(){
+  if(await securityLookupReady())return true;
+  throw new Error('SECURITY_MIGRATION_NOT_READY');
+}
 async function findStudentByAuthUidAndCourse(uid,course,courseDocId=''){
   if(!uid)return null;
-  const variants=courseVariants(course,courseDocId);
-  const fields=['kurs','courseCode','kursnummer','courseDocId'];
-  for(const field of fields){
-    for(const value of variants){
-      try{
-        const snap=await getDocs(query(collection(db,'students'),where('authUid','==',uid),where(field,'==',value),limit(5)));
-        if(!snap.empty){const d=snap.docs[0];return{id:d.id,data:d.data()||{}}}
-      }catch(e){}
-    }
-  }
   try{
+    // Die Query ist absichtlich ausschließlich nach der eigenen Firebase-UID gefiltert.
+    // Firestore Rules erlauben Schüler-Listen nur in genau diesem Eigentümerbereich.
     const snap=await getDocs(query(collection(db,'students'),where('authUid','==',uid),limit(30)));
-    const wanted=new Set(variants.map(v=>String(v).trim().toLowerCase()));
-    const match=snap.docs.find(d=>{
-      const data=d.data()||{};
-      return [data.kurs,data.courseCode,data.kursnummer,data.courseDocId].some(v=>wanted.has(String(v||'').trim().toLowerCase()));
-    });
+    const match=snap.docs.find(d=>courseMatches(d.data()||{},course,courseDocId));
     if(match)return{id:match.id,data:match.data()||{}};
-  }catch(e){}
+  }catch(e){console.warn('UID-Schülerlookup fehlgeschlagen',e)}
+  return null;
+}
+async function directLegacyStudent(email,course,courseDocId=''){
+  const mail=normEmail(email);
+  if(!mail)return null;
+
+  // Unkorrigierte Altprofile hatten historisch eine deterministische Dokument-ID.
+  for(const id of lookupIds(mail,course,courseDocId)){
+    try{
+      const snap=await getDoc(doc(db,'students',id));
+      if(snap.exists()){
+        const data=snap.data()||{};
+        if(normEmail(data.email)===mail&&courseMatches(data,course,courseDocId))return{id:snap.id||id,data};
+      }
+    }catch(e){}
+  }
+
+  // Korrigierte Altprofile behalten ihre alte kanonische Dokument-ID. Dafür gibt es
+  // nach der Lehrer-Migration einen direkten, nicht auflistbaren Lookup-Schlüssel.
+  for(const key of lookupIds(mail,course,courseDocId)){
+    try{
+      const lookupSnap=await getDoc(doc(db,LOOKUP_COLLECTION,key));
+      if(!lookupSnap.exists())continue;
+      const lookup=lookupSnap.data()||{};
+      if(normEmail(lookup.email)!==mail)continue;
+      const canonical=String(lookup.canonicalStudentId||lookup.studentId||'').trim();
+      if(!canonical)continue;
+      const studentSnap=await getDoc(doc(db,'students',canonical));
+      if(!studentSnap.exists())continue;
+      const data=studentSnap.data()||{};
+      if(normEmail(data.email)===mail&&courseMatches(data,course,courseDocId))return{id:studentSnap.id||canonical,data};
+    }catch(e){}
+  }
   return null;
 }
 async function resolveCanonical(profile){
@@ -83,8 +127,9 @@ async function resolveCanonical(profile){
     const byUid=await findStudentByAuthUidAndCourse(user.uid,course,courseDocId);
     if(byUid)return{id:byUid.id,data:byUid.data||{},aliases:candidates};
   }
-  if(email&&course){
-    try{const found=await findStudentByEmailAndCourse(email,course,courseDocId);if(found)return{id:found.id,data:found.data||{},aliases:candidates}}catch(e){}
+  if(email&&course&&await securityLookupReady()){
+    const found=await directLegacyStudent(email,course,courseDocId);
+    if(found)return{id:found.id,data:found.data||{},aliases:candidates};
   }
   return null;
 }
@@ -237,9 +282,6 @@ export async function registerStudent(payload){
     user=await createSecureStudentCredential(pending.email,password);
   }catch(error){
     if(error?.code!=='auth/email-already-in-use')throw error;
-    // Eine E-Mail kann bereits ein Lehrerkonto besitzen. In diesem Fall wird keine
-    // zweite Firebase-Identität erzeugt; dieselbe verifizierte UID bekommt zusätzlich
-    // das Schülerprofil für den angegebenen Kurs.
     user=await signInSecureStudent(pending.email,password);
     existingFirebaseAccount=true;
   }
@@ -253,8 +295,6 @@ export async function registerStudent(payload){
     return{verificationRequired:true,email:pending.email,existingFirebaseAccount};
   }
 
-  // Bereits verifizierte Firebase-Konten (z. B. Lehrkraft + Schüler mit gleicher
-  // E-Mail) können das Schülerprofil sofort sicher an dieselbe UID binden.
   const profile=await finishPendingStudentRegistration();
   return{verificationRequired:false,activated:true,email:pending.email,profile,existingFirebaseAccount};
 }
@@ -269,7 +309,10 @@ export async function finishPendingStudentRegistration(){
 
   const courseLoaded=await loadAllowedCourse(pending.courseCode||pending.kurs);
   let found=await findStudentByAuthUidAndCourse(user.uid,courseLoaded.courseCode,courseLoaded.id);
-  if(!found)found=await findStudentByEmailAndCourse(pending.email,courseLoaded.courseCode,courseLoaded.id);
+  if(!found){
+    await assertSecurityLookupReady();
+    found=await directLegacyStudent(pending.email,courseLoaded.courseCode,courseLoaded.id);
+  }
   const record=found?await claimStudentRecord(found,user):await createStudentRecord(pending,user,courseLoaded);
   const profile=profileFromRecord(record,user,courseLoaded.data||{});
   persistProfile(profile);
@@ -283,23 +326,26 @@ export async function loginStudent(email,kurs,password){
   const emailNorm=normEmail(email),courseRaw=String(kurs||'').trim();
   if(!emailNorm||!courseRaw||!password)throw new Error('MISSING_LOGIN_FIELDS');
   clearActivatedStudentSession();
-  let user=await signInSecureStudent(emailNorm,password);
+  const user=await signInSecureStudent(emailNorm,password);
   if(user.emailVerified!==true){
     try{await sendStudentVerification(user)}catch(e){}
     throw new Error('EMAIL_NOT_VERIFIED');
   }
   assertVerifiedStudentUser(user,emailNorm);
 
-  let found=await findStudentByAuthUidAndCourse(user.uid,courseRaw);
-  if(!found)found=await findStudentByEmailAndCourse(emailNorm,courseRaw);
+  const courseLoaded=await loadAllowedCourse(courseRaw);
+  let found=await findStudentByAuthUidAndCourse(user.uid,courseLoaded.courseCode,courseLoaded.id);
+  if(!found){
+    await assertSecurityLookupReady();
+    found=await directLegacyStudent(emailNorm,courseLoaded.courseCode,courseLoaded.id);
+  }
   if(!found){
     const pending=pendingRegistration();
-    if(pending&&normEmail(pending.email)===emailNorm&&String(pending.kurs||pending.courseCode||'').trim().toLowerCase()===courseRaw.toLowerCase())return finishPendingStudentRegistration();
+    if(pending&&normEmail(pending.email)===emailNorm&&courseMatches(pending,courseLoaded.courseCode,courseLoaded.id))return finishPendingStudentRegistration();
     throw new Error('STUDENT_NOT_FOUND');
   }
   const record=await claimStudentRecord(found,user);
-  const realCourse=record.data.kurs||record.data.courseCode||record.data.kursnummer||courseRaw;
-  let courseData={};try{courseData=(await loadCourse(realCourse))?.data||{}}catch(e){}
+  const courseData=courseLoaded.data||{};
   const profile=profileFromRecord(record,user,courseData);
   persistProfile(profile);
   const normalized=await normalizeStudentIdentity(profile);
