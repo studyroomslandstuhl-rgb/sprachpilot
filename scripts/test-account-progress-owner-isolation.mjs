@@ -105,4 +105,22 @@ assert.equal(result.blocked,true);
 assert.equal(localStorage.getItem(OWNER),'student-c');
 assert.equal(localStorage.getItem(TASK),full);
 
-console.log('Account progress owner isolation tests passed.');
+// Die übergeordnete Sync-Schicht muss bei blockierter Isolation vor jedem
+// Cloud-Aufruf zurückkehren.
+globalThis.localStorage=new MemoryStorage();
+globalThis.sessionStorage=new MemoryStorage();
+globalThis.location={pathname:'/student-dashboard/index.html',search:'',reload(){throw new Error('unexpected reload')}};
+globalThis.__SP_SAFE_SYNC_CALLS=0;
+let syncSource=fs.readFileSync(new URL('../js/account-progress-sync.js',import.meta.url),'utf8');
+syncSource=syncSource
+  .replace(/^import\s+['"]\/js\/(?:progress|point-delta-bridge|ranking-mirror)\.js[^'"]*['"];?\s*$/gm,'')
+  .replace(/^import\s+\{\s*normalizeStudentIdentity\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,'const normalizeStudentIdentity=async()=>({});')
+  .replace(/^import\s+\{\s*isolateLocalProgressOwner\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,"const isolateLocalProgressOwner=async()=>({active:true,blocked:true,currentId:'student-d',oldOwner:'student-c'});")
+  .replace(/^import\s+\{\s*accountProgressReady,\s*startAccountProgressSync\s+as\s+startSafeAccountProgressSync\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,"const accountProgressReady=Promise.resolve(); const startSafeAccountProgressSync=async()=>{globalThis.__SP_SAFE_SYNC_CALLS++;return {active:true}};");
+const syncUrl='data:text/javascript;base64,'+Buffer.from(syncSource).toString('base64');
+const syncModule=await import(syncUrl);
+const blockedSync=await syncModule.startAccountProgressSync();
+assert.equal(blockedSync.blocked,true);
+assert.equal(globalThis.__SP_SAFE_SYNC_CALLS,0);
+
+console.log('Account progress owner isolation and blocked-sync tests passed.');
