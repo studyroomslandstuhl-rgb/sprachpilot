@@ -7,71 +7,177 @@ service cloud.firestore {
       return request.auth != null;
     }
 
+    function verifiedUser() {
+      return signedIn() && request.auth.token.get('email_verified', false) == true;
+    }
+
+    function authEmail() {
+      return signedIn() ? request.auth.token.get('email', '').lower().trim() : '';
+    }
+
+    function sameVerifiedEmail(data) {
+      return verifiedUser() &&
+        data.get('email', '').lower().trim() == authEmail();
+    }
+
     function reasonableSize() {
       return request.resource.data.size() < 200;
     }
 
-    function knownClientCollections() {
-      return true;
+    function ownerEmail() {
+      return signedIn() && authEmail() in [
+        'studyroomslandstuhl@gmail.com',
+        'alicekrekoten@gmail.com',
+        'alisa.krekoten@gmail.com'
+      ];
+    }
+
+    function teacherRecordExists() {
+      return signedIn() && exists(/databases/$(database)/documents/teachers/$(request.auth.uid));
+    }
+
+    function approvedTeacher() {
+      return teacherRecordExists() &&
+        get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('active', true) == true &&
+        (
+          get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('owner', false) == true ||
+          get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('admin', false) == true ||
+          get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('approved', false) == true ||
+          get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('isTeacher', false) == true
+        );
+    }
+
+    function isTeacher() {
+      return ownerEmail() || approvedTeacher();
+    }
+
+    function ownsStudentData(data) {
+      return verifiedUser() &&
+        data.get('authUid', '') == request.auth.uid;
+    }
+
+    function ownsStudentId(studentId) {
+      return verifiedUser() &&
+        exists(/databases/$(database)/documents/students/$(studentId)) &&
+        get(/databases/$(database)/documents/students/$(studentId)).data.get('authUid', '') == request.auth.uid;
+    }
+
+    function legacyStudentClaimAllowed() {
+      return verifiedUser() &&
+        resource.data.get('authUid', '') == '' &&
+        sameVerifiedEmail(resource.data) &&
+        request.resource.data.get('authUid', '') == request.auth.uid &&
+        request.resource.data.get('authEmail', '').lower().trim() == authEmail() &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly([
+          'authUid', 'authEmail', 'authVersion', 'authLinkedAt'
+        ]);
+    }
+
+    function progressOwnedByUser(data, studentId) {
+      return verifiedUser() && (
+        data.get('authUid', '') == request.auth.uid ||
+        sameVerifiedEmail(data) ||
+        ownsStudentId(studentId) ||
+        (
+          data.get('canonicalStudentId', '') != '' &&
+          ownsStudentId(data.get('canonicalStudentId', ''))
+        )
+      );
     }
 
     match /courses/{courseId} {
+      // Kursdaten dürfen für Kurscode-Prüfung gelesen werden. Schreiben nur Lehrkräfte.
       allow read: if signedIn();
-      allow create, update: if signedIn() && reasonableSize();
-      allow delete: if signedIn();
+      allow create, update: if isTeacher() && reasonableSize();
+      allow delete: if isTeacher();
     }
 
     match /students/{studentId} {
-      allow read: if signedIn();
-      allow create, update: if signedIn() && reasonableSize();
-      allow delete: if signedIn();
+      // Schüler sehen nur ihr eigenes UID-gebundenes Profil. Für die einmalige
+      // Migration darf eine verifizierte E-Mail nur ihr eigenes altes Profil lesen.
+      allow read: if isTeacher() || ownsStudentData(resource.data) || sameVerifiedEmail(resource.data);
+
+      allow create: if isTeacher() || (
+        verifiedUser() &&
+        reasonableSize() &&
+        request.resource.data.get('authUid', '') == request.auth.uid &&
+        request.resource.data.get('authEmail', '').lower().trim() == authEmail() &&
+        request.resource.data.get('email', '').lower().trim() == authEmail()
+      );
+
+      allow update: if isTeacher() || (
+        reasonableSize() && (
+          legacyStudentClaimAllowed() ||
+          (
+            ownsStudentData(resource.data) &&
+            request.resource.data.get('authUid', '') == resource.data.get('authUid', '') &&
+            request.resource.data.get('authEmail', '').lower().trim() == resource.data.get('authEmail', '').lower().trim()
+          )
+        )
+      );
+
+      allow delete: if isTeacher();
     }
 
     match /progress/{studentId} {
-      allow read: if signedIn();
-      allow create, update: if signedIn() && reasonableSize();
-      allow delete: if false;
+      // Auch alte Alias-Fortschrittsdokumente bleiben erreichbar, aber nur wenn
+      // sie über UID, verifizierte E-Mail oder canonicalStudentId zum selben Schüler gehören.
+      allow read: if isTeacher() || progressOwnedByUser(resource.data, studentId);
+
+      allow create: if isTeacher() || (
+        verifiedUser() &&
+        reasonableSize() &&
+        progressOwnedByUser(request.resource.data, studentId)
+      );
+
+      allow update: if isTeacher() || (
+        reasonableSize() &&
+        progressOwnedByUser(resource.data, studentId) &&
+        progressOwnedByUser(request.resource.data, studentId)
+      );
+
+      // Lernfortschritt wird absichtlich niemals clientseitig gelöscht.
+      allow delete: if isTeacher();
     }
 
     match /teachers/{teacherId} {
-      allow read: if signedIn();
-      allow create, update: if signedIn() && reasonableSize();
-      allow delete: if signedIn();
+      allow read: if isTeacher() || (signedIn() && teacherId == request.auth.uid);
+      allow create, update, delete: if isTeacher() && reasonableSize();
+    }
+
+    match /teachers_pending/{teacherId} {
+      allow read: if isTeacher() || (signedIn() && teacherId == request.auth.uid);
+      allow create: if signedIn() && teacherId == request.auth.uid && reasonableSize();
+      allow update, delete: if isTeacher();
     }
 
     match /teacherInvites/{inviteId} {
-      allow read: if signedIn();
-      allow create, update: if signedIn() && reasonableSize();
-      allow delete: if signedIn();
+      allow read, create, update, delete: if isTeacher();
     }
 
     match /courseInvites/{inviteId} {
       allow read: if signedIn();
-      allow create, update: if signedIn() && reasonableSize();
-      allow delete: if signedIn();
+      allow create, update, delete: if isTeacher();
     }
 
     match /releases/{releaseId} {
       allow read: if signedIn();
-      allow create, update: if signedIn() && reasonableSize();
-      allow delete: if signedIn();
+      allow create, update, delete: if isTeacher() && reasonableSize();
     }
 
     match /assignments/{assignmentId} {
       allow read: if signedIn();
-      allow create, update: if signedIn() && reasonableSize();
-      allow delete: if signedIn();
+      allow create, update, delete: if isTeacher() && reasonableSize();
     }
 
     match /settings/{settingId} {
       allow read: if signedIn();
-      allow create, update: if signedIn() && reasonableSize();
-      allow delete: if signedIn();
+      allow create, update, delete: if isTeacher() && reasonableSize();
     }
 
     match /diagnostics/{docId} {
-      allow read, create, update: if signedIn() && reasonableSize();
-      allow delete: if false;
+      allow create: if signedIn() && reasonableSize();
+      allow read, update, delete: if isTeacher();
     }
 
     match /{document=**} {
