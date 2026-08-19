@@ -1,0 +1,54 @@
+name: Validate strict student UID isolation
+
+on:
+  pull_request:
+    paths:
+      - 'firestore.rules'
+      - 'firebase.json'
+      - 'js/student-secure-auth.js'
+      - 'js/student-identity.js'
+      - 'js/session-restore.js'
+      - 'js/account-progress-sync.js'
+      - 'js/account-progress-autostart.js'
+      - 'js/learning-auth-gate.js'
+      - 'login/index.html'
+      - 'register/index.html'
+      - 'scripts/test-firestore-student-isolation.mjs'
+      - '.github/workflows/strict-student-isolation-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  security:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Set up Java for Firestore emulator
+        uses: actions/setup-java@v5
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Install isolated Firebase test dependencies
+        run: npm install --no-save firebase@10.12.5 @firebase/rules-unit-testing@3.0.3 firebase-tools@13.15.1
+
+      - name: Check JavaScript syntax
+        run: |
+          node --check js/student-secure-auth.js
+          node --check js/student-identity.js
+          node --check js/session-restore.js
+          node --check js/account-progress-sync.js
+          node --check js/account-progress-autostart.js
+          node --check js/learning-auth-gate.js
+          node --check scripts/test-firestore-student-isolation.mjs
+
+      - name: Test Firestore UID isolation in emulator
+        run: npx firebase emulators:exec --only firestore --project demo-sprachpilot-student-isolation "node scripts/test-firestore-student-isolation.mjs"
