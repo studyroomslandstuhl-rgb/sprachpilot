@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>SprachPilot – Konto</title>
+<style>
+:root{font-family:system-ui,-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;color:#17324d;background:#f5f8fb}*{box-sizing:border-box}body{margin:0;min-height:100vh;display:grid;place-items:center;padding:24px;background:linear-gradient(180deg,#f7fbff 0%,#eef5fa 100%)}.shell{width:min(560px,100%)}.brand{text-align:center;margin-bottom:18px}.brand img{width:86px;height:86px;object-fit:contain}.brand h1{font-size:30px;margin:8px 0 2px}.brand p{margin:0;color:#64778a}.card{background:#fff;border:1px solid #dce6ee;border-radius:18px;padding:28px;box-shadow:0 16px 40px rgba(31,70,104,.10)}h2{margin:0 0 8px;font-size:24px}.lead{color:#53697c;margin:0 0 22px;line-height:1.5}label{display:block;font-weight:650;margin:16px 0 7px}input{width:100%;padding:13px 14px;border:1px solid #b9c8d4;border-radius:10px;font:inherit;background:#fff}input:focus{outline:3px solid rgba(27,119,183,.15);border-color:#1b77b7}button,.primary-link{display:block;width:100%;border:0;border-radius:10px;padding:13px 16px;margin-top:18px;font:inherit;font-weight:700;text-align:center;text-decoration:none;cursor:pointer}.primary,.primary-link{background:#1b77b7;color:#fff}button:disabled{opacity:.6;cursor:wait}.status{margin:18px 0 0;padding:12px 14px;border-radius:10px;line-height:1.45}.status.error{background:#fff2f1;color:#8f241d;border:1px solid #f2c8c5}.status.ok{background:#edf8f0;color:#246a35;border:1px solid #bfdfc7}.account-hint{padding:11px 13px;background:#f3f7fa;border-radius:10px;margin-bottom:8px;word-break:break-word}.success-mark{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:#eaf7ee;color:#26713a;font-size:34px;font-weight:800;margin:4px auto 12px}.help{margin-top:18px;text-align:center;color:#718496;font-size:13px}.help a{color:#1b77b7}.footer{text-align:center;color:#8b9aa8;font-size:12px;margin-top:16px}@media(max-width:520px){body{padding:16px}.card{padding:22px}.brand h1{font-size:27px}}
+</style>
+</head>
+<body>
+<div class="shell">
+  <div class="brand">
+    <img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo">
+    <h1>SprachPilot</h1>
+    <p>Sicherer Zugang zu deinem Lernkonto</p>
+  </div>
+  <main class="card">
+    <h2 id="actionTitle">Konto wird geprüft …</h2>
+    <p class="lead" id="actionLead">Bitte einen Moment warten.</p>
+    <div id="actionContent"></div>
+    <div id="actionStatus" class="status" hidden></div>
+    <div class="help">Probleme mit dem Link? <a href="/login/">Zurück zum Login</a></div>
+  </main>
+  <div class="footer">© SprachPilot · sprachpilot.org</div>
+</div>
+<script type="module" src="./action.js?v=1"></script>
+</body>
+</html>
