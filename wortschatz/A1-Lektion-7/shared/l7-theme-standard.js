@@ -2,7 +2,7 @@
 'use strict';
 if(window.L7ThemeStandard)return;
 
-const VERSION='l7-theme-standard7';
+const VERSION='l7-theme-standard8';
 const COMMON_EMOJIS=Object.freeze({'karteikarten':'🃏','bild-erklaerung-wort':'🖼️','artikel-plural':'🔤','infinitiv-partizip':'🔁','memory':'🧠','partizip-waehlen':'✅','partizip-schreiben':'✍️','fehler-korrigieren':'🛠️','saetze-ordnen':'🧩','saetze-bilden':'✍️','ja-nein-fragen':'💬','w-fragen':'❓','bildimpulse':'🖼️','fragen-antworten':'💬','eigene-saetze':'✍️'});
 const THEME_EMOJIS=Object.freeze({
   1:Object.freeze({'karteikarten':'🃏','bild-erklaerung-wort':'🖼️','artikel-plural':'🔤','koennen-formen':'💪','wollen-formen':'🎯','verbform-waehlen':'✅','aussagen-ordnen':'🧩','ja-nein-fragen':'💬','w-fragen':'❓','faehigkeiten-abstufen':'📊','bildimpulse':'🖼️','fragen-antworten':'💬','partnerinterview':'🎤','wollen-moechten':'⚖️','dialoge-ergaenzen':'💬','hoeren-wuensche':'🎧','eigene-faehigkeiten':'💪','eigene-plaene':'📅'}),
@@ -25,7 +25,8 @@ const THEME_EMOJIS=Object.freeze({
     't3-fehler-korrigieren-v2':'🛠️',
     't3-lesen-v2':'📖',
     't3-lueckentext-v2':'✍️',
-    't3-pruefung-v2':'⭐'
+    't3-schon-einmal-v1':'💬',
+    't3-pruefung-v2':'⭐','t3-pruefung-v3':'⭐'
   }),
   4:Object.freeze({'karteikarten':'🃏','artikel':'🧩','plural-sprechen':'🎤','wort-bedeutung':'💡','redemittel-ordnen':'🧩','lesen-richtig-falsch':'✅','lesen-abc':'🔤','informationen-markieren':'🖍️','ueberschrift':'📰','rechtschreibung':'✍️','informationen-schreiben':'📝','hoeren-sekretariat':'🎧','hoerdialog-ordnen':'🧩','telefonluecken':'☎️','telefonat-sprechen':'📞','dialog-deutschkurs':'💬','dialog-schulausflug':'🚌','dialog-treffpunkt':'📍','entschuldigung-schule':'📝','nachricht-deutschkurs':'💌','entschuldigung-pruefen':'✅','eigener-dialog':'🗣️'})
 });
