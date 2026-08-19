@@ -3,7 +3,7 @@ import { getActiveProfile } from '/js/auth.js';
 import '/shared/points-recalculator.js?v=1';
 
 const MODULES=['fragen','wortschatz','verben','perfekt','grammatik'];
-const RUN_CACHE_MS=30000;
+const RUN_CACHE_MS=5*60*1000;
 function uniq(a){return [...new Set((a||[]).filter(Boolean).map(String))]}
 function norm(s){return String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')}
 function clamp(v){return Math.max(0,Math.min(100,Math.round(Number(v)||0)))}
@@ -84,7 +84,11 @@ export async function unifyProgressAliases(options={}){
  patch.studentId=canonical;patch.userId=canonical;patch.docId=canonical;patch.canonicalStudentId=canonical;patch.aliasIds=[...allIds];patch.studentName=[p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(' ').trim()||p.displayName||p.email||'Schüler/in';patch.email=mail;patch.kurs=course;patch.kursnummer=course;patch.courseCode=course;if(courseDocId)patch.courseDocId=courseDocId;
  patch.totals={...(merged.totals||{}),points};patch.ranking={...(merged.ranking||{}),points,updatedAt:new Date().toISOString()};patch.pointsTotal=points;patch.lifetimePoints=points;patch.punkteGesamt=points;patch.updatedAt=serverTimestamp();patch.metadata={...(patch.metadata||{}),aliasRepair:{version:3,canonical,sourceDocs:rows.map(r=>r.id),at:new Date().toISOString(),verifiedPoints:verified,preservedPoints:points}};
  await setDoc(doc(db,'progress',canonical),patch,{merge:true});
- try{await setDoc(doc(db,'students',canonical),{studentId:canonical,userId:canonical,docId:canonical,email:mail,kurs:course,kursnummer:course,courseCode:course,courseDocId:courseDocId||undefined,rankingPoints:points,pointsTotal:points,updatedAt:serverTimestamp()},{merge:true})}catch(e){}
+ try{
+  const studentPatch={studentId:canonical,userId:canonical,docId:canonical,email:mail,kurs:course,kursnummer:course,courseCode:course,rankingPoints:points,pointsTotal:points,updatedAt:serverTimestamp()};
+  if(courseDocId)studentPatch.courseDocId=courseDocId;
+  await setDoc(doc(db,'students',canonical),studentPatch,{merge:true});
+ }catch(e){}
  try{localStorage.setItem('SP_STUDENT_ID',canonical);localStorage.setItem('SP_POINTS_TOTAL',String(points));sessionStorage.setItem(key,String(Date.now()))}catch(e){}
  const result={ok:true,canonical,docs:rows.map(r=>r.id),aliases:[...allIds],points,verifiedPoints:verified};
  window.SP_PROGRESS_ALIAS_UNIFIER=result;
