@@ -33,8 +33,12 @@
       if(String(localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase().startsWith('teacher'))localStorage.removeItem('SP_LOGIN_CONTEXT');
     }catch(e){}
   }
+  function clearStudentSessionFlags(){
+    try{['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_KEEP_LOGGED_IN','SP_STUDENT_ID','SP_STUDENT_AUTH_UID','SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE','SP_AUTH_ROLE','SP_LOGIN_CONTEXT','motherLanguage','muttersprache','SP_MOTHER_LANGUAGE_CODE'].forEach(k=>localStorage.removeItem(k))}catch(e){}
+  }
   function clearInsecureActiveStudent(){
-    try{['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_KEEP_LOGGED_IN','SP_STUDENT_ID','SP_STUDENT_AUTH_UID','SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE'].forEach(k=>localStorage.removeItem(k));localStorage.setItem('SP_SECURE_STUDENT_RELOGIN_REQUIRED','1')}catch(e){}
+    clearStudentSessionFlags();
+    try{localStorage.setItem('SP_SECURE_STUDENT_RELOGIN_REQUIRED','1')}catch(e){}
   }
   function enforceStudentRole(p){
     if(!secureStudent(p))return;
@@ -63,7 +67,39 @@
     }
     return null;
   }
+  function installSecureLogoutOverride(){
+    try{
+      if(window.logout&&window.logout.__spSecureStudentLogout===true)return;
+      const fallback=typeof window.logout==='function'?window.logout:null;
+      const secureLogout=async function(){
+        const p=firstSecureStudent(PROFILE_KEYS,localStorage);
+        if(!p){
+          if(fallback)return fallback();
+          clearStudentSessionFlags();location.href='/index.html';return;
+        }
+        try{
+          const module=await import('/js/student-secure-auth.js?v=1');
+          await module.secureStudentSignOut();
+        }catch(error){
+          console.error('Sichere Firebase-Abmeldung fehlgeschlagen',error);
+          try{window.alert('Abmeldung konnte nicht vollständig abgeschlossen werden. Die Sitzung bleibt aus Sicherheitsgründen aktiv. Bitte die Seite neu laden und erneut abmelden.')}catch(e){}
+          return;
+        }
+        clearStudentSessionFlags();
+        try{sessionStorage.removeItem('SP_PROFILE_SESSION_BACKUP');sessionStorage.removeItem('SP_STUDENT_PROFILE_SESSION_BACKUP')}catch(e){}
+        location.href='/index.html';
+      };
+      secureLogout.__spSecureStudentLogout=true;
+      window.logout=secureLogout;
+    }catch(e){}
+  }
+
   restore();
+  // guard.js setzt window.logout unmittelbar nach diesem Modul. Der Timer läuft
+  // erst danach und ersetzt ausschließlich die Schüler-Abmeldung durch die sichere Variante.
+  setTimeout(installSecureLogoutOverride,0);
+  setTimeout(installSecureLogoutOverride,500);
+  window.addEventListener('SP_STUDENT_IDENTITY_NORMALIZED',()=>setTimeout(installSecureLogoutOverride,0));
   window.addEventListener('storage',restore);
   document.addEventListener('visibilitychange',()=>{if(!document.hidden)restore();else{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(p&&!teacherSession())saveBackups(p)}});
   window.addEventListener('pagehide',()=>{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(p&&!teacherSession())saveBackups(p)});
