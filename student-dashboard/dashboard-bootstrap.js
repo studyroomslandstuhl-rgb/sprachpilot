@@ -18,5 +18,5 @@ const legitimatePreview=clearStaleTeacherPreview();
 if(activeRole()==='teacher'&&!legitimatePreview){
   location.replace('/teacher/index.html');
 }else{
-  await import('./dashboard-lite.js?v=4');
+  await import('./dashboard-lite.js?v=5');
 }
