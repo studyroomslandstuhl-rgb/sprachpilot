@@ -17,7 +17,12 @@ function clean(v){return String(v||'').trim().toLowerCase().normalize('NFD').rep
 function profile(){return parse(localStorage.getItem('SP_USER_PROFILE'),null)||parse(localStorage.getItem('SP_STUDENT_PROFILE'),null)||{}}
 function currentIds(){
  const p=profile(),course=p.courseCode||p.kurs||p.kursnummer||p.courseDocId||p.course||'kurs',mail=String(p.email||'').trim().toLowerCase(),fallback=clean(course+'_'+(mail||p.vorname||p.firstName||'student'));
- return new Set([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem('SP_STUDENT_ID'),fallback,...(window.SP_PROGRESS_ALIAS_UNIFIER?.aliases||[])].filter(Boolean).map(String))
+ const profileAliases=Array.isArray(p.aliasIds)?p.aliasIds:[],runtimeAliases=window.SP_PROGRESS_ALIAS_UNIFIER?.aliases||[];
+ return new Set([
+  p.canonicalStudentId,p.docId,p.studentId,p.userId,p.uid,p.id,
+  localStorage.getItem('SP_STUDENT_ID'),localStorage.getItem('SP_ACCOUNT_PROGRESS_OWNER'),fallback,
+  ...profileAliases,...runtimeAliases
+ ].filter(Boolean).map(String))
 }
 function ownerMatches(){const owner=String(localStorage.getItem('SP_ACCOUNT_PROGRESS_OWNER')||'').trim();return !owner||currentIds().has(owner)}
 function clamp(v){return Math.max(0,Math.min(100,Math.round(Number(v)||0)))}
