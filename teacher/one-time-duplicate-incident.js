@@ -9,8 +9,13 @@
   function uid(){try{return String(firebase.auth().currentUser?.uid||'').trim()}catch(e){return''}}
   function text(v){return String(v==null?'':v).trim()}
   function mergeFn(a,b){
-    if(typeof root.Students?.mergeProgressRows!=='function')throw new Error('INCIDENT_PROGRESS_MERGE_FUNCTION_MISSING');
-    return root.Students.mergeProgressRows(a,b);
+    // students.js deklariert `const Students` im globalen lexikalischen Scope.
+    // Das Objekt ist deshalb in späteren klassischen Scripts per Identifier erreichbar,
+    // aber absichtlich nicht als window.Students/root.Students verfügbar.
+    if(typeof Students==='undefined'||typeof Students.mergeProgressRows!=='function'){
+      throw new Error('INCIDENT_PROGRESS_MERGE_FUNCTION_MISSING');
+    }
+    return Students.mergeProgressRows(a,b);
   }
   function recalculator(){return root.SPPointRecalculator||null}
   function markStage(error,stage){if(error&&typeof error==='object'&&!error.incidentStage)error.incidentStage=stage;return error}
@@ -191,5 +196,5 @@
     return lines.join('\n');
   }
 
-  root.OneTimeDuplicateIncident={loadState,saveBackup,backupPlan,validateBindings,applyGroup,verifyGroup,runOnce,summary};
+  root.OneTimeDuplicateIncident={loadState,saveBackup,backupPlan,validateBindings,mergeFn,applyGroup,verifyGroup,runOnce,summary};
 })(typeof window!=='undefined'?window:globalThis);
