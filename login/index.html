@@ -1,21 +1,32 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SprachPilot – Login</title><link rel="stylesheet" href="../style.css"></head><body><div class="container"><section class="hero"><a href="/index.html" style="text-decoration:none;color:inherit"><div class="logo-wrap"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></div><h1>SprachPilot</h1></a><p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p></section><section class="card"><h2>Schüler-Login</h2><p class="small">Logge dich mit E-Mail und Kurscode ein.</p><label>E-Mail *</label><input id="loginEmail" type="email" required placeholder="name@email.com"><label>Kurscode *</label><input id="loginCourse" required placeholder="z. B. GLK-68"><button class="success" onclick="studentLogin()">Einloggen</button><a class="btn secondary" href="../register/">Neu registrieren</a><a class="btn secondary" href="../">Zur Startseite</a><div id="loginResult"></div></section><footer>© SprachPilot</footer></div><script type="module">
-import { loginStudent, $, safeText, getRedirectTarget } from "../js/student-identity.js?v=identity3";
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SprachPilot – Login</title><link rel="stylesheet" href="../style.css"></head><body><div class="container"><section class="hero"><a href="/index.html" style="text-decoration:none;color:inherit"><div class="logo-wrap"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></div><h1>SprachPilot</h1></a><p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p></section><section class="card"><h2>Schüler-Login</h2><p class="small">Logge dich mit deiner E-Mail, deinem Passwort und deinem Kurscode ein.</p><label>E-Mail *</label><input id="loginEmail" type="email" required autocomplete="email" placeholder="name@email.com"><label>Passwort *</label><input id="loginPassword" type="password" required autocomplete="current-password" placeholder="Passwort"><label>Kurscode *</label><input id="loginCourse" required autocomplete="off" autocapitalize="characters" placeholder="z. B. GLK-68"><button class="success" onclick="studentLogin()">Einloggen</button><button class="btn secondary" type="button" onclick="resetPassword()">Passwort vergessen</button><a class="btn secondary" href="../register/">Neu registrieren / altes Profil sichern</a><a class="btn secondary" href="../">Zur Startseite</a><div id="loginResult"></div></section><footer>© SprachPilot</footer></div><script type="module">
+import { loginStudent, resetStudentPassword, $, safeText, getRedirectTarget } from "../js/student-identity.js?v=identity4";
 function withTimeout(promise,ms){return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error("AUTH_TIMEOUT")),ms))])}
+function show(html){const result=$("loginResult");if(result)result.innerHTML=html}
 window.studentLogin=async function(){
-  const email=$("loginEmail").value.trim().toLowerCase(),kurs=$("loginCourse").value.trim(),result=$("loginResult");
-  if(!email||!kurs){result.innerHTML='<div class="no">Bitte E-Mail und Kurscode eingeben.</div>';return}
-  result.innerHTML='<div class="ok">Login wird geprüft...</div>';
+  const email=$("loginEmail").value.trim().toLowerCase(),password=$("loginPassword").value,kurs=$("loginCourse").value.trim();
+  if(!email||!password||!kurs){show('<div class="no">Bitte E-Mail, Passwort und Kurscode eingeben.</div>');return}
+  show('<div class="ok">Sicherer Login wird geprüft...</div>');
   try{
-    await withTimeout(loginStudent(email,kurs),10000);
+    await withTimeout(loginStudent(email,kurs,password),15000);
     location.href=(getRedirectTarget("/index.html").includes("/teacher/")?"/index.html":getRedirectTarget("/index.html"));
   }catch(err){
     console.error(err);
-    if(err.message==="AUTH_TIMEOUT") result.innerHTML='<div class="no"><b>Login dauert zu lange.</b><br>Bitte die Seite hart neu laden und noch einmal einloggen. Firebase blockiert nicht mehr endlos; falls es wieder passiert, liegt es an Firestore-Regeln oder Verbindung.</div>';
-    else if(err.message==="COURSE_NOT_FOUND") result.innerHTML=`<div class="no">Dieser Kurscode existiert nicht: ${safeText(kurs)}</div>`;
-    else if(err.message==="STUDENT_NOT_FOUND") result.innerHTML='<div class="no">Profil nicht gefunden. Bitte zuerst registrieren.</div>';
-    else if(err.message==="LOCAL_PROGRESS_ISOLATION_FAILED") result.innerHTML='<div class="no"><b>Login aus Sicherheitsgründen gestoppt.</b><br>Auf diesem Browser liegen noch Lernstände eines anderen Profils, die gerade nicht sicher getrennt werden konnten. Es wurden keine Punkte einem anderen Schüler zugeordnet. Bitte Browser-Speicher nicht löschen und den Login noch einmal versuchen.</div>';
-    else result.innerHTML='<div class="no">Login nicht möglich. Bitte Kurscode, Profil und Firebase-Regeln prüfen.</div>';
+    const code=String(err?.code||""),message=String(err?.message||"");
+    if(message==="AUTH_TIMEOUT")show('<div class="no"><b>Login dauert zu lange.</b><br>Bitte die Seite neu laden und noch einmal versuchen.</div>');
+    else if(message==="EMAIL_NOT_VERIFIED")show('<div class="no"><b>Bitte bestätige zuerst deine E-Mail.</b><br>Eine neue Bestätigungs-E-Mail wurde angefordert. Nach der Bestätigung kannst du dich mit Passwort und Kurscode einloggen.</div>');
+    else if(message==="STUDENT_NOT_FOUND")show('<div class="no">Für diese E-Mail und diesen Kurs wurde kein Schülerprofil gefunden. Wenn du schon früher SprachPilot benutzt hast, öffne „Neu registrieren / altes Profil sichern“ und sichere dein Profil einmalig.</div>');
+    else if(message==="STUDENT_AUTH_OWNERSHIP_MISMATCH")show('<div class="no"><b>Login aus Sicherheitsgründen abgelehnt.</b><br>Dieses Schülerprofil ist bereits mit einer anderen sicheren Konto-ID verbunden. Es wurden keine Daten geöffnet oder verändert.</div>');
+    else if(message==="LOCAL_PROGRESS_ISOLATION_FAILED")show('<div class="no"><b>Login aus Sicherheitsgründen gestoppt.</b><br>Lokale Lernstände eines anderen Profils konnten nicht vollständig getrennt werden. Es wurde kein Cloud-Fortschritt synchronisiert.</div>');
+    else if(code==="auth/invalid-credential"||code==="auth/user-not-found"||code==="auth/wrong-password")show('<div class="no"><b>E-Mail oder Passwort ist nicht korrekt.</b><br>Wenn dein altes SprachPilot-Profil noch kein Passwort hatte, musst du es einmalig über „Neu registrieren / altes Profil sichern“ aktivieren.</div>');
+    else if(code==="auth/too-many-requests")show('<div class="no">Zu viele Loginversuche. Bitte später erneut versuchen oder „Passwort vergessen“ verwenden.</div>');
+    else show(`<div class="no">Login nicht möglich: ${safeText(message||code||"Unbekannter Fehler")}</div>`);
   }
+}
+window.resetPassword=async function(){
+  const email=$("loginEmail").value.trim().toLowerCase();
+  if(!email){show('<div class="no">Bitte zuerst deine E-Mail eingeben.</div>');return}
+  try{await resetStudentPassword(email);show('<div class="ok">Wenn für diese E-Mail ein Konto existiert, wurde eine E-Mail zum Zurücksetzen des Passworts gesendet.</div>')}
+  catch(err){console.error(err);show('<div class="no">Die Passwort-E-Mail konnte nicht gesendet werden.</div>')}
 }
 </script><script src="/shared/sprachpilot-design-system.js"></script>
 </body></html>
