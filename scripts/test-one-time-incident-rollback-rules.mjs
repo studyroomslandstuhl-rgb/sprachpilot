@@ -1,5 +1,5 @@
 import {initializeTestEnvironment,assertSucceeds,assertFails} from '@firebase/rules-unit-testing';
-import {collection,doc,getDocs,getDoc,setDoc,deleteDoc,query,where} from 'firebase/firestore';
+import {collection,doc,getDocs,getDoc,setDoc,deleteDoc,query,where,updateDoc,arrayUnion} from 'firebase/firestore';
 
 const rollbackRules=`
 rules_version = '2';
@@ -25,7 +25,7 @@ const env=await initializeTestEnvironment({projectId:'demo-one-time-rollback',fi
 try{
   await env.withSecurityRulesDisabled(async ctx=>{
     const db=ctx.firestore();
-    await setDoc(doc(db,'students','canonical'),{studentId:'canonical',email:'x@example.com',aliasIds:[]});
+    await setDoc(doc(db,'students','canonical'),{studentId:'canonical',email:'x@example.com',aliasIds:['existing-alias']});
     await setDoc(doc(db,'students','duplicate'),{studentId:'duplicate',email:'x@example.com'});
     await setDoc(doc(db,'progress','canonical'),{studentId:'canonical',pointsTotal:100,fragen:{t:{tasks:{a:{completed:true}}}}});
     await setDoc(doc(db,'progress','duplicate'),{studentId:'duplicate',pointsTotal:50});
@@ -48,7 +48,16 @@ try{
   await assertSucceeds(setDoc(doc(db,'settings','studentSecurity'),{oneTimeDuplicateIncidentVersion:1,oneTimeDuplicateIncidentStatus:'running'},{merge:true}));
   await assertSucceeds(setDoc(doc(db,'progress','canonical'),{pointsTotal:150,oneTimeDuplicateIncidentVersion:1},{merge:true}));
   await assertSucceeds(setDoc(doc(db,'progress','duplicate'),{securityArchived:true,oneTimeDuplicateIncidentVersion:1},{merge:true}));
-  await assertSucceeds(setDoc(doc(db,'students','canonical'),{aliasIds:['duplicate'],oneTimeDuplicateIncidentVersion:1},{merge:true}));
+
+  // Die Fortschritts-Aliasmigration ergänzt nur fehlende Schüler-Aliase atomar.
+  await assertSucceeds(updateDoc(doc(db,'students','canonical'),{aliasIds:arrayUnion('duplicate','legacy-progress-id')}));
+  const canonicalAfterAlias=await assertSucceeds(getDoc(doc(db,'students','canonical')));
+  const aliases=canonicalAfterAlias.data().aliasIds||[];
+  if(!aliases.includes('existing-alias')||!aliases.includes('duplicate')||!aliases.includes('legacy-progress-id')){
+    throw new Error('arrayUnion alias persistence failed under rollback rules');
+  }
+
+  await assertSucceeds(setDoc(doc(db,'students','canonical'),{oneTimeDuplicateIncidentVersion:1},{merge:true}));
   await assertSucceeds(deleteDoc(doc(db,'students','duplicate')));
 
   console.log('One-time incident rollback-rules compatibility passed.');
