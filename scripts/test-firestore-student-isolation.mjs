@@ -44,12 +44,10 @@ try{
     await setDoc(doc(db,'courses','KURS-A'),{courseCode:'KURS-A',name:'Kurs A'});
     await setDoc(doc(db,'courses','KURS-ALT'),{courseCode:'KURS-ALT',name:'Alter Kurs'});
 
-    // T ist NACH dem Cutover vom Owner freigegeben.
     await setDoc(doc(db,'teachers',T.uid),{
       email:T.email,role:'teacher',approved:true,active:true,
       securityApprovedV2:true,securityApprovalGeneration:GENERATION
     });
-    // M simuliert ein altes/manipuliertes Lehrer-Dokument aus der früheren offenen Regelphase.
     await setDoc(doc(db,'teachers',M.uid),{
       email:M.email,role:'teacher',approved:true,isTeacher:true,admin:true,active:true
     });
@@ -125,7 +123,7 @@ try{
   await assertSucceeds(setDoc(doc(adb,'progress','new-a-alias'),{canonicalStudentId:'student-a',points:5}));
   await assertSucceeds(setDoc(doc(adb,'progress','new-a-bound'),{authUid:A.uid,authEmail:A.email,canonicalStudentId:'student-a',points:6}));
 
-  // 7) Collection-Queries nur per eigener UID; E-Mail-Queries sind verboten.
+  // 7) Private Collections: nur UID-Queries; E-Mail-Queries sind verboten.
   await assertSucceeds(getDocs(query(collection(adb,'students'),where('authUid','==',A.uid))));
   await assertFails(getDocs(collection(adb,'students')));
   await assertFails(getDocs(query(collection(adb,'students'),where('email','==',A.email))));
@@ -135,38 +133,53 @@ try{
   await assertFails(getDocs(query(collection(adb,'progress'),where('email','==',A.email))));
   await assertFails(getDocs(query(collection(bdb,'progress'),where('email','==',A.email))));
 
-  // 8) Kursdaten: Schüler lesen, aber schreiben nicht.
+  // 8) Die sichtbare Rangliste ist physisch getrennt und streng minimiert.
+  const rankingA={studentId:'student-a',authUid:A.uid,displayName:'Alice A',courseKey:'KURS-A',points:55,version:1,updatedAt:new Date()};
+  const rankingB={studentId:'student-b',authUid:B.uid,displayName:'Bob B',courseKey:'KURS-B',points:80,version:1,updatedAt:new Date()};
+  await assertSucceeds(setDoc(doc(adb,'studentRankings','student-a'),rankingA));
+  await assertFails(setDoc(doc(adb,'studentRankings','student-b'),{...rankingB,authUid:A.uid}));
+  await assertFails(setDoc(doc(adb,'studentRankings','student-a'),{...rankingA,courseKey:'KURS-B'}));
+  await assertFails(setDoc(doc(adb,'studentRankings','student-a'),{...rankingA,email:A.email}));
+  await assertFails(setDoc(doc(adb,'studentRankings','student-a'),{...rankingA,progress:{task1:100}}));
+  await assertFails(setDoc(doc(aub,'studentRankings','student-a'),rankingA));
+  await assertSucceeds(setDoc(doc(bdb,'studentRankings','student-b'),rankingB));
+  await assertSucceeds(getDocs(query(collection(adb,'studentRankings'),where('courseKey','==','KURS-A'))));
+  await assertSucceeds(getDocs(query(collection(bdb,'studentRankings'),where('courseKey','==','KURS-B'))));
+  await assertFails(getDoc(doc(anon,'studentRankings','student-a')));
+  await assertFails(deleteDoc(doc(adb,'studentRankings','student-a')));
+
+  // 9) Kursdaten: Schüler lesen, aber schreiben nicht.
   await assertSucceeds(getDoc(doc(adb,'courses','KURS-A')));
   await assertFails(updateDoc(doc(adb,'courses','KURS-A'),{name:'Manipuliert'}));
   await assertFails(getDoc(doc(anon,'courses','KURS-A')));
 
-  // 9) Lehrer-Bypass selbst ist neu vertrauensgebunden.
-  // T besitzt die aktuelle Post-Cutover-Generation und darf Schülerdaten verwalten.
+  // 10) Lehrer-Bypass selbst ist neu vertrauensgebunden.
   await assertSucceeds(getDoc(doc(tdb,'students','student-a')));
   await assertSucceeds(updateDoc(doc(tdb,'students','student-b'),{kurs:'KURS-B2'}));
   await assertSucceeds(updateDoc(doc(tdb,'progress','student-b'),{points:81}));
+  await assertSucceeds(setDoc(doc(tdb,'studentRankings','student-b'),{...rankingB,courseKey:'KURS-B2'}));
   await assertSucceeds(setDoc(doc(tdb,'studentLookups','teacher-made'),{email:B.email,canonicalStudentId:'student-b'}));
   await assertSucceeds(updateDoc(doc(tdb,'settings','studentSecurity'),{studentLookupReady:false}));
 
-  // M hat zwar ein altes Dokument mit approved/admin/isTeacher, aber keine aktuelle
-  // Vertrauensgeneration. Es darf sein eigenes Lehrerprofil sehen, sonst nichts Privilegiertes.
+  // M hat alte approved/admin/isTeacher-Flags, aber keine aktuelle Vertrauensgeneration.
   await assertSucceeds(getDoc(doc(mdb,'teachers',M.uid)));
   await assertFails(getDoc(doc(mdb,'students','student-a')));
   await assertFails(updateDoc(doc(mdb,'students','student-a'),{kurs:'ANGRIFF'}));
+  await assertFails(setDoc(doc(mdb,'studentRankings','student-a'),rankingA));
   await assertFails(getDocs(collection(mdb,'teachers')));
 
-  // T darf Lehrer-Vertrauen weder erzeugen noch rotieren.
+  // Normale Teacher dürfen das Vertrauenssystem selbst nicht verändern.
   await assertFails(updateDoc(doc(tdb,'settings','teacherSecurity'),{generation:'attacker-generation'}));
   await assertFails(updateDoc(doc(tdb,'teachers',M.uid),{securityApprovedV2:true,securityApprovalGeneration:GENERATION}));
   await assertFails(getDocs(collection(tdb,'teachers')));
 
-  // Owner kann alles prüfen und ausschließlich er kann die Post-Cutover-Freigabe setzen.
+  // Owner kann alles prüfen und ausschließlich er kann Post-Cutover-Freigaben setzen.
   await assertSucceeds(getDoc(doc(odb,'students','student-a')));
   await assertSucceeds(getDocs(collection(odb,'teachers')));
   await assertSucceeds(updateDoc(doc(odb,'settings','teacherSecurity'),{generation:'rotated-by-owner'}));
   await assertSucceeds(updateDoc(doc(odb,'teachers',M.uid),{securityApprovedV2:true,securityApprovalGeneration:'rotated-by-owner'}));
 
-  console.log('Strict student UID isolation, direct legacy lookup and teacher trust tests passed.');
+  console.log('Strict UID isolation, sanitized ranking and teacher trust tests passed.');
 } finally {
   await env.cleanup();
 }
