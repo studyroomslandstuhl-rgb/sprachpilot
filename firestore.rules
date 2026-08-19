@@ -8,7 +8,9 @@ service cloud.firestore {
     }
 
     function verifiedUser() {
-      return signedIn() && request.auth.token.get('email_verified', false) == true;
+      return signedIn() &&
+        request.auth.token.get('email_verified', false) == true &&
+        request.auth.token.firebase.sign_in_provider == 'password';
     }
 
     function authEmail() {
@@ -44,7 +46,7 @@ service cloud.firestore {
     }
 
     function approvedTeacher() {
-      return teacherRecordExists() && teacherSecurityReady() &&
+      return verifiedUser() && teacherRecordExists() && teacherSecurityReady() &&
         get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('active', true) == true &&
         get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('securityApprovedV2', false) == true &&
         get(/databases/$(database)/documents/teachers/$(request.auth.uid)).data.get('securityApprovalGeneration', '') ==
