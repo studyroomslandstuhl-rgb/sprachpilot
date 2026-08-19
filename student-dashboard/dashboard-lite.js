@@ -1,13 +1,13 @@
-import { db, doc, getDoc, setDoc, collection, query, where, getDocs, limit, serverTimestamp } from '/js/firebase.js';
+import { db, doc, getDoc, getDocFromServer, setDoc, collection, query, where, getDocs, getDocsFromServer, limit, serverTimestamp } from '/js/firebase.js';
 import { getActiveProfile, logout } from '/js/auth.js';
 import { loadCourseRelease, themeOpen } from '/js/course-releases.js?v=release-core-20260701b';
 import '/shared/points-recalculator.js?v=1';
 
 const $=id=>document.getElementById(id);
 const CACHE='SP_STUDENT_DASHBOARD_LITE_V2';
-const VERIFIED_VERSION=2;
+const VERIFIED_VERSION=3;
 const POINT_MODULES=['fragen','wortschatz','verben','perfekt','grammatik'];
-let ownProgress={},roster=[],statsBusy=false,rankingBusy=false,hydrateBusy=false;
+let ownProgress={},roster=[],statsBusy=false,rankingBusy=false;
 let releaseData=readJSON('SP_COURSE_RELEASES',null)||profile().assignments||{};
 
 function readJSON(k,f=null){try{return JSON.parse(localStorage.getItem(k)||'null')??f}catch(e){return f}}
@@ -26,7 +26,7 @@ function technicalFor(r={},module){let best=0;for(const t of Object.values(r?.[m
 function groupFor(r={},module){const key=module==='verben'?'verbenGroups':module==='perfekt'?'perfektGroups':'';if(!key)return 0;let total=0;for(const g of Object.values(r?.metadata?.[key]||{})){try{total+=point(window.SPPointRecalculator?.groupPoints?.(g)?.points)}catch(e){}}return total}
 function evidencePoints(r={}){let calc={breakdown:{}};try{calc=window.SPPointRecalculator?.calculate?.(r)||calc}catch(e){}let total=0;for(const module of POINT_MODULES){const base=point(calc.breakdown?.[module]),groups=groupFor(r,module),technical=technicalFor(r,module);total+=groups>0?Math.max(base,groups):base+technical}total+=point(calc.breakdown?.finnischVerben);return total}
 function recoverablePoints(r={}){return Math.max(storedPoints(r),evidencePoints(r))}
-function taskPct(t={}){const total=Number(t.total||0),done=Array.isArray(t.done)?t.done.length:Number(t.done||0);return Math.max(clamp(t.percent??t.progress??0),t.completed?100:0,total>0?clamp(done/total*100):0)}
+function taskPct(t={}){const total=Number(t.total||0),done=Array.isArray(t.done)?new Set(t.done.map(Number)).size:Number(t.done||0);return Math.max(clamp(t.percent??t.progress??0),t.completed?100:0,total>0?clamp(done/total*100):0)}
 function topicPct(t={}){const tasks=Object.values(t.tasks||{}).filter(x=>x&&typeof x==='object');if(tasks.length)return clamp(tasks.reduce((s,x)=>s+taskPct(x),0)/tasks.length);return Math.max(clamp(t.progressPercent??t.current?.percent??0),t.completed===true?100:0)}
 function isTopic(t){return !!(t&&typeof t==='object'&&!Array.isArray(t)&&(t.tasks||t.exam||t.current||t.lifetime||t.progressPercent!=null||t.lesson||t.theme||t.title))}
 function topicRef(key,t={}){
@@ -41,60 +41,47 @@ function topicRef(key,t={}){
  return{lesson:`A1-Lektion-${lesson}`,theme:`Thema-${theme}`,sig:`${lesson}|${theme}`,lessonNo:lesson,themeNo:theme};
 }
 function strongerTopic(a={},b={}){return topicPct(a)>=topicPct(b)?a:b}
-function mergeProgress(a={},b={}){const out={...b,...a},wa={...(b.wortschatz||{})};for(const[k,t]of Object.entries(a.wortschatz||{})){if(!isTopic(t)){if(!(k in wa))wa[k]=t;continue}const ref=topicRef(k,t),existingKey=ref?Object.keys(wa).find(x=>isTopic(wa[x])&&topicRef(x,wa[x])?.sig===ref.sig):null;if(existingKey)wa[existingKey]=strongerTopic(t,wa[existingKey]);else wa[k]=t}out.wortschatz=wa;out.metadata={...(b.metadata||{}),...(a.metadata||{})};for(const m of ['verben','perfekt','fragen','grammatik'])out[m]={...(b[m]||{}),...(a[m]||{})};out.ranking={...(b.ranking||{}),...(a.ranking||{}),points:Math.max(point(a.ranking?.points),point(b.ranking?.points))};out.totals={...(b.totals||{}),...(a.totals||{}),points:Math.max(point(a.totals?.points),point(b.totals?.points))};out.pointsTotal=Math.max(point(a.pointsTotal),point(b.pointsTotal));out.lifetimePoints=Math.max(point(a.lifetimePoints),point(b.lifetimePoints));out.punkteGesamt=Math.max(point(a.punkteGesamt),point(b.punkteGesamt));return out}
+function mergeRuns(a={},b={}){const out={};for(const k of new Set([...Object.keys(a||{}),...Object.keys(b||{})]))out[k]=Math.max(point(a?.[k]),point(b?.[k]));return out}
+function mergeTaskRuns(a={},b={}){const out={};for(const k of new Set([...Object.keys(a||{}),...Object.keys(b||{})]))out[k]=mergeRuns(a?.[k]||{},b?.[k]||{});return out}
+function mergeProgress(a={},b={}){
+ const out={...b,...a},wa={...(b.wortschatz||{})};
+ for(const[k,t]of Object.entries(a.wortschatz||{})){if(!isTopic(t)){if(!(k in wa))wa[k]=t;continue}const ref=topicRef(k,t),existingKey=ref?Object.keys(wa).find(x=>isTopic(wa[x])&&topicRef(x,wa[x])?.sig===ref.sig):null;if(existingKey){const weak=wa[existingKey]||{},strong=strongerTopic(t,weak),other=strong===t?weak:t,strongLife=strong.lifetime||{},otherLife=other.lifetime||{};wa[existingKey]={...other,...strong,lifetime:{...otherLife,...strongLife,taskPointRuns:mergeTaskRuns(otherLife.taskPointRuns||{},strongLife.taskPointRuns||{}),examPointRuns:mergeRuns(otherLife.examPointRuns||{},strongLife.examPointRuns||{}),points:Math.max(point(otherLife.points),point(strongLife.points))}}}else wa[k]=t}
+ out.wortschatz=wa;out.metadata={...(b.metadata||{}),...(a.metadata||{})};for(const m of ['verben','perfekt','fragen','grammatik'])out[m]={...(b[m]||{}),...(a[m]||{})};out.ranking={...(b.ranking||{}),...(a.ranking||{}),points:Math.max(point(a.ranking?.points),point(b.ranking?.points))};out.totals={...(b.totals||{}),...(a.totals||{}),points:Math.max(point(a.totals?.points),point(b.totals?.points))};out.pointsTotal=Math.max(point(a.pointsTotal),point(b.pointsTotal));out.lifetimePoints=Math.max(point(a.lifetimePoints),point(b.lifetimePoints));out.punkteGesamt=Math.max(point(a.punkteGesamt),point(b.punkteGesamt));return out
+}
 function hasReleaseData(d){return !!(d&&typeof d==='object'&&(d.enabledThemes||d.enabledTasks||d.releases||d.releaseMode||d.defaultLocked!==undefined))}
 function parseReleaseKey(key){const text=String(key||'');const lm=text.match(/A1-Lektion-(\d+)/i),tm=text.match(/Thema-(\d+)/i);if(!lm||!tm)return null;return{lesson:`A1-Lektion-${Number(lm[1])}`,theme:`Thema-${Number(tm[1])}`,sig:`${Number(lm[1])}|${Number(tm[1])}`}}
-function releasedThemeRefs(){
- const map=new Map();
- for(const[k,v]of Object.entries(releaseData?.enabledThemes||{})){if(v!==true)continue;const ref=parseReleaseKey(k);if(ref)map.set(ref.sig,ref)}
- for(const[k,v]of Object.entries(releaseData?.enabledTasks||{})){if(v!==true)continue;const ref=parseReleaseKey(k);if(ref)map.set(ref.sig,ref)}
- for(const alias of ['Wortschatz','wortschatz']){
-  const lessons=releaseData?.releases?.[alias]?.lessons||{};
-  for(const[lessonKey,lessonData]of Object.entries(lessons)){
-   for(const[themeKey,themeData]of Object.entries(lessonData?.themes||{})){
-    if(themeData?.enabled!==true)continue;
-    const ref=parseReleaseKey(`${lessonKey}/${themeKey}`);if(ref)map.set(ref.sig,ref)
-   }
-  }
- }
- return map;
-}
+function releasedThemeRefs(){const map=new Map();for(const[k,v]of Object.entries(releaseData?.enabledThemes||{})){if(v!==true)continue;const ref=parseReleaseKey(k);if(ref)map.set(ref.sig,ref)}for(const[k,v]of Object.entries(releaseData?.enabledTasks||{})){if(v!==true)continue;const ref=parseReleaseKey(k);if(ref)map.set(ref.sig,ref)}for(const alias of ['Wortschatz','wortschatz']){const lessons=releaseData?.releases?.[alias]?.lessons||{};for(const[lessonKey,lessonData]of Object.entries(lessons)){for(const[themeKey,themeData]of Object.entries(lessonData?.themes||{})){if(themeData?.enabled!==true)continue;const ref=parseReleaseKey(`${lessonKey}/${themeKey}`);if(ref)map.set(ref.sig,ref)}}}return map}
 function progressThemeMap(r={}){const map=new Map();for(const[k,t]of Object.entries(r.wortschatz||{})){if(!isTopic(t)||t.technicalRecovery===true)continue;const ref=topicRef(k,t);if(!ref)continue;const old=map.get(ref.sig);map.set(ref.sig,{ref,topic:old?strongerTopic(t,old.topic):t})}return map}
 function refIsReleased(ref){if(!ref)return false;if(!hasReleaseData(releaseData))return true;try{return themeOpen(releaseData,'Wortschatz',ref.lesson,ref.theme)}catch(e){return false}}
-function learningTopics(r={}){
- const progress=progressThemeMap(r),released=releasedThemeRefs(),out=[];
- if(released.size){for(const ref of released.values())out.push({ref,topic:progress.get(ref.sig)?.topic||{}});return out}
- for(const item of progress.values())if(refIsReleased(item.ref))out.push(item);
- return out;
-}
+function learningTopics(r={}){const progress=progressThemeMap(r),released=releasedThemeRefs(),out=[];if(released.size){for(const ref of released.values())out.push({ref,topic:progress.get(ref.sig)?.topic||{}});return out}for(const item of progress.values())if(refIsReleased(item.ref))out.push(item);return out}
 function starsTotal(r={}){let total=0;const seenW=new Set();for(const[k,t]of Object.entries(r.wortschatz||{})){if(!isTopic(t))continue;const ref=topicRef(k,t),sig=ref?.sig||clean(k);if(seenW.has(sig))continue;seenW.add(sig);total+=point(t.exam?.stars)}for(const mod of ['fragen','verben','perfekt','grammatik'])for(const t of Object.values(r[mod]||{}))if(isTopic(t))total+=point(t.exam?.stars);return total}
 function stats(r={}){const list=learningTopics(r),avg=list.length?clamp(list.reduce((s,x)=>s+topicPct(x.topic),0)/list.length):0,done=list.filter(x=>topicPct(x.topic)>=100).length;return{avg,done,totalThemes:list.length,points:Math.max(recoverablePoints(r),point(localStorage.getItem('SP_POINTS_TOTAL'))),stars:starsTotal(r)}}
-function renderStats(s,cache=true){const p=profile();$('userPill').textContent=name(p)+(course(p)?' · '+course(p):'');$('totalCircle').style.setProperty('--p',s.avg||0);$('totalCircle').innerHTML='<span>'+Number(s.avg||0)+'%</span>';$('totalFill').style.width=Number(s.avg||0)+'%';$('summaryText').textContent=s.totalThemes?`${s.done} von ${s.totalThemes} freigegebenen Themen fertig`:'Noch keine Themen freigegeben.';$('pointsTotal').textContent=Number(s.points||0);$('starsTotal').textContent=Number(s.stars||0);$('doneTotal').textContent=Number(s.done||0);$('lastUpdated').textContent='Aktualisiert: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});if(cache){try{localStorage.setItem(CACHE,JSON.stringify(s));localStorage.setItem('SP_POINTS_TOTAL',String(s.points||0))}catch(e){}}}
-
-async function directProgress(id){try{const s=await getDoc(doc(db,'progress',id));return s.exists()?s.data()||{}:null}catch(e){return null}}
-async function ownLoad(){const p=profile(),candidates=ids(p).slice(0,2);let merged={};const first=await withTimeout(Promise.all(candidates.map(directProgress)),6500).catch(()=>[]);for(const r of first)if(r)merged=mergeProgress(r,merged);if((!Object.keys(merged).length||recoverablePoints(merged)===0||!Object.keys(merged.wortschatz||{}).length)&&p.email){try{const s=await withTimeout(getDocs(query(collection(db,'progress'),where('email','==',String(p.email).trim().toLowerCase()),limit(8))),6500);for(const d of s.docs)merged=mergeProgress(d.data()||{},merged)}catch(e){}}return merged}
+function renderStats(s,cache=true,source='server'){const p=profile();$('userPill').textContent=name(p)+(course(p)?' · '+course(p):'');$('totalCircle').style.setProperty('--p',s.avg||0);$('totalCircle').innerHTML='<span>'+Number(s.avg||0)+'%</span>';$('totalFill').style.width=Number(s.avg||0)+'%';$('summaryText').textContent=s.totalThemes?`${s.done} von ${s.totalThemes} freigegebenen Themen fertig`:'Noch keine Themen freigegeben.';$('pointsTotal').textContent=Number(s.points||0);$('starsTotal').textContent=Number(s.stars||0);$('doneTotal').textContent=Number(s.done||0);$('lastUpdated').textContent=source==='cache'?'Letzter lokaler Stand – Server wird erneut versucht.':'Serverstand: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});if(cache){try{localStorage.setItem(CACHE,JSON.stringify(s));localStorage.setItem('SP_POINTS_TOTAL',String(s.points||0));localStorage.setItem('SP_DASHBOARD_LAST_SERVER',new Date().toISOString())}catch(e){}}}
+async function serverDoc(ref){try{return await getDocFromServer(ref)}catch(e){return getDoc(ref)}}
+async function serverDocs(ref){try{return await getDocsFromServer(ref)}catch(e){return getDocs(ref)}}
+async function directProgress(id){try{const s=await serverDoc(doc(db,'progress',id));return s.exists()?s.data()||{}:null}catch(e){return null}}
+async function ownLoad(){const p=profile(),candidates=ids(p).slice(0,5);let merged={};const first=await withTimeout(Promise.all(candidates.map(directProgress)),10000).catch(()=>[]);for(const r of first)if(r)merged=mergeProgress(r,merged);if(p.email){try{const s=await withTimeout(serverDocs(query(collection(db,'progress'),where('email','==',String(p.email).trim().toLowerCase()),limit(20))),10000);for(const d of s.docs)merged=mergeProgress(d.data()||{},merged)}catch(e){}}return merged}
 async function mirrorStudent(row,total,studentDocId=null){const id=studentDocId||row.docId||row.id||row.studentId||row.userId;if(!id||!total)return;const c=course(row)||course();try{await setDoc(doc(db,'students',String(id)),{studentId:row.studentId||row.userId||id,userId:row.userId||row.studentId||id,studentName:name(row),email:row.email||'',kurs:c,kursnummer:c,courseCode:c,rankingPoints:total,pointsTotal:total,rankingMirrorVersion:VERIFIED_VERSION,rankingUpdatedAt:serverTimestamp()},{merge:true})}catch(e){}}
-async function refreshOwn(){if(statsBusy)return;statsBusy=true;try{const r=await ownLoad();if(Object.keys(r||{}).length)ownProgress=r;const s=stats(ownProgress);renderStats(s);if(s.points>0)mirrorStudent(profile(),s.points,profile().docId||profile().studentId||profile().userId||ids()[0])}catch(e){const cached=readJSON(CACHE,null);if(cached)renderStats(cached,false);$('lastUpdated').textContent='Letzter gespeicherter Stand'}finally{statsBusy=false}}
-
-function identity(r={}){return String(r.email||'').trim().toLowerCase()||String(r.studentId||r.userId||r.uid||r.id||r.docId||name(r)).trim().toLowerCase()}
-function mergeStudent(a={},b={}){const out={...a,...b};out.id=a.id||b.id;out.docId=a.docId||b.docId||out.id;out.studentName=a.studentName||b.studentName||name(out);out.email=a.email||b.email||'';out.rankingPoints=Math.max(storedPoints(a),storedPoints(b));out.rankingMirrorVersion=Math.max(Number(a.rankingMirrorVersion||0),Number(b.rankingMirrorVersion||0));return out}
+async function refreshOwn(){if(statsBusy)return;statsBusy=true;try{const r=await ownLoad();ownProgress=r&&Object.keys(r).length?r:{};const s=stats(ownProgress);renderStats(s,true,'server');if(s.points>0)mirrorStudent(profile(),s.points,profile().docId||profile().studentId||profile().userId||ids()[0])}catch(e){const cached=readJSON(CACHE,null);if(cached)renderStats(cached,false,'cache');else renderStats(stats(ownProgress),false,'cache')}finally{statsBusy=false}}
+function identity(r={}){return String(r.email||'').trim().toLowerCase()||String(r.studentId||r.userId||r.uid||r.canonicalStudentId||r.id||r.docId||name(r)).trim().toLowerCase()}
+function mergeStudent(a={},b={}){const out={...a,...b};out.id=a.id||b.id;out.docId=a.docId||b.docId||out.id;out.studentName=a.studentName||b.studentName||name(out);out.email=a.email||b.email||'';out.rankingPoints=Math.max(storedPoints(a),storedPoints(b),recoverablePoints(a),recoverablePoints(b));return out}
 function mergeRoster(rows){const map=new Map();for(const r of rows){const k=identity(r);if(!k)continue;map.set(k,map.has(k)?mergeStudent(map.get(k),r):r)}return [...map.values()]}
-async function rosterQuery(field,value){if(!value)return[];try{const s=await getDocs(query(collection(db,'students'),where(field,'==',value),limit(100)));return s.docs.map(d=>({id:d.id,docId:d.id,...d.data()}))}catch(e){return[]}}
-async function loadRoster(){const c=course();if(!c)return[];const rows=await withTimeout(Promise.all(['kurs','kursnummer','courseCode','course','courseDocId'].map(f=>rosterQuery(f,c))),6500).catch(()=>[]);return mergeRoster(rows.flat())}
-function rankPoints(r={}){return Math.max(point(r.rankingPoints),storedPoints(r))}
-function drawRoster(status=''){const current={...profile(),rankingPoints:Math.max(recoverablePoints(ownProgress),point(localStorage.getItem('SP_POINTS_TOTAL'))),rankingMirrorVersion:VERIFIED_VERSION};const rows=mergeRoster(roster.concat(current)).filter(r=>name(r)&&!['teacher','lehrer','admin'].includes(String(r.role||r.loginRole||'').toLowerCase())).sort((a,b)=>rankPoints(b)-rankPoints(a)||name(a).localeCompare(name(b),'de')).slice(0,50);$('leaderboard').innerHTML=rows.length?rows.map((r,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div><b>${esc(name(r))}</b></div><div class="points"><b>${rankPoints(r)}</b> Punkte</div></div>`).join(''):'<div class="empty">Noch keine Teilnehmer gefunden.</div>';$('rankingStatus').textContent=status||('aktualisiert '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}))}
-async function loadRanking(){if(rankingBusy)return;rankingBusy=true;try{$('rankingStatus').textContent='Teilnehmer werden geladen …';const rows=await loadRoster();if(rows.length)roster=rows;drawRoster();setTimeout(hydrateRanking,350)}finally{rankingBusy=false}}
-async function bestProgressForStudent(r){let best=0;const candidates=uniq([r.docId,r.id,r.studentId,r.userId,r.uid,r.canonicalStudentId]).slice(0,3);for(const id of candidates){const x=await directProgress(id);best=Math.max(best,recoverablePoints(x||{}));if(best>0&&Number(r.rankingMirrorVersion||0)>=VERIFIED_VERSION)break}if((best===0||Number(r.rankingMirrorVersion||0)<VERIFIED_VERSION)&&r.email){try{const s=await getDocs(query(collection(db,'progress'),where('email','==',String(r.email).trim().toLowerCase()),limit(8)));for(const d of s.docs)best=Math.max(best,recoverablePoints(d.data()||{}))}catch(e){}}return best}
-async function hydrateRanking(){if(hydrateBusy||!roster.length)return;hydrateBusy=true;try{const todo=roster.filter(r=>Number(r.rankingMirrorVersion||0)<VERIFIED_VERSION||rankPoints(r)===0).slice(0,40);let done=0;for(const row of todo){$('rankingStatus').textContent=`Punkte werden ergänzt ${done}/${todo.length}`;const p=await bestProgressForStudent(row);if(p>0){row.rankingPoints=Math.max(rankPoints(row),p);await mirrorStudent(row,row.rankingPoints,row.docId||row.id);row.rankingMirrorVersion=VERIFIED_VERSION}done++;drawRoster(`Punkte geprüft ${done}/${todo.length}`);await new Promise(r=>setTimeout(r,80))}drawRoster()}finally{hydrateBusy=false}}
+async function rosterQuery(field,value){if(!value)return[];try{const s=await serverDocs(query(collection(db,'students'),where(field,'==',value),limit(100)));return s.docs.map(d=>({...d.data(),id:d.id,docId:d.id}))}catch(e){return[]}}
+async function progressCourseQuery(field,value){if(!value)return[];try{const s=await serverDocs(query(collection(db,'progress'),where(field,'==',value),limit(100)));return s.docs.map(d=>({...d.data(),id:d.id,docId:d.id,rankingPoints:recoverablePoints(d.data()||{})}))}catch(e){return[]}}
+async function loadRoster(){const c=course();if(!c)return[];const [studentSets,progressSets]=await withTimeout(Promise.all([Promise.all(['kurs','kursnummer','courseCode','course','courseDocId'].map(f=>rosterQuery(f,c))),Promise.all(['kurs','kursnummer','courseCode'].map(f=>progressCourseQuery(f,c)))]),12000).catch(()=>[[],[]]);return mergeRoster([...(studentSets||[]).flat(),...(progressSets||[]).flat()])}
+function rankPoints(r={}){return Math.max(point(r.rankingPoints),storedPoints(r),recoverablePoints(r))}
+function drawRoster(status=''){const current={...profile(),...ownProgress,rankingPoints:Math.max(recoverablePoints(ownProgress),point(localStorage.getItem('SP_POINTS_TOTAL')))};const rows=mergeRoster(roster.concat(current)).filter(r=>name(r)&&!['teacher','lehrer','admin'].includes(String(r.role||r.loginRole||'').toLowerCase())).sort((a,b)=>rankPoints(b)-rankPoints(a)||name(a).localeCompare(name(b),'de')).slice(0,50);$('leaderboard').innerHTML=rows.length?rows.map((r,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div><b>${esc(name(r))}</b></div><div class="points"><b>${rankPoints(r)}</b> Punkte</div></div>`).join(''):'<div class="empty">Noch keine Teilnehmer gefunden.</div>';$('rankingStatus').textContent=status||('Serverstand '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}))}
+async function loadRanking(){if(rankingBusy)return;rankingBusy=true;try{$('rankingStatus').textContent='Rangliste wird vom Server geladen …';roster=await loadRoster();drawRoster()}catch(e){drawRoster('Serververbindung langsam · erneut versuchen')}finally{rankingBusy=false}}
 function refresh(){refreshOwn();loadRanking()}
 
 $('rankingBtn')?.addEventListener('click',()=>loadRanking());
 $('logoutBtn')?.addEventListener('click',()=>logout());
 window.addEventListener('pageshow',()=>setTimeout(refresh,60));
+window.addEventListener('online',()=>setTimeout(refresh,100));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')setTimeout(refresh,60)});
 window.addEventListener('SP_POINT_DELTA_APPLIED',()=>setTimeout(refreshOwn,80));
-const cached=readJSON(CACHE,null);if(cached)renderStats(cached,false);else renderStats({avg:0,done:0,totalThemes:0,points:point(localStorage.getItem('SP_POINTS_TOTAL')),stars:0},false);
+const cached=readJSON(CACHE,null);if(cached)renderStats(cached,false,'cache');else renderStats({avg:0,done:0,totalThemes:0,points:point(localStorage.getItem('SP_POINTS_TOTAL')),stars:0},false,'cache');
 refreshOwn();loadRanking();
 loadCourseRelease(profile()).then(data=>{releaseData=data||releaseData;try{localStorage.setItem('SP_COURSE_RELEASES',JSON.stringify(releaseData||{}))}catch(e){};setTimeout(refreshOwn,50)}).catch(()=>{});
-setInterval(refreshOwn,45000);
-setInterval(loadRanking,90000);
+setInterval(refreshOwn,30000);
+setInterval(loadRanking,60000);
