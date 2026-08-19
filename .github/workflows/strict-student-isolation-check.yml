@@ -18,6 +18,8 @@ on:
       - 'teacher/progress-security-alias-core.js'
       - 'teacher/progress-security-alias-migration.js'
       - 'teacher/progress-security-collision-diagnostics.js'
+      - 'teacher/student-collision-repair-core.js'
+      - 'teacher/student-collision-repair.js'
       - 'teacher/student-identity-guard.js'
       - 'teacher/index.html'
       - 'student-dashboard/dashboard-bootstrap.js'
@@ -32,6 +34,7 @@ on:
       - 'scripts/test-progress-security-alias-core.mjs'
       - 'scripts/test-progress-security-alias-reporting.mjs'
       - 'scripts/test-progress-security-collision-diagnostics.mjs'
+      - 'scripts/test-student-collision-repair-core.mjs'
       - 'scripts/test-private-query-boundaries.mjs'
       - 'scripts/test-secure-access-gate.mjs'
       - '.github/workflows/strict-student-isolation-check.yml'
@@ -75,6 +78,8 @@ jobs:
           node --check teacher/progress-security-alias-core.js
           node --check teacher/progress-security-alias-migration.js
           node --check teacher/progress-security-collision-diagnostics.js
+          node --check teacher/student-collision-repair-core.js
+          node --check teacher/student-collision-repair.js
           node --check teacher/student-identity-guard.js
           node --check student-dashboard/dashboard-bootstrap.js
           node --check student-dashboard/dashboard-lite.js
@@ -83,6 +88,7 @@ jobs:
           node --check scripts/test-progress-security-alias-core.mjs
           node --check scripts/test-progress-security-alias-reporting.mjs
           node --check scripts/test-progress-security-collision-diagnostics.mjs
+          node --check scripts/test-student-collision-repair-core.mjs
           node --check scripts/test-private-query-boundaries.mjs
           node --check scripts/test-secure-access-gate.mjs
           python3 -m py_compile scripts/inject-learning-auth-gate.py
@@ -95,6 +101,9 @@ jobs:
 
       - name: Test read-only progress collision diagnostics
         run: node scripts/test-progress-security-collision-diagnostics.mjs
+
+      - name: Test targeted historical student collision repair
+        run: node scripts/test-student-collision-repair-core.mjs
 
       - name: Test private query boundaries
         run: node scripts/test-private-query-boundaries.mjs
