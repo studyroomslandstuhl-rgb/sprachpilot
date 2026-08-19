@@ -2,7 +2,7 @@ import '/js/progress.js?v=11';
 import '/js/point-delta-bridge.js?v=2';
 import '/js/ranking-mirror.js?v=2';
 import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity2';
-import { isolateLocalProgressOwner } from '/js/account-progress-owner-isolation.js?v=1';
+import { isolateLocalProgressOwner } from '/js/account-progress-owner-isolation.js?v=2';
 import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-safe.js?v=5';
 export { accountProgressReady };
 
@@ -46,6 +46,11 @@ export async function startAccountProgressSync(options={}){
 
   let isolation=null;
   try{isolation=await isolateLocalProgressOwner()}catch(e){console.warn('Lokaler Fortschritt konnte vor dem Sync noch nicht nach Schüler getrennt werden',e)}
+  if(isolation?.blocked){
+    console.error('Account-Fortschritt-Sync aus Sicherheitsgründen gestoppt: lokale Lernstände konnten nicht vollständig dem bisherigen Schüler zugeordnet werden.',isolation);
+    try{window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_SYNC_BLOCKED',{detail:isolation}))}catch(e){}
+    return {active:false,blocked:true,isolation};
+  }
 
   const result=await startSafeAccountProgressSync(options);
   if(refreshAfterProgressPreparation(result,isolation))return result;
