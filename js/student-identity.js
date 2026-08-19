@@ -62,6 +62,30 @@ function persistProfile(profile){
   localStorage.setItem('SP_USER_ROLE','student');
   localStorage.setItem('SP_STUDENT_ID',profile.canonicalStudentId||profile.docId||profile.studentId||profile.userId||'');
 }
+function clearActivatedStudentSession(){
+  try{
+    ['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_KEEP_LOGGED_IN','SP_STUDENT_ID','SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE','SP_AUTH_ROLE','SP_LOGIN_CONTEXT','motherLanguage','muttersprache','SP_MOTHER_LANGUAGE_CODE'].forEach(key=>localStorage.removeItem(key));
+  }catch(e){}
+}
+async function isolateActivatedStudent(){
+  try{
+    const module=await import('/js/account-progress-owner-isolation.js?v=3');
+    const result=await module.isolateLocalProgressOwner();
+    if(result?.blocked){
+      // Der neue Login wird verworfen. Lernstände und der bisherige Besitzer bleiben
+      // unangetastet, bis die lokale Trennung vollständig und dauerhaft gelingt.
+      clearActivatedStudentSession();
+      const error=new Error('LOCAL_PROGRESS_ISOLATION_FAILED');
+      error.isolation=result;
+      throw error;
+    }
+    return result;
+  }catch(error){
+    if(error?.message==='LOCAL_PROGRESS_ISOLATION_FAILED')throw error;
+    console.warn('Lokaler Fortschritt konnte beim Kontowechsel noch nicht getrennt werden',error);
+    return null;
+  }
+}
 
 export async function normalizeStudentIdentity(inputProfile=null,{silent=false}={}){
   const local=inputProfile||readProfile();
@@ -151,10 +175,14 @@ export async function normalizeStudentIdentity(inputProfile=null,{silent=false}=
 
 export async function registerStudent(payload){
   const profile=await legacyRegisterStudent(payload);
-  return await normalizeStudentIdentity(profile);
+  const normalized=await normalizeStudentIdentity(profile);
+  await isolateActivatedStudent();
+  return normalized;
 }
 
 export async function loginStudent(email,kurs){
   const profile=await legacyLoginStudent(email,kurs);
-  return await normalizeStudentIdentity(profile);
+  const normalized=await normalizeStudentIdentity(profile);
+  await isolateActivatedStudent();
+  return normalized;
 }
