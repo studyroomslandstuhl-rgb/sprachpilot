@@ -105,6 +105,11 @@
       }
 
       const progress=relatedProgress(progressDocs,allRecords,config);
+      for(const row of progress){
+        if(text(row.authUid))throw new Error('COLLISION_PROGRESS_AUTH_BOUND:'+progressId(row));
+        const mail=emailOf(row);
+        if(mail&&mail!==lower(config.email))throw new Error('COLLISION_PROGRESS_EMAIL_MISMATCH:'+progressId(row));
+      }
       groups.push({
         config,canonical,duplicateRecords,allRecords,progress,
         legacyIds:legacyIdsFor(allRecords,config.canonicalId)
