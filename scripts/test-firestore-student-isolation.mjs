@@ -16,7 +16,10 @@ const env=await initializeTestEnvironment({projectId,firestore:{rules}});
 const A={uid:'uid-a',email:'alice.student@example.com'};
 const B={uid:'uid-b',email:'bob.student@example.com'};
 const X={uid:'uid-x',email:A.email};
+const O={uid:'uid-owner',email:'studyroomslandstuhl@gmail.com'};
 const T={uid:'uid-teacher',email:'teacher@example.com'};
+const M={uid:'uid-old-fake-teacher',email:'old-fake@example.com'};
+const GENERATION='post-cutover-test-generation';
 const LEGACY_ID='corrected-legacy-canonical-a';
 const LOOKUP_ID='kurs-alt_alice-student-example-com';
 
@@ -29,10 +32,10 @@ try{
     const db=ctx.firestore();
     await setDoc(doc(db,'students','student-a'),{authUid:A.uid,authEmail:A.email,email:A.email,kurs:'KURS-A',active:true});
     await setDoc(doc(db,'students','student-b'),{authUid:B.uid,authEmail:B.email,email:B.email,kurs:'KURS-B',active:true});
-    // Korrigiertes Altprofil: Dokument-ID ist absichtlich NICHT mehr aus aktueller E-Mail/Kurs ableitbar.
     await setDoc(doc(db,'students',LEGACY_ID),{email:A.email,kurs:'KURS-ALT',courseCode:'KURS-ALT',active:true});
     await setDoc(doc(db,'studentLookups',LOOKUP_ID),{lookupVersion:1,canonicalStudentId:LEGACY_ID,studentId:LEGACY_ID,email:A.email,courseKeys:['KURS-ALT'],active:true});
     await setDoc(doc(db,'settings','studentSecurity'),{studentLookupReady:true,studentLookupVersion:1,studentLookupStudents:3});
+    await setDoc(doc(db,'settings','teacherSecurity'),{teacherSecurityVersion:2,generation:GENERATION});
 
     await setDoc(doc(db,'progress','student-a'),{authUid:A.uid,authEmail:A.email,email:A.email,canonicalStudentId:'student-a',points:50});
     await setDoc(doc(db,'progress','student-b'),{authUid:B.uid,authEmail:B.email,email:B.email,canonicalStudentId:'student-b',points:80});
@@ -40,13 +43,24 @@ try{
     await setDoc(doc(db,'progress','legacy-progress-a'),{email:A.email,points:20});
     await setDoc(doc(db,'courses','KURS-A'),{courseCode:'KURS-A',name:'Kurs A'});
     await setDoc(doc(db,'courses','KURS-ALT'),{courseCode:'KURS-ALT',name:'Alter Kurs'});
-    await setDoc(doc(db,'teachers',T.uid),{email:T.email,role:'teacher',approved:true,active:true});
+
+    // T ist NACH dem Cutover vom Owner freigegeben.
+    await setDoc(doc(db,'teachers',T.uid),{
+      email:T.email,role:'teacher',approved:true,active:true,
+      securityApprovedV2:true,securityApprovalGeneration:GENERATION
+    });
+    // M simuliert ein altes/manipuliertes Lehrer-Dokument aus der früheren offenen Regelphase.
+    await setDoc(doc(db,'teachers',M.uid),{
+      email:M.email,role:'teacher',approved:true,isTeacher:true,admin:true,active:true
+    });
   });
 
   const adb=verified(A).firestore();
   const bdb=verified(B).firestore();
   const xdb=verified(X).firestore();
+  const odb=verified(O).firestore();
   const tdb=verified(T).firestore();
+  const mdb=verified(M).firestore();
   const aub=unverified(A).firestore();
   const anon=env.unauthenticatedContext().firestore();
 
@@ -65,8 +79,7 @@ try{
   await assertFails(updateDoc(doc(adb,'students','student-a'),{email:B.email}));
   await assertFails(deleteDoc(doc(adb,'students','student-a')));
 
-  // 3) Direkter Sicherheits-Lookup: A kann den bekannten eigenen Schlüssel lesen,
-  // B nicht. Schüler können Lookup-Dokumente weder auflisten noch manipulieren.
+  // 3) Direkter Sicherheits-Lookup ist nicht auflistbar/manipulierbar durch Schüler.
   await assertSucceeds(getDoc(doc(adb,'studentLookups',LOOKUP_ID)));
   await assertFails(getDoc(doc(bdb,'studentLookups',LOOKUP_ID)));
   await assertFails(getDocs(collection(adb,'studentLookups')));
@@ -75,8 +88,7 @@ try{
   await assertSucceeds(getDoc(doc(adb,'settings','studentSecurity')));
   await assertFails(getDoc(doc(anon,'settings','studentSecurity')));
 
-  // 4) Korrigiertes ungebundenes Altprofil wird nach direktem Lookup direkt gelesen
-  // und darf nur in einem engen Einzelschritt an die verifizierte UID gebunden werden.
+  // 4) Korrigiertes Altprofil: direkter Abruf + enger einmaliger UID-Claim.
   await assertSucceeds(getDoc(doc(adb,'students',LEGACY_ID)));
   await assertFails(getDoc(doc(bdb,'students',LEGACY_ID)));
   await assertFails(getDoc(doc(aub,'students',LEGACY_ID)));
@@ -84,11 +96,10 @@ try{
   await assertFails(updateDoc(doc(adb,'students',LEGACY_ID),{authUid:A.uid,authEmail:A.email,authVersion:2,authLinkedAt:new Date(),kurs:'MANIPULIERT'}));
   await assertSucceeds(updateDoc(doc(adb,'students',LEGACY_ID),{authUid:A.uid,authEmail:A.email,authVersion:2,authLinkedAt:new Date()}));
   await assertSucceeds(updateDoc(doc(adb,'students',LEGACY_ID),{nachname:'Sicher'}));
-  // Nach der ersten Bindung entscheidet ausschließlich die UID, auch bei identischem E-Mail-Claim.
   await assertFails(getDoc(doc(xdb,'students',LEGACY_ID)));
   await assertFails(updateDoc(doc(xdb,'students',LEGACY_ID),{nachname:'Angriff'}));
 
-  // 5) Neue Profile können nur für eigene verifizierte UID und E-Mail erstellt werden.
+  // 5) Neue Profile nur für eigene verifizierte UID/E-Mail.
   await assertSucceeds(setDoc(doc(adb,'students','student-a-new'),{authUid:A.uid,authEmail:A.email,email:A.email,kurs:'KURS-A'}));
   await assertFails(setDoc(doc(adb,'students','forged-owner'),{authUid:B.uid,authEmail:A.email,email:A.email,kurs:'KURS-A'}));
   await assertFails(setDoc(doc(adb,'students','forged-email'),{authUid:A.uid,authEmail:A.email,email:B.email,kurs:'KURS-A'}));
@@ -114,8 +125,7 @@ try{
   await assertSucceeds(setDoc(doc(adb,'progress','new-a-alias'),{canonicalStudentId:'student-a',points:5}));
   await assertSucceeds(setDoc(doc(adb,'progress','new-a-bound'),{authUid:A.uid,authEmail:A.email,canonicalStudentId:'student-a',points:6}));
 
-  // 7) Collection-Queries: Schüler dürfen nach der eigenen UID abfragen. Jede
-  // E-Mail-basierte Schüler-/Fortschritts-Collection-Suche wird serverseitig abgelehnt.
+  // 7) Collection-Queries nur per eigener UID; E-Mail-Queries sind verboten.
   await assertSucceeds(getDocs(query(collection(adb,'students'),where('authUid','==',A.uid))));
   await assertFails(getDocs(collection(adb,'students')));
   await assertFails(getDocs(query(collection(adb,'students'),where('email','==',A.email))));
@@ -125,22 +135,38 @@ try{
   await assertFails(getDocs(query(collection(adb,'progress'),where('email','==',A.email))));
   await assertFails(getDocs(query(collection(bdb,'progress'),where('email','==',A.email))));
 
-  // 8) Kursdaten sind lesbar für angemeldete Nutzer, nicht änderbar durch Schüler.
+  // 8) Kursdaten: Schüler lesen, aber schreiben nicht.
   await assertSucceeds(getDoc(doc(adb,'courses','KURS-A')));
   await assertFails(updateDoc(doc(adb,'courses','KURS-A'),{name:'Manipuliert'}));
   await assertFails(getDoc(doc(anon,'courses','KURS-A')));
 
-  // 9) Genehmigte Lehrkraft bleibt privilegiert und verwaltet Profile, Fortschritt,
-  // Lookup und Sicherheitsstatus.
+  // 9) Lehrer-Bypass selbst ist neu vertrauensgebunden.
+  // T besitzt die aktuelle Post-Cutover-Generation und darf Schülerdaten verwalten.
   await assertSucceeds(getDoc(doc(tdb,'students','student-a')));
-  await assertSucceeds(getDoc(doc(tdb,'students','student-b')));
   await assertSucceeds(updateDoc(doc(tdb,'students','student-b'),{kurs:'KURS-B2'}));
   await assertSucceeds(updateDoc(doc(tdb,'progress','student-b'),{points:81}));
-  await assertSucceeds(updateDoc(doc(tdb,'courses','KURS-A'),{name:'Kurs A neu'}));
   await assertSucceeds(setDoc(doc(tdb,'studentLookups','teacher-made'),{email:B.email,canonicalStudentId:'student-b'}));
   await assertSucceeds(updateDoc(doc(tdb,'settings','studentSecurity'),{studentLookupReady:false}));
 
-  console.log('Firestore strict UID isolation and direct legacy lookup tests passed.');
+  // M hat zwar ein altes Dokument mit approved/admin/isTeacher, aber keine aktuelle
+  // Vertrauensgeneration. Es darf sein eigenes Lehrerprofil sehen, sonst nichts Privilegiertes.
+  await assertSucceeds(getDoc(doc(mdb,'teachers',M.uid)));
+  await assertFails(getDoc(doc(mdb,'students','student-a')));
+  await assertFails(updateDoc(doc(mdb,'students','student-a'),{kurs:'ANGRIFF'}));
+  await assertFails(getDocs(collection(mdb,'teachers')));
+
+  // T darf Lehrer-Vertrauen weder erzeugen noch rotieren.
+  await assertFails(updateDoc(doc(tdb,'settings','teacherSecurity'),{generation:'attacker-generation'}));
+  await assertFails(updateDoc(doc(tdb,'teachers',M.uid),{securityApprovedV2:true,securityApprovalGeneration:GENERATION}));
+  await assertFails(getDocs(collection(tdb,'teachers')));
+
+  // Owner kann alles prüfen und ausschließlich er kann die Post-Cutover-Freigabe setzen.
+  await assertSucceeds(getDoc(doc(odb,'students','student-a')));
+  await assertSucceeds(getDocs(collection(odb,'teachers')));
+  await assertSucceeds(updateDoc(doc(odb,'settings','teacherSecurity'),{generation:'rotated-by-owner'}));
+  await assertSucceeds(updateDoc(doc(odb,'teachers',M.uid),{securityApprovedV2:true,securityApprovalGeneration:'rotated-by-owner'}));
+
+  console.log('Strict student UID isolation, direct legacy lookup and teacher trust tests passed.');
 } finally {
   await env.cleanup();
 }
