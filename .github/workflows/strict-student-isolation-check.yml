@@ -16,6 +16,8 @@ on:
       - 'js/guard.js'
       - 'teacher/student-security-lookup.js'
       - 'teacher/student-security-lookup-details.js'
+      - 'teacher/student-security-lookup-exclusions.js'
+      - 'teacher/legacy-lookup-resolution.js'
       - 'teacher/progress-security-alias-core.js'
       - 'teacher/progress-security-alias-migration.js'
       - 'teacher/progress-security-collision-diagnostics.js'
@@ -38,12 +40,15 @@ on:
       - 'scripts/inject-learning-auth-gate.py'
       - 'scripts/test-firestore-student-isolation.mjs'
       - 'scripts/test-firestore-archived-progress-isolation.mjs'
+      - 'scripts/test-firestore-excluded-legacy-isolation.mjs'
       - 'scripts/test-progress-security-alias-core.mjs'
       - 'scripts/test-progress-security-alias-reporting.mjs'
       - 'scripts/test-progress-security-collision-diagnostics.mjs'
       - 'scripts/test-student-collision-repair-core.mjs'
       - 'scripts/test-student-collision-backup-permissions.mjs'
       - 'scripts/test-student-security-lookup-details.mjs'
+      - 'scripts/test-student-security-lookup-exclusions.mjs'
+      - 'scripts/test-legacy-lookup-resolution.mjs'
       - 'scripts/test-legacy-progress-resolution-core.mjs'
       - 'scripts/test-archived-progress-resolver.mjs'
       - 'scripts/test-one-time-duplicate-incident-core.mjs'
@@ -91,6 +96,8 @@ jobs:
           node --check js/guard.js
           node --check teacher/student-security-lookup.js
           node --check teacher/student-security-lookup-details.js
+          node --check teacher/student-security-lookup-exclusions.js
+          node --check teacher/legacy-lookup-resolution.js
           node --check teacher/progress-security-alias-core.js
           node --check teacher/progress-security-alias-migration.js
           node --check teacher/progress-security-collision-diagnostics.js
@@ -107,12 +114,15 @@ jobs:
           node --check student-dashboard/progress-alias-unifier.js
           node --check scripts/test-firestore-student-isolation.mjs
           node --check scripts/test-firestore-archived-progress-isolation.mjs
+          node --check scripts/test-firestore-excluded-legacy-isolation.mjs
           node --check scripts/test-progress-security-alias-core.mjs
           node --check scripts/test-progress-security-alias-reporting.mjs
           node --check scripts/test-progress-security-collision-diagnostics.mjs
           node --check scripts/test-student-collision-repair-core.mjs
           node --check scripts/test-student-collision-backup-permissions.mjs
           node --check scripts/test-student-security-lookup-details.mjs
+          node --check scripts/test-student-security-lookup-exclusions.mjs
+          node --check scripts/test-legacy-lookup-resolution.mjs
           node --check scripts/test-legacy-progress-resolution-core.mjs
           node --check scripts/test-archived-progress-resolver.mjs
           node --check scripts/test-one-time-duplicate-incident-core.mjs
@@ -144,6 +154,12 @@ jobs:
       - name: Test detailed student lookup failures
         run: node scripts/test-student-security-lookup-details.mjs
 
+      - name: Test safe legacy lookup exclusions
+        run: node scripts/test-student-security-lookup-exclusions.mjs
+
+      - name: Test manual legacy lookup resolution plan
+        run: node scripts/test-legacy-lookup-resolution.mjs
+
       - name: Test final legacy progress resolution plan
         run: node scripts/test-legacy-progress-resolution-core.mjs
 
@@ -167,6 +183,9 @@ jobs:
 
       - name: Test archived progress teacher-only isolation in emulator
         run: npx firebase emulators:exec --only firestore --project demo-sprachpilot-archived-progress "node scripts/test-firestore-archived-progress-isolation.mjs"
+
+      - name: Test excluded legacy profiles stay private in emulator
+        run: npx firebase emulators:exec --only firestore --project demo-sprachpilot-excluded-legacy "node scripts/test-firestore-excluded-legacy-isolation.mjs"
 
       - name: Test one-time incident against rollback production rules
         run: npx firebase emulators:exec --only firestore --project demo-one-time-rollback "node scripts/test-one-time-incident-rollback-rules.mjs"
