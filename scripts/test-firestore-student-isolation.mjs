@@ -15,9 +15,6 @@ const env=await initializeTestEnvironment({projectId,firestore:{rules}});
 
 const A={uid:'uid-a',email:'alice.student@example.com'};
 const B={uid:'uid-b',email:'bob.student@example.com'};
-// Absichtlicher Angriffstest: andere UID behauptet dieselbe E-Mail wie A.
-// Firebase Auth verhindert dies normalerweise bereits; die Rules dürfen sich
-// nach der UID-Bindung trotzdem niemals auf die E-Mail verlassen.
 const X={uid:'uid-x',email:A.email};
 const T={uid:'uid-teacher',email:'teacher@example.com'};
 
@@ -31,8 +28,8 @@ try{
     await setDoc(doc(db,'students','student-a'),{authUid:A.uid,authEmail:A.email,email:A.email,kurs:'KURS-A',active:true});
     await setDoc(doc(db,'students','student-b'),{authUid:B.uid,authEmail:B.email,email:B.email,kurs:'KURS-B',active:true});
     await setDoc(doc(db,'students','legacy-a'),{email:A.email,kurs:'KURS-ALT',active:true});
-    await setDoc(doc(db,'progress','student-a'),{authUid:A.uid,email:A.email,canonicalStudentId:'student-a',points:50});
-    await setDoc(doc(db,'progress','student-b'),{authUid:B.uid,email:B.email,canonicalStudentId:'student-b',points:80});
+    await setDoc(doc(db,'progress','student-a'),{authUid:A.uid,authEmail:A.email,email:A.email,canonicalStudentId:'student-a',points:50});
+    await setDoc(doc(db,'progress','student-b'),{authUid:B.uid,authEmail:B.email,email:B.email,canonicalStudentId:'student-b',points:80});
     await setDoc(doc(db,'progress','alias-a'),{canonicalStudentId:'student-a',points:35});
     await setDoc(doc(db,'progress','legacy-progress-a'),{email:A.email,points:20});
     await setDoc(doc(db,'courses','KURS-A'),{courseCode:'KURS-A',name:'Kurs A'});
@@ -54,7 +51,7 @@ try{
   await assertFails(getDoc(doc(adb,'students','student-b')));
   await assertFails(getDoc(doc(aub,'students','student-a')));
 
-  // 2) Eigene Updates sind erlaubt; UID, Auth-E-Mail und Login-E-Mail bleiben unveränderlich.
+  // 2) Eigene Profilupdates sind erlaubt; alle Identitätsfelder bleiben unveränderlich.
   await assertSucceeds(updateDoc(doc(adb,'students','student-a'),{vorname:'Alice'}));
   await assertFails(updateDoc(doc(adb,'students','student-a'),{authUid:B.uid}));
   await assertFails(updateDoc(doc(adb,'students','student-a'),{authEmail:B.email}));
@@ -70,7 +67,6 @@ try{
   await assertSucceeds(updateDoc(doc(adb,'students','legacy-a'),{authUid:A.uid,authEmail:A.email,authVersion:2,authLinkedAt:new Date()}));
   await assertSucceeds(updateDoc(doc(adb,'students','legacy-a'),{nachname:'Sicher'}));
   await assertFails(getDoc(doc(bdb,'students','legacy-a')));
-  // Nach der Bindung gewinnt die UID: selbst X mit identischer E-Mail wird abgewiesen.
   await assertFails(getDoc(doc(xdb,'students','legacy-a')));
   await assertFails(updateDoc(doc(xdb,'students','legacy-a'),{nachname:'Angriff'}));
 
@@ -80,12 +76,15 @@ try{
   await assertFails(setDoc(doc(adb,'students','forged-email'),{authUid:A.uid,authEmail:A.email,email:B.email,kurs:'KURS-A'}));
   await assertFails(setDoc(doc(aub,'students','unverified-create'),{authUid:A.uid,authEmail:A.email,email:A.email,kurs:'KURS-A'}));
 
-  // 5) Fortschritt: A sieht/schreibt nur A, inklusive alter Alias-Dokumente.
+  // 5) Fortschritt: A sieht/schreibt nur A. Eine gesetzte authUid kann weder
+  // umgeschrieben noch beim Erstellen absichtlich auf eine fremde UID gesetzt werden.
   await assertSucceeds(getDoc(doc(adb,'progress','student-a')));
   await assertFails(getDoc(doc(bdb,'progress','student-a')));
   await assertFails(getDoc(doc(xdb,'progress','student-a')));
   await assertFails(getDoc(doc(adb,'progress','student-b')));
   await assertSucceeds(updateDoc(doc(adb,'progress','student-a'),{points:55}));
+  await assertFails(updateDoc(doc(adb,'progress','student-a'),{authUid:B.uid}));
+  await assertFails(updateDoc(doc(adb,'progress','student-a'),{authEmail:B.email}));
   await assertFails(updateDoc(doc(bdb,'progress','student-a'),{points:999}));
   await assertFails(updateDoc(doc(xdb,'progress','student-a'),{points:999}));
   await assertSucceeds(getDoc(doc(adb,'progress','alias-a')));
@@ -94,7 +93,9 @@ try{
   await assertSucceeds(getDoc(doc(adb,'progress','legacy-progress-a')));
   await assertFails(getDoc(doc(bdb,'progress','legacy-progress-a')));
   await assertFails(setDoc(doc(adb,'progress','fake-b-alias'),{canonicalStudentId:'student-b',points:999}));
+  await assertFails(setDoc(doc(adb,'progress','fake-authuid'),{authUid:B.uid,canonicalStudentId:'student-a',points:999}));
   await assertSucceeds(setDoc(doc(adb,'progress','new-a-alias'),{canonicalStudentId:'student-a',points:5}));
+  await assertSucceeds(setDoc(doc(adb,'progress','new-a-bound'),{authUid:A.uid,authEmail:A.email,canonicalStudentId:'student-a',points:6}));
 
   // 6) Queries sind ebenfalls isoliert; Security Rules sind keine nachträglichen Filter.
   await assertSucceeds(getDocs(query(collection(adb,'students'),where('authUid','==',A.uid))));
