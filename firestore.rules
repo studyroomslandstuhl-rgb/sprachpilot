@@ -97,8 +97,7 @@ service cloud.firestore {
         ) &&
         request.resource.data.get('aliasIds', [studentId]).hasAll(
           resource.data.get('aliasIds', [])
-        ) &&
-        studentId in request.resource.data.get('aliasIds', [studentId]);
+        );
     }
 
     function studentCreateIdentitySafe(studentId) {
