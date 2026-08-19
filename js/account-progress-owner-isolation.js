@@ -1,4 +1,4 @@
-import { getActiveProfile, getActiveRole } from '/js/auth.js?v=owner-isolation1';
+import { getActiveProfile, getActiveRole } from '/js/auth.js?v=owner-isolation2';
 
 const OWNER_KEY='SP_ACCOUNT_PROGRESS_OWNER';
 const TRACKED_KEY='SP_ACCOUNT_PROGRESS_TRACKED';
@@ -69,39 +69,37 @@ function localProgressEntries(){
   return out;
 }
 function quarantineKey(owner,key){return `${QUARANTINE_PREFIX}${enc(owner)}_${enc(key)}`}
-function saveQuarantine(storage,owner,key,value){
-  storage.setItem(quarantineKey(owner,key),JSON.stringify({owner:String(owner),key:String(key),value:String(value),savedAt:Date.now()}));
+function saveQuarantine(owner,key,value){
+  localStorage.setItem(quarantineKey(owner,key),JSON.stringify({owner:String(owner),key:String(key),value:String(value),savedAt:Date.now()}));
 }
 function quarantineCurrentLocal(owner){
-  let moved=0,fallback=0,failed=0;
+  let moved=0,failed=0;
   for(const [key,value] of localProgressEntries()){
     let saved=false;
-    try{saveQuarantine(localStorage,owner,key,value);saved=true}catch(e){
-      try{saveQuarantine(sessionStorage,owner,key,value);saved=true;fallback++}catch(x){}
-    }
+    try{saveQuarantine(owner,key,value);saved=true}catch(e){}
     if(!saved){failed++;continue}
     try{localStorage.removeItem(key);moved++}catch(e){failed++}
   }
-  return{moved,fallback,failed};
+  return{moved,failed};
 }
-function quarantineRecords(storage){
+function quarantineRecords(){
   const out=[];
-  for(let i=0;i<storage.length;i++){
-    const qKey=storage.key(i);if(!String(qKey||'').startsWith(QUARANTINE_PREFIX))continue;
-    const record=parse(storage.getItem(qKey),null);
-    if(record&&record.owner&&record.key&&record.value!==undefined)out.push({storage,qKey,record});
+  for(let i=0;i<localStorage.length;i++){
+    const qKey=localStorage.key(i);if(!String(qKey||'').startsWith(QUARANTINE_PREFIX))continue;
+    const record=parse(localStorage.getItem(qKey),null);
+    if(record&&record.owner&&record.key&&record.value!==undefined)out.push({qKey,record});
   }
   return out;
 }
 function restoreCurrentQuarantine(ids){
   let restored=0;
-  for(const item of [...quarantineRecords(localStorage),...quarantineRecords(sessionStorage)]){
-    const {storage,qKey,record}=item;
+  for(const item of quarantineRecords()){
+    const {qKey,record}=item;
     if(!sameOwner(record.owner,ids))continue;
     try{
       const existing=localStorage.getItem(record.key);
       if(existing===null){localStorage.setItem(record.key,String(record.value));restored++}
-      storage.removeItem(qKey);
+      localStorage.removeItem(qKey);
     }catch(e){}
   }
   return restored;
@@ -113,10 +111,21 @@ export async function isolateLocalProgressOwner(){
   if(!current)return{active:false};
   const oldOwner=String(localStorage.getItem(OWNER_KEY)||'').trim();
   const same=!oldOwner||sameOwner(oldOwner,ids);
-  let quarantined={moved:0,fallback:0,failed:0};
+  let quarantined={moved:0,failed:0};
 
   if(oldOwner&&!same){
     quarantined=quarantineCurrentLocal(oldOwner);
+    // Sicherheitsregel: Solange auch nur ein alter Lernstand nicht dauerhaft
+    // archiviert werden konnte, wird der Besitzer NICHT gewechselt. Dadurch kann
+    // nichts versehentlich dem neuen Schülerkonto zugeordnet werden.
+    if(quarantined.failed>0){
+      const blocked={
+        active:true,currentId:current,oldOwner,sameAccount:false,switchedAccount:false,
+        blocked:true,quarantined:quarantined.moved,quarantineFailed:quarantined.failed,restored:0
+      };
+      try{window.SP_ACCOUNT_PROGRESS_OWNER_ISOLATION=blocked;window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_OWNER_ISOLATION_BLOCKED',{detail:blocked}))}catch(e){}
+      return blocked;
+    }
     try{localStorage.setItem(TRACKED_KEY,'[]')}catch(e){}
   }
 
@@ -128,11 +137,8 @@ export async function isolateLocalProgressOwner(){
 
   const result={
     active:true,currentId:current,oldOwner,sameAccount:same,
-    switchedAccount:!!(oldOwner&&!same),
-    quarantined:quarantined.moved,
-    quarantineFallback:quarantined.fallback,
-    quarantineFailed:quarantined.failed,
-    restored
+    switchedAccount:!!(oldOwner&&!same),blocked:false,
+    quarantined:quarantined.moved,quarantineFailed:0,restored
   };
   try{window.SP_ACCOUNT_PROGRESS_OWNER_ISOLATION=result;window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_OWNER_ISOLATED',{detail:result}))}catch(e){}
   return result;
