@@ -17,7 +17,7 @@
   }
   function strongRandomPassword(cryptoObj=root.crypto){
     if(!cryptoObj?.getRandomValues)throw new Error('CRYPTO_RANDOM_REQUIRED');
-    const bytes=new Uint8Array(24);cryptoObj.getRandomValues(bytes);
+    const bytes=new Uint8Array(32);cryptoObj.getRandomValues(bytes);
     const lower='abcdefghjkmnpqrstuvwxyz',upper='ABCDEFGHJKMNPQRSTUVWXYZ',nums='23456789',special='!@#$%&*?';
     const all=lower+upper+nums+special;
     const chars=[lower[bytes[0]%lower.length],upper[bytes[1]%upper.length],nums[bytes[2]%nums.length],special[bytes[3]%special.length]];
