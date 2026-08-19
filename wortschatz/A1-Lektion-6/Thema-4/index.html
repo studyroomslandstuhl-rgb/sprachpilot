@@ -39,7 +39,7 @@
 <script src="l6t4-user-ui.js?v=l6t4-hardfix9"></script>
 <script src="l6t4-task-ref.js?v=l6t4-hardfix9"></script>
 <script src="l6t4-theme-score-v3.js?v=l6t4-hardfix9"></script>
-<script src="l6t4-task13-route-fix.js?v=20260810-progress-repair2"></script>
+<script src="l6t4-task13-route-fix.js?v=20260819-a13-progress1"></script>
 <script>
 L6T4ThemeScoreV3.initOverview();
 l6t4MatchedMenu();
@@ -67,21 +67,11 @@ l6t4MatchedMenu();
      const desc=link.querySelector('p.small');if(desc)desc.textContent='Schließe zuerst alle anderen Aufgaben zu 100 % ab.';
     }
    });
-  }finally{
-   running=false;
-  }
+  }finally{running=false}
  };
  enforce();
- const grid=document.getElementById('taskGrid');
- if(grid)new MutationObserver(enforce).observe(grid,{childList:true,subtree:true});
- document.addEventListener('click',event=>{
-  const link=event.target.closest('#taskGrid a');
-  if(!link)return;
-  const text=(link.textContent||'').toLowerCase(),href=link.getAttribute('href')||'';
-  if(!text.includes('prüfung')&&!href.includes('task=exam')&&!href.includes('pruefung'))return;
-  event.preventDefault();event.stopImmediatePropagation();
-  if(unlocked())location.assign(examUrl);
- },true);
+ const grid=document.getElementById('taskGrid');if(grid)new MutationObserver(enforce).observe(grid,{childList:true,subtree:true});
+ document.addEventListener('click',event=>{const link=event.target.closest('#taskGrid a');if(!link)return;const text=(link.textContent||'').toLowerCase(),href=link.getAttribute('href')||'';if(!text.includes('prüfung')&&!href.includes('task=exam')&&!href.includes('pruefung'))return;event.preventDefault();event.stopImmediatePropagation();if(unlocked())location.assign(examUrl)},true)
 })();
 L6T4ThemeScoreV3.renderSummary();
 </script>
