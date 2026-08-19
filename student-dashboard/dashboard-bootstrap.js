@@ -24,7 +24,9 @@ if(activeRole()==='teacher'&&!legitimatePreview){
   const aliasRepair=import('./progress-alias-unifier.js?v=3')
     .then(module=>module.unifyProgressAliases())
     .catch(error=>{console.warn('Verteilte Schüler-Fortschritte konnten noch nicht zusammengeführt werden',error);return null});
+  window.SP_PROGRESS_ALIAS_READY=aliasRepair;
   import('./local-theme-points-recovery.js?v=2').catch(error=>console.warn('Lokale Themenpunkte konnten noch nicht geprüft werden',error));
+  import('./local-standard-points-recovery.js?v=1').catch(error=>console.warn('Lokale Aufgabenpunkte konnten noch nicht geprüft werden',error));
   aliasRepair.then(result=>{
     if(!result?.ok)return;
     try{window.dispatchEvent(new CustomEvent('SP_POINT_DELTA_APPLIED',{detail:{type:'dashboard-alias-repair',total:result.points||0}}))}catch(e){}
