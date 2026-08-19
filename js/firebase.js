@@ -117,7 +117,7 @@ function spCompatDoc(path, id) {
     _ref: ref,
 
     async get(options={}) {
-      if(options?.source==="server")return getDocFromServer(ref);
+      if(options?.source==="server"||IS_TEACHER_PATH)return getDocFromServer(ref);
       return getDoc(ref);
     },
 
@@ -157,7 +157,7 @@ function spCompatCollection(path, constraints = []) {
     async get(options={}) {
       await waitAuthRequired();
       const ref=spBuildQuery(path, constraints);
-      if(options?.source==="server")return firestoreGetDocsFromServer(ref);
+      if(options?.source==="server"||IS_TEACHER_PATH)return firestoreGetDocsFromServer(ref);
       return firestoreGetDocs(ref);
     },
 
