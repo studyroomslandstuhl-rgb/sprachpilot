@@ -1,4 +1,4 @@
-import "/js/session-restore.js?v=2";
+import "/js/session-restore.js?v=3";
 import { requireLogin, logout } from "/js/auth.js";
 import { installSpHeader } from "/js/sp-header.js?v=theme-standard2";
 const path=location.pathname;
@@ -42,7 +42,7 @@ const FULL_FIREBASE=!PERFORMANCE_SYNC_OFF;
 if(PERFORMANCE_SYNC_OFF){window.spCanWriteFirebaseProgress=()=>false;window.SP_NO_FIREBASE_SYNC=true;window.SP_PERFORMANCE_MODE=true}
 let aliasRepairPromise=Promise.resolve(null);
 if(FULL_FIREBASE&&SP_USER){
- aliasRepairPromise=import("/student-dashboard/progress-alias-unifier.js?v=3").then(module=>module.unifyProgressAliases()).catch(error=>{console.warn("Verteilte Schüler-Fortschritte konnten noch nicht zusammengeführt werden",error);return null});
+ aliasRepairPromise=import("/student-dashboard/progress-alias-unifier.js?v=4").then(module=>module.unifyProgressAliases()).catch(error=>{console.warn("Verteilte Schüler-Fortschritte konnten noch nicht zusammengeführt werden",error);return null});
  window.SP_PROGRESS_ALIAS_READY=aliasRepairPromise;
 }
 if(FULL_FIREBASE&&SP_USER&&!IS_L7&&!IS_L8){aliasRepairPromise.finally(()=>import("/js/account-progress-sync.js?v=5").then(module=>module.startAccountProgressSync()).catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error)))}
