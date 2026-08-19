@@ -56,4 +56,28 @@ function ok(condition,message){if(!condition)throw new Error(message)}
   ok(patch===null,'already canonical alias progress must not be rewritten');
 }
 
+// Schüler-Aliase werden nur als fehlende Werte geplant. Bestehende Aliaswerte dürfen nicht
+// durch eine komplette neue Liste ersetzt werden; das spätere Firestore-Write nutzt arrayUnion.
+{
+  const analysis={
+    students:[
+      {__docId:'student-a',aliasIds:['existing-a']},
+      {__docId:'student-b',aliasIds:['old-b']}
+    ],
+    aliasPlan:new Map([
+      ['student-a',['existing-a','legacy-a-1','legacy-a-2']],
+      ['student-b',['old-b']]
+    ]),
+    resolver:{
+      studentIdOf:s=>s.__docId,
+      uniq:values=>[...new Set((values||[]).map(String))]
+    }
+  };
+  const writes=migration.studentAliasWritePlan(analysis);
+  ok(writes.length===1,'only students with missing aliases should be written');
+  ok(writes[0].studentId==='student-a','wrong student selected for alias write');
+  ok(JSON.stringify(writes[0].missing)===JSON.stringify(['legacy-a-1','legacy-a-2']),'only missing aliases must be added');
+  ok(writes[0].currentWasArray===true,'existing array field must use atomic arrayUnion path');
+}
+
 console.log('Progress security alias reporting tests passed.');
