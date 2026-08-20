@@ -25,7 +25,12 @@ ok(Object.keys(foreign.entries).length===0,'foreign-account journal must never b
 
 ok(core.denied('SP_USER_PROFILE')===true,'profile data must not be treated as progress');
 ok(core.denied('SP_ACCOUNT_PROGRESS_PENDING_V1_x')===true,'internal pending journal must never sync as lesson progress');
-ok(core.eligible('SP_L8_T1_TASK','{"done":[0],"percent":50}')===true,'lesson progress key should be eligible');
+ok(core.eligible('SP_L8_T1_TASK','{"done":[0],"percent":50}')===true,'generic lesson progress key should remain eligible');
+ok(core.eligible('SP_L8_student-42_T1_aufgabe-3','{"done":[0],"percent":50}')===false,'raw L8 practice state must stay local because resets may lower it');
+ok(core.eligible('SP_L7_student-42_T2_aufgabe-4','{"done":[0],"percent":50}')===false,'raw L7 practice state must stay local because resets may lower it');
+ok(core.eligible('SP_THEME_SCORE_A1_L8_T1_V1_student-42','{"currentRun":2,"runs":{"1":{"tasks":{}}}}')===true,'L8 ledger must sync through the account');
+ok(core.eligible('SP_THEME_SCORE_A1_L7_T2_V1_student-42','{"currentRun":2,"runs":{"1":{"tasks":{}}}}')===true,'L7 ledger must sync through the account');
+ok(core.eligible('SP_THEME_RESET_A1_L8_T1','1700000000000')===true,'L8 reset marker must sync through the account');
 
 const remote=new Map();
 core.mergeRemote(remote,new Map([['k',{key:'k',value:'{"percent":80}',updatedAt:10}]]));
