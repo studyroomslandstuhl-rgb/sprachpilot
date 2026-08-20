@@ -50,7 +50,7 @@ if(FULL_FIREBASE&&IS_SECURE_STUDENT){
  aliasRepairPromise=import("/student-dashboard/progress-alias-unifier.js?v=6").then(module=>module.unifyProgressAliases()).catch(error=>{console.warn("Verteilte Schüler-Fortschritte konnten noch nicht zusammengeführt werden",error);return null});
  window.SP_PROGRESS_ALIAS_READY=aliasRepairPromise;
 }
-if(FULL_FIREBASE&&IS_SECURE_STUDENT&&!IS_L7&&!IS_L8){aliasRepairPromise.finally(()=>import("/js/account-progress-sync.js?v=8").then(module=>module.startAccountProgressSync()).catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error)))}
+if(FULL_FIREBASE&&IS_SECURE_STUDENT){aliasRepairPromise.finally(()=>import("/js/account-progress-sync.js?v=12").then(module=>module.startAccountProgressSync()).catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error)))}
 function shouldInstallGlobalHeader(){if(IS_WORTSCHATZ_LESSON_OVERVIEW)return false;if(IS_WORTSCHATZ_EXERCISE)return true;return !document.querySelector(".topbar")&&!document.querySelector("header.topbar")}
 function installHeaderOnce(){if(!SECURE_ACCESS?.ok)return;if(!shouldInstallGlobalHeader())return;try{installSpHeader()}catch(e){}}
 function setStar(el){if(el&&el.textContent!=="⭐")el.textContent="⭐"}
