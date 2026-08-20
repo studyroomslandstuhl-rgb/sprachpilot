@@ -6,7 +6,8 @@ import { getActiveProfile } from '/js/auth.js';
 import { currentFirebaseUser } from '/js/student-secure-auth.js?v=1';
 import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity5';
 import { isolateLocalProgressOwner } from '/js/account-progress-owner-isolation.js?v=3';
-import { accountProgressReady, startAccountProgressSync as startAuthoritativeAccountProgressSync } from '/js/account-progress-sync-authoritative-v2.js?v=2';
+import { prepareL78AccountProgressBridge, hydrateL78VisibleProgress, installL78RuntimeBridge } from '/js/account-progress-l78-bridge.js?v=1';
+import { accountProgressReady, startAccountProgressSync as startAuthoritativeAccountProgressSync } from '/js/account-progress-sync-authoritative-v2.js?v=3';
 export { accountProgressReady };
 
 function invalidateOldL5Confirmations(){
@@ -48,8 +49,8 @@ function refreshAfterProgressPreparation(result,isolation){
   if(!learningPage())return false;
   const studentId=String(result?.studentId||isolation?.currentId||localStorage.getItem('SP_STUDENT_ID')||'student');
   const page=String(location.pathname||'')+String(location.search||'');
-  const key='SP_ACCOUNT_PROGRESS_RENDERED_V4_'+studentId+'_'+page;
-  const restored=Math.max(0,Number(result?.restored)||0)+Math.max(0,Number(result?.restoredStructured)||0)+Math.max(0,Number(result?.rescuedLocal)||0);
+  const key='SP_ACCOUNT_PROGRESS_RENDERED_V5_'+studentId+'_'+page;
+  const restored=Math.max(0,Number(result?.restored)||0)+Math.max(0,Number(result?.restoredStructured)||0)+Math.max(0,Number(result?.rescuedLocal)||0)+Math.max(0,Number(result?.restoredL78)||0);
   const switched=!!isolation?.switchedAccount&&Math.max(0,Number(isolation?.quarantined)||0)>0;
   try{if(restored<=0&&!switched){sessionStorage.removeItem(key);return false}if(sessionStorage.getItem(key)==='1')return false;sessionStorage.setItem(key,'1')}catch(e){if(restored<=0&&!switched)return false}
   location.reload();return true;
@@ -78,8 +79,14 @@ export async function startAccountProgressSync(options={}){
   }
   if(isolation?.blocked){const result=blockedSecureResult('LOCAL_OWNER_ISOLATION_BLOCKED');showCloudProgressRequired(result);return result}
 
+  let bridge={active:false,staged:0};
+  try{bridge=prepareL78AccountProgressBridge()||bridge}catch(error){console.warn('L7/L8 Kontofortschritt konnte vor der Cloud-Hydrierung nicht vorbereitet werden',error)}
+
   const result=await startAuthoritativeAccountProgressSync(options);
   if(result?.blocked){showCloudProgressRequired(result);return result}
-  if(refreshAfterProgressPreparation(result,isolation))return result;
-  return result;
+  let restoredL78=0;
+  try{restoredL78=hydrateL78VisibleProgress()||0;installL78RuntimeBridge()}catch(error){console.warn('L7/L8 Kontofortschritt konnte nicht vollständig rekonstruiert werden',error)}
+  const enriched={...result,l78BridgeStaged:Number(bridge?.staged)||0,restoredL78};
+  if(refreshAfterProgressPreparation(enriched,isolation))return enriched;
+  return enriched;
 }
