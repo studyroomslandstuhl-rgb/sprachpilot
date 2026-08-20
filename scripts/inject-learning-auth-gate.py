@@ -10,6 +10,7 @@ against the generated _site tree during Pages deployment.
 from __future__ import annotations
 
 import json
+import shutil
 import sys
 from pathlib import Path
 
@@ -72,6 +73,13 @@ def main(site_arg: str = "_site") -> int:
     site = Path(site_arg).resolve()
     if not site.exists():
         raise SystemExit(f"Site directory does not exist: {site}")
+
+    # Firebase Functions are server-side source code. The Pages workflow copies
+    # the repository into _site first, so remove this directory from the static
+    # artifact before anything is uploaded to GitHub Pages.
+    server_functions = site / "functions"
+    if server_functions.exists():
+        shutil.rmtree(server_functions)
 
     already_secure: list[str] = []
     hide_only: list[str] = []
