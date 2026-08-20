@@ -1,5 +1,6 @@
 (function(){
   const OWNER_EMAILS=["studyroomslandstuhl@gmail.com","alicekrekoten@gmail.com","alisa.krekoten@gmail.com"];
+  const FUNCTIONS_REGION="europe-west1";
   const el=id=>document.getElementById(id);
   const norm=value=>String(value||"").trim().toLowerCase();
 
@@ -21,7 +22,12 @@
   }
   async function ensureFirebase(){
     if(!window.TeacherFirebaseReady||!window.auth||!window.db)throw new Error(window.TeacherFirebaseError?.message||"Firebase ist nicht verbunden.");
+    if(typeof firebase.functions!=="function")throw new Error("SprachPilot-Maildienst ist nicht geladen.");
   }
+  function mailCallable(name){return firebase.functions(FUNCTIONS_REGION).httpsCallable(name)}
+  async function sendVerificationMail(){return mailCallable("requestVerificationEmail")({})}
+  async function sendPasswordResetMail(email){return mailCallable("requestPasswordReset")({email:norm(email)})}
+
   function clearTeacherMode(){
     ["SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_UID","SP_TEACHER_PROFILE","SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_LOGIN_CONTEXT"].forEach(k=>localStorage.removeItem(k));
     try{sessionStorage.removeItem("SP_TEACHER_PREVIEW")}catch(e){}
@@ -33,10 +39,6 @@
   }
   function isPending(data={}){const status=norm(data.status);return data.pending===true||data.approved===false||["pending","waiting","requested","beantragt"].includes(status)}
   function isBlocked(data={}){const status=norm(data.status);return data.active===false||data.disabled===true||data.blocked===true||["inactive","disabled","blocked","gesperrt","deaktiviert"].includes(status)}
-  async function sendVerification(user){
-    const url=new URL('/teacher/login.html',location.origin).href;
-    try{await user.sendEmailVerification({url,handleCodeInApp:false})}catch(error){if(error?.code!=="auth/unauthorized-continue-uri")throw error;await user.sendEmailVerification()}
-  }
 
   window.TeacherAuth={
     OWNER_EMAILS,
@@ -58,7 +60,7 @@
       setBusy("loginBtn",true,"Login läuft...","Einloggen");show("Login wird geprüft...","ok");
       try{
         await ensureFirebase();const result=await auth.signInWithEmailAndPassword(email,password),user=result.user;
-        if(user.emailVerified!==true){await auth.signOut();clearTeacherMode();show("Bitte bestätige zuerst deine E-Mail-Adresse. Den Bestätigungslink hast du bei der Registrierung erhalten.");return}
+        if(user.emailVerified!==true){await auth.signOut();clearTeacherMode();show("Bitte bestätige zuerst deine E-Mail-Adresse. Den SprachPilot-Bestätigungslink hast du bei der Registrierung erhalten.");return}
         const teacher=await this.getApprovedTeacher(user);
         if(!teacher){await auth.signOut();clearTeacherMode();show("Für dieses Firebase-Konto liegt keine Lehrerregistrierung vor.");return}
         if(isPending(teacher)){await auth.signOut();clearTeacherMode();show("Dein Lehrerkonto wartet noch auf die Freigabe durch den Owner.");return}
@@ -76,18 +78,26 @@
         if(!OWNER_EMAILS.includes(email)){
           await db.collection("teachers_pending").doc(user.uid).set({uid:user.uid,firstName,lastName,email,emailLower:email,school,job,role:"teacher",approved:false,active:false,status:"pending",requestedAt:firebase.firestore.FieldValue.serverTimestamp(),createdAt:firebase.firestore.FieldValue.serverTimestamp()},{merge:true});
         }
-        await sendVerification(user);await auth.signOut();clearTeacherMode();
+        let mailOk=true;
+        try{await sendVerificationMail()}catch(mailError){mailOk=false;console.error("Lehrer-Bestätigungsmail fehlgeschlagen",mailError)}
+        await auth.signOut();clearTeacherMode();
+        if(!mailOk){show("Die Registrierung wurde gespeichert, aber die Bestätigungs-E-Mail konnte nicht versendet werden. Bitte versuche später „Bestätigungslink erneut senden“.");return}
         show(OWNER_EMAILS.includes(email)?"Registrierung erstellt. Bitte bestätige deine E-Mail-Adresse und logge dich danach erneut ein.":"Registrierung eingegangen. Bitte bestätige zuerst deine E-Mail-Adresse. Danach wartet dein Konto auf die Freigabe durch den Owner.","ok");
       }catch(err){show(readableError(err,"Registrierung nicht möglich."))}finally{setBusy("regBtn",false,"Registrierung läuft...","Registrieren")}
     },
     async resetPassword(){
       const email=norm(el("resetEmail")?.value);if(!email)return show("Bitte E-Mail eingeben.");
       setBusy("resetBtn",true,"Wird gesendet...","Reset-Link senden");show("Reset-Link wird gesendet...","ok");
-      try{await ensureFirebase();await auth.sendPasswordResetEmail(email);show("Reset-Link wurde an deine E-Mail gesendet.","ok")}catch(err){show(readableError(err,"Reset-Link konnte nicht gesendet werden."))}finally{setBusy("resetBtn",false,"Wird gesendet...","Reset-Link senden")}
+      try{await ensureFirebase();await sendPasswordResetMail(email);show("Wenn ein SprachPilot-Konto für diese E-Mail existiert, wurde der Reset-Link versendet.","ok")}catch(err){show(readableError(err,"Reset-Link konnte nicht gesendet werden."))}finally{setBusy("resetBtn",false,"Wird gesendet...","Reset-Link senden")}
     },
     async resendVerification(){
       const email=norm(el("email")?.value),password=el("password")?.value||"";if(!email||!password)return show("Bitte E-Mail und Passwort eingeben.");
-      try{await ensureFirebase();const result=await auth.signInWithEmailAndPassword(email,password);if(result.user.emailVerified){show("Die E-Mail-Adresse ist bereits bestätigt.","ok")}else{await sendVerification(result.user);show("Bestätigungslink wurde erneut gesendet.","ok")}await auth.signOut()}catch(err){show(readableError(err,"Bestätigungslink konnte nicht gesendet werden."))}
+      try{
+        await ensureFirebase();const result=await auth.signInWithEmailAndPassword(email,password);
+        if(result.user.emailVerified)show("Die E-Mail-Adresse ist bereits bestätigt.","ok");
+        else{await sendVerificationMail();show("SprachPilot-Bestätigungslink wurde erneut gesendet.","ok")}
+        await auth.signOut();
+      }catch(err){try{await auth.signOut()}catch(e){}show(readableError(err,"Bestätigungslink konnte nicht gesendet werden."))}
     },
     async logout(){try{clearTeacherMode();if(auth)await auth.signOut()}finally{location.href="login.html"}}
   };
