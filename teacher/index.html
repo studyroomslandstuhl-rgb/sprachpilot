@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta name="color-scheme" content="light">
 <title>SprachPilot · Lehrer-Dashboard</title>
-<link rel="stylesheet" href="dashboard-lite.css?v=1">
+<link rel="stylesheet" href="dashboard-lite.css?v=2">
 </head>
 <body>
 <div class="sp-shell">
@@ -46,10 +46,29 @@
   </main>
 </div>
 
+<nav class="sp-mobile-nav" aria-label="Mobile Dashboard-Navigation">
+  <button type="button" data-view="overview"><span class="sp-mobile-icon">⌂</span><span>Übersicht</span></button>
+  <button type="button" data-view="courses"><span class="sp-mobile-icon">▦</span><span>Kurse</span></button>
+  <button type="button" data-view="students"><span class="sp-mobile-icon">◎</span><span>TN</span></button>
+  <button type="button" data-view="releases"><span class="sp-mobile-icon">✓</span><span>Freigaben</span></button>
+  <details class="sp-mobile-more">
+    <summary><span class="sp-mobile-icon">•••</span><span>Mehr</span></summary>
+    <div class="sp-mobile-sheet">
+      <div class="sp-mobile-sheet-title">Lehrer-Dashboard</div>
+      <button type="button" data-owner-only data-view="teacher-approval" hidden>Lehrer-Freigabe</button>
+      <button type="button" data-owner-only data-view="email-templates" hidden>E-Mail-Vorlagen</button>
+      <button type="button" onclick="SPTeacherDashboard.refresh()">Daten aktualisieren</button>
+      <a href="/index.html">Zu SprachPilot</a>
+      <button type="button" class="danger" onclick="SPTeacherDashboard.logout()">Abmelden</button>
+    </div>
+  </details>
+</nav>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="../js/firebase-config.js?v=teacher-lite-20260820"></script>
 <script src="dashboard-lite.js?v=1"></script>
+<script src="dashboard-account-admin.js?v=1"></script>
 </body>
 </html>
