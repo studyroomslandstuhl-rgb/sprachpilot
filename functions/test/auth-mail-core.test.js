@@ -38,15 +38,30 @@ assert.match(reset.html,/Passwort festlegen/);
 assert.ok(!reset.html.includes('Anna & Bob'));
 assert.ok(reset.html.includes('Anna &amp; Bob'));
 
-const verifyUrl=custom.replace('resetPassword','verifyEmail');
-const verify=core.buildVerificationMail({name:'Anna',url:verifyUrl});
-assert.match(verify.subject,/E-Mail-Adresse bestätigen/);
-assert.match(verify.html,/E-Mail bestätigen/);
+const customReset=core.buildPasswordResetMail({
+  name:'Anna',url:custom,
+  template:{subject:'Mein Betreff',title:'Neuer Titel',intro:'Neue Einleitung',body:'Eigener <Text>',button:'Jetzt ändern',footer:'Eigener Hinweis'}
+});
+assert.equal(customReset.subject,'Mein Betreff');
+assert.match(customReset.text,/Neue Einleitung/);
+assert.match(customReset.text,/Jetzt ändern/);
+assert.match(customReset.html,/Neuer Titel/);
+assert.match(customReset.html,/Eigener &lt;Text&gt;/);
+assert.ok(!customReset.html.includes('Eigener <Text>'));
 
-const setup=core.buildSetupMail({name:'Anna',resetUrl:custom,verifyUrl});
+const bounded=core.templateFor('passwordReset',{subject:'x'.repeat(500)});
+assert.equal(bounded.subject.length,160);
+assert.throws(()=>core.templateFor('unknown',{}),/UNKNOWN_MAIL_TEMPLATE/);
+
+const verifyUrl=custom.replace('resetPassword','verifyEmail');
+const verify=core.buildVerificationMail({name:'Anna',url:verifyUrl,template:{button:'Adresse prüfen'}});
+assert.match(verify.subject,/E-Mail-Adresse bestätigen/);
+assert.match(verify.html,/Adresse prüfen/);
+
+const setup=core.buildSetupMail({name:'Anna',resetUrl:custom,verifyUrl,template:{button:'Passwort setzen',secondButton:'E-Mail freigeben'}});
 assert.match(setup.subject,/Zugang/);
-assert.match(setup.html,/1\. Persönliches Passwort festlegen/);
-assert.match(setup.html,/2\. E-Mail-Adresse bestätigen/);
+assert.match(setup.html,/Passwort setzen/);
+assert.match(setup.html,/E-Mail freigeben/);
 assert.ok(setup.text.includes(custom));
 assert.ok(setup.text.includes(verifyUrl));
 
