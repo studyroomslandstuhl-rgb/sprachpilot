@@ -1,0 +1,55 @@
+name: Record recent Actions status
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - '.github/workflows/actions-diagnostics.yml'
+  workflow_dispatch:
+
+permissions:
+  actions: read
+  contents: write
+
+jobs:
+  actions-status:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Collect recent workflow runs
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set +e
+          gh run list \
+            --repo "$GITHUB_REPOSITORY" \
+            --limit 80 \
+            --json databaseId,displayTitle,workflowName,status,conclusion,headSha,createdAt,updatedAt,url,event \
+            > recent-actions-status.json
+          EXIT_CODE=$?
+          if [ "$EXIT_CODE" -ne 0 ] || [ ! -s recent-actions-status.json ]; then
+            printf '[]\n' > recent-actions-status.json
+          fi
+          echo "gh_exit=$EXIT_CODE" > actions-diagnostics-meta.txt
+          exit 0
+
+      - name: Checkout Firebase status branch
+        uses: actions/checkout@v6
+        with:
+          ref: firebase-status
+          path: _status
+          fetch-depth: 1
+
+      - name: Publish Actions status
+        run: |
+          cp recent-actions-status.json _status/recent-actions-status.json
+          cp actions-diagnostics-meta.txt _status/actions-diagnostics-meta.txt
+          cd _status
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add recent-actions-status.json actions-diagnostics-meta.txt
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Record recent GitHub Actions status"
+          git push origin HEAD:firebase-status
