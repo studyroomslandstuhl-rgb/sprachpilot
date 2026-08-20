@@ -30,6 +30,7 @@ body{background:linear-gradient(180deg,#E8FBFF 0,#F6FDFF 46%,#FFFFFF 100%);color
         <button id="loginBtn" onclick="TeacherAuth.login()">Einloggen</button>
         <button class="secondary" onclick="showRegisterMode()">Als Lehrkraft registrieren</button>
         <button class="secondary" onclick="showResetMode()">Passwort vergessen</button>
+        <button class="secondary" onclick="TeacherAuth.resendVerification()">Bestätigungslink erneut senden</button>
       </div>
     </div>
 
@@ -73,7 +74,7 @@ body{background:linear-gradient(180deg,#E8FBFF 0,#F6FDFF 46%,#FFFFFF 100%);color
     </div>
 
     <div id="loginMsg" class="msg"></div>
-    <p class="small">Falls nichts passiert: Seite neu laden und prüfen, ob Firebase Authentication aktiviert ist.</p>
+    <p class="small">Konto-E-Mails werden über den SprachPilot-Maildienst versendet.</p>
   </div>
 </div>
 
@@ -87,12 +88,12 @@ function showResetMode(){document.getElementById("loginMode").classList.add("hid
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-<script src="js/firebase.js?v=approval2"></script>
-<script src="js/auth.js?v=approval3"></script>
-<script src="js/auth-legacy-fix.js?v=1"></script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-functions-compat.js"></script>
+<script src="js/firebase.js?v=teacher-auth-mail-20260820"></script>
+<script src="js/auth.js?v=teacher-auth-mail-20260820"></script>
 
 <script>
-window.addEventListener("load",()=>{setTimeout(()=>{if(!window.TeacherAuth){document.getElementById("loginMsg").innerHTML="<div class='no'>Lehrer-Login konnte nicht geladen werden. Datei teacher/js/auth.js fehlt oder hat einen Fehler.</div>"}else if(!window.TeacherFirebaseReady){const err=window.TeacherFirebaseError?window.TeacherFirebaseError.message:"Unbekannter Firebase-Fehler";document.getElementById("loginMsg").innerHTML="<div class='no'>Firebase ist nicht verbunden: "+err+"</div>"}},500)});
+window.addEventListener("load",()=>{setTimeout(()=>{if(!window.TeacherAuth){document.getElementById("loginMsg").innerHTML="<div class='no'>Lehrer-Login konnte nicht geladen werden.</div>"}else if(!window.TeacherFirebaseReady){const err=window.TeacherFirebaseError?window.TeacherFirebaseError.message:"Unbekannter Firebase-Fehler";document.getElementById("loginMsg").innerHTML="<div class='no'>Firebase ist nicht verbunden: "+err+"</div>"}},500)});
 </script>
 
 </body>
