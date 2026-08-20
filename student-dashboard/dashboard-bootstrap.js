@@ -12,6 +12,11 @@ function clearStaleTeacherPreview(){
     localStorage.removeItem('SP_NO_FIREBASE_SYNC');
   }catch(e){}
 }
+function alreadyCanonicalSecureProfile(profile,uid){
+  const p=profile||{},canonical=String(p.canonicalStudentId||'').trim();
+  return !!(canonical&&p.secureAuth===true&&String(p.authUid||'')===String(uid||'')&&
+    String(p.docId||canonical)===canonical&&String(p.studentId||canonical)===canonical&&String(p.userId||canonical)===canonical);
+}
 function revealDashboard(){
   try{document.documentElement.dataset.spDashboardAuth='ok';document.documentElement.style.removeProperty('visibility')}catch(e){}
 }
@@ -35,13 +40,18 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
   if(!access?.ok||access.type!=='student')throw new Error('SECURE_STUDENT_DASHBOARD_ACCESS_REQUIRED');
 
   let normalizedProfile=readProfile();
-  try{
-    const identity=await import('/js/student-identity.js?v=identity5');
-    normalizedProfile=await identity.normalizeStudentIdentity(normalizedProfile,{silent:true})||normalizedProfile;
-  }catch(error){
-    console.error('Sichere Schüleridentität konnte vor dem Dashboard nicht bestätigt werden',error);
-    location.replace('/login/?redirect='+encodeURIComponent(location.pathname+location.search));
-    throw error;
+  // Der UID-basierte Login lädt das kanonische students-Dokument bereits frisch vom Server.
+  // In diesem Normalfall darf das Dashboard nicht noch einmal die alte Identitätsmigration
+  // starten, weil diese zusätzlich in das sehr große progress-Dokument schreiben würde.
+  if(!alreadyCanonicalSecureProfile(normalizedProfile,access.uid)){
+    try{
+      const identity=await import('/js/student-identity.js?v=identity5');
+      normalizedProfile=await identity.normalizeStudentIdentity(normalizedProfile,{silent:true})||normalizedProfile;
+    }catch(error){
+      console.error('Sichere Schüleridentität konnte vor dem Dashboard nicht bestätigt werden',error);
+      location.replace('/login/?redirect='+encodeURIComponent(location.pathname+location.search));
+      throw error;
+    }
   }
 
   if(String(normalizedProfile?.authUid||'')!==String(access.uid||'')){
@@ -49,7 +59,7 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
     throw new Error('STUDENT_UID_CHANGED_BEFORE_DASHBOARD_RENDER');
   }
 
-  const progressModule=await import('/js/account-progress-sync.js?v=10');
+  const progressModule=await import('/js/account-progress-sync.js?v=11');
   const progressState=await progressModule.startAccountProgressSync();
   if(progressState?.blocked){showCloudRequired(progressState.reason);throw new Error(progressState.reason||'CLOUD_PROGRESS_SERVER_REQUIRED')}
   if(progressState?.serverAuthoritative!==true||Number(progressState?.authorityVersion||0)<2){
