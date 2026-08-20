@@ -13,16 +13,21 @@ function canonicalId(){const p=profile();return String(p.canonicalStudentId||p.d
 function ownerUid(){const p=profile();return String(p.authUid||localStorage.getItem('SP_STUDENT_AUTH_UID')||'').trim()}
 function journalKey(){return `${PENDING_PREFIX}${core.clean(ownerUid())}_${core.clean(canonicalId())}`}
 function migrationKey(){return `${MIGRATION_PREFIX}${core.clean(ownerUid())}_${core.clean(canonicalId())}`}
-function bridgeKey(key){
-  const k=String(key||'');
-  return /^SP_THEME_SCORE_A1_L[78]_T\d+_V\d+_/i.test(k)||
-    /^SP_SCORE_RUN_wortschatz-a1-lektion-[78]-thema-\d+/i.test(k)||
-    /^SP_THEME_RESET_A1_L[78]_T\d+$/i.test(k);
-}
+function pidClean(value){return String(value||'').trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_').replace(/^_+|_+$/g,'')}
 function currentPid(){
   const p=profile();
-  return String(p.uid||p.userId||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_')||'student')
-    .trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_').replace(/^_+|_+$/g,'')||'student';
+  return pidClean(p.uid||p.userId||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_'))||'student';
+}
+function legacyPid(){
+  const p=profile();
+  return pidClean([p.email,p.kurs,p.kursnummer,p.courseCode,p.vorname,p.firstName,p.nachname,p.lastName].filter(Boolean).join('_'));
+}
+function allowedLedgerPids(){
+  const p=profile(),values=[
+    currentPid(),canonicalId(),p.canonicalStudentId,p.docId,p.studentId,p.userId,p.uid,p.id,p.email,
+    ...(Array.isArray(p.aliasIds)?p.aliasIds:[]),legacyPid(),localStorage.getItem('SP_L7_STABLE_PID')
+  ];
+  return new Set(values.map(pidClean).filter(value=>value&&value!=='student'));
 }
 function freshJournal(){return{ownerUid:ownerUid(),studentId:canonicalId(),entries:{}}}
 function loadJournal(){
@@ -32,25 +37,39 @@ function loadJournal(){
 }
 function saveJournal(journal){localStorage.setItem(journalKey(),JSON.stringify(journal))}
 function resetKey(lesson,theme){return`SP_THEME_RESET_A1_L${lesson}_T${theme}`}
+function runKey(lesson,theme){return`SP_SCORE_RUN_wortschatz-a1-lektion-${lesson}-thema-${theme}`}
 function rawStateKeys(lesson,theme,id,ledgerPid){
   const pids=[String(ledgerPid||'').trim(),currentPid()].filter(Boolean);
   return [...new Set(pids)].map(pid=>`SP_L${lesson}_${pid}_T${theme}_${id}`);
 }
 function ledgerRows(){
-  const rows=[];
+  const allowed=allowedLedgerPids(),rows=[];
   for(let i=0;i<localStorage.length;i++){
     const key=String(localStorage.key(i)||''),match=key.match(/^SP_THEME_SCORE_A1_L([78])_T(\d+)_V\d+_(.+)$/i);if(!match)continue;
+    if(!allowed.has(pidClean(match[3])))continue;
     const ledger=parse(localStorage.getItem(key),null);if(!ledger||typeof ledger!=='object')continue;
     rows.push({key,lesson:Number(match[1]),theme:Number(match[2]),pid:match[3],ledger});
   }
   return rows;
 }
-function migrateExistingRawStateIntoLedgers(){
+function pairKey(lesson,theme){return`${Number(lesson)}:${Number(theme)}`}
+function allowedThemePairs(rows=ledgerRows()){return new Set(rows.map(row=>pairKey(row.lesson,row.theme)))}
+function stageableBridgeKey(key,pairs){
+  const k=String(key||''),ledger=k.match(/^SP_THEME_SCORE_A1_L([78])_T(\d+)_V\d+_(.+)$/i);
+  if(ledger)return allowedLedgerPids().has(pidClean(ledger[3]));
+  const run=k.match(/^SP_SCORE_RUN_wortschatz-a1-lektion-([78])-thema-(\d+)$/i);
+  if(run)return pairs.has(pairKey(run[1],run[2]));
+  const reset=k.match(/^SP_THEME_RESET_A1_L([78])_T(\d+)$/i);
+  if(reset)return pairs.has(pairKey(reset[1],reset[2]));
+  return false;
+}
+function migrateExistingRawStateIntoLedgers(rows=ledgerRows()){
   let migrated=0;
-  for(const row of ledgerRows()){
+  for(const row of rows){
     const {lesson,theme,pid,ledger,key}=row,run=Math.max(1,Math.min(3,Number(ledger.currentRun)||1));
     const runData=ledger.runs?.[String(run)]||ledger.runs?.[run]||{},tasks=runData.tasks||{};
     ledger.clientStates=ledger.clientStates&&typeof ledger.clientStates==='object'?ledger.clientStates:{};
+    ledger.clientStateProgressFloor=Math.max(0,Number(ledger.clientStateProgressFloor)||0);
     let changed=false;
     for(const id of Object.keys(tasks)){
       let bestRaw=null;
@@ -60,6 +79,7 @@ function migrateExistingRawStateIntoLedgers(){
       }
       const state=parse(bestRaw,null);if(!state||typeof state!=='object')continue;
       const compound=`${run}:${id}`,old=ledger.clientStates[compound],oldRaw=old?.state?JSON.stringify(old.state):null;
+      ledger.clientStateProgressFloor=Math.max(ledger.clientStateProgressFloor,core.strength(bestRaw),core.strength(oldRaw));
       if(!oldRaw||core.strength(bestRaw)>core.strength(oldRaw)){
         ledger.clientStates[compound]={state,updatedAt:Date.now()};changed=true;migrated++;
       }
@@ -73,10 +93,10 @@ export function prepareL78AccountProgressBridge(){
   const uid=ownerUid(),studentId=canonicalId();
   if(!uid||!studentId)return{active:false,staged:0,rawMigrated:0};
   if(localStorage.getItem(migrationKey())==='1')return{active:true,staged:0,rawMigrated:0,alreadyPrepared:true};
-  const rawMigrated=migrateExistingRawStateIntoLedgers();
+  const rows=ledgerRows(),pairs=allowedThemePairs(rows),rawMigrated=migrateExistingRawStateIntoLedgers(rows);
   const journal=loadJournal();let staged=0;
   for(let i=0;i<localStorage.length;i++){
-    const key=localStorage.key(i);if(!bridgeKey(key))continue;
+    const key=localStorage.key(i);if(!stageableBridgeKey(key,pairs))continue;
     const value=localStorage.getItem(key);if(value===null)continue;
     const old=journal.entries[key];
     if(!old||core.strength(value)>core.strength(old.value)||String(old.value)!==String(value)){
@@ -108,6 +128,7 @@ export function hydrateL78VisibleProgress(){
   let restored=0;
   for(const row of ledgerRows()){
     const {lesson,theme,pid,ledger}=row,run=Math.max(1,Math.min(3,Number(ledger.currentRun)||1));
+    try{localStorage.setItem(runKey(lesson,theme),String(run))}catch(e){}
     const resetAt=Math.max(0,Number(localStorage.getItem(resetKey(lesson,theme)))||0);
     const exact=ledger.clientStates&&typeof ledger.clientStates==='object'?ledger.clientStates:{};
     const exactIds=new Set();
@@ -140,9 +161,11 @@ function wrapThemeScore(score,lesson){
     const result=original(theme,id,state);
     try{
       const snapshot=cloneState(state);if(!snapshot)return result;
-      const ledger=score.read(theme),run=Math.max(1,Math.min(3,Number(ledger.currentRun)||1));
+      const snapshotRaw=JSON.stringify(snapshot),ledger=score.read(theme),run=Math.max(1,Math.min(3,Number(ledger.currentRun)||1)),compound=`${run}:${String(id)}`;
       ledger.clientStates=ledger.clientStates&&typeof ledger.clientStates==='object'?ledger.clientStates:{};
-      ledger.clientStates[`${run}:${String(id)}`]={state:snapshot,updatedAt:Date.now()};
+      const old=ledger.clientStates[compound],oldRaw=old?.state?JSON.stringify(old.state):null;
+      ledger.clientStateProgressFloor=Math.max(0,Number(ledger.clientStateProgressFloor)||0,core.strength(oldRaw),core.strength(snapshotRaw));
+      ledger.clientStates[compound]={state:snapshot,updatedAt:Date.now()};
       score.write(theme,ledger);
     }catch(error){console.warn(`L${lesson} Account-Aufgabenstand konnte nicht in den Ledger geschrieben werden`,error)}
     return result;
