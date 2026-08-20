@@ -15,25 +15,25 @@ function clearStaleTeacherPreview(){
 function revealDashboard(){
   try{document.documentElement.dataset.spDashboardAuth='ok';document.documentElement.style.removeProperty('visibility')}catch(e){}
 }
-function showCloudRequired(){
+function showCloudRequired(reason='CLOUD_PROGRESS_SERVER_REQUIRED'){
   try{
+    const repair=String(reason)==='CLOUD_PROGRESS_REPAIR_SOURCE_REQUIRED';
     document.documentElement.style.removeProperty('visibility');
-    document.body.innerHTML='<main style="max-width:640px;margin:8vh auto;padding:24px;font:16px/1.5 system-ui;color:#17324d"><div style="background:#fff;border:1px solid #cbd8e2;border-radius:16px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.12)"><h2>Firebase-Fortschritt wird benötigt</h2><p>Dein Lernstand konnte gerade nicht frisch vom SprachPilot-Server geladen werden. Ein alter Browser-Cache wird nicht als Lernstand verwendet.</p><button id="spDashboardCloudRetry" type="button">Erneut laden</button></div></main>';
+    document.body.innerHTML=repair
+      ?'<main style="max-width:640px;margin:8vh auto;padding:24px;font:16px/1.5 system-ui;color:#17324d"><div style="background:#fff;border:1px solid #cbd8e2;border-radius:16px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.12)"><h2>Alter Lernstand muss einmal sicher übernommen werden</h2><p>Firebase kennt bereits Fortschritt für dieses Konto, aber die frühere Geräte-Synchronisierung hat noch keine vollständige geräteunabhängige Kopie erzeugt.</p><p><b>Öffne SprachPilot einmal auf dem Gerät oder Browser, auf dem der bisherige Lernstand noch sichtbar ist.</b> Danach kann dieser Browser denselben Stand laden.</p><button id="spDashboardCloudRetry" type="button">Erneut prüfen</button></div></main>'
+      :'<main style="max-width:640px;margin:8vh auto;padding:24px;font:16px/1.5 system-ui;color:#17324d"><div style="background:#fff;border:1px solid #cbd8e2;border-radius:16px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.12)"><h2>Firebase-Fortschritt wird benötigt</h2><p>Dein Lernstand konnte gerade nicht frisch vom SprachPilot-Server geladen werden. Ein alter Browser-Cache wird nicht als Lernstand verwendet.</p><button id="spDashboardCloudRetry" type="button">Erneut laden</button></div></main>';
     document.getElementById('spDashboardCloudRetry').onclick=()=>location.reload();
   }catch(e){}
 }
 
 clearStaleTeacherPreview();
 
-// Das Schüler-Dashboard ist ausschließlich für eine echte Schüler-Sitzung gedacht.
-// Lehrer bleiben im Lehrer-Dashboard und können Lerninhalte über ihre eigene Route öffnen.
 if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
   location.replace('/teacher/index.html');
 }else{
   const access=await verifySecureAccess({allowTeacher:false,redirect:true,mark:false});
   if(!access?.ok||access.type!=='student')throw new Error('SECURE_STUDENT_DASHBOARD_ACCESS_REQUIRED');
 
-  // Erst NACH bestätigter Firebase-UID darf irgendein Lernstand ausgewertet oder sichtbar werden.
   let normalizedProfile=readProfile();
   try{
     const identity=await import('/js/student-identity.js?v=identity5');
@@ -49,28 +49,16 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
     throw new Error('STUDENT_UID_CHANGED_BEFORE_DASHBOARD_RENDER');
   }
 
-  // Das Dashboard wartet jetzt zwingend auf den kontogebundenen Firebase-Fortschritt.
-  // Beim allerersten sicheren Login darf der alte Rettungsabgleich genau einmal laufen;
-  // danach wird sofort neu geladen und ab dann ausschließlich server-first gestartet.
-  const progressModule=await import('/js/account-progress-sync.js?v=9');
+  const progressModule=await import('/js/account-progress-sync.js?v=10');
   const progressState=await progressModule.startAccountProgressSync();
-  if(progressState?.blocked){showCloudRequired();throw new Error(progressState.reason||'CLOUD_PROGRESS_SERVER_REQUIRED')}
-  if(progressState?.reloadRequired){
-    const reloadKey='SP_DASHBOARD_CLOUD_AUTHORITY_RELOAD_V1_'+String(normalizedProfile?.canonicalStudentId||normalizedProfile?.studentId||'student');
-    if(sessionStorage.getItem(reloadKey)!=='1'){sessionStorage.setItem(reloadKey,'1');location.reload();await new Promise(()=>{})}
+  if(progressState?.blocked){showCloudRequired(progressState.reason);throw new Error(progressState.reason||'CLOUD_PROGRESS_SERVER_REQUIRED')}
+  if(progressState?.serverAuthoritative!==true||Number(progressState?.authorityVersion||0)<2){
+    showCloudRequired('SERVER_AUTHORITATIVE_PROGRESS_REQUIRED');throw new Error('SERVER_AUTHORITATIVE_PROGRESS_REQUIRED');
   }
-  const serverAuthoritative=progressState?.serverAuthoritative===true;
-  if(!serverAuthoritative){showCloudRequired();throw new Error('SERVER_AUTHORITATIVE_PROGRESS_REQUIRED')}
 
-  // Ein alter Dashboard-Anzeigecache darf nach erfolgreichem Serverstart nicht mehr
-  // als Fallback aus einer früheren Sitzung übrig bleiben.
   try{localStorage.removeItem('SP_STUDENT_DASHBOARD_LITE_V3')}catch(e){}
+  window.SP_PROGRESS_ALIAS_READY=Promise.resolve({ok:true,skipped:true,reason:'server-authoritative-progress-v2'});
 
-  // Historische Alias- und lokale Punkte-Recovery war für die Migration nötig. Nach dem
-  // server-first Cutover darf sie den frisch geladenen Firebase-Stand nicht mehr verändern.
-  const aliasRepair=Promise.resolve({ok:true,skipped:true,reason:'server-authoritative-progress'});
-  window.SP_PROGRESS_ALIAS_READY=aliasRepair;
-
-  await import('./dashboard-lite.js?v=8');
+  await import('./dashboard-server-v2.js?v=1');
   revealDashboard();
 }

@@ -6,7 +6,7 @@ import { getActiveProfile } from '/js/auth.js';
 import { currentFirebaseUser } from '/js/student-secure-auth.js?v=1';
 import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity5';
 import { isolateLocalProgressOwner } from '/js/account-progress-owner-isolation.js?v=3';
-import { accountProgressReady, startAccountProgressSync as startAuthoritativeAccountProgressSync } from '/js/account-progress-sync-authoritative.js?v=1';
+import { accountProgressReady, startAccountProgressSync as startAuthoritativeAccountProgressSync } from '/js/account-progress-sync-authoritative-v2.js?v=2';
 export { accountProgressReady };
 
 function invalidateOldL5Confirmations(){
@@ -29,18 +29,22 @@ function blockedSecureResult(reason='SECURE_STUDENT_AUTH_REQUIRED'){
 function showCloudProgressRequired(result){
   if(!learningPage()||!result?.blocked)return;
   if(document.getElementById('sp-cloud-progress-required'))return;
+  const repair=result.reason==='CLOUD_PROGRESS_REPAIR_SOURCE_REQUIRED';
   const box=document.createElement('div');box.id='sp-cloud-progress-required';
   box.style.cssText='position:fixed;inset:0;z-index:2147483647;background:rgba(245,249,252,.98);display:flex;align-items:center;justify-content:center;padding:24px;font:16px/1.5 system-ui;color:#17324d';
-  box.innerHTML='<div style="max-width:620px;background:#fff;border:1px solid #cbd8e2;border-radius:16px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.14)"><h2 style="margin-top:0">Firebase-Fortschritt wird benötigt</h2><p>Dein gespeicherter Lernstand konnte gerade nicht frisch vom SprachPilot-Server geladen werden. Aus Sicherheitsgründen wird kein alter Browser-Cache als Lernstand verwendet.</p><p>Prüfe deine Internetverbindung und lade die Seite danach neu.</p><button id="sp-cloud-progress-retry" type="button" style="padding:10px 16px">Erneut laden</button></div>';
+  box.innerHTML=repair
+    ?'<div style="max-width:620px;background:#fff;border:1px solid #cbd8e2;border-radius:16px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.14)"><h2 style="margin-top:0">Alter Lernstand muss einmal sicher übernommen werden</h2><p>Firebase enthält Lernfortschritt, aber die frühere Geräte-Synchronisierung hat noch keine vollständige geräteunabhängige Kopie erzeugt.</p><p><b>Öffne SprachPilot bitte einmal auf dem Gerät oder Browser, auf dem dein bisheriger Lernstand noch sichtbar ist.</b> Dort wird er verlustfrei in Firebase übernommen. Danach funktioniert derselbe Stand auf anderen Geräten.</p><button id="sp-cloud-progress-retry" type="button" style="padding:10px 16px">Erneut prüfen</button></div>'
+    :'<div style="max-width:620px;background:#fff;border:1px solid #cbd8e2;border-radius:16px;padding:24px;box-shadow:0 12px 40px rgba(0,0,0,.14)"><h2 style="margin-top:0">Firebase-Fortschritt wird benötigt</h2><p>Dein gespeicherter Lernstand konnte gerade nicht frisch vom SprachPilot-Server geladen werden. Aus Sicherheitsgründen wird kein alter Browser-Cache als Lernstand verwendet.</p><p>Prüfe deine Internetverbindung und lade die Seite danach neu.</p><button id="sp-cloud-progress-retry" type="button" style="padding:10px 16px">Erneut laden</button></div>';
   document.body.appendChild(box);box.querySelector('#sp-cloud-progress-retry').onclick=()=>location.reload();
 }
 function refreshAfterProgressPreparation(result,isolation){
   if(!learningPage())return false;
   const studentId=String(result?.studentId||isolation?.currentId||localStorage.getItem('SP_STUDENT_ID')||'student');
   const page=String(location.pathname||'')+String(location.search||'');
-  const key='SP_ACCOUNT_PROGRESS_RENDERED_V3_'+studentId+'_'+page;
-  const restored=Math.max(0,Number(result?.restored)||0),switched=!!isolation?.switchedAccount&&Math.max(0,Number(isolation?.quarantined)||0)>0,force=result?.reloadRequired===true;
-  try{if(!force&&restored<=0&&!switched){sessionStorage.removeItem(key);return false}if(sessionStorage.getItem(key)==='1')return false;sessionStorage.setItem(key,'1')}catch(e){if(!force&&restored<=0&&!switched)return false}
+  const key='SP_ACCOUNT_PROGRESS_RENDERED_V4_'+studentId+'_'+page;
+  const restored=Math.max(0,Number(result?.restored)||0)+Math.max(0,Number(result?.restoredStructured)||0)+Math.max(0,Number(result?.rescuedLocal)||0);
+  const switched=!!isolation?.switchedAccount&&Math.max(0,Number(isolation?.quarantined)||0)>0;
+  try{if(restored<=0&&!switched){sessionStorage.removeItem(key);return false}if(sessionStorage.getItem(key)==='1')return false;sessionStorage.setItem(key,'1')}catch(e){if(restored<=0&&!switched)return false}
   location.reload();return true;
 }
 
@@ -68,13 +72,5 @@ export async function startAccountProgressSync(options={}){
   const result=await startAuthoritativeAccountProgressSync(options);
   if(result?.blocked){showCloudProgressRequired(result);return result}
   if(refreshAfterProgressPreparation(result,isolation))return result;
-
-  // Nach Aktivierung der Cloud-Autorität werden keine lokalen Legacy-Rettungen mehr
-  // gestartet. Firebase ist ab dann die maßgebliche Quelle; nur das Pending-Journal
-  // darf noch nicht synchronisierte Änderungen dieses Kontos nachreichen.
-  if(!result?.serverAuthoritative&&!result?.authorityActivated&&!sessionStorage.getItem('SP_LEGACY_RESCUE_STARTED_V2')){
-    sessionStorage.setItem('SP_LEGACY_RESCUE_STARTED_V2','1');
-    setTimeout(()=>{import('/js/progress-rescue-legacy.js?v=2').then(m=>m.rescueLegacyProgress()).catch(error=>console.warn('Alte Lektionsfortschritte konnten nicht vollständig rekonstruiert werden',error))},2500);
-  }
   return result;
 }

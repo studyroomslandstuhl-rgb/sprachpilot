@@ -5,9 +5,12 @@ on:
     paths:
       - 'js/account-progress-cloud-core.js'
       - 'js/account-progress-sync-authoritative.js'
+      - 'js/account-progress-sync-authoritative-v2.js'
       - 'js/account-progress-sync.js'
       - 'js/account-progress-autostart.js'
       - 'student-dashboard/dashboard-bootstrap.js'
+      - 'student-dashboard/dashboard-server-v2.js'
+      - 'student-dashboard/index.html'
       - 'scripts/test-account-progress-cloud-core.mjs'
       - 'scripts/test-account-progress-cloud-safety.mjs'
       - '.github/workflows/cloud-authoritative-progress-check.yml'
@@ -28,13 +31,14 @@ jobs:
       - name: Check JavaScript syntax
         run: |
           node --check js/account-progress-cloud-core.js
-          node --check js/account-progress-sync-authoritative.js
+          node --check js/account-progress-sync-authoritative-v2.js
           node --check js/account-progress-sync.js
           node --check js/account-progress-autostart.js
           node --check student-dashboard/dashboard-bootstrap.js
+          node --check student-dashboard/dashboard-server-v2.js
           node --check scripts/test-account-progress-cloud-core.mjs
           node --check scripts/test-account-progress-cloud-safety.mjs
       - name: Test cloud authority merge semantics
         run: node scripts/test-account-progress-cloud-core.mjs
-      - name: Test server-first safety contract
+      - name: Test cross-device authority v2 and dashboard safety contract
         run: node scripts/test-account-progress-cloud-safety.mjs
