@@ -1,7 +1,17 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SprachPilot – Login</title><link rel="stylesheet" href="../style.css"></head><body><div class="container"><section class="hero"><a href="/index.html" style="text-decoration:none;color:inherit"><div class="logo-wrap"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></div><h1>SprachPilot</h1></a><p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p></section><section class="card"><h2>Schüler-Login</h2><p class="small">Logge dich mit deiner E-Mail und deinem Passwort ein. Dein Kurs wird automatisch aus deinem Schülerprofil geladen.</p><label>E-Mail *</label><input id="loginEmail" type="email" required autocomplete="email" placeholder="name@email.com"><label>Passwort *</label><input id="loginPassword" type="password" required autocomplete="current-password" placeholder="Passwort"><button class="success" onclick="studentLogin()">Einloggen</button><button class="btn secondary" type="button" onclick="resetPassword()">Passwort vergessen</button><a class="btn secondary" href="../register/">Neu registrieren / altes Profil sichern</a><a class="btn secondary" href="../">Zur Startseite</a><div id="loginResult"></div></section><footer>© SprachPilot</footer></div><script type="module">
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SprachPilot – Login</title><link rel="stylesheet" href="../style.css"></head><body><div class="container"><section class="hero"><a href="/index.html" style="text-decoration:none;color:inherit"><div class="logo-wrap"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></div><h1>SprachPilot</h1></a><p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p></section><section class="card"><h2>Schüler-Login</h2><p class="small">Logge dich mit deiner E-Mail und deinem Passwort ein. Dein Kurs wird automatisch aus deinem Schülerprofil geladen.</p><label>E-Mail *</label><input id="loginEmail" type="email" required autocomplete="email" placeholder="name@email.com"><label>Passwort *</label><input id="loginPassword" type="password" required autocomplete="current-password" placeholder="Passwort"><button id="studentLoginButton" class="success" onclick="studentLogin()">Einloggen</button><button class="btn secondary" type="button" onclick="resetPassword()">Passwort vergessen</button><a class="btn secondary" href="../register/">Neu registrieren / altes Profil sichern</a><a class="btn secondary" href="../">Zur Startseite</a><div id="loginResult"></div></section><footer>© SprachPilot</footer></div><script type="module">
 import { loginStudentWithEmailPassword, loginStudentProfileWithEmailPassword, resetStudentPassword, $, safeText, getRedirectTarget } from "../js/student-login-v2.js?v=1";
-function withTimeout(promise,ms){return Promise.race([promise,new Promise((_,reject)=>setTimeout(()=>reject(new Error("AUTH_TIMEOUT")),ms))])}
+let loginInFlight=false;
+let slowLoginTimer=null;
 function show(html){const result=$("loginResult");if(result)result.innerHTML=html}
+function setLoginBusy(busy){
+  const button=$("studentLoginButton");
+  if(button){button.disabled=!!busy;button.textContent=busy?'Login läuft …':'Einloggen'}
+}
+function startSlowLoginNotice(text='Die Verbindung ist langsam. Der Login läuft weiter – bitte nicht neu laden.'){
+  clearTimeout(slowLoginTimer);
+  slowLoginTimer=setTimeout(()=>{if(loginInFlight)show(`<div class="ok"><b>Login läuft noch.</b><br>${safeText(text)}</div>`)},15000);
+}
+function stopSlowLoginNotice(){clearTimeout(slowLoginTimer);slowLoginTimer=null}
 function goAfterLogin(){const target=getRedirectTarget("/index.html");location.href=target.includes("/teacher/")?"/index.html":target}
 function showProfileChoices(error,email,password){
   const result=$("loginResult");if(!result)return;
@@ -11,10 +21,17 @@ function showProfileChoices(error,email,password){
     const btn=document.createElement('button');btn.type='button';btn.className='btn secondary';
     btn.textContent=[profile.name,profile.course].filter(Boolean).join(' · ')||'Schülerprofil';
     btn.onclick=async()=>{
+      if(loginInFlight)return;
+      loginInFlight=true;setLoginBusy(true);
       [...wrap.querySelectorAll('button')].forEach(b=>b.disabled=true);
       show('<div class="ok">Profil wird sicher geöffnet...</div>');
-      try{await withTimeout(loginStudentProfileWithEmailPassword(email,password,profile.id),15000);goAfterLogin()}
+      startSlowLoginNotice('Das Profil wird noch geladen. Bitte nicht erneut klicken oder die Seite neu laden.');
+      try{await loginStudentProfileWithEmailPassword(email,password,profile.id);goAfterLogin()}
       catch(err){handleLoginError(err,email,password)}
+      finally{
+        stopSlowLoginNotice();loginInFlight=false;setLoginBusy(false);
+        [...wrap.querySelectorAll('button')].forEach(b=>b.disabled=false);
+      }
     };
     wrap.appendChild(btn);
   }
@@ -24,8 +41,7 @@ function handleLoginError(err,email,password){
   console.error(err);
   const code=String(err?.code||""),message=String(err?.message||"");
   if(message==="MULTIPLE_STUDENT_PROFILES"){showProfileChoices(err,email,password);return}
-  if(message==="AUTH_TIMEOUT")show('<div class="no"><b>Login dauert zu lange.</b><br>Bitte die Seite neu laden und noch einmal versuchen.</div>');
-  else if(message==="EMAIL_NOT_VERIFIED")show('<div class="no"><b>Bitte bestätige zuerst deine E-Mail.</b><br>Eine neue Bestätigungs-E-Mail wurde angefordert. Nach der Bestätigung kannst du dich mit E-Mail und Passwort einloggen.</div>');
+  if(message==="EMAIL_NOT_VERIFIED")show('<div class="no"><b>Bitte bestätige zuerst deine E-Mail.</b><br>Eine neue Bestätigungs-E-Mail wurde angefordert. Nach der Bestätigung kannst du dich mit E-Mail und Passwort einloggen.</div>');
   else if(message==="STUDENT_NOT_FOUND")show('<div class="no">Für dieses Firebase-Konto ist noch kein Schülerprofil sicher verbunden. Wenn du SprachPilot schon früher benutzt hast, öffne „Neu registrieren / altes Profil sichern“ und verbinde dein Profil einmalig mit deinem Kurscode.</div>');
   else if(message==="STUDENT_COURSE_MISSING")show('<div class="no"><b>Im Schülerprofil fehlt die Kurszuordnung.</b><br>Bitte nicht neu registrieren. Die Kurszuordnung muss im Lehrer-Dashboard korrigiert werden.</div>');
   else if(message==="STUDENT_AUTH_OWNERSHIP_MISMATCH")show('<div class="no"><b>Login aus Sicherheitsgründen abgelehnt.</b><br>Dieses Schülerprofil ist bereits mit einer anderen sicheren Konto-ID verbunden. Es wurden keine Daten geöffnet oder verändert.</div>');
@@ -35,11 +51,15 @@ function handleLoginError(err,email,password){
   else show(`<div class="no">Login nicht möglich: ${safeText(message||code||"Unbekannter Fehler")}</div>`);
 }
 window.studentLogin=async function(){
+  if(loginInFlight)return;
   const email=$("loginEmail").value.trim().toLowerCase(),password=$("loginPassword").value;
   if(!email||!password){show('<div class="no">Bitte E-Mail und Passwort eingeben.</div>');return}
+  loginInFlight=true;setLoginBusy(true);
   show('<div class="ok">Sicherer Login wird geprüft...</div>');
-  try{await withTimeout(loginStudentWithEmailPassword(email,password),15000);goAfterLogin()}
+  startSlowLoginNotice();
+  try{await loginStudentWithEmailPassword(email,password);goAfterLogin()}
   catch(err){handleLoginError(err,email,password)}
+  finally{stopSlowLoginNotice();loginInFlight=false;setLoginBusy(false)}
 }
 window.resetPassword=async function(){
   const email=$("loginEmail").value.trim().toLowerCase();
