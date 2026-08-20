@@ -3,69 +3,53 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="color-scheme" content="light">
 <title>SprachPilot · Lehrer-Dashboard</title>
-<link rel="stylesheet" href="style.css?v=2">
+<link rel="stylesheet" href="dashboard-lite.css?v=1">
 </head>
 <body>
-<div class="container">
-  <section class="hero">
-    <div class="teacher-top"><a class="teacher-brand" href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"><div><h1>SprachPilot</h1><p class="subtitle">Lehrer-Dashboard</p></div></a><div class="teacher-actions"><button onclick="TeacherPreview.openAll()">SprachPilot öffnen</button><button class="secondary" onclick="teacherLogout()">Abmelden</button></div></div>
-  </section>
-  <main id="app"><div class="card">Dashboard wird geladen …</div></main>
-  <footer>© SprachPilot</footer>
+<div class="sp-shell">
+  <header class="sp-topbar">
+    <div class="sp-topbar-inner">
+      <a class="sp-brand" href="/index.html" aria-label="SprachPilot Startseite">
+        <img src="/assets/logo/sprachpilot-logo.png" alt="">
+        <div><strong>SprachPilot</strong><span>Lehrer-Dashboard</span></div>
+      </a>
+
+      <nav class="sp-nav" aria-label="Dashboard-Navigation">
+        <button type="button" data-view="overview">Gesamtübersicht</button>
+        <button type="button" data-view="courses">Kurse</button>
+        <button type="button" data-view="students">Teilnehmende</button>
+        <button type="button" data-view="releases">Freigaben</button>
+        <button type="button" class="sp-owner-nav" data-owner-only data-view="teacher-approval" hidden>Lehrer-Freigabe</button>
+        <button type="button" data-owner-only data-view="email-templates" hidden>E-Mail-Vorlagen</button>
+      </nav>
+
+      <div class="sp-actions">
+        <div id="accountBadge" class="sp-account"></div>
+        <button id="refreshBtn" type="button" class="sp-icon-btn" title="Daten aus Firebase aktualisieren">Aktualisieren</button>
+        <a class="sp-button secondary" href="/index.html">SprachPilot</a>
+        <button id="logoutBtn" type="button" class="sp-icon-btn">Abmelden</button>
+      </div>
+    </div>
+  </header>
+
+  <main class="sp-main">
+    <div id="spStatus" class="sp-status" aria-live="polite"></div>
+    <div id="app">
+      <div class="sp-grid">
+        <div class="sp-skeleton sp-wide"></div>
+        <div class="sp-skeleton sp-half"></div>
+        <div class="sp-skeleton sp-half"></div>
+      </div>
+    </div>
+  </main>
 </div>
+
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
 <script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-<script src="../js/firebase-config.js?v=teacher-stable-20260819a"></script>
-<script src="../verben/data.js?v=verb-groups-2"></script>
-<script src="../verben/verb-additions.js?v=requested-verbs-1"></script>
-<script src="courses.js?v=teacher-stable-20260819a"></script>
-<script src="course-lock-default.js?v=teacher-stable-20260819a"></script>
-<script src="students.js?v=progress-alias2"></script>
-<script src="progress-security-alias-core.js?v=2"></script>
-<script src="progress-security-alias-migration.js?v=4"></script>
-<script src="student-security-lookup.js?v=1"></script>
-<script src="student-security-lookup-exclusions.js?v=1"></script>
-<script src="student-security-lookup-details.js?v=2"></script>
-<script src="owner-auth-readiness.js?v=1"></script>
-<script src="owner-verification-email.js?v=1"></script>
-<script src="student-auth-provisioning-core.js?v=1"></script>
-<script src="student-auth-provisioning.js?v=1"></script>
-<script src="progress-security-collision-diagnostics.js?v=2"></script>
-<script src="student-collision-repair-core.js?v=1"></script>
-<script src="student-collision-repair.js?v=2"></script>
-<script src="one-time-duplicate-incident-core.js?v=3"></script>
-<script src="one-time-duplicate-incident.js?v=3"></script>
-<script src="legacy-lookup-resolution.js?v=1"></script>
-<script src="legacy-progress-resolution-core.js?v=1"></script>
-<script src="legacy-progress-resolution.js?v=1"></script>
-<script src="one-time-duplicate-incident-ui.js?v=3"></script>
-<script src="student-identity-guard.js?v=identity2"></script>
-<script src="course-fallback.js?v=teacher-stable-20260819a"></script>
-<script src="/shared/points-recalculator.js?v=1"></script>
-<script src="progress-server-source.js?v=1"></script>
-<script src="progress-docid-fix.js?v=2"></script>
-<script src="analytics.js?v=teacher-stable-20260819a"></script>
-<script src="analytics-release-status-fix.js?v=1"></script>
-<script src="analytics-release-strict.js?v=1"></script>
-<script src="teacher-preview.js?v=teacher-release-preview2"></script>
-<script src="releases.js?v=verb-groups-2"></script>
-<script src="verben-groups-release.js?v=4"></script>
-<script src="verben-release-order.js?v=4"></script>
-<script src="l6t3-release-catalog.js?v=1"></script>
-<script src="irregular-verbs-release.js?v=1"></script>
-<script src="release-course-code-fix.js?v=teacher-stable-20260819a"></script>
-<script src="release-parent-rules.js?v=teacher-stable-20260819a"></script>
-<script src="app.js?v=teacher-stable-20260819a"></script>
-<script src="access-legacy-fix.js?v=1"></script>
-<script src="teacher-pending-warning-filter.js?v=1"></script>
-<script src="dashboard-fast-load.js?v=2"></script>
-<script src="dashboard-enhancements.js?v=3"></script>
-<script src="manual-points-fix.js?v=1"></script>
-<script src="dashboard-stable-start.js?v=3"></script>
-<script src="live-progress-refresh.js?v=2"></script>
-<script defer src="../js/performance-boot.js?v=20260709b"></script>
-<script src="/shared/sprachpilot-design-system.js"></script>
+<script src="../js/firebase-config.js?v=teacher-lite-20260820"></script>
+<script src="dashboard-lite.js?v=1"></script>
 </body>
 </html>
