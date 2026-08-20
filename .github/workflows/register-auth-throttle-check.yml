@@ -1,0 +1,27 @@
+name: Validate registration auth throttling
+
+on:
+  pull_request:
+    paths:
+      - 'register/index.html'
+      - 'js/student-login-v2.js'
+      - 'scripts/test-register-auth-throttle.mjs'
+      - '.github/workflows/register-auth-throttle-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  register-auth:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Check test syntax
+        run: node --check scripts/test-register-auth-throttle.mjs
+      - name: Test registration throttling guard
+        run: node scripts/test-register-auth-throttle.mjs
