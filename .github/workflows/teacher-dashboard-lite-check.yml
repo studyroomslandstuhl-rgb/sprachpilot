@@ -1,0 +1,40 @@
+name: Validate lightweight teacher dashboard
+
+on:
+  pull_request:
+    paths:
+      - 'teacher/**'
+      - 'functions/**'
+      - 'firestore.rules'
+      - 'scripts/test-teacher-dashboard-lite.mjs'
+      - '.github/workflows/teacher-dashboard-lite-check.yml'
+  push:
+    branches:
+      - main
+    paths:
+      - 'teacher/**'
+      - 'functions/**'
+      - 'firestore.rules'
+      - 'scripts/test-teacher-dashboard-lite.mjs'
+
+permissions:
+  contents: read
+
+jobs:
+  teacher-dashboard:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Check dashboard JavaScript syntax
+        run: node --check teacher/dashboard-lite.js
+      - name: Validate lightweight startup contract
+        run: node scripts/test-teacher-dashboard-lite.mjs
+      - name: Validate auth mail templates
+        run: |
+          npm install --prefix functions --ignore-scripts --no-audit --no-fund
+          npm test --prefix functions
