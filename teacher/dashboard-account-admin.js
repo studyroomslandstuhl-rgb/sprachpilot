@@ -43,15 +43,19 @@ function courseOptions(student){
 function ownerEditStudent(id){
   const student=currentStudent(id);
   if(!student)return;
-  if(!api.state.isOwner||!student.authUid)return originalEdit(id);
+  if(!api.state.isOwner)return originalEdit(id);
+  const bound=!!student.authUid;
+  const note=bound
+    ? '<strong>Firebase-Konto verbunden.</strong><br>Die Login-E-Mail wird auch in Firebase Authentication geändert. Teilnehmer-ID, Punkte und Fortschritte bleiben erhalten. Die neue Adresse muss danach bestätigt werden.'
+    : '<strong>Noch kein Firebase-Login gebunden.</strong><br>Die E-Mail wird serverseitig in Firestore und im Teilnehmer-Lookup gespeichert und später für die Kontoerstellung verwendet.';
   openModal(`<div class="sp-modal-head"><div><h2 style="margin:0">Teilnehmende bearbeiten</h2><div class="sp-meta">${esc(studentName(student))}</div></div><button class="sp-icon-btn" onclick="SPTeacherDashboard.closeModal()">Schließen</button></div>
   <div class="sp-form-grid">
     <div class="sp-field"><label>Vorname</label><input id="editFirstName" value="${esc(student.vorname||student.firstName||'')}"></div>
     <div class="sp-field"><label>Nachname</label><input id="editLastName" value="${esc(student.nachname||student.lastName||'')}"></div>
-    <div class="sp-field wide"><label>Login-E-Mail</label><input id="editEmail" type="email" value="${esc(student.authEmail||student.email||'')}" autocomplete="email"></div>
+    <div class="sp-field wide"><label>${bound?'Login-E-Mail':'E-Mail'}</label><input id="editEmail" type="email" value="${esc(student.authEmail||student.email||'')}" autocomplete="email"></div>
     <div class="sp-field wide"><label>Kurs</label><select id="editCourse"><option value="">Ohne Kurs</option>${courseOptions(student)}</select></div>
   </div>
-  <div class="sp-owner-note" style="margin-top:14px"><strong>Firebase-Konto verbunden.</strong><br>Als Owner änderst du hier auch die tatsächliche Login-E-Mail in Firebase Authentication. Die Teilnehmer-ID, Punkte und Fortschritte bleiben erhalten. Bei einer neuen E-Mail-Adresse wird eine neue Bestätigungs-E-Mail versendet.</div>
+  <div class="sp-owner-note" style="margin-top:14px">${note}</div>
   <div class="sp-row-actions" style="margin-top:18px"><button class="sp-button secondary" onclick="SPTeacherDashboard.closeModal()">Abbrechen</button><button class="sp-button" id="saveFirebaseStudentBtn" onclick="SPTeacherDashboard.saveStudent('${esc(id)}')">In Firebase speichern</button></div>`);
 }
 async function ensureFunctions(){
@@ -77,7 +81,7 @@ function friendlyError(error){
   const code=String(error?.code||'');
   const message=String(error?.message||'');
   if(code.includes('already-exists')||message.includes('EMAIL_ALREADY_IN_USE')||message.includes('STUDENT_LOOKUP_ALREADY_IN_USE'))return 'Diese E-Mail-Adresse wird bereits von einem anderen Firebase-Konto verwendet.';
-  if(code.includes('permission-denied')||message.includes('OWNER_REQUIRED'))return 'Nur das bestätigte Owner-Konto darf die Login-E-Mail eines gebundenen Teilnehmenden ändern.';
+  if(code.includes('permission-denied')||message.includes('OWNER_REQUIRED'))return 'Nur das bestätigte Owner-Konto darf diese E-Mail-Änderung durchführen.';
   if(code.includes('invalid-argument'))return 'Bitte eine gültige E-Mail-Adresse eingeben.';
   if(code.includes('unavailable')||code.includes('functions/not-found')||message.includes('Function')&&message.includes('not found'))return 'Der Firebase-Kontodienst ist noch nicht erreichbar.';
   if(code.includes('not-found'))return 'Das Teilnehmerkonto wurde in Firebase nicht gefunden.';
@@ -86,7 +90,7 @@ function friendlyError(error){
 async function ownerSaveStudent(id){
   const student=currentStudent(id);
   if(!student)return;
-  if(!api.state.isOwner||!student.authUid)return originalSave(id);
+  if(!api.state.isOwner)return originalSave(id);
 
   const email=norm(document.getElementById('editEmail')?.value);
   const firstName=text(document.getElementById('editFirstName')?.value);
@@ -94,12 +98,12 @@ async function ownerSaveStudent(id){
   const courseCode=text(document.getElementById('editCourse')?.value);
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return status('Bitte eine gültige E-Mail-Adresse eingeben.','error');
 
-  const currentAuthEmail=norm(student.authEmail||student.email);
-  if(email===currentAuthEmail)return originalSave(id);
+  const currentEmail=norm(student.authEmail||student.email);
+  if(email===currentEmail)return originalSave(id);
 
   const button=document.getElementById('saveFirebaseStudentBtn');
   if(button){button.disabled=true;button.textContent='Wird gespeichert …'}
-  status('Firebase Authentication und Teilnehmerdaten werden aktualisiert …');
+  status(student.authUid?'Firebase Authentication und Teilnehmerdaten werden aktualisiert …':'Teilnehmerdaten werden serverseitig in Firebase aktualisiert …');
   try{
     const functions=await ensureFunctions();
     const callable=functions.httpsCallable('updateStudentAccount');
@@ -109,14 +113,14 @@ async function ownerSaveStudent(id){
     if(index>=0){
       api.state.students[index]={
         ...api.state.students[index],vorname:firstName,nachname:lastName,
-        email,emailLower:email,authEmail:result.authEmail||email,authEmailLower:email,
-        authEmailVerified:result.emailVerified===true,
+        email,emailLower:email,
+        ...(result.authUid?{authEmail:result.authEmail||email,authEmailLower:email,authEmailVerified:result.emailVerified===true}:{}),
         kurs:courseCode,kursnummer:courseCode,courseCode
       };
       if(window.__SP_STUDENTS_BY_ID)window.__SP_STUDENTS_BY_ID[id]=api.state.students[index];
     }
     api.closeModal();
-    status(result.verificationSent?'Login-E-Mail geändert. Eine Bestätigungs-E-Mail wurde an die neue Adresse gesendet.':'Teilnehmerdaten in Firebase gespeichert.','ok');
+    status(result.verificationSent?'Login-E-Mail geändert. Eine Bestätigungs-E-Mail wurde an die neue Adresse gesendet.':'E-Mail in Firebase gespeichert.','ok');
     api.navigate('students');
   }catch(error){
     console.error('[SprachPilot] Firebase student update failed',error);
