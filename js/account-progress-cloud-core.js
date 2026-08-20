@@ -1,6 +1,7 @@
 (function(root){
   'use strict';
-  if(root.SPAccountProgressCloudCore)return;
+  const CORE_REVISION=8;
+  if(Number(root.SPAccountProgressCloudCore?.CORE_REVISION||0)>=CORE_REVISION)return;
 
   const AUTHORITY_VERSION=1;
   const STATE_VERSION=7;
@@ -119,5 +120,5 @@
     return{ownerUid:String(ownerUid||''),studentId:String(studentId||''),entries};
   }
 
-  root.SPAccountProgressCloudCore={AUTHORITY_VERSION,STATE_VERSION,INTERNAL_PREFIX,parse,clean,denied,eligible,strength,enc,positiveEntries,mergeRemote,chooseCloudOrPending,buildMap,validJournal};
+  root.SPAccountProgressCloudCore={CORE_REVISION,AUTHORITY_VERSION,STATE_VERSION,INTERNAL_PREFIX,parse,clean,denied,eligible,strength,enc,positiveEntries,mergeRemote,chooseCloudOrPending,buildMap,validJournal};
 })(typeof window!=='undefined'?window:globalThis);
