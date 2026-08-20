@@ -64,20 +64,22 @@ function absorbRemoteRow(id,data,state){
   linked.forEach(alias=>{state.aliases.add(alias);if(!state.seen.has(alias))state.queue.push(alias)});
 }
 async function readServerRemote(){
-  const seed=ids(),state={entries:new Map(),aliases:new Set(seed),docs:[],queue:seed.slice(),seen:new Set()};
-  let successfulReads=0;
+  const canonical=canonicalId(),seed=uniq([canonical,...ids()]),state={entries:new Map(),aliases:new Set(seed),docs:[],queue:seed.slice(),seen:new Set()};
+  let successfulReads=0,canonicalRead=false;
   while(state.queue.length&&state.seen.size<80){
     const id=String(state.queue.shift()||'');if(!id||state.seen.has(id))continue;
     try{
       const snap=await getDocFromServer(doc(db,'progress',id));successfulReads++;
+      if(id===canonical)canonicalRead=true;
       if(snap.exists())absorbRemoteRow(snap.id||id,snap.data()||{},state);
       else state.seen.add(id);
     }catch(error){
-      console.warn('Frischer Cloud-Fortschritt konnte nicht gelesen werden',id,error);
-      throw new Error('CLOUD_PROGRESS_SERVER_REQUIRED');
+      state.seen.add(id);
+      if(id===canonical){console.warn('Kanonischer Cloud-Fortschritt konnte nicht frisch gelesen werden',id,error);throw new Error('CLOUD_PROGRESS_SERVER_REQUIRED')}
+      console.warn('Historischer Fortschritts-Alias wurde beim Server-Read übersprungen',id,error);
     }
   }
-  if(!successfulReads)throw new Error('CLOUD_PROGRESS_SERVER_REQUIRED');
+  if(!successfulReads||!canonicalRead)throw new Error('CLOUD_PROGRESS_SERVER_REQUIRED');
   state.authorityReady=state.docs.some(row=>Number(row.data?.clientProgressAuthorityVersion||0)>=core.AUTHORITY_VERSION);
   return state;
 }
@@ -136,7 +138,7 @@ async function flush(){
   const journal=loadJournal(),pendingEntries={...journal.entries};
   const keys=Object.keys(pendingEntries);if(!keys.length){dirty.clear();return{ok:true,keys:0}}
   flushPromise=(async()=>{
-    let committedEntries=null,resolved=new Map();
+    let committedEntries=null;
     try{
       const ref=doc(db,'progress',activeId);
       await runTransaction(db,async transaction=>{
@@ -146,7 +148,6 @@ async function flush(){
           const pending=pendingEntries[key];if(!pending)continue;
           const remote=entries.get(key),chosen=core.chooseCloudOrPending(remote,pending);
           if(chosen.source==='pending')entries.set(key,{key,value:String(pending.value),deleted:false,updatedAt:Number(pending.updatedAt)||Date.now()});
-          resolved.set(key,chosen);
         }
         const map=core.buildMap(entries);
         transaction.set(ref,{
