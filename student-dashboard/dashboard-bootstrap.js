@@ -55,7 +55,7 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
     throw new Error('STUDENT_UID_CHANGED_BEFORE_DASHBOARD_RENDER');
   }
 
-  const progressModule=await import('/js/account-progress-sync.js?v=11');
+  const progressModule=await import('/js/account-progress-sync.js?v=12');
   const progressState=await progressModule.startAccountProgressSync();
   if(progressState?.blocked){showCloudRequired(progressState.reason);throw new Error(progressState.reason||'CLOUD_PROGRESS_SERVER_REQUIRED')}
   if(progressState?.serverAuthoritative!==true||Number(progressState?.authorityVersion||0)<2){
