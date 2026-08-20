@@ -1,6 +1,8 @@
 import fs from 'node:fs';
 const authoritative=fs.readFileSync(new URL('../js/account-progress-sync-authoritative-v2.js',import.meta.url),'utf8');
 const wrapper=fs.readFileSync(new URL('../js/account-progress-sync.js',import.meta.url),'utf8');
+const bridge=fs.readFileSync(new URL('../js/account-progress-l78-bridge.js',import.meta.url),'utf8');
+const guard=fs.readFileSync(new URL('../js/guard.js',import.meta.url),'utf8');
 const dashboardBootstrap=fs.readFileSync(new URL('../student-dashboard/dashboard-bootstrap.js',import.meta.url),'utf8');
 const dashboardServer=fs.readFileSync(new URL('../student-dashboard/dashboard-server-v2.js',import.meta.url),'utf8');
 function ok(value,message){if(!value)throw new Error(message)}
@@ -17,12 +19,27 @@ ok(authoritative.includes('const local=scanLocal()'),'the one-time pre-v2 repair
 ok(authoritative.includes("structuredProgressEvidence(remote.docs)&&!entriesHaveMeaningful(merged)"),'an empty device must not finalize a known non-empty legacy account as zero progress');
 ok(authoritative.includes("new Error('CLOUD_PROGRESS_REPAIR_SOURCE_REQUIRED')"),'missing repair source must fail closed instead of marking zero as authoritative');
 ok(authoritative.includes("new Error('CLOUD_PROGRESS_STATE_VERIFY_FAILED')"),'repaired progress must be read back and verified before authority v2 is accepted');
-ok(authoritative.includes('if(!remote.authorityReady){repair=await bootstrapAuthorityV2(remote)'),'local rescue must only run before v2 authority is established');
+ok(authoritative.includes('if(!remote.authorityReady){repair=await bootstrapAuthorityV2(remote)'),'general local rescue must only run before v2 authority is established');
 ok(!authoritative.includes("account-progress-sync-safe.js"),'v2 authority must not trust the old migration success result');
-ok(wrapper.includes("account-progress-sync-authoritative-v2.js?v=2"),'main account sync must use authority v2 implementation');
+
+ok(wrapper.includes("account-progress-l78-bridge.js?v=1"),'main account sync must load the L7/L8 bridge before authoritative hydration');
+ok(wrapper.includes('prepareL78AccountProgressBridge'),'existing L7/L8 ledgers must be staged before cloud hydration');
+ok(wrapper.includes('hydrateL78VisibleProgress'),'restored L7/L8 ledgers must rebuild the visible practice state');
+ok(wrapper.includes('installL78RuntimeBridge'),'new L7/L8 task state must be mirrored into the account ledger');
+ok(wrapper.includes("account-progress-sync-authoritative-v2.js?v=3"),'main account sync must load the cache-busted authority v2 implementation');
 ok(wrapper.includes('CLOUD_PROGRESS_REPAIR_SOURCE_REQUIRED'),'learning pages must explain when the old-progress device is required');
 ok(wrapper.includes('alreadyCanonicalSecureProfile'),'canonical UID profiles must avoid the legacy identity rewrite before cloud sync');
-ok(dashboardBootstrap.includes("import('/js/account-progress-sync.js?v=11')"),'student dashboard must wait for the current progress v2 wrapper before rendering');
+
+ok(bridge.includes('clientStates'),'L7/L8 ledgers must carry exact current task state across devices');
+ok(bridge.includes('SP_THEME_RESET_A1_L'),'L7/L8 reset markers must be account-synced');
+ok(bridge.includes('Storage.prototype.removeItem'),'practice resets must be detected without cloud-syncing raw task state');
+ok(bridge.includes('MIGRATION_PREFIX'),'legacy local L7/L8 ledgers need a one-time account migration marker');
+
+ok(guard.includes('if(FULL_FIREBASE&&IS_SECURE_STUDENT){aliasRepairPromise.finally'),'secure students must start account sync on learning pages');
+ok(!guard.includes('IS_SECURE_STUDENT&&!IS_L7&&!IS_L8'),'L7/L8 must no longer be excluded from account progress sync');
+ok(guard.includes("account-progress-sync.js?v=12"),'learning guard must load the current account progress wrapper');
+
+ok(dashboardBootstrap.includes("import('/js/account-progress-sync.js?v=12')"),'student dashboard must wait for the current progress wrapper before rendering');
 ok(dashboardBootstrap.includes('alreadyCanonicalSecureProfile'),'dashboard must avoid legacy identity rewrites for already canonical UID profiles');
 ok(dashboardBootstrap.includes("Number(progressState?.authorityVersion||0)<2"),'student dashboard must require authority v2');
 ok(dashboardBootstrap.includes("import('./dashboard-server-v2.js?v=1')"),'student dashboard must use the server-only renderer');
@@ -32,4 +49,4 @@ ok(!dashboardServer.includes('SP_STUDENT_DASHBOARD_LITE_V3'),'server dashboard m
 ok(!dashboardServer.includes('getDoc('),'server dashboard must not fall back to cached getDoc reads');
 ok(!dashboardServer.includes('getDocs('),'server dashboard must not fall back to cached getDocs reads');
 
-console.log('Cloud-authoritative progress v2 and server-only dashboard safety contract passed.');
+console.log('Cloud-authoritative progress v2, L7/L8 bridge and server-only dashboard safety contract passed.');
