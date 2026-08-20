@@ -31,11 +31,49 @@ function loadJournal(){
   raw.entries=raw.entries&&typeof raw.entries==='object'?raw.entries:{};return raw;
 }
 function saveJournal(journal){localStorage.setItem(journalKey(),JSON.stringify(journal))}
+function resetKey(lesson,theme){return`SP_THEME_RESET_A1_L${lesson}_T${theme}`}
+function rawStateKeys(lesson,theme,id,ledgerPid){
+  const pids=[String(ledgerPid||'').trim(),currentPid()].filter(Boolean);
+  return [...new Set(pids)].map(pid=>`SP_L${lesson}_${pid}_T${theme}_${id}`);
+}
+function ledgerRows(){
+  const rows=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=String(localStorage.key(i)||''),match=key.match(/^SP_THEME_SCORE_A1_L([78])_T(\d+)_V\d+_(.+)$/i);if(!match)continue;
+    const ledger=parse(localStorage.getItem(key),null);if(!ledger||typeof ledger!=='object')continue;
+    rows.push({key,lesson:Number(match[1]),theme:Number(match[2]),pid:match[3],ledger});
+  }
+  return rows;
+}
+function migrateExistingRawStateIntoLedgers(){
+  let migrated=0;
+  for(const row of ledgerRows()){
+    const {lesson,theme,pid,ledger,key}=row,run=Math.max(1,Math.min(3,Number(ledger.currentRun)||1));
+    const runData=ledger.runs?.[String(run)]||ledger.runs?.[run]||{},tasks=runData.tasks||{};
+    ledger.clientStates=ledger.clientStates&&typeof ledger.clientStates==='object'?ledger.clientStates:{};
+    let changed=false;
+    for(const id of Object.keys(tasks)){
+      let bestRaw=null;
+      for(const rawKey of rawStateKeys(lesson,theme,id,pid)){
+        const raw=localStorage.getItem(rawKey);if(raw===null)continue;
+        if(bestRaw===null||core.strength(raw)>core.strength(bestRaw))bestRaw=raw;
+      }
+      const state=parse(bestRaw,null);if(!state||typeof state!=='object')continue;
+      const compound=`${run}:${id}`,old=ledger.clientStates[compound],oldRaw=old?.state?JSON.stringify(old.state):null;
+      if(!oldRaw||core.strength(bestRaw)>core.strength(oldRaw)){
+        ledger.clientStates[compound]={state,updatedAt:Date.now()};changed=true;migrated++;
+      }
+    }
+    if(changed)localStorage.setItem(key,JSON.stringify(ledger));
+  }
+  return migrated;
+}
 
 export function prepareL78AccountProgressBridge(){
   const uid=ownerUid(),studentId=canonicalId();
-  if(!uid||!studentId)return{active:false,staged:0};
-  if(localStorage.getItem(migrationKey())==='1')return{active:true,staged:0,alreadyPrepared:true};
+  if(!uid||!studentId)return{active:false,staged:0,rawMigrated:0};
+  if(localStorage.getItem(migrationKey())==='1')return{active:true,staged:0,rawMigrated:0,alreadyPrepared:true};
+  const rawMigrated=migrateExistingRawStateIntoLedgers();
   const journal=loadJournal();let staged=0;
   for(let i=0;i<localStorage.length;i++){
     const key=localStorage.key(i);if(!bridgeKey(key))continue;
@@ -47,14 +85,9 @@ export function prepareL78AccountProgressBridge(){
   }
   saveJournal(journal);
   localStorage.setItem(migrationKey(),'1');
-  return{active:true,staged};
+  return{active:true,staged,rawMigrated};
 }
 
-function resetKey(lesson,theme){return`SP_THEME_RESET_A1_L${lesson}_T${theme}`}
-function rawStateKeys(lesson,theme,id,ledgerPid){
-  const pids=[String(ledgerPid||'').trim(),currentPid()].filter(Boolean);
-  return [...new Set(pids)].map(pid=>`SP_L${lesson}_${pid}_T${theme}_${id}`);
-}
 function stateTimestamp(value){const n=Date.parse(String(value||''));return Number.isFinite(n)?n:0}
 function approximateState(lesson,item={}){
   const total=Math.max(1,Number(item.total)||Number(item.done)||1),doneCount=Math.max(0,Math.min(total,Number(item.done)||((item.completed||Number(item.percent)>=100)?total:Math.round(total*Math.max(0,Math.min(100,Number(item.percent)||0))/100))));
@@ -70,15 +103,6 @@ function writeVisibleState(lesson,theme,id,ledgerPid,state){
     if(old===null||core.strength(raw)>core.strength(old)){localStorage.setItem(key,raw);changed++}
   }
   return changed;
-}
-function ledgerRows(){
-  const rows=[];
-  for(let i=0;i<localStorage.length;i++){
-    const key=String(localStorage.key(i)||''),match=key.match(/^SP_THEME_SCORE_A1_L([78])_T(\d+)_V\d+_(.+)$/i);if(!match)continue;
-    const ledger=parse(localStorage.getItem(key),null);if(!ledger||typeof ledger!=='object')continue;
-    rows.push({key,lesson:Number(match[1]),theme:Number(match[2]),pid:match[3],ledger});
-  }
-  return rows;
 }
 export function hydrateL78VisibleProgress(){
   let restored=0;
