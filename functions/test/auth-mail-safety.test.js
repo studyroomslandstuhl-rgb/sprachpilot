@@ -14,6 +14,11 @@ assert.ok(src.includes("authContext?.token?.email_verified!==true"),'owner must 
 assert.ok(src.includes('OWNER_EMAILS.has(email)'),'owner allowlist required');
 assert.ok(src.includes('Absichtlich identische Antwort'),'public reset must not reveal account existence');
 assert.ok(src.includes('consumeRateLimit'),'mail endpoints must be rate limited');
+assert.ok(src.includes("const TEMPLATE_DOC='authMailTemplates'"),'Firebase mail-template document must be explicit');
+assert.ok(src.includes('authMailTemplates()'),'mail functions must load the owner-configured Firebase templates');
+assert.ok(src.includes('template:templates.passwordReset'),'password reset must use the Firebase template');
+assert.ok(src.includes('template:templates.verification'),'verification mail must use the Firebase template');
+assert.ok(src.includes('template:templates.setup'),'setup mail must use the Firebase template');
 assert.ok(src.includes("authProvisioningVersion:2"),'server provisioning version missing');
 assert.ok(src.includes('STUDENT_AUTH_OWNERSHIP_MISMATCH'),'existing UID conflicts must fail closed');
 assert.ok(src.includes('core.strongRandomPassword()'),'new accounts must use server-side random temporary passwords');
