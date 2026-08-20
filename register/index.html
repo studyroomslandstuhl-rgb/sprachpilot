@@ -6,8 +6,10 @@ function showMsg(html){const result=$("registerResult");if(result)result.innerHT
 function normalizedEmail(value){return String(value||"").trim().toLowerCase()}
 function showFinishButton(show=true){const b=$("finishBtn");if(b)b.style.display=show?"block":"none"}
 function openStartSoon(){setTimeout(()=>{location.href="/index.html"},700)}
+let registrationBusy=false;
 
 window.doRegister=async function(){
+  if(registrationBusy)return;
   const btn=$("registerBtn"),vorname=$("fname")?.value.trim()||"",nachname=$("lname")?.value.trim()||"";
   const email=normalizedEmail($("email")?.value),emailConfirm=normalizedEmail($("emailConfirm")?.value);
   const password=$("password")?.value||"",passwordConfirm=$("passwordConfirm")?.value||"";
@@ -17,6 +19,7 @@ window.doRegister=async function(){
   if(password!==passwordConfirm){showMsg('<div class="no"><b>Die Passwörter sind nicht gleich.</b><br>Bitte prüfe beide Passwort-Felder.</div>');$("passwordConfirm")?.focus();return}
   if(password.length<8){showMsg('<div class="no">Das Passwort muss mindestens 8 Zeichen lang sein.</div>');return}
   if(!$("email")?.checkValidity()||!$("emailConfirm")?.checkValidity()){showMsg('<div class="no">Bitte gib eine gültige E-Mail-Adresse ein.</div>');return}
+  registrationBusy=true;
   try{
     if(btn){btn.disabled=true;btn.textContent="Konto wird vorbereitet..."}
     showMsg('<div class="ok">Sichere Anmeldung und Kurscode werden geprüft...</div>');
@@ -39,11 +42,12 @@ window.doRegister=async function(){
     else if(message==="RESERVED_COURSE_CODE")showMsg('<div class="no">Dieser Kurscode ist für Lehrkräfte reserviert. Schüler können sich damit nicht registrieren.</div>');
     else if(message==="WEAK_STUDENT_PASSWORD")showMsg('<div class="no">Das Passwort muss mindestens 8 Zeichen lang sein.</div>');
     else if(code==="auth/invalid-credential"||code==="auth/wrong-password")showMsg('<div class="no"><b>Für diese E-Mail gibt es bereits ein Firebase-Konto, aber das Passwort stimmt nicht.</b><br>Verwende das bestehende Passwort oder setze es über den Schüler-Login zurück.</div>');
+    else if(code==="auth/too-many-requests")showMsg('<div class="no"><b>Firebase hat weitere Versuche vorübergehend blockiert.</b><br>Bitte jetzt nicht weiter auf „Sicheres Konto einrichten“ klicken. Warte etwas und versuche es später erneut. Wenn diese E-Mail schon ein Konto hat und du das Passwort nicht kennst, öffne „Ich habe schon ein sicheres Konto“ und nutze dort „Passwort vergessen“.</div>');
     else if(code==="auth/weak-password")showMsg('<div class="no">Bitte wähle ein stärkeres Passwort.</div>');
     else if(code==="auth/invalid-email")showMsg('<div class="no">Bitte gib eine gültige E-Mail-Adresse ein.</div>');
     else if(message==="STUDENT_AUTH_OWNERSHIP_MISMATCH")showMsg('<div class="no"><b>Aktivierung aus Sicherheitsgründen gestoppt.</b><br>Dieses Schülerprofil ist bereits mit einer anderen Firebase-Konto-ID verbunden. Es wurden keine Lernstände verändert.</div>');
     else showMsg(`<div class="no">Registrierung nicht möglich: ${safeText(message||code||"Unbekannter Fehler")}</div>`);
-  }finally{if(btn){btn.disabled=false;btn.textContent="Sicheres Konto einrichten"}}
+  }finally{registrationBusy=false;if(btn){btn.disabled=false;btn.textContent="Sicheres Konto einrichten"}}
 }
 
 window.finishRegistration=async function(){
