@@ -25,7 +25,7 @@ ok(!dashboard.includes('setInterval('),'teacher dashboard must not poll or reren
 ok(!dashboard.includes('visibilitychange'),'teacher dashboard must not rerender on visibility changes');
 ok(!dashboard.includes("addEventListener('scroll'"),'teacher dashboard must not rerender on scroll');
 ok(!dashboard.includes("collection('progress')"),'overview must not fetch the full progress collection');
-ok(dashboard.includes('data-owner-only')===false,'owner-only controls should be driven from the HTML navigation');
+ok(dashboard.includes("querySelectorAll('[data-owner-only]')"),'dashboard must toggle the owner-only controls defined in the HTML navigation');
 ok(dashboard.includes('teachers_pending'),'owner must be able to review pending teachers through Firebase');
 ok(dashboard.includes('authMailTemplates'),'owner mail templates must be stored in Firebase');
 ok(dashboard.includes('ensureReleaseTools'),'release editor must be loaded lazily');
