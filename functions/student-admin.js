@@ -86,7 +86,7 @@ exports.updateStudentAccount=onCall(functionOptions(),async request=>{
   const authUid=core.text(student.authUid);
   const oldEmail=core.normalizeEmail(student.email||student.authEmail);
   const oldCourses=courseValues(student);
-  const newCourses=courseCode?[courseCode]:oldCourses;
+  const newCourses=courseCode?[courseCode]:[];
   const oldKeys=lookupKeys(oldEmail,oldCourses),newKeys=lookupKeys(email,newCourses);
 
   for(const key of newKeys){
@@ -150,6 +150,7 @@ exports.updateStudentAccount=onCall(functionOptions(),async request=>{
       if(mapped===studentId)batch.delete(oldLookup.ref);
     }
     await batch.commit();
+    if(authChanged&&authUid)await getAuth().revokeRefreshTokens(authUid);
 
     return{
       ok:true,studentId,email,authUid,
