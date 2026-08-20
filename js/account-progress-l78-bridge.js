@@ -6,7 +6,6 @@ if(!core)throw new Error('L78_ACCOUNT_PROGRESS_CORE_MISSING');
 const PENDING_PREFIX='SP_ACCOUNT_PROGRESS_PENDING_V1_';
 const MIGRATION_PREFIX='SP_ACCOUNT_PROGRESS_L78_LEDGER_MIGRATED_V1_';
 let runtimeInstallStarted=false;
-let resetTrackingInstalled=false;
 
 function parse(value,fallback=null){try{return JSON.parse(value||'')}catch(e){return fallback}}
 function profile(){return parse(localStorage.getItem('SP_USER_PROFILE'),null)||parse(localStorage.getItem('SP_STUDENT_PROFILE'),null)||{}}
@@ -127,9 +126,9 @@ function wrapThemeScore(score,lesson){
   score.__spAccountStateBridgeV1=true;return true;
 }
 function installResetTracking(){
-  if(resetTrackingInstalled)return;resetTrackingInstalled=true;
   const previousRemove=Storage.prototype.removeItem;
-  Storage.prototype.removeItem=function(key){
+  if(previousRemove?.__spL78ResetTrackingV1)return;
+  const wrapped=function(key){
     const raw=String(key||''),match=raw.match(/^SP_L([78])_(?!PREVIEW(?:_|$)|EXAM_SYNCED(?:_|$)|STABLE_PID$).+_T(\d+)_/i);
     const result=previousRemove.apply(this,arguments);
     if(this===localStorage&&match){
@@ -137,6 +136,8 @@ function installResetTracking(){
     }
     return result;
   };
+  try{Object.defineProperty(wrapped,'__spL78ResetTrackingV1',{value:true})}catch(e){wrapped.__spL78ResetTrackingV1=true}
+  Storage.prototype.removeItem=wrapped;
 }
 export function installL78RuntimeBridge(){
   installResetTracking();
