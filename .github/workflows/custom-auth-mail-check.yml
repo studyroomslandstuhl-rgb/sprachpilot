@@ -1,0 +1,37 @@
+name: Validate custom auth mail service
+
+on:
+  pull_request:
+    paths:
+      - 'functions/**'
+      - 'firebase.json'
+      - '.github/workflows/custom-auth-mail-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  auth-mail:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Install Functions dependencies
+        run: npm install --prefix functions --ignore-scripts --no-audit --no-fund
+      - name: Check JavaScript syntax
+        run: npm run --prefix functions check
+      - name: Run auth mail tests
+        run: npm test --prefix functions
+      - name: Ensure Functions module loads
+        run: node -e "require('./functions/index.js'); console.log('Functions module loads')"
+      - name: Verify no SMTP secret is committed
+        run: |
+          if grep -RIE --exclude='package-lock.json' --exclude='auth-mail-safety.test.js' '(smtp://[^ ]+:[^ ]+@|SPRACHPILOT_SMTP[[:space:]]*=|password[[:space:]]*:[[:space:]]*["'"'][^"'"']+["'"'])' functions; then
+            echo 'Possible committed mail secret found.'
+            exit 1
+          fi
+          echo 'No committed SMTP secret detected.'
