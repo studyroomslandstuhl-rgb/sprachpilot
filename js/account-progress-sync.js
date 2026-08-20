@@ -21,6 +21,16 @@ function secureStudentOwner(){
   const expected=String(p.authUid||localStorage.getItem('SP_STUDENT_AUTH_UID')||'').trim();
   return !!(p.secureAuth===true&&expected&&user&&!user.isAnonymous&&user.emailVerified===true&&String(user.uid)===expected);
 }
+function alreadyCanonicalSecureProfile(){
+  const p=getActiveProfile?.()||{},user=currentFirebaseUser();
+  const canonical=String(p.canonicalStudentId||'').trim();
+  if(!canonical||!user||user.isAnonymous||user.emailVerified!==true)return false;
+  if(String(p.authUid||'').trim()!==String(user.uid))return false;
+  return p.secureAuth===true&&
+    String(p.docId||canonical)===canonical&&
+    String(p.studentId||canonical)===canonical&&
+    String(p.userId||canonical)===canonical;
+}
 function blockedSecureResult(reason='SECURE_STUDENT_AUTH_REQUIRED'){
   const detail={active:false,blocked:true,reason};
   try{window.SP_ACCOUNT_PROGRESS_SYNC_BLOCKED=detail;window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_SYNC_BLOCKED',{detail}))}catch(e){}
@@ -55,9 +65,16 @@ export async function startAccountProgressSync(options={}){
     console.error('Account-Fortschritt-Sync blockiert: keine passende verifizierte Schüler-UID.');
     const result=blockedSecureResult();showCloudProgressRequired(result);return result;
   }
-  try{await normalizeStudentIdentity(null,{silent:true})}catch(e){
-    console.error('Schüleridentität konnte nicht sicher normalisiert werden',e);
-    const result=blockedSecureResult(e?.message||'IDENTITY_NORMALIZATION_FAILED');showCloudProgressRequired(result);return result;
+  // Seit dem UID-basierten Login ist das Profil bereits frisch aus students/{id} geladen.
+  // Eine erneute Normalisierung würde unnötig auch das große progress-Dokument beschreiben.
+  // Genau solche überflüssigen Writes können bei alten, stark indexierten Fortschrittsmaps
+  // das Firestore-Limit für Indexeinträge auslösen. Nur wirklich alte/unvollständige lokale
+  // Profile durchlaufen weiterhin die bestehende Normalisierung.
+  if(!alreadyCanonicalSecureProfile()){
+    try{await normalizeStudentIdentity(null,{silent:true})}catch(e){
+      console.error('Schüleridentität konnte nicht sicher normalisiert werden',e);
+      const result=blockedSecureResult(e?.message||'IDENTITY_NORMALIZATION_FAILED');showCloudProgressRequired(result);return result;
+    }
   }
   if(!secureStudentOwner()){
     const result=blockedSecureResult('STUDENT_UID_CHANGED');showCloudProgressRequired(result);return result;
