@@ -49,9 +49,6 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
     throw new Error('STUDENT_UID_CHANGED_BEFORE_DASHBOARD_RENDER');
   }
 
-  // Vor dem Rendern muss der kanonische Fortschritt frisch vom Firestore-Server gelesen
-  // und die geräteunabhängige Autorität Version 2 bestätigt sein. Die V1-Reparatur läuft
-  // innerhalb dieses Starts atomar; das Dashboard benötigt danach keinen Reload-Zwischenzustand.
   const progressModule=await import('/js/account-progress-sync.js?v=10');
   const progressState=await progressModule.startAccountProgressSync();
   if(progressState?.blocked){showCloudRequired(progressState.reason);throw new Error(progressState.reason||'CLOUD_PROGRESS_SERVER_REQUIRED')}
@@ -62,6 +59,6 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
   try{localStorage.removeItem('SP_STUDENT_DASHBOARD_LITE_V3')}catch(e){}
   window.SP_PROGRESS_ALIAS_READY=Promise.resolve({ok:true,skipped:true,reason:'server-authoritative-progress-v2'});
 
-  await import('./dashboard-lite.js?v=9');
+  await import('./dashboard-server-v2.js?v=1');
   revealDashboard();
 }
