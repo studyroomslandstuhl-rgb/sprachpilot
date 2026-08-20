@@ -14,7 +14,13 @@
   function denied(key){
     const k=String(key||'');
     if(!k||k.startsWith(INTERNAL_PREFIX))return true;
-    if(['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_STUDENT_ID','SP_COURSE_CODE','SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_AUTH_ROLE','SP_KEEP_LOGGED_IN','SP_MOTHER_LANGUAGE_CODE','motherLanguage','muttersprache','SP_TEACHER_PREVIEW'].includes(k))return true;
+    if(['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_STUDENT_ID','SP_COURSE_CODE','SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_AUTH_ROLE','SP_KEEP_LOGGED_IN','SP_MOTHER_LANGUAGE_CODE','motherLanguage','muttersprache','SP_TEACHER_PREVIEW','SP_L7_STABLE_PID'].includes(k))return true;
+    // L7/L8 besitzen eine absichtlich nicht monotone Übungsansicht: bei Wiederholung
+    // und Reset darf der sichtbare Aufgabenstand wieder kleiner werden. Diese rohen
+    // Browserzustände werden deshalb aus dem "stärker gewinnt"-Cloud-Merge heraus-
+    // gehalten. Kontoweit synchronisiert werden stattdessen die L7/L8-Ledger mit
+    // Run-Historie und clientStates über SP_THEME_SCORE_A1_L7/L8.
+    if(/^SP_L[78]_.+_T\d+_/i.test(k))return true;
     if(/PASSWORD|PASSWORT|TOKEN|SECRET|CREDENTIAL|AUTH_TOKEN|ID_TOKEN|REFRESH_TOKEN/i.test(k))return true;
     if(/^(?:SP_)?(?:TEACHER|ADMIN|OWNER|COURSE_INVITE|INVITE|FIREBASE)/i.test(k))return true;
     if(/(?:_CACHE|CACHE_|ASSET_|IMAGE_|AUDIO_)/i.test(k))return true;
