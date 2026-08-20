@@ -86,14 +86,18 @@ function ownerEditStudent(id){
   <div class="sp-owner-note" style="margin-top:14px">${note}</div>
   <div class="sp-row-actions" style="margin-top:18px"><button class="sp-button secondary" onclick="SPTeacherDashboard.closeModal()">Abbrechen</button><button class="sp-button" id="saveFirebaseStudentBtn" onclick="SPTeacherDashboard.saveStudent('${esc(id)}')">In Firebase speichern</button></div>`);
 }
+function regionalFunctions(){
+  if(typeof firebase?.app!=='function')throw timeoutError('sp/firebase-app-missing','Firebase App ist nicht verfügbar.');
+  return firebase.app().functions(REGION);
+}
 async function ensureFunctions(){
-  if(typeof firebase?.functions==='function')return firebase.functions(REGION);
+  if(typeof firebase?.functions==='function')return regionalFunctions();
   if(functionsPromise)return functionsPromise;
   const loader=new Promise((resolve,reject)=>{
     let script=document.querySelector('script[data-sp-functions-sdk]');
     const onLoad=()=>{
       script.dataset.spLoaded='1';
-      if(typeof firebase?.functions==='function')resolve(firebase.functions(REGION));
+      if(typeof firebase?.functions==='function')resolve(regionalFunctions());
       else reject(timeoutError('sp/functions-sdk-missing','Firebase Functions wurde geladen, ist aber nicht verfügbar.'));
     };
     const onError=()=>reject(timeoutError('sp/functions-sdk-load','Firebase Functions konnte nicht geladen werden.'));
@@ -122,6 +126,7 @@ function friendlyError(error){
   const code=String(error?.code||'');
   const message=String(error?.message||'');
   if(code.includes('functions-sdk-timeout')||code.includes('functions-sdk-load')||code.includes('functions-sdk-missing'))return 'Firebase Functions konnte nicht geladen werden. Bitte Internetverbindung prüfen und erneut versuchen.';
+  if(code.includes('firebase-app-missing'))return 'Firebase App ist nicht vollständig geladen. Bitte die Seite neu laden.';
   if(code.includes('functions-call-timeout'))return 'Firebase antwortet zu langsam. Der Speichervorgang wurde nicht bestätigt. Bitte nicht sofort erneut speichern: kurz warten und danach die Teilnehmerliste über „Aktualisieren“ prüfen.';
   if(code.includes('already-exists')||message.includes('EMAIL_ALREADY_IN_USE')||message.includes('STUDENT_LOOKUP_ALREADY_IN_USE'))return 'Diese E-Mail-Adresse wird bereits von einem anderen Firebase-Konto verwendet.';
   if(code.includes('permission-denied')||message.includes('OWNER_REQUIRED'))return 'Nur das bestätigte Owner-Konto darf diese E-Mail-Änderung durchführen.';

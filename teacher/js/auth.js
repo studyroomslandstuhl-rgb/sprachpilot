@@ -24,7 +24,7 @@
     if(!window.TeacherFirebaseReady||!window.auth||!window.db)throw new Error(window.TeacherFirebaseError?.message||"Firebase ist nicht verbunden.");
     if(typeof firebase.functions!=="function")throw new Error("SprachPilot-Maildienst ist nicht geladen.");
   }
-  function mailCallable(name){return firebase.functions(FUNCTIONS_REGION).httpsCallable(name)}
+  function mailCallable(name){return firebase.app().functions(FUNCTIONS_REGION).httpsCallable(name)}
   async function sendVerificationMail(){return mailCallable("requestVerificationEmail")({})}
   async function sendPasswordResetMail(email){return mailCallable("requestPasswordReset")({email:norm(email)})}
 
