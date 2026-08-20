@@ -2,6 +2,8 @@ import fs from 'node:fs';
 
 const index=fs.readFileSync(new URL('../teacher/index.html',import.meta.url),'utf8');
 const dashboard=fs.readFileSync(new URL('../teacher/dashboard-lite.js',import.meta.url),'utf8');
+const accountAdmin=fs.readFileSync(new URL('../teacher/dashboard-account-admin.js',import.meta.url),'utf8');
+const css=fs.readFileSync(new URL('../teacher/dashboard-lite.css',import.meta.url),'utf8');
 const login=fs.readFileSync(new URL('../teacher/login.html',import.meta.url),'utf8');
 const teacherAuth=fs.readFileSync(new URL('../teacher/js/auth.js',import.meta.url),'utf8');
 const rules=fs.readFileSync(new URL('../firestore.rules',import.meta.url),'utf8');
@@ -9,8 +11,10 @@ const rules=fs.readFileSync(new URL('../firestore.rules',import.meta.url),'utf8'
 function ok(value,message){if(!value)throw new Error(message)}
 
 const scripts=[...index.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map(match=>match[1]);
-ok(scripts.length===5,`teacher dashboard should load exactly 5 initial scripts, got ${scripts.length}`);
+ok(scripts.length===6,`teacher dashboard should load exactly 6 initial scripts, got ${scripts.length}`);
 ok(scripts.includes('dashboard-lite.js?v=1'),'teacher dashboard must load the lightweight dashboard core');
+ok(scripts.includes('dashboard-account-admin.js?v=1'),'owner Firebase account editor must be present');
+ok(!scripts.some(src=>src.includes('firebase-functions-compat')),'Firebase Functions SDK must stay lazy and not slow dashboard startup');
 ok(!index.includes('live-progress-refresh.js'),'live refresh must not be loaded on the teacher dashboard');
 ok(!index.includes('analytics.js'),'progress analytics must not load during dashboard startup');
 ok(!index.includes('students.js'),'legacy students bundle must not load during dashboard startup');
@@ -26,6 +30,18 @@ ok(dashboard.includes('teachers_pending'),'owner must be able to review pending 
 ok(dashboard.includes('authMailTemplates'),'owner mail templates must be stored in Firebase');
 ok(dashboard.includes('ensureReleaseTools'),'release editor must be loaded lazily');
 ok(dashboard.includes('releases.js?v=teacher-lite1'),'existing release editor should only load on demand');
+
+ok(index.includes('class="sp-mobile-nav"'),'mobile bottom navigation missing');
+ok(index.includes('data-view="overview"')&&index.includes('data-view="releases"'),'mobile navigation must expose core views');
+ok(index.includes('data-view="teacher-approval"')&&index.includes('data-view="email-templates"'),'owner tools must remain reachable on mobile');
+ok(css.includes('@media(max-width:760px)'),'mobile layout breakpoint missing');
+ok(css.includes('.sp-mobile-nav{display:grid'),'mobile bottom navigation must become visible on phones');
+ok(css.includes('.sp-stat{grid-column:span 6!important'),'mobile statistics should render as a compact 2x2 grid');
+
+ok(accountAdmin.includes("httpsCallable('updateStudentAccount')"),'bound student email changes must use the server-side Firebase account function');
+ok(accountAdmin.includes('firebase-functions-compat.js'),'Functions SDK must be loaded lazily only when needed');
+ok(accountAdmin.includes('api.state.isOwner'),'bound Firebase account editing must be owner-only in the dashboard');
+ok(!accountAdmin.includes('deleteUser('),'student account identity must never be recreated by the dashboard');
 
 ok(login.includes('firebase-functions-compat.js'),'teacher login must load Firebase Functions for custom account mail');
 ok(!login.includes('auth-legacy-fix.js'),'legacy teacher-login query patch must not be loaded');
