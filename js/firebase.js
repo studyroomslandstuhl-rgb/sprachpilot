@@ -51,6 +51,9 @@ const initialAuthState=new Promise(resolve=>{
     resolve(user||auth.currentUser||null);
   };
   try{
+    // Wichtig: auf den echten ersten Firebase-Auth-State warten. Ein künstlicher
+    // Timeout darf eine noch wiederherzustellende Schüler-Sitzung niemals durch
+    // signInAnonymously() ersetzen.
     stop=onAuthStateChanged(auth,user=>finish(user||null),error=>{
       console.warn("Firebase Auth State konnte nicht gelesen werden",error);
       finish(auth.currentUser||null);
@@ -59,7 +62,6 @@ const initialAuthState=new Promise(resolve=>{
     console.warn("Firebase Auth State Start fehlgeschlagen",error);
     finish(auth.currentUser||null);
   }
-  setTimeout(()=>finish(auth.currentUser||null),5000);
 });
 
 async function ensureAuth(){
