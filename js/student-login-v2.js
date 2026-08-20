@@ -1,4 +1,5 @@
-import { db, collection, query, where, getDocsFromServer, limit } from './firebase.js';
+import { db, doc, collection, query, where, getDocsFromServer, limit, updateDoc, serverTimestamp } from './firebase.js';
+import { loadCourse } from './auth.js';
 import {
   signInSecureStudent,
   createSecureStudentCredential,
@@ -6,7 +7,6 @@ import {
   secureStudentSignOut
 } from './student-secure-auth.js?v=1';
 import {
-  loginStudent as legacyLoginStudent,
   registerStudent as legacyRegisterStudent,
   finishPendingStudentRegistration,
   hasPendingStudentRegistration,
@@ -17,6 +17,7 @@ import {
 export { finishPendingStudentRegistration, hasPendingStudentRegistration, resetStudentPassword, $, safeText, getRedirectTarget };
 
 function normEmail(value){return String(value||'').trim().toLowerCase()}
+function uniq(values){return [...new Set((values||[]).filter(Boolean).map(v=>String(v).trim()).filter(Boolean))]}
 function courseOf(data={}){return String(data.courseCode||data.kurs||data.kursnummer||data.courseDocId||data.course||'').trim()}
 function displayName(data={}){
   return [data.vorname||data.firstName||data.name,data.nachname||data.lastName]
@@ -48,6 +49,56 @@ function profileChoiceError(profiles){
   error.profiles=(profiles||[]).map(p=>({id:p.id,course:p.course,name:p.name}));
   return error;
 }
+function clearStudentSession(){
+  try{
+    ['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_KEEP_LOGGED_IN','SP_STUDENT_ID','SP_STUDENT_AUTH_UID','SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE','SP_AUTH_ROLE','SP_LOGIN_CONTEXT','motherLanguage','muttersprache','SP_MOTHER_LANGUAGE_CODE'].forEach(key=>localStorage.removeItem(key));
+  }catch(e){}
+}
+function persistBoundProfile(selected,user,assignments={}){
+  const remote=selected.data||{},canonical=String(selected.id||'').trim(),course=selected.course||courseOf(remote);
+  const aliases=uniq([canonical,...(Array.isArray(remote.aliasIds)?remote.aliasIds:[]),remote.canonicalStudentId,remote.docId,remote.studentId,remote.userId]);
+  const profile={
+    ...remote,
+    assignments:assignments||remote.assignments||{},
+    canonicalStudentId:canonical,docId:canonical,studentId:canonical,userId:canonical,aliasIds:aliases,
+    authUid:String(user.uid),authEmail:normEmail(user.email),authVersion:Math.max(2,Number(remote.authVersion||0)),secureAuth:true,
+    email:normEmail(remote.email||user.email),kurs:course,kursnummer:course,courseCode:course,
+    role:'student',loginRole:'student',isStudent:true,isTeacher:false,firebase:true,keepLoggedIn:true
+  };
+  const json=JSON.stringify(profile);
+  localStorage.setItem('SP_USER_PROFILE',json);
+  localStorage.setItem('SP_STUDENT_PROFILE',json);
+  localStorage.setItem('SP_KEEP_LOGGED_IN','1');
+  localStorage.setItem('SP_LOGIN_ROLE','student');
+  localStorage.setItem('SP_ACTIVE_ROLE','student');
+  localStorage.setItem('SP_USER_ROLE','student');
+  localStorage.setItem('SP_STUDENT_ID',canonical);
+  localStorage.setItem('SP_STUDENT_AUTH_UID',String(user.uid));
+  const mother=String(profile.muttersprache||profile.motherLanguage||'').trim();
+  if(mother){localStorage.setItem('motherLanguage',mother);localStorage.setItem('muttersprache',mother)}
+  return profile;
+}
+async function activateBoundProfile(selected,user){
+  let assignments=selected.data?.assignments||{};
+  try{
+    const loaded=await loadCourse(selected.data?.courseDocId||selected.course);
+    assignments=loaded?.data?.assignments||assignments;
+  }catch(error){console.warn('Kursfreigaben konnten beim Login nicht zusätzlich geladen werden',error)}
+  const profile=persistBoundProfile(selected,user,assignments);
+  try{
+    const isolation=await import('/js/account-progress-owner-isolation.js?v=3').then(m=>m.isolateLocalProgressOwner());
+    if(isolation?.blocked)throw new Error('LOCAL_PROGRESS_ISOLATION_FAILED');
+  }catch(error){
+    clearStudentSession();
+    try{await secureStudentSignOut()}catch(e){}
+    throw error;
+  }
+  // Nur das kleine Schülerdokument aktualisieren. Das große Fortschrittsdokument wird beim
+  // normalen Login absichtlich NICHT beschrieben; dadurch kann ein Index-Limit dort den
+  // Authentifizierungsweg nicht mehr blockieren.
+  try{await updateDoc(doc(db,'students',selected.id),{lastLogin:serverTimestamp()})}catch(e){console.warn('lastLogin update skipped',e)}
+  return profile;
+}
 async function loginResolvedProfile(email,password,requestedId=''){
   const user=await verifiedPasswordUser(email,password);
   const profiles=await ownProfiles(user.uid);
@@ -65,7 +116,7 @@ async function loginResolvedProfile(email,password,requestedId=''){
     throw profileChoiceError(profiles);
   }
   if(!selected.course)throw new Error('STUDENT_COURSE_MISSING');
-  return legacyLoginStudent(normEmail(email),selected.course,String(password||''));
+  return activateBoundProfile(selected,user);
 }
 
 export async function loginStudentWithEmailPassword(email,password){
