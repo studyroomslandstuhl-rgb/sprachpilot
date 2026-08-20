@@ -2,6 +2,8 @@
 'use strict';
 
 const REGION='europe-west1';
+const SDK_TIMEOUT_MS=8000;
+const CALL_TIMEOUT_MS=20000;
 const api=window.SPTeacherDashboard;
 if(!api||api.__accountAdminInstalled)return;
 api.__accountAdminInstalled=true;
@@ -22,6 +24,32 @@ function status(message,kind=''){
   if(!el)return;
   el.textContent=message;
   el.className='sp-status'+(kind?' '+kind:'');
+}
+function timeoutError(code,message){
+  const error=new Error(message);
+  error.code=code;
+  return error;
+}
+function withTimeout(promise,ms,code,message){
+  return new Promise((resolve,reject)=>{
+    let settled=false;
+    const timer=setTimeout(()=>{
+      if(settled)return;
+      settled=true;
+      reject(timeoutError(code,message));
+    },ms);
+    Promise.resolve(promise).then(value=>{
+      if(settled)return;
+      settled=true;
+      clearTimeout(timer);
+      resolve(value);
+    },error=>{
+      if(settled)return;
+      settled=true;
+      clearTimeout(timer);
+      reject(error);
+    });
+  });
 }
 function openModal(html){
   document.getElementById('spModalBackdrop')?.remove();
@@ -61,25 +89,40 @@ function ownerEditStudent(id){
 async function ensureFunctions(){
   if(typeof firebase?.functions==='function')return firebase.functions(REGION);
   if(functionsPromise)return functionsPromise;
-  functionsPromise=new Promise((resolve,reject)=>{
-    const existing=document.querySelector('script[data-sp-functions-sdk]');
-    if(existing){
-      existing.addEventListener('load',()=>resolve(firebase.functions(REGION)),{once:true});
-      existing.addEventListener('error',()=>reject(new Error('Firebase Functions konnte nicht geladen werden.')),{once:true});
+  const loader=new Promise((resolve,reject)=>{
+    let script=document.querySelector('script[data-sp-functions-sdk]');
+    const onLoad=()=>{
+      script.dataset.spLoaded='1';
+      if(typeof firebase?.functions==='function')resolve(firebase.functions(REGION));
+      else reject(timeoutError('sp/functions-sdk-missing','Firebase Functions wurde geladen, ist aber nicht verfügbar.'));
+    };
+    const onError=()=>reject(timeoutError('sp/functions-sdk-load','Firebase Functions konnte nicht geladen werden.'));
+    if(script){
+      if(script.dataset.spLoaded==='1')return onLoad();
+      script.addEventListener('load',onLoad,{once:true});
+      script.addEventListener('error',onError,{once:true});
       return;
     }
-    const script=document.createElement('script');
+    script=document.createElement('script');
     script.src='https://www.gstatic.com/firebasejs/10.12.5/firebase-functions-compat.js';
     script.dataset.spFunctionsSdk='1';
-    script.onload=()=>resolve(firebase.functions(REGION));
-    script.onerror=()=>reject(new Error('Firebase Functions konnte nicht geladen werden.'));
+    script.addEventListener('load',onLoad,{once:true});
+    script.addEventListener('error',onError,{once:true});
     document.head.appendChild(script);
-  }).catch(error=>{functionsPromise=null;throw error});
+  });
+  functionsPromise=withTimeout(loader,SDK_TIMEOUT_MS,'sp/functions-sdk-timeout','Firebase Functions konnte nicht rechtzeitig geladen werden.')
+    .catch(error=>{
+      functionsPromise=null;
+      if(String(error?.code||'').includes('functions-sdk'))document.querySelector('script[data-sp-functions-sdk]')?.remove();
+      throw error;
+    });
   return functionsPromise;
 }
 function friendlyError(error){
   const code=String(error?.code||'');
   const message=String(error?.message||'');
+  if(code.includes('functions-sdk-timeout')||code.includes('functions-sdk-load')||code.includes('functions-sdk-missing'))return 'Firebase Functions konnte nicht geladen werden. Bitte Internetverbindung prüfen und erneut versuchen.';
+  if(code.includes('functions-call-timeout'))return 'Firebase antwortet zu langsam. Der Speichervorgang wurde nicht bestätigt. Bitte nicht sofort erneut speichern: kurz warten und danach die Teilnehmerliste über „Aktualisieren“ prüfen.';
   if(code.includes('already-exists')||message.includes('EMAIL_ALREADY_IN_USE')||message.includes('STUDENT_LOOKUP_ALREADY_IN_USE'))return 'Diese E-Mail-Adresse wird bereits von einem anderen Firebase-Konto verwendet.';
   if(code.includes('permission-denied')||message.includes('OWNER_REQUIRED'))return 'Nur das bestätigte Owner-Konto darf diese E-Mail-Änderung durchführen.';
   if(code.includes('invalid-argument'))return 'Bitte eine gültige E-Mail-Adresse eingeben.';
@@ -107,7 +150,12 @@ async function ownerSaveStudent(id){
   try{
     const functions=await ensureFunctions();
     const callable=functions.httpsCallable('updateStudentAccount');
-    const response=await callable({studentId:id,email,firstName,lastName,courseCode});
+    const response=await withTimeout(
+      callable({studentId:id,email,firstName,lastName,courseCode}),
+      CALL_TIMEOUT_MS,
+      'sp/functions-call-timeout',
+      'Firebase hat den Speichervorgang nicht rechtzeitig bestätigt.'
+    );
     const result=response?.data||{};
     const index=api.state.students.findIndex(item=>studentId(item)===id);
     if(index>=0){
