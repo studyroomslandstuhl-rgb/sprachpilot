@@ -96,7 +96,7 @@ exports.updateStudentAccount=onCall(functionOptions(),async request=>{
     if(mapped&&mapped!==studentId)throw new HttpsError('already-exists','STUDENT_LOOKUP_ALREADY_IN_USE');
   }
 
-  let authUser=null,authChanged=false,oldAuthEmail='',oldVerified=false;
+  let authUser=null,authChanged=false,oldAuthEmail='',oldVerified=false,committed=false;
   if(authUid){
     authUser=await getAuth().getUser(authUid);
     oldAuthEmail=core.normalizeEmail(authUser.email||student.authEmail||oldEmail);
@@ -150,7 +150,11 @@ exports.updateStudentAccount=onCall(functionOptions(),async request=>{
       if(mapped===studentId)batch.delete(oldLookup.ref);
     }
     await batch.commit();
-    if(authChanged&&authUid)await getAuth().revokeRefreshTokens(authUid);
+    committed=true;
+    if(authChanged&&authUid){
+      try{await getAuth().revokeRefreshTokens(authUid)}
+      catch(revokeError){console.error('Student session revoke failed',studentId,String(revokeError?.code||revokeError?.message||revokeError))}
+    }
 
     return{
       ok:true,studentId,email,authUid,
@@ -160,7 +164,7 @@ exports.updateStudentAccount=onCall(functionOptions(),async request=>{
       emailVerified:authUid?(authChanged?false:(authUser?.emailVerified===true)):false
     };
   }catch(error){
-    if(authChanged&&authUid&&oldAuthEmail){
+    if(!committed&&authChanged&&authUid&&oldAuthEmail){
       try{await getAuth().updateUser(authUid,{email:oldAuthEmail,emailVerified:oldVerified})}
       catch(rollbackError){console.error('Student email rollback failed',studentId,String(rollbackError?.code||rollbackError?.message||rollbackError))}
     }
