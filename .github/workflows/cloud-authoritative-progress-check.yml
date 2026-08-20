@@ -1,0 +1,40 @@
+name: Validate cloud-authoritative progress
+
+on:
+  pull_request:
+    paths:
+      - 'js/account-progress-cloud-core.js'
+      - 'js/account-progress-sync-authoritative.js'
+      - 'js/account-progress-sync.js'
+      - 'js/account-progress-autostart.js'
+      - 'student-dashboard/dashboard-bootstrap.js'
+      - 'scripts/test-account-progress-cloud-core.mjs'
+      - 'scripts/test-account-progress-cloud-safety.mjs'
+      - '.github/workflows/cloud-authoritative-progress-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  cloud-progress:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check js/account-progress-cloud-core.js
+          node --check js/account-progress-sync-authoritative.js
+          node --check js/account-progress-sync.js
+          node --check js/account-progress-autostart.js
+          node --check student-dashboard/dashboard-bootstrap.js
+          node --check scripts/test-account-progress-cloud-core.mjs
+          node --check scripts/test-account-progress-cloud-safety.mjs
+      - name: Test cloud authority merge semantics
+        run: node scripts/test-account-progress-cloud-core.mjs
+      - name: Test server-first safety contract
+        run: node scripts/test-account-progress-cloud-safety.mjs
