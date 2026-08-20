@@ -31,7 +31,14 @@ ok(wrapper.includes('CLOUD_PROGRESS_REPAIR_SOURCE_REQUIRED'),'learning pages mus
 ok(wrapper.includes('alreadyCanonicalSecureProfile'),'canonical UID profiles must avoid the legacy identity rewrite before cloud sync');
 
 ok(bridge.includes('clientStates'),'L7/L8 ledgers must carry exact current task state across devices');
+ok(bridge.includes('clientStateProgressFloor'),'resettable visible task state must not make an account ledger weaker than its cloud predecessor');
+ok(bridge.includes('allowedLedgerPids'),'legacy L7/L8 migration must be restricted to identities belonging to the active student');
+ok(bridge.includes("value&&value!=='student'"),'generic student ledgers must not be claimed by a secure Firebase account');
+ok(bridge.includes('canonicalizeLedgers'),'legacy same-account ledger aliases must be copied to the current canonical pid');
 ok(bridge.includes('SP_THEME_RESET_A1_L'),'L7/L8 reset markers must be account-synced');
+ok(bridge.includes('clearVisibleTheme'),'a reset received from another device must clear stale visible task state');
+ok(bridge.includes("SP_ACCOUNT_PROGRESS_REFRESHED"),'L7/L8 visible state must react to fresh cloud updates during an active session');
+ok(bridge.includes('hydratingVisible'),'cloud hydration must not create a false new reset marker');
 ok(bridge.includes('Storage.prototype.removeItem'),'practice resets must be detected without cloud-syncing raw task state');
 ok(bridge.includes('MIGRATION_PREFIX'),'legacy local L7/L8 ledgers need a one-time account migration marker');
 
