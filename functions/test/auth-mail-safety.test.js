@@ -1,0 +1,25 @@
+'use strict';
+const fs=require('node:fs');
+const assert=require('node:assert/strict');
+const src=fs.readFileSync(new URL('../index.js',`file://${__filename}`),'utf8');
+
+assert.ok(src.includes("defineJsonSecret('SPRACHPILOT_SMTP')"),'SMTP credentials must live in Secret Manager');
+assert.ok(src.includes('generatePasswordResetLink'),'Admin password reset link generation missing');
+assert.ok(src.includes('generateEmailVerificationLink'),'Admin verification link generation missing');
+assert.ok(src.includes('sendBrandedMail'),'custom mail transport missing');
+assert.ok(src.includes("region:REGION"),'Functions region must be explicit');
+assert.ok(src.includes("const REGION='europe-west1'"),'EU function region expected');
+assert.ok(src.includes("tokenProvider(authContext)!=='password'"),'owner must use password provider');
+assert.ok(src.includes("authContext?.token?.email_verified!==true"),'owner must be verified');
+assert.ok(src.includes('OWNER_EMAILS.has(email)'),'owner allowlist required');
+assert.ok(src.includes('Absichtlich identische Antwort'),'public reset must not reveal account existence');
+assert.ok(src.includes('consumeRateLimit'),'mail endpoints must be rate limited');
+assert.ok(src.includes("authProvisioningVersion:2"),'server provisioning version missing');
+assert.ok(src.includes('STUDENT_AUTH_OWNERSHIP_MISMATCH'),'existing UID conflicts must fail closed');
+assert.ok(src.includes('core.strongRandomPassword()'),'new accounts must use server-side random temporary passwords');
+assert.ok(!src.includes("password:'123'"),'shared 123 password forbidden');
+assert.ok(!src.includes('sendPasswordResetEmail'),'Firebase template sender must not be used server-side');
+assert.ok(!src.includes('sendEmailVerification'),'Firebase template sender must not be used server-side');
+assert.ok(!src.includes('functions.config()'),'deprecated Functions config must not be used');
+
+console.log('Custom auth mail safety contract passed.');

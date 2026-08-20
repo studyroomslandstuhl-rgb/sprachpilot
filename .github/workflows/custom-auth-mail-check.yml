@@ -1,0 +1,48 @@
+name: Validate custom auth mail service
+
+on:
+  pull_request:
+    paths:
+      - 'functions/**'
+      - 'firebase.json'
+      - 'scripts/inject-learning-auth-gate.py'
+      - '.github/workflows/custom-auth-mail-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  auth-mail:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Install Functions dependencies
+        run: npm install --prefix functions --ignore-scripts --no-audit --no-fund
+      - name: Check JavaScript and Python syntax
+        run: |
+          npm run --prefix functions check
+          python -m py_compile scripts/inject-learning-auth-gate.py
+      - name: Run auth mail tests
+        run: npm test --prefix functions
+      - name: Ensure Functions module loads
+        run: node -e "require('./functions/index.js'); console.log('Functions module loads')"
+      - name: Verify server source is removed from Pages artifact
+        run: |
+          SITE="$(mktemp -d)"
+          mkdir -p "$SITE/wortschatz" "$SITE/functions"
+          printf '<html><head></head><body>Test</body></html>\n' > "$SITE/wortschatz/test.html"
+          printf 'server-only\n' > "$SITE/functions/never-publish.txt"
+          python scripts/inject-learning-auth-gate.py "$SITE"
+          test ! -e "$SITE/functions"
+      - name: Verify no SMTP secret is committed
+        run: |
+          if grep -RIE --exclude='package-lock.json' --exclude='auth-mail-safety.test.js' '(smtp://[^ ]+:[^ ]+@|SPRACHPILOT_SMTP[[:space:]]*=|password[[:space:]]*:[[:space:]]*["'"'][^"'"']+["'"'])' functions; then
+            echo 'Possible committed mail secret found.'
+            exit 1
+          fi
+          echo 'No committed SMTP secret detected.'
