@@ -1,0 +1,219 @@
+name: Deploy Firebase backend
+
+on:
+  push:
+    branches:
+      - main
+    paths:
+      - 'functions/**'
+      - 'firestore.rules'
+      - 'firestore.indexes.json'
+      - 'firebase.json'
+      - '.github/workflows/firebase-backend-deploy.yml'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: firebase-backend
+  cancel-in-progress: false
+
+jobs:
+  firebase-backend:
+    runs-on: ubuntu-latest
+    env:
+      PROJECT_ID: sprachpilot-12c68
+      REGION: europe-west1
+      FIREBASE_TOKEN: ${{ secrets.FIREBASE_TOKEN }}
+      FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
+      FIREBASE_SERVICE_ACCOUNT_PROJECT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_SPRACHPILOT_12C68 }}
+      GOOGLE_CREDENTIALS_JSON: ${{ secrets.GOOGLE_CREDENTIALS }}
+      GOOGLE_APPLICATION_CREDENTIALS_JSON: ${{ secrets.GOOGLE_APPLICATION_CREDENTIALS_JSON }}
+      GCP_SA_KEY: ${{ secrets.GCP_SA_KEY }}
+      GOOGLE_SERVICE_ACCOUNT_KEY: ${{ secrets.GOOGLE_SERVICE_ACCOUNT_KEY }}
+    steps:
+      - name: Checkout source
+        uses: actions/checkout@v6
+
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+
+      - name: Validate Functions locally
+        id: validate
+        shell: bash
+        run: |
+          set +e
+          npm install --prefix functions --ignore-scripts --no-audit --no-fund >/tmp/functions-install.log 2>&1
+          INSTALL_EXIT=$?
+          if [ "$INSTALL_EXIT" -eq 0 ]; then
+            npm run --prefix functions check >/tmp/functions-check.log 2>&1
+            CHECK_EXIT=$?
+            npm test --prefix functions >/tmp/functions-test.log 2>&1
+            TEST_EXIT=$?
+          else
+            CHECK_EXIT=99
+            TEST_EXIT=99
+          fi
+          if [ "$INSTALL_EXIT" -eq 0 ] && [ "$CHECK_EXIT" -eq 0 ] && [ "$TEST_EXIT" -eq 0 ]; then
+            echo "validation=success" >> "$GITHUB_OUTPUT"
+          else
+            echo "validation=failed" >> "$GITHUB_OUTPUT"
+          fi
+          echo "install_exit=$INSTALL_EXIT" >> "$GITHUB_OUTPUT"
+          echo "check_exit=$CHECK_EXIT" >> "$GITHUB_OUTPUT"
+          echo "test_exit=$TEST_EXIT" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Probe updateStudentAccount before deploy
+        id: probe_before
+        shell: bash
+        run: |
+          URL="https://${REGION}-${PROJECT_ID}.cloudfunctions.net/updateStudentAccount"
+          CODE="$(curl --connect-timeout 10 --max-time 20 -sS -o /tmp/function-before.txt -w '%{http_code}' -X POST "$URL" -H 'Content-Type: application/json' --data '{"data":{}}' || true)"
+          [ -n "$CODE" ] || CODE="000"
+          echo "http=$CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Detect existing Firebase deployment credentials
+        id: credentials
+        shell: bash
+        run: |
+          set -e
+          KIND="none"
+          JSON=""
+          if [ -n "$FIREBASE_SERVICE_ACCOUNT_PROJECT" ]; then
+            KIND="service-account-project"
+            JSON="$FIREBASE_SERVICE_ACCOUNT_PROJECT"
+          elif [ -n "$FIREBASE_SERVICE_ACCOUNT" ]; then
+            KIND="service-account"
+            JSON="$FIREBASE_SERVICE_ACCOUNT"
+          elif [ -n "$GOOGLE_CREDENTIALS_JSON" ]; then
+            KIND="google-credentials"
+            JSON="$GOOGLE_CREDENTIALS_JSON"
+          elif [ -n "$GOOGLE_APPLICATION_CREDENTIALS_JSON" ]; then
+            KIND="google-application-credentials"
+            JSON="$GOOGLE_APPLICATION_CREDENTIALS_JSON"
+          elif [ -n "$GCP_SA_KEY" ]; then
+            KIND="gcp-sa-key"
+            JSON="$GCP_SA_KEY"
+          elif [ -n "$GOOGLE_SERVICE_ACCOUNT_KEY" ]; then
+            KIND="google-service-account-key"
+            JSON="$GOOGLE_SERVICE_ACCOUNT_KEY"
+          elif [ -n "$FIREBASE_TOKEN" ]; then
+            KIND="firebase-token"
+          fi
+
+          if [ -n "$JSON" ]; then
+            CREDENTIAL_FILE="$RUNNER_TEMP/sprachpilot-firebase-service-account.json"
+            printf '%s' "$JSON" > "$CREDENTIAL_FILE"
+            chmod 600 "$CREDENTIAL_FILE"
+            echo "GOOGLE_APPLICATION_CREDENTIALS=$CREDENTIAL_FILE" >> "$GITHUB_ENV"
+          fi
+          echo "kind=$KIND" >> "$GITHUB_OUTPUT"
+
+      - name: Deploy Functions and Firestore rules when credentials exist
+        id: deploy
+        shell: bash
+        env:
+          CREDENTIAL_KIND: ${{ steps.credentials.outputs.kind }}
+          VALIDATION: ${{ steps.validate.outputs.validation }}
+        run: |
+          set +e
+          STATUS="not-attempted"
+          EXIT_CODE=0
+
+          if [ "$VALIDATION" != "success" ]; then
+            STATUS="blocked-by-validation"
+          elif [ "$CREDENTIAL_KIND" = "none" ]; then
+            STATUS="missing-credentials"
+          else
+            if [ "$CREDENTIAL_KIND" = "firebase-token" ]; then
+              npx --yes firebase-tools@latest deploy --only functions,firestore:rules --project "$PROJECT_ID" --non-interactive --token "$FIREBASE_TOKEN" >/tmp/firebase-deploy.log 2>&1
+            else
+              npx --yes firebase-tools@latest deploy --only functions,firestore:rules --project "$PROJECT_ID" --non-interactive >/tmp/firebase-deploy.log 2>&1
+            fi
+            EXIT_CODE=$?
+            if [ "$EXIT_CODE" -eq 0 ]; then
+              STATUS="success"
+            else
+              STATUS="failed"
+            fi
+          fi
+
+          echo "status=$STATUS" >> "$GITHUB_OUTPUT"
+          echo "exit_code=$EXIT_CODE" >> "$GITHUB_OUTPUT"
+          exit 0
+
+      - name: Probe updateStudentAccount after deploy
+        id: probe_after
+        shell: bash
+        run: |
+          URL="https://${REGION}-${PROJECT_ID}.cloudfunctions.net/updateStudentAccount"
+          CODE="$(curl --connect-timeout 10 --max-time 20 -sS -o /tmp/function-after.txt -w '%{http_code}' -X POST "$URL" -H 'Content-Type: application/json' --data '{"data":{}}' || true)"
+          [ -n "$CODE" ] || CODE="000"
+          echo "http=$CODE" >> "$GITHUB_OUTPUT"
+
+      - name: Write backend status
+        shell: bash
+        env:
+          VALIDATION: ${{ steps.validate.outputs.validation }}
+          INSTALL_EXIT: ${{ steps.validate.outputs.install_exit }}
+          CHECK_EXIT: ${{ steps.validate.outputs.check_exit }}
+          TEST_EXIT: ${{ steps.validate.outputs.test_exit }}
+          CREDENTIAL_KIND: ${{ steps.credentials.outputs.kind }}
+          DEPLOY_STATUS: ${{ steps.deploy.outputs.status }}
+          DEPLOY_EXIT: ${{ steps.deploy.outputs.exit_code }}
+          HTTP_BEFORE: ${{ steps.probe_before.outputs.http }}
+          HTTP_AFTER: ${{ steps.probe_after.outputs.http }}
+        run: |
+          python - <<'PY'
+          import json, os
+          from datetime import datetime, timezone
+          data = {
+              "source_sha": os.environ.get("GITHUB_SHA", ""),
+              "project_id": os.environ.get("PROJECT_ID", ""),
+              "region": os.environ.get("REGION", ""),
+              "validation": os.environ.get("VALIDATION", "unknown"),
+              "validation_exit_codes": {
+                  "install": os.environ.get("INSTALL_EXIT", ""),
+                  "check": os.environ.get("CHECK_EXIT", ""),
+                  "test": os.environ.get("TEST_EXIT", "")
+              },
+              "credential_kind": os.environ.get("CREDENTIAL_KIND", "none"),
+              "deploy_status": os.environ.get("DEPLOY_STATUS", "unknown"),
+              "deploy_exit_code": os.environ.get("DEPLOY_EXIT", ""),
+              "update_student_account_http_before": os.environ.get("HTTP_BEFORE", ""),
+              "update_student_account_http_after": os.environ.get("HTTP_AFTER", ""),
+              "run_id": os.environ.get("GITHUB_RUN_ID", ""),
+              "run_attempt": os.environ.get("GITHUB_RUN_ATTEMPT", ""),
+              "run_url": f"https://github.com/{os.environ.get('GITHUB_REPOSITORY','')}/actions/runs/{os.environ.get('GITHUB_RUN_ID','')}",
+              "recorded_at": datetime.now(timezone.utc).isoformat()
+          }
+          with open("firebase-backend-status.json", "w", encoding="utf-8") as f:
+              json.dump(data, f, ensure_ascii=False, indent=2)
+              f.write("\n")
+          PY
+
+      - name: Checkout Firebase status branch
+        uses: actions/checkout@v6
+        with:
+          ref: firebase-status
+          path: _firebase_status
+          fetch-depth: 1
+
+      - name: Publish Firebase backend status
+        shell: bash
+        run: |
+          cp firebase-backend-status.json _firebase_status/firebase-backend-status.json
+          cd _firebase_status
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add firebase-backend-status.json
+          if git diff --cached --quiet; then
+            exit 0
+          fi
+          git commit -m "Record Firebase backend status for ${GITHUB_SHA}"
+          git push origin HEAD:firebase-status
