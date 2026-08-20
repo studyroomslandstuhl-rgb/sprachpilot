@@ -9,7 +9,9 @@ assert.equal(pkg.main,'main.js','Firebase Functions must load the combined main 
 assert.ok(src.includes("exports.updateStudentAccount=onCall"),'owner student account callable missing');
 assert.ok(src.includes("getAuth().updateUser(authUid,{email,emailVerified:false})"),'Firebase Auth email must change server-side and require re-verification');
 assert.ok(src.includes("generateEmailVerificationLink(email)"),'new login email must receive a verification link');
+assert.ok(src.includes("revokeRefreshTokens(authUid)"),'old authenticated sessions must be revoked after an email change');
 assert.ok(src.includes("collection('studentLookups')"),'student lookup mapping must be updated');
+assert.ok(src.includes('const newCourses=courseCode?[courseCode]:[]'),'removing a course must also remove stale email/course lookup keys');
 assert.ok(src.includes('authEmail=email'),'student authEmail must follow Firebase Auth email');
 assert.ok(src.includes('oldAuthEmail'),'rollback data must be retained');
 assert.ok(src.includes("updateUser(authUid,{email:oldAuthEmail,emailVerified:oldVerified})"),'Firebase Auth change must roll back when the coordinated update fails');
