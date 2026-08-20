@@ -13,7 +13,7 @@ function ok(value,message){if(!value)throw new Error(message)}
 const scripts=[...index.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map(match=>match[1]);
 ok(scripts.length===6,`teacher dashboard should load exactly 6 initial scripts, got ${scripts.length}`);
 ok(scripts.includes('dashboard-lite.js?v=1'),'teacher dashboard must load the lightweight dashboard core');
-ok(scripts.includes('dashboard-account-admin.js?v=1'),'owner Firebase account editor must be present');
+ok(scripts.includes('dashboard-account-admin.js?v=2'),'owner Firebase account editor must load the current cache-busted version');
 ok(!scripts.some(src=>src.includes('firebase-functions-compat')),'Firebase Functions SDK must stay lazy and not slow dashboard startup');
 ok(!index.includes('live-progress-refresh.js'),'live refresh must not be loaded on the teacher dashboard');
 ok(!index.includes('analytics.js'),'progress analytics must not load during dashboard startup');
@@ -41,6 +41,11 @@ ok(css.includes('.sp-stat{grid-column:span 6!important'),'mobile statistics shou
 ok(accountAdmin.includes("httpsCallable('updateStudentAccount')"),'bound student email changes must use the server-side Firebase account function');
 ok(accountAdmin.includes('firebase-functions-compat.js'),'Functions SDK must be loaded lazily only when needed');
 ok(accountAdmin.includes('api.state.isOwner'),'bound Firebase account editing must be owner-only in the dashboard');
+ok(accountAdmin.includes('const SDK_TIMEOUT_MS=8000'),'Functions SDK loading must have a hard timeout');
+ok(accountAdmin.includes('const CALL_TIMEOUT_MS=20000'),'student account saving must have a hard timeout');
+ok(accountAdmin.includes("'sp/functions-call-timeout'"),'call timeout must produce a dedicated user-visible error');
+ok(accountAdmin.includes('withTimeout('),'Firebase loading and saving must never wait indefinitely');
+ok(accountAdmin.includes("button.disabled=false;button.textContent='In Firebase speichern'"),'save button must recover after Firebase failure or timeout');
 ok(!accountAdmin.includes('deleteUser('),'student account identity must never be recreated by the dashboard');
 
 ok(login.includes('firebase-functions-compat.js'),'teacher login must load Firebase Functions for custom account mail');
