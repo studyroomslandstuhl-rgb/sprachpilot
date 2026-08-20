@@ -289,12 +289,12 @@ service cloud.firestore {
     match /settings/{settingId} {
       allow read: if signedIn();
       allow create, update: if reasonableSize() && (
-        (settingId == 'teacherSecurity' && ownerEmail()) ||
-        (settingId != 'teacherSecurity' && isTeacher())
+        (settingId in ['teacherSecurity','authMailTemplates'] && ownerEmail()) ||
+        (!(settingId in ['teacherSecurity','authMailTemplates']) && isTeacher())
       );
       allow delete: if (
-        (settingId == 'teacherSecurity' && ownerEmail()) ||
-        (settingId != 'teacherSecurity' && isTeacher())
+        (settingId in ['teacherSecurity','authMailTemplates'] && ownerEmail()) ||
+        (!(settingId in ['teacherSecurity','authMailTemplates']) && isTeacher())
       );
     }
 
