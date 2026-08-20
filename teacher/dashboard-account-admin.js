@@ -79,8 +79,8 @@ function friendlyError(error){
   if(code.includes('already-exists')||message.includes('EMAIL_ALREADY_IN_USE')||message.includes('STUDENT_LOOKUP_ALREADY_IN_USE'))return 'Diese E-Mail-Adresse wird bereits von einem anderen Firebase-Konto verwendet.';
   if(code.includes('permission-denied')||message.includes('OWNER_REQUIRED'))return 'Nur das bestätigte Owner-Konto darf die Login-E-Mail eines gebundenen Teilnehmenden ändern.';
   if(code.includes('invalid-argument'))return 'Bitte eine gültige E-Mail-Adresse eingeben.';
+  if(code.includes('unavailable')||code.includes('functions/not-found')||message.includes('Function')&&message.includes('not found'))return 'Der Firebase-Kontodienst ist noch nicht erreichbar.';
   if(code.includes('not-found'))return 'Das Teilnehmerkonto wurde in Firebase nicht gefunden.';
-  if(code.includes('unavailable')||code.includes('not-found')&&message.includes('function'))return 'Der Firebase-Kontodienst ist noch nicht erreichbar.';
   return message||'Das Firebase-Konto konnte nicht aktualisiert werden.';
 }
 async function ownerSaveStudent(id){
@@ -129,7 +129,7 @@ api.editStudent=ownerEditStudent;
 api.saveStudent=ownerSaveStudent;
 
 document.addEventListener('click',event=>{
-  if(event.target.closest('.sp-mobile-nav [data-view],.sp-mobile-sheet [data-view]')){
+  if(event.target.closest('.sp-mobile-sheet [data-view],.sp-mobile-sheet button,.sp-mobile-sheet a')){
     document.querySelectorAll('.sp-mobile-more[open]').forEach(details=>details.removeAttribute('open'));
   }
 });
