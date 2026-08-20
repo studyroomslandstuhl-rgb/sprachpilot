@@ -86,7 +86,9 @@
   function chooseCloudOrPending(remote,pending){
     if(!pending)return{value:remote?.value??null,source:remote?'cloud':'none'};
     if(!remote)return{value:pending.value,source:'pending'};
-    if(strength(remote.value)>strength(pending.value))return{value:remote.value,source:'cloud'};
+    const rs=strength(remote.value),ps=strength(pending.value);
+    if(rs>ps)return{value:remote.value,source:'cloud'};
+    if(rs===ps&&(Number(remote.updatedAt)||0)>(Number(pending.updatedAt)||0))return{value:remote.value,source:'cloud'};
     return{value:pending.value,source:'pending'};
   }
   function buildMap(entries){
