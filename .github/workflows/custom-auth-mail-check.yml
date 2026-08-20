@@ -27,10 +27,10 @@ jobs:
         run: |
           npm run --prefix functions check
           python -m py_compile scripts/inject-learning-auth-gate.py
-      - name: Run auth mail tests
+      - name: Run auth mail and account tests
         run: npm test --prefix functions
-      - name: Ensure Functions module loads
-        run: node -e "require('./functions/index.js'); console.log('Functions module loads')"
+      - name: Ensure complete Functions module loads
+        run: node -e "require('./functions/main.js'); console.log('Functions module loads')"
       - name: Verify server source is removed from Pages artifact
         run: |
           SITE="$(mktemp -d)"
