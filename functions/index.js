@@ -20,6 +20,7 @@ const OWNER_EMAILS=new Set([
 const RATE_COLLECTION='_systemMailRateLimits';
 const RATE_WINDOW_MS=15*60*1000;
 const RATE_MAX=3;
+const TEMPLATE_DOC='authMailTemplates';
 
 let transporterCache=null;
 let transporterSignature='';
@@ -88,6 +89,23 @@ async function studentDisplayNameByEmail(email){
   }catch(error){return''}
 }
 async function bestDisplayName(email){return(await authUserName(email))||(await studentDisplayNameByEmail(email))||''}
+async function authMailTemplates(){
+  try{
+    const snap=await getFirestore().collection('settings').doc(TEMPLATE_DOC).get(),data=snap.exists?(snap.data()||{}):{};
+    return{
+      passwordReset:core.templateFor('passwordReset',data.passwordReset||{}),
+      verification:core.templateFor('verification',data.verification||{}),
+      setup:core.templateFor('setup',data.setup||{})
+    };
+  }catch(error){
+    console.warn('auth mail templates unavailable, using defaults',String(error?.code||error?.message||error));
+    return{
+      passwordReset:core.templateFor('passwordReset',{}),
+      verification:core.templateFor('verification',{}),
+      setup:core.templateFor('setup',{})
+    };
+  }
+}
 
 exports.requestPasswordReset=onCall(functionOptions(),async request=>{
   const email=core.normalizeEmail(request.data?.email);
@@ -97,8 +115,8 @@ exports.requestPasswordReset=onCall(functionOptions(),async request=>{
   try{
     await getAuth().getUserByEmail(email);
     const firebaseLink=await getAuth().generatePasswordResetLink(email);
-    const url=customResetLink(firebaseLink),name=await bestDisplayName(email);
-    await sendBrandedMail(email,core.buildPasswordResetMail({name,url}));
+    const url=customResetLink(firebaseLink),name=await bestDisplayName(email),templates=await authMailTemplates();
+    await sendBrandedMail(email,core.buildPasswordResetMail({name,url,template:templates.passwordReset}));
   }catch(error){
     const code=String(error?.code||'');
     if(code!=='auth/user-not-found')console.error('requestPasswordReset failed',core.hashKey(email),code||error?.message||error);
@@ -114,8 +132,8 @@ exports.requestVerificationEmail=onCall(functionOptions(),async request=>{
   if(!user.email||!core.validEmail(user.email))throw new HttpsError('failed-precondition','AUTH_EMAIL_MISSING');
   if(user.emailVerified===true)return{ok:true,alreadyVerified:true};
   const firebaseLink=await getAuth().generateEmailVerificationLink(user.email);
-  const url=customVerifyLink(firebaseLink),name=core.text(user.displayName)||await studentDisplayNameByEmail(core.normalizeEmail(user.email));
-  await sendBrandedMail(user.email,core.buildVerificationMail({name,url}));
+  const url=customVerifyLink(firebaseLink),name=core.text(user.displayName)||await studentDisplayNameByEmail(core.normalizeEmail(user.email)),templates=await authMailTemplates();
+  await sendBrandedMail(user.email,core.buildVerificationMail({name,url,template:templates.verification}));
   return{ok:true};
 });
 
@@ -147,8 +165,8 @@ exports.provisionStudentAccess=onCall(functionOptions(),async request=>{
   const resetUrl=customResetLink(await getAuth().generatePasswordResetLink(email));
   let verifyUrl='';
   if(authUser.emailVerified!==true)verifyUrl=customVerifyLink(await getAuth().generateEmailVerificationLink(email));
-  const name=core.displayName(student)||core.text(authUser.displayName);
-  await sendBrandedMail(email,core.buildSetupMail({name,resetUrl,verifyUrl}));
+  const name=core.displayName(student)||core.text(authUser.displayName),templates=await authMailTemplates();
+  await sendBrandedMail(email,core.buildSetupMail({name,resetUrl,verifyUrl,template:templates.setup}));
   await ref.set({
     authProvisioningVersion:2,
     authProvisioningStatus:verifyUrl?'custom-setup-mail-sent':'custom-password-mail-sent',
@@ -161,4 +179,4 @@ exports.provisionStudentAccess=onCall(functionOptions(),async request=>{
   return{status:created?'created':'existing-account',studentId,uid:authUser.uid,email,verificationSent:!!verifyUrl,resetSent:true};
 });
 
-exports.__test={smtpConfig,assertOwner,assertPasswordUser,customResetLink,customVerifyLink};
+exports.__test={smtpConfig,assertOwner,assertPasswordUser,customResetLink,customVerifyLink,authMailTemplates};
