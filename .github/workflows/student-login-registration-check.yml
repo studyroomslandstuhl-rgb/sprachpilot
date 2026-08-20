@@ -1,0 +1,30 @@
+name: Validate student email-password login
+
+on:
+  pull_request:
+    paths:
+      - 'js/student-login-v2.js'
+      - 'login/index.html'
+      - 'register/index.html'
+      - 'scripts/test-student-login-registration-v2.mjs'
+      - '.github/workflows/student-login-registration-check.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  student-login:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v6
+      - name: Set up Node
+        uses: actions/setup-node@v6
+        with:
+          node-version: '22'
+      - name: Check JavaScript syntax
+        run: |
+          node --check js/student-login-v2.js
+          node --check scripts/test-student-login-registration-v2.mjs
+      - name: Test email-password login and registration contract
+        run: node scripts/test-student-login-registration-v2.mjs
