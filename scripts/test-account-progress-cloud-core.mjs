@@ -4,6 +4,8 @@ const core=globalThis.SPAccountProgressCloudCore;
 if(!core)throw new Error('SPAccountProgressCloudCore not loaded');
 function ok(value,message){if(!value)throw new Error(message)}
 
+ok(Number(core.CORE_REVISION||0)>=8,'current cloud core revision must replace stale browser globals');
+
 const cloudStrong={value:JSON.stringify({done:[0,1,2],percent:100}),updatedAt:200};
 const pendingWeak={value:JSON.stringify({done:[0],percent:30}),updatedAt:300};
 let chosen=core.chooseCloudOrPending(cloudStrong,pendingWeak);
