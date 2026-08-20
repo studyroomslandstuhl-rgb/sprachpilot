@@ -1,0 +1,152 @@
+import '/js/account-progress-cloud-core.js?v=2';
+
+const core=window.SPAccountProgressCloudCore;
+if(!core)throw new Error('L78_ACCOUNT_PROGRESS_CORE_MISSING');
+
+const PENDING_PREFIX='SP_ACCOUNT_PROGRESS_PENDING_V1_';
+const MIGRATION_PREFIX='SP_ACCOUNT_PROGRESS_L78_LEDGER_MIGRATED_V1_';
+let runtimeInstallStarted=false;
+let resetTrackingInstalled=false;
+
+function parse(value,fallback=null){try{return JSON.parse(value||'')}catch(e){return fallback}}
+function profile(){return parse(localStorage.getItem('SP_USER_PROFILE'),null)||parse(localStorage.getItem('SP_STUDENT_PROFILE'),null)||{}}
+function canonicalId(){const p=profile();return String(p.canonicalStudentId||p.docId||p.studentId||p.userId||localStorage.getItem('SP_STUDENT_ID')||'').trim()}
+function ownerUid(){const p=profile();return String(p.authUid||localStorage.getItem('SP_STUDENT_AUTH_UID')||'').trim()}
+function journalKey(){return `${PENDING_PREFIX}${core.clean(ownerUid())}_${core.clean(canonicalId())}`}
+function migrationKey(){return `${MIGRATION_PREFIX}${core.clean(ownerUid())}_${core.clean(canonicalId())}`}
+function bridgeKey(key){
+  const k=String(key||'');
+  return /^SP_THEME_SCORE_A1_L[78]_T\d+_V\d+_/i.test(k)||
+    /^SP_SCORE_RUN_wortschatz-a1-lektion-[78]-thema-\d+/i.test(k)||
+    /^SP_THEME_RESET_A1_L[78]_T\d+$/i.test(k);
+}
+function currentPid(){
+  const p=profile();
+  return String(p.uid||p.userId||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_')||'student')
+    .trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_').replace(/^_+|_+$/g,'')||'student';
+}
+function freshJournal(){return{ownerUid:ownerUid(),studentId:canonicalId(),entries:{}}}
+function loadJournal(){
+  const raw=parse(localStorage.getItem(journalKey()),null);
+  if(!raw||String(raw.ownerUid||'')!==ownerUid()||String(raw.studentId||'')!==canonicalId())return freshJournal();
+  raw.entries=raw.entries&&typeof raw.entries==='object'?raw.entries:{};return raw;
+}
+function saveJournal(journal){localStorage.setItem(journalKey(),JSON.stringify(journal))}
+
+export function prepareL78AccountProgressBridge(){
+  const uid=ownerUid(),studentId=canonicalId();
+  if(!uid||!studentId)return{active:false,staged:0};
+  if(localStorage.getItem(migrationKey())==='1')return{active:true,staged:0,alreadyPrepared:true};
+  const journal=loadJournal();let staged=0;
+  for(let i=0;i<localStorage.length;i++){
+    const key=localStorage.key(i);if(!bridgeKey(key))continue;
+    const value=localStorage.getItem(key);if(value===null)continue;
+    const old=journal.entries[key];
+    if(!old||core.strength(value)>core.strength(old.value)||String(old.value)!==String(value)){
+      journal.entries[key]={value:String(value),updatedAt:Date.now()};staged++;
+    }
+  }
+  saveJournal(journal);
+  localStorage.setItem(migrationKey(),'1');
+  return{active:true,staged};
+}
+
+function resetKey(lesson,theme){return`SP_THEME_RESET_A1_L${lesson}_T${theme}`}
+function rawStateKeys(lesson,theme,id,ledgerPid){
+  const pids=[String(ledgerPid||'').trim(),currentPid()].filter(Boolean);
+  return [...new Set(pids)].map(pid=>`SP_L${lesson}_${pid}_T${theme}_${id}`);
+}
+function stateTimestamp(value){const n=Date.parse(String(value||''));return Number.isFinite(n)?n:0}
+function approximateState(lesson,item={}){
+  const total=Math.max(1,Number(item.total)||Number(item.done)||1),doneCount=Math.max(0,Math.min(total,Number(item.done)||((item.completed||Number(item.percent)>=100)?total:Math.round(total*Math.max(0,Math.min(100,Number(item.percent)||0))/100))));
+  const done=[...Array(doneCount).keys()],queue=[...Array(total).keys()].filter(i=>i>=doneCount);
+  if(Number(lesson)===7)return{total,done,queue,current:null,tries:0,hadWrong:false,wrongTries:{},firstSeen:[...done],firstCorrect:doneCount,answers:{}};
+  return{total,done,review:{},tries:{},firstSeen:[...done],firstCorrect:doneCount,answers:{},updatedAt:new Date().toISOString()};
+}
+function writeVisibleState(lesson,theme,id,ledgerPid,state){
+  if(!state||typeof state!=='object'||!id)return 0;
+  const raw=JSON.stringify(state);let changed=0;
+  for(const key of rawStateKeys(lesson,theme,id,ledgerPid)){
+    const old=localStorage.getItem(key);
+    if(old===null||core.strength(raw)>core.strength(old)){localStorage.setItem(key,raw);changed++}
+  }
+  return changed;
+}
+function ledgerRows(){
+  const rows=[];
+  for(let i=0;i<localStorage.length;i++){
+    const key=String(localStorage.key(i)||''),match=key.match(/^SP_THEME_SCORE_A1_L([78])_T(\d+)_V\d+_(.+)$/i);if(!match)continue;
+    const ledger=parse(localStorage.getItem(key),null);if(!ledger||typeof ledger!=='object')continue;
+    rows.push({key,lesson:Number(match[1]),theme:Number(match[2]),pid:match[3],ledger});
+  }
+  return rows;
+}
+export function hydrateL78VisibleProgress(){
+  let restored=0;
+  for(const row of ledgerRows()){
+    const {lesson,theme,pid,ledger}=row,run=Math.max(1,Math.min(3,Number(ledger.currentRun)||1));
+    const resetAt=Math.max(0,Number(localStorage.getItem(resetKey(lesson,theme)))||0);
+    const exact=ledger.clientStates&&typeof ledger.clientStates==='object'?ledger.clientStates:{};
+    const exactIds=new Set();
+    for(const [compound,record] of Object.entries(exact)){
+      const cut=compound.indexOf(':');if(cut<0||Number(compound.slice(0,cut))!==run)continue;
+      const id=compound.slice(cut+1);if(!id||!record?.state)continue;
+      const updatedAt=Math.max(Number(record.updatedAt)||0,stateTimestamp(record.state?.updatedAt));
+      if(resetAt&&updatedAt<=resetAt)continue;
+      exactIds.add(id);restored+=writeVisibleState(lesson,theme,id,pid,record.state);
+    }
+    const runData=ledger.runs?.[String(run)]||ledger.runs?.[run]||{};
+    for(const [id,item] of Object.entries(runData.tasks||{})){
+      if(exactIds.has(id))continue;
+      const updatedAt=Math.max(stateTimestamp(item?.updatedAt),0);if(resetAt&&updatedAt&&updatedAt<=resetAt)continue;
+      if(resetAt&&!updatedAt)continue;
+      restored+=writeVisibleState(lesson,theme,id,pid,approximateState(lesson,item));
+    }
+  }
+  return restored;
+}
+
+function cloneState(state){
+  try{const raw=JSON.stringify(state||{});if(raw.length>120000)return null;return JSON.parse(raw)}catch(e){return null}
+}
+function wrapThemeScore(score,lesson){
+  if(!score||score.__spAccountStateBridgeV1)return !!score;
+  if(typeof score.recordState!=='function'||typeof score.read!=='function'||typeof score.write!=='function')return false;
+  const original=score.recordState.bind(score);
+  score.recordState=function(theme,id,state){
+    const result=original(theme,id,state);
+    try{
+      const snapshot=cloneState(state);if(!snapshot)return result;
+      const ledger=score.read(theme),run=Math.max(1,Math.min(3,Number(ledger.currentRun)||1));
+      ledger.clientStates=ledger.clientStates&&typeof ledger.clientStates==='object'?ledger.clientStates:{};
+      ledger.clientStates[`${run}:${String(id)}`]={state:snapshot,updatedAt:Date.now()};
+      score.write(theme,ledger);
+    }catch(error){console.warn(`L${lesson} Account-Aufgabenstand konnte nicht in den Ledger geschrieben werden`,error)}
+    return result;
+  };
+  score.__spAccountStateBridgeV1=true;return true;
+}
+function installResetTracking(){
+  if(resetTrackingInstalled)return;resetTrackingInstalled=true;
+  const previousRemove=Storage.prototype.removeItem;
+  Storage.prototype.removeItem=function(key){
+    const raw=String(key||''),match=raw.match(/^SP_L([78])_(?!PREVIEW(?:_|$)|EXAM_SYNCED(?:_|$)|STABLE_PID$).+_T(\d+)_/i);
+    const result=previousRemove.apply(this,arguments);
+    if(this===localStorage&&match){
+      try{localStorage.setItem(resetKey(Number(match[1]),Number(match[2])),String(Date.now()))}catch(e){}
+    }
+    return result;
+  };
+}
+export function installL78RuntimeBridge(){
+  installResetTracking();
+  if(runtimeInstallStarted)return;runtimeInstallStarted=true;
+  const wanted=/\/A1-Lektion-7\//i.test(location.pathname)?7:/\/A1-Lektion-8\//i.test(location.pathname)?8:0;
+  if(!wanted)return;
+  let tries=0;
+  const timer=setInterval(()=>{
+    tries++;
+    const score=wanted===7?window.L7ThemeScore:window.L8ThemeScore;
+    if(wrapThemeScore(score,wanted)||tries>160)clearInterval(timer);
+  },50);
+}
