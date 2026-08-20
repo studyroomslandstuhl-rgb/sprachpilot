@@ -80,7 +80,7 @@ export async function startAccountProgressSync(options={}){
   if(isolation?.blocked){const result=blockedSecureResult('LOCAL_OWNER_ISOLATION_BLOCKED');showCloudProgressRequired(result);return result}
 
   let bridge={active:false,staged:0};
-  try{bridge=prepareL78AccountProgressBridge()||bridge}catch(error){console.warn('L7/L8 Kontofortschritt konnte vor der Cloud-Hydrierung nicht vorbereitet werden',error)}
+  try{bridge=prepareL78AccountProgressBridge()||bridge;installL78RuntimeBridge()}catch(error){console.warn('L7/L8 Kontofortschritt konnte vor der Cloud-Hydrierung nicht vorbereitet werden',error)}
 
   const result=await startAuthoritativeAccountProgressSync(options);
   if(result?.blocked){showCloudProgressRequired(result);return result}
