@@ -115,7 +115,7 @@ syncSource=syncSource
   .replace(/^import\s+\{\s*currentFirebaseUser\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,'const currentFirebaseUser=()=>globalThis.__SP_TEST_FIREBASE_USER;')
   .replace(/^import\s+\{\s*normalizeStudentIdentity\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,'const normalizeStudentIdentity=async()=>globalThis.__SP_TEST_SYNC_PROFILE;')
   .replace(/^import\s+\{\s*isolateLocalProgressOwner\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,"const isolateLocalProgressOwner=async()=>({active:true,blocked:true,currentId:'student-d',oldOwner:'student-c'});")
-  .replace(/^import\s+\{\s*accountProgressReady,\s*startAccountProgressSync\s+as\s+startSafeAccountProgressSync\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,'const accountProgressReady=Promise.resolve(); const startSafeAccountProgressSync=async()=>{globalThis.__SP_SAFE_SYNC_CALLS++;return {active:true}};');
+  .replace(/^import\s+\{\s*accountProgressReady,\s*startAccountProgressSync\s+as\s+startAuthoritativeAccountProgressSync\s*\}\s+from\s+['"][^'"]+['"];?\s*$/m,'const accountProgressReady=Promise.resolve(); const startAuthoritativeAccountProgressSync=async()=>{globalThis.__SP_SAFE_SYNC_CALLS++;return {active:true,serverAuthoritative:true}};');
 const syncUrl='data:text/javascript;base64,'+Buffer.from(syncSource).toString('base64');
 const syncModule=await import(syncUrl);
 
