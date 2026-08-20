@@ -21,7 +21,9 @@ ok(authoritative.includes('if(!remote.authorityReady){repair=await bootstrapAuth
 ok(!authoritative.includes("account-progress-sync-safe.js"),'v2 authority must not trust the old migration success result');
 ok(wrapper.includes("account-progress-sync-authoritative-v2.js?v=2"),'main account sync must use authority v2 implementation');
 ok(wrapper.includes('CLOUD_PROGRESS_REPAIR_SOURCE_REQUIRED'),'learning pages must explain when the old-progress device is required');
-ok(dashboardBootstrap.includes("import('/js/account-progress-sync.js?v=10')"),'student dashboard must wait for progress v2 before rendering');
+ok(wrapper.includes('alreadyCanonicalSecureProfile'),'canonical UID profiles must avoid the legacy identity rewrite before cloud sync');
+ok(dashboardBootstrap.includes("import('/js/account-progress-sync.js?v=11')"),'student dashboard must wait for the current progress v2 wrapper before rendering');
+ok(dashboardBootstrap.includes('alreadyCanonicalSecureProfile'),'dashboard must avoid legacy identity rewrites for already canonical UID profiles');
 ok(dashboardBootstrap.includes("Number(progressState?.authorityVersion||0)<2"),'student dashboard must require authority v2');
 ok(dashboardBootstrap.includes("import('./dashboard-server-v2.js?v=1')"),'student dashboard must use the server-only renderer');
 ok(dashboardServer.includes('getDocFromServer'),'dashboard progress must come from explicit Firestore server reads');
