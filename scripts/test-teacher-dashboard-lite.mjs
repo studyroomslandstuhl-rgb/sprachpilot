@@ -3,6 +3,7 @@ import fs from 'node:fs';
 const index=fs.readFileSync(new URL('../teacher/index.html',import.meta.url),'utf8');
 const dashboard=fs.readFileSync(new URL('../teacher/dashboard-lite.js',import.meta.url),'utf8');
 const accountAdmin=fs.readFileSync(new URL('../teacher/dashboard-account-admin.js',import.meta.url),'utf8');
+const passwordReset=fs.readFileSync(new URL('../teacher/dashboard-password-reset.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../teacher/dashboard-lite.css',import.meta.url),'utf8');
 const login=fs.readFileSync(new URL('../teacher/login.html',import.meta.url),'utf8');
 const teacherAuth=fs.readFileSync(new URL('../teacher/js/auth.js',import.meta.url),'utf8');
@@ -11,9 +12,10 @@ const rules=fs.readFileSync(new URL('../firestore.rules',import.meta.url),'utf8'
 function ok(value,message){if(!value)throw new Error(message)}
 
 const scripts=[...index.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map(match=>match[1]);
-ok(scripts.length===6,`teacher dashboard should load exactly 6 initial scripts, got ${scripts.length}`);
+ok(scripts.length===7,`teacher dashboard should load exactly 7 initial scripts, got ${scripts.length}`);
 ok(scripts.includes('dashboard-lite.js?v=1'),'teacher dashboard must load the lightweight dashboard core');
 ok(scripts.includes('dashboard-account-admin.js?v=5'),'owner Firebase account editor must load the current cache-busted version');
+ok(scripts.includes('dashboard-password-reset.js?v=1'),'teacher password reset mail module must be loaded');
 ok(!scripts.some(src=>src.includes('firebase-functions-compat')),'Firebase Functions SDK must stay lazy and not slow dashboard startup');
 ok(!index.includes('live-progress-refresh.js'),'live refresh must not be loaded on the teacher dashboard');
 ok(!index.includes('analytics.js'),'progress analytics must not load during dashboard startup');
@@ -63,6 +65,12 @@ ok(accountAdmin.includes('authPreviousUid'),'fallback must retain the previous U
 ok(accountAdmin.includes('authReboundByOwnerUid'),'fallback must record that the owner performed the rebind');
 ok(accountAdmin.includes('user.delete()'),'a newly created replacement auth user must be rolled back if Firestore migration fails');
 ok(accountAdmin.includes('adminFunctionUnavailable'),'repeated clicks must not keep waiting for a known-missing Cloud Function');
+
+ok(passwordReset.includes("sendPasswordResetEmail(email)"),'owner must be able to send a Firebase password reset mail to a student');
+ok(passwordReset.includes("id='sendStudentPasswordResetBtn'")||passwordReset.includes("id='sendStudentPasswordResetBtn'" )||passwordReset.includes("reset.id='sendStudentPasswordResetBtn'"),'password reset action must have its own button');
+ok(passwordReset.includes('student.authUid'),'password reset action must only be offered for a bound Firebase student account');
+ok(passwordReset.includes('api.state.isOwner'),'password reset action must be owner-only');
+ok(passwordReset.includes('Passwort-Wiederherstellungs-Mail wurde an'),'successful reset mail delivery must be confirmed in the UI');
 
 ok(login.includes('firebase-functions-compat.js'),'teacher login must load Firebase Functions for custom account mail');
 ok(login.includes('js/auth.js?v=teacher-auth-mail-20260820-2'),'teacher login must cache-bust the corrected Functions client');
