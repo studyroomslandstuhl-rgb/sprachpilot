@@ -13,7 +13,7 @@ function ok(value,message){if(!value)throw new Error(message)}
 const scripts=[...index.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map(match=>match[1]);
 ok(scripts.length===6,`teacher dashboard should load exactly 6 initial scripts, got ${scripts.length}`);
 ok(scripts.includes('dashboard-lite.js?v=1'),'teacher dashboard must load the lightweight dashboard core');
-ok(scripts.includes('dashboard-account-admin.js?v=3'),'owner Firebase account editor must load the current cache-busted version');
+ok(scripts.includes('dashboard-account-admin.js?v=4'),'owner Firebase account editor must load the current cache-busted version');
 ok(!scripts.some(src=>src.includes('firebase-functions-compat')),'Firebase Functions SDK must stay lazy and not slow dashboard startup');
 ok(!index.includes('live-progress-refresh.js'),'live refresh must not be loaded on the teacher dashboard');
 ok(!index.includes('analytics.js'),'progress analytics must not load during dashboard startup');
@@ -46,8 +46,12 @@ ok(accountAdmin.includes('const CALL_TIMEOUT_MS=20000'),'student account saving 
 ok(accountAdmin.includes("'sp/functions-call-timeout'"),'call timeout must produce a dedicated user-visible error');
 ok(accountAdmin.includes('withTimeout('),'Firebase loading and saving must never wait indefinitely');
 ok(accountAdmin.includes("button.disabled=false;button.textContent='In Firebase speichern'"),'save button must recover after Firebase failure or timeout');
-ok(accountAdmin.includes("firebase.app().functions(REGION)"),'dashboard must select Functions region through the Firebase App instance');
+ok(accountAdmin.includes("const firebase=window.firebase"),'dashboard Functions client must use the loaded Firebase global safely');
+ok(accountAdmin.includes('app.functions(REGION)'),'dashboard must select Functions region through the Firebase App instance');
 ok(!accountAdmin.includes("firebase.functions(REGION)"),'dashboard must not pass a region string to firebase.functions-compat()');
+ok(accountAdmin.includes("id=\"spFirebaseSaveStatus\""),'Firebase save result must be visible inside the edit dialog');
+ok(accountAdmin.includes("button.addEventListener('click'"),'Firebase save button must have a direct click listener');
+ok(!accountAdmin.includes("id=\"saveFirebaseStudentBtn\" onclick="),'Firebase save button must not depend on inline onclick');
 ok(!accountAdmin.includes('deleteUser('),'student account identity must never be recreated by the dashboard');
 
 ok(login.includes('firebase-functions-compat.js'),'teacher login must load Firebase Functions for custom account mail');
