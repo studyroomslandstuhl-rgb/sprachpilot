@@ -3,7 +3,7 @@
 
 const REGION='europe-west1';
 const SDK_TIMEOUT_MS=8000;
-const CALL_TIMEOUT_MS=20000;
+const CALL_TIMEOUT_MS=12000;
 const api=window.SPTeacherDashboard;
 if(!api||api.__accountAdminInstalled)return;
 api.__accountAdminInstalled=true;
@@ -11,14 +11,26 @@ api.__accountAdminInstalled=true;
 const originalEdit=api.editStudent;
 const originalSave=api.saveStudent;
 let functionsPromise=null;
+let adminFunctionUnavailable=false;
 
 const text=value=>String(value==null?'':value).trim();
 const norm=value=>text(value).toLowerCase();
+const uniq=values=>[...new Set((values||[]).filter(Boolean).map(value=>String(value).trim()).filter(Boolean))];
 const esc=value=>String(value==null?'':value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
 const studentId=student=>text(student?.canonicalStudentId||student?.docId||student?.studentId||student?.userId||student?.id);
 const studentName=student=>text([student?.vorname||student?.firstName,student?.nachname||student?.lastName].filter(Boolean).join(' '))||text(student?.name||student?.displayName)||'Teilnehmer/in';
 const studentCourse=student=>text(student?.courseCode||student?.kurs||student?.kursnummer||student?.courseDocId);
 
+function database(){
+  if(window.db&&typeof window.db.collection==='function')return window.db;
+  const firebase=window.firebase;
+  if(firebase&&typeof firebase.firestore==='function')return firebase.firestore();
+  throw new Error('FIRESTORE_NOT_AVAILABLE');
+}
+function serverTimestamp(){
+  const firebase=window.firebase;
+  return firebase?.firestore?.FieldValue?.serverTimestamp?.()||new Date();
+}
 function status(message,kind=''){
   const el=document.getElementById('spStatus');
   if(!el)return;
@@ -85,8 +97,8 @@ function ownerEditStudent(id){
   if(!api.state.isOwner)return originalEdit(id);
   const bound=!!student.authUid;
   const note=bound
-    ? '<strong>Firebase-Konto verbunden.</strong><br>Die Login-E-Mail wird auch in Firebase Authentication geändert. Teilnehmer-ID, Punkte und Fortschritte bleiben erhalten. Die neue Adresse muss danach bestätigt werden.'
-    : '<strong>Noch kein Firebase-Login gebunden.</strong><br>Die E-Mail wird serverseitig in Firestore und im Teilnehmer-Lookup gespeichert und später für die Kontoerstellung verwendet.';
+    ? '<strong>Firebase-Konto verbunden.</strong><br>Die Login-E-Mail wird in Firebase umgestellt. Teilnehmer-ID, Punkte und Fortschritte bleiben erhalten. Die neue Adresse muss danach bestätigt werden.'
+    : '<strong>Noch kein Firebase-Login gebunden.</strong><br>Die E-Mail wird in Firestore und im Teilnehmer-Lookup gespeichert und später für die Kontoerstellung verwendet.';
   openModal(`<div class="sp-modal-head"><div><h2 style="margin:0">Teilnehmende bearbeiten</h2><div class="sp-meta">${esc(studentName(student))}</div></div><button type="button" class="sp-icon-btn" onclick="SPTeacherDashboard.closeModal()">Schließen</button></div>
   <div class="sp-form-grid">
     <div class="sp-field"><label>Vorname</label><input id="editFirstName" value="${esc(student.vorname||student.firstName||'')}"></div>
@@ -107,6 +119,7 @@ function ownerEditStudent(id){
     });
   }
 }
+
 function regionalFunctions(){
   const firebase=window.firebase;
   if(!firebase||typeof firebase.app!=='function')throw timeoutError('sp/firebase-app-missing','Firebase App ist nicht verfügbar.');
@@ -148,17 +161,184 @@ async function ensureFunctions(){
     });
   return functionsPromise;
 }
+function backendUnavailable(error){
+  const code=String(error?.code||'').toLowerCase();
+  const message=String(error?.message||'').trim().toLowerCase();
+  return code.includes('functions/not-found')||code.includes('functions/unavailable')||code.includes('functions/internal')&&(!message||message==='internal')||code.includes('functions-call-timeout');
+}
 function friendlyError(error){
   const code=String(error?.code||'');
   const message=String(error?.message||'');
-  if(code.includes('functions-sdk-timeout')||code.includes('functions-sdk-load')||code.includes('functions-sdk-missing'))return 'Firebase Functions konnte nicht geladen werden. Bitte Internetverbindung prüfen und erneut versuchen.';
+  const identity=String(error?.identityCode||'');
+  if(code.includes('functions-sdk-timeout')||code.includes('functions-sdk-load')||code.includes('functions-sdk-missing'))return 'Firebase Functions konnte nicht geladen werden.';
   if(code.includes('firebase-app-missing'))return 'Firebase App ist nicht vollständig geladen. Bitte die Seite neu laden.';
-  if(code.includes('functions-call-timeout'))return 'Firebase antwortet zu langsam. Der Speichervorgang wurde nicht bestätigt. Bitte kurz warten und danach über „Aktualisieren“ prüfen.';
-  if(code.includes('already-exists')||message.includes('EMAIL_ALREADY_IN_USE')||message.includes('STUDENT_LOOKUP_ALREADY_IN_USE'))return 'Diese E-Mail-Adresse wird bereits von einem anderen Firebase-Konto verwendet.';
+  if(code.includes('functions-call-timeout'))return 'Firebase antwortet zu langsam.';
+  if(code.includes('already-exists')||code.includes('email-already-in-use')||identity.includes('EMAIL_EXISTS')||message.includes('EMAIL_ALREADY_IN_USE')||message.includes('STUDENT_LOOKUP_ALREADY_IN_USE'))return 'Diese E-Mail-Adresse wird bereits von einem anderen Firebase-Konto verwendet.';
   if(code.includes('permission-denied')||message.includes('OWNER_REQUIRED'))return 'Nur das bestätigte Owner-Konto darf diese E-Mail-Änderung durchführen.';
-  if(code.includes('invalid-argument'))return 'Bitte eine gültige E-Mail-Adresse eingeben.';
-  if(code.includes('unavailable')||code.includes('functions/not-found')||code.includes('not-found')||message.includes('Function')&&message.includes('not found'))return 'Der Firebase-Kontodienst ist noch nicht veröffentlicht oder nicht erreichbar.';
+  if(code.includes('invalid-argument')||code.includes('invalid-email'))return 'Bitte eine gültige E-Mail-Adresse eingeben.';
+  if(code.includes('network-request-failed'))return 'Keine Verbindung zu Firebase. Bitte Internetverbindung prüfen.';
+  if(code.includes('too-many-requests'))return 'Firebase hat zu viele Versuche erkannt. Bitte einige Minuten warten und erneut versuchen.';
+  if(code.includes('internal')&&message.toLowerCase()==='internal')return 'Der serverseitige Kontodienst ist nicht veröffentlicht.';
   return message||'Das Firebase-Konto konnte nicht aktualisiert werden.';
+}
+
+function lookupClean(value){
+  return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
+}
+function courseValues(student={}){
+  return uniq([student.courseCode,student.kurs,student.kursnummer,student.courseDocId,student.course]);
+}
+function lookupKeys(email,courses=[]){
+  const mail=norm(email);
+  if(!mail)return[];
+  return uniq((courses||[]).map(course=>`${lookupClean(course)}_${lookupClean(mail)}`).filter(key=>key!=='_'));
+}
+function randomPassword(){
+  const chars='ABCDEFGHJKLMNPQRSTUVWXYZabcdefghijkmnopqrstuvwxyz23456789';
+  const bytes=new Uint8Array(32);
+  globalThis.crypto.getRandomValues(bytes);
+  let body='';
+  for(const byte of bytes)body+=chars[byte%chars.length];
+  return `Aa1!${body}`;
+}
+async function prepareLookupMigration(student,id,email,courseCode){
+  const db=database();
+  const oldEmail=norm(student.authEmail||student.email);
+  const oldKeys=lookupKeys(oldEmail,courseValues(student));
+  const newKeys=lookupKeys(email,courseCode?[courseCode]:[]);
+  const oldRows=[];
+  for(const key of newKeys){
+    const ref=db.collection('studentLookups').doc(key),snap=await ref.get();
+    if(!snap.exists)continue;
+    const mapped=text((snap.data()||{}).canonicalStudentId||(snap.data()||{}).studentId);
+    if(mapped&&mapped!==id){
+      const error=new Error('EMAIL_ALREADY_IN_USE');
+      error.code='sp/email-already-in-use';
+      throw error;
+    }
+  }
+  for(const key of oldKeys.filter(key=>!newKeys.includes(key))){
+    const ref=db.collection('studentLookups').doc(key),snap=await ref.get();
+    if(!snap.exists)continue;
+    const mapped=text((snap.data()||{}).canonicalStudentId||(snap.data()||{}).studentId);
+    if(mapped===id)oldRows.push({key,ref});
+  }
+  return{oldRows,newKeys};
+}
+async function collectBoundDocs(student,id){
+  const db=database();
+  const ids=uniq([id,student.canonicalStudentId,student.docId,student.studentId,student.userId,...(Array.isArray(student.aliasIds)?student.aliasIds:[])]).slice(0,80);
+  const progress=[];
+  const rankings=[];
+  for(const key of ids){
+    const progressRef=db.collection('progress').doc(key);
+    try{const snap=await progressRef.get();if(snap.exists)progress.push({ref:progressRef,data:snap.data()||{}})}catch(error){console.warn('Progress binding read skipped',key,error)}
+    const rankingRef=db.collection('studentRankings').doc(key);
+    try{const snap=await rankingRef.get();if(snap.exists)rankings.push({ref:rankingRef,data:snap.data()||{}})}catch(error){console.warn('Ranking binding read skipped',key,error)}
+  }
+  return{ids,progress,rankings};
+}
+async function createSecondaryFirebaseUser(email,displayName){
+  const firebase=window.firebase;
+  if(!firebase||typeof firebase.initializeApp!=='function'||typeof firebase.app!=='function')throw new Error('FIREBASE_APP_NOT_AVAILABLE');
+  const appName=`sp-email-migration-${Date.now()}-${Math.random().toString(36).slice(2)}`;
+  const secondary=firebase.initializeApp(firebase.app().options,appName);
+  const auth=secondary.auth();
+  let user=null;
+  try{
+    const credential=await auth.createUserWithEmailAndPassword(email,randomPassword());
+    user=credential?.user||null;
+    if(!user?.uid)throw new Error('NEW_AUTH_USER_MISSING');
+    if(displayName)try{await user.updateProfile({displayName})}catch(error){console.warn('Display name update skipped',error)}
+    await user.sendEmailVerification();
+    await auth.sendPasswordResetEmail(email);
+    return{secondary,auth,user};
+  }catch(error){
+    if(user)try{await user.delete()}catch(cleanupError){console.warn('Temporary Firebase user cleanup failed',cleanupError)}
+    try{await auth.signOut()}catch(e){}
+    try{await secondary.delete()}catch(e){}
+    throw error;
+  }
+}
+async function disposeSecondaryAccount(context,{deleteUser=false}={}){
+  if(!context)return;
+  if(deleteUser&&context.user)try{await context.user.delete()}catch(error){console.warn('Temporary Firebase user rollback failed',error)}
+  try{await context.auth?.signOut()}catch(e){}
+  try{await context.secondary?.delete()}catch(e){}
+}
+async function migrateBoundAccountLocally({student,id,email,firstName,lastName,courseCode}){
+  const db=database();
+  const oldUid=text(student.authUid);
+  if(!oldUid)throw new Error('BOUND_AUTH_UID_MISSING');
+  const lookup=await prepareLookupMigration(student,id,email,courseCode);
+  const boundDocs=await collectBoundDocs(student,id);
+  const displayName=text([firstName,lastName].filter(Boolean).join(' '))||studentName(student);
+  let secondary=null,committed=false;
+  try{
+    secondary=await createSecondaryFirebaseUser(email,displayName);
+    const newUid=text(secondary.user?.uid);
+    if(!newUid)throw new Error('NEW_AUTH_USER_MISSING');
+    const batch=db.batch(),stamp=serverTimestamp();
+    batch.set(db.collection('students').doc(id),{
+      vorname:firstName,nachname:lastName,
+      email,emailLower:email,
+      kurs:courseCode,kursnummer:courseCode,courseCode,
+      authUid:newUid,authEmail:email,authEmailLower:email,authEmailVerified:false,
+      authVersion:3,authProvisioningEmail:email,
+      authProvisioningStatus:'owner-email-migrated-client-v1',
+      authPreviousUid:oldUid,
+      authReboundByOwnerUid:text(api.state.user?.uid),
+      authReboundAt:stamp,updatedAt:stamp
+    },{merge:true});
+    for(const key of lookup.newKeys){
+      batch.set(db.collection('studentLookups').doc(key),{
+        lookupVersion:1,canonicalStudentId:id,studentId:id,email,
+        courseKeys:courseCode?[courseCode]:[],active:student.active!==false,updatedAt:stamp
+      },{merge:true});
+    }
+    for(const row of lookup.oldRows)batch.delete(row.ref);
+    for(const row of boundDocs.progress){
+      batch.set(row.ref,{authUid:newUid,authEmail:email,authReboundAt:stamp},{merge:true});
+    }
+    for(const row of boundDocs.rankings){
+      batch.set(row.ref,{authUid:newUid,updatedAt:stamp},{merge:true});
+    }
+    await batch.commit();
+    committed=true;
+    return{
+      ok:true,migrated:true,studentId:id,authUid:newUid,authEmail:email,
+      emailVerified:false,verificationSent:true,passwordResetSent:true,
+      previousAuthUid:oldUid,progressBindingsUpdated:boundDocs.progress.length,rankingBindingsUpdated:boundDocs.rankings.length
+    };
+  }catch(error){
+    if(!committed)await disposeSecondaryAccount(secondary,{deleteUser:true});
+    throw error;
+  }finally{
+    if(committed)await disposeSecondaryAccount(secondary);
+  }
+}
+async function callAdminUpdate(payload){
+  if(adminFunctionUnavailable)throw timeoutError('sp/admin-function-unavailable','ADMIN_FUNCTION_UNAVAILABLE');
+  try{
+    const functions=await ensureFunctions();
+    const callable=functions.httpsCallable('updateStudentAccount');
+    const response=await withTimeout(callable(payload),CALL_TIMEOUT_MS,'sp/functions-call-timeout','Firebase hat den Speichervorgang nicht rechtzeitig bestätigt.');
+    return response?.data||{};
+  }catch(error){
+    if(backendUnavailable(error))adminFunctionUnavailable=true;
+    throw error;
+  }
+}
+function updateLocalStudent(id,{email,firstName,lastName,courseCode,result}){
+  const index=api.state.students.findIndex(item=>studentId(item)===id);
+  if(index<0)return;
+  api.state.students[index]={
+    ...api.state.students[index],vorname:firstName,nachname:lastName,
+    email,emailLower:email,
+    ...(result?.authUid?{authUid:result.authUid,authEmail:result.authEmail||email,authEmailLower:email,authEmailVerified:result.emailVerified===true}:{}),
+    kurs:courseCode,kursnummer:courseCode,courseCode
+  };
+  if(window.__SP_STUDENTS_BY_ID)window.__SP_STUDENTS_BY_ID[id]=api.state.students[index];
 }
 async function ownerSaveStudent(id){
   const student=currentStudent(id);
@@ -172,40 +352,34 @@ async function ownerSaveStudent(id){
   if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return actionStatus('Bitte eine gültige E-Mail-Adresse eingeben.','error');
 
   const currentEmail=norm(student.authEmail||student.email);
-  if(email===currentEmail){
+  if(email===currentEmail||!student.authUid){
     actionStatus('Änderungen werden in Firebase gespeichert …');
     return originalSave(id);
   }
 
   const button=document.getElementById('saveFirebaseStudentBtn');
   if(button){button.disabled=true;button.textContent='Wird gespeichert …'}
-  actionStatus(student.authUid?'Firebase Authentication und Teilnehmerdaten werden aktualisiert …':'Teilnehmerdaten werden serverseitig in Firebase aktualisiert …');
+  actionStatus('Login-E-Mail und Teilnehmerkonto werden in Firebase aktualisiert …');
   try{
-    const functions=await ensureFunctions();
-    const callable=functions.httpsCallable('updateStudentAccount');
-    const response=await withTimeout(
-      callable({studentId:id,email,firstName,lastName,courseCode}),
-      CALL_TIMEOUT_MS,
-      'sp/functions-call-timeout',
-      'Firebase hat den Speichervorgang nicht rechtzeitig bestätigt.'
-    );
-    const result=response?.data||{};
-    const index=api.state.students.findIndex(item=>studentId(item)===id);
-    if(index>=0){
-      api.state.students[index]={
-        ...api.state.students[index],vorname:firstName,nachname:lastName,
-        email,emailLower:email,
-        ...(result.authUid?{authEmail:result.authEmail||email,authEmailLower:email,authEmailVerified:result.emailVerified===true}:{}),
-        kurs:courseCode,kursnummer:courseCode,courseCode
-      };
-      if(window.__SP_STUDENTS_BY_ID)window.__SP_STUDENTS_BY_ID[id]=api.state.students[index];
+    const payload={studentId:id,email,firstName,lastName,courseCode};
+    let result=null;
+    try{
+      result=await callAdminUpdate(payload);
+    }catch(adminError){
+      if(!backendUnavailable(adminError)&&String(adminError?.code||'')!=='sp/admin-function-unavailable')throw adminError;
+      actionStatus('Serverfunktion nicht verfügbar. Sichere Firebase-Kontomigration wird ausgeführt …');
+      result=await migrateBoundAccountLocally({student,id,email,firstName,lastName,courseCode});
     }
+    updateLocalStudent(id,{email,firstName,lastName,courseCode,result});
     api.closeModal();
-    status(result.verificationSent?'Login-E-Mail geändert. Eine Bestätigungs-E-Mail wurde an die neue Adresse gesendet.':'E-Mail in Firebase gespeichert.','ok');
+    const migrated=result?.migrated===true;
+    status(migrated
+      ? 'Login-E-Mail geändert. Der Firebase-Zugang wurde auf die neue Adresse umgebunden. Bestätigungs- und Passwort-E-Mail wurden gesendet.'
+      : result?.verificationSent?'Login-E-Mail geändert. Eine Bestätigungs-E-Mail wurde an die neue Adresse gesendet.':'E-Mail in Firebase gespeichert.','ok');
     api.navigate('students');
   }catch(error){
     console.error('[SprachPilot] Firebase student update failed',error);
-    actionStatus(friendlyError(error),'error');
+    actionStatus('Änderung fehlgeschlagen: '+friendlyError(error),'error');
     if(button){button.disabled=false;button.textContent='In Firebase speichern'}
   }
 }
