@@ -25,6 +25,17 @@ function status(message,kind=''){
   el.textContent=message;
   el.className='sp-status'+(kind?' '+kind:'');
 }
+function modalStatus(message='',kind=''){
+  const el=document.getElementById('spFirebaseSaveStatus');
+  if(!el)return;
+  el.textContent=message;
+  el.className='sp-status'+(kind?' '+kind:'');
+  el.hidden=!message;
+}
+function actionStatus(message='',kind=''){
+  status(message,kind);
+  modalStatus(message,kind);
+}
 function timeoutError(code,message){
   const error=new Error(message);
   error.code=code;
@@ -76,7 +87,7 @@ function ownerEditStudent(id){
   const note=bound
     ? '<strong>Firebase-Konto verbunden.</strong><br>Die Login-E-Mail wird auch in Firebase Authentication geändert. Teilnehmer-ID, Punkte und Fortschritte bleiben erhalten. Die neue Adresse muss danach bestätigt werden.'
     : '<strong>Noch kein Firebase-Login gebunden.</strong><br>Die E-Mail wird serverseitig in Firestore und im Teilnehmer-Lookup gespeichert und später für die Kontoerstellung verwendet.';
-  openModal(`<div class="sp-modal-head"><div><h2 style="margin:0">Teilnehmende bearbeiten</h2><div class="sp-meta">${esc(studentName(student))}</div></div><button class="sp-icon-btn" onclick="SPTeacherDashboard.closeModal()">Schließen</button></div>
+  openModal(`<div class="sp-modal-head"><div><h2 style="margin:0">Teilnehmende bearbeiten</h2><div class="sp-meta">${esc(studentName(student))}</div></div><button type="button" class="sp-icon-btn" onclick="SPTeacherDashboard.closeModal()">Schließen</button></div>
   <div class="sp-form-grid">
     <div class="sp-field"><label>Vorname</label><input id="editFirstName" value="${esc(student.vorname||student.firstName||'')}"></div>
     <div class="sp-field"><label>Nachname</label><input id="editLastName" value="${esc(student.nachname||student.lastName||'')}"></div>
@@ -84,20 +95,35 @@ function ownerEditStudent(id){
     <div class="sp-field wide"><label>Kurs</label><select id="editCourse"><option value="">Ohne Kurs</option>${courseOptions(student)}</select></div>
   </div>
   <div class="sp-owner-note" style="margin-top:14px">${note}</div>
-  <div class="sp-row-actions" style="margin-top:18px"><button class="sp-button secondary" onclick="SPTeacherDashboard.closeModal()">Abbrechen</button><button class="sp-button" id="saveFirebaseStudentBtn" onclick="SPTeacherDashboard.saveStudent('${esc(id)}')">In Firebase speichern</button></div>`);
+  <div id="spFirebaseSaveStatus" class="sp-status" aria-live="polite" hidden style="margin-top:14px"></div>
+  <div class="sp-row-actions" style="margin-top:18px"><button type="button" class="sp-button secondary" onclick="SPTeacherDashboard.closeModal()">Abbrechen</button><button type="button" class="sp-button" id="saveFirebaseStudentBtn">In Firebase speichern</button></div>`);
+  const button=document.getElementById('saveFirebaseStudentBtn');
+  if(button){
+    button.dataset.studentId=id;
+    button.addEventListener('click',event=>{
+      event.preventDefault();
+      event.stopPropagation();
+      void ownerSaveStudent(id);
+    });
+  }
 }
 function regionalFunctions(){
-  if(typeof firebase?.app!=='function')throw timeoutError('sp/firebase-app-missing','Firebase App ist nicht verfügbar.');
-  return firebase.app().functions(REGION);
+  const firebase=window.firebase;
+  if(!firebase||typeof firebase.app!=='function')throw timeoutError('sp/firebase-app-missing','Firebase App ist nicht verfügbar.');
+  const app=firebase.app();
+  if(!app||typeof app.functions!=='function')throw timeoutError('sp/functions-sdk-missing','Firebase Functions ist nicht verfügbar.');
+  return app.functions(REGION);
 }
 async function ensureFunctions(){
-  if(typeof firebase?.functions==='function')return regionalFunctions();
+  const firebase=window.firebase;
+  if(firebase&&typeof firebase.functions==='function')return regionalFunctions();
   if(functionsPromise)return functionsPromise;
   const loader=new Promise((resolve,reject)=>{
     let script=document.querySelector('script[data-sp-functions-sdk]');
     const onLoad=()=>{
       script.dataset.spLoaded='1';
-      if(typeof firebase?.functions==='function')resolve(regionalFunctions());
+      const current=window.firebase;
+      if(current&&typeof current.functions==='function')resolve(regionalFunctions());
       else reject(timeoutError('sp/functions-sdk-missing','Firebase Functions wurde geladen, ist aber nicht verfügbar.'));
     };
     const onError=()=>reject(timeoutError('sp/functions-sdk-load','Firebase Functions konnte nicht geladen werden.'));
@@ -127,31 +153,33 @@ function friendlyError(error){
   const message=String(error?.message||'');
   if(code.includes('functions-sdk-timeout')||code.includes('functions-sdk-load')||code.includes('functions-sdk-missing'))return 'Firebase Functions konnte nicht geladen werden. Bitte Internetverbindung prüfen und erneut versuchen.';
   if(code.includes('firebase-app-missing'))return 'Firebase App ist nicht vollständig geladen. Bitte die Seite neu laden.';
-  if(code.includes('functions-call-timeout'))return 'Firebase antwortet zu langsam. Der Speichervorgang wurde nicht bestätigt. Bitte nicht sofort erneut speichern: kurz warten und danach die Teilnehmerliste über „Aktualisieren“ prüfen.';
+  if(code.includes('functions-call-timeout'))return 'Firebase antwortet zu langsam. Der Speichervorgang wurde nicht bestätigt. Bitte kurz warten und danach über „Aktualisieren“ prüfen.';
   if(code.includes('already-exists')||message.includes('EMAIL_ALREADY_IN_USE')||message.includes('STUDENT_LOOKUP_ALREADY_IN_USE'))return 'Diese E-Mail-Adresse wird bereits von einem anderen Firebase-Konto verwendet.';
   if(code.includes('permission-denied')||message.includes('OWNER_REQUIRED'))return 'Nur das bestätigte Owner-Konto darf diese E-Mail-Änderung durchführen.';
   if(code.includes('invalid-argument'))return 'Bitte eine gültige E-Mail-Adresse eingeben.';
-  if(code.includes('unavailable')||code.includes('functions/not-found')||message.includes('Function')&&message.includes('not found'))return 'Der Firebase-Kontodienst ist noch nicht erreichbar.';
-  if(code.includes('not-found'))return 'Das Teilnehmerkonto wurde in Firebase nicht gefunden.';
+  if(code.includes('unavailable')||code.includes('functions/not-found')||code.includes('not-found')||message.includes('Function')&&message.includes('not found'))return 'Der Firebase-Kontodienst ist noch nicht veröffentlicht oder nicht erreichbar.';
   return message||'Das Firebase-Konto konnte nicht aktualisiert werden.';
 }
 async function ownerSaveStudent(id){
   const student=currentStudent(id);
-  if(!student)return;
+  if(!student)return actionStatus('Teilnehmerkonto wurde nicht gefunden.','error');
   if(!api.state.isOwner)return originalSave(id);
 
   const email=norm(document.getElementById('editEmail')?.value);
   const firstName=text(document.getElementById('editFirstName')?.value);
   const lastName=text(document.getElementById('editLastName')?.value);
   const courseCode=text(document.getElementById('editCourse')?.value);
-  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return status('Bitte eine gültige E-Mail-Adresse eingeben.','error');
+  if(!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))return actionStatus('Bitte eine gültige E-Mail-Adresse eingeben.','error');
 
   const currentEmail=norm(student.authEmail||student.email);
-  if(email===currentEmail)return originalSave(id);
+  if(email===currentEmail){
+    actionStatus('Änderungen werden in Firebase gespeichert …');
+    return originalSave(id);
+  }
 
   const button=document.getElementById('saveFirebaseStudentBtn');
   if(button){button.disabled=true;button.textContent='Wird gespeichert …'}
-  status(student.authUid?'Firebase Authentication und Teilnehmerdaten werden aktualisiert …':'Teilnehmerdaten werden serverseitig in Firebase aktualisiert …');
+  actionStatus(student.authUid?'Firebase Authentication und Teilnehmerdaten werden aktualisiert …':'Teilnehmerdaten werden serverseitig in Firebase aktualisiert …');
   try{
     const functions=await ensureFunctions();
     const callable=functions.httpsCallable('updateStudentAccount');
@@ -177,7 +205,7 @@ async function ownerSaveStudent(id){
     api.navigate('students');
   }catch(error){
     console.error('[SprachPilot] Firebase student update failed',error);
-    status(friendlyError(error),'error');
+    actionStatus(friendlyError(error),'error');
     if(button){button.disabled=false;button.textContent='In Firebase speichern'}
   }
 }
