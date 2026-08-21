@@ -13,7 +13,7 @@ function ok(value,message){if(!value)throw new Error(message)}
 const scripts=[...index.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map(match=>match[1]);
 ok(scripts.length===6,`teacher dashboard should load exactly 6 initial scripts, got ${scripts.length}`);
 ok(scripts.includes('dashboard-lite.js?v=1'),'teacher dashboard must load the lightweight dashboard core');
-ok(scripts.includes('dashboard-account-admin.js?v=4'),'owner Firebase account editor must load the current cache-busted version');
+ok(scripts.includes('dashboard-account-admin.js?v=5'),'owner Firebase account editor must load the current cache-busted version');
 ok(!scripts.some(src=>src.includes('firebase-functions-compat')),'Firebase Functions SDK must stay lazy and not slow dashboard startup');
 ok(!index.includes('live-progress-refresh.js'),'live refresh must not be loaded on the teacher dashboard');
 ok(!index.includes('analytics.js'),'progress analytics must not load during dashboard startup');
@@ -38,11 +38,11 @@ ok(css.includes('@media(max-width:760px)'),'mobile layout breakpoint missing');
 ok(css.includes('.sp-mobile-nav{display:grid'),'mobile bottom navigation must become visible on phones');
 ok(css.includes('.sp-stat{grid-column:span 6!important'),'mobile statistics should render as a compact 2x2 grid');
 
-ok(accountAdmin.includes("httpsCallable('updateStudentAccount')"),'bound student email changes must use the server-side Firebase account function');
+ok(accountAdmin.includes("httpsCallable('updateStudentAccount')"),'bound student email changes should prefer the server-side Firebase account function when available');
 ok(accountAdmin.includes('firebase-functions-compat.js'),'Functions SDK must be loaded lazily only when needed');
 ok(accountAdmin.includes('api.state.isOwner'),'bound Firebase account editing must be owner-only in the dashboard');
 ok(accountAdmin.includes('const SDK_TIMEOUT_MS=8000'),'Functions SDK loading must have a hard timeout');
-ok(accountAdmin.includes('const CALL_TIMEOUT_MS=20000'),'student account saving must have a hard timeout');
+ok(accountAdmin.includes('const CALL_TIMEOUT_MS=12000'),'student account saving must have a hard timeout');
 ok(accountAdmin.includes("'sp/functions-call-timeout'"),'call timeout must produce a dedicated user-visible error');
 ok(accountAdmin.includes('withTimeout('),'Firebase loading and saving must never wait indefinitely');
 ok(accountAdmin.includes("button.disabled=false;button.textContent='In Firebase speichern'"),'save button must recover after Firebase failure or timeout');
@@ -52,7 +52,17 @@ ok(!accountAdmin.includes("firebase.functions(REGION)"),'dashboard must not pass
 ok(accountAdmin.includes("id=\"spFirebaseSaveStatus\""),'Firebase save result must be visible inside the edit dialog');
 ok(accountAdmin.includes("button.addEventListener('click'"),'Firebase save button must have a direct click listener');
 ok(!accountAdmin.includes("id=\"saveFirebaseStudentBtn\" onclick="),'Firebase save button must not depend on inline onclick');
-ok(!accountAdmin.includes('deleteUser('),'student account identity must never be recreated by the dashboard');
+
+ok(accountAdmin.includes('migrateBoundAccountLocally'),'missing Cloud Function must have a safe owner-only fallback');
+ok(accountAdmin.includes('createUserWithEmailAndPassword'),'fallback must create the replacement Firebase Auth credential in a secondary app');
+ok(accountAdmin.includes('sendEmailVerification'),'replacement login must receive a verification email');
+ok(accountAdmin.includes('sendPasswordResetEmail'),'replacement login must receive a password setup/reset email');
+ok(accountAdmin.includes("collection('progress')"),'fallback must rebind existing progress documents instead of dropping progress');
+ok(accountAdmin.includes("collection('studentRankings')"),'fallback must preserve ranking points by rebinding ranking documents');
+ok(accountAdmin.includes('authPreviousUid'),'fallback must retain the previous UID for later audit/cleanup');
+ok(accountAdmin.includes('authReboundByOwnerUid'),'fallback must record that the owner performed the rebind');
+ok(accountAdmin.includes('user.delete()'),'a newly created replacement auth user must be rolled back if Firestore migration fails');
+ok(accountAdmin.includes('adminFunctionUnavailable'),'repeated clicks must not keep waiting for a known-missing Cloud Function');
 
 ok(login.includes('firebase-functions-compat.js'),'teacher login must load Firebase Functions for custom account mail');
 ok(login.includes('js/auth.js?v=teacher-auth-mail-20260820-2'),'teacher login must cache-bust the corrected Functions client');
