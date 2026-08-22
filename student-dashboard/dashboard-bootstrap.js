@@ -14,11 +14,18 @@ function clearStaleTeacherPreview(){
 function alreadyCanonicalSecureProfile(profile,uid){const p=profile||{},canonical=String(p.canonicalStudentId||'').trim();return !!(canonical&&p.secureAuth===true&&String(p.authUid||'')===String(uid||'')&&String(p.docId||canonical)===canonical&&String(p.studentId||canonical)===canonical&&String(p.userId||canonical)===canonical)}
 function revealDashboard(){try{document.documentElement.dataset.spDashboardAuth='ok';document.documentElement.style.removeProperty('visibility')}catch(e){}}
 function warning(title,text){
- revealDashboard();
- let box=document.getElementById('spDashboardWarning');
- if(!box){box=document.createElement('div');box.id='spDashboardWarning';box.style.cssText='max-width:1160px;margin:14px auto;padding:14px 16px;border:1px solid #e5b94b;border-radius:16px;background:#fff8df;color:#6f5310;font:15px/1.45 system-ui;box-shadow:0 8px 24px rgba(0,0,0,.07)';document.body.insertBefore(box,document.body.firstChild)}
- box.innerHTML=`<strong>${title}</strong><br>${text} <button id="spDashboardRetry" type="button" style="margin-left:8px;padding:7px 10px;border:0;border-radius:10px;background:#2f7f96;color:#fff;font-weight:800">Erneut laden</button>`;
- document.getElementById('spDashboardRetry').onclick=()=>location.reload();
+  revealDashboard();
+  let box=document.getElementById('spDashboardWarning');
+  if(!box){box=document.createElement('div');box.id='spDashboardWarning';box.style.cssText='max-width:1160px;margin:14px auto;padding:14px 16px;border:1px solid #e5b94b;border-radius:16px;background:#fff8df;color:#6f5310;font:15px/1.45 system-ui;box-shadow:0 8px 24px rgba(0,0,0,.07)';document.body.insertBefore(box,document.body.firstChild)}
+  box.innerHTML=`<strong>${title}</strong><br>${text} <button id="spDashboardRetry" type="button" style="margin-left:8px;padding:7px 10px;border:0;border-radius:10px;background:#2f7f96;color:#fff;font-weight:800">Jetzt aktualisieren</button>`;
+  document.getElementById('spDashboardRetry').onclick=async()=>{
+    const btn=document.getElementById('spDashboardRetry');if(btn)btn.disabled=true;
+    try{
+      const ok=typeof window.SP_DASHBOARD_RETRY==='function'?await window.SP_DASHBOARD_RETRY():false;
+      if(ok){box.remove();return}
+      location.reload();
+    }catch(e){location.reload()}
+  };
 }
 function fatalVisible(title,text){revealDashboard();warning(title,text)}
 
@@ -30,7 +37,6 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
   try{
     const access=await verifySecureAccess({allowTeacher:false,redirect:true,mark:false});
     if(!access?.ok||access.type!=='student')throw new Error('SECURE_STUDENT_DASHBOARD_ACCESS_REQUIRED');
-    // Sobald die Schüleridentität sicher bestätigt ist, darf die Seite nicht mehr unsichtbar bleiben.
     revealDashboard();
 
     let normalizedProfile=readProfile();
@@ -51,26 +57,25 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
 
     let progressReady=false;
     try{
-      const progressModule=await import('/js/account-progress-sync.js?v=12');
+      const progressModule=await import('/js/account-progress-sync.js?v=13');
       const progressState=await progressModule.startAccountProgressSync();
       progressReady=progressState?.blocked!==true&&progressState?.serverAuthoritative===true&&Number(progressState?.authorityVersion||0)>=2;
-      if(!progressReady){
-        const repair=String(progressState?.reason||'')==='CLOUD_PROGRESS_REPAIR_SOURCE_REQUIRED';
-        warning('Lernstand noch nicht vollständig synchronisiert.',repair?'Öffne SprachPilot einmal auf dem Gerät oder Browser, auf dem dein bisheriger Lernstand noch sichtbar ist. Das Dashboard bleibt trotzdem erreichbar.':'Der Server-Lernstand konnte gerade nicht vollständig geladen werden. Das Dashboard bleibt sichtbar und kann erneut geladen werden.');
-      }
+      if(!progressReady)console.warn('Dashboard nutzt direkten Firebase-Stand, Kontosynchronisierung ist noch nicht vollständig bereit.',progressState);
     }catch(error){
-      console.error('Dashboard-Fortschritt konnte nicht synchronisiert werden',error);
-      warning('Lernstand konnte gerade nicht aktualisiert werden.','Die Dashboard-Seite bleibt geöffnet. Versuche die Aktualisierung später erneut.');
+      console.warn('Kontosynchronisierung im Dashboard verzögert; direkter Firebase-Stand wird trotzdem geladen.',error);
     }
 
     try{localStorage.removeItem('SP_STUDENT_DASHBOARD_LITE_V3')}catch(e){}
-    window.SP_PROGRESS_ALIAS_READY=Promise.resolve({ok:progressReady,skipped:!progressReady,reason:progressReady?'server-authoritative-progress-v2':'dashboard-visible-fallback'});
-    try{await import('./dashboard-server-v2.js?v=2')}catch(error){console.error('Dashboard-Inhalte konnten nicht vollständig geladen werden',error);warning('Dashboard konnte nur teilweise geladen werden.','Die Anmeldung funktioniert, aber die aktuellen Statistiken konnten nicht vollständig aufgebaut werden.')}
+    window.SP_PROGRESS_ALIAS_READY=Promise.resolve({ok:progressReady,skipped:!progressReady,reason:progressReady?'server-authoritative-progress-v2':'dashboard-direct-server-fallback'});
+    try{
+      await import('./dashboard-server-v3.js?v=3');
+    }catch(error){
+      console.error('Dashboard-Inhalte konnten nicht vollständig geladen werden',error);
+      warning('Dashboard konnte nur teilweise geladen werden.','Die Anmeldung funktioniert, aber die aktuellen Statistiken konnten nicht vollständig aufgebaut werden.');
+    }
     revealDashboard();
   }catch(error){
     console.error('Schüler-Dashboard Startfehler',error);
-    // Authentifizierungsfehler werden vom Gate zur Anmeldung weitergeleitet. Falls eine Weiterleitung ausbleibt,
-    // darf die Seite trotzdem nie als komplett leere, unsichtbare Fläche stehen bleiben.
     setTimeout(()=>{
       if(!document.documentElement.dataset.spDashboardAuth&&document.visibilityState!=='hidden')fatalVisible('Dashboard konnte nicht geöffnet werden.','Bitte melde dich erneut an oder lade die Seite neu.');
     },500);
