@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-wrong-queue6';
+const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-no-skip-v7';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 function addOrderPolish(){
  if(page!=='task')return;
@@ -11,8 +11,8 @@ function addOrderPolish(){
 }
 Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
- .then(()=>load('../shared/l7-wrong-queue-v4.js?v=5'))
- .then(()=>{window.SPL7WrongQueueV4?.install?.();return load('../shared/l7-theme-score.js?v=2')})
+ .then(()=>load('../shared/l7-wrong-queue-v4.js?v=7'))
+ .then(()=>{window.SPL7WrongQueueV7?.install?.();return load('../shared/l7-theme-score.js?v=2')})
  .then(()=>load('../shared/l7-exam-gate.js?v=2'))
  .then(()=>{window.SPL7StrictExamGate?.install?.();window.L7T3CardImages?.installRenderer?.();return load('l7t3-bunny-audio.js?v=3')})
  .then(()=>{
@@ -31,7 +31,7 @@ Promise.resolve(window.L7_THEME_READY)
    .then(()=>load('../shared/l7-reading-queue-fix.js?v=2'))
    .then(()=>load('l7t3-schon-einmal-ui.js?v=3'))
    .then(()=>{
-    window.SPL7WrongQueueV4?.install?.();window.L7T2MemoryUI?.install?.();window.L7T2EndingsUI?.install?.();window.L7T2AdvancedUI?.install?.();window.L7T3SpecialUI?.install?.();window.L7T3ErrorSelectionFix?.install?.();window.L7T3HelpStandard?.install?.();window.L7ReadingQueueFix?.install?.();window.L7T3SchonEinmalUI?.install?.();
+    window.SPL7WrongQueueV7?.install?.();window.L7T2MemoryUI?.install?.();window.L7T2EndingsUI?.install?.();window.L7T2AdvancedUI?.install?.();window.L7T3SpecialUI?.install?.();window.L7T3ErrorSelectionFix?.install?.();window.L7T3HelpStandard?.install?.();window.L7ReadingQueueFix?.install?.();window.L7T3SchonEinmalUI?.install?.();
     const result=window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'));window.L7T3CardImages?.patchAll?.(document);return result;
    });
  })
