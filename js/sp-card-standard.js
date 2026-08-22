@@ -4,7 +4,7 @@ if(window.SPCardStandard)return;
 
 function esc(value){
   return String(value??'').replace(/[&<>"']/g,function(char){
-    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char];
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char];
   });
 }
 function fallbackNormalize(value){
@@ -124,9 +124,15 @@ function mount(config){
   }
   function flipOnly(){
     var card=document.getElementById('verbFlipCard');
-    if(card&&!card.classList.contains('flipped'))card.classList.add('flipped');
+    if(card&&!card.classList.contains('flipped')){
+      if(card.dataset.spRepeatMarked!=='1'){
+        card.dataset.spRepeatMarked='1';
+        if(typeof state.wrong==='function')state.wrong();
+      }
+      card.classList.add('flipped');
+    }
     var feedback=document.getElementById('feedback');
-    if(feedback&&!feedback.textContent.trim())feedback.innerHTML='<div class="hint">Sprich das Wort oder schreibe es. Erst eine richtige Antwort geht weiter.</div>';
+    if(feedback)feedback.innerHTML='<div class="hint"><strong>Wiederholen.</strong> Du hast die Lösung gesehen. Sprich oder schreibe das Wort jetzt richtig. Danach kommt diese Karte am Ende noch einmal.</div>';
     var after=document.getElementById('cardAfter');if(after)after.innerHTML='';
   }
   function openWrite(){
@@ -146,7 +152,7 @@ function mount(config){
     if(typeof state.right==='function')state.right();
     area.querySelectorAll('button,input,textarea,audio').forEach(function(element){element.disabled=true;});
     var feedback=document.getElementById('feedback');
-    if(feedback)feedback.innerHTML='<div class="ok">Richtig.'+(repeated?' Der Dialog kommt am Ende noch einmal.':'')+'</div>';
+    if(feedback)feedback.innerHTML='<div class="ok">Richtig.'+(repeated?' Die Karte kommt am Ende noch einmal.':'')+'</div>';
     setTimeout(render,650);
   }
   function startMic(item){
