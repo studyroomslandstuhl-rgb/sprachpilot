@@ -1,6 +1,6 @@
 import '/js/progress.js?v=11';
 import '/js/point-delta-bridge.js?v=2';
-import '/js/ranking-mirror.js?v=2';
+import '/js/ranking-mirror.js?v=3';
 import { authReady } from '/js/firebase.js';
 import { getActiveProfile } from '/js/auth.js';
 import { currentFirebaseUser } from '/js/student-secure-auth.js?v=1';
