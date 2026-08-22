@@ -2,11 +2,11 @@ import { db, doc, getDocFromServer, setDoc, collection, query, where, getDocsFro
 import { getActiveProfile } from '/js/auth.js';
 import { logoutSecureStudent } from '/js/student-identity.js?v=identity5';
 import { loadCourseRelease, themeOpen } from '/js/course-releases.js?v=release-core-20260701b';
-import '/shared/points-recalculator.js?v=1';
+import '/shared/points-recalculator.js?v=20260822-dashboard5';
 
 const $=id=>document.getElementById(id);
 const RANKING_COLLECTION='studentRankings';
-const RANKING_VERSION=4;
+const RANKING_VERSION=5;
 let releaseData=null,statsBusy=false,rankingBusy=false,lastServerStats=null;
 
 function profile(){return getActiveProfile?.()||{} }
@@ -15,7 +15,6 @@ function point(v){const n=Number(v);return Number.isFinite(n)?Math.max(0,n):0}
 function clamp(v){return Math.max(0,Math.min(100,Math.round(Number(v)||0)))}
 function esc(v){return String(v||'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]))}
 function canonicalId(p=profile()){return String(p.canonicalStudentId||p.docId||p.studentId||p.userId||'').trim()}
-function aliasIds(p=profile()){const canonical=canonicalId(p);return uniq([...(Array.isArray(p.aliasIds)?p.aliasIds:[]),p.docId,p.studentId,p.userId]).filter(id=>id&&id!==canonical)}
 function keyVariants(value){const raw=String(value||'').trim();return raw?[raw,raw.toLowerCase(),raw.toUpperCase()]:[]}
 function courseKeys(p=profile()){
   return uniq([
@@ -26,13 +25,23 @@ function courseKeys(p=profile()){
 function primaryCourseKey(p=profile()){return String(p.courseDocId||p.courseCode||p.kurs||p.kursnummer||p.course||localStorage.getItem('SP_COURSE_CODE')||'').trim()}
 function displayName(p=profile()){return [p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(' ').trim()||p.studentName||p.displayName||p.email||'Schüler/in'}
 function profilePoints(p=profile()){return Math.max(point(p.rankingPoints),point(p.pointsTotal),point(p.lifetimePoints),point(p.punkteGesamt),point(p.points),point(p.ranking?.points),point(p.totals?.points))}
+function taskPct(task={}){return Math.max(clamp(task.percent??task.progress??0),task.completed===true?100:0)}
 function topicPct(topic={}){
+  const direct=Math.max(clamp(topic.progressPercent??topic.current?.percent??0),topic.completed===true?100:0);
   const tasks=Object.values(topic.tasks||{}).filter(t=>t&&typeof t==='object');
-  if(tasks.length){
-    const values=tasks.map(task=>Math.max(clamp(task.percent??task.progress??0),task.completed===true?100:0));
-    return clamp(values.reduce((sum,v)=>sum+v,0)/values.length);
-  }
-  return Math.max(clamp(topic.progressPercent??topic.current?.percent??0),topic.completed===true?100:0);
+  if(!tasks.length)return direct;
+  const average=clamp(tasks.reduce((sum,task)=>sum+taskPct(task),0)/tasks.length);
+  return Math.max(direct,average);
+}
+function examWasCompleted(topic={}){
+  const exam=topic.exam||{};
+  return exam.completed===true||point(exam.attempts)>0||point(exam.bestPercent)>0||point(exam.percent)>0||point(exam.scorePercent)>0||point(exam.stars)>0;
+}
+function topicFinished(topic={}){
+  const tasks=Object.values(topic.tasks||{}).filter(t=>t&&typeof t==='object');
+  if(!tasks.length||!tasks.every(task=>task.completed===true||taskPct(task)>=100))return false;
+  if(topicPct(topic)<100)return false;
+  return examWasCompleted(topic);
 }
 function topicRef(key,topic={}){
   const lessonRaw=String(topic.lesson??topic.lektion??''),themeRaw=String(topic.theme??topic.thema??'');
@@ -50,15 +59,10 @@ function calculatedPoints(data={}){try{return Math.max(0,Number(window.SPPointRe
 function topicSignature(module,key,topic={}){const ref=topicRef(key,topic);return `${module}|${ref?.sig||String(key)}`}
 
 async function readProgressRows(){
-  const p=profile(),canonical=canonicalId(p);if(!canonical)throw new Error('STUDENT_ID_MISSING');
-  const rows=[];
+  const canonical=canonicalId();if(!canonical)throw new Error('STUDENT_ID_MISSING');
   const canonicalSnap=await getDocFromServer(doc(db,'progress',canonical));
-  if(canonicalSnap.exists())rows.push({id:canonical,data:canonicalSnap.data()||{}});
-  for(const id of aliasIds(p).slice(0,25)){
-    try{const snap=await getDocFromServer(doc(db,'progress',id));if(snap.exists())rows.push({id,data:snap.data()||{}})}catch(error){console.warn('Historischer Fortschritts-Alias im Dashboard übersprungen',id,error)}
-  }
-  if(!rows.length)throw new Error('CANONICAL_PROGRESS_MISSING');
-  return rows;
+  if(!canonicalSnap.exists())throw new Error('CANONICAL_PROGRESS_MISSING');
+  return[{id:canonical,data:canonicalSnap.data()||{}}];
 }
 function statsFromRows(rows){
   const topics=new Map(),stars=new Map();let points=0;
@@ -66,7 +70,7 @@ function statsFromRows(rows){
     const data=row.data||{};points=Math.max(points,storedPoints(data),calculatedPoints(data));
     for(const [key,topic] of Object.entries(data.wortschatz||{})){
       if(!topicLike(topic))continue;const ref=topicRef(key,topic);if(!ref||!released(ref))continue;
-      const pct=topicPct(topic),old=topics.get(ref.sig);if(!old||pct>old.pct)topics.set(ref.sig,{pct,ref});
+      topics.set(ref.sig,{pct:topicPct(topic),finished:topicFinished(topic),ref});
     }
     for(const module of ['wortschatz','fragen','verben','perfekt','grammatik']){
       for(const [key,topic] of Object.entries(data[module]||{})){
@@ -76,13 +80,13 @@ function statsFromRows(rows){
     }
   }
   const list=[...topics.values()],avg=list.length?clamp(list.reduce((sum,item)=>sum+item.pct,0)/list.length):0;
-  return{avg,done:list.filter(item=>item.pct>=100).length,totalThemes:list.length,points,stars:[...stars.values()].reduce((sum,v)=>sum+v,0)};
+  return{avg,done:list.filter(item=>item.finished).length,activeThemes:list.length,points,stars:[...stars.values()].reduce((sum,v)=>sum+v,0)};
 }
 function renderStats(stats){
   const p=profile(),key=primaryCourseKey(p);$('userPill').textContent=displayName(p)+(key?' · '+key:'');
   $('totalCircle').style.setProperty('--p',stats.avg||0);$('totalCircle').innerHTML='<span>'+Number(stats.avg||0)+'%</span>';
   $('totalFill').style.width=Number(stats.avg||0)+'%';
-  $('summaryText').textContent=stats.totalThemes?`${stats.done} von ${stats.totalThemes} freigegebenen Themen fertig`:'Noch keine freigegebenen Themen mit Fortschritt.';
+  $('summaryText').textContent=stats.done>0?`${stats.done} ${stats.done===1?'Thema':'Themen'} vollständig abgeschlossen.`:(stats.activeThemes?'Noch kein Thema vollständig abgeschlossen.':'Noch kein Lernstand vorhanden.');
   $('pointsTotal').textContent=Number(stats.points||0);$('starsTotal').textContent=Number(stats.stars||0);$('doneTotal').textContent=Number(stats.done||0);
   $('lastUpdated').textContent='Firebase-Serverstand: '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'});
 }
@@ -151,6 +155,8 @@ async function init(){
   window.addEventListener('online',retryAll);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')retryAll()});
   window.addEventListener('SP_ACCOUNT_PROGRESS_SYNCED',()=>setTimeout(refreshOwn,100));
+  window.addEventListener('SP_L7_LIVE_SCORE_SYNCED',()=>setTimeout(retryAll,120));
+  window.addEventListener('SP_SERVER_PROGRESS_RESET_APPLIED',()=>setTimeout(retryAll,120));
   setInterval(refreshOwn,45000);setInterval(loadRanking,60000);
 }
 
