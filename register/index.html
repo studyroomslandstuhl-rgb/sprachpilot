@@ -3,8 +3,10 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+  <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
   <title>SprachPilot – Registrieren</title>
-  <link rel="stylesheet" href="../style.css">
+  <link rel="stylesheet" href="../style.css?v=20260822-cache2">
 </head>
 <body>
 <div class="container">
@@ -25,153 +27,85 @@
         <div><label>Vorname *</label><input id="fname" required autocomplete="given-name"></div>
         <div><label>Nachname *</label><input id="lname" required autocomplete="family-name"></div>
       </div>
-
-      <label>E-Mail *</label>
-      <input id="email" type="email" required autocomplete="email" inputmode="email" placeholder="name@email.com">
-
-      <label>E-Mail wiederholen *</label>
-      <input id="emailConfirm" type="email" required autocomplete="off" inputmode="email" placeholder="E-Mail noch einmal eingeben">
+      <label>E-Mail *</label><input id="email" type="email" required autocomplete="email" inputmode="email" placeholder="name@email.com">
+      <label>E-Mail wiederholen *</label><input id="emailConfirm" type="email" required autocomplete="off" inputmode="email" placeholder="E-Mail noch einmal eingeben">
       <p class="small">Bitte prüfe deine E-Mail genau. An diese Adresse wird die Bestätigung geschickt.</p>
-
-      <label>Passwort *</label>
-      <input id="password" type="password" required minlength="8" autocomplete="new-password" placeholder="Mindestens 8 Zeichen">
-
-      <label>Passwort wiederholen *</label>
-      <input id="passwordConfirm" type="password" required minlength="8" autocomplete="new-password" placeholder="Passwort noch einmal eingeben">
-
+      <label>Passwort *</label><input id="password" type="password" required minlength="8" autocomplete="new-password" placeholder="Mindestens 8 Zeichen">
+      <label>Passwort wiederholen *</label><input id="passwordConfirm" type="password" required minlength="8" autocomplete="new-password" placeholder="Passwort noch einmal eingeben">
       <label>Muttersprache *</label>
       <select id="motherLanguage" required>
         <option value="">Bitte auswählen</option>
         <option>Albanisch</option><option>Amharisch</option><option>Arabisch</option><option>Armenisch</option><option>Aserbaidschanisch</option><option>Bengalisch</option><option>Bosnisch</option><option>Bulgarisch</option><option>Chinesisch</option><option>Dari</option><option>Deutsch</option><option>Englisch</option><option>Farsi/Persisch</option><option>Französisch</option><option>Georgisch</option><option>Griechisch</option><option>Hindi</option><option>Italienisch</option><option>Japanisch</option><option>Kasachisch</option><option>Kroatisch</option><option>Kurdisch</option><option>Paschtu</option><option>Polnisch</option><option>Portugiesisch</option><option>Rumänisch</option><option>Russisch</option><option>Serbisch</option><option>Somali</option><option>Spanisch</option><option>Tamil</option><option>Thai</option><option>Tigrinya</option><option>Tschechisch</option><option>Türkisch</option><option>Ukrainisch</option><option>Ungarisch</option><option>Urdu</option><option>Usbekisch</option><option>Vietnamesisch</option>
       </select>
-
-      <label>Kurscode *</label>
-      <input id="course" required autocomplete="off" autocapitalize="characters" placeholder="z. B. GLK-68">
-
+      <label>Kurscode *</label><input id="course" required autocomplete="off" autocapitalize="characters" placeholder="z. B. GLK-68">
       <button class="success" type="button" id="registerBtn">Registrieren</button>
       <a class="btn secondary" href="../login/">Anmelden</a>
       <div id="registerResult"></div>
     </form>
   </section>
-
   <footer>© SprachPilot</footer>
 </div>
-
+<script src="/shared/sp-cache-epoch.js?v=20260822-cache2"></script>
 <script type="module">
-import {
-  registerStudentV2 as registerStudent,
-  finishPendingStudentRegistration,
-  hasPendingStudentRegistration,
-  $,
-  safeText
-} from "../js/student-login-v2.js?v=5";
-import { secureStudentSignOut } from "../js/student-secure-auth.js?v=1";
-
+import {registerStudentV2 as registerStudent,finishPendingStudentRegistration,hasPendingStudentRegistration,$,safeText} from "../js/student-login-v2.js?v=20260822-cache2";
+import { secureStudentSignOut } from "../js/student-secure-auth.js?v=20260822-cache2";
 const PENDING_KEY='SP_PENDING_SECURE_STUDENT_REGISTRATION_V1';
 function showMsg(html){const result=$("registerResult");if(result)result.innerHTML=html;}
 function normalizedEmail(value){return String(value||"").trim().toLowerCase()}
 function showRegisterButton(show=true){const button=$("registerBtn");if(button)button.style.display=show?"block":"none";}
 function openStartSoon(){setTimeout(()=>{location.href="/index.html"},700)}
-function clearTeacherSessionMarkers(){
-  try{
-    ['SP_TEACHER_MODE','SP_TEACHER_EMAIL','SP_TEACHER_ID','SP_TEACHER_UID','SP_TEACHER_PROFILE','SP_L7_PREVIEW_PID'].forEach(k=>localStorage.removeItem(k));
-    sessionStorage.removeItem('SP_TEACHER_PREVIEW');
-  }catch(e){}
-}
-async function resetStaleRegistrationSession(){
-  try{localStorage.removeItem(PENDING_KEY)}catch(e){}
-  try{await secureStudentSignOut()}catch(e){}
-}
-async function ensureRankingRow(){
-  try{
-    await import('../js/ranking-mirror.js?v=4');
-    return await window.SPRankingMirror?.mirror?.(0);
-  }catch(error){console.warn('Ranglisten-Eintrag nach Registrierung konnte noch nicht erstellt werden',error);return false}
-}
-
-let registrationBusy=false;
-let finishingBusy=false;
-
+function clearTeacherSessionMarkers(){try{['SP_TEACHER_MODE','SP_TEACHER_EMAIL','SP_TEACHER_ID','SP_TEACHER_UID','SP_TEACHER_PROFILE','SP_L7_PREVIEW_PID'].forEach(k=>localStorage.removeItem(k));sessionStorage.removeItem('SP_TEACHER_PREVIEW')}catch(e){}}
+async function resetStaleRegistrationSession(){try{localStorage.removeItem(PENDING_KEY)}catch(e){}try{await secureStudentSignOut()}catch(e){}}
+async function ensureRankingRow(){try{await import('../js/ranking-mirror.js?v=20260822-cache2');return await window.SPRankingMirror?.mirror?.(0)}catch(error){console.warn('Ranglisten-Eintrag nach Registrierung konnte noch nicht erstellt werden',error);return false}}
+let registrationBusy=false,finishingBusy=false;
 async function finishRegistrationAutomatically({showChecking=false}={}){
-  if(finishingBusy||!hasPendingStudentRegistration())return false;
-  finishingBusy=true;
+  if(finishingBusy||!hasPendingStudentRegistration())return false;finishingBusy=true;
   try{
     if(showChecking)showMsg('<div class="ok">E-Mail-Bestätigung wird geprüft...</div>');
-    await finishPendingStudentRegistration();
-    await ensureRankingRow();
-    showMsg('<div class="ok"><b>Registrierung abgeschlossen.</b><br>Du wirst gleich weitergeleitet.</div>');
-    openStartSoon();return true;
+    await finishPendingStudentRegistration();await ensureRankingRow();
+    showMsg('<div class="ok"><b>Registrierung abgeschlossen.</b><br>Du wirst gleich weitergeleitet.</div>');openStartSoon();return true;
   }catch(err){
     const message=String(err?.message||"");
-    if(message==="EMAIL_NOT_VERIFIED"){
-      if(showChecking)showMsg('<div class="ok"><b>Bitte bestätige zuerst deine E-Mail.</b><br>Öffne den Link in der Bestätigungs-E-Mail. Danach wird die Registrierung automatisch abgeschlossen.</div>');
-      return false;
-    }
-    if(message==="VERIFICATION_LOGIN_REQUIRED"){
-      showRegisterButton(true);showMsg('<div class="no"><b>Bitte melde dich an.</b><br>Deine E-Mail wurde bestätigt. Öffne „Anmelden“ und melde dich mit E-Mail und Passwort an.</div>');return false;
-    }
-    if(message==="SECURE_AUTH_EMAIL_MISMATCH"||message==="STUDENT_EMAIL_MISMATCH"){
-      await resetStaleRegistrationSession();showRegisterButton(true);showMsg('<div class="no"><b>Die alte Anmeldesitzung passte nicht zu dieser E-Mail.</b><br>Sie wurde zurückgesetzt. Du kannst die Registrierung jetzt mit den ausgefüllten Daten neu starten.</div>');return false;
-    }
-    if(message==="STUDENT_AUTH_OWNERSHIP_MISMATCH"){
-      showRegisterButton(true);showMsg('<div class="no"><b>Registrierung konnte nicht abgeschlossen werden.</b><br>Dieses Schülerprofil ist bereits mit einem anderen Konto verbunden.</div>');return false;
-    }
-    if(message==="LOCAL_PROGRESS_ISOLATION_FAILED"){
-      showRegisterButton(true);showMsg('<div class="no"><b>Registrierung konnte auf diesem Gerät nicht abgeschlossen werden.</b><br>Bitte lade die Seite neu und versuche es noch einmal.</div>');return false;
-    }
+    if(message==="EMAIL_NOT_VERIFIED"){if(showChecking)showMsg('<div class="ok"><b>Bitte bestätige zuerst deine E-Mail.</b><br>Öffne den Link in der Bestätigungs-E-Mail. Danach wird die Registrierung automatisch abgeschlossen.</div>');return false}
+    if(message==="VERIFICATION_LOGIN_REQUIRED"){showRegisterButton(true);showMsg('<div class="no"><b>Bitte melde dich an.</b><br>Deine E-Mail wurde bestätigt. Öffne „Anmelden“ und melde dich mit E-Mail und Passwort an.</div>');return false}
+    if(message==="SECURE_AUTH_EMAIL_MISMATCH"||message==="STUDENT_EMAIL_MISMATCH"){await resetStaleRegistrationSession();showRegisterButton(true);showMsg('<div class="no"><b>Die alte Anmeldesitzung passte nicht zu dieser E-Mail.</b><br>Sie wurde zurückgesetzt. Du kannst die Registrierung jetzt mit den ausgefüllten Daten neu starten.</div>');return false}
+    if(message==="STUDENT_AUTH_OWNERSHIP_MISMATCH"){showRegisterButton(true);showMsg('<div class="no"><b>Registrierung konnte nicht abgeschlossen werden.</b><br>Dieses Schülerprofil ist bereits mit einem anderen Konto verbunden.</div>');return false}
+    if(message==="LOCAL_PROGRESS_ISOLATION_FAILED"){showRegisterButton(true);showMsg('<div class="no"><b>Registrierung konnte auf diesem Gerät nicht abgeschlossen werden.</b><br>Bitte lade die Seite neu und versuche es noch einmal.</div>');return false}
     showRegisterButton(true);showMsg(`<div class="no">Registrierung konnte nicht abgeschlossen werden: ${safeText(message||"Unbekannter Fehler")}</div>`);return false;
-  }finally{finishingBusy=false;}
+  }finally{finishingBusy=false}
 }
-
 window.doRegister=async function(){
   if(registrationBusy)return;
   const btn=$("registerBtn"),vorname=$("fname")?.value.trim()||"",nachname=$("lname")?.value.trim()||"",email=normalizedEmail($("email")?.value),emailConfirm=normalizedEmail($("emailConfirm")?.value),password=$("password")?.value||"",passwordConfirm=$("passwordConfirm")?.value||"",muttersprache=$("motherLanguage")?.value||"",kurs=$("course")?.value.trim()||"";
-  if(!vorname||!nachname||!email||!emailConfirm||!password||!passwordConfirm||!muttersprache||!kurs){showMsg('<div class="no">Bitte alle Felder ausfüllen.</div>');return;}
-  if(email!==emailConfirm){showMsg('<div class="no"><b>Die E-Mail-Adressen sind nicht gleich.</b><br>Bitte prüfe beide E-Mail-Felder.</div>');$("emailConfirm")?.focus();return;}
-  if(password!==passwordConfirm){showMsg('<div class="no"><b>Die Passwörter sind nicht gleich.</b><br>Bitte prüfe beide Passwort-Felder.</div>');$("passwordConfirm")?.focus();return;}
-  if(password.length<8){showMsg('<div class="no">Das Passwort muss mindestens 8 Zeichen lang sein.</div>');return;}
-  if(!$("email")?.checkValidity()||!$("emailConfirm")?.checkValidity()){showMsg('<div class="no">Bitte gib eine gültige E-Mail-Adresse ein.</div>');return;}
-
+  if(!vorname||!nachname||!email||!emailConfirm||!password||!passwordConfirm||!muttersprache||!kurs){showMsg('<div class="no">Bitte alle Felder ausfüllen.</div>');return}
+  if(email!==emailConfirm){showMsg('<div class="no"><b>Die E-Mail-Adressen sind nicht gleich.</b><br>Bitte prüfe beide E-Mail-Felder.</div>');$("emailConfirm")?.focus();return}
+  if(password!==passwordConfirm){showMsg('<div class="no"><b>Die Passwörter sind nicht gleich.</b><br>Bitte prüfe beide Passwort-Felder.</div>');$("passwordConfirm")?.focus();return}
+  if(password.length<8){showMsg('<div class="no">Das Passwort muss mindestens 8 Zeichen lang sein.</div>');return}
+  if(!$("email")?.checkValidity()||!$("emailConfirm")?.checkValidity()){showMsg('<div class="no">Bitte gib eine gültige E-Mail-Adresse ein.</div>');return}
   registrationBusy=true;
   try{
-    if(btn){btn.disabled=true;btn.textContent="Wird registriert ...";}
-    showMsg('<div class="ok">Registrierung wird vorbereitet ...</div>');
-    await resetStaleRegistrationSession();
-    clearTeacherSessionMarkers();
+    if(btn){btn.disabled=true;btn.textContent="Wird registriert ..."}showMsg('<div class="ok">Registrierung wird vorbereitet ...</div>');await resetStaleRegistrationSession();clearTeacherSessionMarkers();
     const result=await registerStudent({vorname,nachname,email,password,muttersprache,kurs});
-    if(result?.activated){await ensureRankingRow();showMsg('<div class="ok"><b>Registrierung abgeschlossen.</b><br>Du wirst gleich weitergeleitet.</div>');openStartSoon();return;}
-    if(result?.verificationRequired){showRegisterButton(true);showMsg('<div class="ok"><b>Bestätigungs-E-Mail wurde gesendet.</b><br>Öffne die E-Mail und bestätige deine Adresse. Danach wird die Registrierung automatisch abgeschlossen. Der Knopf „Registrieren“ bleibt sichtbar, falls du die Registrierung mit anderen Daten neu starten möchtest.</div>');return;}
+    if(result?.activated){await ensureRankingRow();showMsg('<div class="ok"><b>Registrierung abgeschlossen.</b><br>Du wirst gleich weitergeleitet.</div>');openStartSoon();return}
+    if(result?.verificationRequired){showRegisterButton(true);showMsg('<div class="ok"><b>Bestätigungs-E-Mail wurde gesendet.</b><br>Öffne die E-Mail und bestätige deine Adresse. Danach wird die Registrierung automatisch abgeschlossen. Der Knopf „Registrieren“ bleibt sichtbar, falls du die Registrierung mit anderen Daten neu starten möchtest.</div>');return}
   }catch(err){
     console.error("Registrierung Fehler:",err);const code=String(err?.code||""),message=String(err?.message||"");
     if(message==="COURSE_NOT_FOUND")showMsg(`<div class="no">Dieser Kurscode existiert nicht: ${safeText(kurs)}</div>`);
     else if(message==="RESERVED_COURSE_CODE")showMsg('<div class="no">Dieser Kurscode ist für Lehrkräfte reserviert.</div>');
     else if(message==="WEAK_STUDENT_PASSWORD")showMsg('<div class="no">Das Passwort muss mindestens 8 Zeichen lang sein.</div>');
-    else if(message==="SECURE_AUTH_EMAIL_MISMATCH"||message==="STUDENT_EMAIL_MISMATCH"){await resetStaleRegistrationSession();showMsg('<div class="no"><b>Eine alte Anmeldesitzung hatte eine andere E-Mail.</b><br>Die Sitzung wurde zurückgesetzt. Bitte klicke noch einmal auf „Registrieren“.</div>');}
+    else if(message==="SECURE_AUTH_EMAIL_MISMATCH"||message==="STUDENT_EMAIL_MISMATCH"){await resetStaleRegistrationSession();showMsg('<div class="no"><b>Eine alte Anmeldesitzung hatte eine andere E-Mail.</b><br>Die Sitzung wurde zurückgesetzt. Bitte klicke noch einmal auf „Registrieren“.</div>')}
     else if(code==="auth/invalid-credential"||code==="auth/wrong-password")showMsg('<div class="no"><b>Für diese E-Mail gibt es bereits ein Firebase-Konto.</b><br>Bitte verwende das Passwort dieses Kontos oder nutze „Anmelden“ → „Passwort vergessen“.</div>');
     else if(code==="auth/too-many-requests")showMsg('<div class="no"><b>Zu viele Versuche.</b><br>Bitte warte etwas und versuche es später erneut.</div>');
     else if(code==="auth/weak-password")showMsg('<div class="no">Bitte wähle ein stärkeres Passwort.</div>');
     else if(code==="auth/invalid-email")showMsg('<div class="no">Bitte gib eine gültige E-Mail-Adresse ein.</div>');
     else if(message==="STUDENT_AUTH_OWNERSHIP_MISMATCH")showMsg('<div class="no"><b>Registrierung konnte nicht abgeschlossen werden.</b><br>Dieses Schülerprofil ist bereits mit einem anderen Konto verbunden.</div>');
     else showMsg(`<div class="no">Registrierung nicht möglich: ${safeText(message||code||"Unbekannter Fehler")}</div>`);
-  }finally{
-    registrationBusy=false;showRegisterButton(true);
-    if(btn){btn.disabled=false;btn.textContent="Registrieren";}
-  }
+  }finally{registrationBusy=false;showRegisterButton(true);if(btn){btn.disabled=false;btn.textContent="Registrieren"}}
 };
-
-const form=$("registerForm"),registerBtn=$("registerBtn");
-if(form)form.addEventListener("submit",event=>{event.preventDefault();window.doRegister();});
-if(registerBtn)registerBtn.addEventListener("click",()=>window.doRegister());
-
-if(hasPendingStudentRegistration()){
-  showRegisterButton(true);
-  showMsg('<div class="ok"><b>Es gibt bereits eine offene Registrierung.</b><br>Wenn du die Bestätigungs-E-Mail schon geöffnet hast, wird sie automatisch geprüft. Du kannst den sichtbaren Knopf „Registrieren“ auch verwenden, um mit den aktuell eingetragenen Daten neu zu starten.</div>');
-}
-const verificationReturn=new URLSearchParams(location.search).get('verify')==='1';
-if(verificationReturn&&hasPendingStudentRegistration())setTimeout(()=>finishRegistrationAutomatically({showChecking:true}),250);
-window.addEventListener('focus',()=>{if(hasPendingStudentRegistration())finishRegistrationAutomatically();});
-document.addEventListener('visibilitychange',()=>{if(!document.hidden&&hasPendingStudentRegistration())finishRegistrationAutomatically();});
+const form=$("registerForm"),registerBtn=$("registerBtn");if(form)form.addEventListener("submit",event=>{event.preventDefault();window.doRegister()});if(registerBtn)registerBtn.addEventListener("click",()=>window.doRegister());
+if(hasPendingStudentRegistration()){showRegisterButton(true);showMsg('<div class="ok"><b>Es gibt bereits eine offene Registrierung.</b><br>Wenn du die Bestätigungs-E-Mail schon geöffnet hast, wird sie automatisch geprüft. Du kannst den sichtbaren Knopf „Registrieren“ auch verwenden, um mit den aktuell eingetragenen Daten neu zu starten.</div>')}
+const verificationReturn=new URLSearchParams(location.search).get('verify')==='1';if(verificationReturn&&hasPendingStudentRegistration())setTimeout(()=>finishRegistrationAutomatically({showChecking:true}),250);window.addEventListener('focus',()=>{if(hasPendingStudentRegistration())finishRegistrationAutomatically()});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&hasPendingStudentRegistration())finishRegistrationAutomatically()});
 </script>
-<script src="/shared/sprachpilot-design-system.js"></script>
+<script src="/shared/sprachpilot-design-system.js?v=20260822-cache2"></script>
 </body>
 </html>
