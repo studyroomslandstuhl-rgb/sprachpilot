@@ -2,25 +2,124 @@
   if(window.__SP_TEACHER_UNLOCKED__)return;
   window.__SP_TEACHER_UNLOCKED__=true;
 
+  const realSet=Storage.prototype.setItem;
+  const realGet=Storage.prototype.getItem;
+  const realRemove=Storage.prototype.removeItem;
+  const TEST_PREFIX='SP_TEACHER_TEST_PROGRESS_';
+
+  function rawGet(storage,key){
+    try{return realGet.call(storage,key)}catch(e){return null}
+  }
+  function readJson(storage,key){
+    try{return JSON.parse(rawGet(storage,key)||'null')||{}}catch(e){return{}}
+  }
   function role(){
     return String(
-      localStorage.getItem('SP_LOGIN_ROLE')||
-      localStorage.getItem('SP_ACTIVE_ROLE')||
-      localStorage.getItem('SP_AUTH_ROLE')||
-      localStorage.getItem('SP_LOGIN_CONTEXT')||''
+      rawGet(localStorage,'SP_LOGIN_ROLE')||
+      rawGet(localStorage,'SP_ACTIVE_ROLE')||
+      rawGet(localStorage,'SP_AUTH_ROLE')||
+      rawGet(localStorage,'SP_LOGIN_CONTEXT')||''
     ).toLowerCase();
   }
-  function profile(){try{return JSON.parse(localStorage.getItem('SP_TEACHER_PROFILE')||localStorage.getItem('SP_USER_PROFILE')||'{}')||{}}catch(e){return{}}}
-  function isTeacher(){
-    const r=role(),p=profile();
-    return r==='teacher'||r==='lehrer'||r==='admin'||p.role==='teacher'||p.role==='lehrer'||p.isTeacher===true||p.teacher===true||p.admin===true;
+  function teacherProfile(){
+    const teacher=readJson(localStorage,'SP_TEACHER_PROFILE');
+    if(Object.keys(teacher).length)return teacher;
+    return readJson(localStorage,'SP_USER_PROFILE');
   }
+  function userProfile(){return readJson(localStorage,'SP_USER_PROFILE')}
+  function isTeacher(){
+    const r=role(),p=teacherProfile();
+    const pr=String(p.role||p.loginRole||p.type||'').toLowerCase();
+    return ['teacher','lehrer','admin','owner'].includes(r)||
+      ['teacher','lehrer','admin','owner'].includes(pr)||
+      p.isTeacher===true||p.teacher===true||p.admin===true||p.owner===true;
+  }
+  function isLearningPage(){return /\/(wortschatz|verben|verben-A1|fragen|fragen-A1|perfekt|grammatik)(?:\/|$)/i.test(String(location.pathname||''))}
   if(!isTeacher())return;
+
+  function previewData(){
+    const session=rawGet(sessionStorage,'SP_TEACHER_PREVIEW');
+    if(session){
+      if(session==='1')return{teacherPreview:true,courseCode:rawGet(sessionStorage,'SP_PREVIEW_COURSE')||rawGet(localStorage,'SP_PREVIEW_COURSE')||''};
+      try{const parsed=JSON.parse(session);if(parsed&&parsed.teacherPreview===true)return parsed}catch(e){}
+    }
+    const local=rawGet(localStorage,'SP_TEACHER_PREVIEW');
+    if(local==='1')return{teacherPreview:true,courseCode:rawGet(localStorage,'SP_PREVIEW_COURSE')||''};
+    try{const parsed=JSON.parse(local||'null');if(parsed&&parsed.teacherPreview===true)return parsed}catch(e){}
+    return{};
+  }
+  function clean(value){return String(value||'').trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_').replace(/^_+|_+$/g,'')||'kurs'}
+  function courseKey(){
+    const preview=previewData(),p=userProfile(),teacher=teacherProfile();
+    return clean(preview.courseCode||preview.kurs||rawGet(localStorage,'SP_PREVIEW_COURSE')||p.courseCode||p.kurs||p.kursnummer||teacher.courseCode||teacher.kurs||teacher.kursnummer||'kurs');
+  }
+  function shouldRedirectKey(key){
+    const k=String(key||'');
+    return /^(SP_(?:L\d|TASK_|THEME_|SCORE_RUN_|PROGRESS_|DASHBOARD_PROGRESS|POINTS_|COURSE_LEADERBOARD|EXAM_)|A1_ACTIVE_SESSION)/i.test(k)||
+      /EXAM_HISTORY|EXAM_UNLOCK|LEADERBOARD|RANKING/i.test(k);
+  }
+  function testKey(key){return TEST_PREFIX+courseKey()+'_'+String(key||'')}
+
+  if(!window.__SP_TEACHER_TEST_STORAGE_PATCH__){
+    window.__SP_TEACHER_TEST_STORAGE_PATCH__=true;
+    Storage.prototype.setItem=function(key,value){
+      if(this===localStorage&&isTeacher()&&isLearningPage()&&shouldRedirectKey(key)){
+        return realSet.call(sessionStorage,testKey(key),value);
+      }
+      return realSet.call(this,key,value);
+    };
+    Storage.prototype.getItem=function(key){
+      if(this===localStorage&&isTeacher()&&isLearningPage()&&shouldRedirectKey(key)){
+        return realGet.call(sessionStorage,testKey(key));
+      }
+      return realGet.call(this,key);
+    };
+    Storage.prototype.removeItem=function(key){
+      if(this===localStorage&&isTeacher()&&isLearningPage()&&shouldRedirectKey(key)){
+        return realRemove.call(sessionStorage,testKey(key));
+      }
+      return realRemove.call(this,key);
+    };
+  }
 
   window.spTeacherCanSeeAll=true;
   window.spIsTeacherUnrestricted=function(){return true};
-  if(typeof window.spCanSaveStudentProgress!=='function')window.spCanSaveStudentProgress=function(){return false};
+  window.spCanSaveStudentProgress=function(){return false};
+  window.spCanWriteFirebaseProgress=function(){return false};
 
+  function clearTeacherTestStorage(){
+    const remove=[];
+    for(let i=0;i<sessionStorage.length;i++){
+      const key=String(sessionStorage.key(i)||'');
+      if(key.startsWith(TEST_PREFIX)||
+         key.startsWith('SP_TEACHER_PREVIEW_PROGRESS_')||
+         key.startsWith('SP_L7_PREVIEW_')||
+         key.startsWith('SP_L8_PREVIEW_'))remove.push(key);
+    }
+    remove.forEach(key=>{try{realRemove.call(sessionStorage,key)}catch(e){}});
+    return remove.length;
+  }
+  function resetTeacherTestProgress(){
+    if(!isTeacher())return false;
+    if(!confirm('Deinen Testfortschritt löschen und die Aufgabe neu starten? Teilnehmerdaten bleiben unverändert.'))return false;
+    clearTeacherTestStorage();
+    try{window.dispatchEvent(new CustomEvent('SP_TEACHER_TEST_PROGRESS_RESET'))}catch(e){}
+    const url=new URL(location.href);
+    url.searchParams.set('teacherReset',String(Date.now()));
+    location.replace(url.href);
+    return true;
+  }
+  window.spResetTeacherTestProgress=resetTeacherTestProgress;
+  window.spClearTeacherTestProgress=clearTeacherTestStorage;
+
+  function replaceReset(holder,name){
+    try{
+      if(!holder||typeof holder[name]!=='function'||holder[name].__teacherTestReset)return;
+      const patched=function(){return resetTeacherTestProgress()};
+      patched.__teacherTestReset=true;
+      holder[name]=patched;
+    }catch(e){}
+  }
   function patchFunctions(){
     try{window.isExamUnlocked=function(){return true}}catch(e){}
     try{window.allPrereqComplete=function(){return true}}catch(e){}
@@ -28,6 +127,13 @@
     try{window.unlocked=function(){return true}}catch(e){}
     try{window.l6t4ExamUnlocked=function(){return true}}catch(e){}
     try{window.l6t3ExamUnlocked=function(){return true}}catch(e){}
+
+    ['resetThemeProgress','resetCurrentPackage','resetEverything','resetProgress','clearProgress'].forEach(name=>replaceReset(window,name));
+    replaceReset(window.L7S,'reset');
+    replaceReset(window.L8S,'reset');
+    replaceReset(window.L7ThemeScore,'resetPractice');
+    replaceReset(window.L8ThemeScore,'resetPractice');
+
     if(typeof window.pctFor==='function'&&!window.pctFor.__teacherUnlocked){
       const old=window.pctFor;
       const patched=function(file,total){
@@ -47,6 +153,33 @@
       window.pct=patched;
     }
   }
+
+  function buttonClass(nav){
+    if(nav.querySelector('.l7-btn'))return'l7-btn danger';
+    if(nav.querySelector('.btn'))return'btn secondary';
+    return'btn secondary';
+  }
+  function injectResetButton(){
+    if(!isLearningPage())return;
+    const nav=document.querySelector('.l7-topbar nav,.topbar nav,header.topbar nav,nav.nav,nav');
+    if(!nav)return;
+
+    [...nav.querySelectorAll('button')].forEach(button=>{
+      if(button.id==='spTeacherTestReset')return;
+      if(/fortschritt.*löschen|fortschritte.*löschen|zurücksetzen/i.test(String(button.textContent||'')))button.style.display='none';
+    });
+
+    let button=document.getElementById('spTeacherTestReset');
+    if(button)return;
+    button=document.createElement('button');
+    button.id='spTeacherTestReset';
+    button.type='button';
+    button.className=buttonClass(nav);
+    button.textContent='Testfortschritt löschen';
+    button.addEventListener('click',resetTeacherTestProgress);
+    nav.appendChild(button);
+  }
+
   function unlockDom(){
     document.querySelectorAll('.locked,.exam-locked,[aria-disabled="true"]').forEach(el=>{
       el.classList.remove('locked','exam-locked');
@@ -54,15 +187,22 @@
       el.style.pointerEvents='';
       el.style.opacity='';
       const start=el.querySelector?.('.start');
-      if(start&&/gesperrt/i.test(start.textContent||''))start.textContent='Starten';
+      if(start&&/gesperrt|fertig/i.test(start.textContent||''))start.textContent='Testen';
       const p=el.querySelector?.('p');
       if(p&&/gesperrt|freigeschaltet|100/i.test(p.textContent||''))p.textContent='Lehreransicht: frei zum Testen.';
     });
-    document.querySelectorAll('a.module').forEach(a=>{a.style.pointerEvents='';a.removeAttribute('aria-disabled')});
+    document.querySelectorAll('.module.done,.task-card.done').forEach(el=>{
+      el.classList.remove('done');
+      el.style.pointerEvents='';
+      const start=el.querySelector?.('.start');
+      if(start)start.textContent='Testen';
+    });
+    document.querySelectorAll('a.module,a.task-card').forEach(a=>{a.style.pointerEvents='';a.removeAttribute('aria-disabled')});
   }
-  function run(){patchFunctions();unlockDom()}
+
+  function run(){patchFunctions();unlockDom();injectResetButton()}
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
   window.addEventListener('load',run);
-  [0,100,400,1000,2200].forEach(t=>setTimeout(run,t));
+  [0,100,400,1000,2200,4000].forEach(t=>setTimeout(run,t));
   try{new MutationObserver(()=>setTimeout(run,30)).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
 })();
