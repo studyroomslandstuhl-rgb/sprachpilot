@@ -29,7 +29,7 @@ Promise.resolve(window.L7_THEME_READY)
    .then(()=>{window.L7T3SpecialUI?.install?.();return load('l7t3-error-selection-fix.js?v=1')})
    .then(()=>{window.L7T3ErrorSelectionFix?.install?.();return load('l7t3-help-standard.js?v=1')})
    .then(()=>load('../shared/l7-reading-queue-fix.js?v=2'))
-   .then(()=>load('l7t3-schon-einmal-ui.js?v=3'))
+   .then(()=>load('l7t3-schon-einmal-ui.js?v=4'))
    .then(()=>{
     window.SPL7WrongQueueV7?.install?.();window.L7T2MemoryUI?.install?.();window.L7T2EndingsUI?.install?.();window.L7T2AdvancedUI?.install?.();window.L7T3SpecialUI?.install?.();window.L7T3ErrorSelectionFix?.install?.();window.L7T3HelpStandard?.install?.();window.L7ReadingQueueFix?.install?.();window.L7T3SchonEinmalUI?.install?.();
     const result=window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'));window.L7T3CardImages?.patchAll?.(document);return result;
