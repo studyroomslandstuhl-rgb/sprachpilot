@@ -43,3 +43,29 @@ Erst eine selbst abgegebene richtige Antwort darf das aktuelle Item verlassen.
 
 - Beim Öffnen einer Aufgabe darf automatisch zur eigentlichen Aufgabenfläche gescrollt werden.
 - Danach dürfen normale Interaktionen innerhalb der Aufgabe (Wörter anklicken, ordnen, auswählen, tippen usw.) **kein erneutes automatisches Scrollen** auslösen.
+
+## 7. Übersetzungen
+
+- In Wortschatz- und Themenübersichten wird für Teilnehmer **nur die Übersetzung in der im Profil eingestellten Muttersprache** angezeigt.
+- Es dürfen nicht mehrere Übersetzungssprachen gleichzeitig sichtbar sein.
+- Eine andere Sprache darf nur als technischer Fallback benutzt werden, wenn für die eingestellte Muttersprache wirklich keine Übersetzung vorhanden ist; sie darf nicht zusätzlich neben der Muttersprache erscheinen.
+
+## 8. Kurze und eindeutige Aufgabenhinweise
+
+- Eine Aufgabenkarte enthält einen kurzen Titel und **höchstens eine kurze, eindeutige Beschreibung**.
+- Beim Öffnen der Aufgabe werden allgemeine Hinweise nicht unnötig wiederholt.
+- Wenn die konkrete Frage oder Interaktion bereits selbsterklärend ist, wird keine zusätzliche redundante Aufgabenstellung darüber gesetzt.
+- Formulierungen bleiben auf dem jeweiligen Sprachniveau der Lernenden.
+
+## 9. Antwortpositionen bei Multiple Choice
+
+- Die richtige Antwort darf in einem Aufgabenblock **nie systematisch immer an derselben Position** stehen.
+- Bei A/B/C-Aufgaben werden die richtigen Antworten sinnvoll auf A, B und C verteilt.
+- Bei vier Antwortmöglichkeiten werden die richtigen Positionen entsprechend über alle vier Plätze verteilt.
+- Die Auswertung richtet sich immer nach dem tatsächlichen Lösungswert und nicht nach einer fest codierten Buchstabenposition.
+- Falsche Antwortmöglichkeiten müssen inhaltlich plausibel sein; offensichtlich unsinnige oder völlig themenfremde Ablenker sollen vermieden werden.
+
+## 10. Benennung von Prüfungen
+
+- Der abschließende Test eines Themas heißt in der Teilnehmeroberfläche immer **„Prüfung“**.
+- Bezeichnungen wie „Themenprüfung“, „Thema-Prüfung“ oder andere Varianten werden nicht verwendet.
