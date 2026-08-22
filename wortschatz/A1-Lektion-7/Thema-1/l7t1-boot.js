@@ -5,11 +5,12 @@ function load(src){return new Promise((resolve,reject)=>{const script=document.c
 function installBunnyImages(){try{return window.L7T1BunnyImages?.installRenderer?.()||false}catch(e){console.warn('L7T1 Bunny renderer',e);return false}}
 function resetLegacyHelpState(){try{if(!window.L7S||theme!==1)return;const pid=String(window.L7S.pid?.()||'student'),migrationKey=`SP_L7T1_HELP_FLOW_20260817_V2_${pid}`;if(localStorage.getItem(migrationKey)==='1')return;const taskIds=['faehigkeiten-abstufen','faehigkeit-saetze-schreiben'],stores=window.L7S.preview?.()?[localStorage,sessionStorage]:[localStorage];stores.forEach(store=>{const keys=[];for(let i=0;i<store.length;i++)keys.push(store.key(i));keys.filter(Boolean).forEach(key=>{if(!String(key).includes('_T1_')||!taskIds.some(id=>String(key).endsWith(`_T1_${id}`)))return;try{const state=JSON.parse(store.getItem(key)||'null');if(!state||typeof state!=='object')return;state.tries=0;state.hadWrong=false;store.setItem(key,JSON.stringify(state))}catch(e){}})});localStorage.setItem(migrationKey,'1')}catch(e){console.warn('L7T1 help migration',e)}}
 load('/shared/sp-cache-epoch.js?v=20260822-cache2').catch(()=>{})
+ .then(()=>load('/js/progress-role-guard.js?v=20260823-points1'))
  .then(()=>Promise.resolve(window.L7_THEME_READY))
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
  .then(()=>load('../shared/l7-wrong-queue-v4.js?v=10'))
- .then(()=>{window.SPL7WrongQueueV8?.install?.();return load(`../shared/l7-theme-score.js?v=20260822-live1`)})
- .then(()=>load('../shared/l7-score-live-sync.js?v=20260822-live1'))
+ .then(()=>{window.SPL7WrongQueueV8?.install?.();return load(`../shared/l7-theme-score.js?v=20260823-points1`)})
+ .then(()=>load('../shared/l7-score-live-sync.js?v=20260823-points1'))
  .then(()=>{resetLegacyHelpState();installBunnyImages();return load(`../shared/l7-answer-normalization.js?v=${version}`)})
  .then(()=>{
   if(page==='theme')return load(`../shared/l7-theme-standard.js?v=l7-theme-standard11`).then(()=>load(`l7t1-l6-layout.js?v=${version}`)).then(()=>{window.L7ThemeStandard.render(theme);window.L7T1L6Layout?.run?.()});
