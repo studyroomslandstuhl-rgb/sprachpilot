@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L6T1_CARD_TYPE_LABEL_1)return;
-window.__SP_L6T1_CARD_TYPE_LABEL_1=true;
+if(window.__SP_L6T1_CARD_TYPE_LABEL_2)return;
+window.__SP_L6T1_CARD_TYPE_LABEL_2=true;
 
 const FILE='karteikarten.html';
 let scheduled=false;
@@ -45,12 +45,19 @@ function currentItem(){
     return null;
   }
 }
-
+function typeLabel(item){
+ const type=String(item?.w?.type||'').toLowerCase();
+ if(type==='noun')return'Nomen';
+ if(type==='verb')return'Verb';
+ if(type==='adjective')return'Adjektiv';
+ if(type==='phrase')return'Redewendung';
+ return'Wort';
+}
 function apply(){
   scheduled=false;
   const item=currentItem();
   if(!item)return;
-  const type=item.mode==='sentence'?'Satz':'Nomen';
+  const type=typeLabel(item);
   document.querySelectorAll('#area .card-translation-box>span:first-child').forEach(label=>{
     let badge=label.querySelector('.l6t1-card-type-badge');
     if(!badge){
@@ -62,13 +69,11 @@ function apply(){
     label.setAttribute('aria-label',`${String(label.childNodes[0]?.textContent||'Übersetzung').trim()}, ${type}`);
   });
 }
-
 function schedule(){
   if(scheduled)return;
   scheduled=true;
   requestAnimationFrame(apply);
 }
-
 const area=document.getElementById('area');
 if(area)new MutationObserver(schedule).observe(area,{childList:true,subtree:true});
 [0,80,250,700].forEach(delay=>setTimeout(schedule,delay));
