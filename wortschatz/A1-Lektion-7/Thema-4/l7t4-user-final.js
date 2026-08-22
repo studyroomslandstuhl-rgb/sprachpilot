@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-if(window.__SP_L7T4_USER_FINAL_V2)return;window.__SP_L7T4_USER_FINAL_V2=true;
+if(window.__SP_L7T4_USER_FINAL_V3)return;window.__SP_L7T4_USER_FINAL_V3=true;
 const norm=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[„“”"'`´.,!?;:()\/…]+/g,' ').replace(/\s+/g,' ').trim();
 const forbidden=norm('sich entschuldigen');
 function task(theme,id){return (theme?.tasks||[]).find(t=>t?.id===id)}
@@ -17,6 +17,8 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
  const order=task(theme,'redemittel-ordnen');if(order){
   order.title='Redemittel ordnen';order.description='Ordne die Redewendungen.';order.instruction='Ordne die Redewendungen.';
   order.items=Array.isArray(order.items)?order.items:[];
+  const good=order.items.find(item=>norm(item?.answer)==='gute besserung');
+  if(good){good.answer='Gute Besserung!';good.tokens=['rung!','Gu','Bes','te','se'];good.mode='syllables'}
   if(!order.items.some(item=>norm(item?.answer)==='das ist schade'))order.items.push({answer:'Das ist schade.',mode:'words',tokens:['schade.','ist','Das']});
  }
  const phone=task(theme,'telefonluecken');if(phone){phone.title='Telefonatlücken';phone.description='Ergänze die Telefonate.';phone.instruction='Ergänze die Telefonate.'}
@@ -28,7 +30,7 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
  const email=task(theme,'email-ergaenzen');if(email){email.title='E-Mail ergänzen';email.description='Ergänze die E-Mail.';email.instruction='Ergänze die E-Mail.'}
  const exam=(theme.tasks||[]).find(t=>t?.exam);if(exam){exam.title='Prüfung';exam.description='Bearbeite die Prüfung.'}
  theme.uiRules={...(theme.uiRules||{}),nativeTranslationOnly:true,shortCardInstructions:true,multipleChoiceMixed:true,examTitle:'Prüfung'};
- theme.contentRevision='l7t4-user-final-20260822-v2';window.L7_THEME=theme;return theme;
+ theme.contentRevision='l7t4-user-final-20260822-v3';window.L7_THEME=theme;return theme;
 });
 try{if(window.L7T4CardContent?.data)delete window.L7T4CardContent.data['sich entschuldigen']}catch(e){}
 })();
