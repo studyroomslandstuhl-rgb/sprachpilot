@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-if(window.__SP_L7T3_SCHON_EINMAL_V2)return;window.__SP_L7T3_SCHON_EINMAL_V2=true;
+if(window.__SP_L7T3_SCHON_EINMAL_V3)return;window.__SP_L7T3_SCHON_EINMAL_V3=true;
 const items=[
  {verb:'backen',extra:'der Schokoladenkuchen',image:'backen.webp',positive:false,question:'Hast du schon einmal einen Schokoladenkuchen gebacken?',answer:'Nein, ich habe noch nie einen Schokoladenkuchen gebacken.'},
  {verb:'fliegen',extra:'nach Spanien',image:'fliegen.webp',positive:true,question:'Bist du schon einmal nach Spanien geflogen?',answer:'Ja, ich bin schon einmal nach Spanien geflogen.'},
@@ -19,9 +19,11 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
  if(!theme||!Array.isArray(theme.tasks))return theme;
  let task=theme.tasks.find(t=>t?.id==='t3-schon-einmal-v1');
  if(!task){
-  task={id:'t3-schon-einmal-v1',title:'Hast du das schon einmal gemacht?',description:'Bilde zuerst die Frage mit „schon einmal“. Antworte danach passend mit „schon einmal“ oder „noch nie“. Sprich oder schreibe.',icon:'💬',kind:'schon-einmal',items};
+  task={id:'t3-schon-einmal-v1',title:'Hast du das schon einmal gemacht?',description:'Bilde die Fragen und antworte.',icon:'💬',kind:'schon-einmal',items};
   const examIndex=theme.tasks.findIndex(t=>t?.exam||/pr[uü]fung|exam/i.test(String(t?.id||'')+' '+String(t?.title||'')));
   if(examIndex>=0)theme.tasks.splice(examIndex,0,task);else theme.tasks.push(task);
+ }else{
+  task.description='Bilde die Fragen und antworte.';
  }
  const exam=theme.tasks.find(t=>t?.exam);
  if(exam&&Array.isArray(exam.items)&&!exam.items.some(x=>x?.sourceTask==='schon-einmal')){
@@ -30,7 +32,7 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
    {kind:'input',sourceTask:'schon-einmal',context:'🙁 · backen · der Schokoladenkuchen',prompt:'Antworte negativ mit „noch nie“.',answer:'Nein, ich habe noch nie einen Schokoladenkuchen gebacken.',answers:['Nein, ich habe noch nie einen Schokoladenkuchen gebacken.'],hint:'Beginne mit „Nein, ich habe noch nie …“.'}
   );
  }
- theme.contentRevision='l7t3-schon-einmal-20260819-v2';window.L7_THEME=theme;return theme;
+ theme.contentRevision='l7t3-schon-einmal-20260822-v3';window.L7_THEME=theme;return theme;
 });
 window.L7T3_SCHON_EINMAL_ITEMS=items;
 })();
