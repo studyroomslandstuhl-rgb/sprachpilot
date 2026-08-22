@@ -110,15 +110,17 @@
   }
   function clearTeacherProgressStorage(){
     const sessionKeys=collectKeys(sessionStorage,isSessionProgressKey);
-    const localPreviewKeys=collectKeys(localStorage,isPreviewProgressKey);
+    const localProgressKeys=collectKeys(localStorage,key=>isPreviewProgressKey(key)||shouldRedirectKey(key));
     let removed=0;
     for(const key of sessionKeys){try{realRemove.call(sessionStorage,key);removed++}catch(e){}}
-    for(const key of localPreviewKeys){try{realRemove.call(localStorage,key);removed++}catch(e){}}
+    for(const key of localProgressKeys){try{realRemove.call(localStorage,key);removed++}catch(e){}}
 
-    // Alte Lehrer-Teststände aus früheren Versionen konnten unter dem bereits
-    // umgeleiteten Originalschlüssel in sessionStorage liegen.
-    const secondPass=collectKeys(sessionStorage,key=>shouldRedirectKey(key)||isPreviewProgressKey(key));
-    for(const key of secondPass){try{realRemove.call(sessionStorage,key);removed++}catch(e){}}
+    // Alte Lehrerstände aus früheren Versionen konnten unter Originalschlüsseln
+    // liegen. Ein zweiter Durchlauf entfernt auch diese Restbestände.
+    const sessionRest=collectKeys(sessionStorage,key=>shouldRedirectKey(key)||isPreviewProgressKey(key));
+    const localRest=collectKeys(localStorage,key=>shouldRedirectKey(key)||isPreviewProgressKey(key));
+    for(const key of sessionRest){try{realRemove.call(sessionStorage,key);removed++}catch(e){}}
+    for(const key of localRest){try{realRemove.call(localStorage,key);removed++}catch(e){}}
 
     try{delete window.SP_L7_LOCAL_SCORE_QUEUE}catch(e){}
     try{delete window.SP_PROGRESS_QUEUE}catch(e){}
