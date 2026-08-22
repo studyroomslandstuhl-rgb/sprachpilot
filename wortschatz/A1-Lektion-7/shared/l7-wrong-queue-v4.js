@@ -1,10 +1,11 @@
 (function(){
 'use strict';
-if(window.__SP_L7_WRONG_QUEUE_V7)return;
-window.__SP_L7_WRONG_QUEUE_V7=true;
+if(window.__SP_L7_WRONG_QUEUE_V8)return;
+window.__SP_L7_WRONG_QUEUE_V8=true;
 let installed=false;
 function norm(v){return String(v??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/\s+/g,' ')}
 function taskItem(S,id,index){const task=S.task?.(id);return{task,item:task?.items?.[index]||null}}
+function isMemoryTask(S,id){const t=S.task?.(id);return !!(t?.spL7T2Memory||t?.spL7Memory||t?.memory||norm(`${id} ${t?.kind||''} ${t?.title||''}`).includes('memory'))}
 function solutionText(item){
  if(!item)return'';
  const direct=item.answer??item.word??item.form??item.perfect??item.correct??item.solution;
@@ -53,26 +54,25 @@ function restoreRetryControls(nodes){
  const run=()=>nodes.forEach(el=>{try{if(el?.isConnected)el.disabled=false}catch(e){}});
  setTimeout(run,35);setTimeout(run,170)
 }
-function migrateLegacyRepeat(S,theme,id,total){
- const st=S.load(theme,id,total),seen=new Set((st.firstSeen||[]).map(Number)),done=new Set((st.done||[]).map(Number));
- const candidates=new Set((st.queue||[]).map(Number));if(st.current!=null)candidates.add(Number(st.current));
- const stale=[...candidates].filter(i=>Number.isInteger(i)&&i>=0&&i<total&&seen.has(i)&&!done.has(i)&&Number(st.wrongTries?.[i]||0)===0);
- if(!stale.length)return;
- stale.forEach(i=>{if(!st.done.includes(i))st.done.push(i);if(st.current===i)st.current=null});
- st.queue=(st.queue||[]).filter(x=>!stale.includes(Number(x)));st.tries=0;st.hadWrong=false;
- S.save(theme,id,st,true)
+function normalizeQueue(S,theme,id,total){
+ const st=S.load(theme,id,total),done=new Set((st.done||[]).map(Number)),current=st.current==null?null:Number(st.current),out=[];
+ for(const raw of Array.isArray(st.queue)?st.queue:[]){const i=Number(raw);if(!Number.isInteger(i)||i<0||i>=total||done.has(i)||i===current||out.includes(i))continue;out.push(i)}
+ if(out.length!==(st.queue||[]).length){st.queue=out;S.save(theme,id,st,false)}
+ return st
 }
+function repeatRequired(st,i){return !!(st.hadWrong||Number(st.tries||0)>0||Number(st.wrongTries?.[i]||0)>0||st.answers?.cardRepeat?.[i]===true)}
 function install(){
  const S=window.L7S;if(!S||installed)return !!S;
  const rawIndex=S.index.bind(S);
  S.index=function(theme,id,total){
-  migrateLegacyRepeat(S,theme,id,total);
+  normalizeQueue(S,theme,id,total);
   const i=rawIndex(theme,id,total);if(i==null)return i;
   const st=S.load(theme,id,total),remembered=Math.max(0,Number(st.wrongTries?.[i]||0));
   if(remembered>0){st.tries=remembered;st.hadWrong=true;S.save(theme,id,st,false)}
   return i
  };
  S.wrong=function(theme,id,total){
+  if(isMemoryTask(S,id))return 0;
   const retryable=[...document.querySelectorAll('#app button,#app input,#app select,#app textarea')].filter(el=>!el.disabled);
   const st=S.load(theme,id,total),i=Number(st.current);if(!Number.isInteger(i)||i<0||i>=total)return 0;
   const previous=Math.max(Number(st.wrongTries?.[i]||0),Number(st.tries||0)),count=previous+1;
@@ -87,19 +87,28 @@ function install(){
  };
  S.right=function(theme,id,total,free=false){
   const st=S.load(theme,id,total),i=Number(st.current);
-  st.done=Array.isArray(st.done)?st.done:[];
-  st.queue=Array.isArray(st.queue)?st.queue:[];
+  st.done=Array.isArray(st.done)?st.done:[];st.queue=Array.isArray(st.queue)?st.queue:[];st.answers=st.answers||{};
   if(Number.isInteger(i)&&i>=0&&i<total){
-   if(!st.done.includes(i))st.done.push(i);
-   st.queue=st.queue.filter(x=>Number(x)!==i);
-   if(st.wrongTries)delete st.wrongTries[i]
+   const needsRepeat=!isMemoryTask(S,id)&&repeatRequired(st,i);
+   st.queue=st.queue.filter(x=>Number(x)!==i&&!st.done.includes(Number(x)));
+   if(needsRepeat){
+    st.done=st.done.filter(x=>Number(x)!==i);
+    st.queue.push(i);
+   }else if(!st.done.includes(i))st.done.push(i);
+   if(st.wrongTries)delete st.wrongTries[i];
+   if(st.answers.cardRepeat)delete st.answers.cardRepeat[i]
   }
   st.current=null;st.tries=0;st.hadWrong=false;
   S.save(theme,id,st,true)
  };
- S.__spNoSkipWrongAnswers=true;S.__spThreeStageHelp=true;
+ S.markRepeat=function(theme,id,total,index,reason='repeat'){
+  const st=S.load(theme,id,total),i=Number(index);if(!Number.isInteger(i)||i<0||i>=total)return false;
+  st.answers=st.answers||{};st.answers.cardRepeat=st.answers.cardRepeat||{};st.answers.cardRepeat[i]=String(reason||'repeat');
+  S.save(theme,id,st,false);return true
+ };
+ S.__spNoSkipWrongAnswers=true;S.__spThreeStageHelp=true;S.__spRetryAfterCorrection=true;
  installed=true;return true
 }
-window.SPL7WrongQueueV4=window.SPL7WrongQueueV5=window.SPL7WrongQueueV6=window.SPL7WrongQueueV7={install};
+window.SPL7WrongQueueV4=window.SPL7WrongQueueV5=window.SPL7WrongQueueV6=window.SPL7WrongQueueV7=window.SPL7WrongQueueV8={install};
 if(!install()){let n=0;const timer=setInterval(()=>{if(install()||++n>200)clearInterval(timer)},25)}
 })();
