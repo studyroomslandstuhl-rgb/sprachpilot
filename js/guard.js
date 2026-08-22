@@ -10,7 +10,7 @@ const IS_SECURE_STUDENT=SECURE_ACCESS?.type==='student';
 const path=location.pathname;
 if(/\/wortschatz\/A1-Lektion-(?:3|4|5)(?:\/|$)/i.test(path))import("/js/lesson-button-colors.js?v=2").catch(()=>{});
 const IS_L6T3_PATH=path.includes("/wortschatz/A1-Lektion-6/Thema-3/");
-if(!IS_L6T3_PATH){import("/js/sp-teacher-unlocked.js?v=2").catch(()=>{});import("/js/sp-assets.js?v=4").catch(()=>{});import("/js/sp-image-guard.js?v=5").catch(()=>{})}
+if(!IS_L6T3_PATH){import("/js/sp-teacher-unlocked.js?v=3").catch(()=>{});import("/js/sp-assets.js?v=4").catch(()=>{});import("/js/sp-image-guard.js?v=5").catch(()=>{})}
 window.logout=logout;
 const qs=new URLSearchParams(location.search);
 // Diagnosemodus darf nie dauerhaft im Browser gespeichert bleiben.
