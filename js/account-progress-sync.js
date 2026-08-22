@@ -1,7 +1,7 @@
-import '/js/progress.js?v=11';
-import '/js/point-delta-bridge.js?v=2';
-import '/js/ranking-mirror.js?v=3';
-import { authReady } from '/js/firebase.js';
+import '/js/progress.js?v=20260822-sync14';
+import '/js/point-delta-bridge.js?v=20260822-sync14';
+import '/js/ranking-mirror.js?v=20260822-sync14';
+import { authReady, db, doc, getDocFromServer, setDoc, serverTimestamp } from '/js/firebase.js';
 import { getActiveProfile } from '/js/auth.js';
 import { currentFirebaseUser } from '/js/student-secure-auth.js?v=1';
 import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity5';
@@ -10,6 +10,8 @@ import { prepareL78AccountProgressBridge, hydrateL78VisibleProgress, installL78R
 import { accountProgressReady, startAccountProgressSync as startAuthoritativeAccountProgressSync } from '/js/account-progress-sync-authoritative-v2.js?v=3';
 export { accountProgressReady };
 
+const RESET_MARKER='spCanonicalResetAuthoritativeV1';
+const CLOUD_FIELD='clientProgressStateV1';
 function invalidateOldL5Confirmations(){
   if(sessionStorage.getItem('SP_L5_SIG_RECHECK_V4')==='1')return;
   sessionStorage.setItem('SP_L5_SIG_RECHECK_V4','1');
@@ -29,6 +31,7 @@ function alreadyCanonicalSecureProfile(){
   if(String(p.authUid||'').trim()!==String(user.uid))return false;
   return p.secureAuth===true&&String(p.docId||canonical)===canonical&&String(p.studentId||canonical)===canonical&&String(p.userId||canonical)===canonical;
 }
+function canonicalId(){const p=getActiveProfile?.()||{};return String(p.canonicalStudentId||p.docId||p.studentId||p.userId||localStorage.getItem('SP_STUDENT_ID')||'').trim()}
 function blockedSecureResult(reason='SECURE_STUDENT_AUTH_REQUIRED'){
   const detail={active:false,blocked:true,reason};
   try{window.SP_ACCOUNT_PROGRESS_SYNC_BLOCKED=detail;window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_SYNC_BLOCKED',{detail}))}catch(e){}
@@ -49,11 +52,71 @@ function refreshAfterProgressPreparation(result,isolation){
   if(!learningPage())return false;
   const studentId=String(result?.studentId||isolation?.currentId||localStorage.getItem('SP_STUDENT_ID')||'student');
   const page=String(location.pathname||'')+String(location.search||'');
-  const key='SP_ACCOUNT_PROGRESS_RENDERED_V5_'+studentId+'_'+page;
+  const key='SP_ACCOUNT_PROGRESS_RENDERED_V6_'+studentId+'_'+page;
   const restored=Math.max(0,Number(result?.restored)||0)+Math.max(0,Number(result?.restoredStructured)||0)+Math.max(0,Number(result?.rescuedLocal)||0)+Math.max(0,Number(result?.restoredL78)||0);
   const switched=!!isolation?.switchedAccount&&Math.max(0,Number(isolation?.quarantined)||0)>0;
   try{if(restored<=0&&!switched){sessionStorage.removeItem(key);return false}if(sessionStorage.getItem(key)==='1')return false;sessionStorage.setItem(key,'1')}catch(e){if(restored<=0&&!switched)return false}
   location.reload();return true;
+}
+function positive(value){return Number(value||0)>0}
+function serverHasStructuredProgress(data={}){
+  if(positive(data?.totals?.points)||positive(data.pointsTotal)||positive(data.lifetimePoints)||positive(data.punkteGesamt)||positive(data.points)||positive(data?.ranking?.points))return true;
+  for(const module of ['wortschatz','fragen','verben','perfekt','grammatik']){
+    const group=data?.[module];if(!group||typeof group!=='object')continue;
+    for(const record of Object.values(group)){
+      if(!record||typeof record!=='object')continue;
+      if(positive(record.progressPercent)||positive(record?.current?.percent)||record.completed===true)return true;
+      if(positive(record?.exam?.bestPercent)||positive(record?.exam?.percent)||record?.exam?.completed===true)return true;
+      for(const task of Object.values(record.tasks||{})){
+        if(!task||typeof task!=='object')continue;
+        if(positive(task.percent)||positive(task.progress)||positive(task.done)||task.completed===true||(Array.isArray(task.done)&&task.done.length))return true;
+      }
+    }
+  }
+  return false;
+}
+function isProgressLocalKey(key,value){
+  const k=String(key||'');
+  if(!k)return false;
+  if(/^SP_ACCOUNT_PROGRESS_PENDING_V1_/.test(k)||k==='SP_ACCOUNT_PROGRESS_TRACKED'||k==='SP_ACCOUNT_PROGRESS_OWNER'||k==='SP_POINTS_TOTAL')return true;
+  if(/^SP_(?:THEME_SCORE_|SCORE_RUN_|L[3-9]_T|L[3-9]_.*_T|L7_|L8_|VERB|PERFEKT|GRAMMATIK|FRAGEN)/i.test(k))return true;
+  try{return !!window.SPAccountProgressCloudCore?.eligible?.(k,value)}catch(e){return false}
+}
+function clearLocalProgressForServerReset(){
+  const remove=[];
+  try{for(let i=0;i<localStorage.length;i++){const key=localStorage.key(i),value=key?localStorage.getItem(key):null;if(key&&isProgressLocalKey(key,value))remove.push(key)}}catch(e){}
+  remove.forEach(key=>{try{localStorage.removeItem(key)}catch(e){}});
+  try{for(let i=sessionStorage.length-1;i>=0;i--){const key=sessionStorage.key(i);if(key&&/^SP_ACCOUNT_PROGRESS_RENDERED_/.test(key))sessionStorage.removeItem(key)}}catch(e){}
+  return remove.length;
+}
+function profileStorageSnapshot(){const out={};for(const key of ['SP_USER_PROFILE','SP_STUDENT_PROFILE']){try{out[key]=localStorage.getItem(key)}catch(e){out[key]=null}}return out}
+function setCanonicalOnlyProfiles(){
+  const canonical=canonicalId(),before=profileStorageSnapshot();if(!canonical)return()=>{};
+  for(const key of Object.keys(before)){
+    try{const raw=before[key];if(!raw)continue;const p=JSON.parse(raw);p.aliasIds=[];p.canonicalStudentId=canonical;p.docId=canonical;p.studentId=canonical;p.userId=canonical;p.id=canonical;localStorage.setItem(key,JSON.stringify(p))}catch(e){}
+  }
+  return()=>{for(const [key,raw] of Object.entries(before)){try{if(raw==null)localStorage.removeItem(key);else localStorage.setItem(key,raw)}catch(e){}}};
+}
+async function prepareCanonicalResetPolicy(){
+  const id=canonicalId();if(!id)return{canonicalOnly:false,reset:false};
+  let snap=null;try{snap=await getDocFromServer(doc(db,'progress',id))}catch(error){console.warn('Reset-Prüfung konnte Firebase nicht frisch lesen',error);return{canonicalOnly:false,reset:false}}
+  const exists=!!snap?.exists?.(),data=exists?(snap.data()||{}):{};
+  const marked=data[RESET_MARKER]===true;
+  const noStructured=!serverHasStructuredProgress(data);
+  if(marked)return{canonicalOnly:true,reset:false};
+  if(!exists||noStructured){
+    const removed=clearLocalProgressForServerReset();
+    try{
+      await setDoc(doc(db,'progress',id),{
+        [CLOUD_FIELD]:{},clientProgressStateVersion:2,clientProgressAuthorityVersion:2,
+        clientProgressAuthorityMode:'server-reset-authoritative-v1',[RESET_MARKER]:true,
+        spCanonicalResetAt:serverTimestamp(),updatedAt:serverTimestamp()
+      },{merge:true});
+    }catch(error){console.warn('Server-Reset-Markierung konnte nicht geschrieben werden',error)}
+    try{window.dispatchEvent(new CustomEvent('SP_SERVER_PROGRESS_RESET_APPLIED',{detail:{studentId:id,removedLocal:removed}}))}catch(e){}
+    return{canonicalOnly:true,reset:true,removedLocal:removed};
+  }
+  return{canonicalOnly:false,reset:false};
 }
 
 export async function startAccountProgressSync(options={}){
@@ -79,14 +142,19 @@ export async function startAccountProgressSync(options={}){
   }
   if(isolation?.blocked){const result=blockedSecureResult('LOCAL_OWNER_ISOLATION_BLOCKED');showCloudProgressRequired(result);return result}
 
+  const resetPolicy=await prepareCanonicalResetPolicy();
   let bridge={active:false,staged:0};
-  try{bridge=prepareL78AccountProgressBridge()||bridge;installL78RuntimeBridge()}catch(error){console.warn('L7/L8 Kontofortschritt konnte vor der Cloud-Hydrierung nicht vorbereitet werden',error)}
+  if(!resetPolicy.reset){try{bridge=prepareL78AccountProgressBridge()||bridge;installL78RuntimeBridge()}catch(error){console.warn('L7/L8 Kontofortschritt konnte vor der Cloud-Hydrierung nicht vorbereitet werden',error)}}
 
-  const result=await startAuthoritativeAccountProgressSync(options);
+  let restoreProfile=()=>{},result=null;
+  try{
+    if(resetPolicy.canonicalOnly)restoreProfile=setCanonicalOnlyProfiles();
+    result=await startAuthoritativeAccountProgressSync(options);
+  }finally{restoreProfile()}
   if(result?.blocked){showCloudProgressRequired(result);return result}
   let restoredL78=0;
   try{restoredL78=hydrateL78VisibleProgress()||0;installL78RuntimeBridge()}catch(error){console.warn('L7/L8 Kontofortschritt konnte nicht vollständig rekonstruiert werden',error)}
-  const enriched={...result,l78BridgeStaged:Number(bridge?.staged)||0,restoredL78};
+  const enriched={...result,l78BridgeStaged:Number(bridge?.staged)||0,restoredL78,serverResetApplied:!!resetPolicy.reset,canonicalOnly:!!resetPolicy.canonicalOnly};
   if(refreshAfterProgressPreparation(enriched,isolation))return enriched;
   return enriched;
 }
