@@ -3,14 +3,14 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t2-retry-v9';
+const version='l7t2-retry-v10';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 function currentTask(){const id=new URLSearchParams(location.search).get('task');return window.L7S?.task?.(id)||null}
 function concise(){if(page!=='task')return;const task=currentTask();if(!task?.spL7T2Write)return;document.querySelectorAll('.l7-answer-box label').forEach(label=>{if(label.textContent!=='Antwort')label.textContent='Antwort'})}
 function addPolish(){if(document.getElementById('sp-l7t2-standard-polish'))return;const style=document.createElement('style');style.id='sp-l7t2-standard-polish';style.textContent=`.l7-actions:has([data-action="check-order"]){display:flex!important;gap:10px!important;align-items:stretch!important}.l7-actions:has([data-action="check-order"])>button{flex:1 1 0!important;width:0!important;min-width:0!important;display:flex!important;align-items:center!important;justify-content:center!important}.l7-actions [data-action="check-order"]{order:1!important}.l7-actions [data-action="reset-order"]{order:2!important}.l7-actions [data-action="undo"]{order:3!important}@media(max-width:520px){.l7-actions:has([data-action="check-order"]){gap:7px!important}.l7-actions:has([data-action="check-order"])>button{padding-left:7px!important;padding-right:7px!important}}`;document.head.appendChild(style)}
 Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
- .then(()=>load('../shared/l7-wrong-queue-v4.js?v=9'))
+ .then(()=>load('../shared/l7-wrong-queue-v4.js?v=10'))
  .then(()=>{window.SPL7WrongQueueV8?.install?.();return load('../shared/l7-theme-score.js?v=2')})
  .then(()=>load('../shared/l7-exam-gate.js?v=2'))
  .then(()=>{window.SPL7StrictExamGate?.install?.();window.L7T2CardImages?.installRenderer?.();return load(`l7t2-bunny-audio.js?v=2`)})
