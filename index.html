@@ -14,47 +14,32 @@
 </head>
 <body>
 <header class="sp-home-nav" aria-label="Startnavigation">
-  <div class="sp-home-lang"><a class="active" href="/index.html">Deutsch</a><span>oder</span><a href="/finnisch/">Finnisch</a></div>
+  <div class="sp-home-lang"><a class="active" href="/index.html" data-home-language="de">Deutsch</a><span>oder</span><a href="/finnisch/" data-home-language="fi">Finnisch</a></div>
   <div class="sp-home-auth"><a class="login" href="/login/">Anmelden</a><a class="register" href="/register/">Registrieren</a></div>
 </header>
 <div id="accountStrip" class="account-strip"></div>
 <div class="container">
-  <section class="hero">
-    <a class="brand-logo" href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"><h1>SprachPilot</h1></a>
-    <p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p>
-  </section>
-
-  <section class="card sp-welcome">
-    <h2>Willkommen</h2>
-    <p class="sp-welcome-copy">Lerne Schritt für Schritt, wiederhole schwierige Aufgaben und behalte deinen Fortschritt im Blick.</p>
-    <div id="loggedBox"></div>
-    <div id="guestBox" class="actions">
-      <a class="btn success" href="/register/">Registrieren</a>
-      <a class="btn secondary" href="/login/">Anmelden</a>
-      <a class="btn secondary sp-home-teacher" href="/teacher/login.html">Lehrer-Anmeldung</a>
-    </div>
-  </section>
-
-  <section class="modules" id="modules"></section>
-  <footer>© SprachPilot</footer>
+  <section class="hero"><a class="brand-logo" href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"><h1>SprachPilot</h1></a><p class="subtitle">Deutsch lernen mit klaren Übungen, Bildern, Fragen und Wiederholung.</p></section>
+  <section class="card sp-welcome"><h2>Willkommen</h2><p class="sp-welcome-copy">Lerne Schritt für Schritt, wiederhole schwierige Aufgaben und behalte deinen Fortschritt im Blick.</p><div id="loggedBox"></div><div id="guestBox" class="actions"><a class="btn success" href="/register/">Registrieren</a><a class="btn secondary" href="/login/">Anmelden</a><a class="btn secondary sp-home-teacher" href="/teacher/login.html">Lehrer-Anmeldung</a></div></section>
+  <section class="modules" id="modules"></section><footer>© SprachPilot</footer>
 </div>
-
 <script type="module" src="/js/account-progress-autostart.js?v=1"></script>
 <script type="module">
 import { getActiveProfile, getActiveRole, dashboardHref, logout, safeText, renderAccountStrip } from "./js/auth.js?v=login-main-4";
 import { loadCourseRelease, moduleOpen } from "./js/course-releases.js?v=verb-groups-2";
 window.logout=logout;
+document.querySelectorAll('[data-home-language]').forEach(link=>link.addEventListener('click',()=>{try{localStorage.setItem('SP_LEARNING_LANGUAGE',link.dataset.homeLanguage==='fi'?'fi':'de')}catch(e){}}));
 const modulesEl=document.querySelector("#modules"),loggedBox=document.querySelector("#loggedBox"),guestBox=document.querySelector("#guestBox");
+function normalizeAccountStrip(){const strip=document.getElementById('accountStrip');if(!strip)return;strip.querySelectorAll('a').forEach(a=>{if(/^login$/i.test(a.textContent.trim())||/^einloggen$/i.test(a.textContent.trim()))a.textContent='Anmelden'});const who=strip.querySelector('.who');if(who&&/^nicht eingeloggt$/i.test(who.textContent.trim()))who.textContent='Nicht angemeldet'}
+function renderStrip(){try{renderAccountStrip();normalizeAccountStrip()}catch(e){}}
 function isTeacherAllAccess(){if(getActiveRole()!=="teacher")return false;try{const p=JSON.parse(sessionStorage.getItem("SP_TEACHER_PREVIEW")||"null");return !!(p&&p.teacherPreview===true&&p.allAccess===true)}catch(e){return false}}
 function moduleCard(title,href,desc,open){const locked=!open;return `<a class="module ${locked?'locked':''}" href="${open?href:'#'}" ${open?'':'onclick="return false;" aria-disabled="true"'}><div class="module-title">${safeText(title)}</div><p>${safeText(open?desc:'Für deinen Kurs noch nicht freigeschaltet.')}</p><span class="badge">${open?'Öffnen':'Gesperrt'}</span></a>`}
 function renderModules(assignments={}){const teacherAll=isTeacherAllAccess(),fragen=teacherAll||moduleOpen(assignments,"Fragen A1"),wortschatz=teacherAll||moduleOpen(assignments,"Wortschatz"),verben=teacherAll||moduleOpen(assignments,"Verben"),irregular=teacherAll||moduleOpen(assignments,"Irreguläre Verben"),verbArea=verben||irregular;modulesEl.innerHTML=`${moduleCard('Fragen A1','/fragen-A1/','Wichtige Fragen und Antworten für Alltag, Kurs und Prüfung.',fragen)}${moduleCard('Wortschatz','/wortschatz/','Wörter nach Lektionen und Themen üben.',wortschatz)}${moduleCard('Verben','/verben-bereich/','Verben, irreguläre Verben und Perfekt in einem gemeinsamen Lernbereich.',verbArea)}`}
 function renderLogged(profile,assignments=null){const p=profile||getActiveProfile();if(!p)return;const data=assignments||p.assignments||{};loggedBox.innerHTML=`<div class="ok"><strong>Angemeldet:</strong> ${safeText(p.vorname||p.firstName||'')} ${safeText(p.nachname||p.lastName||'')} · Kurs: ${safeText(p.kurs||p.courseCode||p.kursnummer||'')}<br><a class="btn secondary" href="${dashboardHref()}">Zum Dashboard</a> <button class="btn secondary" onclick="logout()">Abmelden</button></div>`;guestBox.classList.add("hidden");renderModules(data)}
-async function init(){const role=getActiveRole(),profile=role==="student"?getActiveProfile():null;if(profile){renderLogged(profile);try{const assignments=await loadCourseRelease(profile),next={...profile,assignments:assignments||profile.assignments||{}};renderLogged(next,assignments)}catch(e){console.warn("Kursfreigaben konnten nicht geladen werden",e)}}else if(role==="teacher"){loggedBox.innerHTML=`<div class="ok"><strong>Lehrerzugang:</strong> Du bist als Lehrkraft angemeldet.<br><a class="btn secondary" href="${dashboardHref()}">Zum Dashboard</a> <button class="btn secondary" onclick="logout()">Abmelden</button></div>`;guestBox.classList.add("hidden");renderModules({releaseMode:"all",defaultLocked:false})}else{loggedBox.innerHTML='<p>Registriere dich oder melde dich an.</p>';guestBox.classList.remove("hidden");renderModules({})}try{renderAccountStrip()}catch(e){}}
-window.addEventListener("SP_PROFILE_SYNCED",e=>{const p=e.detail&&e.detail.profile;if(p)renderLogged(p);try{renderAccountStrip()}catch(x){}});
-init().catch(e=>{console.error("Startseite konnte nicht geladen werden",e);loggedBox.innerHTML='<p>Registriere dich oder melde dich an.</p>';guestBox.classList.remove("hidden");renderModules({})});
+async function init(){const role=getActiveRole(),profile=role==="student"?getActiveProfile():null;if(profile){renderLogged(profile);try{const assignments=await loadCourseRelease(profile),next={...profile,assignments:assignments||profile.assignments||{}};renderLogged(next,assignments)}catch(e){console.warn("Kursfreigaben konnten nicht geladen werden",e)}}else if(role==="teacher"){loggedBox.innerHTML=`<div class="ok"><strong>Lehrerzugang:</strong> Du bist als Lehrkraft angemeldet.<br><a class="btn secondary" href="${dashboardHref()}">Zum Dashboard</a> <button class="btn secondary" onclick="logout()">Abmelden</button></div>`;guestBox.classList.add("hidden");renderModules({releaseMode:"all",defaultLocked:false})}else{loggedBox.innerHTML='<p>Registriere dich oder melde dich an.</p>';guestBox.classList.remove("hidden");renderModules({})}renderStrip()}
+window.addEventListener("SP_PROFILE_SYNCED",e=>{const p=e.detail&&e.detail.profile;if(p)renderLogged(p);renderStrip()});
+init().catch(e=>{console.error("Startseite konnte nicht geladen werden",e);loggedBox.innerHTML='<p>Registriere dich oder melde dich an.</p>';guestBox.classList.remove("hidden");renderModules({});renderStrip()});
 </script>
-<script src="/js/sp-language-switch.js?v=finnisch-persist2"></script>
-<script defer src="js/performance-boot.js?v=20260709b"></script>
-<script src="/shared/sprachpilot-design-system.js"></script>
+<script defer src="js/performance-boot.js?v=20260709b"></script><script src="/shared/sprachpilot-design-system.js"></script>
 </body>
 </html>
