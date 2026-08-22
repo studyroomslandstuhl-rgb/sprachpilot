@@ -1,12 +1,12 @@
 (function(){
 'use strict';
-const theme=Number(document.body.dataset.theme),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t1-no-skip-v7';
+const theme=Number(document.body.dataset.theme),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t1-no-skip-v8';
 function load(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.body.appendChild(script)})}
 function installBunnyImages(){try{return window.L7T1BunnyImages?.installRenderer?.()||false}catch(e){console.warn('L7T1 Bunny renderer',e);return false}}
 function resetLegacyHelpState(){try{if(!window.L7S||theme!==1)return;const pid=String(window.L7S.pid?.()||'student'),migrationKey=`SP_L7T1_HELP_FLOW_20260817_V2_${pid}`;if(localStorage.getItem(migrationKey)==='1')return;const taskIds=['faehigkeiten-abstufen','faehigkeit-saetze-schreiben'],stores=window.L7S.preview?.()?[localStorage,sessionStorage]:[localStorage];stores.forEach(store=>{const keys=[];for(let i=0;i<store.length;i++)keys.push(store.key(i));keys.filter(Boolean).forEach(key=>{if(!String(key).includes('_T1_')||!taskIds.some(id=>String(key).endsWith(`_T1_${id}`)))return;try{const state=JSON.parse(store.getItem(key)||'null');if(!state||typeof state!=='object')return;state.tries=0;state.hadWrong=false;store.setItem(key,JSON.stringify(state))}catch(e){}})});localStorage.setItem(migrationKey,'1')}catch(e){console.warn('L7T1 help migration',e)}}
 Promise.resolve(window.L7_THEME_READY)
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
- .then(()=>load('../shared/l7-wrong-queue-v4.js?v=7'))
+ .then(()=>load('../shared/l7-wrong-queue-v4.js?v=8'))
  .then(()=>{window.SPL7WrongQueueV7?.install?.();return load(`../shared/l7-theme-score.js?v=2`)})
  .then(()=>{resetLegacyHelpState();installBunnyImages();return load(`../shared/l7-answer-normalization.js?v=${version}`)})
  .then(()=>{
