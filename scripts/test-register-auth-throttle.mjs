@@ -11,6 +11,8 @@ assert.match(html,/finally\{registrationBusy=false;/,'guard must always be relea
 assert.match(html,/code==="auth\/too-many-requests"/,'Firebase throttling must have a dedicated UI branch');
 assert.match(html,/vorübergehend blockiert/,'technical throttling error must be translated for students');
 assert.match(html,/Passwort vergessen/,'throttled existing accounts must be directed to password recovery');
+assert.match(html,/if\(result\?\.verificationRequired\)\{\s*showRegisterButton\(false\);\s*showFinishButton\(true\);/,'after sending verification the create-account button must disappear');
+assert.match(html,/if\(hasPendingStudentRegistration\(\)\)\{showRegisterButton\(false\);showFinishButton\(true\)\}/,'a pending registration must not offer another account-creation attempt after reload');
 
 const marker='export async function registerStudentV2';
 const start=loginV2.indexOf(marker);
@@ -21,4 +23,4 @@ assert.doesNotMatch(registrationBlock,/signInSecureStudent\s*\(/,'registration w
 assert.match(registrationBlock,/return legacyRegisterStudent\(\{\.\.\.payload,email,password\}\);/,'registration wrapper must delegate the single auth flow to student-identity.js');
 assert.doesNotMatch(loginV2,/\bcreateSecureStudentCredential\b/,'student-login-v2 must not import the duplicate registration credential creator');
 
-console.log('Registration uses one Firebase auth flow and keeps throttling UI safeguards.');
+console.log('Registration uses one Firebase auth flow and blocks repeat account-creation attempts while verification is pending.');
