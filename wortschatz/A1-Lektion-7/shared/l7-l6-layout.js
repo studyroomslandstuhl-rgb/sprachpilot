@@ -1,18 +1,28 @@
 (function(){
 'use strict';
-if(window.__SP_L7_L6_LAYOUT_1)return;
-window.__SP_L7_L6_LAYOUT_1=true;
+if(window.__SP_L7_L6_LAYOUT_2)return;
+window.__SP_L7_L6_LAYOUT_2=true;
 if(!/\/wortschatz\/A1-Lektion-7\/Thema-[234]\//i.test(location.pathname))return;
 const CDN='https://sprachpilot.b-cdn.net/';
 const page=document.body.dataset.page||'';
 const themeNo=Number(document.body.dataset.theme||location.pathname.match(/Thema-(\d+)/i)?.[1]||0);
 const root=document.getElementById('app');
-let scrollTimer=null,lastScrollSignature='';
+let scrollTimer=null,initialScrollDone=false;
 function esc(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
 function currentTask(){const id=new URLSearchParams(location.search).get('task');const tasks=window.L7_THEME?.tasks||window.L7S?.T?.tasks||[];const index=tasks.findIndex(task=>task?.id===id);return{task:index>=0?tasks[index]:null,index,tasks}}
 function decorateTask(){if(page!=='task'||!root)return;const pageNode=root.querySelector('.l7-page');if(!pageNode)return;const{task,index}=currentTask();if(task&&index>=0){let title=pageNode.querySelector(':scope > .sp-l6-task-title');const wanted=`Aufgabe ${index+1}|${task.title||'Aufgabe'}`;if(!title){title=document.createElement('div');title.className='sp-l6-task-title';pageNode.insertBefore(title,pageNode.firstElementChild||null)}if(title.dataset.signature!==wanted){title.dataset.signature=wanted;title.innerHTML=`<span>Aufgabe ${index+1}</span><h1>${esc(task.title||'Aufgabe')}</h1>`;document.title=`Aufgabe ${index+1} · ${task.title||'Aufgabe'} · L7T${themeNo}`}}root.querySelectorAll('.l7-image-fallback').forEach(node=>{node.hidden=true;node.textContent=''});scheduleScroll()}
 function decorateTheme(){if(page!=='theme'||!root)return;document.body.classList.add('sp-l6t4-theme-look');root.querySelectorAll('.module').forEach(module=>module.classList.add('sp-l6-module'))}
-function scheduleScroll(){if(page!=='task'||!root)return;clearTimeout(scrollTimer);scrollTimer=setTimeout(()=>{const target=root.querySelector('.l7-question-card,.l7-learning,.sp-conj-write-table-wrap,.sp-ability-cue,.l7-options,.sort-board,.memory-board');if(!target)return;const{task}=currentTask();const progress=root.querySelector('.l7-progress-row')?.textContent||'';const key=`${task?.id||''}|${progress}|${target.className}`;if(key===lastScrollSignature)return;lastScrollSignature=key;target.scrollIntoView({block:'center',inline:'nearest',behavior:'smooth'})},180)}
+function scheduleScroll(){
+ if(page!=='task'||!root||initialScrollDone)return;
+ clearTimeout(scrollTimer);
+ scrollTimer=setTimeout(()=>{
+  if(initialScrollDone)return;
+  const target=root.querySelector('.l7-question-card,.l7-learning,.sp-conj-write-table-wrap,.sp-ability-cue,.l7-options,.sort-board,.memory-board');
+  if(!target)return;
+  initialScrollDone=true;
+  target.scrollIntoView({block:'center',inline:'nearest',behavior:'smooth'});
+ },180)
+}
 function installPureImageBehavior(){const S=window.L7S;if(!S||S.__l7L6PureImages)return false;S.__l7L6PureImages=true;const original=S.image;S.image=function(file,alt='Bild'){if(!file)return'';const value=String(file||'').trim();const src=/^https?:\/\//i.test(value)?value:CDN+value.split('/').filter(Boolean).map(encodeURIComponent).join('/');return `<div class="l7-image sp-pure-image"><img src="${esc(src)}" alt="${esc(alt)}" loading="eager" decoding="async" onerror="this.hidden=true"></div>`};S.image.original=original;return true}
 function run(){installPureImageBehavior();if(page==='task')decorateTask();if(page==='theme')decorateTheme()}
 const style=document.createElement('style');style.id='sp-l7-l6-layout-style';style.textContent=`body[data-page="task"] #app{min-height:100dvh}body[data-page="task"] .l7-page{width:min(1120px,100%);box-sizing:border-box;margin:0 auto;padding:18px clamp(12px,3vw,28px) 38px;min-height:100dvh}body[data-page="task"] .sp-l6-task-title{margin:0 0 14px;padding:2px 2px 0}body[data-page="task"] .sp-l6-task-title span{display:block;font-size:15px;font-weight:950;letter-spacing:.05em;text-transform:uppercase;color:var(--muted)}body[data-page="task"] .sp-l6-task-title h1{margin:4px 0 0;color:var(--dark);font-size:clamp(28px,4vw,38px);line-height:1.1}body[data-page="task"] .l7-card{width:100%;box-sizing:border-box}body[data-page="task"] .l7-instruction{margin:14px 0 18px;padding:14px 18px;border-radius:16px;background:var(--soft);font-size:clamp(17px,2.2vw,20px);font-weight:850;color:var(--dark)}body[data-page="task"] .l7-question-card{min-height:min(54dvh,590px);box-sizing:border-box;display:flex;flex-direction:column;justify-content:center}body[data-page="task"] .l7-question-card>.eyebrow{display:none!important}body[data-page="task"] .l7-image-fallback{display:none!important}body[data-page="task"] .l7-image.sp-pure-image{margin:8px auto 18px}body[data-page="task"] .l7-image.sp-pure-image img{display:block;max-width:min(310px,70vw);max-height:min(310px,42dvh);object-fit:contain;margin:auto}body[data-page="task"] .l7-options{width:min(820px,100%);margin-inline:auto}body[data-page="task"] input,body[data-page="task"] textarea,body[data-page="task"] button{max-width:100%}@media(max-width:680px){body[data-page="task"] .l7-page{padding:10px 10px 28px}body[data-page="task"] .l7-card{padding:14px!important}body[data-page="task"] .l7-question-card{min-height:auto;padding:16px!important}body[data-page="task"] .l7-instruction{margin:10px 0 14px;padding:12px 14px}body[data-page="task"] .sp-l6-task-title{margin-bottom:10px}}body.sp-l6t4-theme-look .container{width:min(1180px,100%);box-sizing:border-box;margin:0 auto;padding-inline:clamp(12px,3vw,28px)}body.sp-l6t4-theme-look #taskGrid.grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:18px;align-items:stretch}body.sp-l6t4-theme-look .module.sp-l6-module{min-height:285px;display:flex;flex-direction:column;box-sizing:border-box;border-radius:22px}body.sp-l6t4-theme-look .module.sp-l6-module .num{font-size:18px;font-weight:950}body.sp-l6t4-theme-look .module.sp-l6-module .icon{font-size:42px;margin:18px 0 10px}body.sp-l6t4-theme-look .module.sp-l6-module p{flex:1;font-size:16px;line-height:1.45}body.sp-l6t4-theme-look .module.sp-l6-module .start{margin-top:10px;font-weight:900}@media(max-width:580px){body.sp-l6t4-theme-look #taskGrid.grid{grid-template-columns:1fr}body.sp-l6t4-theme-look .module.sp-l6-module{min-height:230px}}`;document.head.appendChild(style);
