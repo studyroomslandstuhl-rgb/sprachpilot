@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-if(window.__SP_L7T4_TASK11_DIALOGS_V2)return;window.__SP_L7T4_TASK11_DIALOGS_V2=true;
+if(window.__SP_L7T4_TASK11_DIALOGS_V3)return;window.__SP_L7T4_TASK11_DIALOGS_V3=true;
 window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
  if(!theme||!Array.isArray(theme.tasks))return theme;
  const task=theme.tasks.find(t=>t?.id==='hoerdialog-ordnen');
@@ -17,7 +17,7 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
     ['Mutter','Paul Marin. Er geht in die Klasse 2b.'],
     ['Sekretariat','Danke. Was ist heute los?']
    ],
-   options:['Auf Wiederhören und gute Besserung.','Grundschule Sonnenweg, guten Morgen.','Der Unterricht endet heute um zwölf Uhr.'],
+   options:['Grundschule Sonnenweg, guten Abend.','Grundschule Sonnenweg, guten Morgen.','Grundschule Sonnenweg, gute Morgen.'],
    answer:'Grundschule Sonnenweg, guten Morgen.'
   },
   {
@@ -28,7 +28,7 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
     ['Sekretariat','Das tut mir leid. Bleibt er heute zu Hause?'],
     ['Vater','Ja. Morgen rufe ich noch einmal an.']
    ],
-   options:['Er ist krank und hat Fieber.','Er ist wieder gesund und kommt gleich.','Er fährt heute mit der Klasse ins Schwimmbad.'],
+   options:['Er sind krank und hat Fieber.','Er ist krank und hat Fieber.','Er ist krank und haben Fieber.'],
    answer:'Er ist krank und hat Fieber.'
   },
   {
@@ -40,7 +40,7 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
     ['Amina','Am Dienstag bin ich wieder da.'],
     ['Kursbüro','Alles klar. Danke für die Information.']
    ],
-   options:['Wann beginnt heute der Unterricht?','Warum gehen Sie zum Arzt?','Wann kommen Sie wieder zum Kurs?'],
+   options:['Wann kommen Sie wieder zur Schule?','Wann kommt Sie wieder zum Kurs?','Wann kommen Sie wieder zum Kurs?'],
    answer:'Wann kommen Sie wieder zum Kurs?'
   },
   {
@@ -51,7 +51,7 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
     ['Vater','Ja, er hat Fieber und bleibt zu Hause.'],
     ['Sekretariat','Danke. Ich informiere die Lehrerin.']
    ],
-   options:['Mein Sohn Karim kann am Freitag beim Ausflug nicht mitkommen.','Mein Sohn Karim möchte am Freitag einen neuen Ausflug planen.','Mein Sohn Karim kommt am Freitag später zum Unterricht.'],
+   options:['Mein Sohn Karim kann am Freitag beim Unterricht nicht mitkommen.','Mein Sohn Karim kann am Freitag beim Ausflug nicht mitkommt.','Mein Sohn Karim kann am Freitag beim Ausflug nicht mitkommen.'],
    answer:'Mein Sohn Karim kann am Freitag beim Ausflug nicht mitkommen.'
   },
   {
@@ -62,7 +62,7 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
     ['Sekretariat','Dann fehlt Paul morgen den ganzen Tag.'],
     ['Mutter','Ja, genau. Vielen Dank.']
    ],
-   options:['Kommt Paul nach dem Termin noch zur Schule?','Kommt Paul heute schon um halb zehn zur Schule?','Kommt Paul am Donnerstag nicht mehr zur Schule?'],
+   options:['Kommt Paul nach dem Termin noch zur Schule?','Kommen Paul nach dem Termin noch zur Schule?','Kommt Paul nach dem Termin noch zum Deutschkurs?'],
    answer:'Kommt Paul nach dem Termin noch zur Schule?'
   },
   {
@@ -74,7 +74,7 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
     ['Sekretariat','Danke. Warum kann Elena heute nicht kommen?'],
     ['Mutter','Sie ist krank und hat heute einen Arzttermin.']
    ],
-   options:['Sie heißt Elena Marin und geht in die Klasse 2a.','Sie heißt Frau Müller und arbeitet im Sekretariat.','Sie heißt Elena Marin und kommt heute um zwei Uhr zurück.'],
+   options:['Ich heiße Elena Marin und gehe in die Klasse 2a.','Sie heißt Elena Marin und geht in die Klasse 2a.','Sie heißt Elena Marin und gehe in die Klasse 2a.'],
    answer:'Sie heißt Elena Marin und geht in die Klasse 2a.'
   },
   {
@@ -86,7 +86,7 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
     ['Kursbüro','Das ist ein Problem. Sie haben schon oft gefehlt.'],
     ['Amina','Ja, ich weiß. Mein Kind ist heute krank.']
    ],
-   options:['Ich möchte heute einen neuen Deutschkurs beginnen.','Ich möchte wissen, wann der nächste Ausflug ist.','Ich kann heute wieder nicht zum Deutschkurs kommen.'],
+   options:['Ich kann heute wieder nicht zur Schule kommen.','Ich kann heute wieder nicht zum Deutschkurs kommt.','Ich kann heute wieder nicht zum Deutschkurs kommen.'],
    answer:'Ich kann heute wieder nicht zum Deutschkurs kommen.'
   },
   {
@@ -97,11 +97,11 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
     ['Sekretariat','Genau. Gute Besserung für Karim.'],
     ['Vater','Vielen Dank. Auf Wiederhören.']
    ],
-   options:['Nein. Wenn Karim morgen noch krank ist, rufen Sie bitte noch einmal an.','Ja. Sie müssen Karim heute noch in die Schule bringen.','Nein. Der Ausflug findet deshalb morgen nicht statt.'],
+   options:['Nein. Wenn Karim morgen noch krank ist, rufen Sie bitte heute noch einmal an.','Nein. Wenn Karim morgen noch krank ist, rufen Sie bitte noch einmal an.','Nein. Wenn Karim morgen noch krank ist, ruft Sie bitte noch einmal an.'],
    answer:'Nein. Wenn Karim morgen noch krank ist, rufen Sie bitte noch einmal an.'
   }
  ];
- theme.contentRevision='l7t4-dialogs-v2-20260822';
+ theme.contentRevision='l7t4-dialogs-v3-20260822';
  window.L7_THEME=theme;
  return theme;
 });
