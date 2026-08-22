@@ -2,7 +2,6 @@ import { db, doc, collection, query, where, getDocsFromServer, limit, updateDoc,
 import { loadCourse } from './auth.js';
 import {
   signInSecureStudent,
-  createSecureStudentCredential,
   sendStudentVerification,
   secureStudentSignOut
 } from './student-secure-auth.js?v=1';
@@ -127,11 +126,9 @@ export async function loginStudentProfileWithEmailPassword(email,password,studen
 export async function registerStudentV2(payload={}){
   const email=normEmail(payload.email),password=String(payload.password||'');
   if(!email||!password)throw new Error('MISSING_FIELDS');
-  try{
-    await createSecureStudentCredential(email,password);
-  }catch(error){
-    if(error?.code!=='auth/email-already-in-use')throw error;
-    await signInSecureStudent(email,password);
-  }
+  // student-identity.js besitzt den kompletten Registrierungsablauf inklusive genau
+  // eines Firebase-Auth-Versuchs (create ODER sign-in bei bestehendem Konto).
+  // Hier darf nicht vorab nochmals create/sign-in ausgeführt werden: Das verdoppelt
+  // Auth-Anfragen pro Klick und kann Firebase unnötig in too-many-requests treiben.
   return legacyRegisterStudent({...payload,email,password});
 }
