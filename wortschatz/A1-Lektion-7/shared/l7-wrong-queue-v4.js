@@ -42,7 +42,7 @@ function injectHelp(S,theme,id,index,count){
    const box=feedbackBox();if(!box)return;
    const current=String(box.innerHTML||'');
    if(count===2&&/Hinweis:/i.test(current))return;
-   if(count>=3&&/Lösung:/i.test(current))return;
+   if(count>=3&&/Lösung:/i.test(current)&&!/(später|nächsten Durchgang|erneut)/i.test(current))return;
    const{task,item}=taskItem(S,id,index);box.innerHTML=helpHtml(task,item,count)
   }catch(e){}
  };
