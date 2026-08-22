@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-if(window.__SP_L7T4_TASK11_DIALOGS_V3)return;window.__SP_L7T4_TASK11_DIALOGS_V3=true;
+if(window.__SP_L7T4_TASK11_DIALOGS_V4)return;window.__SP_L7T4_TASK11_DIALOGS_V4=true;
 window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
  if(!theme||!Array.isArray(theme.tasks))return theme;
  const task=theme.tasks.find(t=>t?.id==='hoerdialog-ordnen');
@@ -11,14 +11,14 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
  task.items=[
   {
    turns:[
+    ['Sekretariat','Grundschule am Park, guten Morgen.'],
+    ['Vater','Guten Morgen. Mein Kind kann heute nicht kommen.'],
     ['Sekretariat','{{gap}}'],
-    ['Mutter','Guten Morgen, hier spricht Elena Marin. Mein Sohn kann heute leider nicht zur Schule kommen.'],
-    ['Sekretariat','Guten Morgen, Frau Marin. Wie heißt Ihr Sohn?'],
-    ['Mutter','Paul Marin. Er geht in die Klasse 2b.'],
+    ['Vater','Karim Ali. Er geht in die Klasse 3b.'],
     ['Sekretariat','Danke. Was ist heute los?']
    ],
-   options:['Grundschule Sonnenweg, guten Abend.','Grundschule Sonnenweg, guten Morgen.','Grundschule Sonnenweg, gute Morgen.'],
-   answer:'Grundschule Sonnenweg, guten Morgen.'
+   options:['Wie heißen Sie?','Wie heißt Ihr Kind?','Wie heißt die Lehrerin?'],
+   answer:'Wie heißt Ihr Kind?'
   },
   {
    turns:[
@@ -91,17 +91,16 @@ window.L7_THEME_READY=Promise.resolve(window.L7_THEME_READY).then(theme=>{
   },
   {
    turns:[
-    ['Vater','Danke. Sie haben die Krankmeldung schon notiert. Muss ich noch etwas machen?'],
-    ['Sekretariat','{{gap}}'],
-    ['Vater','Alles klar. Dann rufe ich morgen wieder an, wenn Karim noch krank ist.'],
-    ['Sekretariat','Genau. Gute Besserung für Karim.'],
-    ['Vater','Vielen Dank. Auf Wiederhören.']
+    ['Mutter','Meine Tochter ist heute krank und bleibt zu Hause.'],
+    ['Sekretariat','Alles klar. Ich sage der Lehrerin Bescheid. Gute Besserung für Ihre Tochter.'],
+    ['Mutter','{{gap}}'],
+    ['Sekretariat','Gern. Ich wünsche Ihrer Tochter einen ruhigen Tag.']
    ],
-   options:['Nein. Wenn Karim morgen noch krank ist, rufen Sie bitte heute noch einmal an.','Nein. Wenn Karim morgen noch krank ist, rufen Sie bitte noch einmal an.','Nein. Wenn Karim morgen noch krank ist, ruft Sie bitte noch einmal an.'],
-   answer:'Nein. Wenn Karim morgen noch krank ist, rufen Sie bitte noch einmal an.'
+   options:['Ihnen auch gute Besserung.','Vielen Dank.','Ebenfalls.'],
+   answer:'Vielen Dank.'
   }
  ];
- theme.contentRevision='l7t4-dialogs-v3-20260822';
+ theme.contentRevision='l7t4-dialogs-v4-20260822';
  window.L7_THEME=theme;
  return theme;
 });
