@@ -13,6 +13,7 @@ function solutionText(item){
  if(item.singular&&item.plural)return`${item.singular} · ${item.plural}`;
  if(Array.isArray(item.blanks)&&item.blanks.length)return item.blanks.map((b,i)=>`${i+1}: ${b.answer||''}`).filter(x=>!/: $/.test(x)).join(' · ');
  if(Array.isArray(item.questions)&&item.questions.length)return item.questions.map((q,i)=>q?.answer?`${i+1}: ${q.answer}`:'').filter(Boolean).join(' · ');
+ if(item.sentence)return String(item.sentence);
  return''
 }
 function hintText(task,item){
