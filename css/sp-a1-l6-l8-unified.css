@@ -1,74 +1,19 @@
 /* Gemeinsamer visueller Standard für SprachPilot A1 Lektion 6–8.
    L6 bleibt die Karten-Vorlage. L7/L8 übernehmen diese Form; der Fortschrittsbereich folgt L8. */
 body{--sp-unified-radius:24px;--sp-unified-shadow:0 8px 20px rgba(0,0,0,.08)}
-
-/* Einheitliche Grundtypografie */
 .l7-page,.l8-wrap{font-family:system-ui,-apple-system,"Segoe UI",sans-serif}
-
-/* Themenkarten: L7 und L8 an die L6-Karten angleichen. L6 selbst nicht verändern. */
-body[data-page="theme"] .module,.l8-task-card{
-  border-radius:var(--sp-unified-radius)!important;
-  border-width:2px!important;
-  box-shadow:var(--sp-unified-shadow)!important;
-  padding:18px!important;
-  min-height:270px;
-  display:flex!important;
-  flex-direction:column!important;
-  box-sizing:border-box!important;
-}
+body[data-page="theme"] .module,.l8-task-card{border-radius:var(--sp-unified-radius)!important;border-width:2px!important;box-shadow:var(--sp-unified-shadow)!important;padding:18px!important;min-height:270px;display:flex!important;flex-direction:column!important;box-sizing:border-box!important}
 body[data-page="theme"] .module .num,.l8-task-number{font-size:18px!important;font-weight:950!important}
 body[data-page="theme"] .module .icon,body[data-page="theme"] .module .big-icon,.l8-task-card .emoji{font-size:42px!important;line-height:1!important;margin:18px 0 10px!important}
 body[data-page="theme"] .module p,.l8-task-card p{font-size:16px!important;line-height:1.45!important;flex:1}
 body[data-page="theme"] .module .start,.l8-task-start{margin-top:10px!important;font-weight:900!important;border-radius:999px!important;padding:10px 16px!important}
 body[data-page="theme"] #taskGrid.grid,.l8-grid{grid-template-columns:repeat(auto-fit,minmax(240px,1fr))!important;gap:18px!important;align-items:stretch!important}
+.l7-card,.l7-question-card,.l8-card,.l8-exercise,.l8-task-head{border-radius:var(--sp-unified-radius)!important;border-width:2px!important;box-shadow:var(--sp-unified-shadow)!important}
+.l7-btn,.l8-btn{border-radius:999px!important;font-weight:900!important}.l7-instruction,.l8-note{border-radius:18px!important;font-weight:800!important}.l7-options button,.l8-option{border-radius:18px!important}.l7-image img,.l8-cardword img{border-radius:20px!important}
 
-/* Aufgabenflächen: L7 und L8 an L6 angleichen. */
-.l7-card,.l7-question-card,.l8-card,.l8-exercise,.l8-task-head{
-  border-radius:var(--sp-unified-radius)!important;
-  border-width:2px!important;
-  box-shadow:var(--sp-unified-shadow)!important;
-}
-.l7-btn,.l8-btn{border-radius:999px!important;font-weight:900!important}
-.l7-instruction,.l8-note{border-radius:18px!important;font-weight:800!important}
-.l7-options button,.l8-option{border-radius:18px!important}
-.l7-image img,.l8-cardword img{border-radius:20px!important}
-
-/* Fortschrittsbereich: für L6, L7 und L8 gleicher Aufbau nach L8. */
-.progress-card,.l8-progress-card{
-  display:flex!important;
-  align-items:center!important;
-  gap:22px!important;
-  border-radius:24px!important;
-  padding:20px!important;
-  box-shadow:var(--sp-unified-shadow)!important;
-}
-.progress-card>.circle,.l8-progress-circle{
-  width:116px!important;
-  height:116px!important;
-  flex:0 0 116px!important;
-  border-radius:50%!important;
-  display:grid!important;
-  place-items:center!important;
-  font-size:31px!important;
-  font-weight:950!important;
-}
-.progress-card>.progress-main,.progress-card>div:not(.circle):not(.sp-l7-score-slot),.l8-progress-main{flex:1;min-width:240px}
-.progress-card h2,.l8-progress-main h2{font-size:31px!important;margin:0 0 7px!important}
-.progress,.l7-progress,.l8-progress{height:14px!important;border-radius:999px!important;overflow:hidden!important}
-.progress .bar,.l7-progress>span,.l8-progress>div{border-radius:999px!important}
-.sp-l7-score-slot,.l8-score-slot{flex:0 0 285px!important;align-self:stretch!important;display:flex!important}
-.sp-l7-score-card,.l8-score-panel,#scoreSummary:not(:empty){border-radius:18px!important}
-.progress-card #scoreSummary:not(:empty){margin-top:12px;padding:12px 14px;border:2px solid var(--lesson-line,#e4d7dc);background:var(--lesson-soft,#fff0f4)}
-
-@media(max-width:850px){
- .progress-card,.l8-progress-card{align-items:flex-start!important;flex-wrap:wrap!important}
- .sp-l7-score-slot,.l8-score-slot{flex:1 1 100%!important;width:100%!important}
-}
-@media(max-width:700px){
- body[data-page="theme"] .module,.l8-task-card{min-height:230px}
- body[data-page="theme"] #taskGrid.grid,.l8-grid{grid-template-columns:1fr!important}
- .progress-card,.l8-progress-card{gap:14px!important}
- .progress-card>.circle,.l8-progress-circle{width:94px!important;height:94px!important;flex-basis:94px!important;font-size:26px!important}
- .progress-card h2,.l8-progress-main h2{font-size:27px!important}
- .l7-card,.l7-question-card,.l8-card{padding:16px!important}
-}
+/* L8-Fortschrittskopf als verbindlicher Standard für L6, L7 und L8. */
+.progress-card,.l8-progress-card{display:flex!important;align-items:center!important;gap:22px!important;border-radius:24px!important;padding:20px!important;box-shadow:var(--sp-unified-shadow)!important;background:#fff!important}
+.progress-card>.circle,.l8-progress-circle{width:116px!important;height:116px!important;flex:0 0 116px!important;border-radius:50%!important;display:grid!important;place-items:center!important;font-size:31px!important;font-weight:950!important;background:var(--lesson-main,var(--main,#8DBFEA))!important;color:#fff!important;border:0!important;box-shadow:0 12px 26px color-mix(in srgb,var(--lesson-main-dark,var(--dark,#4E7FA8)) 22%,transparent)!important}
+.progress-card>.progress-main,.progress-card>div:not(.circle):not(.sp-l7-score-slot),.l8-progress-main{flex:1;min-width:240px}.progress-card h2,.l8-progress-main h2{font-size:31px!important;margin:0 0 7px!important;color:#111!important}.progress,.l7-progress,.l8-progress{height:14px!important;border-radius:999px!important;overflow:hidden!important;background:#e7eff1!important}.progress .bar,.l7-progress>span,.l8-progress>div{height:100%!important;border-radius:999px!important;background:linear-gradient(135deg,var(--lesson-main-dark,var(--dark,#4E7FA8)),var(--lesson-main,var(--main,#8DBFEA)))!important}.sp-l7-score-slot,.l8-score-slot{flex:0 0 285px!important;align-self:stretch!important;display:flex!important}.sp-l7-score-card,.l8-score-panel,#scoreSummary:not(:empty){border-radius:18px!important}.progress-card #scoreSummary:not(:empty){margin-top:12px;padding:12px 14px;border:2px solid var(--lesson-line,#e4d7dc);background:var(--lesson-soft,#fff0f4)}
+@media(max-width:850px){.progress-card,.l8-progress-card{align-items:flex-start!important;flex-wrap:wrap!important}.sp-l7-score-slot,.l8-score-slot{flex:1 1 100%!important;width:100%!important}}
+@media(max-width:700px){body[data-page="theme"] .module,.l8-task-card{min-height:230px}body[data-page="theme"] #taskGrid.grid,.l8-grid{grid-template-columns:1fr!important}.progress-card,.l8-progress-card{gap:14px!important}.progress-card>.circle,.l8-progress-circle{width:94px!important;height:94px!important;flex-basis:94px!important;font-size:26px!important}.progress-card h2,.l8-progress-main h2{font-size:27px!important}.l7-card,.l7-question-card,.l8-card{padding:16px!important}}
