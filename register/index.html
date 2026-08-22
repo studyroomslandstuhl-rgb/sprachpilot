@@ -64,7 +64,7 @@ import {
   hasPendingStudentRegistration,
   $,
   safeText
-} from "../js/student-login-v2.js?v=4";
+} from "../js/student-login-v2.js?v=5";
 import { secureStudentSignOut } from "../js/student-secure-auth.js?v=1";
 
 const PENDING_KEY='SP_PENDING_SECURE_STUDENT_REGISTRATION_V1';
@@ -82,6 +82,12 @@ async function resetStaleRegistrationSession(){
   try{localStorage.removeItem(PENDING_KEY)}catch(e){}
   try{await secureStudentSignOut()}catch(e){}
 }
+async function ensureRankingRow(){
+  try{
+    await import('../js/ranking-mirror.js?v=4');
+    return await window.SPRankingMirror?.mirror?.(0);
+  }catch(error){console.warn('Ranglisten-Eintrag nach Registrierung konnte noch nicht erstellt werden',error);return false}
+}
 
 let registrationBusy=false;
 let finishingBusy=false;
@@ -92,6 +98,7 @@ async function finishRegistrationAutomatically({showChecking=false}={}){
   try{
     if(showChecking)showMsg('<div class="ok">E-Mail-Bestätigung wird geprüft...</div>');
     await finishPendingStudentRegistration();
+    await ensureRankingRow();
     showMsg('<div class="ok"><b>Registrierung abgeschlossen.</b><br>Du wirst gleich weitergeleitet.</div>');
     openStartSoon();return true;
   }catch(err){
@@ -132,7 +139,7 @@ window.doRegister=async function(){
     await resetStaleRegistrationSession();
     clearTeacherSessionMarkers();
     const result=await registerStudent({vorname,nachname,email,password,muttersprache,kurs});
-    if(result?.activated){showMsg('<div class="ok"><b>Registrierung abgeschlossen.</b><br>Du wirst gleich weitergeleitet.</div>');openStartSoon();return;}
+    if(result?.activated){await ensureRankingRow();showMsg('<div class="ok"><b>Registrierung abgeschlossen.</b><br>Du wirst gleich weitergeleitet.</div>');openStartSoon();return;}
     if(result?.verificationRequired){showRegisterButton(true);showMsg('<div class="ok"><b>Bestätigungs-E-Mail wurde gesendet.</b><br>Öffne die E-Mail und bestätige deine Adresse. Danach wird die Registrierung automatisch abgeschlossen. Der Knopf „Registrieren“ bleibt sichtbar, falls du die Registrierung mit anderen Daten neu starten möchtest.</div>');return;}
   }catch(err){
     console.error("Registrierung Fehler:",err);const code=String(err?.code||""),message=String(err?.message||"");
