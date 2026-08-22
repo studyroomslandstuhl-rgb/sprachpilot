@@ -1,0 +1,9 @@
+(function(){
+'use strict';
+if(window.__SP_L7_PROGRESS_FIRST_V1)return;window.__SP_L7_PROGRESS_FIRST_V1=true;
+if(document.body?.dataset?.page!=='theme')return;
+const root=document.getElementById('app');if(!root)return;
+root.innerHTML=`<section class="card progress-card sp-l7-progress-first" aria-label="Fortschritt wird geladen"><div class="circle">0%</div><div class="progress-main"><h2>Dein Fortschritt</h2><p class="small">Fortschritt wird geladen …</p><div class="progress"><div class="bar" style="width:0%"></div></div></div><div class="sp-l7-score-slot"><div class="sp-l7-score-card"><div class="sp-l7-score-label">Punkte</div><div class="sp-l7-score-total">…</div><div class="small">Punkte werden geladen …</div></div></div></section><section class="sp-l7-tasks-loading" aria-live="polite">Aufgaben werden geladen …</section>`;
+const style=document.createElement('style');style.id='sp-l7-progress-first-style';style.textContent=`.sp-l7-progress-first{display:flex!important;align-items:center!important;gap:22px!important;min-height:154px}.sp-l7-progress-first .circle{width:116px!important;height:116px!important;flex:0 0 116px!important;font-size:31px!important}.sp-l7-progress-first .progress-main{flex:1;min-width:240px}.sp-l7-progress-first .progress-main h2{font-size:31px;margin:0 0 7px}.sp-l7-tasks-loading{padding:22px 4px;color:var(--lesson-muted,var(--muted,#667085));font-weight:800}@media(max-width:850px){.sp-l7-progress-first{align-items:flex-start!important;flex-wrap:wrap}.sp-l7-progress-first .sp-l7-score-slot{flex:1 1 100%;width:100%}}@media(max-width:700px){.sp-l7-progress-first{gap:14px!important}.sp-l7-progress-first .circle{width:94px!important;height:94px!important;flex-basis:94px!important;font-size:26px!important}.sp-l7-progress-first .progress-main h2{font-size:27px}}`;
+document.head.appendChild(style);
+})();
