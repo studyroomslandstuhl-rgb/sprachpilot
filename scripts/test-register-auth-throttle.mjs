@@ -12,7 +12,13 @@ assert.match(html,/code==="auth\/too-many-requests"/,'Firebase throttling must h
 assert.match(html,/vorübergehend blockiert/,'technical throttling error must be translated for students');
 assert.match(html,/Passwort vergessen/,'throttled existing accounts must be directed to password recovery');
 
-assert.match(loginV2,/if\(error\?\.code!==['"]auth\/email-already-in-use['"]\)throw error;/,'only email-already-in-use may fall back from create to sign-in');
-assert.match(loginV2,/await signInSecureStudent\(email,password\);/,'existing Firebase accounts must still require their real password');
+const marker='export async function registerStudentV2';
+const start=loginV2.indexOf(marker);
+assert.ok(start>=0,'registerStudentV2 must exist');
+const registrationBlock=loginV2.slice(start);
+assert.doesNotMatch(registrationBlock,/createSecureStudentCredential\s*\(/,'registration wrapper must not create a Firebase credential before the canonical registration flow');
+assert.doesNotMatch(registrationBlock,/signInSecureStudent\s*\(/,'registration wrapper must not perform a second Firebase sign-in before the canonical registration flow');
+assert.match(registrationBlock,/return legacyRegisterStudent\(\{\.\.\.payload,email,password\}\);/,'registration wrapper must delegate the single auth flow to student-identity.js');
+assert.doesNotMatch(loginV2,/\bcreateSecureStudentCredential\b/,'student-login-v2 must not import the duplicate registration credential creator');
 
-console.log('Registration throttling guard and error handling passed.');
+console.log('Registration uses one Firebase auth flow and keeps throttling UI safeguards.');
