@@ -44,7 +44,7 @@ const LIGHT_FIREBASE_PAGE=IS_WORTSCHATZ_EXERCISE||IS_FRAGEN_EXERCISE||IS_VERBEN_
 const NO_FIREBASE_SYNC=qs.has("nofirebase")||sessionStorage.getItem("SP_NO_FIREBASE_SYNC_SESSION")==="1";
 const PERFORMANCE_SYNC_OFF=NO_FIREBASE_SYNC;
 const FULL_FIREBASE=!PERFORMANCE_SYNC_OFF;
-if(IS_L6T2||IS_L6T3||IS_L6T4)import("/js/l6-image-format-fix.js?v=1").catch(()=>{});
+if(IS_L6T2||IS_L6T3||IS_L6T4)import("/js/l6-image-format-fix.js?v=2").catch(()=>{});
 if(PERFORMANCE_SYNC_OFF){window.spCanWriteFirebaseProgress=()=>false;window.SP_NO_FIREBASE_SYNC=true;window.SP_PERFORMANCE_MODE=true}
 let aliasRepairPromise=Promise.resolve(null);
 if(FULL_FIREBASE&&IS_SECURE_STUDENT){
