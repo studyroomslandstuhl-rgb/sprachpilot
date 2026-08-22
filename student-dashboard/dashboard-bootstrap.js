@@ -1,3 +1,4 @@
+import '/shared/sp-cache-epoch.js?v=20260822-cache2';
 import '/js/session-restore.js?v=4';
 import { verifySecureAccess } from '/js/secure-access-gate.js?v=1';
 
@@ -57,7 +58,7 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
 
     let progressReady=false;
     try{
-      const progressModule=await import('/js/account-progress-sync.js?v=13');
+      const progressModule=await import('/js/account-progress-sync.js?v=20260822-sync14');
       const progressState=await progressModule.startAccountProgressSync();
       progressReady=progressState?.blocked!==true&&progressState?.serverAuthoritative===true&&Number(progressState?.authorityVersion||0)>=2;
       if(!progressReady)console.warn('Dashboard nutzt direkten Firebase-Stand, Kontosynchronisierung ist noch nicht vollständig bereit.',progressState);
@@ -68,7 +69,7 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
     try{localStorage.removeItem('SP_STUDENT_DASHBOARD_LITE_V3')}catch(e){}
     window.SP_PROGRESS_ALIAS_READY=Promise.resolve({ok:progressReady,skipped:!progressReady,reason:progressReady?'server-authoritative-progress-v2':'dashboard-direct-server-fallback'});
     try{
-      await import('./dashboard-server-v3.js?v=4');
+      await import('./dashboard-server-v3.js?v=20260822-dashboard5');
     }catch(error){
       console.error('Dashboard-Inhalte konnten nicht vollständig geladen werden',error);
       warning('Dashboard konnte nur teilweise geladen werden.','Die Anmeldung funktioniert, aber die aktuellen Statistiken konnten nicht vollständig aufgebaut werden.');
