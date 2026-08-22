@@ -115,8 +115,8 @@ function type(item){
  return'other';
 }
 function labelForType(value){return({noun:'Nomen',verb:'Verben',adjective:'Adjektive',adverb:'Adverbien',phrase:'Ausdrücke und Redewendungen',other:'Weitere Wörter'})[value]||'Weitere Wörter'}
-function grid(item){return `<div class="sp-translation-grid">${LANGS.map(([code,label])=>`<div><b>${esc(label)}:</b> <span>${esc(exactTranslation(item,code)||'—')}</span></div>`).join('')}</div>`}
 function native(item){const code=currentCode();return{code,label:NAME[code]||code.toUpperCase(),text:translation(item,code)}}
+function grid(item){const selected=native(item);return `<div class="sp-translation-grid sp-translation-grid--native"><div><b>${esc(selected.label)}:</b> <span>${esc(selected.text||'—')}</span></div></div>`}
 function enrich(){
  const theme=window.L7_THEME;
  if(!theme||!Array.isArray(theme.tasks))return;
