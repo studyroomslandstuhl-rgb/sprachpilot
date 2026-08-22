@@ -6,7 +6,7 @@ import '/shared/points-recalculator.js?v=1';
 
 const $=id=>document.getElementById(id);
 const RANKING_COLLECTION='studentRankings';
-const RANKING_VERSION=3;
+const RANKING_VERSION=4;
 let releaseData=null,statsBusy=false,rankingBusy=false,lastServerStats=null;
 
 function profile(){return getActiveProfile?.()||{} }
@@ -16,9 +16,16 @@ function clamp(v){return Math.max(0,Math.min(100,Math.round(Number(v)||0)))}
 function esc(v){return String(v||'').replace(/[&<>'"]/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[ch]))}
 function canonicalId(p=profile()){return String(p.canonicalStudentId||p.docId||p.studentId||p.userId||'').trim()}
 function aliasIds(p=profile()){const canonical=canonicalId(p);return uniq([...(Array.isArray(p.aliasIds)?p.aliasIds:[]),p.docId,p.studentId,p.userId]).filter(id=>id&&id!==canonical)}
-function courseKeys(p=profile()){return uniq([p.courseDocId,p.courseCode,p.kurs,p.kursnummer,p.course,localStorage.getItem('SP_COURSE_CODE')])}
-function primaryCourseKey(p=profile()){return courseKeys(p)[0]||''}
+function keyVariants(value){const raw=String(value||'').trim();return raw?[raw,raw.toLowerCase(),raw.toUpperCase()]:[]}
+function courseKeys(p=profile()){
+  return uniq([
+    ...keyVariants(p.courseDocId),...keyVariants(p.courseCode),...keyVariants(p.kurs),...keyVariants(p.kursnummer),...keyVariants(p.course),
+    ...keyVariants(localStorage.getItem('SP_COURSE_CODE'))
+  ]);
+}
+function primaryCourseKey(p=profile()){return String(p.courseDocId||p.courseCode||p.kurs||p.kursnummer||p.course||localStorage.getItem('SP_COURSE_CODE')||'').trim()}
 function displayName(p=profile()){return [p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(' ').trim()||p.studentName||p.displayName||p.email||'Schüler/in'}
+function profilePoints(p=profile()){return Math.max(point(p.rankingPoints),point(p.pointsTotal),point(p.lifetimePoints),point(p.punkteGesamt),point(p.points),point(p.ranking?.points),point(p.totals?.points))}
 function topicPct(topic={}){
   const tasks=Object.values(topic.tasks||{}).filter(t=>t&&typeof t==='object');
   if(tasks.length){
@@ -81,7 +88,9 @@ function renderStats(stats){
 }
 async function mirrorRanking(points){
   const p=profile(),id=canonicalId(p),uid=String(p.authUid||'').trim(),key=primaryCourseKey(p);if(!id||!uid||!key)return false;
-  const payload={studentId:id,authUid:uid,displayName:displayName(p),courseKey:key,points:point(points),version:RANKING_VERSION,updatedAt:serverTimestamp()};
+  let existingPoints=0;
+  try{const snap=await getDocFromServer(doc(db,RANKING_COLLECTION,id));if(snap.exists())existingPoints=point(snap.data()?.points)}catch(e){}
+  const payload={studentId:id,authUid:uid,displayName:displayName(p),courseKey:key,points:Math.max(point(points),profilePoints(p),existingPoints),version:RANKING_VERSION,updatedAt:serverTimestamp()};
   try{await setDoc(doc(db,RANKING_COLLECTION,id),payload,{merge:true});return true}catch(error){console.warn('Eigene Ranglistenzeile konnte nicht aktualisiert werden',error);return false}
 }
 async function refreshOwn(){
@@ -97,26 +106,30 @@ async function refreshOwn(){
 async function loadRoster(){
   const keys=courseKeys();if(!keys.length)return[];
   const rows=[];
-  for(const key of keys.slice(0,6)){
+  for(const key of keys.slice(0,18)){
     try{
-      const snap=await getDocsFromServer(query(collection(db,RANKING_COLLECTION),where('courseKey','==',key),limit(100)));
+      const snap=await getDocsFromServer(query(collection(db,RANKING_COLLECTION),where('courseKey','==',key),limit(250)));
       snap.docs.forEach(d=>rows.push({...(d.data()||{}),id:d.id}));
     }catch(error){console.warn('Ranglisten-Abfrage für Kurskennung fehlgeschlagen',key,error)}
   }
   const byId=new Map();
-  for(const row of rows){const id=String(row.studentId||row.id||row.authUid||'');if(!id)continue;const old=byId.get(id);if(!old||point(row.points)>point(old.points))byId.set(id,row)}
+  for(const row of rows){
+    const id=String(row.studentId||row.id||row.authUid||'');if(!id)continue;
+    const old=byId.get(id);
+    if(!old||point(row.points)>point(old.points)||(!old.displayName&&row.displayName))byId.set(id,row);
+  }
   return [...byId.values()];
 }
 function drawRoster(rows,status=''){
-  const p=profile(),current={studentId:canonicalId(p),authUid:p.authUid,displayName:displayName(p),courseKey:primaryCourseKey(p),points:point(lastServerStats?.points)};
-  const map=new Map();for(const row of rows.concat(current)){const id=String(row.studentId||row.id||row.authUid||'');if(!id)continue;const old=map.get(id);if(!old||point(row.points)>point(old.points))map.set(id,row)}
-  const sorted=[...map.values()].filter(r=>r.displayName).sort((a,b)=>point(b.points)-point(a.points)||String(a.displayName).localeCompare(String(b.displayName),'de')).slice(0,100);
+  const p=profile(),current={studentId:canonicalId(p),authUid:p.authUid,displayName:displayName(p),courseKey:primaryCourseKey(p),points:Math.max(point(lastServerStats?.points),profilePoints(p))};
+  const map=new Map();for(const row of rows.concat(current)){const id=String(row.studentId||row.id||row.authUid||'');if(!id)continue;const old=map.get(id);if(!old||point(row.points)>point(old.points)||(!old.displayName&&row.displayName))map.set(id,row)}
+  const sorted=[...map.values()].filter(r=>r.displayName).sort((a,b)=>point(b.points)-point(a.points)||String(a.displayName).localeCompare(String(b.displayName),'de')).slice(0,250);
   $('leaderboard').innerHTML=sorted.length?sorted.map((r,i)=>`<div class="rank"><div class="rankNo">${i+1}</div><div><b>${esc(r.displayName)}</b></div><div class="points"><b>${point(r.points)}</b> Punkte</div></div>`).join(''):'<div class="empty">Noch keine Teilnehmer gefunden.</div>';
-  $('rankingStatus').textContent=status||('Firebase-Serverstand '+new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'}));
+  $('rankingStatus').textContent=status||(`${sorted.length} Teilnehmer · Firebase-Serverstand ${new Date().toLocaleTimeString('de-DE',{hour:'2-digit',minute:'2-digit'})}`);
 }
 async function loadRanking(){
   if(rankingBusy)return;rankingBusy=true;$('rankingStatus').textContent='Rangliste wird vom Server geladen …';
-  try{const rows=await loadRoster();drawRoster(rows,rows.length?'Rangliste aktualisiert':'Noch keine weiteren Ranglisteneinträge im Kurs')}
+  try{const rows=await loadRoster();drawRoster(rows,rows.length?`${rows.length} Teilnehmer geladen`:'Noch keine weiteren Ranglisteneinträge im Kurs')}
   catch(error){console.error('Rangliste konnte nicht vom Firebase-Server geladen werden',error);$('rankingStatus').textContent='Serverstand konnte nicht geladen werden'}
   finally{rankingBusy=false}
 }
@@ -133,6 +146,7 @@ async function init(){
   const key=primaryCourseKey();$('userPill').textContent=displayName(profile())+(key?` · ${key}`:'');
   $('rankingBtn')?.addEventListener('click',retryAll);$('logoutBtn')?.addEventListener('click',dashboardLogout);
   try{releaseData=await loadCourseRelease(profile())}catch(error){console.warn('Kursfreigaben konnten nicht geladen werden',error);releaseData=profile().assignments||null}
+  await mirrorRanking(profilePoints(profile()));
   await Promise.allSettled([refreshOwn(),loadRanking()]);
   window.addEventListener('online',retryAll);
   document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')retryAll()});
