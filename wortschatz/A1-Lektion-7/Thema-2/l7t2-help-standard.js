@@ -1,10 +1,10 @@
 (function(){
 'use strict';
-if(window.__SP_L7T2_HELP_STANDARD_V3)return;
-window.__SP_L7T2_HELP_STANDARD_V3=true;
+if(window.__SP_L7T2_HELP_STANDARD_V4)return;
+window.__SP_L7T2_HELP_STANDARD_V4=true;
 
 function install(){
- if(!window.L7||!window.L7S||window.L7.__l7t2HelpStandardV3)return false;
+ if(!window.L7||!window.L7S||window.L7.__l7t2HelpStandardV4)return false;
  const S=window.L7S,root=document.getElementById('app');
  const raw=window.L7.renderTaskPage.bind(window.L7);
  let busy=false,patchQueued=false;
@@ -22,9 +22,9 @@ function install(){
  }
  function esc(v){return S.esc(v)}
  function setFeedback(html){const box=document.getElementById('spFeedback');if(!box)return;if(box.innerHTML!==html)box.innerHTML=html}
- function first(){return'<div class="l7-no">Noch nicht richtig.</div>'}
+ function first(){return'<div class="l7-no"><strong>Noch nicht richtig.</strong><br>Korrigiere deine Antwort. Erst wenn sie richtig ist, geht es weiter.</div>'}
  function hint(text){return`<div class="l7-hint"><strong>Hinweis:</strong> ${esc(text)}</div>`}
- function solution(text,action='Gib die richtige Antwort selbst ein.'){return`<div class="l7-no"><strong>Lösung:</strong> ${text}<br>${action} Die Aufgabe kommt später erneut.</div>`}
+ function solution(text,action='Gib die richtige Antwort selbst ein.'){return`<div class="l7-hint"><strong>Lösung:</strong> ${text}<br>${action} Erst danach geht es weiter.</div>`}
  function specificHint(id,item){
   if(id==='hoeren-partizip')return'Achte auf die Bildung des Partizips II.';
   if(id==='grammatik'){
@@ -81,10 +81,9 @@ function install(){
  function clearKeys(t,keys){const st=state(t);keys.forEach(key=>delete st.answers[key]);S.save(theme(),t.id,st,false)}
  function markWrong(t,i){S.attempt(theme(),t.id,t.items.length,i,false);S.wrong(theme(),t.id,t.items.length);window.L7.renderTaskPage(theme(),t.id)}
  function markRight(t,i,keys=[]){
-  const before=state(t),repeat=!!(before.hadWrong||Number(before.tries||0)>0);
   if(keys.length)clearKeys(t,keys);
   S.attempt(theme(),t.id,t.items.length,i,true);S.right(theme(),t.id,t.items.length);
-  busy=true;setFeedback(`<div class="l7-ok">Richtig.${repeat?' Die Aufgabe kommt später noch einmal.':''}</div>`);rerender(520)
+  busy=true;setFeedback('<div class="l7-ok">Richtig.</div>');rerender(520)
  }
  function exact(a,b){return String(a||'').replace(/\s+/g,' ').trim()===String(b||'').replace(/\s+/g,' ').trim()}
  function normOrder(value){return String(value||'').toLocaleLowerCase('de-DE').replace(/[.?!]+$/,'').replace(/\s+/g,' ').trim()}
@@ -112,20 +111,19 @@ function install(){
   if(correct)markRight(t,i,keys);else markWrong(t,i)
  }
  function checkHaben(event,t){
-  stop(event);const st=state(t);st.answers.habenHelpTries=st.answers.habenHelpTries||{};st.answers.habenNeedsCleanRepeat=st.answers.habenNeedsCleanRepeat||{};
-  let touched=false,wrong=false,repeatCorrect=false;
+  stop(event);const st=state(t);st.answers.habenHelpTries=st.answers.habenHelpTries||{};
+  let touched=false,wrong=false,changed=false;
   t.items.forEach((item,i)=>{
    if(st.done.includes(i))return;
    const input=document.querySelector(`[data-haben="${i}"]`),v=String(input?.value||'').trim();if(!v)return;touched=true;
    if(S.norm(v)===S.norm(item.form)){
-    if(st.answers.habenNeedsCleanRepeat[i]){delete st.answers.habenNeedsCleanRepeat[i];delete st.answers.habenHelpTries[i];delete st.answers[`haben:${i}`];repeatCorrect=true}
-    else{st.done.push(i);delete st.answers.habenHelpTries[i];delete st.answers[`haben:${i}`]}
-   }else{st.answers.habenHelpTries[i]=Number(st.answers.habenHelpTries[i]||0)+1;st.answers.habenNeedsCleanRepeat[i]=true;wrong=true}
+    if(!st.done.includes(i))st.done.push(i);delete st.answers.habenHelpTries[i];delete st.answers[`haben:${i}`];changed=true
+   }else{st.answers.habenHelpTries[i]=Number(st.answers.habenHelpTries[i]||0)+1;wrong=true}
   });
   if(!touched)return;
   st.current=null;S.save(theme(),t.id,st,true);
   if(wrong)return window.L7.renderTaskPage(theme(),t.id);
-  busy=true;setFeedback(`<div class="l7-ok">Richtig.${repeatCorrect?' Die korrigierte Form kommt noch einmal.':''}</div>`);rerender(520)
+  busy=true;setFeedback(changed?'<div class="l7-ok">Richtig.</div>':'');rerender(520)
  }
 
  document.addEventListener('click',event=>{
@@ -144,7 +142,7 @@ function install(){
 
  if(root)new MutationObserver(queuePatch).observe(root,{childList:true,subtree:true,characterData:true});
  window.L7.renderTaskPage=function(th,id){const result=raw(th,id);queuePatch();return result};
- window.L7.__l7t2HelpStandardV3=true;queuePatch();return true
+ window.L7.__l7t2HelpStandardV4=true;queuePatch();return true
 }
 window.L7T2HelpStandard={install};
 })();
