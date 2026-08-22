@@ -59,6 +59,19 @@
       /EXAM_HISTORY|EXAM_UNLOCK|LEADERBOARD|RANKING/i.test(k);
   }
   function testKey(key){return TEST_PREFIX+courseKey()+'_'+String(key||'')}
+  function isPreviewProgressKey(key){
+    const k=String(key||'');
+    return k.startsWith(TEST_PREFIX)||
+      k.startsWith('SP_TEACHER_PREVIEW_PROGRESS_')||
+      k.startsWith('SP_L7_PREVIEW_')||
+      k.startsWith('SP_L8_PREVIEW_')||
+      k.startsWith('SP_TEACHER_TEST_');
+  }
+  function isSessionProgressKey(key){
+    const k=String(key||'');
+    return isPreviewProgressKey(k)||shouldRedirectKey(k)||
+      /^SP_(?:TASK_STATE_|TASK_|THEME_|SCORE_RUN_|L\d|PROGRESS_|POINTS_|EXAM_)/i.test(k);
+  }
 
   if(!window.__SP_TEACHER_TEST_STORAGE_PATCH__){
     window.__SP_TEACHER_TEST_STORAGE_PATCH__=true;
@@ -87,36 +100,53 @@
   window.spCanSaveStudentProgress=function(){return false};
   window.spCanWriteFirebaseProgress=function(){return false};
 
-  function clearTeacherTestStorage(){
-    const remove=[];
-    for(let i=0;i<sessionStorage.length;i++){
-      const key=String(sessionStorage.key(i)||'');
-      if(key.startsWith(TEST_PREFIX)||
-         key.startsWith('SP_TEACHER_PREVIEW_PROGRESS_')||
-         key.startsWith('SP_L7_PREVIEW_')||
-         key.startsWith('SP_L8_PREVIEW_'))remove.push(key);
+  function collectKeys(storage,predicate){
+    const keys=[];
+    for(let i=0;i<storage.length;i++){
+      const key=String(storage.key(i)||'');
+      if(predicate(key))keys.push(key);
     }
-    remove.forEach(key=>{try{realRemove.call(sessionStorage,key)}catch(e){}});
-    return remove.length;
+    return keys;
   }
-  function resetTeacherTestProgress(){
+  function clearTeacherProgressStorage(){
+    const sessionKeys=collectKeys(sessionStorage,isSessionProgressKey);
+    const localProgressKeys=collectKeys(localStorage,key=>isPreviewProgressKey(key)||shouldRedirectKey(key));
+    let removed=0;
+    for(const key of sessionKeys){try{realRemove.call(sessionStorage,key);removed++}catch(e){}}
+    for(const key of localProgressKeys){try{realRemove.call(localStorage,key);removed++}catch(e){}}
+
+    // Alte Lehrerstände aus früheren Versionen konnten unter Originalschlüsseln
+    // liegen. Ein zweiter Durchlauf entfernt auch diese Restbestände.
+    const sessionRest=collectKeys(sessionStorage,key=>shouldRedirectKey(key)||isPreviewProgressKey(key));
+    const localRest=collectKeys(localStorage,key=>shouldRedirectKey(key)||isPreviewProgressKey(key));
+    for(const key of sessionRest){try{realRemove.call(sessionStorage,key);removed++}catch(e){}}
+    for(const key of localRest){try{realRemove.call(localStorage,key);removed++}catch(e){}}
+
+    try{delete window.SP_L7_LOCAL_SCORE_QUEUE}catch(e){}
+    try{delete window.SP_PROGRESS_QUEUE}catch(e){}
+    try{window.__SP_TEACHER_PROGRESS_RESET_AT=Date.now()}catch(e){}
+    return removed;
+  }
+  function resetTeacherProgress(){
     if(!isTeacher())return false;
-    if(!confirm('Deinen Testfortschritt löschen und die Aufgabe neu starten? Teilnehmerdaten bleiben unverändert.'))return false;
-    clearTeacherTestStorage();
+    if(!confirm('Fortschritte löschen und die Aufgabe neu starten? Teilnehmerdaten bleiben unverändert.'))return false;
+    clearTeacherProgressStorage();
     try{window.dispatchEvent(new CustomEvent('SP_TEACHER_TEST_PROGRESS_RESET'))}catch(e){}
     const url=new URL(location.href);
     url.searchParams.set('teacherReset',String(Date.now()));
     location.replace(url.href);
     return true;
   }
-  window.spResetTeacherTestProgress=resetTeacherTestProgress;
-  window.spClearTeacherTestProgress=clearTeacherTestStorage;
+  window.spResetTeacherTestProgress=resetTeacherProgress;
+  window.spClearTeacherTestProgress=clearTeacherProgressStorage;
+  window.spResetTeacherProgress=resetTeacherProgress;
+  window.spClearTeacherProgress=clearTeacherProgressStorage;
 
   function replaceReset(holder,name){
     try{
-      if(!holder||typeof holder[name]!=='function'||holder[name].__teacherTestReset)return;
-      const patched=function(){return resetTeacherTestProgress()};
-      patched.__teacherTestReset=true;
+      if(!holder||typeof holder[name]!=='function'||holder[name].__teacherProgressReset)return;
+      const patched=function(){return resetTeacherProgress()};
+      patched.__teacherProgressReset=true;
       holder[name]=patched;
     }catch(e){}
   }
@@ -170,13 +200,13 @@
     });
 
     let button=document.getElementById('spTeacherTestReset');
-    if(button)return;
+    if(button){button.textContent='Fortschritte löschen';return;}
     button=document.createElement('button');
     button.id='spTeacherTestReset';
     button.type='button';
     button.className=buttonClass(nav);
-    button.textContent='Testfortschritt löschen';
-    button.addEventListener('click',resetTeacherTestProgress);
+    button.textContent='Fortschritte löschen';
+    button.addEventListener('click',resetTeacherProgress);
     nav.appendChild(button);
   }
 
