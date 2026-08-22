@@ -1,100 +1,16 @@
 <!DOCTYPE html>
 <html lang="de">
 <head>
-<meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>SprachPilot · Lehrer Login</title>
-<link rel="stylesheet" href="css/styles.css">
-<style>
-:root{--sp-blue:#47ABC6;--sp-blue-dark:#2F7F96;--sp-baby:#84E3FF;--sp-light:#EAFBFF;--sp-soft:#F6FDFF;--sp-accent:#7E2D00;--sp-dark:#123047;--sp-muted:#5F7180;--sp-line:#D9EEF7;--sp-green:#2E9E4F;--sp-red:#E74C3C;--sp-shadow:0 14px 34px rgba(18,48,71,.12)}
-body{background:linear-gradient(180deg,#E8FBFF 0,#F6FDFF 46%,#FFFFFF 100%);color:var(--sp-dark)}.login-wrapper{max-width:520px;margin:70px auto}.login-card{background:white;border-radius:24px;padding:30px;box-shadow:var(--sp-shadow);border:1px solid var(--sp-line)}.login-card h1{color:var(--sp-dark);text-align:center;margin-bottom:8px}.login-card p{text-align:center;color:var(--sp-muted);margin-bottom:22px}.login-card label{display:block;margin-top:12px;font-weight:bold;color:var(--sp-dark)}.login-card input{width:100%;padding:13px;border:2px solid var(--sp-line);border-radius:12px;margin-top:6px;font-size:16px}.login-card input:focus{outline:none;border-color:var(--sp-blue);box-shadow:0 0 0 4px rgba(71,171,198,.16)}.login-logo{display:flex;justify-content:center;margin-bottom:14px}.login-logo img{width:76px;height:76px;object-fit:contain;border-radius:18px}.login-buttons{display:flex;flex-direction:column;gap:10px;margin-top:20px}.mode-box{margin-top:18px;padding-top:14px;border-top:2px solid var(--sp-line)}.hidden{display:none!important}.msg{margin-top:14px}.ok{background:#E8F9F0;border-left:5px solid var(--sp-green);padding:12px;border-radius:12px;margin:10px 0;color:#145A32}.no{background:#FFE1E1;border-left:5px solid var(--sp-red);padding:12px;border-radius:12px;margin:10px 0;color:#7B1D1D}button{border:0;border-radius:14px;padding:13px 16px;font-size:16px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,var(--sp-blue),var(--sp-blue-dark));color:white}button.secondary{background:#EFFAFF;color:var(--sp-dark);border:1px solid var(--sp-line)}button:disabled{opacity:.55;cursor:not-allowed}.small{font-size:13px;color:var(--sp-muted)}
-</style>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><title>SprachPilot · Lehrer-Anmeldung</title><link rel="stylesheet" href="css/styles.css">
+<style>:root{--sp-blue:#47ABC6;--sp-blue-dark:#2F7F96;--sp-baby:#84E3FF;--sp-light:#EAFBFF;--sp-soft:#F6FDFF;--sp-accent:#7E2D00;--sp-dark:#123047;--sp-muted:#5F7180;--sp-line:#D9EEF7;--sp-green:#2E9E4F;--sp-red:#E74C3C;--sp-shadow:0 14px 34px rgba(18,48,71,.12)}body{background:linear-gradient(180deg,#E8FBFF 0,#F6FDFF 46%,#FFFFFF 100%);color:var(--sp-dark)}.login-wrapper{max-width:520px;margin:70px auto}.login-card{background:white;border-radius:24px;padding:30px;box-shadow:var(--sp-shadow);border:1px solid var(--sp-line)}.login-card h1{color:var(--sp-dark);text-align:center;margin-bottom:8px}.login-card p{text-align:center;color:var(--sp-muted);margin-bottom:22px}.login-card label{display:block;margin-top:12px;font-weight:bold;color:var(--sp-dark)}.login-card input{width:100%;padding:13px;border:2px solid var(--sp-line);border-radius:12px;margin-top:6px;font-size:16px}.login-card input:focus{outline:none;border-color:var(--sp-blue);box-shadow:0 0 0 4px rgba(71,171,198,.16)}.login-logo{display:flex;justify-content:center;margin-bottom:14px}.login-logo img{width:76px;height:76px;object-fit:contain;border-radius:18px}.login-buttons{display:flex;flex-direction:column;gap:10px;margin-top:20px}.mode-box{margin-top:18px;padding-top:14px;border-top:2px solid var(--sp-line)}.hidden{display:none!important}.msg{margin-top:14px}.ok{background:#E8F9F0;border-left:5px solid var(--sp-green);padding:12px;border-radius:12px;margin:10px 0;color:#145A32}.no{background:#FFE1E1;border-left:5px solid var(--sp-red);padding:12px;border-radius:12px;margin:10px 0;color:#7B1D1D}button{border:0;border-radius:14px;padding:13px 16px;font-size:16px;font-weight:800;cursor:pointer;background:linear-gradient(135deg,var(--sp-blue),var(--sp-blue-dark));color:white}button.secondary{background:#EFFAFF;color:var(--sp-dark);border:1px solid var(--sp-line)}button:disabled{opacity:.55;cursor:not-allowed}.small{font-size:13px;color:var(--sp-muted)}</style>
 </head>
-<body>
-
-<div class="login-wrapper">
-  <div class="login-card">
-
-    <div class="login-logo"><a href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></a></div>
-    <h1>Lehrerbereich</h1>
-    <p>Einloggen, registrieren oder Passwort zurücksetzen</p>
-
-    <div id="loginMode">
-      <label>E-Mail</label>
-      <input id="email" type="email" placeholder="lehrer@email.de" autocomplete="email">
-
-      <label>Passwort</label>
-      <input id="password" type="password" placeholder="Passwort" autocomplete="current-password">
-
-      <div class="login-buttons">
-        <button id="loginBtn" onclick="TeacherAuth.login()">Einloggen</button>
-        <button class="secondary" onclick="showRegisterMode()">Als Lehrkraft registrieren</button>
-        <button class="secondary" onclick="showResetMode()">Passwort vergessen</button>
-        <button class="secondary" onclick="TeacherAuth.resendVerification()">Bestätigungslink erneut senden</button>
-      </div>
-    </div>
-
-    <div id="registerMode" class="hidden mode-box">
-      <h2>Lehrkraft registrieren</h2>
-
-      <label>Vorname</label>
-      <input id="regFirstName" type="text" placeholder="Vorname" autocomplete="given-name">
-
-      <label>Nachname</label>
-      <input id="regLastName" type="text" placeholder="Nachname" autocomplete="family-name">
-
-      <label>E-Mail</label>
-      <input id="regEmail" type="email" placeholder="lehrer@email.de" autocomplete="email">
-
-      <label>Passwort</label>
-      <input id="regPassword" type="password" placeholder="mindestens 6 Zeichen" autocomplete="new-password">
-
-      <label>Schule / Institution</label>
-      <input id="regSchool" type="text" placeholder="z. B. VHS, Sprachschule, Bildungsträger">
-
-      <label>Beruf / Rolle</label>
-      <input id="regJob" type="text" placeholder="z. B. DaF-Lehrkraft, Kursleitung">
-
-      <div class="login-buttons">
-        <button id="regBtn" onclick="TeacherAuth.register()">Registrieren</button>
-        <button class="secondary" onclick="showLoginMode()">Zurück zum Login</button>
-      </div>
-    </div>
-
-    <div id="resetMode" class="hidden mode-box">
-      <h2>Passwort vergessen</h2>
-
-      <label>E-Mail</label>
-      <input id="resetEmail" type="email" placeholder="lehrer@email.de" autocomplete="email">
-
-      <div class="login-buttons">
-        <button id="resetBtn" onclick="TeacherAuth.resetPassword()">Reset-Link senden</button>
-        <button class="secondary" onclick="showLoginMode()">Zurück zum Login</button>
-      </div>
-    </div>
-
-    <div id="loginMsg" class="msg"></div>
-    <p class="small">Konto-E-Mails werden über den SprachPilot-Maildienst versendet.</p>
-  </div>
-</div>
-
-<script>
-function msgClear(){document.getElementById("loginMsg").innerHTML=""}
-function showLoginMode(){document.getElementById("loginMode").classList.remove("hidden");document.getElementById("registerMode").classList.add("hidden");document.getElementById("resetMode").classList.add("hidden");msgClear()}
-function showRegisterMode(){document.getElementById("loginMode").classList.add("hidden");document.getElementById("registerMode").classList.remove("hidden");document.getElementById("resetMode").classList.add("hidden");msgClear()}
-function showResetMode(){document.getElementById("loginMode").classList.add("hidden");document.getElementById("registerMode").classList.add("hidden");document.getElementById("resetMode").classList.remove("hidden");msgClear()}
-</script>
-
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script>
-<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-functions-compat.js"></script>
-<script src="js/firebase.js?v=teacher-auth-mail-20260820"></script>
-<script src="js/auth.js?v=teacher-auth-mail-20260820-2"></script>
-
-<script>
-window.addEventListener("load",()=>{setTimeout(()=>{if(!window.TeacherAuth){document.getElementById("loginMsg").innerHTML="<div class='no'>Lehrer-Login konnte nicht geladen werden.</div>"}else if(!window.TeacherFirebaseReady){const err=window.TeacherFirebaseError?window.TeacherFirebaseError.message:"Unbekannter Firebase-Fehler";document.getElementById("loginMsg").innerHTML="<div class='no'>Firebase ist nicht verbunden: "+err+"</div>"}},500)});
-</script>
-
-</body>
-</html>
+<body><div class="login-wrapper"><div class="login-card">
+<div class="login-logo"><a href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"></a></div><h1>Lehrerbereich</h1><p>Anmelden, registrieren oder Passwort zurücksetzen</p>
+<div id="loginMode"><label>E-Mail</label><input id="email" type="email" placeholder="lehrer@email.de" autocomplete="email"><label>Passwort</label><input id="password" type="password" placeholder="Passwort" autocomplete="current-password"><div class="login-buttons"><button id="loginBtn" onclick="TeacherAuth.login()">Anmelden</button><button class="secondary" onclick="showRegisterMode()">Als Lehrkraft registrieren</button><button class="secondary" onclick="showResetMode()">Passwort vergessen</button><button class="secondary" onclick="TeacherAuth.resendVerification()">Bestätigungslink erneut senden</button></div></div>
+<div id="registerMode" class="hidden mode-box"><h2>Lehrkraft registrieren</h2><label>Vorname</label><input id="regFirstName" type="text" placeholder="Vorname" autocomplete="given-name"><label>Nachname</label><input id="regLastName" type="text" placeholder="Nachname" autocomplete="family-name"><label>E-Mail</label><input id="regEmail" type="email" placeholder="lehrer@email.de" autocomplete="email"><label>Passwort</label><input id="regPassword" type="password" placeholder="mindestens 6 Zeichen" autocomplete="new-password"><label>Schule / Institution</label><input id="regSchool" type="text" placeholder="z. B. VHS, Sprachschule, Bildungsträger"><label>Beruf / Rolle</label><input id="regJob" type="text" placeholder="z. B. DaF-Lehrkraft, Kursleitung"><div class="login-buttons"><button id="regBtn" onclick="TeacherAuth.register()">Registrieren</button><button class="secondary" onclick="showLoginMode()">Zurück zur Anmeldung</button></div></div>
+<div id="resetMode" class="hidden mode-box"><h2>Passwort vergessen</h2><label>E-Mail</label><input id="resetEmail" type="email" placeholder="lehrer@email.de" autocomplete="email"><div class="login-buttons"><button id="resetBtn" onclick="TeacherAuth.resetPassword()">Reset-Link senden</button><button class="secondary" onclick="showLoginMode()">Zurück zur Anmeldung</button></div></div>
+<div id="loginMsg" class="msg"></div><p class="small">Konto-E-Mails werden über den SprachPilot-Maildienst versendet.</p></div></div>
+<script>function msgClear(){document.getElementById("loginMsg").innerHTML=""}function showLoginMode(){document.getElementById("loginMode").classList.remove("hidden");document.getElementById("registerMode").classList.add("hidden");document.getElementById("resetMode").classList.add("hidden");msgClear()}function showRegisterMode(){document.getElementById("loginMode").classList.add("hidden");document.getElementById("registerMode").classList.remove("hidden");document.getElementById("resetMode").classList.add("hidden");msgClear()}function showResetMode(){document.getElementById("loginMode").classList.add("hidden");document.getElementById("registerMode").classList.add("hidden");document.getElementById("resetMode").classList.remove("hidden");msgClear()}</script>
+<script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-app-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-auth-compat.js"></script><script src="https://www.gstatic.com/firebasejs/10.12.5/firebase-functions-compat.js"></script><script src="js/firebase.js?v=teacher-auth-mail-20260820"></script><script src="js/auth.js?v=teacher-session-separation-20260822"></script>
+<script>window.addEventListener("load",()=>{setTimeout(()=>{if(!window.TeacherAuth){document.getElementById("loginMsg").innerHTML="<div class='no'>Lehrer-Anmeldung konnte nicht geladen werden.</div>"}else if(!window.TeacherFirebaseReady){const err=window.TeacherFirebaseError?window.TeacherFirebaseError.message:"Unbekannter Firebase-Fehler";document.getElementById("loginMsg").innerHTML="<div class='no'>Firebase ist nicht verbunden: "+err+"</div>"}},500)});</script>
+</body></html>
