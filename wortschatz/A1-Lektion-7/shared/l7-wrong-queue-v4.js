@@ -49,6 +49,10 @@ function injectHelp(S,theme,id,index,count){
  };
  setTimeout(run,20);setTimeout(run,140)
 }
+function restoreRetryControls(nodes){
+ const run=()=>nodes.forEach(el=>{try{if(el?.isConnected)el.disabled=false}catch(e){}});
+ setTimeout(run,35);setTimeout(run,170)
+}
 function install(){
  const S=window.L7S;if(!S||installed)return !!S;
  const rawIndex=S.index.bind(S);
@@ -59,6 +63,7 @@ function install(){
   return i
  };
  S.wrong=function(theme,id,total){
+  const retryable=[...document.querySelectorAll('#app button,#app input,#app select,#app textarea')].filter(el=>!el.disabled);
   const st=S.load(theme,id,total),i=Number(st.current);if(!Number.isInteger(i)||i<0||i>=total)return 0;
   const previous=Math.max(Number(st.wrongTries?.[i]||0),Number(st.tries||0)),count=previous+1;
   st.wrongTries=st.wrongTries||{};st.wrongTries[i]=count;st.tries=count;st.hadWrong=true;
@@ -66,6 +71,7 @@ function install(){
   st.current=i;
   S.save(theme,id,st,true);
   try{window.dispatchEvent(new CustomEvent('SP_L7_WRONG_ANSWER',{detail:{theme:Number(theme),id:String(id),index:i,count}}))}catch(e){}
+  restoreRetryControls(retryable);
   injectHelp(S,theme,id,i,count);
   return count
  };
