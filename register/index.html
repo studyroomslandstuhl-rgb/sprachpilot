@@ -5,6 +5,7 @@ import { registerStudentV2 as registerStudent, finishPendingStudentRegistration,
 function showMsg(html){const result=$("registerResult");if(result)result.innerHTML=html}
 function normalizedEmail(value){return String(value||"").trim().toLowerCase()}
 function showFinishButton(show=true){const b=$("finishBtn");if(b)b.style.display=show?"block":"none"}
+function showRegisterButton(show=true){const b=$("registerBtn");if(b)b.style.display=show?"block":"none"}
 function openStartSoon(){setTimeout(()=>{location.href="/index.html"},700)}
 let registrationBusy=false;
 
@@ -26,11 +27,13 @@ window.doRegister=async function(){
     const result=await registerStudent({vorname,nachname,email,password,muttersprache,kurs});
     if(result?.activated){
       showFinishButton(false);
+      showRegisterButton(false);
       showMsg('<div class="ok"><b>Das sichere Schülerkonto ist aktiviert.</b><br>Die E-Mail war bereits als bestätigtes Firebase-Konto vorhanden. Das Schülerprofil wurde sicher derselben Konto-ID zugeordnet.</div>');
       openStartSoon();
       return;
     }
     if(result?.verificationRequired){
+      showRegisterButton(false);
       showFinishButton(true);
       showMsg('<div class="ok"><b>Bestätigungs-E-Mail wurde gesendet.</b><br>Öffne die E-Mail und bestätige deine Adresse. Danach komm zurück und klicke auf „Nach E-Mail-Bestätigung abschließen“. Dein altes Profil und deine Punkte werden bis dahin nicht verändert.</div>');
       return;
@@ -70,7 +73,7 @@ window.finishRegistration=async function(){
 }
 
 const form=$("registerForm");if(form)form.addEventListener("submit",e=>{e.preventDefault();window.doRegister()});
-if(hasPendingStudentRegistration())showFinishButton(true);
+if(hasPendingStudentRegistration()){showRegisterButton(false);showFinishButton(true)}
 if(new URLSearchParams(location.search).get('verify')==='1'&&hasPendingStudentRegistration())setTimeout(()=>window.finishRegistration(),300);
 </script><script src="/shared/sprachpilot-design-system.js"></script>
 </body></html>
