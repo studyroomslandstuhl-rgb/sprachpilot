@@ -13,7 +13,7 @@
   function readableError(err,fallback){
     console.error(err);const code=err?.code||"";
     if(["auth/invalid-credential","auth/user-not-found","auth/wrong-password"].includes(code))return "E-Mail oder Passwort ist falsch. Bitte prüfen und noch einmal versuchen.";
-    if(code==="auth/email-already-in-use")return "Diese E-Mail ist schon registriert. Bitte einloggen.";
+    if(code==="auth/email-already-in-use")return "Diese E-Mail ist schon registriert. Bitte anmelden.";
     if(code==="auth/weak-password")return "Das Passwort ist zu kurz. Bitte mindestens 6 Zeichen verwenden.";
     if(code==="auth/invalid-email")return "Diese E-Mail-Adresse ist ungültig.";
     if(code==="auth/too-many-requests")return "Zu viele Versuche. Bitte später noch einmal versuchen.";
@@ -28,14 +28,19 @@
   async function sendVerificationMail(){return mailCallable("requestVerificationEmail")({})}
   async function sendPasswordResetMail(email){return mailCallable("requestPasswordReset")({email:norm(email)})}
 
+  function clearStudentMode(){
+    ["SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_KEEP_LOGGED_IN","SP_STUDENT_ID","SP_STUDENT_AUTH_UID","SP_AUTH_ROLE","SP_SECURE_STUDENT_RELOGIN_REQUIRED"].forEach(k=>localStorage.removeItem(k));
+    try{["SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_STUDENT_ID","SP_STUDENT_AUTH_UID"].forEach(k=>sessionStorage.removeItem(k))}catch(e){}
+  }
   function clearTeacherMode(){
-    ["SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_UID","SP_TEACHER_PROFILE","SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_LOGIN_CONTEXT"].forEach(k=>localStorage.removeItem(k));
+    ["SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_UID","SP_TEACHER_PROFILE","SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_LOGIN_CONTEXT","SP_L7_PREVIEW_PID"].forEach(k=>localStorage.removeItem(k));
     try{sessionStorage.removeItem("SP_TEACHER_PREVIEW")}catch(e){}
   }
   function setTeacherMode(user,teacher={}){
+    clearStudentMode();
     clearTeacherMode();
     const profile={uid:user.uid,email:user.email||teacher.email||"",role:teacher.role||"teacher",firstName:teacher.firstName||"",lastName:teacher.lastName||"",owner:teacher.owner===true};
-    localStorage.setItem("SP_TEACHER_MODE","1");localStorage.setItem("SP_LOGIN_ROLE","teacher");localStorage.setItem("SP_ACTIVE_ROLE","teacher");localStorage.setItem("SP_LOGIN_CONTEXT","teacher");localStorage.setItem("SP_USER_ROLE",profile.role);localStorage.setItem("SP_TEACHER_EMAIL",profile.email);localStorage.setItem("SP_TEACHER_ID",user.uid);localStorage.setItem("SP_TEACHER_UID",user.uid);localStorage.setItem("SP_TEACHER_PROFILE",JSON.stringify(profile));
+    localStorage.setItem("SP_TEACHER_MODE","1");localStorage.setItem("SP_LOGIN_ROLE","teacher");localStorage.setItem("SP_ACTIVE_ROLE","teacher");localStorage.setItem("SP_LOGIN_CONTEXT","teacher");localStorage.setItem("SP_USER_ROLE",profile.role);localStorage.setItem("SP_TEACHER_EMAIL",profile.email);localStorage.setItem("SP_TEACHER_ID",user.uid);localStorage.setItem("SP_TEACHER_UID",user.uid);localStorage.setItem("SP_TEACHER_PROFILE",JSON.stringify(profile));localStorage.setItem("SP_L7_PREVIEW_PID",String(user.uid));
   }
   function isPending(data={}){const status=norm(data.status);return data.pending===true||data.approved===false||["pending","waiting","requested","beantragt"].includes(status)}
   function isBlocked(data={}){const status=norm(data.status);return data.active===false||data.disabled===true||data.blocked===true||["inactive","disabled","blocked","gesperrt","deaktiviert"].includes(status)}
@@ -57,7 +62,7 @@
     async login(){
       const email=norm(el("email")?.value),password=el("password")?.value||"";
       if(!email||!password)return show("Bitte E-Mail und Passwort eingeben.");
-      setBusy("loginBtn",true,"Login läuft...","Einloggen");show("Login wird geprüft...","ok");
+      setBusy("loginBtn",true,"Anmeldung läuft...","Anmelden");show("Anmeldung wird geprüft...","ok");
       try{
         await ensureFirebase();const result=await auth.signInWithEmailAndPassword(email,password),user=result.user;
         if(user.emailVerified!==true){await auth.signOut();clearTeacherMode();show("Bitte bestätige zuerst deine E-Mail-Adresse. Den SprachPilot-Bestätigungslink hast du bei der Registrierung erhalten.");return}
@@ -65,8 +70,8 @@
         if(!teacher){await auth.signOut();clearTeacherMode();show("Für dieses Firebase-Konto liegt keine Lehrerregistrierung vor.");return}
         if(isPending(teacher)){await auth.signOut();clearTeacherMode();show("Dein Lehrerkonto wartet noch auf die Freigabe durch den Owner.");return}
         if(isBlocked(teacher)){await auth.signOut();clearTeacherMode();show("Dieser Lehrerzugang ist deaktiviert.");return}
-        setTeacherMode(user,teacher);show("Login erfolgreich.","ok");location.href="index.html";
-      }catch(err){show(readableError(err,"Login nicht möglich."))}finally{setBusy("loginBtn",false,"Login läuft...","Einloggen")}
+        setTeacherMode(user,teacher);show("Anmeldung erfolgreich.","ok");location.href="index.html";
+      }catch(err){show(readableError(err,"Anmeldung nicht möglich."))}finally{setBusy("loginBtn",false,"Anmeldung läuft...","Anmelden")}
     },
     async register(){
       const firstName=(el("regFirstName")?.value||"").trim(),lastName=(el("regLastName")?.value||"").trim(),email=norm(el("regEmail")?.value),password=el("regPassword")?.value||"",school=(el("regSchool")?.value||"").trim(),job=(el("regJob")?.value||"").trim();
@@ -82,7 +87,7 @@
         try{await sendVerificationMail()}catch(mailError){mailOk=false;console.error("Lehrer-Bestätigungsmail fehlgeschlagen",mailError)}
         await auth.signOut();clearTeacherMode();
         if(!mailOk){show("Die Registrierung wurde gespeichert, aber die Bestätigungs-E-Mail konnte nicht versendet werden. Bitte versuche später „Bestätigungslink erneut senden“.");return}
-        show(OWNER_EMAILS.includes(email)?"Registrierung erstellt. Bitte bestätige deine E-Mail-Adresse und logge dich danach erneut ein.":"Registrierung eingegangen. Bitte bestätige zuerst deine E-Mail-Adresse. Danach wartet dein Konto auf die Freigabe durch den Owner.","ok");
+        show(OWNER_EMAILS.includes(email)?"Registrierung erstellt. Bitte bestätige deine E-Mail-Adresse und melde dich danach erneut an.":"Registrierung eingegangen. Bitte bestätige zuerst deine E-Mail-Adresse. Danach wartet dein Konto auf die Freigabe durch den Owner.","ok");
       }catch(err){show(readableError(err,"Registrierung nicht möglich."))}finally{setBusy("regBtn",false,"Registrierung läuft...","Registrieren")}
     },
     async resetPassword(){
