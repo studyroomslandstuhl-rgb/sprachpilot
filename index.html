@@ -21,8 +21,8 @@
     <h2>Willkommen</h2>
     <div id="loggedBox"></div>
     <div id="guestBox" class="actions">
-      <a class="btn success" href="/register/">Als Schüler registrieren</a>
-      <a class="btn secondary" href="/login/">Schüler-Login</a>
+      <a class="btn success" href="/register/">Registrieren</a>
+      <a class="btn secondary" href="/login/">Ich habe schon ein Konto</a>
       <a class="btn secondary" href="/teacher/login.html">Lehrer-Login</a>
     </div>
   </section>
@@ -99,7 +99,7 @@ async function init(){
     guestBox.classList.add("hidden");
     renderModules({releaseMode:"all",defaultLocked:false});
   }else{
-    loggedBox.innerHTML='<p>Registriere dich oder logge dich mit deinem Kurscode ein.</p>';
+    loggedBox.innerHTML='<p>Registriere dich oder logge dich ein.</p>';
     guestBox.classList.remove("hidden");
     renderModules({});
   }
@@ -115,7 +115,7 @@ window.addEventListener("SP_PROFILE_SYNCED",e=>{
 
 init().catch(e=>{
   console.error("Startseite konnte nicht geladen werden",e);
-  loggedBox.innerHTML='<p>Registriere dich oder logge dich mit deinem Kurscode ein.</p>';
+  loggedBox.innerHTML='<p>Registriere dich oder logge dich ein.</p>';
   guestBox.classList.remove("hidden");
   renderModules({});
 });
