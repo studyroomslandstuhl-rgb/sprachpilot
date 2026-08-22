@@ -12,10 +12,10 @@ Promise.resolve(window.L7_THEME_READY)
  .then(()=>{if([2,3,4].includes(theme))return load('../shared/l7-exam-gate.js?v=2').then(()=>window.SPL7StrictExamGate?.install?.())})
  .then(()=>{if(theme===4)window.L7T4BunnyMedia?.install?.()})
  .then(()=>{
-   if(page==='theme')return load(`../shared/l7-theme-standard.js?v=l7-theme-standard9`).then(()=>window.L7ThemeStandard.render(theme));
+   if(page==='theme')return load(`../shared/l7-theme-standard.js?v=l7-theme-standard10`).then(()=>window.L7ThemeStandard.render(theme));
    if(window.L7S)window.L7S.header=()=>'';
    return load(`../shared/l7-ui.js?v=${version}`)
-    .then(()=>theme===4?load('../Thema-4/l7t4-custom-ui.js?v=1'):null)
+    .then(()=>theme===4?load('../Thema-4/l7t4-custom-ui.js?v=3'):null)
     .then(()=>load('../shared/l7-external-links.js?v=1'))
     .then(()=>{window.SPL7WrongQueueV4?.install?.();return window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'))});
  })
