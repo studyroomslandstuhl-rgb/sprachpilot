@@ -4,7 +4,7 @@ if(window.SPCardStandard)return;
 
 function esc(value){
   return String(value??'').replace(/[&<>"']/g,function(char){
-    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char];
+    return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char];
   });
 }
 function fallbackNormalize(value){
