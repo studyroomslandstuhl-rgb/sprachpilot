@@ -183,9 +183,16 @@
   }
 
   function buttonClass(nav){
-    if(nav.querySelector('.l7-btn'))return'l7-btn danger';
-    if(nav.querySelector('.btn'))return'btn secondary';
-    return'btn secondary';
+    if(nav.querySelector('.l7-btn'))return'l7-btn';
+    if(nav.querySelector('.btn'))return'btn';
+    return'btn';
+  }
+  function styleResetButton(button){
+    if(!button)return;
+    button.style.setProperty('background','#ffe1e1','important');
+    button.style.setProperty('color','#9b1c12','important');
+    button.style.setProperty('border','2px solid #ffc1b8','important');
+    button.style.setProperty('box-shadow','none','important');
   }
   function injectResetButton(){
     if(!isLearningPage())return;
@@ -198,12 +205,13 @@
     });
 
     let button=document.getElementById('spTeacherTestReset');
-    if(button){button.textContent='Fortschritte löschen';return;}
+    if(button){button.textContent='Fortschritte löschen';styleResetButton(button);return;}
     button=document.createElement('button');
     button.id='spTeacherTestReset';
     button.type='button';
     button.className=buttonClass(nav);
     button.textContent='Fortschritte löschen';
+    styleResetButton(button);
     button.addEventListener('click',resetTeacherProgress);
     nav.appendChild(button);
   }
