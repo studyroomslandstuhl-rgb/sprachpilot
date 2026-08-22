@@ -1,13 +1,13 @@
 (function(){
 'use strict';
-if(window.__SP_L6_IMAGE_FORMAT_FIX_V1)return;
+if(window.__SP_L6_IMAGE_FORMAT_FIX_V2)return;
 const path=String(location.pathname||'');
 if(!/\/wortschatz\/A1-Lektion-6\/Thema-(?:2|3|4)\//i.test(path))return;
-window.__SP_L6_IMAGE_FORMAT_FIX_V1=true;
+window.__SP_L6_IMAGE_FORMAT_FIX_V2=true;
 function install(){
- if(document.getElementById('sp-l6-image-format-fix-v1'))return;
+ if(document.getElementById('sp-l6-image-format-fix-v2'))return;
  const style=document.createElement('style');
- style.id='sp-l6-image-format-fix-v1';
+ style.id='sp-l6-image-format-fix-v2';
  style.textContent=`
 /* L6T2–T4: Bilder immer vollständig, quadratisch und proportional anzeigen. */
 .task-img-box{
@@ -57,10 +57,28 @@ function install(){
   max-width:100%!important;
   margin:0 auto!important;
 }
+.flip-back-image .task-img-box{
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  aspect-ratio:1/1!important;
+  margin:0!important;
+  padding:0!important;
+  border:0!important;
+  border-radius:inherit!important;
+}
+.flip-back-image .task-img-box>img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
 @media(max-width:640px){
   .task-img-box,
   .question-card>.visual:not(.small-visual),
   .plural-card>.visual:not(.small-visual){width:min(285px,100%)!important}
+  .flip-back-image .task-img-box{width:100%!important}
 }
 `;
  document.head.appendChild(style);
