@@ -6,6 +6,7 @@ const root=document.getElementById('app');
 const version='l7-retry-v11';
 function load(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.body.appendChild(script)})}
 load('/shared/sp-cache-epoch.js?v=20260822-cache2').catch(()=>{})
+ .then(()=>load('/js/progress-role-guard.js?v=20260823-points1'))
  .then(()=>Promise.resolve(window.L7_THEME_READY))
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
  .then(()=>load('../shared/l7-wrong-queue-v4.js?v=10'))
