@@ -44,13 +44,14 @@ const LIGHT_FIREBASE_PAGE=IS_WORTSCHATZ_EXERCISE||IS_FRAGEN_EXERCISE||IS_VERBEN_
 const NO_FIREBASE_SYNC=qs.has("nofirebase")||sessionStorage.getItem("SP_NO_FIREBASE_SYNC_SESSION")==="1";
 const PERFORMANCE_SYNC_OFF=NO_FIREBASE_SYNC;
 const FULL_FIREBASE=!PERFORMANCE_SYNC_OFF;
+if(IS_L6T2||IS_L6T3||IS_L6T4)import("/js/l6-image-format-fix.js?v=1").catch(()=>{});
 if(PERFORMANCE_SYNC_OFF){window.spCanWriteFirebaseProgress=()=>false;window.SP_NO_FIREBASE_SYNC=true;window.SP_PERFORMANCE_MODE=true}
 let aliasRepairPromise=Promise.resolve(null);
 if(FULL_FIREBASE&&IS_SECURE_STUDENT){
  aliasRepairPromise=import("/student-dashboard/progress-alias-unifier.js?v=6").then(module=>module.unifyProgressAliases()).catch(error=>{console.warn("Verteilte Schüler-Fortschritte konnten noch nicht zusammengeführt werden",error);return null});
  window.SP_PROGRESS_ALIAS_READY=aliasRepairPromise;
 }
-if(FULL_FIREBASE&&IS_SECURE_STUDENT){aliasRepairPromise.finally(()=>import("/js/account-progress-sync.js?v=12").then(module=>module.startAccountProgressSync()).catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error)))}
+if(FULL_FIREBASE&&IS_SECURE_STUDENT){aliasRepairPromise.finally(()=>import("/js/account-progress-sync.js?v=13").then(module=>module.startAccountProgressSync()).catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error)))}
 function shouldInstallGlobalHeader(){if(IS_WORTSCHATZ_LESSON_OVERVIEW)return false;if(IS_WORTSCHATZ_EXERCISE)return true;return !document.querySelector(".topbar")&&!document.querySelector("header.topbar")}
 function installHeaderOnce(){if(!SECURE_ACCESS?.ok)return;if(!shouldInstallGlobalHeader())return;try{installSpHeader()}catch(e){}}
 function setStar(el){if(el&&el.textContent!=="⭐")el.textContent="⭐"}
