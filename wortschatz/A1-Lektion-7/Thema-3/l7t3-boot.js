@@ -22,11 +22,12 @@ load('/shared/sp-cache-epoch.js?v=20260822-cache2').catch(()=>{})
    .then(()=>load('../shared/l7-listen-participle-bunny-fix.js?v=1'))
    .then(()=>load('l7t3-special-ui.js?v=2'))
    .then(()=>{window.L7T3SpecialUI?.install?.();return load('l7t3-no-repeat-special.js?v=2')})
-   .then(()=>{window.L7T3RetrySpecial?.install?.();return load('l7t3-error-selection-fix.js?v=1')})
+   .then(()=>{window.L7T3RetrySpecial?.install?.();return load('l7t3-sein-answer-fix.js?v=1')})
+   .then(()=>{window.L7T3SeinAnswerFix?.install?.();return load('l7t3-error-selection-fix.js?v=1')})
    .then(()=>{window.L7T3ErrorSelectionFix?.install?.();return load('l7t3-help-standard.js?v=2')})
    .then(()=>load('../shared/l7-reading-queue-fix.js?v=2'))
    .then(()=>load('l7t3-schon-einmal-ui.js?v=4'))
-   .then(()=>{window.SPL7WrongQueueV8?.install?.();window.L7T2MemoryUI?.install?.();window.L7T2EndingsUI?.install?.();window.L7T2AdvancedUI?.install?.();window.L7T3SpecialUI?.install?.();window.L7T3RetrySpecial?.install?.();window.L7T3ErrorSelectionFix?.install?.();window.L7T3HelpStandard?.install?.();window.L7ReadingQueueFix?.install?.();window.L7T3SchonEinmalUI?.install?.();const result=window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'));window.L7T3CardImages?.patchAll?.(document);return result});
+   .then(()=>{window.SPL7WrongQueueV8?.install?.();window.L7T2MemoryUI?.install?.();window.L7T2EndingsUI?.install?.();window.L7T2AdvancedUI?.install?.();window.L7T3SpecialUI?.install?.();window.L7T3RetrySpecial?.install?.();window.L7T3SeinAnswerFix?.install?.();window.L7T3ErrorSelectionFix?.install?.();window.L7T3HelpStandard?.install?.();window.L7ReadingQueueFix?.install?.();window.L7T3SchonEinmalUI?.install?.();const result=window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'));window.L7T3CardImages?.patchAll?.(document);return result});
  })
  .catch(error=>{console.error(error);if(root)root.innerHTML='<section class="card"><h2>Die Inhalte konnten nicht geladen werden.</h2><p>Bitte lade die Seite neu.</p><button class="btn" onclick="location.reload()">Neu laden</button></section>'});
 })();
