@@ -17,7 +17,7 @@ function norm(value){
 }
 
 function cardKeys(card){
- return [card?.word,card?.full,card?.term,card?.front,card?.label]
+ return [card?.word,card?.full,card?.term,card?.front,card?.label,card?.answer]
   .filter(Boolean)
   .map(norm)
   .filter(Boolean);
@@ -34,7 +34,7 @@ function exactCardMap(cards){
 }
 
 function singularFromCard(card,key){
- const values=[card?.full,card?.word,card?.term,card?.front,card?.label].filter(Boolean);
+ const values=[card?.full,card?.word,card?.term,card?.front,card?.label,card?.answer].filter(Boolean);
  return values.find(value=>/^(der|die|das)\s+/i.test(String(value).trim())&&norm(value)===key)||'';
 }
 
