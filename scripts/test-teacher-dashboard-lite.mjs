@@ -3,6 +3,8 @@ import fs from 'node:fs';
 const index=fs.readFileSync(new URL('../teacher/index.html',import.meta.url),'utf8');
 const dashboard=fs.readFileSync(new URL('../teacher/dashboard-lite.js',import.meta.url),'utf8');
 const accountAdmin=fs.readFileSync(new URL('../teacher/dashboard-account-admin.js',import.meta.url),'utf8');
+const accountRepair=fs.readFileSync(new URL('../teacher/dashboard-account-repair.js',import.meta.url),'utf8');
+const studentDelete=fs.readFileSync(new URL('../teacher/dashboard-student-delete.js',import.meta.url),'utf8');
 const passwordReset=fs.readFileSync(new URL('../teacher/dashboard-password-reset.js',import.meta.url),'utf8');
 const css=fs.readFileSync(new URL('../teacher/dashboard-lite.css',import.meta.url),'utf8');
 const login=fs.readFileSync(new URL('../teacher/login.html',import.meta.url),'utf8');
@@ -23,6 +25,8 @@ ok(!index.includes('analytics.js'),'progress analytics must not load during dash
 ok(!index.includes('students.js'),'legacy students bundle must not load during dashboard startup');
 ok(!index.includes('releases.js'),'large release editor must be lazy-loaded');
 ok(!index.includes('dashboard-stable-start.js'),'legacy competing dashboard bootstrap must not load');
+ok(index.includes('dashboard-student-delete.js?v=20260824-delete3'),'teacher dashboard must cache-bust the safe deletion fallback');
+ok(index.includes('dashboard-account-repair.js?v=20260824-repair3'),'teacher dashboard must load the corrected account repair');
 
 ok(!dashboard.includes('setInterval('),'teacher dashboard must not poll or rerender on an interval');
 ok(!dashboard.includes('visibilitychange'),'teacher dashboard must not rerender on visibility changes');
@@ -66,6 +70,24 @@ ok(accountAdmin.includes('authPreviousUid'),'fallback must retain the previous U
 ok(accountAdmin.includes('authReboundByOwnerUid'),'fallback must record that the owner performed the rebind');
 ok(accountAdmin.includes('user.delete()'),'a newly created replacement auth user must be rolled back if Firestore migration fails');
 ok(accountAdmin.includes('adminFunctionUnavailable'),'repeated clicks must not keep waiting for a known-missing Cloud Function');
+
+// Account repair must always write through the real Firestore document id, even when legacy identity fields are stale.
+ok(accountRepair.includes('student?.__docId'),'student account repair must prefer the authoritative Firestore document id');
+ok(accountRepair.includes("db.collection('students').doc(id)"),'student account repair must bind the resolved Firestore document');
+ok(accountRepair.includes('studentIdentifiers(student).includes(wanted)'),'repair lookup must accept legacy aliases while resolving the real row');
+ok(accountRepair.includes('isRepairGhost'),'repair must clean up accidental ghost rows from older attempts');
+
+// Full deletion: backend remains preferred, but an owner may safely delete a TN that has no email/auth login when Functions are unavailable.
+ok(studentDelete.includes("httpsCallable('deleteStudentAccount')"),'full deletion must prefer the server-side account delete function');
+ok(studentDelete.includes('student?.__docId'),'deletion must prefer the authoritative Firestore document id');
+ok(studentDelete.includes('function canDeleteLocally(student)'),'safe local fallback predicate is required');
+ok(studentDelete.includes("api.state?.isOwner===true"),'local deletion fallback must be owner-only');
+ok(studentDelete.includes("!text(student?.authUid)&&!text(student?.authEmail)&&!text(student?.email)"),'local deletion must be limited to TN without Firebase login/email');
+ok(studentDelete.includes('deleteUnboundStudentLocally'),'unbound TN must have a direct Firestore deletion fallback');
+ok(studentDelete.includes("collection('studentLookups')"),'local deletion must remove participant lookup rows');
+ok(studentDelete.includes("collection('studentRankings')"),'local deletion must remove ranking rows');
+ok(studentDelete.includes("collection('progress')"),'local deletion must remove progress rows');
+ok(studentDelete.includes('backendUnavailable(error)&&canDeleteLocally(student)'),'fallback must only run after a backend-unavailable failure');
 
 ok(passwordReset.includes("sendPasswordResetEmail(email)"),'owner must be able to send a Firebase password reset mail to a student');
 ok(passwordReset.includes("id='sendStudentPasswordResetBtn'")||passwordReset.includes("id='sendStudentPasswordResetBtn'" )||passwordReset.includes("reset.id='sendStudentPasswordResetBtn'"),'password reset action must have its own button');
