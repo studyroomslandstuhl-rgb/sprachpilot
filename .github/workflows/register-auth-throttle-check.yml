@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'register/index.html'
+      - 'js/firebase.js'
       - 'js/student-login-v2.js'
       - 'js/student-registration-v3.js'
       - 'js/student-identity.js'
@@ -14,6 +15,7 @@ on:
   pull_request:
     paths:
       - 'register/index.html'
+      - 'js/firebase.js'
       - 'js/student-login-v2.js'
       - 'js/student-registration-v3.js'
       - 'js/student-identity.js'
