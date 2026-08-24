@@ -81,7 +81,9 @@ async function ensureAuth(){
   return signInFlight;
 }
 
-export const authReady=ensureAuth();
+// Importing Firebase must never create an anonymous account by itself. Firestore
+// access calls ensureAuth() explicitly when an anonymous session is actually needed.
+export const authReady=initialAuthState;
 
 async function waitAuthRequired(){
   const user=await ensureAuth();
