@@ -20,6 +20,8 @@
     <p class="small">Melde dich mit deiner E-Mail und deinem Passwort an.</p>
     <label>E-Mail *</label><input id="loginEmail" type="email" required autocomplete="email" placeholder="name@email.com">
     <label>Passwort *</label><input id="loginPassword" type="password" required autocomplete="current-password" placeholder="Passwort">
+    <label>Kurscode <span class="small">(bei der ersten Verknüpfung)</span></label><input id="loginCourse" autocomplete="off" autocapitalize="characters" placeholder="z. B. GLK-68">
+    <p class="small">Wenn dein Firebase-Konto schon existiert, aber noch keinem Kursprofil zugeordnet ist, gib hier deinen Kurscode ein.</p>
     <button id="studentLoginButton" class="success" type="button">Anmelden</button>
     <button id="resetPasswordButton" class="btn secondary" type="button">Passwort vergessen</button>
     <a class="btn secondary" href="../register/">Noch kein Konto? Registrieren</a>
@@ -28,9 +30,9 @@
   </section>
   <footer>© SprachPilot</footer>
 </div>
-<script src="/shared/sp-cache-epoch.js?v=20260824-release1"></script>
+<script src="/shared/sp-cache-epoch.js?v=20260824-register3"></script>
 <script type="module">
-import {loginStudentWithEmailPassword,loginStudentProfileWithEmailPassword,resetStudentPassword,$,safeText,getRedirectTarget} from "../js/student-login-v2.js?v=20260822-cache2";
+import {loginStudentWithEmailPassword,loginStudentProfileWithEmailPassword,resetStudentPassword,$,safeText,getRedirectTarget} from "../js/student-login-v2.js?v=20260824-link1";
 let loginInFlight=false,slowLoginTimer=null;
 function show(html){const result=$("loginResult");if(result)result.innerHTML=html;}
 function setLoginBusy(busy){const button=$("studentLoginButton");if(button){button.disabled=!!busy;button.textContent=busy?'Anmeldung läuft …':'Anmelden';}}
@@ -46,7 +48,10 @@ function handleLoginError(err,email,password){
  console.error(err);const code=String(err?.code||""),message=String(err?.message||"");
  if(message==="MULTIPLE_STUDENT_PROFILES"){showProfileChoices(err,email,password);return}
  if(message==="EMAIL_NOT_VERIFIED")show('<div class="no"><b>Bitte bestätige zuerst deine E-Mail.</b><br>Wir haben dir eine neue Bestätigungs-E-Mail geschickt. Danach kannst du dich anmelden.</div>');
- else if(message==="STUDENT_NOT_FOUND")show('<div class="no"><b>Zu diesem Konto wurde noch kein Kursprofil gefunden.</b><br>Wenn du SprachPilot schon früher benutzt hast, gehe zu „Registrieren“ und gib dort einmal deinen Kurscode ein.</div>');
+ else if(message==="STUDENT_COURSE_REQUIRED_FOR_LINK"){show('<div class="no"><b>Dein Konto ist noch nicht mit einem Kursprofil verbunden.</b><br>Gib bitte deinen Kurscode ein (z. B. GLK-68) und klicke danach erneut auf „Anmelden“.</div>');$("loginCourse")?.focus();}
+ else if(message==="COURSE_NOT_FOUND")show('<div class="no"><b>Dieser Kurscode wurde nicht gefunden.</b><br>Bitte prüfe den Kurscode und versuche es erneut.</div>');
+ else if(message==="STUDENT_NOT_FOUND")show('<div class="no"><b>Zu dieser E-Mail und diesem Kurscode wurde kein passendes TN-Profil gefunden.</b><br>Bitte prüfe E-Mail und Kurscode oder wende dich an deine Lehrkraft.</div>');
+ else if(message==="STUDENT_EMAIL_MISMATCH")show('<div class="no"><b>Die E-Mail des Kursprofils passt nicht zu diesem Firebase-Konto.</b><br>Bitte wende dich an deine Lehrkraft.</div>');
  else if(message==="STUDENT_COURSE_MISSING")show('<div class="no"><b>Bei deinem Profil fehlt der Kurs.</b><br>Bitte wende dich an deine Lehrkraft.</div>');
  else if(message==="STUDENT_AUTH_OWNERSHIP_MISMATCH")show('<div class="no"><b>Dieses Profil ist bereits mit einem anderen Konto verbunden.</b><br>Bitte wende dich an deine Lehrkraft.</div>');
  else if(message==="LOCAL_PROGRESS_ISOLATION_FAILED")show('<div class="no"><b>Die Anmeldung konnte auf diesem Gerät nicht abgeschlossen werden.</b><br>Bitte lade die Seite neu und versuche es noch einmal.</div>');
@@ -55,9 +60,9 @@ function handleLoginError(err,email,password){
  else show(`<div class="no">Anmeldung nicht möglich: ${safeText(message||code||"Unbekannter Fehler")}</div>`)
 }
 window.studentLogin=async function(){
- if(loginInFlight)return;const email=$("loginEmail").value.trim().toLowerCase(),password=$("loginPassword").value;if(!email||!password){show('<div class="no">Bitte E-Mail und Passwort eingeben.</div>');return}
+ if(loginInFlight)return;const email=$("loginEmail").value.trim().toLowerCase(),password=$("loginPassword").value,course=$("loginCourse")?.value.trim()||'';if(!email||!password){show('<div class="no">Bitte E-Mail und Passwort eingeben.</div>');return}
  loginInFlight=true;setLoginBusy(true);show('<div class="ok">Anmeldung wird geprüft …</div>');startSlowLoginNotice();
- try{await loginStudentWithEmailPassword(email,password);goAfterLogin()}catch(err){handleLoginError(err,email,password)}finally{stopSlowLoginNotice();loginInFlight=false;setLoginBusy(false)}
+ try{await loginStudentWithEmailPassword(email,password,course);goAfterLogin()}catch(err){handleLoginError(err,email,password)}finally{stopSlowLoginNotice();loginInFlight=false;setLoginBusy(false)}
 };
 window.resetPassword=async function(){const email=$("loginEmail").value.trim().toLowerCase();if(!email){show('<div class="no">Bitte zuerst deine E-Mail eingeben.</div>');return}try{await resetStudentPassword(email);show('<div class="ok">Wenn für diese E-Mail ein Konto existiert, wurde eine E-Mail zum Zurücksetzen des Passworts gesendet.</div>')}catch(err){console.error(err);show('<div class="no">Die Passwort-E-Mail konnte nicht gesendet werden.</div>')}};
 const loginButton=$("studentLoginButton"),resetButton=$("resetPasswordButton");if(loginButton)loginButton.addEventListener('click',()=>window.studentLogin());if(resetButton)resetButton.addEventListener('click',()=>window.resetPassword());
