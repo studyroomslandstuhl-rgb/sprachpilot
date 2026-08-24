@@ -21,7 +21,7 @@
 <script src="l4t3-bunny-images.js?v=2"></script>
 <script>
 header('Farben & Adjektive');
-const EXAM_VERSION='l4t3-exam-compact1';
+const EXAM_VERSION='l4t3-exam-20-v1';
 if(!examUnlocked()){
  area.innerHTML='<div class="finish-box"><div class="question">Prüfung gesperrt</div><p>Schließe zuerst alle Aufgaben mit 100% ab.</p><div class="actions"><a class="btn secondary" href="index.html?colors='+encodeURIComponent(L4T3ColorMode.mode())+'&v='+EXAM_VERSION+'">Zurück zum Thema</a></div></div>';
 }else{startExam()}
@@ -41,11 +41,11 @@ function descriptorVisual(id,cls='task-img'){
 }
 function pluralItemImage(fileName){return `<div class="plural-pair" aria-label="Pluralbild">${img(fileName,'task-img')}${img(fileName,'task-img')}</div>`}
 function makeExamTasks(){
- const colors=shuffle(L4T3ColorMode.activeColors()).slice(0,5).map(color=>({type:'color',solution:color.word,color}));
- const adjectives=shuffle(ADJECTIVES).slice(0,5).map(adj=>({type:'adjective',solution:adj.word,adj}));
- const writing=shuffle(L4T3ColorMode.activeWritingTasks()).slice(0,2).map(task=>({type:'write',solution:task.text,...task}));
+ const colors=shuffle(L4T3ColorMode.activeColors()).slice(0,6).map(color=>({type:'color',solution:color.word,color}));
+ const adjectives=shuffle(ADJECTIVES).slice(0,6).map(adj=>({type:'adjective',solution:adj.word,adj}));
+ const writing=shuffle(L4T3ColorMode.activeWritingTasks()).slice(0,3).map(task=>({type:'write',solution:task.text,...task}));
  const contrast=shuffle(CONTRAST_TASKS).slice(0,2).map(task=>({type:'contrast',solution:task.sentence,...task}));
- const gefallen=shuffle(L4T3ColorMode.activeGefallenTasks()).slice(0,2).map(task=>({type:'gefallen',solution:task.answer,...task}));
+ const gefallen=shuffle(L4T3ColorMode.activeGefallenTasks()).slice(0,3).map(task=>({type:'gefallen',solution:task.answer,...task}));
  return shuffle([...colors,...adjectives,...writing,...contrast,...gefallen])
 }
 function taskTitle(task){
