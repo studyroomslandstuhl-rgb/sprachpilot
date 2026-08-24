@@ -2,6 +2,8 @@ import { loadCourse } from './auth.js';
 import { deleteUser } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
   createSecureStudentCredential,
+  signInSecureStudent,
+  clearRegistrationAuthFailure,
   sendStudentVerification
 } from './student-secure-auth.js?v=20260824-register1';
 
@@ -25,6 +27,10 @@ async function loadAllowedCourse(course){
 function currentAuthUser(){
   return window.spAuth?.currentUser||window.spFirebase?.auth?.currentUser||window.SP_FIREBASE?.auth?.currentUser||null;
 }
+function isExistingAccountError(error){
+  const code=String(error?.code||''),message=String(error?.message||'');
+  return code==='auth/email-already-in-use'||code==='auth/credential-already-in-use'||message==='STUDENT_AUTH_ACCOUNT_EXISTS';
+}
 async function rollbackCredential(user,createdThisAttempt){
   if(!createdThisAttempt||!user)return;
   try{await deleteUser(user)}catch(error){console.warn('[SprachPilot] Registrierung: Firebase-Konto nach ungültigem Kurscode konnte nicht zurückgerollt werden',error)}
@@ -43,19 +49,27 @@ export async function registerStudentOnce(payload={},finishPendingStudentRegistr
   if(password.length<8)throw new Error('WEAK_STUDENT_PASSWORD');
   assertCourseAllowed(pending.kurs);
 
-  // Entscheidend: Zuerst genau EINEN echten E-Mail/Passwort-Credential-Versuch ausführen.
-  // Erst danach werden Kursdaten gelesen. Dadurch ist der Nutzer für Firestore bereits
-  // angemeldet und die Registrierung benötigt keine anonyme Firebase-Anmeldung mehr.
-  // Genau diese anonyme Voranmeldung hatte bei vielen TN auth/too-many-requests ausgelöst.
+  // Genau ein Konto-Erstellungsversuch. Existiert die E-Mail bereits, wird genau einmal
+  // mit dem eingegebenen Passwort angemeldet. So kann eine unterbrochene Registrierung
+  // ihr vorhandenes Firebase-Konto endlich mit dem Kursprofil verbinden.
   const before=currentAuthUser();
-  const user=await createSecureStudentCredential(pending.email,password);
-  const createdThisAttempt=!before||before.isAnonymous===true;
+  let user=null,createdThisAttempt=false,existingFirebaseAccount=false;
+  try{
+    user=await createSecureStudentCredential(pending.email,password);
+    createdThisAttempt=!before||before.isAnonymous===true;
+  }catch(error){
+    if(!isExistingAccountError(error))throw error;
+    clearRegistrationAuthFailure(pending.email);
+    user=await signInSecureStudent(pending.email,password);
+    existingFirebaseAccount=true;
+    createdThisAttempt=false;
+  }
 
   let courseLoaded;
   try{
     courseLoaded=await loadAllowedCourse(pending.kurs);
   }catch(error){
-    // Bei einem falschen Kurscode darf kein nutzloses Firebase-Konto zurückbleiben.
+    // Nur ein Konto löschen, das tatsächlich in genau diesem Registrierungsversuch neu entstand.
     await rollbackCredential(user,createdThisAttempt);
     throw error;
   }
@@ -68,10 +82,10 @@ export async function registerStudentOnce(payload={},finishPendingStudentRegistr
 
   if(user.emailVerified!==true){
     await sendStudentVerification(user);
-    return{verificationRequired:true,email:pending.email,existingFirebaseAccount:false};
+    return{verificationRequired:true,email:pending.email,existingFirebaseAccount};
   }
 
   if(typeof finishPendingStudentRegistration!=='function')throw new Error('REGISTRATION_FINISH_HANDLER_MISSING');
   const profile=await finishPendingStudentRegistration();
-  return{verificationRequired:false,activated:true,email:pending.email,profile,existingFirebaseAccount:false};
+  return{verificationRequired:false,activated:true,email:pending.email,profile,existingFirebaseAccount};
 }
