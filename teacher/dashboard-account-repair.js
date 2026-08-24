@@ -8,8 +8,9 @@ api.__accountRepairInstalled=true;
 const previousEdit=api.editStudent;
 const text=value=>String(value==null?'':value).trim();
 const norm=value=>text(value).toLowerCase();
-const studentId=student=>text(student?.canonicalStudentId||student?.docId||student?.studentId||student?.userId||student?.id);
+const studentDocId=student=>text(student?.__docId||student?.id||student?.docId||student?.canonicalStudentId||student?.studentId||student?.userId);
 const studentName=student=>text([student?.vorname||student?.firstName,student?.nachname||student?.lastName].filter(Boolean).join(' '))||text(student?.name||student?.displayName)||'Teilnehmer/in';
+const studentCourse=student=>text(student?.courseCode||student?.kurs||student?.kursnummer||student?.courseDocId||student?.course);
 
 function database(){
   if(window.db&&typeof window.db.collection==='function')return window.db;
@@ -17,12 +18,24 @@ function database(){
   throw new Error('FIRESTORE_NOT_AVAILABLE');
 }
 function stamp(){return window.firebase?.firestore?.FieldValue?.serverTimestamp?.()||new Date()}
-function currentStudent(id){return (api.state?.students||[]).find(student=>studentId(student)===String(id||''))}
+function studentIdentifiers(student){
+  return [student?.__docId,student?.id,student?.docId,student?.canonicalStudentId,student?.studentId,student?.userId].map(text).filter(Boolean);
+}
+function currentStudent(id){
+  const wanted=String(id||'');
+  return (api.state?.students||[]).find(student=>studentIdentifiers(student).includes(wanted));
+}
 function validEmail(email){return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(norm(email))}
 function emailOf(student){return norm(student?.authEmail||student?.email)}
 function matchingProfiles(email){
   const wanted=norm(email);
   return (api.state?.students||[]).filter(student=>emailOf(student)===wanted);
+}
+function isRepairGhost(student){
+  return !studentCourse(student)
+    && !text(student?.email)
+    && !text(student?.vorname||student?.firstName||student?.name||student?.displayName)
+    && /^owner-(?:account|duplicate)-/.test(text(student?.authProvisioningStatus));
 }
 function setMessage(message,kind=''){
   const modal=document.getElementById('spFirebaseSaveStatus');
@@ -39,7 +52,7 @@ function randomPassword(){
 function friendlyError(error){
   const code=String(error?.code||'');
   const message=String(error?.message||'');
-  if(code.includes('email-already-in-use'))return 'Zu dieser E-Mail existiert bereits ein Firebase-Konto, aber im TN-Profil fehlt die Verknüpfung. Die Passwort-Mail wurde ausgelöst; die automatische Verknüpfung benötigt den serverseitigen Kontodienst.';
+  if(code.includes('email-already-in-use'))return 'Zu dieser E-Mail existiert bereits ein Firebase-Konto, aber im TN-Profil fehlt die Verknüpfung. Öffne den TN erneut und nutze „Zugang prüfen & Passwort-Mail“.';
   if(code.includes('too-many-requests'))return 'Firebase hat zu viele Anfragen erkannt. Bitte einige Minuten warten und erneut versuchen.';
   if(code.includes('network-request-failed'))return 'Keine Verbindung zu Firebase. Bitte Internetverbindung prüfen.';
   if(code.includes('permission-denied'))return 'Das Owner-Konto darf diese Teilnehmerprofile momentan nicht aktualisieren.';
@@ -48,27 +61,39 @@ function friendlyError(error){
 function updateLocalProfiles(email,uid){
   const wanted=norm(email);
   for(const student of api.state?.students||[]){
-    if(emailOf(student)!==wanted)continue;
+    if(emailOf(student)!==wanted||isRepairGhost(student))continue;
     student.authUid=uid;student.authEmail=wanted;student.authEmailLower=wanted;student.authVersion=Math.max(3,Number(student.authVersion||0));
-    const id=studentId(student);
-    if(id&&window.__SP_STUDENTS_BY_ID&&window.__SP_STUDENTS_BY_ID[id]){
-      Object.assign(window.__SP_STUDENTS_BY_ID[id],{authUid:uid,authEmail:wanted,authEmailLower:wanted,authVersion:Math.max(3,Number(window.__SP_STUDENTS_BY_ID[id].authVersion||0))});
+    for(const id of studentIdentifiers(student)){
+      if(id&&window.__SP_STUDENTS_BY_ID?.[id]){
+        Object.assign(window.__SP_STUDENTS_BY_ID[id],{authUid:uid,authEmail:wanted,authEmailLower:wanted,authVersion:Math.max(3,Number(window.__SP_STUDENTS_BY_ID[id].authVersion||0))});
+      }
     }
   }
 }
-async function bindMatchingProfiles(email,uid,status='owner-account-repaired-client-v1'){
+async function bindMatchingProfiles(email,uid,status='owner-account-repaired-client-v2'){
   const rows=matchingProfiles(email),db=database(),batch=db.batch(),now=stamp();
-  let count=0;
-  for(const student of rows){
-    const id=studentId(student);if(!id)continue;
+  const courseRows=rows.filter(row=>studentCourse(row)&&!isRepairGhost(row));
+  const targetRows=courseRows.length?courseRows:rows.filter(row=>!isRepairGhost(row));
+  let count=0,removedGhosts=0;
+  for(const student of targetRows){
+    const id=studentDocId(student);if(!id)continue;
     batch.set(db.collection('students').doc(id),{
       authUid:String(uid),authEmail:norm(email),authEmailLower:norm(email),authVersion:3,
       authProvisioningStatus:status,authProvisioningEmail:norm(email),authProvisioningUpdatedAt:now
     },{merge:true});
     count++;
   }
+  for(const ghost of rows.filter(isRepairGhost)){
+    const id=studentDocId(ghost);if(!id)continue;
+    batch.delete(db.collection('students').doc(id));removedGhosts++;
+  }
   if(!count)throw new Error('STUDENT_PROFILE_NOT_FOUND');
-  await batch.commit();updateLocalProfiles(email,String(uid));return count;
+  await batch.commit();
+  if(removedGhosts){
+    api.state.students=(api.state?.students||[]).filter(row=>!isRepairGhost(row));
+  }
+  updateLocalProfiles(email,String(uid));
+  return{count,removedGhosts};
 }
 async function createSecondaryAccount(email,name){
   const firebase=window.firebase;
@@ -99,17 +124,17 @@ async function ensureFirebaseAccount(id){
   const email=emailOf(student);if(!validEmail(email))throw new Error('Für diesen TN ist keine gültige E-Mail gespeichert.');
   const rows=matchingProfiles(email),bound=rows.find(row=>text(row.authUid));
   if(bound){
-    const uid=text(bound.authUid),linked=await bindMatchingProfiles(email,uid,'owner-duplicate-profile-repaired-client-v1');
-    return{email,uid,linked,created:false};
+    const uid=text(bound.authUid),result=await bindMatchingProfiles(email,uid,'owner-duplicate-profile-repaired-client-v2');
+    return{email,uid,linked:result.count,removedGhosts:result.removedGhosts,created:false};
   }
 
   let secondary=null,committed=false;
   try{
     secondary=await createSecondaryAccount(email,studentName(student));
     const uid=text(secondary.user?.uid);if(!uid)throw new Error('NEW_AUTH_USER_MISSING');
-    const linked=await bindMatchingProfiles(email,uid,'owner-account-created-client-v1');
+    const result=await bindMatchingProfiles(email,uid,'owner-account-created-client-v2');
     committed=true;
-    return{email,uid,linked,created:true};
+    return{email,uid,linked:result.count,removedGhosts:result.removedGhosts,created:true};
   }catch(error){
     if(String(error?.code||'').includes('email-already-in-use')){
       try{await window.firebase.auth().sendPasswordResetEmail(email)}catch(resetError){console.warn('[SprachPilot] existing unbound account reset failed',resetError)}
@@ -125,17 +150,14 @@ async function repairAccess(id){
   const student=currentStudent(id);if(!student)return setMessage('Teilnehmerkonto wurde nicht gefunden.','error');
   const button=document.getElementById('repairStudentFirebaseAccountBtn');
   if(button){button.disabled=true;button.textContent='Zugang wird repariert …'}
-  setMessage('Firebase-Zugang und doppelte Kursprofile werden geprüft …');
+  setMessage('Firebase-Zugang und Kursprofil werden geprüft …');
   try{
     const result=await ensureFirebaseAccount(id);
-    if(!result.created){
-      await window.firebase.auth().sendPasswordResetEmail(result.email);
-      setMessage(`Firebase-Zugang repariert. ${result.linked} Kursprofil${result.linked===1?'':'e'} sind mit demselben Konto verbunden. Passwort-Mail wurde an ${result.email} gesendet.`,'ok');
-    }else{
-      setMessage(`Firebase-Konto wurde eingerichtet und mit ${result.linked} Kursprofil${result.linked===1?'':'en'} verbunden. Bestätigungs- und Passwort-Mail wurden an ${result.email} gesendet.`,'ok');
-    }
+    if(!result.created)await window.firebase.auth().sendPasswordResetEmail(result.email);
+    const cleanup=result.removedGhosts?` ${result.removedGhosts} fehlerhafter Zwischen-Datensatz wurde entfernt.`:'';
+    setMessage(`Firebase-Zugang repariert. ${result.linked} echtes Kursprofil${result.linked===1?' ist':'e sind'} mit dem Konto verbunden.${cleanup} Passwort-Mail wurde an ${result.email} gesendet.`,'ok');
     if(button){button.textContent='Zugang repariert';button.disabled=false}
-    setTimeout(()=>{try{api.navigate('students')}catch(e){}},700);
+    setTimeout(()=>{try{api.refresh()}catch(e){}},500);
   }catch(error){
     console.error('[SprachPilot] student account repair failed',error);setMessage(friendlyError(error),'error');
     if(button){button.disabled=false;button.textContent=text(student.authUid)?'Zugang prüfen & Passwort-Mail':'Firebase-Zugang einrichten'}
@@ -149,7 +171,7 @@ function enhanceEdit(id){
   const saveButton=document.getElementById('saveFirebaseStudentBtn');if(!saveButton||document.getElementById('repairStudentFirebaseAccountBtn'))return;
   const button=document.createElement('button');button.type='button';button.id='repairStudentFirebaseAccountBtn';button.className='sp-button secondary';
   button.textContent=text(student.authUid)?'Zugang prüfen & Passwort-Mail':'Firebase-Zugang einrichten';
-  button.title=text(student.authUid)?'Doppelte Kursprofile verknüpfen und Passwort-Mail senden':'Firebase-Konto anlegen und Einrichtungs-Mails senden';
+  button.title=text(student.authUid)?'Kursprofil korrekt mit dem Firebase-Konto verknüpfen und Passwort-Mail senden':'Firebase-Konto anlegen und Kursprofil verknüpfen';
   button.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();void repairAccess(id)});
   saveButton.parentElement?.insertBefore(button,saveButton);
 }
