@@ -1,8 +1,10 @@
 (function(){
 'use strict';
-if(window.__SP_L7_SCROLL_MEMORY_V4)return;window.__SP_L7_SCROLL_MEMORY_V4=true;
+if(window.__SP_L7_SCROLL_MEMORY_V5)return;window.__SP_L7_SCROLL_MEMORY_V5=true;
 const theme=Number(document.body?.dataset?.theme||0),page=String(document.body?.dataset?.page||'');
 if(!theme)return;
+function loadReleaseEnforcer(){if(window.__SP_L7_RELEASE_ENFORCER_V1||document.querySelector('script[data-sp-l7-release-enforcer]'))return;const s=document.createElement('script');s.src='../shared/l7-release-enforcer.js?v=20260824-1';s.dataset.spL7ReleaseEnforcer='1';document.head.appendChild(s)}
+loadReleaseEnforcer();
 const key=`SP_L7_LAST_TASK_T${theme}`;
 const app=document.getElementById('app');
 if(!app)return;
