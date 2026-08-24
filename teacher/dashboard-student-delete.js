@@ -62,15 +62,20 @@ async function ensureFunctions(){
   return functionsPromise;
 }
 function friendlyError(error){
-  const code=String(error?.code||'').toLowerCase(),message=String(error?.message||'');
-  if(message.includes('STUDENT_OUTSIDE_TEACHER_COURSES'))return 'Dieser TN hat mindestens ein Profil in einem Kurs, für den du keine Berechtigung hast. Die vollständige Löschung darf dann nur der Owner durchführen.';
-  if(message.includes('STUDENT_AUTH_IS_TEACHER'))return 'Dieses Firebase-Konto gehört auch zu einer Lehrkraft und darf nicht als TN-Konto gelöscht werden.';
-  if(message.includes('STUDENT_NOT_FOUND')||code.includes('not-found'))return 'Der TN wurde bereits gelöscht oder nicht mehr gefunden.';
-  if(message.includes('DELETE_CONFIRMATION_REQUIRED'))return 'Die Löschung wurde nicht bestätigt.';
-  if(message.includes('TEACHER_REQUIRED')||code.includes('permission-denied'))return 'Du hast keine Berechtigung für die vollständige Löschung dieses TN.';
-  if(message.includes('STUDENT_AUTH_DELETE_FAILED'))return 'Das Firebase-Login konnte nicht gelöscht werden. Es wurden keine Teilnehmerprofile entfernt. Bitte erneut versuchen.';
-  if(message.includes('STUDENT_DATA_DELETE_FAILED'))return 'Das Firebase-Login wurde entfernt, aber die Datensätze konnten nicht vollständig bereinigt werden. Bitte denselben TN erneut löschen.';
+  const code=String(error?.code||'').toLowerCase(),message=String(error?.message||''),details=String(error?.details||'');
+  const diagnostic=`${message} ${details}`;
+  if(diagnostic.includes('STUDENT_OUTSIDE_TEACHER_COURSES'))return 'Dieser TN hat mindestens ein Profil in einem Kurs, für den du keine Berechtigung hast. Die vollständige Löschung darf dann nur der Owner durchführen.';
+  if(diagnostic.includes('STUDENT_AUTH_IS_TEACHER'))return 'Dieses Firebase-Konto gehört auch zu einer Lehrkraft und darf nicht als TN-Konto gelöscht werden.';
+  if(diagnostic.includes('STUDENT_NOT_FOUND')||code.includes('not-found'))return 'Der TN wurde bereits gelöscht oder nicht mehr gefunden.';
+  if(diagnostic.includes('DELETE_CONFIRMATION_REQUIRED'))return 'Die Löschung wurde nicht bestätigt.';
+  if(diagnostic.includes('TEACHER_REQUIRED')||code.includes('permission-denied'))return 'Du hast keine Berechtigung für die vollständige Löschung dieses TN.';
+  if(diagnostic.includes('STUDENT_AUTH_DELETE_FAILED'))return 'Das Firebase-Login konnte nicht gelöscht werden. Es wurden keine Teilnehmerprofile entfernt. Bitte erneut versuchen.';
+  if(diagnostic.includes('STUDENT_DATA_DELETE_FAILED'))return 'Das Firebase-Login wurde entfernt, aber die Datensätze konnten nicht vollständig bereinigt werden. Bitte denselben TN erneut löschen.';
   if(code.includes('functions/not-found')||code.includes('functions/unavailable')||code.includes('functions-call-timeout')||code.includes('functions-sdk'))return 'Der serverseitige Löschdienst ist momentan nicht verfügbar.';
+  // Ein nicht veröffentlichter Callable liefert über das Firebase-Web-SDK je nach
+  // HTTP-Antwort nur functions/internal + "internal". Diese Meldung darf nicht
+  // unverändert im Lehrer-Dashboard landen.
+  if(code.includes('functions/internal')&&(!message||message.toLowerCase()==='internal'))return 'Der serverseitige Löschdienst ist nicht erreichbar. Die TN-Daten wurden nicht gelöscht.';
   return message||'Der TN konnte nicht vollständig gelöscht werden.';
 }
 function openModal(html){
