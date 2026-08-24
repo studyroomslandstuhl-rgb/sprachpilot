@@ -1,20 +1,20 @@
 {
-  "source_sha": "e48f97d6a19f69402f01036243e2e0b3e10ecc67",
+  "source_sha": "faf9e016a20e00f92dab823008e7753fc3c0dffd",
   "project_id": "sprachpilot-12c68",
   "region": "europe-west1",
-  "validation": "failed",
+  "validation": "success",
   "validation_exit_codes": {
     "install": "0",
     "check": "0",
-    "test": "1"
+    "test": "0"
   },
   "credential_kind": "none",
-  "deploy_status": "blocked-by-validation",
+  "deploy_status": "missing-credentials",
   "deploy_exit_code": "0",
   "update_student_account_http_before": "404",
   "update_student_account_http_after": "404",
-  "run_id": "32706266569",
+  "run_id": "32706367215",
   "run_attempt": "1",
-  "run_url": "https://github.com/studyroomslandstuhl-rgb/sprachpilot/actions/runs/32706266569",
-  "recorded_at": "2026-08-24T08:26:04.856428+00:00"
+  "run_url": "https://github.com/studyroomslandstuhl-rgb/sprachpilot/actions/runs/32706367215",
+  "recorded_at": "2026-08-24T08:27:19.300788+00:00"
 }
