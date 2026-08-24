@@ -11,12 +11,24 @@ import {
 import { auth, authReady } from './firebase.js';
 
 const REGISTER_BLOCK_KEY='SP_REGISTER_AUTH_BLOCK_V2';
+const VERIFY_SENT_KEY='SP_REGISTER_VERIFY_SENT_V1';
+const AUTH_DIAG_KEY='SP_REGISTER_AUTH_DIAG_V1';
 const EMAIL_EXISTS_BLOCK_MS=120000;
 const THROTTLE_BLOCK_MS=300000;
+const VERIFY_COOLDOWN_MS=60000;
 let immediateRegistrationFailure=null;
 
 function normalizedEmail(value){return String(value||'').trim().toLowerCase()}
 function now(){return Date.now()}
+function readJson(key,fallback=null){try{return JSON.parse(sessionStorage.getItem(key)||'null')||fallback}catch(e){return fallback}}
+function writeJson(key,value){try{sessionStorage.setItem(key,JSON.stringify(value))}catch(e){}}
+function recordAuthEvent(stage,ok,extra={}){
+  const old=readJson(AUTH_DIAG_KEY,{credentialCalls:0,credentialFailures:0,verificationCalls:0,verificationFailures:0,anonymousUpgrades:0,last:null})||{};
+  if(stage==='credential'){old.credentialCalls=Number(old.credentialCalls||0)+1;if(!ok)old.credentialFailures=Number(old.credentialFailures||0)+1}
+  if(stage==='verification'){old.verificationCalls=Number(old.verificationCalls||0)+1;if(!ok)old.verificationFailures=Number(old.verificationFailures||0)+1}
+  if(extra.anonymousUpgrade)old.anonymousUpgrades=Number(old.anonymousUpgrades||0)+1;
+  old.last={stage,ok,code:String(extra.code||''),at:now()};writeJson(AUTH_DIAG_KEY,old);return old;
+}
 function readRegistrationBlock(){
   try{
     const value=JSON.parse(sessionStorage.getItem(REGISTER_BLOCK_KEY)||'null');
@@ -38,18 +50,14 @@ function clearRegistrationBlock(email=''){
 }
 function semanticAccountExists(original,email){
   const error=new Error('STUDENT_AUTH_ACCOUNT_EXISTS');
-  error.code='auth/email-already-in-use';
-  error.email=normalizedEmail(email);
-  error.cause=original;
-  error.spNoSecondCredentialAttempt=true;
+  error.code='auth/email-already-in-use';error.authStage='credential';
+  error.email=normalizedEmail(email);error.cause=original;error.spNoSecondCredentialAttempt=true;
   return error;
 }
-function semanticThrottle(original,email){
+function semanticThrottle(original,email,stage='credential'){
   const error=new Error('STUDENT_AUTH_THROTTLED');
-  error.code='auth/too-many-requests';
-  error.email=normalizedEmail(email);
-  error.cause=original;
-  error.spNoSecondCredentialAttempt=true;
+  error.code='auth/too-many-requests';error.authStage=stage;
+  error.email=normalizedEmail(email);error.cause=original;error.spNoSecondCredentialAttempt=true;
   return error;
 }
 function blockedRegistrationError(email){
@@ -62,17 +70,21 @@ function blockedRegistrationError(email){
 function normalizeCreateError(error,email){
   const code=String(error?.code||'');
   if(code==='auth/email-already-in-use'||code==='auth/credential-already-in-use'){
-    const block=writeRegistrationBlock(email,'auth/email-already-in-use');
-    immediateRegistrationFailure=block;
+    const block=writeRegistrationBlock(email,'auth/email-already-in-use');immediateRegistrationFailure=block;
     return semanticAccountExists(error,email);
   }
   if(code==='auth/too-many-requests'){
-    const block=writeRegistrationBlock(email,'auth/too-many-requests');
-    immediateRegistrationFailure=block;
-    return semanticThrottle(error,email);
+    const block=writeRegistrationBlock(email,'auth/too-many-requests');immediateRegistrationFailure=block;
+    return semanticThrottle(error,email,'credential');
   }
+  try{error.authStage=error.authStage||'credential'}catch(e){}
   return error;
 }
+function verificationRecentlySent(user){
+  const email=normalizedEmail(user?.email),uid=String(user?.uid||''),state=readJson(VERIFY_SENT_KEY,null);
+  return !!(state&&state.email===email&&state.uid===uid&&now()-Number(state.at||0)<VERIFY_COOLDOWN_MS);
+}
+function rememberVerificationSent(user){writeJson(VERIFY_SENT_KEY,{email:normalizedEmail(user?.email),uid:String(user?.uid||''),at:now()})}
 
 async function settleInitialAuth(){
   // firebase.js darf für Firestore-Lesezugriffe zunächst eine anonyme Sitzung
@@ -84,28 +96,22 @@ async function settleInitialAuth(){
 }
 
 export function currentFirebaseUser(){return auth.currentUser||null}
-
 export function registrationAuthFailureState(){return readRegistrationBlock()}
+export function registrationAuthDiagnostics(){return readJson(AUTH_DIAG_KEY,{credentialCalls:0,credentialFailures:0,verificationCalls:0,verificationFailures:0,anonymousUpgrades:0,last:null})}
 export function clearRegistrationAuthFailure(email=''){clearRegistrationBlock(email)}
 
 export async function reloadFirebaseUser(user=auth.currentUser){
-  await settleInitialAuth();
-  user=user||auth.currentUser;
-  if(!user)return null;
-  await reload(user);
-  return auth.currentUser||user;
+  await settleInitialAuth();user=user||auth.currentUser;if(!user)return null;await reload(user);return auth.currentUser||user;
 }
 
 export async function signInSecureStudent(email,password){
   await settleInitialAuth();
   const wanted=normalizedEmail(email);
-  // student-identity.js hatte historisch nach "email-already-in-use" sofort
-  // noch einen Passwort-Login ausgelöst. Genau dieser zweite Credential-Aufruf
-  // erzeugte bei falschem/neuem Passwort zusätzliche Firebase-Fehlversuche.
-  // Wir blockieren nur diesen unmittelbar folgenden Registrierungs-Fallback.
+  // Alte Registrierungslogik versuchte nach "email-already-in-use" sofort noch
+  // einen Passwort-Login. Dieser unmittelbar folgende zweite Credential-Aufruf
+  // wird abgefangen; ein normaler Login auf der Login-Seite bleibt unbeeinflusst.
   if(immediateRegistrationFailure?.email===wanted&&now()-Number(immediateRegistrationFailure.at||0)<15000){
-    const code=immediateRegistrationFailure.code;
-    immediateRegistrationFailure=null;
+    const code=immediateRegistrationFailure.code;immediateRegistrationFailure=null;
     if(code==='auth/too-many-requests')throw semanticThrottle(null,wanted);
     throw semanticAccountExists(null,wanted);
   }
@@ -121,61 +127,58 @@ export async function createSecureStudentCredential(email,password){
   const blocked=blockedRegistrationError(wanted);if(blocked)throw blocked;
   const current=auth.currentUser||null;
 
-  // Eine bereits laufende Registrierung derselben E-Mail darf das bestehende
-  // nicht-anonyme Konto wiederverwenden, ohne einen weiteren Auth-Versuch.
   if(current&&!current.isAnonymous){
     if(normalizedEmail(current.email)===wanted){clearRegistrationBlock(wanted);return current}
-    const mismatch=new Error('SECURE_AUTH_EMAIL_MISMATCH');mismatch.code='sp/auth-email-mismatch';throw mismatch;
+    const mismatch=new Error('SECURE_AUTH_EMAIL_MISMATCH');mismatch.code='sp/auth-email-mismatch';mismatch.authStage='credential';throw mismatch;
   }
 
+  recordAuthEvent('credential',true,{code:'started'});
   try{
-    let credential;
+    let credential,anonymousUpgrade=false;
     if(current?.isAnonymous){
-      // Firestore hat bereits eine anonyme Sitzung angelegt. Diese wird direkt
-      // zum permanenten Schülerkonto hochgestuft. Kein signOut -> anonymous
-      // signIn -> createUser Dreifachlauf mehr.
       const emailCredential=EmailAuthProvider.credential(wanted,pwd);
-      credential=await linkWithCredential(current,emailCredential);
+      credential=await linkWithCredential(current,emailCredential);anonymousUpgrade=true;
     }else{
       credential=await createUserWithEmailAndPassword(auth,wanted,pwd);
     }
     const user=auth.currentUser||credential.user;
     if(!user||user.isAnonymous||String(user.uid)!==String(credential.user.uid))throw new Error('SECURE_AUTH_RACE_DETECTED');
-    clearRegistrationBlock(wanted);
-    return user;
+    clearRegistrationBlock(wanted);recordAuthEvent('credential',true,{code:'success',anonymousUpgrade});return user;
   }catch(error){
+    recordAuthEvent('credential',false,{code:error?.code||error?.message});
     throw normalizeCreateError(error,wanted);
   }
 }
 
 export async function sendStudentVerification(user=auth.currentUser){
-  await settleInitialAuth();
-  user=user||auth.currentUser;
+  await settleInitialAuth();user=user||auth.currentUser;
   if(!user||user.isAnonymous)throw new Error('SECURE_AUTH_USER_REQUIRED');
+  if(user.emailVerified===true)return{skipped:true,reason:'already-verified'};
+  if(verificationRecentlySent(user))return{skipped:true,reason:'cooldown'};
   const preferredUrl=new URL('/register/?verify=1',location.origin).href;
+  recordAuthEvent('verification',true,{code:'started'});
   try{
-    await sendEmailVerification(user,{url:preferredUrl,handleCodeInApp:false});
+    try{await sendEmailVerification(user,{url:preferredUrl,handleCodeInApp:false})}
+    catch(error){if(error?.code!=='auth/unauthorized-continue-uri')throw error;await sendEmailVerification(user)}
+    rememberVerificationSent(user);recordAuthEvent('verification',true,{code:'success'});return{sent:true};
   }catch(error){
-    if(error?.code!=='auth/unauthorized-continue-uri')throw error;
-    await sendEmailVerification(user);
+    recordAuthEvent('verification',false,{code:error?.code||error?.message});
+    if(error?.code==='auth/too-many-requests'){
+      writeRegistrationBlock(user.email,'auth/too-many-requests');throw semanticThrottle(error,user.email,'verification');
+    }
+    try{error.authStage='verification'}catch(e){}
+    throw error;
   }
 }
 
 export async function resetSecureStudentPassword(email){
-  await settleInitialAuth();
-  const preferredUrl=new URL('/login/',location.origin).href;
-  try{
-    await sendPasswordResetEmail(auth,normalizedEmail(email),{url:preferredUrl,handleCodeInApp:false});
-  }catch(error){
-    if(error?.code!=='auth/unauthorized-continue-uri')throw error;
-    await sendPasswordResetEmail(auth,normalizedEmail(email));
-  }
+  await settleInitialAuth();const preferredUrl=new URL('/login/',location.origin).href;
+  try{await sendPasswordResetEmail(auth,normalizedEmail(email),{url:preferredUrl,handleCodeInApp:false})}
+  catch(error){if(error?.code!=='auth/unauthorized-continue-uri')throw error;await sendPasswordResetEmail(auth,normalizedEmail(email))}
 }
 
 export async function secureStudentSignOut(){
-  await settleInitialAuth();
-  try{await signOut(auth)}catch(e){}
-  if(auth.currentUser)throw new Error('SECURE_SIGNOUT_FAILED');
+  await settleInitialAuth();try{await signOut(auth)}catch(e){}if(auth.currentUser)throw new Error('SECURE_SIGNOUT_FAILED');
 }
 
 export function assertVerifiedStudentUser(user,email=''){
