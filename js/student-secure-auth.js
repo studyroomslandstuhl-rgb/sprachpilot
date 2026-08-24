@@ -22,12 +22,14 @@ function normalizedEmail(value){return String(value||'').trim().toLowerCase()}
 function now(){return Date.now()}
 function readJson(key,fallback=null){try{return JSON.parse(sessionStorage.getItem(key)||'null')||fallback}catch(e){return fallback}}
 function writeJson(key,value){try{sessionStorage.setItem(key,JSON.stringify(value))}catch(e){}}
-function recordAuthEvent(stage,ok,extra={}){
+function recordAuthEvent(stage,event,extra={}){
   const old=readJson(AUTH_DIAG_KEY,{credentialCalls:0,credentialFailures:0,verificationCalls:0,verificationFailures:0,anonymousUpgrades:0,last:null})||{};
-  if(stage==='credential'){old.credentialCalls=Number(old.credentialCalls||0)+1;if(!ok)old.credentialFailures=Number(old.credentialFailures||0)+1}
-  if(stage==='verification'){old.verificationCalls=Number(old.verificationCalls||0)+1;if(!ok)old.verificationFailures=Number(old.verificationFailures||0)+1}
-  if(extra.anonymousUpgrade)old.anonymousUpgrades=Number(old.anonymousUpgrades||0)+1;
-  old.last={stage,ok,code:String(extra.code||''),at:now()};writeJson(AUTH_DIAG_KEY,old);return old;
+  if(stage==='credential'&&event==='start')old.credentialCalls=Number(old.credentialCalls||0)+1;
+  if(stage==='credential'&&event==='failure')old.credentialFailures=Number(old.credentialFailures||0)+1;
+  if(stage==='verification'&&event==='start')old.verificationCalls=Number(old.verificationCalls||0)+1;
+  if(stage==='verification'&&event==='failure')old.verificationFailures=Number(old.verificationFailures||0)+1;
+  if(extra.anonymousUpgrade&&event==='success')old.anonymousUpgrades=Number(old.anonymousUpgrades||0)+1;
+  old.last={stage,event,code:String(extra.code||''),at:now()};writeJson(AUTH_DIAG_KEY,old);return old;
 }
 function readRegistrationBlock(){
   try{
@@ -87,10 +89,6 @@ function verificationRecentlySent(user){
 function rememberVerificationSent(user){writeJson(VERIFY_SENT_KEY,{email:normalizedEmail(user?.email),uid:String(user?.uid||''),at:now()})}
 
 async function settleInitialAuth(){
-  // firebase.js darf für Firestore-Lesezugriffe zunächst eine anonyme Sitzung
-  // herstellen. Bei der Registrierung behalten wir diese Sitzung und wandeln
-  // sie in das E-Mail/Passwort-Konto um, statt sie vorher ab- und erneut
-  // anzumelden. Dadurch entsteht pro Registrierung nur ein Credential-Versuch.
   try{await authReady}catch(e){}
   return auth.currentUser||null;
 }
@@ -107,9 +105,6 @@ export async function reloadFirebaseUser(user=auth.currentUser){
 export async function signInSecureStudent(email,password){
   await settleInitialAuth();
   const wanted=normalizedEmail(email);
-  // Alte Registrierungslogik versuchte nach "email-already-in-use" sofort noch
-  // einen Passwort-Login. Dieser unmittelbar folgende zweite Credential-Aufruf
-  // wird abgefangen; ein normaler Login auf der Login-Seite bleibt unbeeinflusst.
   if(immediateRegistrationFailure?.email===wanted&&now()-Number(immediateRegistrationFailure.at||0)<15000){
     const code=immediateRegistrationFailure.code;immediateRegistrationFailure=null;
     if(code==='auth/too-many-requests')throw semanticThrottle(null,wanted);
@@ -132,7 +127,7 @@ export async function createSecureStudentCredential(email,password){
     const mismatch=new Error('SECURE_AUTH_EMAIL_MISMATCH');mismatch.code='sp/auth-email-mismatch';mismatch.authStage='credential';throw mismatch;
   }
 
-  recordAuthEvent('credential',true,{code:'started'});
+  recordAuthEvent('credential','start',{code:'started'});
   try{
     let credential,anonymousUpgrade=false;
     if(current?.isAnonymous){
@@ -143,9 +138,9 @@ export async function createSecureStudentCredential(email,password){
     }
     const user=auth.currentUser||credential.user;
     if(!user||user.isAnonymous||String(user.uid)!==String(credential.user.uid))throw new Error('SECURE_AUTH_RACE_DETECTED');
-    clearRegistrationBlock(wanted);recordAuthEvent('credential',true,{code:'success',anonymousUpgrade});return user;
+    clearRegistrationBlock(wanted);recordAuthEvent('credential','success',{code:'success',anonymousUpgrade});return user;
   }catch(error){
-    recordAuthEvent('credential',false,{code:error?.code||error?.message});
+    recordAuthEvent('credential','failure',{code:error?.code||error?.message});
     throw normalizeCreateError(error,wanted);
   }
 }
@@ -156,13 +151,13 @@ export async function sendStudentVerification(user=auth.currentUser){
   if(user.emailVerified===true)return{skipped:true,reason:'already-verified'};
   if(verificationRecentlySent(user))return{skipped:true,reason:'cooldown'};
   const preferredUrl=new URL('/register/?verify=1',location.origin).href;
-  recordAuthEvent('verification',true,{code:'started'});
+  recordAuthEvent('verification','start',{code:'started'});
   try{
     try{await sendEmailVerification(user,{url:preferredUrl,handleCodeInApp:false})}
     catch(error){if(error?.code!=='auth/unauthorized-continue-uri')throw error;await sendEmailVerification(user)}
-    rememberVerificationSent(user);recordAuthEvent('verification',true,{code:'success'});return{sent:true};
+    rememberVerificationSent(user);recordAuthEvent('verification','success',{code:'success'});return{sent:true};
   }catch(error){
-    recordAuthEvent('verification',false,{code:error?.code||error?.message});
+    recordAuthEvent('verification','failure',{code:error?.code||error?.message});
     if(error?.code==='auth/too-many-requests'){
       writeRegistrationBlock(user.email,'auth/too-many-requests');throw semanticThrottle(error,user.email,'verification');
     }
