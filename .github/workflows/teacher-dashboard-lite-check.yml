@@ -16,6 +16,7 @@ on:
       - 'functions/**'
       - 'firestore.rules'
       - 'scripts/test-teacher-dashboard-lite.mjs'
+      - '.github/workflows/teacher-dashboard-lite-check.yml'
 
 permissions:
   contents: read
@@ -34,6 +35,7 @@ jobs:
         run: |
           node --check teacher/dashboard-lite.js
           node --check teacher/dashboard-account-repair.js
+          node --check teacher/dashboard-student-delete.js
       - name: Validate lightweight startup contract
         run: node scripts/test-teacher-dashboard-lite.mjs
       - name: Validate auth mail templates
