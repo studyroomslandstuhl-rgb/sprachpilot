@@ -1,5 +1,6 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-app.js";
 import { getAuth, signInAnonymously, onAuthStateChanged } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { getFunctions, httpsCallable } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-functions.js";
 
 import {
   getFirestore,
@@ -38,6 +39,8 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 export const auth = getAuth(app);
 export const db = getFirestore(app);
+export const functions = getFunctions(app, 'europe-west1');
+export { httpsCallable };
 
 const IS_TEACHER_PATH=/^\/teacher(?:\/|$)/i.test(location.pathname||"");
 let signInFlight=null;
@@ -51,9 +54,6 @@ const initialAuthState=new Promise(resolve=>{
     resolve(user||auth.currentUser||null);
   };
   try{
-    // Wichtig: auf den echten ersten Firebase-Auth-State warten. Ein künstlicher
-    // Timeout darf eine noch wiederherzustellende Schüler-Sitzung niemals durch
-    // signInAnonymously() ersetzen.
     stop=onAuthStateChanged(auth,user=>finish(user||null),error=>{
       console.warn("Firebase Auth State konnte nicht gelesen werden",error);
       finish(auth.currentUser||null);
@@ -81,8 +81,6 @@ async function ensureAuth(){
   return signInFlight;
 }
 
-// Importing Firebase must never create an anonymous account by itself. Firestore
-// access calls ensureAuth() explicitly when an anonymous session is actually needed.
 export const authReady=initialAuthState;
 
 async function waitAuthRequired(){
@@ -192,6 +190,7 @@ window.spDb = db;
 window.spAuth = auth;
 window.spAuthReady = authReady;
 window.spEnsureFirebaseAuth = ensureAuth;
+window.spFunctions = functions;
 window.db = compatDb;
 
 window.spFirebase = {
@@ -200,6 +199,8 @@ window.spFirebase = {
   authReady,
   ensureAuth,
   db,
+  functions,
+  httpsCallable,
   compatDb,
   doc: firestoreDoc,
   getDoc,
