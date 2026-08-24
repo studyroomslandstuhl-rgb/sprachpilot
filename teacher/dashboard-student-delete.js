@@ -110,7 +110,7 @@ function installDeleteButton(id){
 function openDeleteConfirmation(id){
   const student=currentStudent(id);if(!student)return status('TN wurde nicht gefunden.','error');
   const email=text(student.authEmail||student.email)||'keine E-Mail';
-  const localNote=canDeleteLocally(student)?'<br><br><strong>Hinweis:</strong> Für diesen TN ist kein Firebase-Login hinterlegt. Als Owner können die Teilnehmerdaten deshalb auch dann gelöscht werden, wenn der serverseitige Kontodienst nicht verfügbar ist.':'';
+  const localNote=canDeleteLocally(student)?'<br><br><strong>Hinweis:</strong> Für diesen TN ist kein Firebase-Login hinterlegt. Als Owner werden die Teilnehmerdaten direkt gelöscht; dafür ist kein serverseitiger Kontodienst nötig.':'';
   openModal(`<div class="sp-modal-head"><div><h2 style="margin:0">TN vollständig löschen</h2><div class="sp-meta">${esc(studentName(student))} · ${esc(email)}</div></div><button type="button" class="sp-icon-btn" onclick="SPTeacherDashboard.closeModal()">Schließen</button></div>
   <div class="sp-owner-note" style="margin-top:14px"><strong>Diese Löschung kann nicht rückgängig gemacht werden.</strong><br>Gelöscht werden das Firebase-Login, alle mit diesem Login verbundenen TN-Profile, Fortschritte, Ranglisten-Einträge und Teilnehmer-Lookups. Hat dieselbe Person mehrere Kursprofile, werden diese ebenfalls gelöscht.${localNote}</div>
   <div class="sp-field wide" style="margin-top:16px"><label>Zur Bestätigung LÖSCHEN eingeben</label><input id="deleteStudentConfirmText" autocomplete="off" placeholder="LÖSCHEN"></div>
@@ -128,9 +128,7 @@ async function callDelete(studentId){
   const response=await withTimeout(callable({studentId,confirmation:'DELETE_STUDENT'}),DELETE_TIMEOUT_MS,'sp/functions-call-timeout','Firebase hat die Löschung nicht rechtzeitig bestätigt.');
   return response?.data||{};
 }
-function addRef(refs,ref){
-  if(ref?.path)refs.set(ref.path,ref);
-}
+function addRef(refs,ref){if(ref?.path)refs.set(ref.path,ref)}
 async function collectQueryRefs(refs,collectionName,field,value){
   if(!value)return;
   const snap=await database().collection(collectionName).where(field,'==',value).get();
@@ -144,26 +142,33 @@ async function deleteRefs(refs){
     await batch.commit();
   }
 }
+function idIsSharedWithAnotherStudent(student,id){
+  return (api.state?.students||[]).some(other=>other!==student&&studentIdentifiers(other).includes(id));
+}
 async function deleteUnboundStudentLocally(student){
   if(!canDeleteLocally(student))throw new Error('LOCAL_DELETE_NOT_ALLOWED');
-  const ids=studentIdentifiers(student),refs=new Map(),db=database();
-  const primary=studentDocId(student);if(primary&&!ids.includes(primary))ids.unshift(primary);
+  const db=database(),primary=studentDocId(student);
+  if(!primary)throw new Error('STUDENT_DOCUMENT_ID_MISSING');
+  const safeIds=[...new Set([primary,...studentIdentifiers(student).filter(id=>!idIsSharedWithAnotherStudent(student,id))])];
+  const refs=new Map();
 
-  for(const id of ids){
-    addRef(refs,db.collection('students').doc(id));
+  // Nur das tatsächlich ausgewählte Firestore-TN-Dokument direkt löschen. Alte Alias-IDs
+  // dürfen niemals blind als weitere student-Dokumente gelöscht werden.
+  addRef(refs,db.collection('students').doc(primary));
+  for(const id of safeIds){
     addRef(refs,db.collection('progress').doc(id));
     addRef(refs,db.collection('studentRankings').doc(id));
   }
+
   const jobs=[];
-  for(const id of ids){
-    for(const field of ['canonicalStudentId','studentId','userId','docId'])jobs.push(collectQueryRefs(refs,'students',field,id));
+  for(const id of safeIds){
     for(const field of ['canonicalStudentId','studentId','userId','docId'])jobs.push(collectQueryRefs(refs,'progress',field,id));
     for(const field of ['studentId','canonicalStudentId'])jobs.push(collectQueryRefs(refs,'studentRankings',field,id));
     for(const field of ['canonicalStudentId','studentId'])jobs.push(collectQueryRefs(refs,'studentLookups',field,id));
   }
   await Promise.all(jobs);
   await deleteRefs(refs);
-  return{deletedStudentIds:ids,authLinked:false,localFallback:true};
+  return{deletedStudentIds:[primary],authLinked:false,localFallback:true};
 }
 function removeLocalRows(result,id){
   const deleted=new Set((Array.isArray(result?.deletedStudentIds)?result.deletedStudentIds:[]).map(text).filter(Boolean));deleted.add(text(id));
@@ -184,28 +189,26 @@ async function deleteStudent(id){
   if(typed!=='LÖSCHEN')return deleteModalStatus('Bitte zuerst LÖSCHEN eingeben.','error');
   const student=currentStudent(id);if(!student)return deleteModalStatus('TN wurde nicht gefunden.','error');
   const button=document.getElementById('confirmDeleteFirebaseStudentBtn');if(button){button.disabled=true;button.textContent='Wird gelöscht …'}
-  deleteModalStatus('Firebase-Login und Teilnehmerdaten werden vollständig gelöscht …');
+
   try{
+    // Bei alten TN ohne E-Mail/Firebase-Login ist kein Admin-Auth-Aufruf nötig. Diese
+    // Datensätze können als Owner direkt und sicher aus Firestore bereinigt werden.
+    if(canDeleteLocally(student)){
+      deleteModalStatus('TN ohne Firebase-Login wird direkt aus den Teilnehmerdaten gelöscht …');
+      const result=await deleteUnboundStudentLocally(student);
+      await finishSuccessfulDelete(result,id,'TN vollständig gelöscht. Für diesen TN war kein Firebase-Login hinterlegt; Teilnehmerprofil, Fortschritt, Rangliste und Lookup-Daten wurden direkt entfernt.');
+      return;
+    }
+
+    deleteModalStatus('Firebase-Login und Teilnehmerdaten werden vollständig gelöscht …');
     const result=await callDelete(studentDocId(student)||id);
     await finishSuccessfulDelete(result,id,result?.authLinked===false
       ? 'TN vollständig aus dem System gelöscht. Es war kein gebundenes Firebase-Login vorhanden.'
       : 'TN vollständig gelöscht: Firebase-Login, Teilnehmerprofile, Fortschritt, Rangliste und Lookup-Daten wurden entfernt.');
   }catch(error){
     console.error('[SprachPilot] full student deletion failed',error);
-    if(backendUnavailable(error)&&canDeleteLocally(student)){
-      try{
-        deleteModalStatus('Serverdienst nicht erreichbar. TN ohne Firebase-Login wird direkt aus den Teilnehmerdaten gelöscht …');
-        const result=await deleteUnboundStudentLocally(student);
-        await finishSuccessfulDelete(result,id,'TN vollständig gelöscht. Für diesen TN war kein Firebase-Login hinterlegt; Teilnehmerprofil, Fortschritt, Rangliste und Lookup-Daten wurden direkt entfernt.');
-        return;
-      }catch(localError){
-        console.error('[SprachPilot] local owner deletion fallback failed',localError);
-        deleteModalStatus('Der serverseitige Löschdienst ist nicht erreichbar und die direkte Datenlöschung ist ebenfalls fehlgeschlagen: '+text(localError?.message||localError),'error');
-      }
-    }else{
-      const suffix=backendUnavailable(error)&&!canDeleteLocally(student)?' Bei TN mit E-Mail oder Firebase-Konto ist die serverseitige Löschung zwingend erforderlich.':'';
-      deleteModalStatus(friendlyError(error)+suffix,'error');
-    }
+    const suffix=backendUnavailable(error)?' Bei TN mit E-Mail oder Firebase-Konto ist die serverseitige Löschung zwingend erforderlich.':'';
+    deleteModalStatus(friendlyError(error)+suffix,'error');
     if(button){button.disabled=false;button.textContent='Endgültig löschen'}
   }
 }
