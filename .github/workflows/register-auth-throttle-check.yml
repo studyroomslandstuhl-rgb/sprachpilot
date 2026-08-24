@@ -5,6 +5,7 @@ on:
     branches: [main]
     paths:
       - 'register/index.html'
+      - 'login/index.html'
       - 'js/firebase.js'
       - 'js/student-login-v2.js'
       - 'js/student-registration-v3.js'
@@ -15,6 +16,7 @@ on:
   pull_request:
     paths:
       - 'register/index.html'
+      - 'login/index.html'
       - 'js/firebase.js'
       - 'js/student-login-v2.js'
       - 'js/student-registration-v3.js'
@@ -36,7 +38,9 @@ jobs:
         uses: actions/setup-node@v6
         with:
           node-version: '22'
-      - name: Check test syntax
-        run: node --check scripts/test-register-auth-throttle.mjs
-      - name: Test registration throttling guard
+      - name: Check JavaScript syntax
+        run: |
+          node --check scripts/test-register-auth-throttle.mjs
+          node --check js/student-login-v2.js
+      - name: Test registration and login auth guard
         run: node scripts/test-register-auth-throttle.mjs
