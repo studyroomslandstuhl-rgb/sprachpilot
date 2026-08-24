@@ -45,9 +45,9 @@
   </section>
   <footer>© SprachPilot</footer>
 </div>
-<script src="/shared/sp-cache-epoch.js?v=20260824-register1"></script>
+<script src="/shared/sp-cache-epoch.js?v=20260824-register2"></script>
 <script type="module">
-import {registerStudentV2 as registerStudent,finishPendingStudentRegistration,hasPendingStudentRegistration,$,safeText} from "../js/student-login-v2.js?v=20260824-register1";
+import {registerStudentV2 as registerStudent,finishPendingStudentRegistration,hasPendingStudentRegistration,$,safeText} from "../js/student-register-entry-v2.js?v=20260824-register2";
 import {currentFirebaseUser,secureStudentSignOut,registrationAuthFailureState} from "../js/student-secure-auth.js?v=20260824-register1";
 const PENDING_KEY='SP_PENDING_SECURE_STUDENT_REGISTRATION_V1';
 function showMsg(html){const result=$("registerResult");if(result)result.innerHTML=html;}
@@ -104,7 +104,7 @@ window.doRegister=async function(){
     else if(code==="auth/invalid-credential"||code==="auth/wrong-password")showMsg('<div class="no"><b>Die Anmeldung für ein bestehendes Konto war nicht möglich.</b><br>Bitte nutze „Ich habe schon ein Konto“ und dort bei Bedarf „Passwort vergessen“.</div>');
     else if(code==="auth/too-many-requests"||message==="STUDENT_AUTH_THROTTLED"){
       console.warn('Firebase-Registrierung ist gedrosselt; weitere Credential-Versuche werden lokal blockiert.',registrationAuthFailureState());
-      showMsg('<div class="no"><b>Zu viele Versuche.</b><br>Für diese E-Mail werden jetzt keine weiteren automatischen Anmeldeversuche ausgelöst. Bitte versuche die Registrierung später erneut.</div>');
+      showMsg('<div class="no"><b>Zu viele Versuche.</b><br>Firebase blockiert die Registrierung momentan. SprachPilot startet keine automatischen Wiederholungen. Bitte versuche es nach kurzer Zeit erneut.</div>');
     }
     else if(code==="auth/weak-password")showMsg('<div class="no">Bitte wähle ein stärkeres Passwort.</div>');
     else if(code==="auth/invalid-email")showMsg('<div class="no">Bitte gib eine gültige E-Mail-Adresse ein.</div>');
