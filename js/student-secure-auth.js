@@ -40,8 +40,8 @@ function readRegistrationBlock(){
     return value;
   }catch(e){return null}
 }
-function writeRegistrationBlock(email,code){
-  const value={email:normalizedEmail(email),code:String(code||''),at:now()};
+function writeRegistrationBlock(email,code,stage='credential'){
+  const value={email:normalizedEmail(email),code:String(code||''),stage:String(stage||'credential'),at:now()};
   try{sessionStorage.setItem(REGISTER_BLOCK_KEY,JSON.stringify(value))}catch(e){}
   return value;
 }
@@ -65,18 +65,21 @@ function semanticThrottle(original,email,stage='credential'){
 function blockedRegistrationError(email){
   const wanted=normalizedEmail(email),block=readRegistrationBlock();
   if(!block||block.email!==wanted)return null;
-  if(block.code==='auth/too-many-requests')return semanticThrottle(null,wanted);
+  // A throttled verification e-mail must never masquerade as a blocked account creation.
+  // The Firebase account may already exist and only the mail transport is being limited.
+  if(block.stage==='verification')return null;
+  if(block.code==='auth/too-many-requests')return semanticThrottle(null,wanted,'credential');
   if(block.code==='auth/email-already-in-use')return semanticAccountExists(null,wanted);
   return null;
 }
 function normalizeCreateError(error,email){
   const code=String(error?.code||'');
   if(code==='auth/email-already-in-use'||code==='auth/credential-already-in-use'){
-    const block=writeRegistrationBlock(email,'auth/email-already-in-use');immediateRegistrationFailure=block;
+    const block=writeRegistrationBlock(email,'auth/email-already-in-use','credential');immediateRegistrationFailure=block;
     return semanticAccountExists(error,email);
   }
   if(code==='auth/too-many-requests'){
-    const block=writeRegistrationBlock(email,'auth/too-many-requests');immediateRegistrationFailure=block;
+    const block=writeRegistrationBlock(email,'auth/too-many-requests','credential');immediateRegistrationFailure=block;
     return semanticThrottle(error,email,'credential');
   }
   try{error.authStage=error.authStage||'credential'}catch(e){}
@@ -106,8 +109,8 @@ export async function signInSecureStudent(email,password){
   await settleInitialAuth();
   const wanted=normalizedEmail(email);
   if(immediateRegistrationFailure?.email===wanted&&now()-Number(immediateRegistrationFailure.at||0)<15000){
-    const code=immediateRegistrationFailure.code;immediateRegistrationFailure=null;
-    if(code==='auth/too-many-requests')throw semanticThrottle(null,wanted);
+    const code=immediateRegistrationFailure.code,stage=immediateRegistrationFailure.stage||'credential';immediateRegistrationFailure=null;
+    if(code==='auth/too-many-requests')throw semanticThrottle(null,wanted,stage);
     throw semanticAccountExists(null,wanted);
   }
   const credential=await signInWithEmailAndPassword(auth,wanted,String(password||''));
@@ -119,13 +122,17 @@ export async function signInSecureStudent(email,password){
 export async function createSecureStudentCredential(email,password){
   await settleInitialAuth();
   const wanted=normalizedEmail(email),pwd=String(password||'');
-  const blocked=blockedRegistrationError(wanted);if(blocked)throw blocked;
   const current=auth.currentUser||null;
 
+  // If this exact account was already created during the current registration, reuse it
+  // before consulting any local throttle marker. A failed verification e-mail must not
+  // make an existing signed-in account look like a failed account-creation attempt.
   if(current&&!current.isAnonymous){
     if(normalizedEmail(current.email)===wanted){clearRegistrationBlock(wanted);return current}
     const mismatch=new Error('SECURE_AUTH_EMAIL_MISMATCH');mismatch.code='sp/auth-email-mismatch';mismatch.authStage='credential';throw mismatch;
   }
+
+  const blocked=blockedRegistrationError(wanted);if(blocked)throw blocked;
 
   recordAuthEvent('credential','start',{code:'started'});
   try{
@@ -159,7 +166,9 @@ export async function sendStudentVerification(user=auth.currentUser){
   }catch(error){
     recordAuthEvent('verification','failure',{code:error?.code||error?.message});
     if(error?.code==='auth/too-many-requests'){
-      writeRegistrationBlock(user.email,'auth/too-many-requests');throw semanticThrottle(error,user.email,'verification');
+      // This limits only verification-mail retries. Do not block credential creation/login.
+      writeRegistrationBlock(user.email,'auth/too-many-requests','verification');
+      throw semanticThrottle(error,user.email,'verification');
     }
     try{error.authStage='verification'}catch(e){}
     throw error;
