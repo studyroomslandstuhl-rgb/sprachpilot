@@ -26,7 +26,7 @@ ok(!index.includes('students.js'),'legacy students bundle must not load during d
 ok(!index.includes('releases.js'),'large release editor must be lazy-loaded');
 ok(!index.includes('dashboard-stable-start.js'),'legacy competing dashboard bootstrap must not load');
 ok(index.includes('dashboard-student-delete.js?v=20260824-delete4'),'teacher dashboard must cache-bust the direct safe deletion fallback');
-ok(index.includes('dashboard-account-repair.js?v=20260824-repair3'),'teacher dashboard must load the corrected account repair');
+ok(index.includes('dashboard-account-repair.js?v=20260824-repair4'),'teacher dashboard must load the existing-account repair flow');
 
 ok(!dashboard.includes('setInterval('),'teacher dashboard must not poll or rerender on an interval');
 ok(!dashboard.includes('visibilitychange'),'teacher dashboard must not rerender on visibility changes');
@@ -76,6 +76,17 @@ ok(accountRepair.includes('student?.__docId'),'student account repair must prefe
 ok(accountRepair.includes("db.collection('students').doc(id)"),'student account repair must bind the resolved Firestore document');
 ok(accountRepair.includes('studentIdentifiers(student).includes(wanted)'),'repair lookup must accept legacy aliases while resolving the real row');
 ok(accountRepair.includes('isRepairGhost'),'repair must clean up accidental ghost rows from older attempts');
+
+// If Firebase already contains the e-mail but the TN profile has no authUid, the teacher browser cannot discover that UID.
+// The safe recovery path therefore prepares the secure e-mail/course lookup and lets the next verified TN login claim the profile.
+ok(accountRepair.includes('prepareExistingAccountLink'),'existing unbound Firebase accounts must have a dedicated recovery path');
+ok(accountRepair.includes("'owner-existing-account-awaiting-login'"),'existing-account recovery must persist an explicit pending-link state');
+ok(accountRepair.includes("collection('studentLookups')"),'existing-account recovery must prepare the participant lookup used during student login');
+ok(accountRepair.includes('sendResetBestEffort'),'existing-account recovery must send a password reset without undoing prepared lookup state when mail throttling occurs');
+ok(accountRepair.includes("includes('email-already-in-use')"),'account-exists must be detected explicitly');
+ok(accountRepair.includes('return existingAccountPendingResult(email)'),'account-exists must continue into pending-login recovery instead of returning a dead-end error');
+ok(accountRepair.includes('automatisch mit dem TN-Profil verbunden'),'teacher UI must explain that the next student login completes the binding');
+ok(accountRepair.includes("'Passwort-Mail erneut senden'"),'pending existing accounts must not repeatedly try to create another Firebase account');
 
 // Full deletion: backend remains required for Auth-linked accounts, while an owner can directly remove a truly unbound legacy TN.
 ok(studentDelete.includes("httpsCallable('deleteStudentAccount')"),'full deletion must use the server-side account delete function for Auth-linked accounts');
