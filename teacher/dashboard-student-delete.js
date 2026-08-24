@@ -13,10 +13,22 @@ const previousEdit=api.editStudent;
 
 const text=value=>String(value==null?'':value).trim();
 const esc=value=>String(value==null?'':value).replace(/[&<>"']/g,ch=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
-const sid=student=>text(student?.canonicalStudentId||student?.docId||student?.studentId||student?.userId||student?.id);
 const studentName=student=>text([student?.vorname||student?.firstName,student?.nachname||student?.lastName].filter(Boolean).join(' '))||text(student?.name||student?.displayName)||'Teilnehmer/in';
+const studentDocId=student=>text(student?.__docId||student?.id||student?.docId||student?.canonicalStudentId||student?.studentId||student?.userId);
 
-function currentStudent(id){return (api.state?.students||[]).find(student=>sid(student)===id)}
+function studentIdentifiers(student){
+  const aliases=Array.isArray(student?.aliasIds)?student.aliasIds:[];
+  return [...new Set([student?.__docId,student?.id,student?.docId,student?.canonicalStudentId,student?.studentId,student?.userId,...aliases].map(text).filter(Boolean))];
+}
+function currentStudent(id){
+  const wanted=text(id);
+  return (api.state?.students||[]).find(student=>studentIdentifiers(student).includes(wanted));
+}
+function database(){
+  if(window.db&&typeof window.db.collection==='function')return window.db;
+  if(window.firebase&&typeof window.firebase.firestore==='function')return window.firebase.firestore();
+  throw new Error('FIRESTORE_NOT_AVAILABLE');
+}
 function status(message,kind=''){
   const el=document.getElementById('spStatus');if(!el)return;
   el.textContent=message;el.className='sp-status'+(kind?' '+kind:'');
@@ -61,6 +73,11 @@ async function ensureFunctions(){
   functionsPromise=withTimeout(loader,SDK_TIMEOUT_MS,'sp/functions-sdk-timeout','Firebase Functions konnte nicht rechtzeitig geladen werden.').catch(error=>{functionsPromise=null;throw error});
   return functionsPromise;
 }
+function backendUnavailable(error){
+  const code=String(error?.code||'').toLowerCase(),message=String(error?.message||'').toLowerCase();
+  return code.includes('functions/not-found')||code.includes('functions/unavailable')||code.includes('functions-call-timeout')||code.includes('functions-sdk')||
+    (code.includes('functions/internal')&&(!message||message==='internal'));
+}
 function friendlyError(error){
   const code=String(error?.code||'').toLowerCase(),message=String(error?.message||''),details=String(error?.details||'');
   const diagnostic=`${message} ${details}`;
@@ -71,12 +88,11 @@ function friendlyError(error){
   if(diagnostic.includes('TEACHER_REQUIRED')||code.includes('permission-denied'))return 'Du hast keine Berechtigung für die vollständige Löschung dieses TN.';
   if(diagnostic.includes('STUDENT_AUTH_DELETE_FAILED'))return 'Das Firebase-Login konnte nicht gelöscht werden. Es wurden keine Teilnehmerprofile entfernt. Bitte erneut versuchen.';
   if(diagnostic.includes('STUDENT_DATA_DELETE_FAILED'))return 'Das Firebase-Login wurde entfernt, aber die Datensätze konnten nicht vollständig bereinigt werden. Bitte denselben TN erneut löschen.';
-  if(code.includes('functions/not-found')||code.includes('functions/unavailable')||code.includes('functions-call-timeout')||code.includes('functions-sdk'))return 'Der serverseitige Löschdienst ist momentan nicht verfügbar.';
-  // Ein nicht veröffentlichter Callable liefert über das Firebase-Web-SDK je nach
-  // HTTP-Antwort nur functions/internal + "internal". Diese Meldung darf nicht
-  // unverändert im Lehrer-Dashboard landen.
-  if(code.includes('functions/internal')&&(!message||message.toLowerCase()==='internal'))return 'Der serverseitige Löschdienst ist nicht erreichbar. Die TN-Daten wurden nicht gelöscht.';
+  if(backendUnavailable(error))return 'Der serverseitige Löschdienst ist nicht erreichbar.';
   return message||'Der TN konnte nicht vollständig gelöscht werden.';
+}
+function canDeleteLocally(student){
+  return api.state?.isOwner===true&&!text(student?.authUid)&&!text(student?.authEmail)&&!text(student?.email);
 }
 function openModal(html){
   document.getElementById('spModalBackdrop')?.remove();
@@ -94,8 +110,9 @@ function installDeleteButton(id){
 function openDeleteConfirmation(id){
   const student=currentStudent(id);if(!student)return status('TN wurde nicht gefunden.','error');
   const email=text(student.authEmail||student.email)||'keine E-Mail';
+  const localNote=canDeleteLocally(student)?'<br><br><strong>Hinweis:</strong> Für diesen TN ist kein Firebase-Login hinterlegt. Als Owner können die Teilnehmerdaten deshalb auch dann gelöscht werden, wenn der serverseitige Kontodienst nicht verfügbar ist.':'';
   openModal(`<div class="sp-modal-head"><div><h2 style="margin:0">TN vollständig löschen</h2><div class="sp-meta">${esc(studentName(student))} · ${esc(email)}</div></div><button type="button" class="sp-icon-btn" onclick="SPTeacherDashboard.closeModal()">Schließen</button></div>
-  <div class="sp-owner-note" style="margin-top:14px"><strong>Diese Löschung kann nicht rückgängig gemacht werden.</strong><br>Gelöscht werden das Firebase-Login, alle mit diesem Login verbundenen TN-Profile, Fortschritte, Ranglisten-Einträge und Teilnehmer-Lookups. Hat dieselbe Person mehrere Kursprofile, werden diese ebenfalls gelöscht.</div>
+  <div class="sp-owner-note" style="margin-top:14px"><strong>Diese Löschung kann nicht rückgängig gemacht werden.</strong><br>Gelöscht werden das Firebase-Login, alle mit diesem Login verbundenen TN-Profile, Fortschritte, Ranglisten-Einträge und Teilnehmer-Lookups. Hat dieselbe Person mehrere Kursprofile, werden diese ebenfalls gelöscht.${localNote}</div>
   <div class="sp-field wide" style="margin-top:16px"><label>Zur Bestätigung LÖSCHEN eingeben</label><input id="deleteStudentConfirmText" autocomplete="off" placeholder="LÖSCHEN"></div>
   <div id="spDeleteStudentStatus" class="sp-status" aria-live="polite" hidden style="margin-top:14px"></div>
   <div class="sp-row-actions" style="margin-top:18px"><button type="button" class="sp-button secondary" onclick="SPTeacherDashboard.closeModal()">Abbrechen</button><button type="button" class="sp-button danger" id="confirmDeleteFirebaseStudentBtn">Endgültig löschen</button></div>`);
@@ -111,24 +128,84 @@ async function callDelete(studentId){
   const response=await withTimeout(callable({studentId,confirmation:'DELETE_STUDENT'}),DELETE_TIMEOUT_MS,'sp/functions-call-timeout','Firebase hat die Löschung nicht rechtzeitig bestätigt.');
   return response?.data||{};
 }
+function addRef(refs,ref){
+  if(ref?.path)refs.set(ref.path,ref);
+}
+async function collectQueryRefs(refs,collectionName,field,value){
+  if(!value)return;
+  const snap=await database().collection(collectionName).where(field,'==',value).get();
+  snap.docs.forEach(doc=>addRef(refs,doc.ref));
+}
+async function deleteRefs(refs){
+  const rows=[...refs.values()];
+  for(let start=0;start<rows.length;start+=400){
+    const batch=database().batch();
+    rows.slice(start,start+400).forEach(ref=>batch.delete(ref));
+    await batch.commit();
+  }
+}
+async function deleteUnboundStudentLocally(student){
+  if(!canDeleteLocally(student))throw new Error('LOCAL_DELETE_NOT_ALLOWED');
+  const ids=studentIdentifiers(student),refs=new Map(),db=database();
+  const primary=studentDocId(student);if(primary&&!ids.includes(primary))ids.unshift(primary);
+
+  for(const id of ids){
+    addRef(refs,db.collection('students').doc(id));
+    addRef(refs,db.collection('progress').doc(id));
+    addRef(refs,db.collection('studentRankings').doc(id));
+  }
+  const jobs=[];
+  for(const id of ids){
+    for(const field of ['canonicalStudentId','studentId','userId','docId'])jobs.push(collectQueryRefs(refs,'students',field,id));
+    for(const field of ['canonicalStudentId','studentId','userId','docId'])jobs.push(collectQueryRefs(refs,'progress',field,id));
+    for(const field of ['studentId','canonicalStudentId'])jobs.push(collectQueryRefs(refs,'studentRankings',field,id));
+    for(const field of ['canonicalStudentId','studentId'])jobs.push(collectQueryRefs(refs,'studentLookups',field,id));
+  }
+  await Promise.all(jobs);
+  await deleteRefs(refs);
+  return{deletedStudentIds:ids,authLinked:false,localFallback:true};
+}
 function removeLocalRows(result,id){
-  const deleted=new Set((Array.isArray(result?.deletedStudentIds)?result.deletedStudentIds:[]).map(text).filter(Boolean));deleted.add(id);
+  const deleted=new Set((Array.isArray(result?.deletedStudentIds)?result.deletedStudentIds:[]).map(text).filter(Boolean));deleted.add(text(id));
   const authUid=text(result?.authUid);
-  api.state.students=(api.state.students||[]).filter(student=>!deleted.has(sid(student))&&(!authUid||text(student.authUid)!==authUid));
-  if(window.__SP_STUDENTS_BY_ID){for(const key of Object.keys(window.__SP_STUDENTS_BY_ID)){const student=window.__SP_STUDENTS_BY_ID[key];if(deleted.has(sid(student))||(authUid&&text(student?.authUid)===authUid))delete window.__SP_STUDENTS_BY_ID[key]}}
+  api.state.students=(api.state.students||[]).filter(student=>!studentIdentifiers(student).some(value=>deleted.has(value))&&(!authUid||text(student.authUid)!==authUid));
+  if(window.__SP_STUDENTS_BY_ID){
+    for(const key of Object.keys(window.__SP_STUDENTS_BY_ID)){
+      const student=window.__SP_STUDENTS_BY_ID[key];
+      if(studentIdentifiers(student).some(value=>deleted.has(value))||(authUid&&text(student?.authUid)===authUid))delete window.__SP_STUDENTS_BY_ID[key];
+    }
+  }
+}
+async function finishSuccessfulDelete(result,id,message){
+  removeLocalRows(result,id);api.closeModal();api.navigate('students');status(message,'ok');
 }
 async function deleteStudent(id){
   const typed=text(document.getElementById('deleteStudentConfirmText')?.value).toUpperCase();
   if(typed!=='LÖSCHEN')return deleteModalStatus('Bitte zuerst LÖSCHEN eingeben.','error');
+  const student=currentStudent(id);if(!student)return deleteModalStatus('TN wurde nicht gefunden.','error');
   const button=document.getElementById('confirmDeleteFirebaseStudentBtn');if(button){button.disabled=true;button.textContent='Wird gelöscht …'}
   deleteModalStatus('Firebase-Login und Teilnehmerdaten werden vollständig gelöscht …');
   try{
-    const result=await callDelete(id);removeLocalRows(result,id);api.closeModal();api.navigate('students');
-    status(result?.authLinked===false
+    const result=await callDelete(studentDocId(student)||id);
+    await finishSuccessfulDelete(result,id,result?.authLinked===false
       ? 'TN vollständig aus dem System gelöscht. Es war kein gebundenes Firebase-Login vorhanden.'
-      : 'TN vollständig gelöscht: Firebase-Login, Teilnehmerprofile, Fortschritt, Rangliste und Lookup-Daten wurden entfernt.','ok');
+      : 'TN vollständig gelöscht: Firebase-Login, Teilnehmerprofile, Fortschritt, Rangliste und Lookup-Daten wurden entfernt.');
   }catch(error){
-    console.error('[SprachPilot] full student deletion failed',error);deleteModalStatus(friendlyError(error),'error');
+    console.error('[SprachPilot] full student deletion failed',error);
+    if(backendUnavailable(error)&&canDeleteLocally(student)){
+      try{
+        deleteModalStatus('Serverdienst nicht erreichbar. TN ohne Firebase-Login wird direkt aus den Teilnehmerdaten gelöscht …');
+        const result=await deleteUnboundStudentLocally(student);
+        await finishSuccessfulDelete(result,id,'TN vollständig gelöscht. Für diesen TN war kein Firebase-Login hinterlegt; Teilnehmerprofil, Fortschritt, Rangliste und Lookup-Daten wurden direkt entfernt.');
+        return;
+      }catch(localError){
+        console.error('[SprachPilot] local owner deletion fallback failed',localError);
+        deleteModalStatus('Der serverseitige Löschdienst ist nicht erreichbar und die direkte Datenlöschung ist ebenfalls fehlgeschlagen: '+text(localError?.message||localError),'error');
+      }
+    }else{
+      const suffix=backendUnavailable(error)&&!canDeleteLocally(student)?' Bei TN mit E-Mail oder Firebase-Konto ist die serverseitige Löschung zwingend erforderlich.':'';
+      deleteModalStatus(friendlyError(error)+suffix,'error');
+    }
     if(button){button.disabled=false;button.textContent='Endgültig löschen'}
   }
 }
