@@ -54,7 +54,7 @@ assert.match(registration,/existingFirebaseAccount=true/,'interrupted real accou
 
 // Existing Firebase account with an unbound TN profile: login must be able to claim the prepared legacy profile.
 assert.match(loginHtml,/id="loginCourse"/,'login page must offer a course code for first-time profile linking');
-assert.match(loginHtml,/student-login-v2\.js\?v=20260824-link1/,'login page must cache-bust the repaired profile-linking client');
+assert.match(loginHtml,/student-login-v2\.js\?v=20260824-link2/,'login page must cache-bust the current profile-linking client');
 assert.match(loginHtml,/loginStudentWithEmailPassword\(email,password,course\)/,'login page must pass the recovery course code to the login client');
 assert.match(loginHtml,/STUDENT_COURSE_REQUIRED_FOR_LINK/,'login page must explain when a course code is required');
 assert.match(login,/async function recoverPreparedProfile\(user,email,courseRaw\)/,'student login must have a prepared-profile recovery path');
@@ -65,6 +65,12 @@ assert.match(login,/authUid:String\(user\.uid\)/,'claim must bind the signed-in 
 assert.match(login,/authEmail:mail/,'claim must bind the verified login e-mail');
 assert.match(login,/return claimLegacyStudentRecord\(studentSnap\.id\|\|canonical,student,user,mail\)/,'prepared lookup recovery must actually claim the resolved profile');
 assert.match(login,/throw new Error\('STUDENT_COURSE_REQUIRED_FOR_LINK'\)/,'unbound accounts without a course code must not silently fail as profile-not-found');
+
+// Login must never send another verification email automatically.
+assert.doesNotMatch(login,/sendStudentVerification/,'login attempts must not trigger verification-mail sends');
+assert.match(login,/if\(user\.emailVerified!==true\)throw new Error\('EMAIL_NOT_VERIFIED'\)/,'unverified login must stop without sending mail');
+assert.doesNotMatch(loginHtml,/Wir haben dir eine neue Bestätigungs-E-Mail geschickt/,'login UI must not claim it sent another verification email');
+assert.match(loginHtml,/Die Anmeldung verschickt absichtlich keine weiteren Bestätigungs-E-Mails/,'login UI must explain the single-mail registration flow');
 
 // Secure auth: custom mail is preferred, verification throttling cannot poison future signup.
 assert.match(secureAuth,/sendVerificationViaSprachPilot/,'student verification must try the SprachPilot mail service first');
@@ -82,4 +88,4 @@ assert.match(firebase,/export const authReady=initialAuthState;/,'authReady must
 assert.doesNotMatch(firebase,/export const authReady=ensureAuth\(\);/,'firebase.js must not sign in anonymously as an import side effect');
 assert.match(firebase,/async function waitAuthRequired\(\)[\s\S]*?await ensureAuth\(\)/,'Firestore access may request auth for normal application reads after a user exists');
 
-console.log('Registration auth guard passed: stale sessions are rejected, false account-success states are impossible, and failed verification sends roll back newly created accounts.');
+console.log('Registration auth guard passed: one verification mail per signup, stale sessions rejected, and failed verification sends roll back newly created accounts.');
