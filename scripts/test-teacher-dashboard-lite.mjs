@@ -25,7 +25,7 @@ ok(!index.includes('analytics.js'),'progress analytics must not load during dash
 ok(!index.includes('students.js'),'legacy students bundle must not load during dashboard startup');
 ok(!index.includes('releases.js'),'large release editor must be lazy-loaded');
 ok(!index.includes('dashboard-stable-start.js'),'legacy competing dashboard bootstrap must not load');
-ok(index.includes('dashboard-student-delete.js?v=20260824-delete3'),'teacher dashboard must cache-bust the safe deletion fallback');
+ok(index.includes('dashboard-student-delete.js?v=20260824-delete4'),'teacher dashboard must cache-bust the direct safe deletion fallback');
 ok(index.includes('dashboard-account-repair.js?v=20260824-repair3'),'teacher dashboard must load the corrected account repair');
 
 ok(!dashboard.includes('setInterval('),'teacher dashboard must not poll or rerender on an interval');
@@ -77,17 +77,19 @@ ok(accountRepair.includes("db.collection('students').doc(id)"),'student account 
 ok(accountRepair.includes('studentIdentifiers(student).includes(wanted)'),'repair lookup must accept legacy aliases while resolving the real row');
 ok(accountRepair.includes('isRepairGhost'),'repair must clean up accidental ghost rows from older attempts');
 
-// Full deletion: backend remains preferred, but an owner may safely delete a TN that has no email/auth login when Functions are unavailable.
-ok(studentDelete.includes("httpsCallable('deleteStudentAccount')"),'full deletion must prefer the server-side account delete function');
+// Full deletion: backend remains required for Auth-linked accounts, while an owner can directly remove a truly unbound legacy TN.
+ok(studentDelete.includes("httpsCallable('deleteStudentAccount')"),'full deletion must use the server-side account delete function for Auth-linked accounts');
 ok(studentDelete.includes('student?.__docId'),'deletion must prefer the authoritative Firestore document id');
-ok(studentDelete.includes('function canDeleteLocally(student)'),'safe local fallback predicate is required');
-ok(studentDelete.includes("api.state?.isOwner===true"),'local deletion fallback must be owner-only');
+ok(studentDelete.includes('function canDeleteLocally(student)'),'safe local deletion predicate is required');
+ok(studentDelete.includes("api.state?.isOwner===true"),'local deletion must be owner-only');
 ok(studentDelete.includes("!text(student?.authUid)&&!text(student?.authEmail)&&!text(student?.email)"),'local deletion must be limited to TN without Firebase login/email');
-ok(studentDelete.includes('deleteUnboundStudentLocally'),'unbound TN must have a direct Firestore deletion fallback');
+ok(studentDelete.includes('deleteUnboundStudentLocally'),'unbound TN must have a direct Firestore deletion path');
+ok(studentDelete.includes('if(canDeleteLocally(student))'),'unbound owner deletion must not depend on the unavailable Functions backend');
+ok(studentDelete.includes('idIsSharedWithAnotherStudent'),'legacy aliases must be checked for collisions before related data is deleted');
+ok(studentDelete.includes("db.collection('students').doc(primary)"),'local fallback must delete only the selected authoritative student document directly');
 ok(studentDelete.includes("'studentLookups'"),'local deletion must remove participant lookup rows');
 ok(studentDelete.includes("collection('studentRankings')"),'local deletion must remove ranking rows');
 ok(studentDelete.includes("collection('progress')"),'local deletion must remove progress rows');
-ok(studentDelete.includes('backendUnavailable(error)&&canDeleteLocally(student)'),'fallback must only run after a backend-unavailable failure');
 
 ok(passwordReset.includes("sendPasswordResetEmail(email)"),'owner must be able to send a Firebase password reset mail to a student');
 ok(passwordReset.includes("id='sendStudentPasswordResetBtn'")||passwordReset.includes("id='sendStudentPasswordResetBtn'" )||passwordReset.includes("reset.id='sendStudentPasswordResetBtn'"),'password reset action must have its own button');
