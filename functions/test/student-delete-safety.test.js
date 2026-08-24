@@ -11,7 +11,7 @@ assert.ok(src.includes("confirmation!=='DELETE_STUDENT'"),'irreversible deletion
 assert.ok(src.includes("authContext?.token?.email_verified!==true"),'teacher account must have a verified e-mail');
 assert.ok(src.includes("tokenProvider(authContext)!=='password'"),'teacher must authenticate with password provider');
 assert.ok(src.includes('securityApprovedV2!==true'),'non-owner teachers must have current security approval');
-assert.ok(src.includes("collection('courses').where('teacherUid'"),'teacher deletion must be scoped to assigned courses');
+assert.ok(src.includes("['teacherUid','==',admin.uid]")&&src.includes("collection('courses').where(field,op,value)"),'teacher deletion must be scoped to assigned courses');
 assert.ok(src.includes('STUDENT_OUTSIDE_TEACHER_COURSES'),'a teacher must not delete students from inaccessible courses');
 assert.ok(src.includes('STUDENT_AUTH_IS_TEACHER'),'student deletion must protect teacher/owner Firebase accounts');
 assert.ok(src.includes("collection('students').where('authUid','==',authUid)"),'all student profiles bound to the Firebase account must be collected');
