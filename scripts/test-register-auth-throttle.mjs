@@ -26,7 +26,11 @@ assert.doesNotMatch(registrationBlock,/createSecureStudentCredential\s*\(/,'regi
 assert.doesNotMatch(registrationBlock,/signInSecureStudent\s*\(/,'registration wrapper must not perform a password-login fallback');
 assert.match(registrationBlock,/registerStudentOnce\(\{\.\.\.payload,email,password\},finishPendingStudentRegistration\)/,'registration wrapper must delegate to the single-attempt helper');
 
-// Registration helper: exactly one credential mutation.
+// Registration helper: exactly one auth preflight before course lookup and exactly one credential mutation.
+assert.equal((registration.match(/await ensureCourseLookupAuth\s*\(/g)||[]).length,1,'registration must establish course-read auth exactly once');
+assert.match(registration,/await ensureCourseLookupAuth\(\);[\s\S]*?const loaded=await loadCourse\(course\);/,'auth preflight must complete before robust course lookup starts');
+assert.match(registration,/COURSE_AUTH_BLOCK_KEY/,'course auth throttling must be cached locally');
+assert.match(registration,/COURSE_AUTH_BLOCK_MS/,'course auth retry guard must have a cooldown');
 assert.equal((registration.match(/await createSecureStudentCredential\s*\(/g)||[]).length,1,'registration helper must perform exactly one credential creation call');
 assert.doesNotMatch(registration,/signInSecureStudent\s*\(/,'account-exists must never trigger an automatic password login');
 
@@ -41,4 +45,4 @@ assert.match(firebase,/export const authReady=initialAuthState;/,'authReady must
 assert.doesNotMatch(firebase,/export const authReady=ensureAuth\(\);/,'firebase.js must not sign in anonymously as an import side effect');
 assert.match(firebase,/async function waitAuthRequired\(\)[\s\S]*?await ensureAuth\(\)/,'Firestore access must still request auth explicitly when needed');
 
-console.log('Registration auth guard passed: one credential attempt, no eager anonymous auth, local throttle protection.');
+console.log('Registration auth guard passed: one course-auth preflight, one credential attempt, no automatic retry loop.');
