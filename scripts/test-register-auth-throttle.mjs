@@ -34,9 +34,9 @@ assert.doesNotMatch(registrationBlock,/signInSecureStudent\s*\(/,'registration w
 assert.match(registrationBlock,/return registerStudentOnce\(\{\.\.\.payload,email,password\},finishPendingStudentRegistration\);/,'registration wrapper must delegate to the single-attempt registration helper');
 assert.doesNotMatch(registrationBlock,/legacyRegisterStudent/,'legacy registration flow must not be used');
 
-assert.match(registration,/const user=await createSecureStudentCredential\(pending\.email,password\);/,'registration helper must perform exactly one credential call');
+assert.match(registration,/const user=await createSecureStudentCredential\(pending\.email,password\);/,'registration helper must perform a credential call');
+assert.equal((registration.match(/await createSecureStudentCredential\s*\(/g)||[]).length,1,'registration helper must perform exactly one credential creation call');
 assert.doesNotMatch(registration,/signInSecureStudent\s*\(/,'registration helper must never convert account-exists into a password login attempt');
-assert.doesNotMatch(registration,/createSecureStudentCredential[\s\S]*createSecureStudentCredential/,'registration helper must contain only one credential creation call');
 assert.match(secureAuth,/linkWithCredential\(current,emailCredential\)/,'an existing anonymous Firebase session must be upgraded instead of discarded and recreated');
 assert.match(secureAuth,/current\?\.isAnonymous/,'secure auth must explicitly handle the anonymous registration session');
 assert.match(secureAuth,/immediateRegistrationFailure/,'secure auth must remember an immediate registration credential failure');
