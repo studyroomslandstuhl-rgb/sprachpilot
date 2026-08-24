@@ -31,7 +31,9 @@ jobs:
         with:
           node-version: '22'
       - name: Check dashboard JavaScript syntax
-        run: node --check teacher/dashboard-lite.js
+        run: |
+          node --check teacher/dashboard-lite.js
+          node --check teacher/dashboard-account-repair.js
       - name: Validate lightweight startup contract
         run: node scripts/test-teacher-dashboard-lite.mjs
       - name: Validate auth mail templates
