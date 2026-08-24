@@ -8,7 +8,7 @@ import {
   EmailAuthProvider,
   linkWithCredential
 } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
-import { auth, authReady } from './firebase.js';
+import { auth, authReady, functions, httpsCallable } from './firebase.js';
 
 const REGISTER_BLOCK_KEY='SP_REGISTER_AUTH_BLOCK_V2';
 const VERIFY_SENT_KEY='SP_REGISTER_VERIFY_SENT_V1';
@@ -29,7 +29,7 @@ function recordAuthEvent(stage,event,extra={}){
   if(stage==='verification'&&event==='start')old.verificationCalls=Number(old.verificationCalls||0)+1;
   if(stage==='verification'&&event==='failure')old.verificationFailures=Number(old.verificationFailures||0)+1;
   if(extra.anonymousUpgrade&&event==='success')old.anonymousUpgrades=Number(old.anonymousUpgrades||0)+1;
-  old.last={stage,event,code:String(extra.code||''),at:now()};writeJson(AUTH_DIAG_KEY,old);return old;
+  old.last={stage,event,code:String(extra.code||''),transport:String(extra.transport||''),at:now()};writeJson(AUTH_DIAG_KEY,old);return old;
 }
 function readRegistrationBlock(){
   try{
@@ -65,8 +65,6 @@ function semanticThrottle(original,email,stage='credential'){
 function blockedRegistrationError(email){
   const wanted=normalizedEmail(email),block=readRegistrationBlock();
   if(!block||block.email!==wanted)return null;
-  // A throttled verification e-mail must never masquerade as a blocked account creation.
-  // The Firebase account may already exist and only the mail transport is being limited.
   if(block.stage==='verification')return null;
   if(block.code==='auth/too-many-requests')return semanticThrottle(null,wanted,'credential');
   if(block.code==='auth/email-already-in-use')return semanticAccountExists(null,wanted);
@@ -90,6 +88,17 @@ function verificationRecentlySent(user){
   return !!(state&&state.email===email&&state.uid===uid&&now()-Number(state.at||0)<VERIFY_COOLDOWN_MS);
 }
 function rememberVerificationSent(user){writeJson(VERIFY_SENT_KEY,{email:normalizedEmail(user?.email),uid:String(user?.uid||''),at:now()})}
+function callableUnavailable(error){
+  const code=String(error?.code||'');
+  return code==='functions/not-found'||code==='functions/unavailable'||code==='functions/internal'||code==='functions/deadline-exceeded'||code==='functions/unknown';
+}
+async function sendVerificationViaSprachPilot(user){
+  if(!functions||typeof httpsCallable!=='function')throw Object.assign(new Error('SP_VERIFICATION_SERVICE_UNAVAILABLE'),{code:'functions/unavailable'});
+  const call=httpsCallable(functions,'requestVerificationEmail');
+  const result=await call({});
+  if(result?.data?.ok!==true)throw Object.assign(new Error('SP_VERIFICATION_SERVICE_FAILED'),{code:'functions/internal'});
+  return{sent:true,transport:'custom-smtp-v1',alreadyVerified:result?.data?.alreadyVerified===true};
+}
 
 async function settleInitialAuth(){
   try{await authReady}catch(e){}
@@ -124,9 +133,6 @@ export async function createSecureStudentCredential(email,password){
   const wanted=normalizedEmail(email),pwd=String(password||'');
   const current=auth.currentUser||null;
 
-  // If this exact account was already created during the current registration, reuse it
-  // before consulting any local throttle marker. A failed verification e-mail must not
-  // make an existing signed-in account look like a failed account-creation attempt.
   if(current&&!current.isAnonymous){
     if(normalizedEmail(current.email)===wanted){clearRegistrationBlock(wanted);return current}
     const mismatch=new Error('SECURE_AUTH_EMAIL_MISMATCH');mismatch.code='sp/auth-email-mismatch';mismatch.authStage='credential';throw mismatch;
@@ -157,16 +163,28 @@ export async function sendStudentVerification(user=auth.currentUser){
   if(!user||user.isAnonymous)throw new Error('SECURE_AUTH_USER_REQUIRED');
   if(user.emailVerified===true)return{skipped:true,reason:'already-verified'};
   if(verificationRecentlySent(user))return{skipped:true,reason:'cooldown'};
-  const preferredUrl=new URL('/register/?verify=1',location.origin).href;
   recordAuthEvent('verification','start',{code:'started'});
+
+  try{
+    const result=await sendVerificationViaSprachPilot(user);
+    rememberVerificationSent(user);recordAuthEvent('verification','success',{code:'success',transport:result.transport});return result;
+  }catch(customError){
+    if(!callableUnavailable(customError)){
+      recordAuthEvent('verification','failure',{code:customError?.code||customError?.message,transport:'custom-smtp-v1'});
+      try{customError.authStage='verification'}catch(e){}
+      throw customError;
+    }
+    console.warn('[SprachPilot] eigener Bestätigungsmail-Dienst noch nicht erreichbar; Firebase-Mail wird als Übergang genutzt.',customError?.code||customError?.message||customError);
+  }
+
+  const preferredUrl=new URL('/register/?verify=1',location.origin).href;
   try{
     try{await sendEmailVerification(user,{url:preferredUrl,handleCodeInApp:false})}
     catch(error){if(error?.code!=='auth/unauthorized-continue-uri')throw error;await sendEmailVerification(user)}
-    rememberVerificationSent(user);recordAuthEvent('verification','success',{code:'success'});return{sent:true};
+    rememberVerificationSent(user);recordAuthEvent('verification','success',{code:'success',transport:'firebase-default'});return{sent:true,transport:'firebase-default'};
   }catch(error){
-    recordAuthEvent('verification','failure',{code:error?.code||error?.message});
+    recordAuthEvent('verification','failure',{code:error?.code||error?.message,transport:'firebase-default'});
     if(error?.code==='auth/too-many-requests'){
-      // This limits only verification-mail retries. Do not block credential creation/login.
       writeRegistrationBlock(user.email,'auth/too-many-requests','verification');
       throw semanticThrottle(error,user.email,'verification');
     }
