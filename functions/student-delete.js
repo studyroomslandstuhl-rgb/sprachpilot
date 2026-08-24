@@ -28,7 +28,6 @@ function studentIdentityIds(id,student={}){
     ...(Array.isArray(student.aliasIds)?student.aliasIds:[])
   ]).slice(0,MAX_LINKED_IDS);
 }
-function refKey(ref){return String(ref?.path||'')}
 function addRef(map,ref){if(ref?.path)map.set(ref.path,ref)}
 
 async function assertTeacherAdmin(authContext){
@@ -78,7 +77,6 @@ async function teacherCourseKeys(admin){
 }
 function profileAllowedForTeacher(profile,allowed){
   if(!allowed)return true;
-  if(profile.securityArchived===true||profile.securityLookupExcluded===true)return true;
   return courseValues(profile).some(value=>allowed.has(courseKey(value)));
 }
 
