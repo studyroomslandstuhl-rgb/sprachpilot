@@ -1,10 +1,21 @@
 name: Validate registration auth throttling
 
 on:
+  push:
+    branches: [main]
+    paths:
+      - 'register/index.html'
+      - 'js/student-login-v2.js'
+      - 'js/student-identity.js'
+      - 'js/student-secure-auth.js'
+      - 'scripts/test-register-auth-throttle.mjs'
+      - '.github/workflows/register-auth-throttle-check.yml'
   pull_request:
     paths:
       - 'register/index.html'
       - 'js/student-login-v2.js'
+      - 'js/student-identity.js'
+      - 'js/student-secure-auth.js'
       - 'scripts/test-register-auth-throttle.mjs'
       - '.github/workflows/register-auth-throttle-check.yml'
 
