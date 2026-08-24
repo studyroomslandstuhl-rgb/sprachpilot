@@ -45,9 +45,9 @@
   </section>
   <footer>© SprachPilot</footer>
 </div>
-<script src="/shared/sp-cache-epoch.js?v=20260824-register2"></script>
+<script src="/shared/sp-cache-epoch.js?v=20260824-register3"></script>
 <script type="module">
-import {registerStudentV2 as registerStudent,finishPendingStudentRegistration,hasPendingStudentRegistration,$,safeText} from "../js/student-register-entry-v2.js?v=20260824-register2";
+import {registerStudentV2 as registerStudent,finishPendingStudentRegistration,hasPendingStudentRegistration,$,safeText} from "../js/student-register-entry-v2.js?v=20260824-register3";
 import {currentFirebaseUser,secureStudentSignOut,registrationAuthFailureState} from "../js/student-secure-auth.js?v=20260824-register1";
 const PENDING_KEY='SP_PENDING_SECURE_STUDENT_REGISTRATION_V1';
 function showMsg(html){const result=$("registerResult");if(result)result.innerHTML=html;}
@@ -100,8 +100,8 @@ window.doRegister=async function(){
     else if(message==="RESERVED_COURSE_CODE")showMsg('<div class="no">Dieser Kurscode ist für Lehrkräfte reserviert.</div>');
     else if(message==="WEAK_STUDENT_PASSWORD")showMsg('<div class="no">Das Passwort muss mindestens 8 Zeichen lang sein.</div>');
     else if(message==="SECURE_AUTH_EMAIL_MISMATCH"||message==="STUDENT_EMAIL_MISMATCH"){await resetStaleRegistrationSession();showMsg('<div class="no"><b>Eine alte Anmeldesitzung hatte eine andere E-Mail.</b><br>Die Sitzung wurde zurückgesetzt. Bitte klicke noch einmal auf „Registrieren“.</div>')}
-    else if(message==="STUDENT_AUTH_ACCOUNT_EXISTS"||code==="auth/email-already-in-use"||code==="auth/credential-already-in-use")showMsg('<div class="no"><b>Für diese E-Mail gibt es bereits ein Konto.</b><br>Bitte öffne „Ich habe schon ein Konto“. Wenn du das Passwort nicht mehr kennst, nutze dort „Passwort vergessen“.</div>');
-    else if(code==="auth/invalid-credential"||code==="auth/wrong-password")showMsg('<div class="no"><b>Die Anmeldung für ein bestehendes Konto war nicht möglich.</b><br>Bitte nutze „Ich habe schon ein Konto“ und dort bei Bedarf „Passwort vergessen“.</div>');
+    else if(message==="STUDENT_AUTH_ACCOUNT_EXISTS"||code==="auth/email-already-in-use"||code==="auth/credential-already-in-use")showMsg('<div class="no"><b>Das bestehende Konto konnte nicht mit dem Kurs verbunden werden.</b><br>Bitte prüfe das Passwort. Wenn du es nicht mehr kennst, nutze unter „Ich habe schon ein Konto“ die Funktion „Passwort vergessen“.</div>');
+    else if(code==="auth/invalid-credential"||code==="auth/wrong-password")showMsg('<div class="no"><b>Das Passwort für dieses bestehende Konto ist nicht korrekt.</b><br>Nutze bei Bedarf „Ich habe schon ein Konto“ und dort „Passwort vergessen“.</div>');
     else if(code==="auth/too-many-requests"||message==="STUDENT_AUTH_THROTTLED"){
       console.warn('Firebase-Registrierung ist gedrosselt; weitere Credential-Versuche werden lokal blockiert.',registrationAuthFailureState());
       showMsg('<div class="no"><b>Zu viele Versuche.</b><br>Firebase blockiert die Registrierung momentan. SprachPilot startet keine automatischen Wiederholungen. Bitte versuche es nach kurzer Zeit erneut.</div>');
