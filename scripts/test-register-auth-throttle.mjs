@@ -3,7 +3,7 @@ import assert from 'node:assert/strict';
 
 const html=fs.readFileSync(new URL('../register/index.html',import.meta.url),'utf8');
 const loginV2=fs.readFileSync(new URL('../js/student-login-v2.js',import.meta.url),'utf8');
-const identity=fs.readFileSync(new URL('../js/student-identity.js',import.meta.url),'utf8');
+const registration=fs.readFileSync(new URL('../js/student-registration-v3.js',import.meta.url),'utf8');
 const secureAuth=fs.readFileSync(new URL('../js/student-secure-auth.js',import.meta.url),'utf8');
 
 assert.match(html,/let registrationBusy=false;/,'registration must have an in-flight guard');
@@ -29,12 +29,14 @@ const marker='export async function registerStudentV2';
 const start=loginV2.indexOf(marker);
 assert.ok(start>=0,'registerStudentV2 must exist');
 const registrationBlock=loginV2.slice(start);
-assert.doesNotMatch(registrationBlock,/createSecureStudentCredential\s*\(/,'registration wrapper must not create a Firebase credential before the canonical registration flow');
-assert.doesNotMatch(registrationBlock,/signInSecureStudent\s*\(/,'registration wrapper must not perform a second Firebase sign-in before the canonical registration flow');
-assert.match(registrationBlock,/return legacyRegisterStudent\(\{\.\.\.payload,email,password\}\);/,'registration wrapper must delegate the single auth flow to student-identity.js');
-assert.doesNotMatch(loginV2,/\bcreateSecureStudentCredential\b/,'student-login-v2 must not import the duplicate registration credential creator');
+assert.doesNotMatch(registrationBlock,/createSecureStudentCredential\s*\(/,'registration wrapper must not create a second Firebase credential itself');
+assert.doesNotMatch(registrationBlock,/signInSecureStudent\s*\(/,'registration wrapper must not perform a Firebase password sign-in');
+assert.match(registrationBlock,/return registerStudentOnce\(\{\.\.\.payload,email,password\},finishPendingStudentRegistration\);/,'registration wrapper must delegate to the single-attempt registration helper');
+assert.doesNotMatch(registrationBlock,/legacyRegisterStudent/,'legacy registration flow must not be used');
 
-assert.match(identity,/createSecureStudentCredential\(pending\.email,password\)/,'canonical registration must create or upgrade exactly one credential');
+assert.match(registration,/const user=await createSecureStudentCredential\(pending\.email,password\);/,'registration helper must perform exactly one credential call');
+assert.doesNotMatch(registration,/signInSecureStudent\s*\(/,'registration helper must never convert account-exists into a password login attempt');
+assert.doesNotMatch(registration,/createSecureStudentCredential[\s\S]*createSecureStudentCredential/,'registration helper must contain only one credential creation call');
 assert.match(secureAuth,/linkWithCredential\(current,emailCredential\)/,'an existing anonymous Firebase session must be upgraded instead of discarded and recreated');
 assert.match(secureAuth,/current\?\.isAnonymous/,'secure auth must explicitly handle the anonymous registration session');
 assert.match(secureAuth,/immediateRegistrationFailure/,'secure auth must remember an immediate registration credential failure');
