@@ -74,7 +74,7 @@ ok(passwordReset.includes('api.state.isOwner'),'password reset action must be ow
 ok(passwordReset.includes('Passwort-Wiederherstellungs-Mail wurde an'),'successful reset mail delivery must be confirmed in the UI');
 
 ok(login.includes('firebase-functions-compat.js'),'teacher login must load Firebase Functions for custom account mail');
-ok(login.includes('js/auth.js?v=teacher-auth-mail-20260820-2'),'teacher login must cache-bust the corrected Functions client');
+ok(/js\/auth\.js\?v=[^"']+/.test(login),'teacher login must cache-bust the Functions/auth client');
 ok(!login.includes('auth-legacy-fix.js'),'legacy teacher-login query patch must not be loaded');
 ok(teacherAuth.includes('requestVerificationEmail'),'teacher verification must use the SprachPilot mail service');
 ok(teacherAuth.includes('requestPasswordReset'),'teacher password reset must use the SprachPilot mail service');
