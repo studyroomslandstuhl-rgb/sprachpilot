@@ -6,8 +6,8 @@
     "node": "22"
   },
   "scripts": {
-    "test": "node test/auth-mail-core.test.js && node test/auth-mail-safety.test.js && node test/student-admin-safety.test.js",
-    "check": "node --check index.js && node --check auth-mail-core.js && node --check student-admin.js && node --check main.js"
+    "test": "node test/auth-mail-core.test.js && node test/auth-mail-safety.test.js && node test/student-admin-safety.test.js && node test/student-delete-safety.test.js",
+    "check": "node --check index.js && node --check auth-mail-core.js && node --check student-admin.js && node --check student-delete.js && node --check main.js"
   },
   "dependencies": {
     "firebase-admin": "^13.4.0",
