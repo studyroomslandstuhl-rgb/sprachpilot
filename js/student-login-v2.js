@@ -4,14 +4,14 @@ import {
   signInSecureStudent,
   sendStudentVerification,
   secureStudentSignOut
-} from './student-secure-auth.js?v=1';
+} from './student-secure-auth.js?v=20260824-register1';
 import {
-  registerStudent as legacyRegisterStudent,
   finishPendingStudentRegistration,
   hasPendingStudentRegistration,
   resetStudentPassword,
   $, safeText, getRedirectTarget
 } from './student-identity.js?v=identity4';
+import { registerStudentOnce } from './student-registration-v3.js?v=20260824-register1';
 
 export { finishPendingStudentRegistration, hasPendingStudentRegistration, resetStudentPassword, $, safeText, getRedirectTarget };
 
@@ -86,5 +86,5 @@ export async function loginStudentProfileWithEmailPassword(email,password,studen
 export async function registerStudentV2(payload={}){
   const email=normEmail(payload.email),password=String(payload.password||'');if(!email||!password)throw new Error('MISSING_FIELDS');
   clearTeacherSession();
-  return legacyRegisterStudent({...payload,email,password});
+  return registerStudentOnce({...payload,email,password},finishPendingStudentRegistration);
 }
