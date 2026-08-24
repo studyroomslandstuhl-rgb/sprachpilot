@@ -2,16 +2,15 @@ import { db, doc, collection, query, where, getDocsFromServer, getDocFromServer,
 import { loadCourse, makeStudentId } from './auth.js';
 import {
   signInSecureStudent,
-  sendStudentVerification,
   secureStudentSignOut
-} from './student-secure-auth.js?v=20260824-register1';
+} from './student-secure-auth.js?v=20260824-register5';
 import {
   finishPendingStudentRegistration,
   hasPendingStudentRegistration,
   resetStudentPassword,
   $, safeText, getRedirectTarget
 } from './student-identity.js?v=identity4';
-import { registerStudentOnce } from './student-registration-v3.js?v=20260824-register3';
+import { registerStudentOnce } from './student-registration-v3.js?v=20260824-register6';
 
 export { finishPendingStudentRegistration, hasPendingStudentRegistration, resetStudentPassword, $, safeText, getRedirectTarget };
 
@@ -32,7 +31,9 @@ async function ownProfiles(uid){
 async function verifiedPasswordUser(email,password){
   const emailNorm=normEmail(email),pwd=String(password||'');if(!emailNorm||!pwd)throw new Error('MISSING_LOGIN_FIELDS');
   const user=await signInSecureStudent(emailNorm,pwd);
-  if(user.emailVerified!==true){try{await sendStudentVerification(user)}catch(e){};throw new Error('EMAIL_NOT_VERIFIED')}
+  // Login darf niemals automatisch eine weitere Bestätigungs-E-Mail auslösen.
+  // Die Registrierung sendet genau eine Mail; zusätzliche Login-Versuche dürfen Firebase nicht drosseln.
+  if(user.emailVerified!==true)throw new Error('EMAIL_NOT_VERIFIED');
   if(user.isAnonymous||!user.uid)throw new Error('SECURE_AUTH_REQUIRED');return user;
 }
 function profileChoiceError(profiles){const error=new Error('MULTIPLE_STUDENT_PROFILES');error.profiles=(profiles||[]).map(p=>({id:p.id,course:p.course,name:p.name}));return error}
@@ -125,8 +126,6 @@ async function recoverPreparedProfile(user,email,courseRaw){
     }
   }
 
-  // Ältere SprachPilot-Konten hatten die Teilnehmer-ID direkt aus Kurs + E-Mail gebildet.
-  // Damit kann ein Profil auch repariert werden, wenn der Lookup-Datensatz noch fehlt.
   for(const candidateId of lookupIds){
     try{
       const studentSnap=await getDocFromServer(doc(db,'students',candidateId));
