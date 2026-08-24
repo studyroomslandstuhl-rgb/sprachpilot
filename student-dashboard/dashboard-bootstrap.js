@@ -69,7 +69,7 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
     try{localStorage.removeItem('SP_STUDENT_DASHBOARD_LITE_V3')}catch(e){}
     window.SP_PROGRESS_ALIAS_READY=Promise.resolve({ok:progressReady,skipped:!progressReady,reason:progressReady?'server-authoritative-progress-v2':'dashboard-direct-server-fallback'});
     try{
-      await import('./dashboard-server-v3.js?v=20260822-dashboard5');
+      await import('./dashboard-server-v3.js?v=20260824-release6');
     }catch(error){
       console.error('Dashboard-Inhalte konnten nicht vollständig geladen werden',error);
       warning('Dashboard konnte nur teilweise geladen werden.','Die Anmeldung funktioniert, aber die aktuellen Statistiken konnten nicht vollständig aufgebaut werden.');
