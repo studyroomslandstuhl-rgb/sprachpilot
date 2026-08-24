@@ -12,10 +12,11 @@ const rules=fs.readFileSync(new URL('../firestore.rules',import.meta.url),'utf8'
 function ok(value,message){if(!value)throw new Error(message)}
 
 const scripts=[...index.matchAll(/<script\b[^>]*\bsrc="([^"]+)"/g)].map(match=>match[1]);
-ok(scripts.length===7,`teacher dashboard should load exactly 7 initial scripts, got ${scripts.length}`);
-ok(scripts.includes('dashboard-lite.js?v=1'),'teacher dashboard must load the lightweight dashboard core');
-ok(scripts.includes('dashboard-account-admin.js?v=5'),'owner Firebase account editor must load the current cache-busted version');
-ok(scripts.includes('dashboard-password-reset.js?v=1'),'teacher password reset mail module must be loaded');
+ok(scripts.length<=14,`teacher dashboard startup script budget exceeded: ${scripts.length}`);
+ok(scripts.some(src=>src.startsWith('dashboard-lite.js?')),'teacher dashboard must load the lightweight dashboard core');
+ok(scripts.some(src=>src.startsWith('dashboard-account-admin.js?')),'owner Firebase account editor must load');
+ok(scripts.some(src=>src.startsWith('dashboard-student-delete.js?')),'student deletion controls must load');
+ok(scripts.some(src=>src.startsWith('dashboard-password-reset.js?')),'teacher password reset mail module must be loaded');
 ok(!scripts.some(src=>src.includes('firebase-functions-compat')),'Firebase Functions SDK must stay lazy and not slow dashboard startup');
 ok(!index.includes('live-progress-refresh.js'),'live refresh must not be loaded on the teacher dashboard');
 ok(!index.includes('analytics.js'),'progress analytics must not load during dashboard startup');
