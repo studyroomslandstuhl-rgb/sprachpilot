@@ -2,6 +2,8 @@ import fs from 'node:fs';
 import assert from 'node:assert/strict';
 
 const html=fs.readFileSync(new URL('../register/index.html',import.meta.url),'utf8');
+const loginHtml=fs.readFileSync(new URL('../login/index.html',import.meta.url),'utf8');
+const login=fs.readFileSync(new URL('../js/student-login-v2.js',import.meta.url),'utf8');
 const registerEntry=fs.readFileSync(new URL('../js/student-register-entry-v2.js',import.meta.url),'utf8');
 const registration=fs.readFileSync(new URL('../js/student-registration-v3.js',import.meta.url),'utf8');
 const secureAuth=fs.readFileSync(new URL('../js/student-secure-auth.js',import.meta.url),'utf8');
@@ -39,6 +41,20 @@ assert.match(registration,/await rollbackCredential\(user,createdThisAttempt\)/,
 assert.match(registration,/deleteUser\(user\)/,'rollback must delete only the just-created Firebase account');
 assert.match(registration,/existingFirebaseAccount=true/,'interrupted registrations must be recognized and continued');
 
+// Existing Firebase account with an unbound TN profile: login must be able to claim the prepared legacy profile.
+assert.match(loginHtml,/id="loginCourse"/,'login page must offer a course code for first-time profile linking');
+assert.match(loginHtml,/student-login-v2\.js\?v=20260824-link1/,'login page must cache-bust the repaired profile-linking client');
+assert.match(loginHtml,/loginStudentWithEmailPassword\(email,password,course\)/,'login page must pass the recovery course code to the login client');
+assert.match(loginHtml,/STUDENT_COURSE_REQUIRED_FOR_LINK/,'login page must explain when a course code is required');
+assert.match(login,/async function recoverPreparedProfile\(user,email,courseRaw\)/,'student login must have a prepared-profile recovery path');
+assert.match(login,/getDocFromServer\(doc\(db,'studentLookups',lookupId\)\)/,'recovery must read the teacher-prepared participant lookup directly');
+assert.match(login,/getDocFromServer\(doc\(db,'students',canonical\)\)/,'recovery must resolve the authoritative TN document');
+assert.match(login,/async function claimLegacyStudentRecord/,'legacy TN profile must have an explicit secure claim step');
+assert.match(login,/authUid:String\(user\.uid\)/,'claim must bind the signed-in Firebase UID to the TN profile');
+assert.match(login,/authEmail:mail/,'claim must bind the verified login e-mail');
+assert.match(login,/return claimLegacyStudentRecord\(studentSnap\.id\|\|canonical,student,user,mail\)/,'prepared lookup recovery must actually claim the resolved profile');
+assert.match(login,/throw new Error\('STUDENT_COURSE_REQUIRED_FOR_LINK'\)/,'unbound accounts without a course code must not silently fail as profile-not-found');
+
 // Secure auth: failed create attempts remain guarded; the helper explicitly clears only the account-exists block it is recovering from.
 assert.match(secureAuth,/REGISTER_BLOCK_KEY/,'failed credential attempts must have a session-level guard');
 assert.match(secureAuth,/spNoSecondCredentialAttempt=true/,'non-retry credential errors must be marked explicitly');
@@ -50,4 +66,4 @@ assert.match(firebase,/export const authReady=initialAuthState;/,'authReady must
 assert.doesNotMatch(firebase,/export const authReady=ensureAuth\(\);/,'firebase.js must not sign in anonymously as an import side effect');
 assert.match(firebase,/async function waitAuthRequired\(\)[\s\S]*?await ensureAuth\(\)/,'Firestore access may request auth for normal application reads after a user exists');
 
-console.log('Registration auth guard passed: one create attempt plus one targeted existing-account recovery, no anonymous preflight or retry loop.');
+console.log('Registration and login auth guard passed: no anonymous preflight, no retry loop, and existing unbound Firebase accounts can claim a prepared course profile.');
