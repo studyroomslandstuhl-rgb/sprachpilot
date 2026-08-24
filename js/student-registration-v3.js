@@ -5,7 +5,7 @@ import {
   signInSecureStudent,
   clearRegistrationAuthFailure,
   sendStudentVerification
-} from './student-secure-auth.js?v=20260824-register1';
+} from './student-secure-auth.js?v=20260824-register4';
 
 const PENDING_KEY='SP_PENDING_SECURE_STUDENT_REGISTRATION_V1';
 const RESERVED_COURSE_CODES=new Set(['ALLE','ALLEE','ALL_ACCESS','LEHRER','TEACHER']);
@@ -31,6 +31,9 @@ function isExistingAccountError(error){
   const code=String(error?.code||''),message=String(error?.message||'');
   return code==='auth/email-already-in-use'||code==='auth/credential-already-in-use'||message==='STUDENT_AUTH_ACCOUNT_EXISTS';
 }
+function isVerificationThrottle(error){
+  return String(error?.code||'')==='auth/too-many-requests'&&String(error?.authStage||'')==='verification';
+}
 async function rollbackCredential(user,createdThisAttempt){
   if(!createdThisAttempt||!user)return;
   try{await deleteUser(user)}catch(error){console.warn('[SprachPilot] Registrierung: Firebase-Konto nach ungültigem Kurscode konnte nicht zurückgerollt werden',error)}
@@ -51,7 +54,7 @@ export async function registerStudentOnce(payload={},finishPendingStudentRegistr
 
   // Genau ein Konto-Erstellungsversuch. Existiert die E-Mail bereits, wird genau einmal
   // mit dem eingegebenen Passwort angemeldet. So kann eine unterbrochene Registrierung
-  // ihr vorhandenes Firebase-Konto endlich mit dem Kursprofil verbinden.
+  // ihr vorhandenes Firebase-Konto mit dem Kursprofil verbinden.
   const before=currentAuthUser();
   let user=null,createdThisAttempt=false,existingFirebaseAccount=false;
   try{
@@ -81,8 +84,15 @@ export async function registerStudentOnce(payload={},finishPendingStudentRegistr
   writePending(pending);
 
   if(user.emailVerified!==true){
-    await sendStudentVerification(user);
-    return{verificationRequired:true,email:pending.email,existingFirebaseAccount};
+    try{
+      const verification=await sendStudentVerification(user);
+      return{verificationRequired:true,verificationSent:verification?.sent===true||verification?.reason==='cooldown',verificationThrottled:false,email:pending.email,existingFirebaseAccount};
+    }catch(error){
+      // Important: account creation succeeded already. A Firebase mail throttle must not
+      // be presented as a failed registration and must not encourage another signup.
+      if(isVerificationThrottle(error))return{verificationRequired:true,verificationSent:false,verificationThrottled:true,email:pending.email,existingFirebaseAccount};
+      throw error;
+    }
   }
 
   if(typeof finishPendingStudentRegistration!=='function')throw new Error('REGISTRATION_FINISH_HANDLER_MISSING');
