@@ -1,5 +1,5 @@
 {
-  "source_sha": "17f50b9351a2ca783923313d650a14a57d0a50fd",
+  "source_sha": "e48f97d6a19f69402f01036243e2e0b3e10ecc67",
   "project_id": "sprachpilot-12c68",
   "region": "europe-west1",
   "validation": "failed",
@@ -13,8 +13,8 @@
   "deploy_exit_code": "0",
   "update_student_account_http_before": "404",
   "update_student_account_http_after": "404",
-  "run_id": "32706051095",
+  "run_id": "32706266569",
   "run_attempt": "1",
-  "run_url": "https://github.com/studyroomslandstuhl-rgb/sprachpilot/actions/runs/32706051095",
-  "recorded_at": "2026-08-24T08:23:42.067732+00:00"
+  "run_url": "https://github.com/studyroomslandstuhl-rgb/sprachpilot/actions/runs/32706266569",
+  "recorded_at": "2026-08-24T08:26:04.856428+00:00"
 }
