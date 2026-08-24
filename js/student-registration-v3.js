@@ -5,7 +5,7 @@ import {
   signInSecureStudent,
   clearRegistrationAuthFailure,
   sendStudentVerification
-} from './student-secure-auth.js?v=20260824-register4';
+} from './student-secure-auth.js?v=20260824-register5';
 
 const PENDING_KEY='SP_PENDING_SECURE_STUDENT_REGISTRATION_V1';
 const RESERVED_COURSE_CODES=new Set(['ALLE','ALLEE','ALL_ACCESS','LEHRER','TEACHER']);
@@ -52,9 +52,6 @@ export async function registerStudentOnce(payload={},finishPendingStudentRegistr
   if(password.length<8)throw new Error('WEAK_STUDENT_PASSWORD');
   assertCourseAllowed(pending.kurs);
 
-  // Genau ein Konto-Erstellungsversuch. Existiert die E-Mail bereits, wird genau einmal
-  // mit dem eingegebenen Passwort angemeldet. So kann eine unterbrochene Registrierung
-  // ihr vorhandenes Firebase-Konto mit dem Kursprofil verbinden.
   const before=currentAuthUser();
   let user=null,createdThisAttempt=false,existingFirebaseAccount=false;
   try{
@@ -72,7 +69,6 @@ export async function registerStudentOnce(payload={},finishPendingStudentRegistr
   try{
     courseLoaded=await loadAllowedCourse(pending.kurs);
   }catch(error){
-    // Nur ein Konto löschen, das tatsächlich in genau diesem Registrierungsversuch neu entstand.
     await rollbackCredential(user,createdThisAttempt);
     throw error;
   }
@@ -86,10 +82,8 @@ export async function registerStudentOnce(payload={},finishPendingStudentRegistr
   if(user.emailVerified!==true){
     try{
       const verification=await sendStudentVerification(user);
-      return{verificationRequired:true,verificationSent:verification?.sent===true||verification?.reason==='cooldown',verificationThrottled:false,email:pending.email,existingFirebaseAccount};
+      return{verificationRequired:true,verificationSent:verification?.sent===true||verification?.reason==='cooldown',verificationThrottled:false,email:pending.email,existingFirebaseAccount,verificationTransport:verification?.transport||''};
     }catch(error){
-      // Important: account creation succeeded already. A Firebase mail throttle must not
-      // be presented as a failed registration and must not encourage another signup.
       if(isVerificationThrottle(error))return{verificationRequired:true,verificationSent:false,verificationThrottled:true,email:pending.email,existingFirebaseAccount};
       throw error;
     }
