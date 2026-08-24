@@ -3,6 +3,8 @@ import assert from 'node:assert/strict';
 
 const html=fs.readFileSync(new URL('../register/index.html',import.meta.url),'utf8');
 const loginV2=fs.readFileSync(new URL('../js/student-login-v2.js',import.meta.url),'utf8');
+const identity=fs.readFileSync(new URL('../js/student-identity.js',import.meta.url),'utf8');
+const secureAuth=fs.readFileSync(new URL('../js/student-secure-auth.js',import.meta.url),'utf8');
 
 assert.match(html,/let registrationBusy=false;/,'registration must have an in-flight guard');
 assert.match(html,/if\(registrationBusy\)return;/,'parallel registration attempts must be ignored');
@@ -32,4 +34,15 @@ assert.doesNotMatch(registrationBlock,/signInSecureStudent\s*\(/,'registration w
 assert.match(registrationBlock,/return legacyRegisterStudent\(\{\.\.\.payload,email,password\}\);/,'registration wrapper must delegate the single auth flow to student-identity.js');
 assert.doesNotMatch(loginV2,/\bcreateSecureStudentCredential\b/,'student-login-v2 must not import the duplicate registration credential creator');
 
-console.log('Registration uses normal wording, automatic email-verification completion, and one Firebase auth flow.');
+assert.match(identity,/createSecureStudentCredential\(pending\.email,password\)/,'canonical registration must create or upgrade exactly one credential');
+assert.match(secureAuth,/linkWithCredential\(current,emailCredential\)/,'an existing anonymous Firebase session must be upgraded instead of discarded and recreated');
+assert.match(secureAuth,/current\?\.isAnonymous/,'secure auth must explicitly handle the anonymous registration session');
+assert.match(secureAuth,/immediateRegistrationFailure/,'secure auth must remember an immediate registration credential failure');
+assert.match(secureAuth,/spNoSecondCredentialAttempt=true/,'registration account-exists/throttle errors must be marked as non-retry errors');
+assert.match(secureAuth,/REGISTER_BLOCK_KEY/,'repeated registration credential attempts must have a session-level guard');
+assert.match(secureAuth,/THROTTLE_BLOCK_MS/,'Firebase throttling must block repeated local credential calls for a cooldown');
+assert.match(html,/resetStaleRegistrationSession\(targetEmail=''/,'registration session cleanup must distinguish the target e-mail');
+assert.match(html,/user&&!user\.isAnonymous/,'the registration page must keep the Firebase anonymous session instead of signing it out unconditionally');
+assert.doesNotMatch(html,/await resetStaleRegistrationSession\(\);clearTeacherSessionMarkers\(\)/,'a fresh registration must not blindly sign out the Firebase session before the course lookup');
+
+console.log('Registration performs one credential attempt, upgrades anonymous auth, blocks duplicate failed attempts, and keeps automatic verification completion.');
