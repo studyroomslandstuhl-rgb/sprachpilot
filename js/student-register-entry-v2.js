@@ -3,7 +3,7 @@ import {
   hasPendingStudentRegistration,
   $, safeText
 } from './student-identity.js?v=identity4';
-import { registerStudentOnce } from './student-registration-v3.js?v=20260824-register4';
+import { registerStudentOnce } from './student-registration-v3.js?v=20260824-register5';
 
 export { finishPendingStudentRegistration, hasPendingStudentRegistration, $, safeText };
 
