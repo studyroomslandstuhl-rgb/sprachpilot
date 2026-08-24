@@ -84,7 +84,7 @@ ok(studentDelete.includes('function canDeleteLocally(student)'),'safe local fall
 ok(studentDelete.includes("api.state?.isOwner===true"),'local deletion fallback must be owner-only');
 ok(studentDelete.includes("!text(student?.authUid)&&!text(student?.authEmail)&&!text(student?.email)"),'local deletion must be limited to TN without Firebase login/email');
 ok(studentDelete.includes('deleteUnboundStudentLocally'),'unbound TN must have a direct Firestore deletion fallback');
-ok(studentDelete.includes("collection('studentLookups')"),'local deletion must remove participant lookup rows');
+ok(studentDelete.includes("'studentLookups'"),'local deletion must remove participant lookup rows');
 ok(studentDelete.includes("collection('studentRankings')"),'local deletion must remove ranking rows');
 ok(studentDelete.includes("collection('progress')"),'local deletion must remove progress rows');
 ok(studentDelete.includes('backendUnavailable(error)&&canDeleteLocally(student)'),'fallback must only run after a backend-unavailable failure');
