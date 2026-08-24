@@ -5,6 +5,7 @@ const html=fs.readFileSync(new URL('../register/index.html',import.meta.url),'ut
 const loginV2=fs.readFileSync(new URL('../js/student-login-v2.js',import.meta.url),'utf8');
 const registration=fs.readFileSync(new URL('../js/student-registration-v3.js',import.meta.url),'utf8');
 const secureAuth=fs.readFileSync(new URL('../js/student-secure-auth.js',import.meta.url),'utf8');
+const firebase=fs.readFileSync(new URL('../js/firebase.js',import.meta.url),'utf8');
 
 assert.match(html,/let registrationBusy=false;/,'registration must have an in-flight guard');
 assert.match(html,/if\(registrationBusy\)return;/,'parallel registration attempts must be ignored');
@@ -47,4 +48,8 @@ assert.match(html,/resetStaleRegistrationSession\(targetEmail=''/,'registration 
 assert.match(html,/user&&!user\.isAnonymous/,'the registration page must keep the Firebase anonymous session instead of signing it out unconditionally');
 assert.doesNotMatch(html,/await resetStaleRegistrationSession\(\);clearTeacherSessionMarkers\(\)/,'a fresh registration must not blindly sign out the Firebase session before the course lookup');
 
-console.log('Registration performs one credential attempt, upgrades anonymous auth, blocks duplicate failed attempts, and keeps automatic verification completion.');
+assert.match(firebase,/export const authReady=initialAuthState;/,'importing firebase.js must only wait for the restored auth state');
+assert.doesNotMatch(firebase,/export const authReady=ensureAuth\(\);/,'importing firebase.js must never create an anonymous Firebase account eagerly');
+assert.match(firebase,/async function waitAuthRequired\(\)[\s\S]*await ensureAuth\(\)/,'Firestore operations must still request anonymous auth explicitly when needed');
+
+console.log('Registration performs one credential attempt, avoids eager anonymous auth, blocks duplicate failed attempts, and keeps automatic verification completion.');
