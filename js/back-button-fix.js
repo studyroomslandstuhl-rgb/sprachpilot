@@ -1,7 +1,7 @@
 (function(){
   'use strict';
-  if(window.__SP_BACK_BUTTON_FIX_V4)return;
-  window.__SP_BACK_BUTTON_FIX_V4=true;
+  if(window.__SP_BACK_BUTTON_FIX_V5)return;
+  window.__SP_BACK_BUTTON_FIX_V5=true;
 
   const HUB='/verben-bereich/';
   let navigationStarted=false;
@@ -51,7 +51,21 @@
   }
 
   function isBack(el){
-    return !!el&&(/zurück|zurueck|←/i.test(String(el.textContent||'').trim())||el?.dataset?.spFastBack==='1');
+    if(!el)return false;
+
+    // Bereits eindeutig markierte Zurück-Navigation bleibt gültig.
+    if(el?.dataset?.spFastBack==='1'||el?.dataset?.spBack==='1'||el?.dataset?.spBackTarget)return true;
+
+    // Echte, strukturell als Zurück-Knopf gekennzeichnete Elemente.
+    if(el.matches?.('[data-sp-back="1"],.sp-back,.sp-back-button,.back-button,.back-btn,.btn-back'))return true;
+
+    // Legacy-Navigation: Text darf nur innerhalb einer Navigationsleiste ausgewertet
+    // werden und muss exakt "Zurück" sein. Übungsantworten mit dem Wort "zurück"
+    // werden dadurch niemals als Navigation interpretiert oder überschrieben.
+    const nav=el.closest?.('.sp-header__nav,.sp-nav,.topbar nav,.l7-topbar nav,.l7-nav,header nav,nav.nav');
+    if(!nav)return false;
+    const text=String(el.textContent||'').replace(/\s+/g,' ').trim();
+    return /^(?:←\s*)?(?:zurück|zurueck)$/i.test(text);
   }
 
   function isStatisticsControl(el){
