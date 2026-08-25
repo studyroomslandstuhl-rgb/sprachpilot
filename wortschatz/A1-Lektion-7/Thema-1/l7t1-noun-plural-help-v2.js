@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_NOUN_PLURAL_HELP_V3)return;
-window.__SP_L7T1_NOUN_PLURAL_HELP_V3=true;
+if(window.__SP_L7T1_NOUN_PLURAL_HELP_V4)return;
+window.__SP_L7T1_NOUN_PLURAL_HELP_V4=true;
 if(!window.L7||!window.L7S)return;
 
 const S=window.L7S;
@@ -9,26 +9,28 @@ const previousRender=window.L7.renderTaskPage.bind(window.L7);
 
 function esc(value){return S.esc(value)}
 function firstValue(...values){for(const value of values){if(value!==undefined&&value!==null&&String(value).trim())return String(value).trim()}return''}
-function combinedParts(item){
+function answerPair(item){
  const raw=String(item?.answer||'').trim();
  const parts=raw.split(/\s+[–—-]\s+/);
- return parts.length>=2?[parts[0].trim(),parts.slice(1).join(' - ').trim()]:['',''];
+ if(parts.length<2)return['',''];
+ return[parts.shift().trim(),parts.join(' - ').trim()];
 }
 function singularExpected(item){
- const pair=combinedParts(item);
+ const pair=answerPair(item);
  let value=firstValue(item?.singularAnswer,item?.singular,item?.full,item?.word,item?.term,pair[0]).split('|')[0].trim();
  const article=String(item?.article||'').trim();
  if(article&&value&&!/^(der|die|das)\s/i.test(value))value=`${article} ${value}`.trim();
  return value;
 }
 function pluralExpected(item){
- const pair=combinedParts(item);
+ const pair=answerPair(item);
  let value=firstValue(item?.pluralAnswer,item?.plural,item?.pluralForm,item?.forms?.plural,item?.pluralWord,pair[1]);
  if(!value)return'';
  if(/^kein plural/i.test(value))return value;
  if(!/^(der|die|das)\s/i.test(value))value=`die ${value}`.trim();
  return value;
 }
+function sameForm(given,expected){return S.norm(String(given||''))===S.norm(String(expected||''))}
 function draftKey(index,field){return`nounplural:${index}:${field}`}
 function draftValue(state,index,field){return String(state.answers?.[draftKey(index,field)]??'')}
 function saveDraft(theme,task,total,index,field,value){
@@ -53,13 +55,15 @@ function nounImage(item){
  return S.image(resolved,label||'Nomen');
 }
 function helpHtml(state,item,index){
- const tries=Math.max(0,Number(state.tries)||0);if(!tries)return'';
+ const tries=Math.max(0,Number(state.tries)||0);
+ if(!tries)return'';
+ const expectedS=singularExpected(item),expectedP=pluralExpected(item);
+ const givenS=draftValue(state,index,'singular'),givenP=draftValue(state,index,'plural');
+ const sOk=sameForm(givenS,expectedS),pOk=sameForm(givenP,expectedP);
  if(tries===1)return'<div class="l7-no">Noch nicht richtig. Versuch es noch einmal.</div>';
- const expectedS=singularExpected(item),expectedP=pluralExpected(item),givenS=draftValue(state,index,'singular'),givenP=draftValue(state,index,'plural');
- const sOk=S.norm(givenS)===S.norm(expectedS),pOk=S.norm(givenP)===S.norm(expectedP);
  if(tries===2){
   let tip='Tipp: Prüfe den Artikel im Singular und die genaue Pluralform.';
-  if(sOk&&!pOk)tip='Tipp: Der Singular ist richtig. Prüfe nur noch die Pluralform und den Artikel „die“.';
+  if(sOk&&!pOk)tip='Tipp: Der Singular ist richtig. Prüfe nur noch die Pluralform und den Pluralartikel „die“.';
   else if(!sOk&&pOk)tip='Tipp: Der Plural ist richtig. Prüfe nur noch Artikel und Schreibweise im Singular.';
   return `<div class="l7-hint">${esc(tip)}</div>`;
  }
@@ -71,6 +75,7 @@ function render(theme,id){
  if(state.done.length>=total)return previousRender(theme,id);
  const index=S.index(theme,task.id,total);state=S.load(theme,task.id,total);const item=task.items?.[index]||{};
  const singular=draftValue(state,index,'singular'),plural=draftValue(state,index,'plural');
+ const expectedS=singularExpected(item),expectedP=pluralExpected(item);
  const root=document.getElementById('app');
  root.innerHTML=`<div class="l7-page">${S.header(theme,task.title)}<section class="l7-card">${progressHtml(theme,task,total)}<div class="l7-instruction">${esc(task.description||'Schreibe das Nomen mit Artikel und Plural.')}</div><div id="spSpecialTask" class="l7-question-card"><p class="eyebrow">Aufgabe ${state.done.length+1} von ${total}</p>${nounImage(item)}<div class="sp-noun-plural-inputs"><label>Nomen mit Artikel<input id="spNounSingular" autocomplete="off" placeholder="z. B. das Buch" value="${esc(singular)}"></label><label>Plural<input id="spNounPlural" autocomplete="off" placeholder="z. B. die Bücher" value="${esc(plural)}"></label></div><div class="l7-actions"><button type="button" class="l7-btn" id="spCheckNounPlural">Prüfen</button></div><div id="spSpecialFeedback">${helpHtml(state,item,index)}</div></div></section><footer>© SprachPilot</footer></div>`;
  const singularInput=document.getElementById('spNounSingular'),pluralInput=document.getElementById('spNounPlural');
@@ -78,10 +83,9 @@ function render(theme,id){
  pluralInput?.addEventListener('input',event=>saveDraft(theme,task,total,index,'plural',event.target.value));
  const check=()=>{
   const singularValue=String(singularInput?.value||'').trim(),pluralValue=String(pluralInput?.value||'').trim();
-  if(!singularValue||!pluralValue)return;
+  if(!singularValue||!pluralValue){document.getElementById('spSpecialFeedback').innerHTML='<div class="l7-no">Bitte fülle beide Felder aus.</div>';return}
   saveDraft(theme,task,total,index,'singular',singularValue);saveDraft(theme,task,total,index,'plural',pluralValue);
-  const expectedS=singularExpected(item),expectedP=pluralExpected(item);
-  const ok=S.norm(singularValue)===S.norm(expectedS)&&S.norm(pluralValue)===S.norm(expectedP);
+  const ok=sameForm(singularValue,expectedS)&&sameForm(pluralValue,expectedP);
   S.attempt(theme,task.id,total,index,ok);
   if(ok){
    const before=S.load(theme,task.id,total),repeat=before.hadWrong||before.tries>0;
