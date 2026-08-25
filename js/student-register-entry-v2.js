@@ -4,11 +4,9 @@ import {
   $, safeText
 } from './student-identity.js?v=identity4';
 import { authReady } from './firebase.js';
-import { registerStudentOnce } from './student-registration-v3.js?v=20260825-register7';
+import { registerStudentOnce } from './student-registration-v3.js?v=20260825-register9';
 
 export { hasPendingStudentRegistration, $, safeText };
-
-const PENDING_KEY='SP_PENDING_SECURE_STUDENT_REGISTRATION_V1';
 
 function normEmail(value){return String(value||'').trim().toLowerCase()}
 function clearTeacherSession(){
@@ -18,23 +16,12 @@ function clearTeacherSession(){
   }catch(e){}
 }
 
-// Eine lokal gespeicherte offene Registrierung darf die Registrierungsseite nicht dauerhaft sperren.
-// Zuerst warten wir, bis Firebase eine eventuell vorhandene Anmeldung wiederhergestellt hat.
-// Gibt es danach wirklich keine Anmeldung mehr, ist nur der lokale Pending-Eintrag veraltet:
-// wir entfernen ihn und geben die normale Registrierung wieder frei.
+// Die Registrierungsdaten bleiben bis zur ersten erfolgreichen, verifizierten Anmeldung erhalten.
+// Ein Bestätigungslink kann in einem anderen Tab/Browser geöffnet werden; fehlende aktive Auth
+// darf deshalb die Daten für das spätere TN-Profil niemals löschen.
 export async function finishPendingStudentRegistration(){
   try{await authReady}catch(e){}
-  try{
-    return await finishPendingStudentRegistrationRaw();
-  }catch(error){
-    if(String(error?.message||'')==='VERIFICATION_LOGIN_REQUIRED'){
-      try{localStorage.removeItem(PENDING_KEY)}catch(e){}
-      const recovered=new Error('Die alte offene Registrierung hatte keine aktive Anmeldung mehr. Bitte gib dein Passwort erneut ein und klicke auf „Registrieren“.');
-      recovered.code='STALE_PENDING_REGISTRATION';
-      throw recovered;
-    }
-    throw error;
-  }
+  return finishPendingStudentRegistrationRaw();
 }
 
 export async function registerStudentV2(payload={}){
