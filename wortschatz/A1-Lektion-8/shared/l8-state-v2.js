@@ -23,7 +23,8 @@ function pid(){
  return resolved||(preview()?'teacher_preview':browserId());
 }
 const prefix=()=>preview()?'SP_L8V2_PREVIEW':'SP_L8V2';
-const key=(theme,task)=>`${prefix()}_${pid()}_T${Number(theme)}_${String(task)}`;
+function runNo(theme){const key=`SP_SCORE_RUN_wortschatz-a1-lektion-8-thema-${Number(theme)}`;return Math.max(1,Math.min(3,Number(localStorage.getItem(key))||1))}
+function key(theme,task){theme=Number(theme);if(theme===1)return`${prefix()}_${pid()}_T1_R${runNo(theme)}_REV20260825_TASKS5_${String(task)}`;return`${prefix()}_${pid()}_T${theme}_${String(task)}`}
 function blank(total){total=Math.max(0,Number(total)||0);return{schema:VERSION,total,done:[],queue:shuffled([...Array(total).keys()]),reviewQueue:[],current:null,review:{},tries:{},firstSeen:[],firstCorrect:0,answers:{},updatedAt:new Date().toISOString()}}
 function validIndex(i,total){return Number.isInteger(Number(i))&&Number(i)>=0&&Number(i)<total}
 function normalizeState(raw,total){
@@ -52,5 +53,5 @@ function equal(answer,expected){const a=norm(answer);return(Array.isArray(expect
 let activeAudio=null;
 function say(text,audioFile){if(activeAudio){try{activeAudio.pause();activeAudio.currentTime=0}catch(e){}activeAudio=null}if(audioFile){const raw=String(audioFile||''),src=/^https?:\/\//i.test(raw)?raw:`https://sprachpilot.b-cdn.net/audio/${raw.replace(/^audio\//i,'')}`;const a=new Audio(src);activeAudio=a;a.onerror=()=>{if(activeAudio===a)activeAudio=null;tts(text)};a.onended=()=>{if(activeAudio===a)activeAudio=null};a.play().catch(()=>tts(text));return}tts(text)}
 function tts(text){if(!('speechSynthesis'in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=.84;speechSynthesis.speak(u)}catch(e){}}
-window.L8S={profile,preview,pid,key,load,save,nextIndex,wrong,right,completeFree,pct,allDone,reset,norm,equal,say,stateSchema:VERSION};
+window.L8S={profile,preview,pid,key,load,save,nextIndex,wrong,right,completeFree,pct,allDone,reset,norm,equal,say,stateSchema:VERSION,runNo};
 })();
