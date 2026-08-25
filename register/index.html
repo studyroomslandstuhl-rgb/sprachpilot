@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
   <title>SprachPilot – Registrieren</title>
-  <link rel="stylesheet" href="../style.css?v=20260824-register6">
+  <link rel="stylesheet" href="../style.css?v=20260825-register7">
 </head>
 <body>
 <div class="container">
@@ -45,15 +45,19 @@
   </section>
   <footer>© SprachPilot</footer>
 </div>
-<script src="/shared/sp-cache-epoch.js?v=20260824-register6"></script>
+<script src="/shared/sp-cache-epoch.js?v=20260825-register7"></script>
 <script type="module">
-import {registerStudentV2 as registerStudent,finishPendingStudentRegistration,hasPendingStudentRegistration,$,safeText} from "../js/student-register-entry-v2.js?v=20260824-register6";
-import {currentFirebaseUser,secureStudentSignOut,registrationAuthFailureState,sendStudentVerification} from "../js/student-secure-auth.js?v=20260824-register5";
+import {registerStudentV2 as registerStudent,finishPendingStudentRegistration,hasPendingStudentRegistration,$,safeText} from "../js/student-register-entry-v2.js?v=20260825-register7";
+import {currentFirebaseUser,secureStudentSignOut,registrationAuthFailureState,sendStudentVerification} from "../js/student-secure-auth.js?v=20260825-register7";
 const PENDING_KEY='SP_PENDING_SECURE_STUDENT_REGISTRATION_V1';
 function showMsg(html){const result=$("registerResult");if(result)result.innerHTML=html;}
 function normalizedEmail(value){return String(value||"").trim().toLowerCase()}
 function showRegisterButton(show=true){const button=$("registerBtn");if(button)button.style.display=show?"block":"none";}
 function openStartSoon(){setTimeout(()=>{location.href="/index.html"},700)}
+function resendButtonHtml(){return '<button type="button" class="btn secondary" id="resendVerificationBtn">Bestätigungs-E-Mail erneut senden</button>'}
+function bindResendButton(){document.getElementById('resendVerificationBtn')?.addEventListener('click',resendVerificationMail,{once:true})}
+function waitText(ms){const minutes=Math.max(1,Math.ceil(Number(ms||0)/60000));return minutes===1?'etwa 1 Minute':`etwa ${minutes} Minuten`}
+function showPendingVerification(html,kind='no'){showRegisterButton(false);showMsg(`<div class="${kind}">${html}</div>${resendButtonHtml()}`);bindResendButton()}
 function clearTeacherSessionMarkers(){try{['SP_TEACHER_MODE','SP_TEACHER_EMAIL','SP_TEACHER_ID','SP_TEACHER_UID','SP_TEACHER_PROFILE','SP_L7_PREVIEW_PID'].forEach(k=>localStorage.removeItem(k));sessionStorage.removeItem('SP_TEACHER_PREVIEW')}catch(e){}}
 async function resetStaleRegistrationSession(targetEmail=''){
   try{localStorage.removeItem(PENDING_KEY)}catch(e){}
@@ -62,23 +66,42 @@ async function resetStaleRegistrationSession(targetEmail=''){
     if(user&&!user.isAnonymous&&wanted&&normalizedEmail(user.email)!==wanted)await secureStudentSignOut();
   }catch(e){}
 }
-async function ensureRankingRow(){try{await import('../js/ranking-mirror.js?v=20260824-register1');return await window.SPRankingMirror?.mirror?.(0)}catch(error){console.warn('Ranglisten-Eintrag nach Registrierung konnte noch nicht erstellt werden',error);return false}}
+async function ensureRankingRow(){try{await import('../js/ranking-mirror.js?v=20260825-register7');return await window.SPRankingMirror?.mirror?.(0)}catch(error){console.warn('Ranglisten-Eintrag nach Registrierung konnte noch nicht erstellt werden',error);return false}}
 let registrationBusy=false,finishingBusy=false,resendBusy=false;
 async function resendVerificationMail(){
   if(resendBusy)return;resendBusy=true;
   const button=document.getElementById('resendVerificationBtn');if(button){button.disabled=true;button.textContent='E-Mail wird angefordert …'}
   try{
     const user=currentFirebaseUser();
-    if(!user||user.isAnonymous){showMsg('<div class="no"><b>Kein bestätigbares Konto ist angemeldet.</b><br>Bitte starte die Registrierung neu.</div>');return}
+    if(!user||user.isAnonymous){
+      try{localStorage.removeItem(PENDING_KEY)}catch(e){}
+      showRegisterButton(true);
+      showMsg('<div class="no"><b>Die offene Registrierung konnte auf diesem Gerät nicht mehr gefunden werden.</b><br>Bitte starte die Registrierung einmal neu.</div>');
+      return;
+    }
     const result=await sendStudentVerification(user);
-    if(result?.reason==='cooldown')showMsg('<div class="ok"><b>Die Bestätigungs-E-Mail wurde bereits angefordert.</b><br>Bitte prüfe auch den Spam-Ordner.</div>');
-    else showMsg('<div class="ok"><b>Bestätigungs-E-Mail wurde gesendet.</b><br>Öffne die E-Mail und bestätige deine Adresse. Danach wird die Registrierung automatisch abgeschlossen.</div>');
+    if(result?.reason==='already-verified'){
+      await finishRegistrationAutomatically({showChecking:true});
+      return;
+    }
+    if(result?.reason==='throttled-cooldown'){
+      showPendingVerification(`<b>Der E-Mail-Versand ist noch kurz gesperrt.</b><br>Deine offene Registrierung bleibt gespeichert. Bitte NICHT erneut registrieren. Warte ${waitText(result.retryAfterMs)} und sende dann nur die Bestätigungs-E-Mail erneut.`);
+      return;
+    }
+    if(result?.reason==='cooldown'){
+      showPendingVerification('<b>Die Bestätigungs-E-Mail wurde bereits angefordert.</b><br>Bitte prüfe auch den Spam-Ordner. Die Registrierung bleibt offen; du musst dich nicht erneut registrieren.','ok');
+      return;
+    }
+    showPendingVerification('<b>Bestätigungs-E-Mail wurde gesendet.</b><br>Öffne die E-Mail und bestätige deine Adresse. Danach wird die Registrierung automatisch abgeschlossen.','ok');
   }catch(err){
     const code=String(err?.code||''),stage=String(err?.authStage||'');
-    if(code==='auth/too-many-requests'&&stage==='verification')showMsg('<div class="no"><b>Die Bestätigungs-E-Mail konnte nicht versendet werden.</b><br>Die Registrierung ist noch nicht abgeschlossen.</div>');
-    else showMsg(`<div class="no">Bestätigungs-E-Mail konnte nicht gesendet werden: ${safeText(err?.message||code||'Unbekannter Fehler')}</div>`);
+    if(code==='auth/too-many-requests'&&stage==='verification'){
+      showPendingVerification('<b>Firebase blockiert momentan nur den Versand der Bestätigungs-E-Mail.</b><br>Die Registrierung bleibt offen und wird nicht gelöscht. Bitte NICHT erneut registrieren. Warte etwa 5 Minuten und klicke dann nur auf „Bestätigungs-E-Mail erneut senden“.');
+    }else{
+      showPendingVerification(`<b>Die Bestätigungs-E-Mail konnte noch nicht gesendet werden.</b><br>Die Registrierung bleibt offen. Bitte nicht erneut registrieren.<br>${safeText(err?.message||code||'Unbekannter Fehler')}`);
+    }
   }finally{
-    resendBusy=false;const next=document.getElementById('resendVerificationBtn');if(next){next.disabled=false;next.addEventListener('click',resendVerificationMail,{once:true})}
+    resendBusy=false;const next=document.getElementById('resendVerificationBtn');if(next)next.disabled=false;
   }
 }
 async function finishRegistrationAutomatically({showChecking=false}={}){
@@ -89,16 +112,31 @@ async function finishRegistrationAutomatically({showChecking=false}={}){
     showMsg('<div class="ok"><b>Registrierung abgeschlossen.</b><br>Du wirst gleich weitergeleitet.</div>');openStartSoon();return true;
   }catch(err){
     const message=String(err?.message||"");
-    if(message==="EMAIL_NOT_VERIFIED"){if(showChecking)showMsg('<div class="ok"><b>Bitte bestätige zuerst deine E-Mail.</b><br>Öffne den Link in der Bestätigungs-E-Mail. Danach wird die Registrierung automatisch abgeschlossen.</div>');return false}
-    if(message==="VERIFICATION_LOGIN_REQUIRED"){showRegisterButton(true);showMsg('<div class="no"><b>Bitte melde dich an.</b><br>Deine E-Mail wurde bestätigt. Öffne „Ich habe schon ein Konto“ und melde dich mit E-Mail und Passwort an.</div>');return false}
-    if(message==="SECURE_AUTH_EMAIL_MISMATCH"||message==="STUDENT_EMAIL_MISMATCH"){await resetStaleRegistrationSession();showRegisterButton(true);showMsg('<div class="no"><b>Die alte Anmeldesitzung passte nicht zu dieser E-Mail.</b><br>Sie wurde zurückgesetzt. Du kannst die Registrierung jetzt mit den ausgefüllten Daten neu starten.</div>');return false}
-    if(message==="STUDENT_AUTH_OWNERSHIP_MISMATCH"){showRegisterButton(true);showMsg('<div class="no"><b>Registrierung konnte nicht abgeschlossen werden.</b><br>Dieses Schülerprofil ist bereits mit einem anderen Konto verbunden.</div>');return false}
-    if(message==="LOCAL_PROGRESS_ISOLATION_FAILED"){showRegisterButton(true);showMsg('<div class="no"><b>Registrierung konnte auf diesem Gerät nicht abgeschlossen werden.</b><br>Bitte lade die Seite neu und versuche es noch einmal.</div>');return false}
-    showRegisterButton(true);showMsg(`<div class="no">Registrierung konnte nicht abgeschlossen werden: ${safeText(message||"Unbekannter Fehler")}</div>`);return false;
+    if(message==="EMAIL_NOT_VERIFIED"){
+      if(showChecking)showPendingVerification('<b>Bitte bestätige zuerst deine E-Mail.</b><br>Die Registrierung bleibt gespeichert. Öffne die Bestätigungs-E-Mail oder fordere sie erneut an.','ok');
+      return false;
+    }
+    if(message==="VERIFICATION_LOGIN_REQUIRED"){
+      showRegisterButton(false);showMsg('<div class="no"><b>Bitte melde dich an.</b><br>Deine offene Registrierung ist gespeichert. Öffne „Ich habe schon ein Konto“ und melde dich mit E-Mail und Passwort an.</div>');return false;
+    }
+    if(message==="SECURE_AUTH_EMAIL_MISMATCH"||message==="STUDENT_EMAIL_MISMATCH"){
+      await resetStaleRegistrationSession();showRegisterButton(true);showMsg('<div class="no"><b>Die alte Anmeldesitzung passte nicht zu dieser E-Mail.</b><br>Sie wurde zurückgesetzt. Du kannst die Registrierung jetzt neu starten.</div>');return false;
+    }
+    if(message==="STUDENT_AUTH_OWNERSHIP_MISMATCH"){
+      showRegisterButton(false);showMsg('<div class="no"><b>Registrierung konnte nicht abgeschlossen werden.</b><br>Dieses Schülerprofil ist bereits mit einem anderen Konto verbunden.</div>');return false;
+    }
+    if(message==="LOCAL_PROGRESS_ISOLATION_FAILED"){
+      showRegisterButton(false);showMsg('<div class="no"><b>Registrierung konnte auf diesem Gerät nicht abgeschlossen werden.</b><br>Bitte lade die Seite neu und versuche es noch einmal.</div>');return false;
+    }
+    showRegisterButton(!hasPendingStudentRegistration());showMsg(`<div class="no">Registrierung konnte nicht abgeschlossen werden: ${safeText(message||"Unbekannter Fehler")}</div>`);return false;
   }finally{finishingBusy=false}
 }
 window.doRegister=async function(){
   if(registrationBusy)return;
+  if(hasPendingStudentRegistration()){
+    showPendingVerification('<b>Es gibt bereits eine offene Registrierung.</b><br>Bitte nicht noch einmal registrieren. Bestätige die E-Mail oder fordere nur die Bestätigungs-E-Mail erneut an.','ok');
+    return;
+  }
   const btn=$("registerBtn"),vorname=$("fname")?.value.trim()||"",nachname=$("lname")?.value.trim()||"",email=normalizedEmail($("email")?.value),emailConfirm=normalizedEmail($("emailConfirm")?.value),password=$("password")?.value||"",passwordConfirm=$("passwordConfirm")?.value||"",muttersprache=$("motherLanguage")?.value||"",kurs=$("course")?.value.trim()||"";
   if(!vorname||!nachname||!email||!emailConfirm||!password||!passwordConfirm||!muttersprache||!kurs){showMsg('<div class="no">Bitte alle Felder ausfüllen.</div>');return}
   if(email!==emailConfirm){showMsg('<div class="no"><b>Die E-Mail-Adressen sind nicht gleich.</b><br>Bitte prüfe beide E-Mail-Felder.</div>');$("emailConfirm")?.focus();return}
@@ -111,16 +149,13 @@ window.doRegister=async function(){
     const result=await registerStudent({vorname,nachname,email,password,muttersprache,kurs});
     if(result?.activated){await ensureRankingRow();showMsg('<div class="ok"><b>Registrierung abgeschlossen.</b><br>Du wirst gleich weitergeleitet.</div>');openStartSoon();return}
     if(result?.verificationRequired){
-      showRegisterButton(true);
       if(result.verificationThrottled){
-        if(result.verificationRolledBack){
-          showMsg('<div class="no"><b>Registrierung konnte nicht abgeschlossen werden.</b><br>Die Bestätigungs-E-Mail wurde von Firebase nicht versendet. Das dabei neu angelegte, unvollständige Konto wurde automatisch wieder entfernt. Es bleibt kein falsches Konto zurück.</div>');
-        }else{
-          showMsg('<div class="no"><b>Die Bestätigungs-E-Mail konnte nicht versendet werden.</b><br>Dieses Firebase-Konto bestand bereits. Die Registrierung ist noch nicht abgeschlossen.</div><button type="button" class="btn secondary" id="resendVerificationBtn">Bestätigungs-E-Mail erneut senden</button>');
-          document.getElementById('resendVerificationBtn')?.addEventListener('click',resendVerificationMail,{once:true});
-        }
+        const wait=result.verificationRetryAfterMs>0?waitText(result.verificationRetryAfterMs):'etwa 5 Minuten';
+        showPendingVerification(`<b>Die Registrierung ist offen, aber die Bestätigungs-E-Mail konnte gerade nicht gesendet werden.</b><br>Bitte NICHT erneut registrieren. Warte ${wait} und klicke dann nur auf „Bestätigungs-E-Mail erneut senden“.`);
+      }else if(result.verificationFailed){
+        showPendingVerification('<b>Die Registrierung ist offen, aber die Bestätigungs-E-Mail konnte noch nicht gesendet werden.</b><br>Bitte NICHT erneut registrieren. Nutze nur „Bestätigungs-E-Mail erneut senden“.');
       }else{
-        showMsg('<div class="ok"><b>Bestätigungs-E-Mail wurde gesendet.</b><br>Öffne die E-Mail und bestätige deine Adresse. Danach wird die Registrierung automatisch abgeschlossen.</div>');
+        showPendingVerification('<b>Bestätigungs-E-Mail wurde gesendet.</b><br>Öffne die E-Mail und bestätige deine Adresse. Danach wird die Registrierung automatisch abgeschlossen.','ok');
       }
       return;
     }
@@ -134,19 +169,22 @@ window.doRegister=async function(){
     else if(code==="auth/invalid-credential"||code==="auth/wrong-password")showMsg('<div class="no"><b>Das Passwort für dieses bestehende Konto ist nicht korrekt.</b><br>Nutze bei Bedarf „Ich habe schon ein Konto“ und dort „Passwort vergessen“.</div>');
     else if(code==="auth/too-many-requests"||message==="STUDENT_AUTH_THROTTLED"){
       console.warn('Firebase-Registrierung ist gedrosselt.',registrationAuthFailureState());
-      if(stage==='verification')showMsg('<div class="no"><b>Die Bestätigungs-E-Mail konnte nicht versendet werden.</b><br>Die Registrierung wurde nicht als abgeschlossen markiert.</div>');
-      else showMsg('<div class="no"><b>Firebase blockiert momentan die Erstellung neuer Konten.</b><br>Der Fehler kommt direkt aus Firebase Authentication (Konto-Erstellung). SprachPilot startet keine automatischen Wiederholungen.</div>');
+      if(stage==='verification')showPendingVerification('<b>Die Bestätigungs-E-Mail konnte momentan nicht versendet werden.</b><br>Die offene Registrierung bleibt erhalten. Bitte nicht erneut registrieren; warte etwa 5 Minuten und sende nur die E-Mail erneut.');
+      else showMsg('<div class="no"><b>Firebase blockiert momentan die Erstellung neuer Konten.</b><br>Bitte warte einige Minuten und versuche die Registrierung danach einmal neu. SprachPilot startet keine automatischen Wiederholungen.</div>');
     }
     else if(code==="auth/weak-password")showMsg('<div class="no">Bitte wähle ein stärkeres Passwort.</div>');
     else if(code==="auth/invalid-email")showMsg('<div class="no">Bitte gib eine gültige E-Mail-Adresse ein.</div>');
     else if(message==="STUDENT_AUTH_OWNERSHIP_MISMATCH")showMsg('<div class="no"><b>Registrierung konnte nicht abgeschlossen werden.</b><br>Dieses Schülerprofil ist bereits mit einem anderen Konto verbunden.</div>');
     else showMsg(`<div class="no">Registrierung nicht möglich: ${safeText(message||code||"Unbekannter Fehler")}</div>`);
-  }finally{registrationBusy=false;showRegisterButton(true);if(btn){btn.disabled=false;btn.textContent="Registrieren"}}
+  }finally{registrationBusy=false;showRegisterButton(!hasPendingStudentRegistration());if(btn){btn.disabled=false;btn.textContent="Registrieren"}}
 };
 const form=$("registerForm"),registerBtn=$("registerBtn");if(form)form.addEventListener("submit",event=>{event.preventDefault();window.doRegister()});if(registerBtn)registerBtn.addEventListener("click",()=>window.doRegister());
-if(hasPendingStudentRegistration()){showRegisterButton(true);showMsg('<div class="ok"><b>Es gibt bereits eine offene Registrierung.</b><br>Wenn du die Bestätigungs-E-Mail schon geöffnet hast, wird sie automatisch geprüft.</div>')}
+if(hasPendingStudentRegistration()){
+  showPendingVerification('<b>Es gibt bereits eine offene Registrierung.</b><br>Bitte nicht noch einmal registrieren. Bestätige deine E-Mail oder fordere nur die Bestätigungs-E-Mail erneut an.','ok');
+  setTimeout(()=>finishRegistrationAutomatically(),400);
+}
 const verificationReturn=new URLSearchParams(location.search).get('verify')==='1';if(verificationReturn&&hasPendingStudentRegistration())setTimeout(()=>finishRegistrationAutomatically({showChecking:true}),250);window.addEventListener('focus',()=>{if(hasPendingStudentRegistration())finishRegistrationAutomatically()});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&hasPendingStudentRegistration())finishRegistrationAutomatically()});
 </script>
-<script src="/shared/sprachpilot-design-system.js?v=20260824-register6"></script>
+<script src="/shared/sprachpilot-design-system.js?v=20260825-register7"></script>
 </body>
 </html>
