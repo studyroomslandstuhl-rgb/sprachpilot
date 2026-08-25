@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const EPOCH='20260825-register8';
+const EPOCH='20260825-register9';
 const KEY='SP_CACHE_EPOCH';
 if(window.__SP_CACHE_EPOCH_V4)return;window.__SP_CACHE_EPOCH_V4=true;
 async function clearAppCaches(){
