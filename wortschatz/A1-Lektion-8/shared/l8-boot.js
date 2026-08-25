@@ -8,23 +8,27 @@ function ensureStateV2(){
  return stateV2Promise;
 }
 function norm(value){return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim()}
-function taskText(task){
- const items=(Array.isArray(task?.items)?task.items:[]).slice(0,6).map(item=>`${item?.type||''} ${item?.prompt||''} ${item?.context||''} ${item?.hint||''}`).join(' ');
- return norm(`${task?.id||''} ${task?.title||''} ${task?.kind||''} ${task?.instruction||''} ${task?.intro||''} ${items}`);
-}
-function taskEmoji(task){
- const text=taskText(task),types=new Set((Array.isArray(task?.items)?task.items:[]).map(item=>String(item?.type||'').toLowerCase()));
- if(task?.exam||/prufung|exam/.test(text))return'⭐';
- if(/karte|card/.test(text)||task?.kind==='cards')return'📚';
+function l7MeaningEmoji(task){
+ const id=String(task?.id||'').toLowerCase(),title=String(task?.title||'').toLowerCase(),kind=String(task?.kind||'').toLowerCase(),text=`${id} ${title} ${kind}`;
+ if(task?.exam||/prüfung|pruefung|exam/.test(text))return'⭐';
+ if(/karte|card/.test(text))return'📚';
  if(/memory/.test(text))return'🧠';
- if(/hor|listen|audio/.test(text)||(task?.items||[]).some(item=>item?.audio||item?.audioFile))return'🎧';
- if(/lesen|reading|text versteh|leseversteh/.test(text))return'📖';
+ if(/hör|hoer|listen|audio/.test(text))return'🎧';
+ if(/lesen|reading|text.*versteh/.test(text))return'📖';
  if(/grammatik|grammar|satzteil/.test(text))return'🧲';
  if(/konjug|\bsein\b|\bhaben\b/.test(text))return'🔤';
  if(/endung|gruppe|sort|zuord/.test(text))return'📦';
- if(/ordnen|order|reihenfolge|redemittel/.test(text)||types.has('order'))return'🧩';
- if(/schreib|write|lucke|text|brief|information|markier|plural/.test(text)||types.has('input')||types.has('free'))return'✍️';
- if(/wahl|choice|artikel|richtig|falsch|uberschrift|fehler/.test(text)||types.has('choice'))return'✅';
+ if(/ordnen|order|reihenfolge|redemittel/.test(text))return'🧩';
+ if(/schreib|write|lücke|luecke|text|brief|information|markier|plural/.test(text))return'✍️';
+ if(/wahl|choice|artikel|richtig|falsch|überschrift|ueberschrift|fehler/.test(text))return'✅';
+ return'';
+}
+function taskEmoji(task){
+ const standard=l7MeaningEmoji(task);if(standard)return standard;
+ const types=(Array.isArray(task?.items)?task.items:[]).map(item=>String(item?.type||'').toLowerCase());
+ if(types.includes('order'))return'🧩';
+ if(types.includes('input')||types.includes('free'))return'✍️';
+ if(types.includes('choice'))return'✅';
  return'✅';
 }
 function polishHeader(){
