@@ -37,7 +37,7 @@ const ITEMS=[
  {id:'feiertag',word:'der Feiertag',answer:'An diesem Tag arbeiten viele Menschen nicht.',choices:['An diesem Tag arbeiten viele Menschen nicht.','Das ist ein Telefon.','Das ist eine Uhrzeit am Abend.']},
  {id:'schild',word:'das Schild',answer:'Darauf stehen Informationen.',choices:['Darauf stehen Informationen.','Damit kocht man Essen.','Damit hört man Musik.']},
  {id:'termin',word:'einen Termin vereinbaren',answer:'Man macht eine Zeit aus.',choices:['Man macht eine Zeit aus.','Man sieht einen Film.','Man räumt das Zimmer auf.']},
- {id:'ausleihen',word:'etwas ausleihen',answer:'Man nimmt etwas und bringt es später wieder.',choices:['Man nimmt etwas und bringt es später zurück.','Man bleibt den ganzen Tag zu Hause.','Man öffnet ein Geschäft.']},
+ {id:'ausleihen',word:'etwas ausleihen',answer:'Man nimmt etwas und bringt es später zurück.',choices:['Man nimmt etwas und bringt es später zurück.','Man bleibt den ganzen Tag zu Hause.','Man öffnet ein Geschäft.']},
  {id:'zum_beispiel',word:'z.B.',answer:'Das bedeutet: zum Beispiel.',choices:['Das bedeutet: zum Beispiel.','Das ist ein freier Tag.','Das ist eine Uhrzeit.']}
 ];
 const TOTAL=ITEMS.length,KEY=window.SP_L5T4_TASK10_KEY(FILE),area=document.getElementById('area');
@@ -54,4 +54,5 @@ function check(index,value,button){let state=load();if(state.current!==index){sh
 show();
 })();
 </script>
-</body></html>
+</body>
+</html>
