@@ -56,10 +56,11 @@ function semanticAccountExists(original,email){
   error.email=normalizedEmail(email);error.cause=original;error.spNoSecondCredentialAttempt=true;
   return error;
 }
-function semanticThrottle(original,email,stage='credential'){
+function semanticThrottle(original,email,stage='credential',retryAfterMs=0){
   const error=new Error('STUDENT_AUTH_THROTTLED');
   error.code='auth/too-many-requests';error.authStage=stage;
   error.email=normalizedEmail(email);error.cause=original;error.spNoSecondCredentialAttempt=true;
+  error.retryAfterMs=Math.max(0,Number(retryAfterMs||0));
   return error;
 }
 function blockedRegistrationError(email){
@@ -69,6 +70,11 @@ function blockedRegistrationError(email){
   if(block.code==='auth/too-many-requests')return semanticThrottle(null,wanted,'credential');
   if(block.code==='auth/email-already-in-use')return semanticAccountExists(null,wanted);
   return null;
+}
+function verificationThrottleRemaining(user){
+  const wanted=normalizedEmail(user?.email),block=readRegistrationBlock();
+  if(!wanted||!block||block.email!==wanted||block.stage!=='verification'||block.code!=='auth/too-many-requests')return 0;
+  return Math.max(0,THROTTLE_BLOCK_MS-(now()-Number(block.at||0)));
 }
 function normalizeCreateError(error,email){
   const code=String(error?.code||'');
@@ -162,6 +168,8 @@ export async function sendStudentVerification(user=auth.currentUser){
   await settleInitialAuth();user=user||auth.currentUser;
   if(!user||user.isAnonymous)throw new Error('SECURE_AUTH_USER_REQUIRED');
   if(user.emailVerified===true)return{skipped:true,reason:'already-verified'};
+  const retryAfterMs=verificationThrottleRemaining(user);
+  if(retryAfterMs>0)return{skipped:true,reason:'throttled-cooldown',retryAfterMs};
   if(verificationRecentlySent(user))return{skipped:true,reason:'cooldown'};
   recordAuthEvent('verification','start',{code:'started'});
 
@@ -177,16 +185,14 @@ export async function sendStudentVerification(user=auth.currentUser){
     console.warn('[SprachPilot] eigener Bestätigungsmail-Dienst noch nicht erreichbar; Firebase-Mail wird als Übergang genutzt.',customError?.code||customError?.message||customError);
   }
 
-  const preferredUrl=new URL('/register/?verify=1',location.origin).href;
   try{
-    try{await sendEmailVerification(user,{url:preferredUrl,handleCodeInApp:false})}
-    catch(error){if(error?.code!=='auth/unauthorized-continue-uri')throw error;await sendEmailVerification(user)}
+    await sendEmailVerification(user);
     rememberVerificationSent(user);recordAuthEvent('verification','success',{code:'success',transport:'firebase-default'});return{sent:true,transport:'firebase-default'};
   }catch(error){
     recordAuthEvent('verification','failure',{code:error?.code||error?.message,transport:'firebase-default'});
     if(error?.code==='auth/too-many-requests'){
       writeRegistrationBlock(user.email,'auth/too-many-requests','verification');
-      throw semanticThrottle(error,user.email,'verification');
+      throw semanticThrottle(error,user.email,'verification',THROTTLE_BLOCK_MS);
     }
     try{error.authStage='verification'}catch(e){}
     throw error;
