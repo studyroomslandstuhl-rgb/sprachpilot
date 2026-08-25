@@ -13,6 +13,7 @@ function taskText(task){
  return norm(`${task?.id||''} ${task?.title||''} ${task?.kind||''} ${task?.instruction||''} ${task?.intro||''} ${items}`);
 }
 function taskEmoji(task){
+ if(task?.icon)return String(task.icon);
  const text=taskText(task),types=new Set((Array.isArray(task?.items)?task.items:[]).map(item=>String(item?.type||'').toLowerCase()));
  if(task?.exam||/prufung|exam/.test(text))return'⭐';
  if(/karte|card/.test(text)||task?.kind==='cards')return'📚';
