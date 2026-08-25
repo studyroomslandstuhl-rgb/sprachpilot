@@ -1,0 +1,10 @@
+(function(){
+'use strict';
+if(window.__SP_L8T1_EXERCISE_MEDIA_V1)return;window.__SP_L8T1_EXERCISE_MEDIA_V1=true;
+const CDN='https://sprachpilot.b-cdn.net/';
+function mediaUrl(value){const raw=String(value||'').trim();if(!raw)return'';if(/^https?:\/\//i.test(raw))return raw;return CDN+raw.split('/').filter(Boolean).map(encodeURIComponent).join('/')}
+function current(){const taskId=new URLSearchParams(location.search).get('task'),theme=window.L8_THEME,task=(theme?.tasks||[]).find(t=>String(t?.id)===String(taskId));if(!task||task.kind==='cards')return null;const state=window.L8S?.load?.(1,task.id,task.items.length);const index=Number(state?.current);if(!Number.isInteger(index)||index<0||index>=task.items.length)return null;return{task,item:task.items[index],index}}
+function install(){const exercise=document.getElementById('exercise');if(!exercise||exercise.querySelector('.sp-l8t1-exercise-image'))return;const cur=current(),src=mediaUrl(cur?.item?.image||cur?.item?.img);if(!src)return;const box=document.createElement('div');box.className='sp-l8t1-exercise-image';const img=document.createElement('img');img.src=src;img.alt='Berufsbild';img.loading='eager';img.onerror=()=>box.remove();box.appendChild(img);const context=exercise.querySelector('.l8-context'),prompt=exercise.querySelector('.l8-prompt');exercise.insertBefore(box,context||prompt||exercise.firstChild)}
+const style=document.createElement('style');style.textContent=`.sp-l8t1-exercise-image{width:min(320px,78vw);height:min(320px,42vh);margin:0 auto 18px;border:2px solid var(--lesson-line,var(--l8-line));border-radius:20px;background:#fff;overflow:hidden;display:grid;place-items:center}.sp-l8t1-exercise-image img{width:100%;height:100%;object-fit:contain;display:block}`;document.head.appendChild(style);
+const root=document.getElementById('app');if(root)new MutationObserver(()=>requestAnimationFrame(install)).observe(root,{childList:true,subtree:true});[0,80,250,700].forEach(ms=>setTimeout(install,ms));
+})();
