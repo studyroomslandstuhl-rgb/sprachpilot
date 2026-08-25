@@ -7,7 +7,7 @@ import {
   sendStudentVerification,
   reloadFirebaseUser,
   secureStudentSignOut
-} from './student-secure-auth.js?v=20260824-register5';
+} from './student-secure-auth.js?v=20260825-register7';
 
 const PENDING_KEY='SP_PENDING_SECURE_STUDENT_REGISTRATION_V1';
 const RESERVED_COURSE_CODES=new Set(['ALLE','ALLEE','ALL_ACCESS','LEHRER','TEACHER']);
@@ -110,36 +110,35 @@ export async function registerStudentOnce(payload={},finishPendingStudentRegistr
   if(user.emailVerified!==true){
     try{
       const verification=await sendStudentVerification(user);
+      const throttled=verification?.reason==='throttled-cooldown';
       return{
         verificationRequired:true,
         verificationSent:verification?.sent===true||verification?.reason==='cooldown',
-        verificationThrottled:false,
+        verificationThrottled:throttled,
+        verificationRetryAfterMs:Number(verification?.retryAfterMs||0),
+        verificationRolledBack:false,
         email:pending.email,
         existingFirebaseAccount,
         accountCreatedThisAttempt:createdThisAttempt,
         verificationTransport:verification?.transport||''
       };
     }catch(error){
-      if(isVerificationThrottle(error)){
-        // Kein halbfertiges neues Konto zurücklassen. Dadurch führt ein fehlgeschlagener
-        // Mailversand nicht beim nächsten Versuch zu "E-Mail schon vorhanden"/falschem Passwort.
-        const rolledBack=await rollbackCredential(user,createdThisAttempt);
-        if(rolledBack){clearPending();clearRegistrationAuthFailure(pending.email)}
-        return{
-          verificationRequired:true,
-          verificationSent:false,
-          verificationThrottled:true,
-          verificationRolledBack:rolledBack,
-          email:pending.email,
-          existingFirebaseAccount,
-          accountCreatedThisAttempt:createdThisAttempt
-        };
-      }
-      if(createdThisAttempt){
-        const rolledBack=await rollbackCredential(user,true);
-        if(rolledBack){clearPending();clearRegistrationAuthFailure(pending.email)}
-      }
-      throw error;
+      const throttled=isVerificationThrottle(error);
+      // Sobald Firebase das Konto akzeptiert und der Kurs geprüft ist, bleibt die Registrierung offen.
+      // Ein Mailfehler darf das Konto nicht wieder löschen: genau dieses Löschen/Neuanlegen kann
+      // Firebase-Abuse-Schutz weiter verschärfen und führt zu scheinbar endlosen Registrierungsfehlern.
+      return{
+        verificationRequired:true,
+        verificationSent:false,
+        verificationThrottled:throttled,
+        verificationRetryAfterMs:Number(error?.retryAfterMs||0),
+        verificationFailed:true,
+        verificationErrorCode:String(error?.code||error?.message||''),
+        verificationRolledBack:false,
+        email:pending.email,
+        existingFirebaseAccount,
+        accountCreatedThisAttempt:createdThisAttempt
+      };
     }
   }
 
