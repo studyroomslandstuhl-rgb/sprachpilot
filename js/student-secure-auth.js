@@ -4,6 +4,7 @@ import {
   sendEmailVerification,
   sendPasswordResetEmail,
   reload,
+  getIdToken,
   signOut,
   EmailAuthProvider,
   linkWithCredential
@@ -117,7 +118,19 @@ export function registrationAuthDiagnostics(){return readJson(AUTH_DIAG_KEY,{cre
 export function clearRegistrationAuthFailure(email=''){clearRegistrationBlock(email)}
 
 export async function reloadFirebaseUser(user=auth.currentUser){
-  await settleInitialAuth();user=user||auth.currentUser;if(!user)return null;await reload(user);return auth.currentUser||user;
+  await settleInitialAuth();
+  user=user||auth.currentUser;
+  if(!user)return null;
+  const wasVerified=user.emailVerified===true;
+  await reload(user);
+  const refreshed=auth.currentUser||user;
+  // Firestore-Regeln prüfen email_verified aus dem ID-Token. Nach Klick auf den
+  // Bestätigungslink kann user.emailVerified bereits true sein, während das alte
+  // Token noch email_verified=false enthält. Deshalb Token sofort erneuern.
+  if(refreshed?.emailVerified===true&&!wasVerified){
+    try{await getIdToken(refreshed,true)}catch(error){console.warn('[SprachPilot] verifiziertes Firebase-Token konnte nicht sofort erneuert werden',error)}
+  }
+  return refreshed;
 }
 
 export async function signInSecureStudent(email,password){
@@ -131,6 +144,7 @@ export async function signInSecureStudent(email,password){
   const credential=await signInWithEmailAndPassword(auth,wanted,String(password||''));
   const user=await reloadFirebaseUser(credential.user);
   if(!user||user.isAnonymous||String(user.uid)!==String(credential.user.uid))throw new Error('SECURE_AUTH_RACE_DETECTED');
+  if(user.emailVerified===true){try{await getIdToken(user,true)}catch(e){}}
   return user;
 }
 
