@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
   <title>SprachPilot – Anmelden</title>
-  <link rel="stylesheet" href="../style.css?v=20260824-register6">
+  <link rel="stylesheet" href="../style.css?v=20260825-register8">
 </head>
 <body>
 <div class="container">
@@ -30,9 +30,9 @@
   </section>
   <footer>© SprachPilot</footer>
 </div>
-<script src="/shared/sp-cache-epoch.js?v=20260824-register6"></script>
+<script src="/shared/sp-cache-epoch.js?v=20260825-register8"></script>
 <script type="module">
-import {loginStudentWithEmailPassword,loginStudentProfileWithEmailPassword,resetStudentPassword,$,safeText,getRedirectTarget} from "../js/student-login-v2.js?v=20260824-link2";
+import {loginStudentWithEmailPassword,loginStudentProfileWithEmailPassword,resetStudentPassword,$,safeText,getRedirectTarget} from "../js/student-login-v2.js?v=20260825-link3";
 let loginInFlight=false,slowLoginTimer=null;
 function show(html){const result=$("loginResult");if(result)result.innerHTML=html;}
 function setLoginBusy(busy){const button=$("studentLoginButton");if(button){button.disabled=!!busy;button.textContent=busy?'Anmeldung läuft …':'Anmelden';}}
@@ -55,6 +55,7 @@ function handleLoginError(err,email,password){
  else if(message==="STUDENT_COURSE_MISSING")show('<div class="no"><b>Bei deinem Profil fehlt der Kurs.</b><br>Bitte wende dich an deine Lehrkraft.</div>');
  else if(message==="STUDENT_AUTH_OWNERSHIP_MISMATCH")show('<div class="no"><b>Dieses Profil ist bereits mit einem anderen Konto verbunden.</b><br>Bitte wende dich an deine Lehrkraft.</div>');
  else if(message==="LOCAL_PROGRESS_ISOLATION_FAILED")show('<div class="no"><b>Die Anmeldung konnte auf diesem Gerät nicht abgeschlossen werden.</b><br>Bitte lade die Seite neu und versuche es noch einmal.</div>');
+ else if(code==="permission-denied"||code==="firestore/permission-denied")show('<div class="no"><b>Das bestätigte Konto konnte das TN-Profil noch nicht anlegen.</b><br>Bitte lade die Seite einmal neu und melde dich erneut an.</div>');
  else if(code==="auth/invalid-credential"||code==="auth/user-not-found"||code==="auth/wrong-password")show('<div class="no"><b>E-Mail oder Passwort ist nicht korrekt.</b><br>Wenn du dein Passwort nicht kennst, nutze „Passwort vergessen“.</div>');
  else if(code==="auth/too-many-requests")show('<div class="no">Zu viele Anmeldeversuche. Bitte versuche nicht mehrfach hintereinander. Nutze bei Bedarf „Passwort vergessen“.</div>');
  else show(`<div class="no">Anmeldung nicht möglich: ${safeText(message||code||"Unbekannter Fehler")}</div>`)
@@ -67,6 +68,6 @@ window.studentLogin=async function(){
 window.resetPassword=async function(){const email=$("loginEmail").value.trim().toLowerCase();if(!email){show('<div class="no">Bitte zuerst deine E-Mail eingeben.</div>');return}try{await resetStudentPassword(email);show('<div class="ok">Wenn für diese E-Mail ein Konto existiert, wurde eine E-Mail zum Zurücksetzen des Passworts gesendet.</div>')}catch(err){console.error(err);show('<div class="no">Die Passwort-E-Mail konnte nicht gesendet werden.</div>')}};
 const loginButton=$("studentLoginButton"),resetButton=$("resetPasswordButton");if(loginButton)loginButton.addEventListener('click',()=>window.studentLogin());if(resetButton)resetButton.addEventListener('click',()=>window.resetPassword());
 </script>
-<script src="/shared/sprachpilot-design-system.js?v=20260824-register6"></script>
+<script src="/shared/sprachpilot-design-system.js?v=20260825-register8"></script>
 </body>
 </html>
