@@ -1,5 +1,5 @@
 import { loadCourse } from './auth.js';
-import { deleteUser } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
+import { deleteUser, updateProfile } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import {
   createSecureStudentCredential,
   signInSecureStudent,
@@ -10,12 +10,15 @@ import {
 } from './student-secure-auth.js?v=20260825-register7';
 
 const PENDING_KEY='SP_PENDING_SECURE_STUDENT_REGISTRATION_V1';
+const AUTH_PENDING_PREFIX='SPREG1|';
 const RESERVED_COURSE_CODES=new Set(['ALLE','ALLEE','ALL_ACCESS','LEHRER','TEACHER']);
 const STALE_AUTH_CODES=new Set(['auth/user-token-expired','auth/invalid-user-token','auth/user-not-found','auth/user-disabled']);
 
 function normEmail(value){return String(value||'').trim().toLowerCase()}
 function clean(value){return String(value||'').trim()}
+function normCourse(value){return clean(value).toLowerCase()}
 function writePending(value){localStorage.setItem(PENDING_KEY,JSON.stringify(value))}
+function readPending(){try{return JSON.parse(localStorage.getItem(PENDING_KEY)||'null')}catch(e){return null}}
 function clearPending(){try{localStorage.removeItem(PENDING_KEY)}catch(e){}}
 function assertCourseAllowed(course){
   if(RESERVED_COURSE_CODES.has(clean(course).toUpperCase()))throw new Error('RESERVED_COURSE_CODE');
@@ -43,6 +46,58 @@ function isStaleAuthError(error){
   const message=String(error?.message||'').toLowerCase();
   return STALE_AUTH_CODES.has(code)||message.includes('user-token-expired')||message.includes('invalid-user-token')||message.includes('user-not-found');
 }
+function enc(value){return encodeURIComponent(clean(value))}
+function dec(value){try{return decodeURIComponent(String(value||''))}catch(e){return String(value||'')}}
+function encodeAuthPending(pending={}){
+  return AUTH_PENDING_PREFIX+[
+    pending.vorname,pending.nachname,pending.muttersprache,
+    pending.courseCode||pending.kurs,pending.courseDocId||''
+  ].map(enc).join('|');
+}
+function decodeAuthPending(displayName=''){
+  const raw=String(displayName||'');
+  if(!raw.startsWith(AUTH_PENDING_PREFIX))return null;
+  const parts=raw.slice(AUTH_PENDING_PREFIX.length).split('|').map(dec);
+  if(parts.length<4)return null;
+  const [vorname,nachname,muttersprache,kurs,courseDocId='']=parts;
+  if(!vorname||!nachname||!muttersprache||!kurs)return null;
+  return{vorname,nachname,muttersprache,kurs,courseCode:kurs,courseDocId};
+}
+function pendingMatchesUser(pending,user,courseRaw=''){
+  if(!pending||!user||user.isAnonymous||!user.uid)return false;
+  if(normEmail(pending.email)!==normEmail(user.email))return false;
+  if(pending.uid&&String(pending.uid)!==String(user.uid))return false;
+  const wanted=normCourse(courseRaw);
+  if(!wanted)return true;
+  return [pending.kurs,pending.courseCode,pending.courseDocId].some(value=>normCourse(value)===wanted);
+}
+async function persistAuthPending(user,pending){
+  if(!user||user.isAnonymous||!user.uid)throw new Error('SECURE_AUTH_USER_REQUIRED');
+  const token=encodeAuthPending(pending);
+  await updateProfile(user,{displayName:token});
+  return token;
+}
+
+export function restorePendingStudentRegistration(user,courseRaw=''){
+  const local=readPending();
+  if(pendingMatchesUser(local,user,courseRaw))return local;
+  const meta=decodeAuthPending(user?.displayName||'');
+  if(!meta)return null;
+  const wanted=normCourse(courseRaw);
+  if(wanted&&![meta.kurs,meta.courseCode,meta.courseDocId].some(value=>normCourse(value)===wanted))return null;
+  const pending={
+    ...meta,
+    email:normEmail(user.email),
+    uid:String(user.uid),
+    createdAt:Date.now(),
+    restoredFromAuthProfile:true
+  };
+  writePending(pending);
+  return pending;
+}
+
+export function isAuthPendingRegistration(user){return !!decodeAuthPending(user?.displayName||'')}
+
 async function validatedExistingSession(email){
   const wanted=normEmail(email),current=currentAuthUser();
   if(!current||current.isAnonymous)return current;
@@ -107,6 +162,22 @@ export async function registerStudentOnce(payload={},finishPendingStudentRegistr
   pending.createdAt=Date.now();
   writePending(pending);
 
+  // Die für das spätere Firestore-TN-Profil nötigen Daten werden zusätzlich im eigenen
+  // Firebase-Auth-Profil zwischengespeichert. So kann ein bestätigter Account auch dann
+  // fertiggestellt werden, wenn der Mail-Link in einem anderen Browser/Tab geöffnet wurde
+  // und dort kein localStorage-Pending vorhanden ist.
+  try{
+    await persistAuthPending(user,pending);
+  }catch(error){
+    console.error('[SprachPilot] Registrierungsdaten konnten nicht am Firebase-Konto hinterlegt werden',error);
+    const rolledBack=await rollbackCredential(user,createdThisAttempt);
+    if(rolledBack)clearPending();
+    const wrapped=new Error('REGISTRATION_PROFILE_METADATA_FAILED');
+    wrapped.code='sp/registration-profile-metadata-failed';
+    wrapped.cause=error;
+    throw wrapped;
+  }
+
   if(user.emailVerified!==true){
     try{
       const verification=await sendStudentVerification(user);
@@ -124,9 +195,6 @@ export async function registerStudentOnce(payload={},finishPendingStudentRegistr
       };
     }catch(error){
       const throttled=isVerificationThrottle(error);
-      // Sobald Firebase das Konto akzeptiert und der Kurs geprüft ist, bleibt die Registrierung offen.
-      // Ein Mailfehler darf das Konto nicht wieder löschen: genau dieses Löschen/Neuanlegen kann
-      // Firebase-Abuse-Schutz weiter verschärfen und führt zu scheinbar endlosen Registrierungsfehlern.
       return{
         verificationRequired:true,
         verificationSent:false,
