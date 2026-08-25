@@ -1,5 +1,12 @@
 (function(){
 'use strict';
+let stateV2Promise=null;
+function ensureStateV2(){
+ if(window.__SP_L8_STATE_V2&&window.L8S?.stateSchema===2)return Promise.resolve();
+ if(stateV2Promise)return stateV2Promise;
+ stateV2Promise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='../shared/l8-state-v2.js?v=20260825-progress2';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
+ return stateV2Promise;
+}
 function norm(value){return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim()}
 function taskText(task){
  const items=(Array.isArray(task?.items)?task.items:[]).slice(0,6).map(item=>`${item?.type||''} ${item?.prompt||''} ${item?.context||''} ${item?.hint||''}`).join(' ');
@@ -41,8 +48,9 @@ function polishTaskEmojis(){
  const line=document.querySelector('.l8-task-title-block p');
  if(task&&line)line.textContent=`${taskEmoji(task)} ${task.instruction||''}`;
 }
-function start(){
- if(window.L8_T2_TIME_REVIEW_PENDING||window.L8_T2_QUALITY_PENDING||!window.L8_THEME||!window.L8S||!window.L8UI){setTimeout(start,30);return}
+async function start(){
+ try{await ensureStateV2()}catch(error){console.error('L8 Fortschrittssystem konnte nicht geladen werden',error)}
+ if(window.L8_T2_TIME_REVIEW_PENDING||window.L8_T2_QUALITY_PENDING||!window.L8_THEME||!window.L8S||!window.L8UI||window.L8S.stateSchema!==2){setTimeout(start,30);return}
  if(document.body.dataset.page==='theme')window.L8UI.themeOverview();else window.L8UI.taskPage();
  [0,80,250,700,1500].forEach(ms=>setTimeout(()=>{polishHeader();polishTaskEmojis()},ms));
 }
