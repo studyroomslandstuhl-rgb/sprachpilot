@@ -118,8 +118,16 @@ async function createVerifiedProfileFromPending(user,email,courseRaw=''){
   if(!loaded)throw new Error('COURSE_NOT_FOUND');
   const courseCode=loaded.data?.courseCode||loaded.data?.code||loaded.data?.kurs||loaded.data?.kursnummer||loaded.id;
   const mail=normEmail(user.email),studentId=makeStudentId(mail,loaded.id);
-  const existing=await getDocFromServer(doc(db,'students',studentId));
-  if(existing.exists()){
+  let existing=null;
+  try{
+    existing=await getDocFromServer(doc(db,'students',studentId));
+  }catch(error){
+    // Bei einem noch nicht existierenden Dokument kann die alte Firestore-Regel den GET
+    // mit permission-denied ablehnen, obwohl CREATE für den verifizierten Eigentümer erlaubt ist.
+    // In diesem Fall direkt den sicheren CREATE versuchen statt die Anmeldung abzubrechen.
+    if(!String(error?.code||'').includes('permission-denied'))throw error;
+  }
+  if(existing?.exists()){
     const row=await claimLegacyStudentRecord(existing.id||studentId,existing.data()||{},user,mail);
     clearPendingRegistration();await clearAuthRegistrationMarker(user,pending);
     return row;
