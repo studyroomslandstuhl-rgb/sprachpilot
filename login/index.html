@@ -6,7 +6,7 @@
   <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
   <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
   <title>SprachPilot – Anmelden</title>
-  <link rel="stylesheet" href="../style.css?v=20260825-register8">
+  <link rel="stylesheet" href="../style.css?v=20260825-register9">
 </head>
 <body>
 <div class="container">
@@ -30,9 +30,9 @@
   </section>
   <footer>© SprachPilot</footer>
 </div>
-<script src="/shared/sp-cache-epoch.js?v=20260825-register8"></script>
+<script src="/shared/sp-cache-epoch.js?v=20260825-register9"></script>
 <script type="module">
-import {loginStudentWithEmailPassword,loginStudentProfileWithEmailPassword,resetStudentPassword,$,safeText,getRedirectTarget} from "../js/student-login-v2.js?v=20260825-link3";
+import {loginStudentWithEmailPassword,loginStudentProfileWithEmailPassword,resetStudentPassword,$,safeText,getRedirectTarget} from "../js/student-login-v2.js?v=20260825-link4";
 let loginInFlight=false,slowLoginTimer=null;
 function show(html){const result=$("loginResult");if(result)result.innerHTML=html;}
 function setLoginBusy(busy){const button=$("studentLoginButton");if(button){button.disabled=!!busy;button.textContent=busy?'Anmeldung läuft …':'Anmelden';}}
@@ -68,6 +68,6 @@ window.studentLogin=async function(){
 window.resetPassword=async function(){const email=$("loginEmail").value.trim().toLowerCase();if(!email){show('<div class="no">Bitte zuerst deine E-Mail eingeben.</div>');return}try{await resetStudentPassword(email);show('<div class="ok">Wenn für diese E-Mail ein Konto existiert, wurde eine E-Mail zum Zurücksetzen des Passworts gesendet.</div>')}catch(err){console.error(err);show('<div class="no">Die Passwort-E-Mail konnte nicht gesendet werden.</div>')}};
 const loginButton=$("studentLoginButton"),resetButton=$("resetPasswordButton");if(loginButton)loginButton.addEventListener('click',()=>window.studentLogin());if(resetButton)resetButton.addEventListener('click',()=>window.resetPassword());
 </script>
-<script src="/shared/sprachpilot-design-system.js?v=20260825-register8"></script>
+<script src="/shared/sprachpilot-design-system.js?v=20260825-register9"></script>
 </body>
 </html>
