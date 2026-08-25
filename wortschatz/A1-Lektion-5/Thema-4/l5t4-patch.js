@@ -7,7 +7,8 @@
   function patch(id,data){const w=findWord(id);if(w)Object.assign(w,data)}
   function forceImage(w,name){if(!w)return;const n=cleanName(name||w.imageBase||w.id||w.image);if(!n)return;w.imageBase=n;w.image=bunny(n);w.localImage=''}
 
-  ['halb'].forEach(id=>{const idx=WORDS.findIndex(w=>w&&w.id===id);if(idx>=0)WORDS.splice(idx,1)});
+  ['halb','ich_bin_fertig'].forEach(id=>{const idx=WORDS.findIndex(w=>w&&w.id===id);if(idx>=0)WORDS.splice(idx,1)});
+  for(let i=WORDS.length-1;i>=0;i--){const text=String(WORDS[i]?.full||WORDS[i]?.word||'').trim().toLowerCase().replace(/[.!?]+$/,'');if(text==='ich bin fertig')WORDS.splice(i,1)}
   if(Array.isArray(WORDS)) WORDS.forEach(w=>forceImage(w));
 
   patch('ist_geoeffnet',{imageBase:'ist_geoeffnet',image:bunny('ist_geoeffnet'),aliases:['ist geöffnet','geöffnet']});
@@ -29,12 +30,11 @@
   patch('feiertag',{imageBase:'feiertag',image:bunny('feiertag')});
   patch('oeffnungszeiten',{imageBase:'oeffnungszeiten',image:bunny('oeffnungszeiten')});
   patch('schild',{imageBase:'schild',image:bunny('schild')});
-  patch('ganz',{imageBase:'ganz',image:bunny('ganz')});
+  patch('ganz',{imageBase:'den_ganzen_tag',image:bunny('den_ganzen_tag')});
   patch('ganzen_tag',{imageBase:'den_ganzen_tag',image:bunny('den_ganzen_tag')});
   patch('zum_beispiel',{imageBase:'zum_beispiel',image:bunny('zum_beispiel'),cue:null,aliases:['zum Beispiel']});
   patch('wieder',{imageBase:'wieder',image:bunny('wieder')});
   patch('total',{imageBase:'ich_bin_total_fertig',image:bunny('ich_bin_total_fertig'),cue:null,aliases:['total','absolut']});
-  patch('ich_bin_fertig',{imageBase:'ich_bin_total_fertig',image:bunny('ich_bin_total_fertig')});
   patch('jugend',{imageBase:'jugendliche',image:bunny('jugendliche')});
   patch('jugendliche',{imageBase:'jugendliche',image:bunny('jugendliche')});
 
