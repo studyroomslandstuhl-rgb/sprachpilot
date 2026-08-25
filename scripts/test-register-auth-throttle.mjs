@@ -34,7 +34,7 @@ assert.doesNotMatch(registrationBlock,/createSecureStudentCredential\s*\(/,'regi
 assert.doesNotMatch(registrationBlock,/signInSecureStudent\s*\(/,'registration wrapper must not perform its own password-login fallback');
 assert.match(registrationBlock,/registerStudentOnce\(\{\.\.\.payload,email,password\},finishPendingStudentRegistration\)/,'registration wrapper must delegate to the helper');
 
-// Registration helper: one account-creation attempt and safe recovery for an already existing account.
+// Registration helper: one account-creation attempt, safe recovery, and durable pending profile metadata.
 assert.equal((registration.match(/await createSecureStudentCredential\s*\(/g)||[]).length,1,'registration helper must perform exactly one credential creation call');
 assert.equal((registration.match(/await signInSecureStudent\s*\(/g)||[]).length,1,'existing-account recovery must perform at most one password-login call');
 assert.match(registration,/async function validatedExistingSession\(email\)/,'restored Firebase sessions must be validated before reuse');
@@ -44,13 +44,28 @@ assert.match(registration,/user=await reloadFirebaseUser\(user\)/,'new or recove
 assert.match(registration,/SECURE_AUTH_ACCOUNT_CONFIRMATION_FAILED/,'unconfirmed auth objects must never be reported as accounts');
 assert.match(registration,/existingFirebaseAccount=true/,'an interrupted real account must be recoverable');
 assert.match(registration,/verificationRolledBack:false/,'verification transport failure must not delete an accepted Firebase account');
+assert.match(registration,/AUTH_PENDING_PREFIX='SPREG1\|'/,'registration data must have a durable Firebase Auth marker format');
+assert.match(registration,/await updateProfile\(user,\{displayName:token\}\)/,'name, language and course metadata must survive outside localStorage until activation');
+assert.match(registration,/export function restorePendingStudentRegistration/,'verified login must be able to restore registration metadata from Firebase Auth');
 
-// Login remains able to recover prepared TN profiles and must not spam verification emails.
+// Login: a verified Firebase account with no Firestore profile must create its TN profile on first login.
 assert.match(loginHtml,/id="loginCourse"/,'login page must offer a course code for first-time profile linking');
-assert.match(login,/async function recoverPreparedProfile\(user,email,courseRaw\)/,'student login must have prepared-profile recovery');
-assert.match(login,/async function claimLegacyStudentRecord/,'legacy TN profile must have an explicit secure claim step');
+assert.match(loginHtml,/student-login-v2\.js\?v=20260825-link3/,'login page must load verified profile recovery code');
+assert.match(login,/async function createVerifiedProfileFromPending\(user,email,courseRaw='?'?\)/,'login must have a first-login profile creation path');
+assert.match(login,/restorePendingStudentRegistration\(user,courseRaw\)/,'first login must restore registration metadata from Firebase Auth when localStorage is missing');
+assert.match(login,/await setDoc\(doc\(db,'students',studentId\),st\)/,'verified first login must create the Firestore student profile');
+assert.match(login,/await setDoc\(doc\(db,'progress',studentId\)/,'verified first login must create the matching progress document');
+assert.match(login,/aliasIds:\[studentId\]/,'new student identity must satisfy canonical Firestore identity rules');
+assert.match(login,/clearAuthRegistrationMarker\(user,pending\)/,'temporary Firebase Auth registration metadata must be removed after profile creation');
+assert.match(login,/async function recoverPreparedProfile\(user,email,courseRaw\)/,'student login must still have prepared legacy-profile recovery');
+assert.match(login,/async function claimLegacyStudentRecord/,'legacy TN profile must still have an explicit secure claim step');
 assert.doesNotMatch(login,/sendStudentVerification/,'login attempts must not trigger verification-mail sends');
 assert.match(login,/if\(user\.emailVerified!==true\)throw new Error\('EMAIL_NOT_VERIFIED'\)/,'unverified login must stop without sending mail');
+
+// After email verification, Firestore must get a fresh token before profile writes.
+assert.match(secureAuth,/getIdToken/,'secure auth must be able to refresh the Firebase ID token');
+assert.match(secureAuth,/await getIdToken\(refreshed,true\)/,'verification transition must force-refresh email_verified in the token');
+assert.match(secureAuth,/if\(user\.emailVerified===true\)\{try\{await getIdToken\(user,true\)/,'password login of a verified user must also refresh the token before Firestore writes');
 
 // Secure auth still rate-limits mail delivery and performs at most one Firebase fallback request per allowed attempt.
 assert.match(secureAuth,/sendVerificationViaSprachPilot/,'student verification must try the SprachPilot mail service first');
@@ -64,4 +79,4 @@ assert.match(secureAuth,/writeRegistrationBlock\(email,'auth\/too-many-requests'
 assert.match(firebase,/export const authReady=initialAuthState;/,'authReady must only wait for restored auth state');
 assert.doesNotMatch(firebase,/export const authReady=ensureAuth\(\);/,'firebase.js must not sign in anonymously on import');
 
-console.log('Registration auth guard passed: normal register button remains available, stale pending UI cannot block signup, and auth retries stay rate-limited.');
+console.log('Registration auth guard passed: verified Firebase accounts create their Firestore TN profile on first login, even when the email link opened in another browser.');
