@@ -7,10 +7,10 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const norm=v=>String(v??'').trim().toLowerCase().replace(/[.,!?;:“”"'`´()]/g,'').replace(/\s+/g,' ');
 const shuffle=a=>{a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function role(){return String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||localStorage.getItem('SP_USER_ROLE')||'').toLowerCase()}
-function readJson(key){try{return JSON.parse(localStorage.getItem(key)||'null')||{}}catch(e){return{}}}
+function readJson(key){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):null}catch(e){return null}}
 function profile(){
  const r=role();
- if(['teacher','lehrer','admin','owner','superadmin'].includes(r))return readJson('SP_TEACHER_PROFILE');
+ if(['teacher','lehrer','admin','owner','superadmin'].includes(r))return readJson('SP_TEACHER_PROFILE')||{};
  return readJson('SP_USER_PROFILE')||readJson('SP_STUDENT_PROFILE')||{}
 }
 function preview(){
@@ -47,7 +47,7 @@ function identityMatch(key){const text=String(key||''),id=pid();if(preview())ret
 function candidateKeys(theme,task,storage){
  const suffix=`_T${theme}_${task}`,keys=[k(theme,task)],old=`${preview()?'SP_L7_PREVIEW':'SP_L7'}_${legacyPid()}${suffix}`;
  if(!keys.includes(old))keys.push(old);
- if(!preview()){const student=`SP_L7_student${suffix}`;if(!keys.includes(student))keys.push(student)}
+ if(!preview()&&pid()==='student'){const student=`SP_L7_student${suffix}`;if(!keys.includes(student))keys.push(student)}
  for(let i=0;i<storage.length;i++){const key=storage.key(i),text=String(key||'');if(text.startsWith(preview()?'SP_L7_PREVIEW_':'SP_L7_')&&text.endsWith(suffix)&&identityMatch(text)&&!keys.includes(key))keys.push(key)}
  return keys
 }
@@ -82,7 +82,7 @@ function image(file,alt='Bild'){if(!file)return'';const src=/^https?:\/\//i.test
 function say(text,fail){if(!('speechSynthesis' in window)){fail?.();return}try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=.84;u.onerror=()=>fail?.();speechSynthesis.speak(u)}catch(e){fail?.()}}
 function dash(){return ['teacher','lehrer','admin','owner','superadmin'].includes(role())?'/teacher/index.html':'/student-dashboard/index.html'}
 function header(theme,title,reset=false){const p=profile(),name=[p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join(' ')||(preview()?'Lehrer-Vorschau':'Schüler/in');return`<header class="l7-topbar"><div class="l7-top-main"><a class="l7-brand" href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"><div><h1>SprachPilot</h1><p>Lektion 7 · Thema ${theme} · ${esc(title)}</p></div></a><div class="l7-account"><span>${esc(name)}</span><a href="${dash()}">Dashboard</a><a href="/profile/index.html">Profil</a></div></div><nav><a class="l7-btn secondary" href="../index.html">← Lektion 7</a><a class="l7-btn secondary" href="index.html">Themenübersicht</a>${reset?'<button class="l7-btn danger" id="resetTheme">Fortschritte löschen</button>':''}</nav></header>`}
-function reset(theme){if(preview()){alert('In der Lehrer-Vorschau werden keine Teilnehmerpunkte verändert.');return}if(window.L7ThemeScore?.resetPractice)return window.L7ThemeScore.resetPractice(theme);if(!confirm(`Fortschritte in Lektion 7 · Thema ${theme} löschen? Bereits verdiente Punkte bleiben erhalten.`))return;const prefixes=[`SP_L7_${pid()}_T${theme}_`,`SP_L7_${legacyPid()}_T${theme}_`,`SP_L7_student_T${theme}_`],keys=[];for(let i=0;i<localStorage.length;i++){const x=String(localStorage.key(i)||'');if(prefixes.some(prefix=>x.startsWith(prefix)))keys.push(x)}keys.forEach(x=>localStorage.removeItem(x));location.href='index.html?reset='+Date.now()}
+function reset(theme){if(preview()){alert('In der Lehrer-Vorschau werden keine Teilnehmerpunkte verändert.');return}if(window.L7ThemeScore?.resetPractice)return window.L7ThemeScore.resetPractice(theme);if(!confirm(`Fortschritte in Lektion 7 · Thema ${theme} löschen? Bereits verdiente Punkte bleiben erhalten.`))return;const prefixes=[`SP_L7_${pid()}_T${theme}_`,`SP_L7_${legacyPid()}_T${theme}_`];if(pid()==='student')prefixes.push(`SP_L7_student_T${theme}_`);const keys=[];for(let i=0;i<localStorage.length;i++){const x=String(localStorage.key(i)||'');if(prefixes.some(prefix=>x.startsWith(prefix)))keys.push(x)}keys.forEach(x=>localStorage.removeItem(x));location.href='index.html?reset='+Date.now()}
 function mic(item,ok,tech){const R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){tech('Das Mikrofon wird nicht unterstützt. Bitte schreibe.');return}if(rec)try{rec.abort()}catch(e){}let got=false,bad=false;try{rec=new R()}catch(e){tech('Das Mikrofon konnte nicht gestartet werden. Bitte schreibe.');return}rec.lang='de-DE';rec.interimResults=false;rec.maxAlternatives=5;tech('Ich höre zu …');rec.onresult=e=>{got=true;ok(Array.from(e.results[0]||[]).map(x=>x.transcript))};rec.onerror=()=>{bad=true;tech('Das Mikrofon ist blockiert oder hat nicht funktioniert. Bitte schreibe.')};rec.onend=()=>{rec=null;if(!got&&!bad)tech('Ich konnte nichts erkennen. Bitte schreibe.')};try{rec.start()}catch(e){tech('Das Mikrofon konnte nicht gestartet werden. Bitte schreibe.')}}
 window.L7S={T,esc,norm,shuffle,profile,preview,load,save,index,attempt,wrong,right,markRepeat,pct,allDone,image,say,header,reset,mic,task,pid,run};
 })();
