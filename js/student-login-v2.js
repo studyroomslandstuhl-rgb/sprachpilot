@@ -3,7 +3,7 @@ import { loadCourse, makeStudentId } from './auth.js';
 import {
   signInSecureStudent,
   secureStudentSignOut
-} from './student-secure-auth.js?v=20260824-register5';
+} from './student-secure-auth.js?v=20260825-register7';
 import {
   finishPendingStudentRegistration,
   hasPendingStudentRegistration,
@@ -14,6 +14,7 @@ import { registerStudentOnce } from './student-registration-v3.js?v=20260824-reg
 
 export { finishPendingStudentRegistration, hasPendingStudentRegistration, resetStudentPassword, $, safeText, getRedirectTarget };
 
+const PENDING_KEY='SP_PENDING_SECURE_STUDENT_REGISTRATION_V1';
 function normEmail(value){return String(value||'').trim().toLowerCase()}
 function normCourse(value){return String(value||'').trim().toLowerCase()}
 function uniq(values){return [...new Set((values||[]).filter(Boolean).map(v=>String(v).trim()).filter(Boolean))]}
@@ -24,6 +25,16 @@ function displayName(data={}){return [data.vorname||data.firstName||data.name,da
 function rankingPoints(data={}){return Math.max(point(data.rankingPoints),point(data.pointsTotal),point(data.lifetimePoints),point(data.punkteGesamt),point(data.points),point(data.ranking?.points),point(data.totals?.points))}
 function activeOwnProfile(data={}){return data.securityArchived!==true&&data.securityLookupExcluded!==true&&data.active!==false&&String(data.authUid||'').trim()!==''}
 function courseMatches(data={},variants=[]){const wanted=new Set((variants||[]).map(normCourse).filter(Boolean));return [data.courseCode,data.kurs,data.kursnummer,data.courseDocId,data.course].some(value=>wanted.has(normCourse(value)))}
+function pendingRegistrationFor(email,courseRaw=''){
+  let pending=null;
+  try{pending=JSON.parse(localStorage.getItem(PENDING_KEY)||'null')}catch(e){pending=null}
+  if(!pending||normEmail(pending.email)!==normEmail(email))return null;
+  const raw=normCourse(courseRaw);
+  if(!raw)return pending;
+  const variants=[pending.kurs,pending.courseCode,pending.courseDocId].map(normCourse).filter(Boolean);
+  return variants.includes(raw)?pending:null;
+}
+function clearPendingRegistration(){try{localStorage.removeItem(PENDING_KEY)}catch(e){}}
 async function ownProfiles(uid){
   const snap=await getDocsFromServer(query(collection(db,'students'),where('authUid','==',String(uid)),limit(20)));
   return snap.docs.map(d=>({id:d.id,data:d.data()||{}})).filter(row=>activeOwnProfile(row.data)).map(row=>({id:row.id,course:courseOf(row.data),name:displayName(row.data),data:row.data}));
@@ -31,8 +42,6 @@ async function ownProfiles(uid){
 async function verifiedPasswordUser(email,password){
   const emailNorm=normEmail(email),pwd=String(password||'');if(!emailNorm||!pwd)throw new Error('MISSING_LOGIN_FIELDS');
   const user=await signInSecureStudent(emailNorm,pwd);
-  // Login darf niemals automatisch eine weitere Bestätigungs-E-Mail auslösen.
-  // Die Registrierung sendet genau eine Mail; zusätzliche Login-Versuche dürfen Firebase nicht drosseln.
   if(user.emailVerified!==true)throw new Error('EMAIL_NOT_VERIFIED');
   if(user.isAnonymous||!user.uid)throw new Error('SECURE_AUTH_REQUIRED');return user;
 }
@@ -97,6 +106,41 @@ async function claimLegacyStudentRecord(studentId,data,user,email){
   }catch(error){console.warn('Progress-Verknüpfung beim Altprofil-Login wurde übersprungen',error)}
   return{id,course:courseOf(data),name:displayName(data),data:{...data,authUid:String(user.uid),authEmail:mail,authVersion:Math.max(2,Number(data?.authVersion||0))}};
 }
+async function createVerifiedProfileFromPending(user,email,courseRaw=''){
+  const pending=pendingRegistrationFor(email,courseRaw);
+  if(!pending)return null;
+  const loaded=await loadCourse(pending.courseDocId||pending.courseCode||pending.kurs);
+  if(!loaded)throw new Error('COURSE_NOT_FOUND');
+  const courseCode=loaded.data?.courseCode||loaded.data?.code||loaded.data?.kurs||loaded.data?.kursnummer||loaded.id;
+  const mail=normEmail(user.email),studentId=makeStudentId(mail,loaded.id);
+  const existing=await getDocFromServer(doc(db,'students',studentId));
+  if(existing.exists()){
+    const row=await claimLegacyStudentRecord(existing.id||studentId,existing.data()||{},user,mail);
+    clearPendingRegistration();
+    return row;
+  }
+  const st={
+    canonicalStudentId:studentId,studentId,userId:studentId,docId:studentId,aliasIds:[studentId],
+    authUid:String(user.uid),authEmail:mail,authVersion:3,authLinkedAt:serverTimestamp(),
+    vorname:String(pending.vorname||'').trim(),nachname:String(pending.nachname||'').trim(),email:mail,
+    muttersprache:String(pending.muttersprache||'').trim(),
+    kurs:courseCode,kursnummer:courseCode,courseCode,courseDocId:loaded.id,
+    role:'student',loginRole:'student',isStudent:true,isTeacher:false,
+    profilVollstaendig:false,active:true,
+    fragenFortschritt:0,verbenFortschritt:0,wortschatzFortschritt:0,
+    identityVersion:3,createdAt:serverTimestamp(),lastLogin:serverTimestamp()
+  };
+  await setDoc(doc(db,'students',studentId),st);
+  await setDoc(doc(db,'progress',studentId),{
+    canonicalStudentId:studentId,studentId,userId:studentId,docId:studentId,aliasIds:[studentId],
+    authUid:String(user.uid),authEmail:mail,authVersion:3,
+    email:mail,kurs:courseCode,kursnummer:courseCode,courseCode,courseDocId:loaded.id,
+    fragen:{progress:0,state:{}},verben:{progress:0,stars:0,state:{}},wortschatz:{progress:0,state:{}},grammatik:{progress:0,state:{}},
+    updatedAt:serverTimestamp()
+  },{merge:true});
+  clearPendingRegistration();
+  return{id:studentId,course:courseCode,name:displayName(st),data:st};
+}
 async function recoverPreparedProfile(user,email,courseRaw){
   const mail=normEmail(email),raw=String(courseRaw||'').trim();
   if(!raw)throw new Error('STUDENT_COURSE_REQUIRED_FOR_LINK');
@@ -145,6 +189,11 @@ async function loginResolvedProfile(email,password,requestedId='',courseRaw=''){
   const user=await verifiedPasswordUser(email,password),profiles=await ownProfiles(user.uid);
   let selected=null;
   if(!profiles.length){
+    // Neue Registrierung: Das Firebase-Konto existiert nach der E-Mail-Bestätigung,
+    // das Firestore-TN-Profil wird jetzt beim ersten verifizierten Login zuverlässig
+    // aus den lokal gespeicherten Registrierungsdaten angelegt.
+    selected=await createVerifiedProfileFromPending(user,email,courseRaw);
+    if(selected)return activateBoundProfile(selected,user);
     try{selected=await recoverPreparedProfile(user,email,courseRaw)}catch(error){try{await secureStudentSignOut()}catch(e){};throw error}
     return activateBoundProfile(selected,user);
   }
