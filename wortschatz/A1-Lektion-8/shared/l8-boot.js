@@ -7,7 +7,7 @@ function polishHeader(){
  const subtitle=document.querySelector('.sp-header__subtitle');
  if(subtitle)subtitle.textContent=task?`${task.title} · A1 Lektion 8 · Thema ${t.number}`:`${t.title} · A1 Lektion 8 · Thema ${t.number}`;
  document.querySelectorAll('.sp-header__nav-link').forEach(link=>{
-  if(String(link.textContent||'').trim()==='Übersicht'&&link.tagName==='A')link.setAttribute('href','index.html');
+  if(String(link.textContent||'').trim()==='Übersicht'&&link.tagName==='A')link.setAttribute('href','uebersicht.html');
  });
 }
 function start(){
