@@ -23,9 +23,10 @@ assert.doesNotMatch(html,/showPendingVerification/,'page must not hide registrat
 assert.match(html,/clearPendingRegistration\(\)/,'a new registration attempt must clear stale local pending state');
 assert.match(html,/Bitte warte einige Minuten und klicke danach erneut auf „Registrieren“/,'temporary throttling must return users to the normal register action');
 assert.doesNotMatch(html,/Das Firebase-Konto wurde erfolgreich erstellt/,'UI must never claim a successful account before completion');
-assert.match(html,/20260825-register8/,'registration page must use the current cache epoch');
+assert.match(html,/20260825-register9/,'registration page must use the current cache epoch');
+assert.match(html,/TN-Profil wird dabei automatisch fertig angelegt/,'registration UI must explain first verified login completion');
 
-// Registration wrapper delegates once.
+// Registration wrapper delegates once and never deletes pending data just because verification opened elsewhere.
 const marker='export async function registerStudentV2';
 const start=registerEntry.indexOf(marker);
 assert.ok(start>=0,'registerStudentV2 must exist');
@@ -33,6 +34,8 @@ const registrationBlock=registerEntry.slice(start);
 assert.doesNotMatch(registrationBlock,/createSecureStudentCredential\s*\(/,'registration wrapper must not create a second Firebase credential itself');
 assert.doesNotMatch(registrationBlock,/signInSecureStudent\s*\(/,'registration wrapper must not perform its own password-login fallback');
 assert.match(registrationBlock,/registerStudentOnce\(\{\.\.\.payload,email,password\},finishPendingStudentRegistration\)/,'registration wrapper must delegate to the helper');
+assert.doesNotMatch(registerEntry,/localStorage\.removeItem\(PENDING_KEY\)/,'verification-login-required must not erase pending registration profile data');
+assert.match(registerEntry,/return finishPendingStudentRegistrationRaw\(\)/,'pending completion wrapper must preserve the raw completion result');
 
 // Registration helper: one account-creation attempt, safe recovery, and durable pending profile metadata.
 assert.equal((registration.match(/await createSecureStudentCredential\s*\(/g)||[]).length,1,'registration helper must perform exactly one credential creation call');
@@ -50,9 +53,10 @@ assert.match(registration,/export function restorePendingStudentRegistration/,'v
 
 // Login: a verified Firebase account with no Firestore profile must create its TN profile on first login.
 assert.match(loginHtml,/id="loginCourse"/,'login page must offer a course code for first-time profile linking');
-assert.match(loginHtml,/student-login-v2\.js\?v=20260825-link3/,'login page must load verified profile recovery code');
+assert.match(loginHtml,/student-login-v2\.js\?v=20260825-link5/,'login page must load the latest verified profile recovery code');
 assert.match(login,/async function createVerifiedProfileFromPending\(user,email,courseRaw='?'?\)/,'login must have a first-login profile creation path');
 assert.match(login,/restorePendingStudentRegistration\(user,courseRaw\)/,'first login must restore registration metadata from Firebase Auth when localStorage is missing');
+assert.match(login,/if\(!String\(error\?\.code\|\|''\)\.includes\('permission-denied'\)\)throw error/,'nonexistent student GET permission denial must fall through to secure CREATE');
 assert.match(login,/await setDoc\(doc\(db,'students',studentId\),st\)/,'verified first login must create the Firestore student profile');
 assert.match(login,/await setDoc\(doc\(db,'progress',studentId\)/,'verified first login must create the matching progress document');
 assert.match(login,/aliasIds:\[studentId\]/,'new student identity must satisfy canonical Firestore identity rules');
