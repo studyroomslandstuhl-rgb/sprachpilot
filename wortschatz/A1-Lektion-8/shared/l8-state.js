@@ -1,32 +1,52 @@
 (function(){'use strict';
 const clean=v=>String(v||'').trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_').replace(/^_+|_+$/g,'');
-function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')||{}}catch(e){return{}}}
+const unique=a=>[...new Set((a||[]).map(Number).filter(Number.isInteger))];
+const shuffled=values=>{const a=[...(values||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+function readProfile(key){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):null}catch(e){return null}}
+function profile(){return readProfile('SP_USER_PROFILE')||readProfile('SP_STUDENT_PROFILE')||{}}
 function preview(){
  const r=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();
  const context=String(localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase();
- const p=profile();
- const explicitPreview=p.previewOnly===true||p.teacherPreview===true||p.studentCoursePreview===true;
- if(['student','schueler','schüler'].includes(r)&&context!=='teacher-student-preview'&&!explicitPreview)return false;
+ const p=profile(),explicit=p.previewOnly===true||p.teacherPreview===true||p.studentCoursePreview===true;
+ if(['student','schueler','schüler'].includes(r)&&context!=='teacher-student-preview'&&!explicit)return false;
  if(['teacher','lehrer','admin','owner'].includes(r))return true;
- if(context!=='teacher-student-preview'||!explicitPreview)return false;
+ if(context!=='teacher-student-preview'||!explicit)return false;
  return !!(sessionStorage.getItem('SP_TEACHER_PREVIEW')||localStorage.getItem('SP_TEACHER_PREVIEW'))
 }
-function pid(){const p=profile();return clean(p.uid||p.userId||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_'))||'student'}
+function pid(){const p=profile();return clean(p.authUid||p.canonicalStudentId||p.docId||p.studentId||p.uid||p.userId||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_'))||'student'}
 const key=(theme,task)=>`${preview()?'SP_L8_PREVIEW':'SP_L8'}_${pid()}_T${theme}_${task}`;
-function blank(total){return{total,done:[],review:{},tries:{},firstSeen:[],firstCorrect:0,answers:{},updatedAt:new Date().toISOString()}}
-function load(theme,task,total){try{const x=JSON.parse(localStorage.getItem(key(theme,task))||'null');if(x&&x.total===total)return{...blank(total),...x,review:x.review||{},tries:x.tries||{}}}catch(e){}return blank(total)}
-function save(theme,task,s){s.updatedAt=new Date().toISOString();if(!preview())localStorage.setItem(key(theme,task),JSON.stringify(s));try{window.L8ThemeScore?.recordState?.(theme,task,s)}catch(e){}return s}
+function blank(total){return{total,done:[],queue:shuffled([...Array(total).keys()]),reviewQueue:[],current:null,review:{},tries:{},firstSeen:[],firstCorrect:0,answers:{},updatedAt:new Date().toISOString()}}
+function validIndex(i,total){return Number.isInteger(Number(i))&&Number(i)>=0&&Number(i)<total}
+function normalizeState(raw,total){
+ const base=blank(total),x=raw&&typeof raw==='object'?raw:{},done=unique(x.done).filter(i=>validIndex(i,total));
+ const review={};for(const [k,v] of Object.entries(x.review&&typeof x.review==='object'?x.review:{})){const i=Number(k),stage=Number(v);if(validIndex(i,total)&&!done.includes(i)&&stage>0)review[i]=stage}
+ const tries={};for(const [k,v] of Object.entries(x.tries&&typeof x.tries==='object'?x.tries:{})){const i=Number(k),n=Number(v);if(validIndex(i,total)&&n>0)tries[i]=n}
+ let current=validIndex(x.current,total)&&!done.includes(Number(x.current))?Number(x.current):null;
+ const reviewQueue=unique([...(x.reviewQueue||[]),...Object.keys(review).filter(k=>Number(review[k])===2).map(Number)]).filter(i=>validIndex(i,total)&&!done.includes(i)&&i!==current);
+ const queue=unique(x.queue).filter(i=>validIndex(i,total)&&!done.includes(i)&&i!==current&&!reviewQueue.includes(i));
+ const missing=[...Array(total).keys()].filter(i=>!done.includes(i)&&i!==current&&!queue.includes(i)&&!reviewQueue.includes(i));
+ queue.push(...shuffled(missing));
+ return{...base,...x,total,done,queue,reviewQueue,current,review,tries,firstSeen:unique(x.firstSeen).filter(i=>validIndex(i,total)),firstCorrect:Math.max(0,Number(x.firstCorrect)||0),answers:x.answers&&typeof x.answers==='object'?x.answers:{}}
+}
+function load(theme,task,total){try{return normalizeState(JSON.parse(localStorage.getItem(key(theme,task))||'null'),total)}catch(e){return blank(total)}}
+function save(theme,task,s,doSync=true){const out=normalizeState(s,Math.max(0,Number(s?.total)||0));out.updatedAt=new Date().toISOString();if(!preview())localStorage.setItem(key(theme,task),JSON.stringify(out));if(doSync)try{window.L8ThemeScore?.recordState?.(theme,task,out)}catch(e){}return out}
 function first(s,index,ok){if(!s.firstSeen.includes(index)){s.firstSeen.push(index);if(ok)s.firstCorrect++}}
-function wrong(theme,task,total,index,answer){const s=load(theme,task,total);first(s,index,false);s.answers[index]=answer;s.tries[index]=Number(s.tries[index]||0)+1;if(!s.review[index])s.review[index]=1;save(theme,task,s);return{s,tries:s.tries[index]}}
-function right(theme,task,total,index,answer){const s=load(theme,task,total);first(s,index,true);s.answers[index]=answer;const stage=Number(s.review[index]||0);if(stage===1){s.review[index]=2;s.tries[index]=0}else{if(stage===2)delete s.review[index];if(!s.done.includes(index))s.done.push(index);s.tries[index]=0}save(theme,task,s);return{s,needsReview:stage===1}}
-function completeFree(theme,task,total,index,text){const s=load(theme,task,total);first(s,index,true);s.answers[index]=text;if(!s.done.includes(index))s.done.push(index);save(theme,task,s);return s}
-function doneCount(theme,task,total){const s=load(theme,task,total);return new Set((s.done||[]).filter(i=>Number.isInteger(Number(i))&&Number(i)>=0&&Number(i)<total).map(Number)).size}
-function pct(theme,task,total){if(!total)return 0;const done=doneCount(theme,task,total);if(done>=total)return 100;return Math.min(99,Math.round(done/total*100))}
+function nextIndex(theme,task,total){const s=load(theme,task,total);if(validIndex(s.current,total)&&!s.done.includes(s.current))return s.current;while(s.queue.length&&s.done.includes(s.queue[0]))s.queue.shift();if(!s.queue.length){while(s.reviewQueue.length&&s.done.includes(s.reviewQueue[0]))s.reviewQueue.shift()}if(!s.queue.length&&!s.reviewQueue.length){const missing=[...Array(total).keys()].filter(i=>!s.done.includes(i));if(missing.length)s.queue=shuffled(missing.filter(i=>Number(s.review?.[i]||0)!==2));if(!s.queue.length)s.reviewQueue=shuffled(missing)}const next=s.queue.length?s.queue.shift():s.reviewQueue.shift();s.current=validIndex(next,total)?Number(next):null;save(theme,task,s,false);return s.current}
+function wrong(theme,task,total,index,answer){const s=load(theme,task,total),i=Number(index);first(s,i,false);s.current=i;s.answers[i]=answer;s.tries[i]=Number(s.tries[i]||0)+1;if(!s.review[i])s.review[i]=1;save(theme,task,s);return{s,tries:s.tries[i],stage:Number(s.review[i]||1)}}
+function right(theme,task,total,index,answer){const s=load(theme,task,total),i=Number(index);first(s,i,true);s.answers[i]=answer;const stage=Number(s.review[i]||0),tries=Number(s.tries[i]||0);let needsReview=false;
+ if(stage===2){delete s.review[i];delete s.tries[i];s.reviewQueue=s.reviewQueue.filter(x=>Number(x)!==i);if(!s.done.includes(i))s.done.push(i)}
+ else if(stage===1||tries>0){s.review[i]=2;s.tries[i]=0;s.queue=s.queue.filter(x=>Number(x)!==i);if(!s.reviewQueue.includes(i))s.reviewQueue.push(i);needsReview=true}
+ else{delete s.review[i];delete s.tries[i];if(!s.done.includes(i))s.done.push(i)}
+ s.current=null;save(theme,task,s);return{s,needsReview}}
+function completeFree(theme,task,total,index,text){const s=load(theme,task,total),i=Number(index);first(s,i,true);s.answers[i]=text;if(!s.done.includes(i))s.done.push(i);delete s.review[i];delete s.tries[i];s.queue=s.queue.filter(x=>Number(x)!==i);s.reviewQueue=s.reviewQueue.filter(x=>Number(x)!==i);s.current=null;save(theme,task,s);return s}
+function doneCount(theme,task,total){return load(theme,task,total).done.length}
+function pct(theme,task,total){if(!total)return 0;const done=doneCount(theme,task,total);return done>=total?100:Math.min(99,Math.round(done/total*100))}
 function allDone(theme){const T=window.L8_THEME;if(!T)return false;if(preview())return true;return T.tasks.filter(t=>!t.exam).every(t=>{const total=Array.isArray(t.items)?t.items.length:0;return total<=0||doneCount(theme,t.id,total)>=total})}
 function reset(theme){if(preview()){alert('In der Lehrer-Vorschau werden keine Teilnehmerfortschritte gespeichert.');return}if(!confirm(`Fortschritte in Lektion 8 · Thema ${theme} löschen? Bereits verdiente Punkte bleiben erhalten.`))return;const prefix=`SP_L8_${pid()}_T${theme}_`,del=[];for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i)||'';if(k.startsWith(prefix))del.push(k)}del.forEach(k=>localStorage.removeItem(k));location.href='index.html?reset='+Date.now()}
-function norm(v){return String(v??'').trim().toLowerCase().replace(/[.,!?;:“”"'`´()]/g,'').replace(/\s+/g,' ')}
+function norm(v){return String(v??'').normalize('NFC').trim().toLowerCase().replace(/[.,!?;:“”"'`´()]/g,'').replace(/\s+/g,' ')}
 function equal(answer,expected){const a=norm(answer);return(Array.isArray(expected)?expected:[expected]).some(x=>norm(x)===a)}
-function say(text,audioFile){if(audioFile){const a=new Audio(`https://sprachpilot.b-cdn.net/audio/${audioFile}`);a.onerror=()=>tts(text);a.play().catch(()=>tts(text));return}tts(text)}
+let activeAudio=null;
+function say(text,audioFile){if(activeAudio){try{activeAudio.pause();activeAudio.currentTime=0}catch(e){}activeAudio=null}if(audioFile){const raw=String(audioFile||''),src=/^https?:\/\//i.test(raw)?raw:`https://sprachpilot.b-cdn.net/audio/${raw.replace(/^audio\//i,'')}`;const a=new Audio(src);activeAudio=a;a.onerror=()=>{if(activeAudio===a)activeAudio=null;tts(text)};a.onended=()=>{if(activeAudio===a)activeAudio=null};a.play().catch(()=>tts(text));return}tts(text)}
 function tts(text){if(!('speechSynthesis'in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=.84;speechSynthesis.speak(u)}catch(e){}}
-window.L8S={profile,preview,pid,key,load,save,wrong,right,completeFree,pct,allDone,reset,norm,equal,say};
+window.L8S={profile,preview,pid,key,load,save,nextIndex,wrong,right,completeFree,pct,allDone,reset,norm,equal,say};
 })();

@@ -1,8 +1,11 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Zuordnen</title><link rel="stylesheet" href="style.css?v=3"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="../data/wortschatz.js?v=7"></script><script>window.SP_L5_THEME={id:'Thema-4',title:'Öffnungszeiten und Freizeit',sub:'A1 Lektion 5 · Thema 4',key:'SP_L5_T4_V1'};</script><script src="app.js?v=2"></script><script src="../Thema-1/points-hook.js?v=5"></script><script>
 header('Zuordnen');
 const FILE='zuordnen.html';
+const CONTENT_REV='20260825-zuordnen-v2';
+const REV_KEY=CFG.key+'_CONTENT_REV_'+FILE;
+if(localStorage.getItem(REV_KEY)!==CONTENT_REV){localStorage.removeItem(taskKey(FILE));localStorage.setItem(REV_KEY,CONTENT_REV)}
 const ITEMS=[
-{w:'die Kita / der Kindergarten',a:'Hier sind Kinder am Tag.',opts:['Hier sind Kinder am Tag.','Hier kauft man Brot.','Hier fährt ein Bus.']},
+{w:'das Kino',a:'Hier kann man Filme sehen.',opts:['Hier kann man Filme sehen.','Hier sind Kinder am Tag.','Hier kauft man Brot.']},
 {w:'die Krippe',a:'Hier sind sehr kleine Kinder.',opts:['Hier sind sehr kleine Kinder.','Hier kann man Filme sehen.','Hier arbeitet ein Arzt.']},
 {w:'die Bibliothek',a:'Hier kann man Bücher ausleihen.',opts:['Hier kann man Bücher ausleihen.','Hier bringt man Kinder am Morgen.','Hier kauft man Schuhe.']},
 {w:'das Geschäft',a:'Hier kann man etwas kaufen.',opts:['Hier kann man etwas kaufen.','Hier schlafen Kinder.','Hier liest man einen Fahrplan.']},
