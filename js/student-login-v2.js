@@ -11,7 +11,7 @@ import {
   resetStudentPassword,
   $, safeText, getRedirectTarget
 } from './student-identity.js?v=identity4';
-import { registerStudentOnce, restorePendingStudentRegistration } from './student-registration-v3.js?v=20260825-register8';
+import { registerStudentOnce, restorePendingStudentRegistration } from './student-registration-v3.js?v=20260825-register9';
 
 export { finishPendingStudentRegistration, hasPendingStudentRegistration, resetStudentPassword, $, safeText, getRedirectTarget };
 
