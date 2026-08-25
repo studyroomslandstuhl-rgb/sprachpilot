@@ -1,3 +1,4 @@
+import { updateProfile } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-auth.js";
 import { db, doc, collection, query, where, getDocsFromServer, getDocFromServer, setDoc, limit, updateDoc, serverTimestamp } from './firebase.js';
 import { loadCourse, makeStudentId } from './auth.js';
 import {
@@ -10,7 +11,7 @@ import {
   resetStudentPassword,
   $, safeText, getRedirectTarget
 } from './student-identity.js?v=identity4';
-import { registerStudentOnce } from './student-registration-v3.js?v=20260824-register6';
+import { registerStudentOnce, restorePendingStudentRegistration } from './student-registration-v3.js?v=20260825-register8';
 
 export { finishPendingStudentRegistration, hasPendingStudentRegistration, resetStudentPassword, $, safeText, getRedirectTarget };
 
@@ -35,6 +36,9 @@ function pendingRegistrationFor(email,courseRaw=''){
   return variants.includes(raw)?pending:null;
 }
 function clearPendingRegistration(){try{localStorage.removeItem(PENDING_KEY)}catch(e){}}
+async function clearAuthRegistrationMarker(user,pending={}){
+  try{await updateProfile(user,{displayName:[pending.vorname,pending.nachname].filter(Boolean).join(' ').trim()||null})}catch(error){console.warn('[SprachPilot] Registrierungsmarker im Firebase-Profil konnte nicht bereinigt werden',error)}
+}
 async function ownProfiles(uid){
   const snap=await getDocsFromServer(query(collection(db,'students'),where('authUid','==',String(uid)),limit(20)));
   return snap.docs.map(d=>({id:d.id,data:d.data()||{}})).filter(row=>activeOwnProfile(row.data)).map(row=>({id:row.id,course:courseOf(row.data),name:displayName(row.data),data:row.data}));
@@ -107,7 +111,8 @@ async function claimLegacyStudentRecord(studentId,data,user,email){
   return{id,course:courseOf(data),name:displayName(data),data:{...data,authUid:String(user.uid),authEmail:mail,authVersion:Math.max(2,Number(data?.authVersion||0))}};
 }
 async function createVerifiedProfileFromPending(user,email,courseRaw=''){
-  const pending=pendingRegistrationFor(email,courseRaw);
+  let pending=pendingRegistrationFor(email,courseRaw);
+  if(!pending)pending=restorePendingStudentRegistration(user,courseRaw);
   if(!pending)return null;
   const loaded=await loadCourse(pending.courseDocId||pending.courseCode||pending.kurs);
   if(!loaded)throw new Error('COURSE_NOT_FOUND');
@@ -116,7 +121,7 @@ async function createVerifiedProfileFromPending(user,email,courseRaw=''){
   const existing=await getDocFromServer(doc(db,'students',studentId));
   if(existing.exists()){
     const row=await claimLegacyStudentRecord(existing.id||studentId,existing.data()||{},user,mail);
-    clearPendingRegistration();
+    clearPendingRegistration();await clearAuthRegistrationMarker(user,pending);
     return row;
   }
   const st={
@@ -138,7 +143,7 @@ async function createVerifiedProfileFromPending(user,email,courseRaw=''){
     fragen:{progress:0,state:{}},verben:{progress:0,stars:0,state:{}},wortschatz:{progress:0,state:{}},grammatik:{progress:0,state:{}},
     updatedAt:serverTimestamp()
   },{merge:true});
-  clearPendingRegistration();
+  clearPendingRegistration();await clearAuthRegistrationMarker(user,pending);
   return{id:studentId,course:courseCode,name:displayName(st),data:st};
 }
 async function recoverPreparedProfile(user,email,courseRaw){
@@ -189,9 +194,6 @@ async function loginResolvedProfile(email,password,requestedId='',courseRaw=''){
   const user=await verifiedPasswordUser(email,password),profiles=await ownProfiles(user.uid);
   let selected=null;
   if(!profiles.length){
-    // Neue Registrierung: Das Firebase-Konto existiert nach der E-Mail-Bestätigung,
-    // das Firestore-TN-Profil wird jetzt beim ersten verifizierten Login zuverlässig
-    // aus den lokal gespeicherten Registrierungsdaten angelegt.
     selected=await createVerifiedProfileFromPending(user,email,courseRaw);
     if(selected)return activateBoundProfile(selected,user);
     try{selected=await recoverPreparedProfile(user,email,courseRaw)}catch(error){try{await secureStudentSignOut()}catch(e){};throw error}
