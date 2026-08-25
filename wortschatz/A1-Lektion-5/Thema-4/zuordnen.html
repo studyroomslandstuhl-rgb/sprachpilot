@@ -1,8 +1,8 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Zuordnen</title><link rel="stylesheet" href="style.css?v=3"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="../data/wortschatz.js?v=7"></script><script>window.SP_L5_THEME={id:'Thema-4',title:'Öffnungszeiten und Freizeit',sub:'A1 Lektion 5 · Thema 4',key:'SP_L5_T4_V1'};</script><script src="app.js?v=2"></script><script src="../Thema-1/points-hook.js?v=5"></script><script>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Zuordnen</title><link rel="stylesheet" href="style.css?v=3"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script type="module" src="/js/guard.js"></script><script src="../data/wortschatz.js?v=7"></script><script>window.SP_L5_THEME={id:'Thema-4',title:'Öffnungszeiten und Freizeit',sub:'A1 Lektion 5 · Thema 4',key:'SP_L5_T4_V1'};</script><script src="app.js?v=4"></script><script src="l5t4-task10-progress-scope.js?v=20260825-1"></script><script src="../Thema-1/points-hook.js?v=5"></script><script>
 header('Zuordnen');
 const FILE='zuordnen.html';
-const CONTENT_REV='20260825-zuordnen-v2';
-const REV_KEY=CFG.key+'_CONTENT_REV_'+FILE;
+const CONTENT_REV='20260825-zuordnen-v3-user';
+const REV_KEY=taskKey(FILE)+'_CONTENT_REV';
 if(localStorage.getItem(REV_KEY)!==CONTENT_REV){localStorage.removeItem(taskKey(FILE));localStorage.setItem(REV_KEY,CONTENT_REV)}
 const ITEMS=[
 {w:'das Kino',a:'Hier kann man Filme sehen.',opts:['Hier kann man Filme sehen.','Hier sind Kinder am Tag.','Hier kauft man Brot.']},
@@ -17,7 +17,7 @@ const ITEMS=[
 {w:'z.B.',a:'Das bedeutet: zum Beispiel.',opts:['Das bedeutet: zum Beispiel.','Das ist ein freier Tag.','Das ist eine Uhrzeit.']}
 ];
 let i=0;
-function show(){const area=document.getElementById('area');if(loadTask(FILE,ITEMS.length).done.length>=ITEMS.length){complete(area,FILE,'saetze-bauen.html');return}i=spNextIndex(FILE,ITEMS.length);const it=ITEMS[i];const opts=shuffle(it.opts);area.innerHTML=`${spProgressHtml(FILE,ITEMS.length)}${instruction('Was passt zusammen? Wählen Sie die richtige Bedeutung.')}<div class="sentence-box">${it.w}</div><div class="choice-grid">${opts.map((o,index)=>`<button class="choice" type="button" data-choice-index="${index}">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`;area.querySelectorAll('[data-choice-index]').forEach((btn,index)=>btn.addEventListener('click',()=>check(btn,opts[index])))}
+function show(){const area=document.getElementById('area'),state=loadTask(FILE,ITEMS.length);if(state.done.length>=ITEMS.length){complete(area,FILE,'saetze-bauen.html');return}i=spNextIndex(FILE,ITEMS.length);const it=ITEMS[i];const opts=shuffle(it.opts);area.innerHTML=`${spProgressHtml(FILE,ITEMS.length)}${instruction('Was passt zusammen? Wählen Sie die richtige Bedeutung.')}<div class="sentence-box">${it.w}</div><div class="choice-grid">${opts.map((o,index)=>`<button class="choice" type="button" data-choice-index="${index}">${o}</button>`).join('')}</div><div id="fb" class="feedback"></div>`;area.querySelectorAll('[data-choice-index]').forEach((btn,index)=>btn.addEventListener('click',()=>check(btn,opts[index])))}
 function check(btn,val){const it=ITEMS[i],feedback=document.getElementById('fb');if(val===it.a){btn.classList.add('ok');if(feedback)feedback.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,ITEMS.length);setTimeout(show,800)}else{btn.classList.add('no');const tries=spMarkWrong(FILE,ITEMS.length);if(!feedback)return;if(tries===1)feedback.innerHTML='<div class="no">Das passt noch nicht.</div>';else if(tries===2)feedback.innerHTML='<div class="hint">Tipp: Denken Sie an den Ort oder die Situation.</div>';else feedback.innerHTML='<div class="no">Richtige Antwort: <strong>'+it.a+'</strong></div>'}}
 show();
 </script></body></html>
