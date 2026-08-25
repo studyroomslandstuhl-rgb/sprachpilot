@@ -9,17 +9,19 @@ const registration=fs.readFileSync(new URL('../js/student-registration-v3.js',im
 const secureAuth=fs.readFileSync(new URL('../js/student-secure-auth.js',import.meta.url),'utf8');
 const firebase=fs.readFileSync(new URL('../js/firebase.js',import.meta.url),'utf8');
 
-// UI: one click at a time, fresh client, and no false successful-account claim.
+// UI: one click at a time, fresh client, no false successful-account claim,
+// and an interrupted verification flow must stay recoverable instead of creating/deleting accounts repeatedly.
 assert.match(html,/registrationBusy=false/,'registration must have an in-flight guard');
 assert.match(html,/if\(registrationBusy\)return;/,'parallel registration attempts must be ignored');
 assert.match(html,/registrationBusy=true;/,'guard must activate before registration');
 assert.match(html,/registrationBusy=false;/,'guard must be released after registration');
-assert.match(html,/student-register-entry-v2\.js\?v=20260824-register6/,'registration page must load the current cache-busted entry');
-assert.match(html,/student-secure-auth\.js\?v=20260824-register5/,'registration page must load the current auth helper');
-assert.doesNotMatch(html,/Das Firebase-Konto wurde erfolgreich erstellt/,'UI must not claim a successful account when verification transport failed');
-assert.match(html,/unvollständige Konto wurde automatisch wieder entfernt/,'rolled-back partial registrations must be explained accurately');
-assert.match(html,/Firebase blockiert momentan die Erstellung neuer Konten/,'credential throttling must be identified separately');
-assert.match(html,/>Registrieren<\/button>/,'primary registration action must exist');
+assert.match(html,/student-register-entry-v2\.js\?v=20260825-register7/,'registration page must load the current cache-busted entry');
+assert.match(html,/student-secure-auth\.js\?v=20260825-register7/,'registration page must load the current auth helper');
+assert.doesNotMatch(html,/Das Firebase-Konto wurde erfolgreich erstellt/,'UI must never claim a successful account when registration is not complete');
+assert.match(html,/Bitte NICHT erneut registrieren/,'mail throttling must explicitly prevent duplicate registration attempts');
+assert.match(html,/showRegisterButton\(!hasPendingStudentRegistration\(\)\)/,'an open pending registration must hide the create-account action');
+assert.match(html,/Bestätigungs-E-Mail erneut senden/,'an interrupted verification flow must offer a dedicated resend action');
+assert.match(html,/>Registrieren<\/button>/,'primary registration action must exist for fresh registrations');
 assert.match(html,/>Ich habe schon ein Konto<\/a>/,'existing accounts must still have a direct login route');
 
 // Registration wrapper delegates exactly once.
@@ -30,10 +32,10 @@ const registrationBlock=registerEntry.slice(start);
 assert.doesNotMatch(registrationBlock,/createSecureStudentCredential\s*\(/,'registration wrapper must not create a second Firebase credential itself');
 assert.doesNotMatch(registrationBlock,/signInSecureStudent\s*\(/,'registration wrapper must not perform its own password-login fallback');
 assert.match(registrationBlock,/registerStudentOnce\(\{\.\.\.payload,email,password\},finishPendingStudentRegistration\)/,'registration wrapper must delegate to the helper');
-assert.match(registerEntry,/student-registration-v3\.js\?v=20260824-register6/,'wrapper must load the repaired registration helper');
+assert.match(registerEntry,/student-registration-v3\.js\?v=20260825-register7/,'wrapper must load the repaired registration helper');
 
 // Registration helper: one create attempt, stale restored sessions are verified first,
-// and an account is confirmed against Firebase before the UI can call it real.
+// and an account is confirmed against Firebase before course setup.
 assert.doesNotMatch(registration,/ensureCourseLookupAuth/,'registration must not create an anonymous auth preflight');
 assert.equal((registration.match(/await createSecureStudentCredential\s*\(/g)||[]).length,1,'registration helper must perform exactly one credential creation call');
 assert.equal((registration.match(/await signInSecureStudent\s*\(/g)||[]).length,1,'existing-account recovery must perform at most one password-login call');
@@ -44,13 +46,18 @@ assert.match(registration,/await secureStudentSignOut\(\)/,'a stale restored Fir
 assert.match(registration,/user=await reloadFirebaseUser\(user\)/,'new or recovered Firebase credentials must be confirmed before course setup');
 assert.match(registration,/SECURE_AUTH_ACCOUNT_CONFIRMATION_FAILED/,'unconfirmed auth objects must never be reported as accounts');
 assert.match(registration,/user=await createSecureStudentCredential\(pending\.email,password\);[\s\S]*?courseLoaded=await loadAllowedCourse\(pending\.kurs\);/,'a secure password user must exist before Firestore course lookup begins');
-assert.match(registration,/isVerificationThrottle/,'registration helper must distinguish verification-mail throttling');
-assert.match(registration,/verificationRolledBack:rolledBack/,'verification mail failure must report whether a just-created account was rolled back');
-assert.match(registration,/const rolledBack=await rollbackCredential\(user,createdThisAttempt\)/,'a just-created account must be removed when its verification mail cannot be sent');
-assert.match(registration,/clearPending\(\);clearRegistrationAuthFailure\(pending\.email\)/,'successful rollback must clear pending registration state');
-assert.match(registration,/await rollbackCredential\(user,createdThisAttempt\)/,'invalid course codes must roll back accounts created by that attempt');
-assert.match(registration,/deleteUser\(user\)/,'rollback must delete only the just-created Firebase account');
+assert.match(registration,/await rollbackCredential\(user,createdThisAttempt\);\s*clearPending\(\);\s*throw error;/,'an invalid course must still roll back a credential created by that attempt');
+assert.match(registration,/deleteUser\(user\)/,'rollback must remain available for invalid pre-registration setup');
 assert.match(registration,/existingFirebaseAccount=true/,'interrupted real accounts must still be recognized and continued');
+assert.match(registration,/verificationRolledBack:false/,'verification transport failures must preserve the accepted Firebase account');
+assert.match(registration,/Ein Mailfehler darf das Konto nicht wieder löschen/,'verification failure behavior must document why the account is preserved');
+const verificationStart=registration.indexOf('if(user.emailVerified!==true)');
+const verificationEnd=registration.indexOf("if(typeof finishPendingStudentRegistration",verificationStart);
+assert.ok(verificationStart>=0&&verificationEnd>verificationStart,'verification block must exist');
+const verificationBlock=registration.slice(verificationStart,verificationEnd);
+assert.doesNotMatch(verificationBlock,/rollbackCredential\s*\(/,'verification mail failure must not delete and recreate the Firebase account');
+assert.match(verificationBlock,/verificationThrottled:throttled/,'verification cooldown must be propagated to the UI');
+assert.match(verificationBlock,/verificationRetryAfterMs/,'verification retry delay must be propagated to the UI');
 
 // Existing Firebase account with an unbound TN profile: login must be able to claim the prepared legacy profile.
 assert.match(loginHtml,/id="loginCourse"/,'login page must offer a course code for first-time profile linking');
@@ -72,13 +79,17 @@ assert.match(login,/if\(user\.emailVerified!==true\)throw new Error\('EMAIL_NOT_
 assert.doesNotMatch(loginHtml,/Wir haben dir eine neue Bestätigungs-E-Mail geschickt/,'login UI must not claim it sent another verification email');
 assert.match(loginHtml,/Die Anmeldung verschickt absichtlich keine weiteren Bestätigungs-E-Mails/,'login UI must explain the single-mail registration flow');
 
-// Secure auth: custom mail is preferred, verification throttling cannot poison future signup.
+// Secure auth: custom mail is preferred, Firebase fallback sends at most one request,
+// and a verification throttle creates a five-minute local resend gate instead of hammering Firebase.
 assert.match(secureAuth,/sendVerificationViaSprachPilot/,'student verification must try the SprachPilot mail service first');
 assert.match(secureAuth,/httpsCallable\(functions,'requestVerificationEmail'\)/,'student client must target the server-side verification mail function');
 assert.match(secureAuth,/writeRegistrationBlock\(email,code,stage='credential'\)/,'registration block must record its Firebase stage');
 assert.match(secureAuth,/if\(block\.stage==='verification'\)return null;/,'verification-mail throttling must never block credential creation');
+assert.match(secureAuth,/function verificationThrottleRemaining\(user\)/,'verification resend must have a local throttle gate');
+assert.match(secureAuth,/reason:'throttled-cooldown'/,'active verification throttling must be returned without another network send');
 assert.match(secureAuth,/writeRegistrationBlock\(user\.email,'auth\/too-many-requests','verification'\)/,'verification throttle must be recorded as verification-stage only');
 assert.match(secureAuth,/writeRegistrationBlock\(email,'auth\/too-many-requests','credential'\)/,'account-creation throttle must remain credential-stage');
+assert.equal((secureAuth.match(/await sendEmailVerification\(user\);/g)||[]).length,1,'Firebase verification fallback must make exactly one mail request per allowed attempt');
 assert.match(secureAuth,/REGISTER_BLOCK_KEY/,'failed credential attempts must still have a session-level guard');
 assert.match(secureAuth,/spNoSecondCredentialAttempt=true/,'non-retry credential errors must still be marked explicitly');
 assert.match(secureAuth,/export function clearRegistrationAuthFailure/,'registration recovery must have an explicit block-clear API');
@@ -88,4 +99,4 @@ assert.match(firebase,/export const authReady=initialAuthState;/,'authReady must
 assert.doesNotMatch(firebase,/export const authReady=ensureAuth\(\);/,'firebase.js must not sign in anonymously as an import side effect');
 assert.match(firebase,/async function waitAuthRequired\(\)[\s\S]*?await ensureAuth\(\)/,'Firestore access may request auth for normal application reads after a user exists');
 
-console.log('Registration auth guard passed: one verification mail per signup, stale sessions rejected, and failed verification sends roll back newly created accounts.');
+console.log('Registration auth guard passed: pending accounts survive mail throttling, duplicate signup is blocked, and verification resend is rate-limited locally.');
