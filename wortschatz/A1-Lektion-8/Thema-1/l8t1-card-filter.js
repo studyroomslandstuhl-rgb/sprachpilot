@@ -1,9 +1,9 @@
 (function(){
 'use strict';
-if(window.__SP_L8T1_CARD_FILTER_5)return;window.__SP_L8T1_CARD_FILTER_5=true;
+if(window.__SP_L8T1_CARD_FILTER_6)return;window.__SP_L8T1_CARD_FILTER_6=true;
 const norm=value=>String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
 const term=item=>String(item?.term||item?.full||item?.word||item?.answer||item?.prompt||'').trim();
-const blockedCards=new Set(['was bist du von beruf','was sind sie von beruf','was machst du beruflich','was machen sie beruflich','eigen','eigener','eigene','eigenes','eigenen','arbeiten als','arbeiten bei']);
+const blockedCards=new Set(['was bist du von beruf','was sind sie von beruf','was machst du beruflich','was machen sie beruflich','eigen','eigen eigene eigenes','eigener','eigene','eigenes','eigenen','arbeiten als','arbeiten bei']);
 const requested=new Set(['eigen','eigener','eigene','eigenes','eigenen','arbeiten als','arbeiten bei']);
 const translations={
  eigener:{en:'own (masculine nominative)',ru:'собственный',tr:'kendi',uk:'власний',ar:'خاص / ذاتي',ja:'自分の',ro:'propriu',pl:'własny',ku:'xwe'},
@@ -46,6 +46,6 @@ window.L8_CONTENT_READY=Promise.resolve(window.L8_CONTENT_READY).then(themes=>{
  const cards=theme.tasks.find(task=>task?.kind==='cards'||task?.id==='karteikarten'||/karteikart/i.test(task?.title||''));if(cards&&Array.isArray(cards.items))cards.items=cards.items.filter(item=>!blockedCards.has(norm(term(item))));
  const practice=theme.tasks.filter(task=>!task?.exam),task5=practice[4];if(task5&&Array.isArray(task5.items))task5.items=task5.items.filter(item=>!containsRequested(item));
  theme.tasks.forEach(task=>{task.icon=l7Icon(task)});
- theme.overviewOnlyItems=overviewOnly;theme.contentRevision='l8t1-card-filter-20260825-v5';theme.iconRevision='l8t1-semantic-icons-v2';if(Number(document.body?.dataset?.theme)===1)window.L8_THEME=theme;return themes;
+ theme.overviewOnlyItems=overviewOnly;theme.contentRevision='l8t1-card-filter-20260825-v6';theme.iconRevision='l8t1-semantic-icons-v2';if(Number(document.body?.dataset?.theme)===1)window.L8_THEME=theme;return themes;
 });
 })();
