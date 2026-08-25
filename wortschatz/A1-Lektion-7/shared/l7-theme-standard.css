@@ -37,6 +37,9 @@ body{
 .sp-l7-score-total{font-size:27px;line-height:1.05;font-weight:950;color:var(--lesson-main-dark)}
 .sp-l7-score-card .small{color:var(--lesson-muted)!important}
 .sp-l7-score-sync{font-size:12px!important;margin-top:2px}
+.sp-l7-repeat-btn{margin-top:8px;border:2px solid var(--lesson-main-dark);border-radius:12px;background:#fff;color:var(--lesson-main-dark);padding:9px 12px;font:inherit;font-weight:900;cursor:pointer}
+.sp-l7-repeat-btn:hover{background:var(--lesson-main-dark);color:#fff}
+.sp-l7-repeat-done{margin-top:6px;font-weight:800}
 
 .module.exam-locked{opacity:.58!important;background:#f1eef5!important;border-style:dashed!important;border-color:#cfc5dc!important;pointer-events:none!important;box-shadow:none!important}
 .module.exam-locked .start{background:#ece7f1!important;color:#756b80!important;border-color:#d7cfdf!important}
@@ -51,4 +54,5 @@ body{
  .sp-teacher-preview-note{font-size:16px}
  .sp-l7-score-slot{width:100%;flex-basis:auto}
  .sp-l7-score-total{font-size:24px}
+ .sp-l7-repeat-btn{width:100%}
 }
