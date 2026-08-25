@@ -1,13 +1,13 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_NOUN_PLURAL_FIX_2)return;
-window.__SP_L7T1_NOUN_PLURAL_FIX_2=true;
+if(window.__SP_L7T1_NOUN_PLURAL_FIX_3)return;
+window.__SP_L7T1_NOUN_PLURAL_FIX_3=true;
 
 function normalize(value){
  return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[„“”"'`´.,!?;:()]/g,'').replace(/\s+/g,' ');
 }
 function fullWord(item){
- const direct=String(item?.full||item?.word||item?.answer||item?.term||'').trim();
+ const direct=String(item?.full||item?.word||item?.term||item?.singularAnswer||'').trim();
  const article=String(item?.article||'').trim();
  if(article&&!/^(der|die|das)\s/i.test(direct))return `${article} ${direct}`.trim();
  return direct;
@@ -27,14 +27,21 @@ function firstValue(...values){
  }
  return'';
 }
+function combinedParts(item){
+ const raw=String(item?.answer||'').trim();
+ const parts=raw.split(/\s+[–—-]\s+/);
+ return parts.length>=2?[parts[0].trim(),parts.slice(1).join(' - ').trim()]:['',''];
+}
 function singularOf(item){
- const direct=firstValue(item?.singularAnswer,item?.singular,item?.full,item?.word,item?.answer,item?.term).split('|')[0].trim();
+ const pair=combinedParts(item);
+ const direct=firstValue(item?.singularAnswer,item?.singular,item?.full,item?.word,item?.term,pair[0]).split('|')[0].trim();
  const article=String(item?.article||'').trim();
  if(article&&direct&&!/^(der|die|das)\s/i.test(direct))return`${article} ${direct}`.trim();
  return direct;
 }
 function pluralOf(item){
- return firstValue(item?.pluralAnswer,item?.plural,item?.pluralForm,item?.forms?.plural,item?.pluralWord);
+ const pair=combinedParts(item);
+ return firstValue(item?.pluralAnswer,item?.plural,item?.pluralForm,item?.forms?.plural,item?.pluralWord,pair[1]);
 }
 function transform(theme){
  if(!theme||!Array.isArray(theme.tasks))return theme;
@@ -58,7 +65,7 @@ function transform(theme){
  articleTask.kind='noun-plural';
  articleTask.title='Artikel und Plural';
  articleTask.description='Schreibe das Nomen mit Artikel und Plural.';
- theme.nounPluralFixRevision='l7t1-noun-plural-only-2026-08-25-v2';
+ theme.nounPluralFixRevision='l7t1-noun-plural-only-2026-08-25-v3';
  return theme;
 }
 
