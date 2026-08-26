@@ -6,7 +6,7 @@
 <script src="../data/wortschatz.js?v=8"></script>
 <script>window.SP_L5_THEME={id:'Thema-4',title:'Öffnungszeiten und Freizeit',sub:'A1 Lektion 5 · Thema 4',key:'SP_L5_T4_V1'};</script>
 <script src="app.js?v=4"></script>
-<script src="l5t4-task10-progress-scope.js?v=20260826-9"></script>
+<script src="l5t4-task10-progress-scope.js?v=20260826-10"></script>
 <script src="../Thema-1/points-hook.js?v=6"></script>
 <script>
 header('Zuordnen');
@@ -25,16 +25,18 @@ const ITEMS=[
 {id:'zum_beispiel',w:'z.B.',a:'Das bedeutet: zum Beispiel.',opts:['Das bedeutet: zum Beispiel.','Das ist ein freier Tag.','Das ist eine Uhrzeit.']}
 ];
 const TOTAL=ITEMS.length;
-const KEY=window.SP_L5T4_TASK10_KEY?window.SP_L5T4_TASK10_KEY(FILE):taskKey(FILE);
+function stateKey(){return window.SP_L5T4_TASK10_KEY?window.SP_L5T4_TASK10_KEY(FILE):taskKey(FILE)}
 function mix(values){const out=[...values];for(let n=out.length-1;n>0;n--){const j=Math.floor(Math.random()*(n+1));[out[n],out[j]]=[out[j],out[n]]}return out}
 function fresh(){return{rev:REV,total:TOTAL,done:[],queue:mix([...Array(TOTAL).keys()]),current:null,tries:0,hadWrong:false}}
 function cleanState(value){if(!value||Number(value.total)!==TOTAL||!Array.isArray(value.done))return fresh();const done=[...new Set(value.done.map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<TOTAL))];let current=value.current===null||value.current===undefined?null:Number(value.current);if(!Number.isInteger(current)||current<0||current>=TOTAL||done.includes(current))current=null;let queue=[...new Set((Array.isArray(value.queue)?value.queue:[]).map(Number).filter(n=>Number.isInteger(n)&&n>=0&&n<TOTAL&&!done.includes(n)&&n!==current))];if(!queue.length&&done.length<TOTAL&&current===null)queue=mix([...Array(TOTAL).keys()].filter(n=>!done.includes(n)));return{rev:REV,total:TOTAL,done,queue,current,tries:Math.max(0,Number(value.tries)||0),hadWrong:value.hadWrong===true}}
-function load(){try{return cleanState(JSON.parse(localStorage.getItem(KEY)||'null'))}catch(e){return fresh()}}
-function save(state){state=cleanState(state);localStorage.setItem(KEY,JSON.stringify(state));try{if(typeof window.saveTask==='function')window.saveTask(FILE,state)}catch(e){console.warn('Task 10 Punkte-Sync',e)}return state}
+function load(){try{window.SP_L5T4_TASK10_MIGRATE?.();return cleanState(JSON.parse(localStorage.getItem(stateKey())||'null'))}catch(e){return fresh()}}
+function save(state){state=cleanState(state);localStorage.setItem(stateKey(),JSON.stringify(state));try{if(typeof window.saveTask==='function')window.saveTask(FILE,state)}catch(e){console.warn('Task 10 Punkte-Sync',e)}return state}
 function ensureCurrent(state){if(state.current!==null)return state;if(!state.queue.length&&state.done.length<TOTAL)state.queue=mix([...Array(TOTAL).keys()].filter(n=>!state.done.includes(n)));while(state.queue.length&&state.done.includes(state.queue[0]))state.queue.shift();state.current=state.queue.length?state.queue.shift():null;state.tries=0;state.hadWrong=false;return save(state)}
 function progressHtml(state){const done=state.done.length,pct=Math.round(done/TOTAL*100);return`<div class="small">${done} richtig · ${TOTAL-done} übrig · ${pct}%</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div>`}
 function finish(){document.getElementById('area').innerHTML='<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="saetze-bauen.html">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div></div>'}
 function show(){let state=load();if(state.done.length>=TOTAL){finish();return}state=ensureCurrent(state);if(state.current===null){finish();return}const index=state.current,it=ITEMS[index],opts=mix(it.opts);const area=document.getElementById('area');area.innerHTML=`${progressHtml(state)}${instruction('Was passt zusammen? Wählen Sie die richtige Bedeutung.')}<div class="sentence-box">${it.w}</div><div class="choice-grid" id="answerGrid">${opts.map((text,n)=>`<button class="choice" type="button" data-role="answer" data-sp-exercise-answer="1" data-answer="${n}"></button>`).join('')}</div><div id="fb" class="feedback"></div>`;const buttons=[...document.querySelectorAll('#answerGrid [data-answer]')];buttons.forEach((button,n)=>{button.textContent=opts[n];button.onclick=()=>check(button,opts[n],index)});}
 function check(button,value,index){let state=load();if(state.current!==index)return show();const item=ITEMS[index],feedback=document.getElementById('fb');if(value===item.a){button.classList.add('ok');if(feedback)feedback.innerHTML='<div class="ok">Richtig!</div>';if(state.hadWrong||state.tries>0){if(!state.queue.includes(index))state.queue.push(index)}else if(!state.done.includes(index))state.done.push(index);state.current=null;state.tries=0;state.hadWrong=false;save(state);setTimeout(show,700);return}button.classList.add('no');state.tries=(state.tries||0)+1;state.hadWrong=true;save(state);if(!feedback)return;if(state.tries===1)feedback.innerHTML='<div class="no">Das passt noch nicht. Versuche es noch einmal.</div>';else if(state.tries===2)feedback.innerHTML='<div class="hint">Tipp: Denken Sie an den Ort oder die Situation.</div>';else feedback.innerHTML='<div class="no">Richtige Antwort: <strong>'+item.a+'</strong><br>Wähle die richtige Antwort selbst aus.</div>'}
+window.addEventListener('SP_STUDENT_IDENTITY_NORMALIZED',()=>{window.SP_L5T4_TASK10_MIGRATE?.();show()});
+window.addEventListener('SP_PROFILE_SYNCED',()=>{window.SP_L5T4_TASK10_MIGRATE?.();show()});
 show();
 </script></body></html>
