@@ -1,34 +1,23 @@
 <!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><title>Prüfung</title><link rel="stylesheet" href="style.css?v=3"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div>
 <script src="/js/session-restore.js?v=4"></script>
-<script type="module" src="/js/guard.js?v=20260826-l5t4-central2"></script>
+<script type="module" src="/js/guard.js?v=20260826-l5t4-central3"></script>
 <script src="../data/wortschatz.js?v=8"></script>
 <script>window.SP_L5_THEME={id:'Thema-4',title:'Öffnungszeiten und Freizeit',sub:'A1 Lektion 5 · Thema 4',key:'SP_L5_T4_V1'};</script>
 <script src="app.js?v=5"></script>
-<script src="l5t4-progress.js?v=20260826-central2"></script>
+<script src="l5t4-progress.js?v=20260826-central3"></script>
 <script src="l5t4-patch.js?v=11"></script>
 <script src="/wortschatz/A1-Lektion-5/l5-bunny-words.js?v=l5-bunny-all3"></script>
 <script>
 header('Prüfung');
 const FILE='pruefung.html';
 const need=[['karteikarten.html',WORDS.length],['artikel.html',12],['hoeren-schreiben.html',13],['hoeren-bild.html',WORDS.filter(w=>w&&w.image).length],['bild-wort.html',WORDS.filter(w=>w&&(w.image||w.cue)).length],['hoeren.html',13],['schilder.html',10],['lesen.html',6],['tv-programm.html',6],['zuordnen.html',10],['saetze-bauen.html',8],['mini-dialoge.html',8],['jede-zeit.html',16]];
-const q=[
- ['Der Film fängt um ___ an.',['20:15 Uhr','20 Uhr 15']],
- ['Die Kita ist von Montag bis Freitag ___.',['geöffnet']],
- ['Ich vereinbare einen ___.',['Termin']],
- ['Die Bibliothek ist an Feiertagen ___.',['geschlossen']],
- ['z.B. = ___.',['zum Beispiel']],
- ['jeden ___',['Tag']],
- ['jede ___',['Woche']],
- ['jedes ___',['Wochenende']],
- ['Ich möchte ein Buch ___.',['ausleihen']],
- ['Emil geht in die / in den ___.',['Kita','Kindergarten']],
- ['Ich bin ___ fertig.',['total']],
- ['Das Geschäft ist den ganzen ___ geöffnet.',['Tag']]
-];
+const q=[['Der Film fängt um ___ an.',['20:15 Uhr','20 Uhr 15']],['Die Kita ist von Montag bis Freitag ___.',['geöffnet']],['Ich vereinbare einen ___.',['Termin']],['Die Bibliothek ist an Feiertagen ___.',['geschlossen']],['z.B. = ___.',['zum Beispiel']],['jeden ___',['Tag']],['jede ___',['Woche']],['jedes ___',['Wochenende']],['Ich möchte ein Buch ___.',['ausleihen']],['Emil geht in die / in den ___.',['Kita','Kindergarten']],['Ich bin ___ fertig.',['total']],['Das Geschäft ist den ganzen ___ geöffnet.',['Tag']]];
 let i=0,score=0;
 function unlocked(){return need.every(x=>pctFor(x[0],x[1])>=100)}
 function renderLock(){area.innerHTML='<div class="question">Prüfung noch gesperrt</div><div class="hint">Bearbeiten Sie zuerst alle Aufgaben.</div><div class="exam-lock">'+need.map(x=>'<a href="'+x[0]+'">'+x[0].replace('.html','')+': '+pctFor(x[0],x[1])+'%</a>').join('')+'</div><div class="actions"><a class="btn secondary" href="index.html">Zum Menü</a></div>'}
-if(unlocked())show();else renderLock();
+function startExam(){if(unlocked())show();else renderLock()}
+area.innerHTML='<div class="hint">Fortschritt wird geprüft …</div>';
+Promise.resolve(typeof spL5T4SyncNow==='function'?spL5T4SyncNow():null).catch(()=>null).finally(startExam);
 function show(){if(i>=q.length){done();return}area.innerHTML='<div class="small">Aufgabe '+(i+1)+' / '+q.length+'</div><div class="question">'+q[i][0]+'</div><input id="ans" placeholder="Antwort"><div class="actions"><button class="btn" onclick="check()">Weiter</button></div>'}
 function check(){const sols=Array.isArray(q[i][1])?q[i][1]:[q[i][1]];if(sols.some(s=>simple(ans.value)===simple(s)))score++;i++;show()}
 function done(){const percent=Math.round(score/q.length*100),stars=percent>=100?3:percent>=70?2:percent>=50?1:0;spL5T4SaveExamResult({score,maxScore:q.length,percent,stars});area.innerHTML='<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="hint">Ergebnis: '+score+' / '+q.length+' = '+percent+'%</div><div class="actions"><a class="btn" href="index.html">Zum Thema</a></div></div>'}
