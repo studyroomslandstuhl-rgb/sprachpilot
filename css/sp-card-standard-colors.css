@@ -18,6 +18,11 @@ html[data-sp-card-lesson="7"]{
  --lesson-soft:#f4effb;--lesson-line:#d9ccef;--lesson-bg:#fbf9ff;
  --lesson-shadow:0 12px 28px rgba(95,71,127,.16);
 }
+html[data-sp-card-lesson="8"]{
+ --lesson-main:#63c3cf;--lesson-main-dark:#17626e;--lesson-main-light:#a9e1e7;
+ --lesson-soft:#ecfafb;--lesson-line:#bde5e9;--lesson-bg:#f8fdfd;
+ --lesson-shadow:0 12px 28px rgba(23,98,110,.16);
+}
 body{background:linear-gradient(180deg,var(--lesson-bg),#fff)}
 .topbar,.card,.sp-header{box-shadow:var(--lesson-shadow)}
 .progress{background:color-mix(in srgb,var(--lesson-soft) 86%,#fff)}
