@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L5T4_PROGRESS_V2)return;
-window.__SP_L5T4_PROGRESS_V2=true;
+if(window.__SP_L5T4_PROGRESS_V3)return;
+window.__SP_L5T4_PROGRESS_V3=true;
 
 const MASTER_KEY='SP_L5_T4_PROGRESS_V2';
 const POINTS_KEY='SP_L5_T4_POINTS';
@@ -28,7 +28,7 @@ function canonical(file){file=String(file||'');return ALIASES[file]||file}
 function runFromStorage(){return Math.max(1,Math.min(3,Math.round(Number(localStorage.getItem(SCORE_RUN_KEY)||1)||1)))}
 function taskPoints(run){return run===1?5:run===2?10:run===3?15:0}
 function examMax(run){return run===1?100:run===2?200:run===3?300:0}
-function knownTotal(file,fallback){const fixed=TASK_TOTALS[canonical(file)];return Math.max(0,Number(fallback??fixed)||0)}
+function knownTotal(file,fallback){const fixed=Number(TASK_TOTALS[canonical(file)])||0;return Math.max(0,Number(fallback)||fixed||0)}
 function ints(list,total){return [...new Set((Array.isArray(list)?list:[]).filter(n=>Number.isInteger(n)&&n>=0&&n<total))]}
 function blankTask(total){total=Math.max(0,Number(total)||0);return{total,done:[],queue:[...Array(total).keys()].sort(()=>Math.random()-.5),current:null,tries:0,hadWrong:false}}
 function percentOf(st,total=st?.total){total=Math.max(0,Number(total)||0);return total?clamp((Array.isArray(st?.done)?st.done.length:0)/total*100):0}
@@ -44,7 +44,7 @@ function normalizeTask(st,total){
  return{...st,total,done,queue,current,tries:Math.max(0,Number(st.tries)||0),hadWrong:!!st.hadWrong};
 }
 function mergeTask(a,b,total){a=normalizeTask(a,total);b=normalizeTask(b,total);return percentOf(b,total)>percentOf(a,total)?b:a}
-function emptyMaster(){return{version:2,run:runFromStorage(),tasks:{},exam:{byRun:{}},awards:{taskByRun:{},examByRun:{}},points:0,updatedAt:new Date().toISOString()}}
+function emptyMaster(){return{version:3,run:runFromStorage(),pendingResets:0,tasks:{},exam:{byRun:{}},awards:{taskByRun:{},examByRun:{}},points:0,updatedAt:new Date().toISOString()}}
 function readRaw(){const m=parse(localStorage.getItem(MASTER_KEY),null);return m&&typeof m==='object'?m:emptyMaster()}
 function legacyKeys(file){const names=[file,...Object.keys(ALIASES).filter(x=>ALIASES[x]===file)],out=[];for(const p of LEGACY_PREFIXES)for(const n of names)out.push(p+n);return out}
 function migrate(master){
@@ -61,37 +61,27 @@ function migrate(master){
  return master;
 }
 function ensure(master){
- master.version=2;master.tasks=master.tasks||{};master.exam=master.exam||{byRun:{}};master.exam.byRun=master.exam.byRun||{};
+ master.version=3;master.tasks=master.tasks||{};master.exam=master.exam||{byRun:{}};master.exam.byRun=master.exam.byRun||{};
  master.awards=master.awards||{taskByRun:{},examByRun:{}};master.awards.taskByRun=master.awards.taskByRun||{};master.awards.examByRun=master.awards.examByRun||{};
- master.run=Math.max(1,Math.min(3,Math.max(Number(master.run)||1,runFromStorage())));
+ master.pendingResets=Math.max(0,Math.min(2,Number(master.pendingResets)||0));master.run=Math.max(1,Math.min(3,Math.max(Number(master.run)||1,runFromStorage())));
  for(const[file,st]of Object.entries(master.tasks)){const f=canonical(file);if(f!==file){master.tasks[f]=mergeTask(master.tasks[f],st,knownTotal(f,st?.total));delete master.tasks[file]}}
  return master;
 }
-function awardCompleted(master){
- for(const[file,st]of Object.entries(master.tasks)){if(!TASK_TOTALS.hasOwnProperty(file)||percentOf(st,st.total)<100)continue;master.awards.taskByRun[file]=master.awards.taskByRun[file]||{};const r=String(master.run);if(!master.awards.taskByRun[file][r])master.awards.taskByRun[file][r]=taskPoints(master.run)}
-}
+function awardCompleted(master){for(const[file,st]of Object.entries(master.tasks)){if(!TASK_TOTALS.hasOwnProperty(file)||percentOf(st,st.total)<100)continue;master.awards.taskByRun[file]=master.awards.taskByRun[file]||{};const r=String(master.run);if(!master.awards.taskByRun[file][r])master.awards.taskByRun[file][r]=taskPoints(master.run)}}
 function recalc(master){let points=0;for(const runs of Object.values(master.awards.taskByRun||{}))for(const v of Object.values(runs||{}))points+=Math.max(0,Number(v)||0);for(const v of Object.values(master.awards.examByRun||{}))points+=Math.max(0,Number(v)||0);master.points=Math.round(points);master.updatedAt=new Date().toISOString();return master}
 function readMaster(){const m=ensure(migrate(readRaw()));awardCompleted(m);return recalc(m)}
 function writeMaster(master,emit=true){ensure(master);awardCompleted(master);recalc(master);localStorage.setItem(MASTER_KEY,JSON.stringify(master));localStorage.setItem(POINTS_KEY,String(master.points||0));if(emit)try{window.dispatchEvent(new CustomEvent('sprachpilot-progress',{detail:{theme:'L5T4',master}}))}catch(e){}return master}
 
 function taskPayload(file,st){const total=Math.max(0,Number(st?.total)||knownTotal(file)),done=Math.min(total,Array.isArray(st?.done)?st.done.length:0),percent=total?clamp(done/total*100):0;return{module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:'5',theme:'4',topicId:TOPIC_ID,title:'A1 Lektion 5 · Thema 4',file,taskKey:file,taskTitle:TITLES[file]||file.replace('.html',''),total,done,percent,completed:percent>=100,countAttempt:false}}
-function loadApi(){if(window.SPProgress)return Promise.resolve(window.SPProgress);if(cloudPromise)return cloudPromise;cloudPromise=import('/js/progress.js?v=l5t4-central2').then(()=>window.SPProgress||null).catch(e=>{console.warn('L5T4: Firebase-Sync nicht verfügbar',e);cloudPromise=null;return null});return cloudPromise}
+function loadApi(){if(window.SPProgress)return Promise.resolve(window.SPProgress);if(cloudPromise)return cloudPromise;cloudPromise=import('/js/progress.js?v=l5t4-central3').then(()=>window.SPProgress||null).catch(e=>{console.warn('L5T4: Firebase-Sync nicht verfügbar',e);cloudPromise=null;return null});return cloudPromise}
 function syncStorageKey(key){return 'SP_L5_T4_SYNC_'+key.replace(/[^a-z0-9_-]+/gi,'_')}
 function signature(method,data,extra=''){return[method,data?.file||'',data?.percent??'',data?.done??'',data?.total??'',data?.score??'',data?.maxScore??'',data?.stars??'',extra].join('|')}
-function queueCloud(method,data,key,extra=''){
- key=key||method+':'+(data?.file||'');const sig=signature(method,data,extra),storeKey=syncStorageKey(key);if(localStorage.getItem(storeKey)===sig)return;
- pending.set(key,{method,data,key,sig,storeKey});clearTimeout(flushTimer);flushTimer=setTimeout(flushCloud,120);
-}
-async function flushCloud(){
- if(!pending.size)return;const api=await loadApi();if(!api){setTimeout(flushCloud,1500);return}
- const items=[...pending.values()];pending.clear();
- for(const item of items){try{const fn=api[item.method];if(typeof fn!=='function')continue;await fn(item.data);localStorage.setItem(item.storeKey,item.sig)}catch(e){console.warn('L5T4: Sync fehlgeschlagen',item.method,e);pending.set(item.key,item)}}
- if(pending.size)setTimeout(flushCloud,1200);
-}
-async function alignRun(api,master){
- if(!api||typeof api.currentRun!=='function'||typeof api.recordThemeReset!=='function')return;
- let cloudRun=Math.max(1,Math.min(3,Number(api.currentRun(TOPIC_ID))||1));
- while(cloudRun<master.run){await api.recordThemeReset({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:'5',theme:'4',topicId:TOPIC_ID,title:'A1 Lektion 5 · Thema 4'});cloudRun=Math.max(1,Math.min(3,Number(api.currentRun(TOPIC_ID))||cloudRun+1))}
+function queueCloud(method,data,key,extra=''){key=key||method+':'+(data?.file||'');const sig=signature(method,data,extra),storeKey=syncStorageKey(key);if(localStorage.getItem(storeKey)===sig)return;pending.set(key,{method,data,key,sig,storeKey});clearTimeout(flushTimer);flushTimer=setTimeout(flushCloud,120)}
+async function flushCloud(){if(!pending.size)return;const api=await loadApi();if(!api){setTimeout(flushCloud,1500);return}const items=[...pending.values()];pending.clear();for(const item of items){try{const fn=api[item.method];if(typeof fn!=='function')continue;await fn(item.data);localStorage.setItem(item.storeKey,item.sig)}catch(e){console.warn('L5T4: Sync fehlgeschlagen',item.method,e);pending.set(item.key,item)}}if(pending.size)setTimeout(flushCloud,1200)}
+async function applyPendingResets(api,master=readMaster()){
+ if(!api||typeof api.recordThemeReset!=='function'||master.pendingResets<=0)return master;
+ while(master.pendingResets>0){await api.recordThemeReset({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:'5',theme:'4',topicId:TOPIC_ID,title:'A1 Lektion 5 · Thema 4'});master.pendingResets--;writeMaster(master,false)}
+ return master;
 }
 function saveTask(file,st,sync=true){file=canonical(file);const master=readMaster(),total=knownTotal(file,st?.total),next=normalizeTask(st,total);master.tasks[file]=next;writeMaster(master);if(sync&&file!=='pruefung.html')queueCloud('recordTaskProgress',taskPayload(file,next),'task:'+file);return next}
 function loadTaskState(file,total){file=canonical(file);const master=readMaster(),resolved=knownTotal(file,total),next=normalizeTask(master.tasks[file],resolved);if(master.tasks[file]&&JSON.stringify(master.tasks[file])!==JSON.stringify(next)){master.tasks[file]=next;writeMaster(master,false)}return next}
@@ -102,24 +92,16 @@ function saveExam(result={}){
  const data={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:'5',theme:'4',topicId:TOPIC_ID,title:'A1 Lektion 5 · Thema 4',file:'pruefung.html',taskTitle:'Prüfung',score,maxScore,percent,scorePercent:percent,stars};queueCloud('recordExamResult',data,'exam:'+r,'attempt:'+old.attempts);return old;
 }
 function stateFromCloud(total,percent){const n=percent>=100?total:Math.min(total,Math.round(total*clamp(percent)/100));return normalizeTask({total,done:[...Array(n).keys()],queue:[],current:null,tries:0,hadWrong:false},total)}
-function mergeAwards(master,topic){
- const life=topic?.lifetime||{};for(const[raw,runs]of Object.entries(life.taskPointRuns||{})){let file=raw.endsWith('.html')?raw:raw.replace(/-html$/,'.html');file=canonical(file);if(!TASK_TOTALS.hasOwnProperty(file))continue;master.awards.taskByRun[file]=master.awards.taskByRun[file]||{};for(const[r,v]of Object.entries(runs||{}))master.awards.taskByRun[file][r]=Math.max(Number(master.awards.taskByRun[file][r]||0),Number(v)||0)}for(const[r,v]of Object.entries(life.examPointRuns||{}))master.awards.examByRun[r]=Math.max(Number(master.awards.examByRun[r]||0),Number(v)||0)
-}
+function mergeAwards(master,topic){const life=topic?.lifetime||{};for(const[raw,runs]of Object.entries(life.taskPointRuns||{})){let file=raw.endsWith('.html')?raw:raw.replace(/-html$/,'.html');file=canonical(file);if(!TASK_TOTALS.hasOwnProperty(file))continue;master.awards.taskByRun[file]=master.awards.taskByRun[file]||{};for(const[r,v]of Object.entries(runs||{}))master.awards.taskByRun[file][r]=Math.max(Number(master.awards.taskByRun[file][r]||0),Number(v)||0)}for(const[r,v]of Object.entries(life.examPointRuns||{}))master.awards.examByRun[r]=Math.max(Number(master.awards.examByRun[r]||0),Number(v)||0)}
 async function pullCloud(api){
  if(!api||typeof api.loadCurrentStudentProgress!=='function')return readMaster();let master=readMaster();
- try{const progress=await api.loadCurrentStudentProgress(),topic=progress?.wortschatz?.[TOPIC_ID];if(!topic)return master;const cloudRun=Math.max(1,Math.min(3,(Number(topic?.lifetime?.resets)||0)+1));master.run=Math.max(master.run,cloudRun);mergeAwards(master,topic);const cloudTasks=topic.tasks||{};
+ try{const progress=await api.loadCurrentStudentProgress(),topic=progress?.wortschatz?.[TOPIC_ID];if(!topic)return master;const cloudRun=Math.max(1,Math.min(3,(Number(topic?.lifetime?.resets)||0)+1));if(master.pendingResets===0&&cloudRun>runFromStorage())localStorage.setItem(SCORE_RUN_KEY,String(cloudRun));master.run=Math.max(master.run,cloudRun);mergeAwards(master,topic);const cloudTasks=topic.tasks||{};
   for(const file of Object.keys(TASK_TOTALS)){const names=[file,...Object.keys(ALIASES).filter(x=>ALIASES[x]===file)];let best=null;for(const name of names){const rec=cloudTasks[name];if(rec&&(!best||clamp(rec.percent)>clamp(best.percent)))best=rec}if(!best)continue;const total=knownTotal(file,best.total||master.tasks[file]?.total);if(!total)continue;const cloud=stateFromCloud(total,best.percent||0),local=normalizeTask(master.tasks[file],total);if(percentOf(cloud,total)>percentOf(local,total))master.tasks[file]=cloud}
   const exam=topic.exam||{},r=String(master.run);if(exam.attempted){const old=master.exam.byRun[r]||{attempts:0,percent:0,score:0,maxScore:12,stars:0};old.percent=Math.max(clamp(old.percent),clamp(exam.bestPercent||exam.percent));old.stars=Math.max(Number(old.stars)||0,Number(exam.stars)||0);old.attempts=Math.max(Number(old.attempts)||0,Number(exam.attempts)||0);master.exam.byRun[r]=old}writeMaster(master);return master
  }catch(e){console.warn('L5T4: Cloud-Fortschritt konnte nicht gelesen werden',e);return master}
 }
-function syncAll(master=readMaster()){
- for(const file of Object.keys(TASK_TOTALS)){const st=master.tasks[file];if(st&&st.total&&percentOf(st,st.total)>0)queueCloud('recordTaskProgress',taskPayload(file,st),'task:'+file)}
- const ex=master.exam?.byRun?.[String(master.run)];if(ex&&ex.attempts){const data={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:'5',theme:'4',topicId:TOPIC_ID,title:'A1 Lektion 5 · Thema 4',file:'pruefung.html',taskTitle:'Prüfung',score:ex.score||0,maxScore:ex.maxScore||12,percent:ex.percent||0,scorePercent:ex.percent||0,stars:ex.stars||0};queueCloud('recordExamResult',data,'exam:'+master.run,'attempt:'+ex.attempts)}
-}
-function resetTheme(){
- if(!confirm('Fortschritte in diesem Thema löschen?'))return;const master=readMaster();master.run=Math.min(3,master.run+1);master.tasks={};master.exam.byRun[String(master.run)]={attempts:0,percent:0,score:0,maxScore:12,stars:0};writeMaster(master);for(const key of Object.keys(localStorage))if(key.startsWith('SP_L5_T4_SYNC_'))localStorage.removeItem(key);
- loadApi().then(async api=>{await alignRun(api,master);location.href='index.html'}).catch(()=>{location.href='index.html'});setTimeout(()=>{if(!/\/index\.html$/.test(location.pathname))location.href='index.html'},1800)
-}
+function syncAll(master=readMaster()){for(const file of Object.keys(TASK_TOTALS)){const st=master.tasks[file];if(st&&st.total&&percentOf(st,st.total)>0)queueCloud('recordTaskProgress',taskPayload(file,st),'task:'+file)}const ex=master.exam?.byRun?.[String(master.run)];if(ex&&ex.attempts){const data={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:'5',theme:'4',topicId:TOPIC_ID,title:'A1 Lektion 5 · Thema 4',file:'pruefung.html',taskTitle:'Prüfung',score:ex.score||0,maxScore:ex.maxScore||12,percent:ex.percent||0,scorePercent:ex.percent||0,stars:ex.stars||0};queueCloud('recordExamResult',data,'exam:'+master.run,'attempt:'+ex.attempts)}}
+function resetTheme(){if(!confirm('Fortschritte in diesem Thema löschen?'))return;const master=readMaster();master.run=Math.min(3,master.run+1);master.pendingResets=Math.min(2,(Number(master.pendingResets)||0)+1);master.tasks={};master.exam.byRun[String(master.run)]={attempts:0,percent:0,score:0,maxScore:12,stars:0};writeMaster(master);for(const key of Object.keys(localStorage))if(key.startsWith('SP_L5_T4_SYNC_'))localStorage.removeItem(key);loadApi().then(async api=>{master.pendingResets?await applyPendingResets(api,master):null;location.href='index.html'}).catch(()=>{location.href='index.html'});setTimeout(()=>{location.href='index.html'},1800)}
 
 window.taskKey=file=>'SP_L5_T4_CANONICAL_'+canonical(file);
 window.loadTask=(file,total)=>loadTaskState(file,total);
@@ -131,10 +113,10 @@ window.resetThemeProgress=resetTheme;
 window.spL5T4SaveExamResult=saveExam;
 window.spL5T4ReadProgress=readMaster;
 window.spL5T4ThemePoints=()=>readMaster().points||0;
-window.spL5T4SyncNow=async()=>{const api=await loadApi(),master=await pullCloud(api);await alignRun(api,master);syncAll(master);return flushCloud()};
+window.spL5T4SyncNow=async()=>{const api=await loadApi();let master=readMaster();master=await applyPendingResets(api,master);master=await pullCloud(api);syncAll(master);return flushCloud()};
 
 writeMaster(readMaster(),false);
-loadApi().then(async api=>{let master=await pullCloud(api);await alignRun(api,master);master=readMaster();syncAll(master);flushCloud()});
+loadApi().then(async api=>{let master=readMaster();master=await applyPendingResets(api,master);master=await pullCloud(api);syncAll(master);flushCloud()});
 window.addEventListener('online',()=>window.spL5T4SyncNow());
 window.addEventListener('focus',()=>{syncAll();flushCloud()});
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){syncAll();flushCloud()}});
