@@ -5,57 +5,11 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
 <meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0">
+<meta http-equiv="refresh" content="0;url=zuordnen.html?v=20260826-task10-v8">
 <title>Zuordnen</title>
-<link rel="stylesheet" href="style.css?v=20260825-task10-v6">
 </head>
 <body>
-<div class="container">
-<header class="topbar">
-  <div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">Zuordnen · A1 Lektion 5 · Thema 4</div></div></a></div>
-  <nav class="nav sp-page-nav"><a class="btn secondary" href="index.html">← Zurück</a><a class="btn secondary" href="uebersicht.html">Übersicht</a><a class="btn secondary" href="statistik.html">Statistik</a></nav>
-</header>
-<section class="card" id="area"></section>
-<footer>© SprachPilot</footer>
-</div>
-<!-- L5T4: alte gecachte Zurück-Erkennung V4 darf Antworten mit "zurück" nicht übernehmen. -->
-<script>window.__SP_BACK_BUTTON_FIX_V4=true;</script>
-<script src="/js/back-button-fix.js?v=5"></script>
-<script type="module" src="/js/guard.js?v=20260826-l5t4-zuordnen-v7"></script>
-<script>window.SP_L5_THEME={id:'Thema-4',title:'Öffnungszeiten und Freizeit',sub:'A1 Lektion 5 · Thema 4',key:'SP_L5_T4_V1'};</script>
-<script src="l5t4-task10-progress-scope.js?v=20260825-6"></script>
-<script>
-window.saveTask=function(file,state){try{localStorage.setItem(window.SP_L5T4_TASK10_KEY(file),JSON.stringify(state))}catch(e){console.warn(e)}};
-</script>
-<script src="../Thema-1/points-hook.js?v=5"></script>
-<script>
-(function(){
-'use strict';
-const FILE='zuordnen-v6.html',REV='20260826-task10-v7';
-const ITEMS=[
- {id:'kino',word:'das Kino',answer:'Hier kann man Filme sehen.',choices:['Hier kann man Filme sehen.','Hier sind Kinder am Tag.','Hier kauft man Brot.']},
- {id:'krippe',word:'die Krippe',answer:'Hier sind sehr kleine Kinder.',choices:['Hier sind sehr kleine Kinder.','Hier kann man Filme sehen.','Hier arbeitet ein Arzt.']},
- {id:'bibliothek',word:'die Bibliothek',answer:'Hier kann man Bücher ausleihen.',choices:['Hier kann man Bücher ausleihen.','Hier bringt man Kinder am Morgen.','Hier kauft man Schuhe.']},
- {id:'geschaeft',word:'das Geschäft',answer:'Hier kann man etwas kaufen.',choices:['Hier kann man etwas kaufen.','Hier schlafen Kinder.','Hier liest man einen Fahrplan.']},
- {id:'oeffnungszeiten',word:'die Öffnungszeiten',answer:'Diese Zeiten zeigen: wann ist geöffnet und wann ist geschlossen.',choices:['Diese Zeiten zeigen: wann ist geöffnet und wann ist geschlossen.','Das ist ein freier Tag.','Das ist eine Person.']},
- {id:'feiertag',word:'der Feiertag',answer:'An diesem Tag arbeiten viele Menschen nicht.',choices:['An diesem Tag arbeiten viele Menschen nicht.','Das ist ein Telefon.','Das ist eine Uhrzeit am Abend.']},
- {id:'schild',word:'das Schild',answer:'Darauf stehen Informationen.',choices:['Darauf stehen Informationen.','Damit kocht man Essen.','Damit hört man Musik.']},
- {id:'termin',word:'einen Termin vereinbaren',answer:'Man macht eine Zeit aus.',choices:['Man macht eine Zeit aus.','Man sieht einen Film.','Man räumt das Zimmer auf.']},
- {id:'ausleihen',word:'etwas ausleihen',answer:'Man nimmt etwas und bringt es später zurück.',choices:['Man nimmt etwas und bringt es später zurück.','Man bleibt den ganzen Tag zu Hause.','Man öffnet ein Geschäft.']},
- {id:'zum_beispiel',word:'z.B.',answer:'Das bedeutet: zum Beispiel.',choices:['Das bedeutet: zum Beispiel.','Das ist ein freier Tag.','Das ist eine Uhrzeit.']}
-];
-const TOTAL=ITEMS.length,KEY=window.SP_L5T4_TASK10_KEY(FILE),area=document.getElementById('area');
-function mix(values){const a=[...values];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a}
-function fresh(){return{rev:REV,total:TOTAL,done:[],queue:mix([...Array(TOTAL).keys()]),current:null,tries:0,hadWrong:false}}
-function normalize(raw){if(!raw||raw.rev!==REV||Number(raw.total)!==TOTAL)return fresh();const done=[...new Set((raw.done||[]).map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<TOTAL))];let current=raw.current===null||raw.current===undefined?null:Number(raw.current);if(!Number.isInteger(current)||current<0||current>=TOTAL||done.includes(current))current=null;const queue=[...new Set((raw.queue||[]).map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<TOTAL&&!done.includes(i)&&i!==current))];return{rev:REV,total:TOTAL,done,queue,current,tries:Math.max(0,Number(raw.tries)||0),hadWrong:raw.hadWrong===true}}
-function load(){try{return normalize(JSON.parse(localStorage.getItem(KEY)||'null'))}catch(e){return fresh()}}
-function save(state){const out=normalize(state);window.saveTask(FILE,out);return out}
-function ensureCurrent(state){if(state.current!==null)return state;if(!state.queue.length&&state.done.length<TOTAL)state.queue=mix([...Array(TOTAL).keys()].filter(i=>!state.done.includes(i)));state.current=state.queue.length?state.queue.shift():null;state.tries=0;state.hadWrong=false;return save(state)}
-function progress(state){const done=state.done.length,pct=Math.round(done/TOTAL*100);return`<div class="small">${done} richtig · ${TOTAL-done} übrig · ${pct}%</div><div class="progress"><div class="bar" style="width:${pct}%"></div></div>`}
-function finish(){area.innerHTML='<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Geschafft!</div><div class="hint">Diese Aufgabe ist abgeschlossen.</div><div class="actions"><a class="btn" href="saetze-bauen.html">Weiter →</a><a class="btn secondary" href="index.html">Zum Menü</a></div></div>'}
-function show(){let state=load();if(state.done.length>=TOTAL){finish();return}state=ensureCurrent(state);if(state.current===null){finish();return}const index=state.current,item=ITEMS[index],choices=mix(item.choices);area.innerHTML=`${progress(state)}<div class="task-instruction">Was passt zusammen? Wählen Sie die richtige Bedeutung.</div><div class="sentence-box">${item.word}</div><div class="choice-grid" id="answerGrid"></div><div id="fb" class="feedback"></div>`;const grid=document.getElementById('answerGrid');choices.forEach(text=>{const button=document.createElement('button');button.type='button';button.className='choice';button.dataset.role='answer';button.dataset.spExerciseAnswer='1';button.textContent=text;button.addEventListener('click',()=>check(index,text,button));grid.appendChild(button)});}
-function check(index,value,button){let state=load();if(state.current!==index){show();return}const item=ITEMS[index],fb=document.getElementById('fb');if(value===item.answer){button.classList.add('ok');if(fb)fb.innerHTML='<div class="ok">Richtig!</div>';if(state.hadWrong||state.tries>0){if(!state.queue.includes(index))state.queue.push(index)}else if(!state.done.includes(index))state.done.push(index);state.current=null;state.tries=0;state.hadWrong=false;save(state);setTimeout(show,650);return}button.classList.add('no');state.tries++;state.hadWrong=true;save(state);if(!fb)return;if(state.tries===1)fb.innerHTML='<div class="no">Das passt noch nicht. Versuche es noch einmal.</div>';else if(state.tries===2)fb.innerHTML='<div class="hint">Tipp: Denken Sie an den Ort oder die Situation.</div>';else fb.innerHTML=`<div class="no">Richtige Antwort: <strong>${item.answer}</strong><br>Wähle die richtige Antwort selbst aus.</div>`;}
-show();
-})();
-</script>
+<script>location.replace('zuordnen.html?v=20260826-task10-v8');</script>
+<p><a href="zuordnen.html?v=20260826-task10-v8">Zuordnen öffnen</a></p>
 </body>
 </html>
