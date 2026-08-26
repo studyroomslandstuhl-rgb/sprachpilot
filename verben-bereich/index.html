@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Verben · SprachPilot</title>
-<link rel="stylesheet" href="/style.css?v=verben-bereich4">
+<link rel="stylesheet" href="/style.css?v=verben-bereich5">
 <style>
 .verb-hub-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.verb-hub-head .actions{margin:0}.verb-hub-note{margin:8px 0 0;color:#5f7180}.modules{margin-top:18px}.module-title{font-size:22px}.module .module-icon{font-size:42px;line-height:1;margin-bottom:12px}
 </style>
@@ -23,10 +23,10 @@ import{loadCourseRelease,moduleOpen}from'/js/course-releases.js?v=verb-stable3';
 const target=document.querySelector('#verbModules'),dashboard=document.querySelector('#dashboardLink');
 const role=String(getActiveRole()||'').toLowerCase(),profile=getActiveProfile();dashboard.href=dashboardHref();
 function card(title,icon,href,description,open){return `<a class="module ${open?'':'locked'}" href="${open?href:'#'}" ${open?'':'onclick="return false" aria-disabled="true"'}><div class="module-icon" aria-hidden="true">${safeText(icon)}</div><div class="module-title">${safeText(title)}</div><p>${safeText(open?description:'Für deinen Kurs noch nicht freigeschaltet.')}</p><span class="badge">${open?'Öffnen':'Gesperrt'}</span></a>`}
-function render(assignments={}){const teacher=role==='teacher',verbs=teacher||moduleOpen(assignments,'Verben'),irregular=teacher||moduleOpen(assignments,'Irreguläre Verben');target.innerHTML=[card('Verben','Aa','/verben/','Freigegebene Verben in Gruppen lernen, konjugieren, hören, schreiben und sprechen.',verbs),card('Irreguläre Verben','↔','/irregulaere-verben/','Unregelmäßige Präsensformen systematisch lernen und wiederholen.',irregular),card('Perfekt','hat / ist','/perfekt/','Perfektformen mit Partizip II sowie haben oder sein trainieren.',verbs),card('Dativverben','Wem?','/dativverben/','Dativverben von A1 bis C1 mit Artikeln, Pronomen und Sätzen trainieren.',verbs)].join('')}
-async function init(){if(!profile&&role!=='teacher'){location.href='/login/';return}render(profile?.assignments||{});if(profile&&role!=='teacher'){loadCourseRelease(profile).then(data=>render(data||profile.assignments||{})).catch(error=>console.warn('Kursfreigaben konnten nicht geladen werden',error))}try{renderAccountStrip()}catch{}}
+function render(assignments={}){const teacher=role==='teacher'||role==='owner',verbs=teacher||moduleOpen(assignments,'Verben'),irregular=teacher||moduleOpen(assignments,'Irreguläre Verben'),dativ=teacher||moduleOpen(assignments,'Dativverben');target.innerHTML=[card('Verben','Aa','/verben/','Freigegebene Verben in Gruppen lernen, konjugieren, hören, schreiben und sprechen.',verbs),card('Irreguläre Verben','↔','/irregulaere-verben/','Unregelmäßige Präsensformen systematisch lernen und wiederholen.',irregular),card('Perfekt','hat / ist','/perfekt/','Perfektformen mit Partizip II sowie haben oder sein trainieren.',verbs),card('Dativverben','Wem?','/dativverben/','Dativverben nach Niveaustufe freigeben und mit Artikeln, Pronomen und Sätzen trainieren.',dativ)].join('')}
+async function init(){if(!profile&&role!=='teacher'&&role!=='owner'){location.href='/login/';return}render(profile?.assignments||{});if(profile&&role!=='teacher'&&role!=='owner'){loadCourseRelease(profile).then(data=>render(data||profile.assignments||{})).catch(error=>console.warn('Kursfreigaben konnten nicht geladen werden',error))}try{renderAccountStrip()}catch{}}
 init();
 </script>
-<script src="/shared/sprachpilot-design-system.js?v=verben-bereich4"></script>
+<script src="/shared/sprachpilot-design-system.js?v=verben-bereich5"></script>
 </body>
 </html>
