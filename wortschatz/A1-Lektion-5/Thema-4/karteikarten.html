@@ -37,13 +37,13 @@ footer{color:#52706e}
 <section class="card" id="area"><p>Die Aufgabe wird geladen …</p></section>
 <footer>© SprachPilot</footer>
 </div>
-<script type="module" src="/js/guard.js?v=l5-card-standard1"></script>
+<script type="module" src="/js/guard.js?v=20260826-l5t4-central1"></script>
 <script src="../data/wortschatz.js?v=8"></script>
 <script>window.SP_L5_THEME={id:'Thema-4',title:'Öffnungszeiten und Freizeit',sub:'A1 Lektion 5 · Thema 4',key:'SP_L5_T4_V1'};</script>
-<script src="app.js?v=l5-card-standard1"></script>
+<script src="app.js?v=5"></script>
 <script src="l5t4-patch.js?v=11"></script>
 <script src="/wortschatz/A1-Lektion-5/l5-bunny-words.js?v=l5-bunny-all3"></script>
-<script src="../Thema-1/points-hook.js?v=5"></script>
+<script src="../Thema-1/points-hook.js?v=7"></script>
 <script>
 (function(){
 'use strict';
@@ -55,7 +55,7 @@ let currentIndex=null;
 let recognition=null;
 let autoScrollTimer=null;
 
-function esc(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
+function esc(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char]))}
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')}catch(e){return null}}
 function languageName(){try{return LANG_NAMES[langKey()]||'Englisch'}catch(e){return'Englisch'}}
 function translation(item){try{return tr(item)||''}catch(e){return''}}
@@ -75,7 +75,7 @@ function answerInput(label='Schreibe deine Antwort.',withMic=false,hidden=false)
 function header(title){const target=document.querySelector('.topbar');if(!target)return;const p=profile(),name=`${p?.vorname||p?.firstName||''} ${p?.nachname||p?.lastName||''}`.trim()||'Schüler/in';const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();const dashboard=role==='teacher'?'/teacher/index.html':'/student-dashboard/index.html';target.innerHTML=`<div class="topbar-main"><a class="brand" href="/index.html"><div class="logo"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"></div><div><h1>SprachPilot</h1><div class="subtitle">${esc(title)} · A1 Lektion 5 · Thema ${THEME_NUMBER}</div></div></a><div class="account-tools"><span class="account-pill">${esc(name)}</span><a class="account-link" href="${dashboard}">Dashboard</a><a class="account-link" href="/profile/index.html">Profil</a></div></div><nav class="nav"><a class="btn secondary" href="index.html">← Zur Übersicht</a></nav>`}
 function bindInputs(){document.getElementById('answerInput')?.addEventListener('keydown',event=>{if(event.key==='Enter')checkInput(event.target.value)})}
 function scrollToTaskImage(){clearTimeout(autoScrollTimer);autoScrollTimer=setTimeout(()=>{const target=area?.querySelector('.flip-wrap,.question-card>.visual,.question-card .visual,.question-card');if(!target)return;target.scrollIntoView({block:'center',inline:'nearest',behavior:'smooth'})},180)}
-function render(){stopMic();const saved=state();if(saved.done.length>=WORDS.length){finish();return}const item=current();if(!item){localStorage.removeItem(taskKey(FILE));return render()}header('Karteikarten');document.title='Aufgabe 1 · Karteikarten';renderCard(item);bindInputs();scrollToTaskImage()}
+function render(){stopMic();const saved=state();if(saved.done.length>=WORDS.length){finish();return}const item=current();if(!item){return render()}header('Karteikarten');document.title='Aufgabe 1 · Karteikarten';renderCard(item);bindInputs();scrollToTaskImage()}
 function renderCard(item){const plural=item.plural?`<div><span>Plural</span><strong>${esc(String(item.plural).replace('kein Plural üblich','kein Plural'))}</strong></div>`:'',meaning=translation(item);area.innerHTML=`${top()}<div class="flip-wrap"><div id="verbFlipCard" class="flip-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="flip-face flip-front">${imageBlock(item)}<div class="card-translation-box"><span>${esc(languageName())}</span><strong>${esc(meaning)}</strong></div></div><div class="flip-face flip-back"><div class="flip-back-grid"><div class="flip-back-image">${imageBlock(item,true,true)}</div><div class="flip-back-info"><div class="flip-word">${esc(full(item))}</div><div class="card-translation-box back-translation"><span>${esc(languageName())}</span><strong>${esc(meaning)}</strong></div><div class="card-details">${plural}<div><span>Beispiel</span><strong>${esc(item.sentence||'')}</strong></div></div><button type="button" class="btn secondary card-listen-btn" id="cardListenBtn">🔊 Anhören</button></div></div></div></div></div><div class="actions card-actions"><button id="cardMicBtn" type="button" class="btn">🎤 Sprechen</button><button id="cardWriteBtn" type="button" class="btn secondary">✍️ Schreiben</button></div><div id="cardAnswerBox" hidden>${answerInput('Wort schreiben')}</div><div id="feedback" class="feedback">${hint(item)}</div><div id="tech"></div><div id="cardAfter" class="actions card-actions"></div>`;const card=document.getElementById('verbFlipCard');card?.addEventListener('click',reveal);card?.addEventListener('keydown',event=>{if(event.key==='Enter'||event.key===' '){event.preventDefault();reveal()}});document.getElementById('cardListenBtn')?.addEventListener('click',event=>{event.preventDefault();event.stopPropagation();playCardAudio(item)});document.getElementById('cardMicBtn')?.addEventListener('click',()=>startMic(item));document.getElementById('cardWriteBtn')?.addEventListener('click',openCardWrite)}
 function technical(message){const target=document.getElementById('tech');if(target)target.innerHTML=`<div class="hint">${esc(message)}</div>`}
 function checkInput(value){const item=current();if(!String(value||'').trim())return;if(isCorrect(item,value))return markRight();spMarkWrong(FILE,WORDS.length);render()}
