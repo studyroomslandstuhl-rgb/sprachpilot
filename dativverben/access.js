@@ -7,6 +7,7 @@ const app=document.querySelector('#app');
 let ready=false;
 let moduleAllowed=true;
 let allowedLevels=new Set(LEVELS);
+let applyQueued=false;
 
 function getPath(obj,path){let cur=obj;for(const part of path){if(!cur||typeof cur!=='object'||!(part in cur))return undefined;cur=cur[part]}return cur}
 function defaultOpen(data){return data?.releaseMode==='all'||data?.releaseMode==='open'||data?.defaultLocked===false}
@@ -25,13 +26,14 @@ function levelOpen(data,level){
 function currentLevel(){const group=Number(new URLSearchParams(location.search).get('group'))||0;return LEVELS[group-1]||''}
 function visibleCount(){return [...allowedLevels].reduce((sum,level)=>sum+(COUNTS[level]||0),0)}
 function visibleLevelText(){const levels=LEVELS.filter(level=>allowedLevels.has(level));return levels.length?levels.join(', '):'keine Niveaustufe'}
+function setText(el,text){if(el&&el.textContent!==text)el.textContent=text}
 function lockView(title,text,key){
   if(!app)return;
   if(app.dataset.dativAccessState===key&&app.querySelector('.dativ-access-lock'))return;
   app.dataset.dativAccessState=key;
   app.innerHTML=`<section class="card locked-card dativ-access-lock"><h2>${title}</h2><p>${text}</p><a class="btn" href="/verben-bereich/">Zurück zu Verben</a></section>`;
 }
-function clearLockState(){if(app)app.dataset.dativAccessState='open'}
+function clearLockState(){if(app&&app.dataset.dativAccessState!=='open')app.dataset.dativAccessState='open'}
 function ensureEmptyNotice(){
   if(!app||allowedLevels.size)return;
   const container=app.querySelector('.groups-accordion');
@@ -55,16 +57,20 @@ function apply(){
     if(levelName)section.hidden=!allowedLevels.has(levelName);
   });
   ensureEmptyNotice();
-  const headText=document.querySelector('#topbar .brand p');
-  if(headText)headText.textContent=`${visibleCount()} freigegeben · ${visibleLevelText()}`;
+  setText(document.querySelector('#topbar .brand p'),`${visibleCount()} freigegeben · ${visibleLevelText()}`);
   document.querySelectorAll('.section-head .overview-total').forEach(el=>{
-    if(/Verben/i.test(el.textContent||''))el.textContent=`${visibleCount()} Verben`;
+    if(/Verben/i.test(el.textContent||''))setText(el,`${visibleCount()} Verben`);
   });
 }
+function queueApply(){
+  if(applyQueued)return;
+  applyQueued=true;
+  requestAnimationFrame(()=>{applyQueued=false;apply()});
+}
 
-const observer=new MutationObserver(()=>queueMicrotask(apply));
-observer.observe(document.body,{childList:true,subtree:true});
-window.addEventListener('popstate',()=>queueMicrotask(apply));
+const observer=new MutationObserver(queueApply);
+if(app)observer.observe(app,{childList:true,subtree:true});
+window.addEventListener('popstate',queueApply);
 
 aSyncInit();
 async function aSyncInit(){
