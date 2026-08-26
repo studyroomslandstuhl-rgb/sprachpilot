@@ -4,29 +4,84 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>Verben · SprachPilot</title>
-<link rel="stylesheet" href="/style.css?v=verben-bereich5">
+<link rel="stylesheet" href="/style.css?v=verben-bereich6">
 <style>
-.verb-hub-head{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap}.verb-hub-head .actions{margin:0}.verb-hub-note{margin:8px 0 0;color:#5f7180}.modules{margin-top:18px}.module-title{font-size:22px}.module .module-icon{font-size:42px;line-height:1;margin-bottom:12px}
+.verb-shell{max-width:1200px;margin:0 auto;padding:24px 18px 44px}
+.verb-hero{position:relative;overflow:hidden;background:linear-gradient(135deg,#fff 0%,#f7fcff 58%,#edf9fc 100%);border:1px solid #d8eaf0;border-radius:32px;box-shadow:0 18px 46px rgba(54,88,110,.11);padding:30px 30px 28px;margin-bottom:24px}
+.verb-hero:after{content:"";position:absolute;width:250px;height:250px;border-radius:50%;right:-105px;top:-125px;background:rgba(112,211,232,.13);pointer-events:none}
+.verb-hero-row{position:relative;z-index:1;display:flex;align-items:center;justify-content:space-between;gap:22px;flex-wrap:wrap}
+.verb-brand{display:flex;align-items:center;gap:18px;color:inherit;text-decoration:none;border-radius:24px;padding:4px 8px 4px 4px;transition:transform .18s ease,background .18s ease}
+.verb-brand:hover{transform:translateY(-2px);background:rgba(255,255,255,.55)}
+.verb-brand:focus-visible{outline:3px solid #74d5e8;outline-offset:4px}
+.verb-brand img{width:78px;height:78px;object-fit:contain;border-radius:22px;background:#fff;padding:8px;box-shadow:0 10px 24px rgba(54,88,110,.13)}
+.verb-brand-copy h1{margin:0;color:#17344a;font-size:48px;line-height:1;font-weight:800;letter-spacing:-1px}
+.verb-brand-copy p{margin:10px 0 0;color:#5c7080;font-size:17px;line-height:1.45}
+.verb-hero-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.verb-hero-actions .btn{min-height:46px;padding:0 20px;border-radius:15px}
+.verb-card{background:#fff;border:1px solid #d8eaf0;border-radius:30px;box-shadow:0 18px 46px rgba(54,88,110,.10);padding:30px}
+.verb-hub-head{display:flex;align-items:flex-end;justify-content:space-between;gap:18px;flex-wrap:wrap;margin-bottom:24px}
+.verb-hub-head h2{margin:0;color:#237087;font-size:31px;line-height:1.1}
+.verb-hub-note{margin:8px 0 0;color:#657785;font-size:17px}
+.modules{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:18px;margin-top:0}
+.module{position:relative;display:flex;flex-direction:column;min-height:300px;padding:26px 24px 24px;border:1px solid #d8e9ef;border-radius:27px;background:linear-gradient(180deg,#fff 0%,#fbfeff 100%);box-shadow:0 10px 25px rgba(54,88,110,.075);text-decoration:none;color:#17344a;overflow:hidden;transition:transform .18s ease,box-shadow .18s ease,border-color .18s ease}
+.module:before{content:"";position:absolute;left:0;right:0;top:0;height:5px;background:linear-gradient(90deg,#75d8e9,#9ee7ef);opacity:.7}
+.module:hover{transform:translateY(-5px);border-color:#b9dfe9;box-shadow:0 18px 34px rgba(54,88,110,.14)}
+.module:focus-visible{outline:3px solid #74d5e8;outline-offset:3px}
+.module.locked{background:linear-gradient(180deg,#fbfdfe 0%,#f5f9fb 100%);box-shadow:none;cursor:default}
+.module.locked:before{background:#d9e6eb}
+.module.locked:hover{transform:none;border-color:#d8e9ef;box-shadow:none}
+.module-icon{display:flex;align-items:center;min-height:64px;margin-bottom:15px;color:#17344a;font-size:54px;line-height:1;font-weight:400;letter-spacing:-1px}
+.module-title{margin-bottom:10px;color:#24758c;font-size:23px;line-height:1.2;font-weight:800}
+.module p{margin:0;color:#5c6f7e;font-size:16px;line-height:1.55;flex:1}
+.badge{align-self:flex-start;display:inline-flex;align-items:center;justify-content:center;min-height:38px;margin-top:20px;padding:0 16px;border:2px solid #91dceb;border-radius:999px;background:#f1fbfd;color:#286a7e;font-size:15px;font-weight:800}
+.module.locked .badge{border-color:#c8dce3;background:#f7fafb;color:#62747d}
+footer{text-align:center;color:#7e909c;margin-top:22px}
+@media(max-width:1050px){.modules{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media(max-width:700px){.verb-shell{padding:16px 12px 32px}.verb-hero,.verb-card{border-radius:24px;padding:20px 18px}.verb-hero{margin-bottom:16px}.verb-hero-row{align-items:flex-start}.verb-brand{align-items:flex-start;gap:13px}.verb-brand img{width:62px;height:62px;border-radius:18px}.verb-brand-copy h1{font-size:34px}.verb-brand-copy p{font-size:15px;margin-top:7px}.verb-hero-actions{width:100%}.verb-hero-actions .btn{width:100%;justify-content:center}.verb-hub-head h2{font-size:27px}.modules{grid-template-columns:1fr;gap:14px}.module{min-height:0;padding:22px 20px;border-radius:23px}.module-icon{font-size:47px;min-height:52px}}
 </style>
 </head>
 <body>
 <div id="accountStrip" class="account-strip"></div>
-<div class="container">
-<section class="hero"><a class="brand-logo" href="/index.html"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo"><h1>SprachPilot</h1></a><p class="subtitle">Verben lernen, Formen trainieren und das Perfekt sicher bilden.</p></section>
-<section class="card"><div class="verb-hub-head"><div><h2>Verben</h2><p class="verb-hub-note">Wähle den passenden Lernbereich.</p></div><div class="actions"><a class="btn secondary" href="/index.html">← Startseite</a><a class="btn secondary" id="dashboardLink" href="/student-dashboard/">Dashboard</a></div></div><div class="modules" id="verbModules"></div></section>
-<footer>© SprachPilot</footer>
+<div class="verb-shell">
+  <section class="verb-hero">
+    <div class="verb-hero-row">
+      <a class="verb-brand" href="/index.html" aria-label="Zur SprachPilot-Startseite">
+        <img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot Logo">
+        <div class="verb-brand-copy">
+          <h1>SprachPilot</h1>
+          <p>Verben lernen, Formen trainieren und das Perfekt sicher bilden.</p>
+        </div>
+      </a>
+      <div class="verb-hero-actions">
+        <a class="btn secondary" id="dashboardLink" href="/student-dashboard/">Dashboard</a>
+      </div>
+    </div>
+  </section>
+
+  <section class="verb-card">
+    <div class="verb-hub-head">
+      <div>
+        <h2>Verben</h2>
+        <p class="verb-hub-note">Wähle den passenden Lernbereich.</p>
+      </div>
+    </div>
+    <div class="modules" id="verbModules"></div>
+  </section>
+
+  <footer>© SprachPilot</footer>
 </div>
 <script type="module" src="/js/account-progress-autostart.js?v=1"></script>
 <script type="module">
 import{getActiveProfile,getActiveRole,dashboardHref,safeText,renderAccountStrip}from'/js/auth.js?v=login-main-4';
 import{loadCourseRelease,moduleOpen}from'/js/course-releases.js?v=verb-stable3';
 const target=document.querySelector('#verbModules'),dashboard=document.querySelector('#dashboardLink');
-const role=String(getActiveRole()||'').toLowerCase(),profile=getActiveProfile();dashboard.href=dashboardHref();
+const role=String(getActiveRole()||'').toLowerCase(),profile=getActiveProfile();
+dashboard.href=dashboardHref();
 function card(title,icon,href,description,open){return `<a class="module ${open?'':'locked'}" href="${open?href:'#'}" ${open?'':'onclick="return false" aria-disabled="true"'}><div class="module-icon" aria-hidden="true">${safeText(icon)}</div><div class="module-title">${safeText(title)}</div><p>${safeText(open?description:'Für deinen Kurs noch nicht freigeschaltet.')}</p><span class="badge">${open?'Öffnen':'Gesperrt'}</span></a>`}
 function render(assignments={}){const teacher=role==='teacher'||role==='owner',verbs=teacher||moduleOpen(assignments,'Verben'),irregular=teacher||moduleOpen(assignments,'Irreguläre Verben'),dativ=teacher||moduleOpen(assignments,'Dativverben');target.innerHTML=[card('Verben','Aa','/verben/','Freigegebene Verben in Gruppen lernen, konjugieren, hören, schreiben und sprechen.',verbs),card('Irreguläre Verben','↔','/irregulaere-verben/','Unregelmäßige Präsensformen systematisch lernen und wiederholen.',irregular),card('Perfekt','hat / ist','/perfekt/','Perfektformen mit Partizip II sowie haben oder sein trainieren.',verbs),card('Dativverben','Wem?','/dativverben/','Dativverben nach Niveaustufe freigeben und mit Artikeln, Pronomen und Sätzen trainieren.',dativ)].join('')}
 async function init(){if(!profile&&role!=='teacher'&&role!=='owner'){location.href='/login/';return}render(profile?.assignments||{});if(profile&&role!=='teacher'&&role!=='owner'){loadCourseRelease(profile).then(data=>render(data||profile.assignments||{})).catch(error=>console.warn('Kursfreigaben konnten nicht geladen werden',error))}try{renderAccountStrip()}catch{}}
 init();
 </script>
-<script src="/shared/sprachpilot-design-system.js?v=verben-bereich5"></script>
+<script src="/shared/sprachpilot-design-system.js?v=verben-bereich6"></script>
 </body>
 </html>
