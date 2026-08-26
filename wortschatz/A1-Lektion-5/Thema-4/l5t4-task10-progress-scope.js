@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L5T4_TASK10_PROGRESS_SCOPE_V9)return;
-window.__SP_L5T4_TASK10_PROGRESS_SCOPE_V9=true;
+if(window.__SP_L5T4_TASK10_PROGRESS_SCOPE_V10)return;
+window.__SP_L5T4_TASK10_PROGRESS_SCOPE_V10=true;
 
 const cfgKey=String(window.SP_L5_THEME?.key||'SP_L5_T4_V1');
 const LOGICAL_FILE='zuordnen.html';
@@ -18,9 +18,17 @@ function pid(){
  return [p.authUid,p.canonicalStudentId,p.docId,p.studentId,p.uid,p.userId,p.id,localStorage.getItem('SP_STUDENT_AUTH_UID'),localStorage.getItem('SP_STUDENT_ID'),p.email]
   .map(clean).find(Boolean)||'';
 }
-function browserPid(){return clean(localStorage.getItem('SP_L5T4_BROWSER_PID_V1'))}
+function oldBrowserPid(){return clean(localStorage.getItem('SP_L5T4_BROWSER_PID_V1'))}
+function tempPid(){
+ let id=clean(sessionStorage.getItem('SP_L5T4_TASK10_TEMP_PID_V1'));
+ if(id)return id;
+ try{id='session_'+crypto.randomUUID().replace(/-/g,'')}catch(e){id='session_'+Date.now().toString(36)+Math.random().toString(36).slice(2)}
+ try{sessionStorage.setItem('SP_L5T4_TASK10_TEMP_PID_V1',id)}catch(e){}
+ return id;
+}
+function owner(){return pid()||tempPid()}
 function isTask10(file){return /^zuordnen(?:-v\d+)?\.html$/i.test(String(file||''))}
-function stableKey(){return `${cfgKey}_${LOGICAL_FILE}`}
+function stableKey(){return `${cfgKey}_U_${owner()}_zuordnen`}
 function normalizeState(raw){
  if(!raw||typeof raw!=='object')return null;
  const done=[...new Set((Array.isArray(raw.done)?raw.done:[]).map(Number).filter(i=>Number.isInteger(i)&&i>=0&&i<TOTAL))];
@@ -33,18 +41,26 @@ function normalizeState(raw){
 function score(state){if(!state)return-1;return state.done.length*100+(state.current!==null?5:0)+Math.min(4,state.tries||0)}
 function addScoped(keys,id){if(!id)return;['zuordnen','zuordnen_v8','zuordnen_v7','zuordnen_v6','zuordnen_v5'].forEach(s=>keys.push(`${cfgKey}_U_${id}_${s}`))}
 function candidateKeys(){
- const keys=[stableKey(),`${cfgKey}_zuordnen-v7.html`,`${cfgKey}_zuordnen-v6.html`,`${cfgKey}_zuordnen-v5.html`];
+ const keys=[stableKey(),`${cfgKey}_${LOGICAL_FILE}`,`${cfgKey}_zuordnen-v7.html`,`${cfgKey}_zuordnen-v6.html`,`${cfgKey}_zuordnen-v5.html`];
  addScoped(keys,pid());
- addScoped(keys,browserPid());
+ addScoped(keys,tempPid());
+ addScoped(keys,oldBrowserPid());
  return [...new Set(keys)];
 }
 function migrate(){
+ const target=stableKey();
  let best=null;
  for(const key of candidateKeys()){
   const state=normalizeState(read(key));
   if(state&&score(state)>score(best))best=state;
  }
- if(best)write(stableKey(),best);
+ if(best)write(target,best);
+ if(pid()){
+  const old=oldBrowserPid();
+  if(old){
+   ['zuordnen','zuordnen_v8','zuordnen_v7','zuordnen_v6','zuordnen_v5'].forEach(s=>{try{localStorage.removeItem(`${cfgKey}_U_${old}_${s}`)}catch(e){}});
+  }
+ }
  return best;
 }
 function task10Key(){migrate();return stableKey()}
