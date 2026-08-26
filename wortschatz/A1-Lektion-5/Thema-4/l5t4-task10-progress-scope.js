@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L5T4_TASK10_PROGRESS_SCOPE_V8)return;
-window.__SP_L5T4_TASK10_PROGRESS_SCOPE_V8=true;
+if(window.__SP_L5T4_TASK10_PROGRESS_SCOPE_V9)return;
+window.__SP_L5T4_TASK10_PROGRESS_SCOPE_V9=true;
 
 const cfgKey=String(window.SP_L5_THEME?.key||'SP_L5_T4_V1');
 const LOGICAL_FILE='zuordnen.html';
@@ -31,15 +31,11 @@ function normalizeState(raw){
  return{rev:REV,total:TOTAL,done,queue,current,tries:Math.max(0,Number(raw.tries)||0),hadWrong:raw.hadWrong===true};
 }
 function score(state){if(!state)return-1;return state.done.length*100+(state.current!==null?5:0)+Math.min(4,state.tries||0)}
+function addScoped(keys,id){if(!id)return;['zuordnen','zuordnen_v8','zuordnen_v7','zuordnen_v6','zuordnen_v5'].forEach(s=>keys.push(`${cfgKey}_U_${id}_${s}`))}
 function candidateKeys(){
  const keys=[stableKey(),`${cfgKey}_zuordnen-v7.html`,`${cfgKey}_zuordnen-v6.html`,`${cfgKey}_zuordnen-v5.html`];
- const id=pid();
- if(id){
-  ['zuordnen','zuordnen_v8','zuordnen_v7','zuordnen_v6','zuordnen_v5'].forEach(s=>keys.push(`${cfgKey}_U_${id}_${s}`));
- }else{
-  const bid=browserPid();
-  if(bid)['zuordnen','zuordnen_v8','zuordnen_v7','zuordnen_v6','zuordnen_v5'].forEach(s=>keys.push(`${cfgKey}_U_${bid}_${s}`));
- }
+ addScoped(keys,pid());
+ addScoped(keys,browserPid());
  return [...new Set(keys)];
 }
 function migrate(){
