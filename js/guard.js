@@ -67,7 +67,7 @@ window.addEventListener("load",scheduleThemeOverviewButton);setTimeout(normalize
 if(!IS_L3T1&&!IS_L5&&!IS_L6T3){try{let iconTimer=null;new MutationObserver(()=>{clearTimeout(iconTimer);iconTimer=setTimeout(normalizeExamIcons,100)}).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}}
 window.addEventListener("SP_PROFILE_SYNCED",()=>setTimeout(installHeaderOnce,0));
 function delayedImport(src,delay){setTimeout(()=>import(src).catch(()=>{}),delay)}
-if(IS_L6T3){delayedImport("/js/microphone-fallback.js?v=1",1200);delayedImport("/js/back-button-fix.js?v=4",1600);delayedImport("/js/sp-help-flow.js?v=1",1800)}else{import("/js/microphone-fallback.js?v=1").catch(()=>{});import("/js/back-button-fix.js?v=4").catch(()=>{});import("/js/sp-help-flow.js?v=1").catch(()=>{})}
+if(IS_L6T3){delayedImport("/js/microphone-fallback.js?v=1",1200);delayedImport("/js/back-button-fix.js?v=5",1600);delayedImport("/js/sp-help-flow.js?v=1",1800)}else{import("/js/microphone-fallback.js?v=1").catch(()=>{});import("/js/back-button-fix.js?v=5").catch(()=>{});import("/js/sp-help-flow.js?v=1").catch(()=>{})}
 import("/js/release-helper.js?v=20260824-release13").catch(()=>{});
 if(IS_L3T1){import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-stability.js?v=3").catch(()=>{});import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-image-fix.js?v=3").catch(()=>{})}
 if(IS_L3T2){import("/wortschatz/A1-Lektion-3/Thema-2/l3t2-task-fix.js?v=3").catch(()=>{})}
