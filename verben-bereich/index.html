@@ -76,6 +76,17 @@ import{getActiveProfile,getActiveRole,dashboardHref,safeText,renderAccountStrip}
 import{loadCourseRelease,moduleOpen}from'/js/course-releases.js?v=verb-stable3';
 const target=document.querySelector('#verbModules'),dashboard=document.querySelector('#dashboardLink');
 const role=String(getActiveRole()||'').toLowerCase(),profile=getActiveProfile();
+function ensureTeacherPreview(){
+  if(role!=='teacher'&&role!=='owner')return;
+  try{
+    let preview={};
+    try{preview=JSON.parse(sessionStorage.getItem('SP_TEACHER_PREVIEW')||'{}')||{}}catch{}
+    if(preview.teacherPreview!==true||preview.allAccess!==true){
+      sessionStorage.setItem('SP_TEACHER_PREVIEW',JSON.stringify({...preview,teacherPreview:true,allAccess:true,courseCode:'ALLE',kurs:'ALLE'}));
+    }
+  }catch(error){console.warn('Lehrer-Vorschau konnte nicht vorbereitet werden',error)}
+}
+ensureTeacherPreview();
 dashboard.href=dashboardHref();
 function card(title,icon,href,description,open){return `<a class="module ${open?'':'locked'}" href="${open?href:'#'}" ${open?'':'onclick="return false" aria-disabled="true"'}><div class="module-icon" aria-hidden="true">${safeText(icon)}</div><div class="module-title">${safeText(title)}</div><p>${safeText(open?description:'Für deinen Kurs noch nicht freigeschaltet.')}</p><span class="badge">${open?'Öffnen':'Gesperrt'}</span></a>`}
 function render(assignments={}){const teacher=role==='teacher'||role==='owner',verbs=teacher||moduleOpen(assignments,'Verben'),irregular=teacher||moduleOpen(assignments,'Irreguläre Verben'),dativ=teacher||moduleOpen(assignments,'Dativverben');target.innerHTML=[card('Verben','Aa','/verben/','Freigegebene Verben in Gruppen lernen, konjugieren, hören, schreiben und sprechen.',verbs),card('Irreguläre Verben','↔','/irregulaere-verben/','Unregelmäßige Präsensformen systematisch lernen und wiederholen.',irregular),card('Perfekt','hat / ist','/perfekt/','Perfektformen mit Partizip II sowie haben oder sein trainieren.',verbs),card('Dativverben','Wem?','/dativverben/','Dativverben nach Niveaustufe freigeben und mit Artikeln, Pronomen und Sätzen trainieren.',dativ)].join('')}
