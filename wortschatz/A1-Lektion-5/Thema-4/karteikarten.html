@@ -13,37 +13,19 @@
 <link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-compact-v2.css?v=l6t4-bunny-audio9">
 <link rel="stylesheet" href="/wortschatz/A1-Lektion-6/Thema-4/l6t4-card-image-standard.css?v=20260730-card300">
 <style id="l5-card-standard-pastel-turquoise">
-:root{
- --lesson-main:#29b8b3;
- --lesson-main-dark:#16847f;
- --lesson-main-light:#9fe9e5;
- --lesson-soft:#e8fbfa;
- --lesson-line:#bfece9;
- --lesson-bg:#f4ffff;
- --lesson-shadow:0 12px 28px rgba(22,132,127,.16);
-}
-body{background:linear-gradient(180deg,var(--lesson-bg),#fff)}
-.topbar,.card{box-shadow:var(--lesson-shadow)}
-.progress{background:#dff7f5}
-.module:hover{box-shadow:0 12px 24px rgba(22,132,127,.14)}
-.answer-area,.free-box,.speech-box,.write-box,.card-answer-box{background:#f4ffff}
-.answer-row input:focus,.free-box textarea:focus,.write-box input:focus{outline-color:rgba(41,184,179,.28)}
-footer{color:#52706e}
+:root{--lesson-main:#29b8b3;--lesson-main-dark:#16847f;--lesson-main-light:#9fe9e5;--lesson-soft:#e8fbfa;--lesson-line:#bfece9;--lesson-bg:#f4ffff;--lesson-shadow:0 12px 28px rgba(22,132,127,.16)}
+body{background:linear-gradient(180deg,var(--lesson-bg),#fff)}.topbar,.card{box-shadow:var(--lesson-shadow)}.progress{background:#dff7f5}.module:hover{box-shadow:0 12px 24px rgba(22,132,127,.14)}.answer-area,.free-box,.speech-box,.write-box,.card-answer-box{background:#f4ffff}.answer-row input:focus,.free-box textarea:focus,.write-box input:focus{outline-color:rgba(41,184,179,.28)}footer{color:#52706e}
 </style>
 </head>
 <body>
-<div class="container">
-<header class="topbar"></header>
-<section class="card" id="area"><p>Die Aufgabe wird geladen …</p></section>
-<footer>© SprachPilot</footer>
-</div>
-<script type="module" src="/js/guard.js?v=20260826-l5t4-central1"></script>
+<div class="container"><header class="topbar"></header><section class="card" id="area"><p>Die Aufgabe wird geladen …</p></section><footer>© SprachPilot</footer></div>
+<script type="module" src="/js/guard.js?v=20260826-l5t4-central2"></script>
 <script src="../data/wortschatz.js?v=8"></script>
 <script>window.SP_L5_THEME={id:'Thema-4',title:'Öffnungszeiten und Freizeit',sub:'A1 Lektion 5 · Thema 4',key:'SP_L5_T4_V1'};</script>
 <script src="app.js?v=5"></script>
+<script src="l5t4-progress.js?v=20260826-central2"></script>
 <script src="l5t4-patch.js?v=11"></script>
 <script src="/wortschatz/A1-Lektion-5/l5-bunny-words.js?v=l5-bunny-all3"></script>
-<script src="../Thema-1/points-hook.js?v=7"></script>
 <script>
 (function(){
 'use strict';
@@ -51,11 +33,8 @@ const area=document.getElementById('area');
 const FILE='karteikarten.html';
 const THEME_NUMBER=4;
 const NEXT_PAGE='artikel.html';
-let currentIndex=null;
-let recognition=null;
-let autoScrollTimer=null;
-
-function esc(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[char]))}
+let currentIndex=null,recognition=null,autoScrollTimer=null;
+function esc(value){return String(value??'').replace(/[&<>"']/g,char=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[char]))}
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')}catch(e){return null}}
 function languageName(){try{return LANG_NAMES[langKey()]||'Englisch'}catch(e){return'Englisch'}}
 function translation(item){try{return tr(item)||''}catch(e){return''}}
