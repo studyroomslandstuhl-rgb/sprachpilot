@@ -1,10 +1,10 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><title>Zuordnen</title><link rel="stylesheet" href="style.css?v=20260826-central1"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><title>Zuordnen</title><link rel="stylesheet" href="style.css?v=20260826-central2"></head><body><div class="container"><header class="topbar"></header><section class="card" id="area"></section><footer>© SprachPilot</footer></div>
 <script src="/js/session-restore.js?v=4"></script>
-<script type="module" src="/js/guard.js?v=20260826-l5t4-central1"></script>
+<script type="module" src="/js/guard.js?v=20260826-l5t4-central2"></script>
 <script src="../data/wortschatz.js?v=8"></script>
 <script>window.SP_L5_THEME={id:'Thema-4',title:'Öffnungszeiten und Freizeit',sub:'A1 Lektion 5 · Thema 4',key:'SP_L5_T4_V1'};</script>
 <script src="app.js?v=5"></script>
-<script src="../Thema-1/points-hook.js?v=7"></script>
+<script src="l5t4-progress.js?v=20260826-central2"></script>
 <script>
 header('Zuordnen');
 const FILE='zuordnen.html';
@@ -21,31 +21,7 @@ const ITEMS=[
  {w:'z.B.',a:'Das bedeutet: zum Beispiel.',opts:['Das bedeutet: zum Beispiel.','Das ist ein freier Tag.','Das ist eine Uhrzeit.']}
 ];
 let i=0;
-function show(){
- const state=loadTask(FILE,ITEMS.length);
- if(state.done.length>=ITEMS.length){complete(area,FILE,'saetze-bauen.html');return}
- i=spNextIndex(FILE,ITEMS.length);
- const item=ITEMS[i],opts=shuffle(item.opts);
- area.innerHTML=`${spProgressHtml(FILE,ITEMS.length)}${instruction('Was passt zusammen? Wählen Sie die richtige Bedeutung.')}<div class="sentence-box">${item.w}</div><div class="choice-grid">${opts.map((text,n)=>`<button class="choice" type="button" data-sp-exercise-answer="1" data-choice="${n}"></button>`).join('')}</div><div id="fb" class="feedback"></div>`;
- const buttons=[...area.querySelectorAll('[data-choice]')];
- buttons.forEach((button,n)=>{button.textContent=opts[n];button.addEventListener('click',()=>check(button,opts[n]))});
-}
-function check(button,value){
- const item=ITEMS[i],fb=document.getElementById('fb');
- if(value===item.a){
-  button.classList.add('ok');
-  if(fb)fb.innerHTML='<div class="ok">Richtig!</div>';
-  spMarkRight(FILE,ITEMS.length);
-  area.querySelectorAll('button').forEach(node=>node.disabled=true);
-  setTimeout(show,650);
-  return;
- }
- button.classList.add('no');
- const tries=spMarkWrong(FILE,ITEMS.length);
- if(!fb)return;
- if(tries===1)fb.innerHTML='<div class="no">Das passt noch nicht. Versuche es noch einmal.</div>';
- else if(tries===2)fb.innerHTML='<div class="hint">Tipp: Denken Sie an die Bedeutung des Wortes und an die Situation.</div>';
- else fb.innerHTML=`<div class="no">Richtige Antwort: <strong>${item.a}</strong><br>Wähle die richtige Antwort selbst aus.</div>`;
-}
+function show(){const state=loadTask(FILE,ITEMS.length);if(state.done.length>=ITEMS.length){complete(area,FILE,'saetze-bauen.html');return}i=spNextIndex(FILE,ITEMS.length);const item=ITEMS[i],opts=shuffle(item.opts);area.innerHTML=`${spProgressHtml(FILE,ITEMS.length)}${instruction('Was passt zusammen? Wählen Sie die richtige Bedeutung.')}<div class="sentence-box">${item.w}</div><div class="choice-grid">${opts.map((text,n)=>`<button class="choice" type="button" data-sp-exercise-answer="1" data-choice="${n}"></button>`).join('')}</div><div id="fb" class="feedback"></div>`;const buttons=[...area.querySelectorAll('[data-choice]')];buttons.forEach((button,n)=>{button.textContent=opts[n];button.addEventListener('click',()=>check(button,opts[n]))})}
+function check(button,value){const item=ITEMS[i],fb=document.getElementById('fb');if(value===item.a){button.classList.add('ok');if(fb)fb.innerHTML='<div class="ok">Richtig!</div>';spMarkRight(FILE,ITEMS.length);area.querySelectorAll('button').forEach(node=>node.disabled=true);setTimeout(show,650);return}button.classList.add('no');const tries=spMarkWrong(FILE,ITEMS.length);if(!fb)return;if(tries===1)fb.innerHTML='<div class="no">Das passt noch nicht. Versuche es noch einmal.</div>';else if(tries===2)fb.innerHTML='<div class="hint">Tipp: Denken Sie an die Bedeutung des Wortes und an die Situation.</div>';else fb.innerHTML=`<div class="no">Richtige Antwort: <strong>${item.a}</strong><br>Wähle die richtige Antwort selbst aus.</div>`}
 show();
 </script></body></html>
