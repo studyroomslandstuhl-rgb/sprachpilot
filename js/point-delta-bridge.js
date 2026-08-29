@@ -1,7 +1,7 @@
 import { db, doc, getDoc, getDocFromServer, updateDoc, increment, serverTimestamp } from '/js/firebase.js';
 import { getActiveProfile } from '/js/auth.js';
 
-const STATE_KEY='__SP_POINT_DELTA_BRIDGE_V3_STATE';
+const STATE_KEY='__SP_POINT_DELTA_BRIDGE_V4_STATE';
 const PENDING_KEY='SP_POINT_DELTA_PENDING_V2';
 const MODULE_ALIASES={'fragen-a1':'fragen','verben-a1':'verben','irregulare-verben':'verben'};
 const clamp=v=>Math.max(0,Math.min(100,Math.round(Number(v)||0)));
@@ -11,9 +11,10 @@ const state=window[STATE_KEY]||{locks:new Map(),current:null,descriptorInstalled
 window[STATE_KEY]=state;
 window.__SP_POINT_DELTA_BRIDGE_V2=true;
 window.__SP_POINT_DELTA_BRIDGE_V3=true;
+window.__SP_POINT_DELTA_BRIDGE_V4=true;
 
 function moduleKey(v){const k=clean(v||'wortschatz');return MODULE_ALIASES[k]||k}
-function topicId(p={}){return p.topicId||p.themeId||clean([p.module||'wortschatz',p.level||'A1','lektion',p.lesson||p.lektion||'','thema',p.theme||p.thema||''].filter(Boolean).join('_'))}
+function topicId(p={}){return p.topicId||p.themeId||clean([p.module||'wortschatz',p.level||'A1','lektion',p.lesson||p.lektion||'', 'thema',p.theme||p.thema||''].filter(Boolean).join('_'))}
 function storedRecord(r={}){return Math.max(point(r?.ranking?.points),point(r?.totals?.points),point(r?.pointsTotal),point(r?.lifetimePoints),point(r?.punkteGesamt))}
 function stored(r={}){return Math.max(storedRecord(r),point(localStorage.getItem('SP_POINTS_TOTAL')))}
 function currentId(result={}){const p=getActiveProfile?.()||{};return result.canonicalStudentId||result.studentId||result.userId||result.docId||p.canonicalStudentId||p.docId||p.studentId||p.userId||localStorage.getItem('SP_STUDENT_ID')||''}
@@ -24,9 +25,7 @@ function savePending(entry){try{localStorage.setItem(PENDING_KEY,JSON.stringify(
 function clearPending(){try{localStorage.removeItem(PENDING_KEY)}catch(e){}}
 function pending(){try{return JSON.parse(localStorage.getItem(PENDING_KEY)||'null')}catch(e){return null}}
 
-async function freshProgress(id){
-  try{return await getDocFromServer(doc(db,'progress',id))}catch(e){return await getDoc(doc(db,'progress',id))}
-}
+async function freshProgress(id){try{return await getDocFromServer(doc(db,'progress',id))}catch(e){return await getDoc(doc(db,'progress',id))}}
 async function incrementTo(id,desired,detail={}){
   if(!id||desired<=0)return false;
   try{
@@ -36,7 +35,9 @@ async function incrementTo(id,desired,detail={}){
       await updateDoc(doc(db,'progress',id),{
         pointsTotal:increment(gap),lifetimePoints:increment(gap),punkteGesamt:increment(gap),
         'totals.points':increment(gap),'ranking.points':increment(gap),
-        'metadata.pointDeltaBridgeVersion':3,'metadata.pointDeltaLastAt':serverTimestamp()
+        'metadata.pointDeltaBridgeVersion':4,
+        'metadata.pointDeltaLastAt':serverTimestamp(),
+        'metadata.pointDeltaLastDetail':{...detail,delta:gap,desired:Number(desired)||0}
       });
     }
     setLocalTotal(Math.max(desired,current+gap));clearPending();
@@ -60,8 +61,7 @@ async function applyGap(result,beforeStored,delta,detail){
 
 function patchApi(api){
   if(!api||typeof api!=='object')return api;
-  if(api.__deltaBridgeV3)return api;
-  if(api.__deltaBridgeV2){api.__deltaBridgeV3=true;return api}
+  if(api.__deltaBridgeV4)return api;
   const rawTask=api.recordTaskProgress?.bind(api),rawExam=api.recordExamResult?.bind(api);
   if(typeof rawTask!=='function'||typeof rawExam!=='function')return api;
   api.recordTaskProgress=async function(payload={}){
@@ -90,37 +90,25 @@ function patchApi(api){
       return applyGap(result,beforeTotal,delta,{type:'exam',module,topicId:id,run,percent:pct});
     })().finally(()=>state.locks.delete(lock));state.locks.set(lock,job);return job;
   };
-  api.__deltaBridgeV2=true;api.__deltaBridgeV3=true;
+  api.__deltaBridgeV2=true;api.__deltaBridgeV3=true;api.__deltaBridgeV4=true;
   repairPending();
   return api;
 }
 
-function ensure(){
-  const api=window.SPProgress;
-  if(!api)return false;
-  const patched=patchApi(api);
-  if(patched!==api)window.SPProgress=patched;
-  state.current=patched;
-  return !!patched?.__deltaBridgeV3;
-}
-
+function ensure(){const api=window.SPProgress;if(!api)return false;const patched=patchApi(api);state.current=patched;return !!patched?.__deltaBridgeV4}
 function installDescriptor(){
   if(state.descriptorInstalled)return true;
   try{
     const existing=Object.getOwnPropertyDescriptor(window,'SPProgress');
     if(existing&&!existing.configurable)return false;
     let current=patchApi(existing?.get?existing.get.call(window):window.SPProgress);
-    Object.defineProperty(window,'SPProgress',{
-      configurable:true,enumerable:true,
-      get(){return current},
-      set(value){current=patchApi(value);state.current=current}
-    });
+    Object.defineProperty(window,'SPProgress',{configurable:true,enumerable:true,get(){return current},set(value){current=patchApi(value);state.current=current}});
     state.current=current;state.descriptorInstalled=true;return true;
   }catch(error){console.warn('Punkte-Bridge konnte SPProgress nicht direkt beobachten',error);return false}
 }
 
 installDescriptor();ensure();
-if(!state.watcher){state.watcher=setInterval(()=>ensure(),500)}
+if(!state.watcher)state.watcher=setInterval(()=>ensure(),500);
 window.SPEnsurePointDeltaBridge=ensure;
 window.SPRepairPendingPointDelta=repairPending;
 window.addEventListener('online',()=>{ensure();repairPending()});
