@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_TEACHER_RANKING_ROSTER_BACKFILL_V3)return;
-window.__SP_TEACHER_RANKING_ROSTER_BACKFILL_V3=true;
+if(window.__SP_TEACHER_RANKING_ROSTER_BACKFILL_V4)return;
+window.__SP_TEACHER_RANKING_ROSTER_BACKFILL_V4=true;
 
 const text=value=>String(value==null?'':value).trim();
 const point=value=>{const n=Number(value);return Number.isFinite(n)?Math.max(0,n):0};
@@ -43,7 +43,7 @@ async function syncRoster({force=false}={}){
      const authUid=text(student.authUid||old.authUid),name=displayName(student)!=='Teilnehmer/in'?displayName(student):text(old.displayName)||'Teilnehmer/in';
      const auditedVersion=Math.max(point(student.pointAuditVersion),point(student.pointReconciliationVersion),point(old.pointAuditVersion),point(old.pointReconciliationVersion));
      const points=Math.max(currentPoints(student),point(old.points));
-     await ref.set({studentId:id,authUid,displayName:name,courseKey:key,courseCode:text(student.courseCode||student.kurs||student.kursnummer),courseDocId:text(student.courseDocId),points,version:7,pointAuditVersion:auditedVersion,pointReconciliationVersion:Math.max(point(student.pointReconciliationVersion),point(old.pointReconciliationVersion)),rosterBackfilled:true,autoLoweringDisabled:true,updatedAt:nowTs()},{merge:true});
+     await ref.set({studentId:id,authUid,displayName:name,courseKey:key,courseCode:text(student.courseCode||student.kurs||student.kursnummer),courseDocId:text(student.courseDocId),points,version:8,pointAuditVersion:auditedVersion,pointReconciliationVersion:Math.max(point(student.pointReconciliationVersion),point(old.pointReconciliationVersion)),rosterBackfilled:true,autoLoweringDisabled:true,updatedAt:nowTs()},{merge:true});
      written++;
     }catch(error){failed++;console.warn('Ranglisten-Roster konnte für Teilnehmer nicht gespiegelt werden',id,error)}
    }));
@@ -62,12 +62,12 @@ function appendScript(src,marker){
  });
 }
 async function loadPointSuite(){
- if(window.__SP_TEACHER_POINTS_SUITE_LOADING_V3)return;
- window.__SP_TEACHER_POINTS_SUITE_LOADING_V3=true;
+ if(window.__SP_TEACHER_POINTS_SUITE_LOADING_V4)return;
+ window.__SP_TEACHER_POINTS_SUITE_LOADING_V4=true;
  try{
-  await appendScript('/teacher/points-suite.js?v=20260829-points3','sp-points-suite-v3');
-  await appendScript('/teacher/b1-points-runtime-fix.js?v=20260829-points3','sp-b1-runtime-fix-v3');
- }catch(error){window.__SP_TEACHER_POINTS_SUITE_LOADING_V3=false;console.warn('Punkte-Werkzeuge konnten nicht vollständig nachgeladen werden',error)}
+  await appendScript('/teacher/points-suite.js?v=20260829-points9-recovery','sp-points-suite-v4');
+  await appendScript('/teacher/b1-points-runtime-fix.js?v=20260829-points9-recovery','sp-b1-runtime-fix-v4');
+ }catch(error){window.__SP_TEACHER_POINTS_SUITE_LOADING_V4=false;console.warn('Punkte-Werkzeuge konnten nicht vollständig nachgeladen werden',error)}
 }
 window.SPRankingRosterBackfill={sync:syncRoster,loadPointSuite};
 window.addEventListener('load',()=>{schedule(true,600);setTimeout(loadPointSuite,250)},{once:true});
