@@ -1,4 +1,4 @@
-import '/shared/sp-cache-epoch.js?v=20260829-points6';
+import '/shared/sp-cache-epoch.js?v=20260829-points7';
 import '/js/session-restore.js?v=4';
 import { verifySecureAccess } from '/js/secure-access-gate.js?v=1';
 
@@ -57,12 +57,12 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
     }
 
     try{
-      await import('/js/point-delta-bridge.js?v=20260829-points6');
+      await import('/js/point-delta-bridge.js?v=20260829-points7');
       try{window.SPEnsurePointDeltaBridge?.()}catch(e){}
     }catch(error){console.warn('Globale Punkte-Bridge konnte im Dashboard noch nicht vorbereitet werden.',error)}
 
     try{
-      const l8t1Points=await import('/js/l8t1-milestone-sync.js?v=20260829-5');
+      const l8t1Points=await import('/js/l8t1-milestone-sync.js?v=20260829-6');
       await Promise.race([
         l8t1Points.flushL8T1Milestones({reason:'dashboard-before-server-read'}),
         new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'dashboard-flush-timeout'}),10000))
@@ -72,7 +72,7 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
     }
 
     try{
-      const aliases=await import('/student-dashboard/progress-alias-unifier.js?v=20260829-points6');
+      const aliases=await import('/student-dashboard/progress-alias-unifier.js?v=20260829-points7');
       await Promise.race([
         aliases.unifyProgressAliases({force:true}),
         new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'alias-unify-timeout'}),8000))
@@ -82,7 +82,7 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
     }
 
     try{
-      const repair=await import('/js/point-stall-repair.js?v=20260829-points6');
+      const repair=await import('/js/point-stall-repair.js?v=20260829-points7');
       await Promise.race([
         repair.repairStalledPoints(),
         new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'point-repair-timeout'}),8000))
@@ -104,7 +104,7 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
     try{localStorage.removeItem('SP_STUDENT_DASHBOARD_LITE_V3')}catch(e){}
     window.SP_PROGRESS_ALIAS_READY=Promise.resolve({ok:progressReady,skipped:!progressReady,reason:progressReady?'server-authoritative-progress-v2':'dashboard-direct-server-fallback'});
     try{
-      await import('./dashboard-server-v3.js?v=20260829-points6');
+      await import('./dashboard-server-v3.js?v=20260829-points7');
     }catch(error){
       console.error('Dashboard-Inhalte konnten nicht vollständig geladen werden',error);
       warning('Dashboard konnte nur teilweise geladen werden.','Die Anmeldung funktioniert, aber die aktuellen Statistiken konnten nicht vollständig aufgebaut werden.');
