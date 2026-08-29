@@ -35,7 +35,6 @@ async function normalizeOne(change={}){
   try{
    await ref.set({
     totals:{points:total},ranking:{points:total},points:total,pointsTotal:total,lifetimePoints:total,punkteGesamt:total,
-    metadata:{pointAudit:{authoritativeExactVersion:1,authoritativeExactPoints:total,b1RecalculationVersion:1,b1RecalculationCourse:COURSE}},
     pointAuditVersion:1,lastPointRecalculationAt:nowTs(),updatedAt:nowTs()
    },{merge:true});written++;
   }catch(error){console.warn('Punktespiegel eines Fortschritts-Alias konnte nicht korrigiert werden',ref.id,error)}
