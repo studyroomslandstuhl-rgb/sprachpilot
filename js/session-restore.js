@@ -93,14 +93,23 @@
       window.logout=secureLogout;
     }catch(e){}
   }
+  function installPointBridge(){
+    try{
+      const p=firstSecureStudent(PROFILE_KEYS,localStorage);
+      if(!p||teacherSession())return;
+      import('/js/point-delta-bridge.js?v=20260829-points3').then(()=>{try{window.SPEnsurePointDeltaBridge?.()}catch(e){}}).catch(error=>console.warn('Punkte-Bridge konnte noch nicht geladen werden',error));
+    }catch(e){}
+  }
 
   restore();
+  installPointBridge();
   // guard.js setzt window.logout unmittelbar nach diesem Modul. Der Timer läuft
   // erst danach und ersetzt ausschließlich die Schüler-Abmeldung durch die sichere Variante.
   setTimeout(installSecureLogoutOverride,0);
   setTimeout(installSecureLogoutOverride,500);
-  window.addEventListener('SP_STUDENT_IDENTITY_NORMALIZED',()=>setTimeout(installSecureLogoutOverride,0));
-  window.addEventListener('storage',restore);
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden)restore();else{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(p&&!teacherSession())saveBackups(p)}});
+  setTimeout(installPointBridge,250);
+  window.addEventListener('SP_STUDENT_IDENTITY_NORMALIZED',()=>{setTimeout(installSecureLogoutOverride,0);setTimeout(installPointBridge,0)});
+  window.addEventListener('storage',()=>{restore();installPointBridge()});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){restore();installPointBridge()}else{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(p&&!teacherSession())saveBackups(p)}});
   window.addEventListener('pagehide',()=>{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(p&&!teacherSession())saveBackups(p)});
 })();
