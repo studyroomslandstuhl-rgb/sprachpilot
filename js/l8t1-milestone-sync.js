@@ -31,19 +31,19 @@ async function normalizeIdentity(){
 async function api(){
   try{
     await normalizeIdentity();
-    await import('/js/point-delta-bridge.js?v=20260829-points4');
-    if(!window.SPProgress?.recordTaskProgress)await import('/js/progress.js?v=20260829-l8t1-points4');
+    await import('/js/point-delta-bridge.js?v=20260829-points5');
+    if(!window.SPProgress?.recordTaskProgress)await import('/js/progress.js?v=20260829-l8t1-points5');
     try{window.SPEnsurePointDeltaBridge?.()}catch(e){}
     return window.SPProgress?.recordTaskProgress?window.SPProgress:null;
   }catch(error){console.warn('L8T1 milestone sync: Punkte-API fehlt',error);return null}
 }
 async function reconcileCanonicalPoints(){
   try{
-    const unifier=await import('/student-dashboard/progress-alias-unifier.js?v=20260829-points4');
+    const unifier=await import('/student-dashboard/progress-alias-unifier.js?v=20260829-points5');
     await unifier.unifyProgressAliases({force:true});
   }catch(error){console.warn('L8T1: verteilte Fortschrittsdaten konnten noch nicht vereinigt werden',error)}
   try{
-    const repair=await import('/js/point-stall-repair.js?v=20260829-points4');
+    const repair=await import('/js/point-stall-repair.js?v=20260829-points5');
     await repair.repairStalledPoints();
   }catch(error){console.warn('L8T1: fehlende Gesamtpunkte konnten noch nicht nachgetragen werden',error)}
 }
