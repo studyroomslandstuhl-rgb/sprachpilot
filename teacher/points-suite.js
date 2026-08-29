@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_TEACHER_POINTS_SUITE_V2)return;
-window.__SP_TEACHER_POINTS_SUITE_V2=true;
+if(window.__SP_TEACHER_POINTS_SUITE_V3)return;
+window.__SP_TEACHER_POINTS_SUITE_V3=true;
 
 function load(src){
   return new Promise((resolve,reject)=>{
@@ -17,6 +17,8 @@ async function start(){
     await load('/shared/points-recalculator.js?v=2');
     await load('/shared/dativ-points-extension.js?v=2');
     await load('/teacher/points-dashboard.js?v=2');
+    await load('/teacher/point-floor-preflight.js?v=1');
+    try{await window.SPPointFloorPreflightReady}catch(error){console.warn('Historische Ranglisten-Untergrenze konnte nicht vollständig vorbereitet werden',error)}
     await load('/teacher/b1-points-alias-normalize.js?v=2');
     await load('/teacher/b1-points-recalculate.js?v=2');
     await load('/teacher/b1-points-control.js?v=2');
