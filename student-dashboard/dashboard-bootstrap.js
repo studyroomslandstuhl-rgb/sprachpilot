@@ -56,6 +56,20 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
       throw new Error('STUDENT_UID_CHANGED_BEFORE_DASHBOARD_RENDER');
     }
 
+    // L8T1 speichert einzelne Antworten bewusst nur lokal. Vor dem serverautoritativen
+    // Dashboard werden ausschließlich fertige Aufgaben/Prüfungen als Punkte-Meilensteine
+    // nach Firebase übertragen. Dadurch gehen bereits lokal verdiente Punkte nicht verloren,
+    // wenn der Schüler direkt aus einer Aufgabe ins Dashboard wechselt.
+    try{
+      const l8t1Points=await import('/js/l8t1-milestone-sync.js?v=20260829-1');
+      await Promise.race([
+        l8t1Points.flushL8T1Milestones({reason:'dashboard-before-server-read'}),
+        new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'dashboard-flush-timeout'}),6000))
+      ]);
+    }catch(error){
+      console.warn('Lokale L8T1-Punkte konnten vor dem Dashboard noch nicht nach Firebase übertragen werden.',error);
+    }
+
     let progressReady=false;
     try{
       const progressModule=await import('/js/account-progress-sync.js?v=20260822-sync14');
