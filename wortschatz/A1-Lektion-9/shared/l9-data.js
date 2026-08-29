@@ -12,7 +12,7 @@ const t1Core=[
  noun('behoerde','die','Behörde','die Behörden','Ämter'),noun('amt','das','Amt','die Ämter','Ämter'),
  noun('urkunde','die','Urkunde','die Urkunden','Dokumente'),noun('bescheinigung','die','Bescheinigung','die Bescheinigungen','Dokumente'),noun('ausweis','der','Ausweis','die Ausweise','Dokumente'),noun('reisepass','der','Reisepass','die Reisepässe','Dokumente'),
  noun('ziel','das','Ziel','die Ziele','Anleitungen'),noun('fahrkarte','die','Fahrkarte','die Fahrkarten','Anleitungen'),noun('fahrkartenautomat','der','Fahrkartenautomat','die Fahrkartenautomaten','Anleitungen'),noun('kaffeemaschine','die','Kaffeemaschine','die Kaffeemaschinen','Anleitungen'),
- noun('kind','das','Kind','die Kinder','Anleitungen'),noun('erwachsene','der/die','Erwachsene','die Erwachsenen','Anleitungen'),
+ noun('kind','das','Kind','die Kinder','Anleitungen'),noun('erwachsener','der','Erwachsene','die Erwachsenen','Anleitungen'),noun('erwachsene','die','Erwachsene','die Erwachsenen','Anleitungen'),
  word('bezahlen','bezahlen','verb','Handlungen'),word('eingeben','eingeben','verb','Handlungen'),word('druecken','drücken','verb','Handlungen'),word('bestaetigen','bestätigen','verb','Handlungen'),word('unterschreiben','unterschreiben','verb','Handlungen'),word('mitbringen','mitbringen','verb','Behörde')
 ];
 const t1Extra=[
@@ -40,7 +40,7 @@ window.L9_THEMES={
   },
   coreVocabulary:t1Core,extraVocabulary:t1Extra,extraSelectionKey:'SP_L9_T1_EXTRA_BEHOERDEN',
   examples:[
-   'Man muss zuerst das Ziel auswählen.','Dann muss man Erwachsene oder Kind auswählen.','Danach muss man bezahlen.','Zum Schluss muss man die Fahrkarte nehmen.',
+   'Man muss zuerst das Ziel auswählen.','Dann muss man Erwachsener oder Kind auswählen.','Danach muss man bezahlen.','Zum Schluss muss man die Fahrkarte nehmen.',
    'Was muss ich für den Antrag mitbringen?','Muss man das Formular unterschreiben?'
   ],
   tasks:[
