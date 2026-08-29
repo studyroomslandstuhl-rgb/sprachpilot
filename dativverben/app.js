@@ -35,15 +35,40 @@ let profile={},preview=false,locked=false,state=null,currentQuestion=null,rec=nu
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const norm=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:"'`´()„“”]/g,'').replace(/\s+/g,' ');
 const answerNorm=v=>norm(v).replace(/\s+/g,'');
-const shuffle=a=>{a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const randomInt=max=>{
+ max=Math.floor(Number(max)||0);if(max<=1)return 0;
+ try{
+  if(globalThis.crypto?.getRandomValues){
+   const range=0x100000000,limit=Math.floor(range/max)*max,buf=new Uint32Array(1);
+   do{globalThis.crypto.getRandomValues(buf)}while(buf[0]>=limit);
+   return buf[0]%max;
+  }
+ }catch{}
+ return Math.floor(Math.random()*max);
+};
+const shuffle=a=>{a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=randomInt(i+1);[a[i],a[j]]=[a[j],a[i]]}return a};
+const pickRandom=a=>Array.isArray(a)&&a.length?a[randomInt(a.length)]:null;
 const uniq=a=>[...new Set((a||[]).filter(Boolean))];
 const entryKey=e=>`${e.level}:${e.verb}`;
-const entryByKey=key=>ENTRIES.find(e=>entryKey(e)===String(key||'').split('#')[0])||null;
+const baseEntryKey=key=>String(key||'').split('#')[0];
+const entryByKey=key=>ENTRIES.find(e=>entryKey(e)===baseEntryKey(key))||null;
 const groupById=id=>GROUPS[id-1]||null;
+const optionLayouts=new Map();
 
 function imageName(verb){return String(verb||'').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/\s+/g,'_').replace(/[\/]/g,'_')}
 function imageUrl(e){return `https://sprachpilot.b-cdn.net/${encodeURIComponent(imageName(e.verb))}.webp`}
-function options(answer,pool,count=4){const seen=new Set([norm(answer)]),others=[];shuffle(pool).forEach(x=>{if(x!=null&&!seen.has(norm(x))){seen.add(norm(x));others.push(x)}});return shuffle([answer,...others.slice(0,count-1)])}
+function options(answer,pool,count=4){
+ const seen=new Set([norm(answer)]),others=[];
+ shuffle(pool).forEach(x=>{if(x!=null&&!seen.has(norm(x))){seen.add(norm(x));others.push(x)}});
+ let result=shuffle([answer,...others.slice(0,count-1)]);
+ const setKey=[norm(answer),...result.map(norm).sort()].join('|'),signature=result.map(norm).join('|'),previous=optionLayouts.get(setKey);
+ if(previous===signature&&result.length>1){
+  const shiftBy=1+randomInt(result.length-1);
+  result=[...result.slice(shiftBy),...result.slice(0,shiftBy)];
+ }
+ optionLayouts.set(setKey,result.map(norm).join('|'));
+ return result;
+}
 function replaceFirst(text,needle,replacement){const source=String(text||''),target=String(needle||''),i=source.indexOf(target);return i<0?source:source.slice(0,i)+replacement+source.slice(i+target.length)}
 function datArticle(e){return String(e.dat||'').trim().split(/\s+/)[0]||''}
 function wrongVerbForm(e){const forms=CONJ[e.verb]||[];return forms.find(x=>norm(x)!==norm(e.form)&&!norm(e.sentence).includes(norm(x)))||e.verb}
@@ -78,7 +103,7 @@ function unitForKey(g,t,key){
 
 const userSlug=()=>[profile.email,profile.courseCode,profile.kurs,profile.kursnummer,profile.vorname,profile.nachname].filter(Boolean).join('_').toLowerCase().replace(/[^a-z0-9äöüß]+/gi,'_')||'student';
 const storageKey=()=>`SP_DATIVVERBEN_V2_${userSlug()}`;
-const blankTask=total=>({total,done:[],queue:[],current:null,tries:0,hadWrong:false});
+const blankTask=total=>({total,done:[],queue:[],current:null,last:null,tries:0,hadWrong:false});
 const blankRun=()=>({tasks:{},exam:{bestPercent:0,stars:0,session:null},awards:{tasks:{},examPoints:0},completed:false});
 const blankGroup=sig=>({signature:sig,currentRun:1,runs:{'1':blankRun()}});
 const blankState=()=>({version:2,taskSchema:4,selectedGroup:1,groups:{}});
@@ -90,8 +115,9 @@ function normalizeRun(run,g,resetTasks=false){
   const keys=taskUnitKeys(g,t),x=run.tasks[t]||blankTask(keys.length);
   x.total=keys.length;
   x.done=[...new Set((x.done||[]).filter(k=>keys.includes(k)))];
-  x.queue=[...new Set((x.queue||[]).filter(k=>keys.includes(k)&&!x.done.includes(k)))];
+  x.queue=[];
   x.current=x.current&&keys.includes(x.current)&&!x.done.includes(x.current)?x.current:null;
+  x.last=x.last&&keys.includes(x.last)?x.last:null;
   x.tries=Number(x.tries)||0;x.hadWrong=!!x.hadWrong;
   run.tasks[t]=x;
  }
@@ -134,16 +160,22 @@ function nextUnit(id,t){
  const x=taskState(id,t),g=groupById(id);if(!x||!g)return null;
  const keys=taskUnitKeys(g,t);
  if(x.current&&!x.done.includes(x.current))return unitForKey(g,t,x.current);
- if(!x.queue.length)x.queue=shuffle(keys.filter(k=>!x.done.includes(k)));
- x.current=x.queue.shift()||null;x.tries=0;x.hadWrong=false;save();
+ const pending=keys.filter(k=>!x.done.includes(k));
+ if(!pending.length){x.current=null;x.queue=[];save();return null}
+ let candidates=pending;
+ if(x.last&&pending.length>1){
+  const otherVerb=pending.filter(k=>baseEntryKey(k)!==baseEntryKey(x.last));
+  if(otherVerb.length)candidates=otherVerb;
+  else{const notSame=pending.filter(k=>k!==x.last);if(notSame.length)candidates=notSame}
+ }
+ x.current=pickRandom(candidates);x.queue=[];x.tries=0;x.hadWrong=false;save();
  return unitForKey(g,t,x.current);
 }
 function markWrong(id,t){const x=taskState(id,t);if(!x)return 0;x.tries++;x.hadWrong=true;save();return x.tries}
 function markRight(id,t){
  const x=taskState(id,t),k=x?.current;if(!x||!k)return;
- if(x.hadWrong||x.tries>0){if(!x.done.includes(k)&&!x.queue.includes(k))x.queue.push(k)}
- else if(!x.done.includes(k))x.done.push(k);
- x.current=null;x.tries=0;x.hadWrong=false;
+ if(!x.hadWrong&&x.tries===0&&!x.done.includes(k))x.done.push(k);
+ x.last=k;x.current=null;x.queue=[];x.tries=0;x.hadWrong=false;
  if(taskDone(id,t)&&!currentRun(id).awards.tasks[t])currentRun(id).awards.tasks[t]=taskPoints(id);
  save();
 }
@@ -296,11 +328,22 @@ function examItems(id){
  for(let i=0;i<14;i++)items.push({key:entryKey(entries[i%entries.length]),task:lex[i%lex.length]});
  for(let i=0;i<3;i++)items.push({key:entryKey(entries[(i+2)%entries.length]),task:'read-write'});
  for(let i=0;i<3;i++)items.push({key:entryKey(entries[(i+5)%entries.length]),task:i===2?'context-write':'dativ-use'});
- return shuffle(items);
+ const mixed=shuffle(items);
+ mixed.forEach(item=>{
+  if(item.task!=='dativ-use')return;
+  const e=entryByKey(item.key),rows=e?(g.level==='A1'?a1GapUnits(e):genericGapUnits(e)):[];
+  item.unitKey=pickRandom(rows)?.id||null;
+ });
+ return mixed;
 }
 function examUnit(id,item){
  const g=groupById(id),e=entryByKey(item.key);if(!e)return null;
- if(item.task==='dativ-use'){const rows=g.level==='A1'?a1GapUnits(e):genericGapUnits(e);return rows[(item.key.length+item.task.length)%rows.length]||rows[0]}
+ if(item.task==='dativ-use'){
+  const rows=g.level==='A1'?a1GapUnits(e):genericGapUnits(e);
+  const selected=rows.find(row=>row.id===item.unitKey)||pickRandom(rows)||rows[0];
+  if(selected&&!item.unitKey)item.unitKey=selected.id;
+  return selected;
+ }
  return{id:item.key,entry:e};
 }
 function renderExam(id){
