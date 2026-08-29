@@ -21,6 +21,7 @@ function audioUrl(raw,fallback=''){
 function mediaStem(item){return slug(item?.id||term(item)||item?.answer||item?.prompt||'')}
 function lexicalCard(item){const t=term(item);return !!(t&&!GRAMMAR_CARD.test(t))}
 function taskText(task){return `${task?.id||''} ${task?.title||''} ${task?.instruction||''} ${task?.intro||''}`}
+function itemText(item){return `${item?.term||''} ${item?.prompt||''} ${item?.context||''} ${item?.example||''} ${Array.isArray(item?.answer)?item.answer.join(' '):item?.answer||''}`}
 function stripImages(obj){if(!obj||typeof obj!=='object')return;if(Array.isArray(obj)){obj.forEach(stripImages);return}for(const key of Object.keys(obj)){if(/^(image|img|imageUrl|picture)$/i.test(key)){delete obj[key];continue}stripImages(obj[key])}}
 function bunnyWalk(obj){
  if(!obj||typeof obj!=='object')return;
@@ -63,7 +64,7 @@ function formsTask(){return{
 function useTask(){return{
  id:'zeitwoerter-seit-vor',title:'seit und vor',emoji:'⏳',icon:'⏳',kind:'input',
  instruction:'Schreibe die richtige Zeitangabe mit seit oder vor.',
- intro:'seit und vor stehen mit Dativ. Singular: einer Sekunde, einer Minute, einer Stunde, einer Woche; einem Tag, einem Monat, einem Jahr. Im Plural: zwei Sekunden, drei Minuten, vier Stunden, zwei Tagen, drei Wochen, fünf Monaten, vier Jahren.',
+ intro:'seit und vor stehen mit Dativ. Singular: seit/vor einer Sekunde, einer Minute, einer Stunde, einer Woche; seit/vor einem Tag, einem Monat, einem Jahr. Bei mehreren Zeitangaben heißt es z. B. seit zwei Tagen, vor drei Wochen, seit fünf Monaten oder vor vier Jahren.',
  items:[
   {type:'input',prompt:'seit + 1 + Sekunde',answer:['seit einer Sekunde'],hint:'die Sekunde → einer Sekunde'},
   {type:'input',prompt:'vor + 2 + Sekunde',answer:['vor zwei Sekunden','vor 2 Sekunden'],hint:'Plural: Sekunden'},
@@ -88,7 +89,9 @@ function installTimeTasks(theme){
 }
 function cleanGrammarMedia(theme){
  for(const task of theme.tasks||[]){
-  if(GRAMMAR_TASK.test(taskText(task))&&task.id!=='zeitwoerter-artikel-plural')stripImages(task);
+  const wholeTask=GRAMMAR_TASK.test(taskText(task))&&task.id!=='zeitwoerter-artikel-plural';
+  if(wholeTask)stripImages(task);
+  else for(const item of task.items||[])if(GRAMMAR_TASK.test(itemText(item)))stripImages(item);
   bunnyWalk(task);
  }
 }
@@ -104,7 +107,7 @@ window.L8_T2_CURRENT_READY=(async()=>{
   {title:'vor + Dativ',text:'Etwas ist zu einem Zeitpunkt in der Vergangenheit passiert.',example:'Ich habe vor einem Jahr eine Ausbildung gemacht.'},
   {title:'eine Ausbildung als + Beruf machen',text:'Nach als steht der Beruf hier ohne Artikel.',example:'Ich mache eine Ausbildung als Koch.'},
   {title:'arbeiten als + Beruf',text:'Mit als nennen wir den Beruf. Der Beruf steht ohne Artikel.',example:'Ich arbeite als Ärztin.'},
-  {title:'arbeiten bei + Arbeitgeber',text:'Mit bei nennen wir die Firma oder den Arbeitgeber. bei steht mit Dativ.',example:'Ich arbeite bei einer Firma.'}
+  {title:'arbeiten bei + Arbeitgeber',text:'Mit bei nennen wir die Firma oder den Arbeitgeber. Bei steht mit Dativ.',example:'Ich arbeite bei einer Firma.'}
  ];
  if(window.L8_THEME&&Number(window.L8_THEME.number)===2)window.L8_THEME=theme;
  return theme;
