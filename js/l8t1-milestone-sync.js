@@ -16,7 +16,14 @@ function taskTitle(id){try{return window.L8_THEME?.tasks?.find(t=>String(t.id)==
 function signature(run,id,st){return `${run}|${id}|100|${doneCount(st)}|${Number(st?.total)||0}|${Number(st?.firstCorrect)||0}`}
 function acked(master,owner,key,sig){return String(master?.students?.[owner]?.sync?.[key]||'')===sig}
 function saveAck(owner,key,sig){const latest=readMaster();if(!latest?.students?.[owner])return;latest.students[owner].sync=latest.students[owner].sync&&typeof latest.students[owner].sync==='object'?latest.students[owner].sync:{};latest.students[owner].sync[key]=sig;latest.updatedAt=new Date().toISOString();try{localStorage.setItem(MASTER_KEY,JSON.stringify(latest))}catch(e){}}
-async function api(){if(window.SPProgress?.recordTaskProgress)return window.SPProgress;try{await import('/js/progress.js?v=20260829-l8t1-points1');return window.SPProgress||null}catch(error){console.warn('L8T1 milestone sync: Progress API fehlt',error);return null}}
+async function api(){
+  try{
+    await import('/js/point-delta-bridge.js?v=20260829-points3');
+    if(!window.SPProgress?.recordTaskProgress)await import('/js/progress.js?v=20260829-l8t1-points3');
+    try{window.SPEnsurePointDeltaBridge?.()}catch(e){}
+    return window.SPProgress?.recordTaskProgress?window.SPProgress:null;
+  }catch(error){console.warn('L8T1 milestone sync: Punkte-API fehlt',error);return null}
+}
 async function doFlush(reason='auto'){
  const master=readMaster();if(!master)return{ok:true,reason:'no-local-l8t1',synced:0};
  const owner=findOwner(master);if(!owner)return{ok:false,reason:'local-owner-not-found',synced:0};
