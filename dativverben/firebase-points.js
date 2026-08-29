@@ -1,5 +1,4 @@
 import '/shared/dativ-points-extension.js?v=2';
-import '/js/progress.js?v=points-preserve3';
 import { getActiveProfile, getActiveRole } from '/js/auth.js?v=login-main-4';
 
 const TASKS={
@@ -26,9 +25,7 @@ function slug(){
 }
 function key(){return PREFIX+slug()}
 function state(){try{return JSON.parse(localStorage.getItem(key())||'null')}catch{return null}}
-function levelOf(signature,group={}){
-  return String(group.level||signature||'').toUpperCase().match(/A1|A2|B1|B2|C1/)?.[0]||'';
-}
+function levelOf(signature,group={}){return String(group.level||signature||'').toUpperCase().match(/A1|A2|B1|B2|C1/)?.[0]||''}
 function completed(task={}){
   const total=Number(task.total||0),done=Array.isArray(task.done)?task.done.length:Number(task.done||0);
   return task.completed===true||(total>0&&done>=total);
@@ -49,15 +46,13 @@ function digestOf(data){
   return rows.sort().join('||');
 }
 async function waitReady(){
-  for(let i=0;i<100;i++){
+  for(let i=0;i<120;i++){
     if(window.SPProgress?.recordTaskProgress&&window.SPPointRecalculator?.__dativverbenV2)return true;
     await new Promise(resolve=>setTimeout(resolve,50));
   }
   return false;
 }
-function setRun(topicId,run){
-  try{localStorage.setItem(`SP_SCORE_RUN_${topicId}`,String(Math.max(1,Math.min(3,Number(run)||1))))}catch(e){}
-}
+function setRun(topicId,run){try{localStorage.setItem(`SP_SCORE_RUN_${topicId}`,String(Math.max(1,Math.min(3,Number(run)||1))))}catch(e){}}
 async function sync(){
   if(preview||running)return false;
   const data=state();if(!data?.groups)return false;
@@ -67,8 +62,7 @@ async function sync(){
   try{
     for(const [signature,group] of Object.entries(data.groups)){
       const level=levelOf(signature,group);if(!level)continue;
-      const topicId=`dativverben-${level.toLowerCase()}`;
-      const title=`Dativverben ${level}`;
+      const topicId=`dativverben-${level.toLowerCase()}`,title=`Dativverben ${level}`;
       const runs=Object.entries(group?.runs||{}).sort((a,b)=>Number(a[0])-Number(b[0]));
       for(const [runId,run] of runs){
         const runNo=Math.max(1,Math.min(3,Number(runId)||1));setRun(topicId,runNo);
@@ -121,7 +115,7 @@ if(!preview){
   window.addEventListener('SP_ACCOUNT_PROGRESS_SYNCED',()=>schedule(250));
   window.addEventListener('online',()=>schedule(250));
   window.addEventListener('focus',()=>schedule(250));
-  schedule(500);
+  schedule(700);
 }
 
 window.SPDativFirebasePoints={sync,schedule,key};
