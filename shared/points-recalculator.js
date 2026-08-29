@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-if(window.SPPointRecalculator)return;
+if(window.SPPointRecalculator?.version>=2)return;
 const MODULES=['fragen','wortschatz','verben','perfekt','grammatik'];
 const TECH=new Set(['state','progress','totals','metadata','profile','updatedAt','lastActive','lastPage','known','learned','unknown','unsure','activeVerbs','learnedVerbs']);
 const clamp=v=>Math.max(0,Math.min(100,Math.round(Number(v)||0)));
@@ -17,6 +17,14 @@ function topicSig(module,key,t={}){
  if(lesson||theme)return [module,level,lesson,theme].join('|');
  return module+'|key|'+clean(key);
 }
+function legacyRunState(topic={}){
+ const lifetime=topic.lifetime||{};
+ const finished=Math.max(0,Math.min(3,Math.round(Number(lifetime.finishedRuns)||0)));
+ const resets=Math.max(0,Math.min(2,Math.round(Number(lifetime.resets)||0)));
+ const previous=Math.max(finished,resets);
+ const current=previous>=3?3:previous+1;
+ return{previous,current,hasLegacyMarkers:finished>0||resets>0};
+}
 function taskStateMap(topic={}){
  const map=new Map();
  const ensure=raw=>{const id=clean(raw)||String(raw||'task');if(!map.has(id))map.set(id,{id,runs:new Set(),completed:false});return map.get(id)};
@@ -31,20 +39,39 @@ function taskStateMap(topic={}){
 }
 function topicPoints(topic={}){
  if(topic?.technicalRecovery)return {points:0,taskPoints:0,examPoints:0,tasks:0,exams:0,technical:true};
- const taskMap=taskStateMap(topic);let tasks=0,taskTotal=0;
+ const legacy=legacyRunState(topic),taskMap=taskStateMap(topic);let tasks=0,taskTotal=0,legacyTaskRuns=0;
  for(const item of taskMap.values()){
-  if(item.runs.size){for(const run of item.runs){taskTotal+=taskPoints(run);tasks++;}}
-  else if(item.completed){taskTotal+=taskPoints(1);tasks++;}
+  const counted=new Set(item.runs);
+  // Ein Reset/finishedRun ist nur möglich, nachdem der vorige Durchgang beendet wurde.
+  // Darum dürfen bei alten Datensätzen fehlende Aufgaben-Runmarker für diese bereits
+  // abgeschlossenen Durchgänge konservativ rekonstruiert werden.
+  if(legacy.hasLegacyMarkers){
+   for(let run=1;run<=legacy.previous&&run<=3;run++)if(!counted.has(run)){counted.add(run);legacyTaskRuns++}
+   if(item.completed&&legacy.current<=3&&!counted.has(legacy.current)){counted.add(legacy.current);legacyTaskRuns++}
+  }
+  if(counted.size){for(const run of counted){taskTotal+=taskPoints(run);tasks++}}
+  else if(item.completed){taskTotal+=taskPoints(1);tasks++}
  }
- if(!taskMap.size&&positive(topic.completedTasks||topic.current?.completedTasks)){
-  const n=Math.max(0,Math.round(positive(topic.completedTasks||topic.current?.completedTasks)));taskTotal+=n*taskPoints(1);tasks+=n;
+ if(!taskMap.size){
+  const totalTasks=Math.max(0,Math.round(positive(topic.totalTasks||topic.current?.totalTasks)));
+  const completedNow=Math.max(0,Math.round(positive(topic.completedTasks||topic.current?.completedTasks)));
+  if(legacy.hasLegacyMarkers&&totalTasks>0){
+   for(let run=1;run<=legacy.previous&&run<=3;run++){taskTotal+=totalTasks*taskPoints(run);tasks+=totalTasks;legacyTaskRuns+=totalTasks}
+   if(legacy.current<=3&&completedNow>0){taskTotal+=completedNow*taskPoints(legacy.current);tasks+=completedNow;legacyTaskRuns+=completedNow}
+  }else if(completedNow>0){taskTotal+=completedNow*taskPoints(1);tasks+=completedNow}
  }
  const examRuns=topic?.lifetime?.examPointRuns||{};let examTotal=0,exams=0,hasExamRun=false;
  for(const run of [1,2,3]){
   const raw=positive(examRuns?.[String(run)]??examRuns?.[run]);if(!raw)continue;hasExamRun=true;examTotal+=Math.min(examMax(run),raw);exams++;
  }
- if(!hasExamRun){const exam=topic.exam||{},pct=clamp(exam.bestPercent??exam.percent??exam.lastPercent??0);if(exam.attempted===true||exam.completed===true||pct>0){examTotal+=examEarned(1,pct||(exam.completed?100:0));exams++;}}
- return {points:taskTotal+examTotal,taskPoints:taskTotal,examPoints:examTotal,tasks,exams,technical:false};
+ if(!hasExamRun){
+  const exam=topic.exam||{},pct=clamp(exam.bestPercent??exam.percent??exam.lastPercent??0);
+  if(exam.attempted===true||exam.completed===true||pct>0){
+   const run=legacy.hasLegacyMarkers?legacy.current:1;
+   examTotal+=examEarned(run,pct||(exam.completed?100:0));exams++;
+  }
+ }
+ return {points:taskTotal+examTotal,taskPoints:taskTotal,examPoints:examTotal,tasks,exams,technical:false,legacyTaskRuns};
 }
 function groupPoints(group={}){
  let total=0,taskTotal=0,examTotal=0,tasks=0,exams=0;
@@ -77,16 +104,14 @@ function metadataFallback(progress,module,topics){
  }
  return extra;
 }
-function finnishPoints(progress={}){
- let total=0;for(const group of Object.values(progress?.finnischVerben?.groups||{}))total+=groupPoints(group).points;return total;
-}
+function finnishPoints(progress={}){let total=0;for(const group of Object.values(progress?.finnischVerben?.groups||{}))total+=groupPoints(group).points;return total;}
 function calculate(progress={}){
  const breakdown={},topicDetails={};let total=0;
  for(const module of MODULES){const topics=moduleAudit(progress,module);const topicTotal=[...topics.values()].reduce((sum,x)=>sum+x.points,0);const fallback=metadataFallback(progress,module,topics);breakdown[module]=topicTotal+fallback;topicDetails[module]=[...topics.values()];total+=breakdown[module];}
  const finnisch=finnishPoints(progress);if(finnisch){breakdown.finnischVerben=finnisch;total+=finnisch;}
- return {total,breakdown,topics:topicDetails,version:1};
+ return {total,breakdown,topics:topicDetails,version:2};
 }
 function stored(progress={}){return Math.max(positive(progress?.ranking?.points),positive(progress?.totals?.points),positive(progress?.pointsTotal),positive(progress?.lifetimePoints),positive(progress?.punkteGesamt),positive(progress?.points));}
 function audit(progress={}){const exact=calculate(progress);return {...exact,stored:stored(progress),difference:exact.total-stored(progress),inflatedBy:Math.max(0,stored(progress)-exact.total)};}
-window.SPPointRecalculator={calculate,audit,topicPoints,groupPoints,taskPoints,examMax,examEarned,version:1};
+window.SPPointRecalculator={calculate,audit,topicPoints,groupPoints,taskPoints,examMax,examEarned,legacyRunState,version:2};
 })();
