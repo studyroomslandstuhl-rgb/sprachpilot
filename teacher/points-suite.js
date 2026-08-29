@@ -17,6 +17,7 @@ async function start(){
     await load('/shared/points-recalculator.js?v=2');
     await load('/shared/dativ-points-extension.js?v=2');
     await load('/teacher/points-dashboard.js?v=1');
+    await load('/teacher/b1-points-alias-normalize.js?v=1');
     await load('/teacher/b1-points-recalculate.js?v=1');
     await load('/teacher/b1-points-control.js?v=1');
   }catch(error){console.warn('Punkte-Werkzeuge konnten nicht vollständig geladen werden',error)}
