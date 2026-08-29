@@ -5,7 +5,7 @@ if(/^\/wortschatz\/?(?:index\.html)?$/i.test(location.pathname)){
   import('/wortschatz/lesson-colors-pastel.js?v=4').catch(()=>{});
 }
 
-import('/js/account-progress-sync.js?v=13')
+import('/js/account-progress-sync.js?v=12')
   .then(async mod=>{
     await mod.startAccountProgressSync?.();
     import('/js/authoritative-point-repair.js?v=1').catch(error=>{
