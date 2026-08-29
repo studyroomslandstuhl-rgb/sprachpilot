@@ -5,13 +5,13 @@ if(/^\/wortschatz\/?(?:index\.html)?$/i.test(location.pathname)){
   import('/wortschatz/lesson-colors-pastel.js?v=4').catch(()=>{});
 }
 
-import('/js/account-progress-sync.js?v=12')
+import('/js/account-progress-sync.js?v=13')
   .then(async mod=>{
     await mod.startAccountProgressSync?.();
-    import('/js/authoritative-point-repair.js?v=1').catch(error=>{
-      console.warn('Autoritativer Punktestand konnte nicht vorbereitet werden',error);
+    import('/js/authoritative-point-repair.js?v=2').catch(error=>{
+      console.warn('Sicherer Punktestand konnte nicht vorbereitet werden',error);
     });
   })
   .catch(error=>{
-    console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error);
+    console.warn('Account-Fortschritt Sync konnte nicht gestartet werden',error);
   });
