@@ -38,7 +38,7 @@ async function syncRoster({force=false}={}){
    await Promise.all(chunk.map(async student=>{
     const id=studentId(student),key=courseKey(student);if(!id||!key){skipped++;return}
     try{
-     const ref=database.collection('studentRankings').doc(id);let old={};
+     const ref=db().collection('studentRankings').doc(id);let old={};
      try{const snap=await ref.get();if(snap.exists)old=snap.data()||{}}catch(e){}
      const authUid=text(student.authUid||old.authUid),name=displayName(student)!=='Teilnehmer/in'?displayName(student):text(old.displayName)||'Teilnehmer/in';
      const studentAudit=point(student.pointAuditVersion),rankingAudit=point(old.pointAuditVersion),auditedVersion=Math.max(studentAudit,rankingAudit);
@@ -54,18 +54,27 @@ async function syncRoster({force=false}={}){
  }finally{running=false}
 }
 function schedule(force=false,delay=500){setTimeout(()=>syncRoster({force}).catch(()=>{}),delay)}
-function loadPointSuite(){
+function appendScript(src,marker){
+ if(document.querySelector(`script[data-${marker}]`))return Promise.resolve();
+ return new Promise((resolve,reject)=>{
+  const script=document.createElement('script');script.src=src;script.async=true;script.setAttribute(`data-${marker}`,'1');
+  script.onload=()=>resolve();script.onerror=()=>reject(new Error(`Script konnte nicht geladen werden: ${src}`));document.head.appendChild(script);
+ });
+}
+async function loadPointSuite(){
  if(window.__SP_TEACHER_POINTS_SUITE_LOADING)return;
  window.__SP_TEACHER_POINTS_SUITE_LOADING=true;
- const script=document.createElement('script');script.src='/teacher/points-suite.js?v=1';script.async=true;
- script.onerror=()=>{window.__SP_TEACHER_POINTS_SUITE_LOADING=false;console.warn('Punkte-Werkzeuge konnten nicht nachgeladen werden')};
- document.head.appendChild(script);
+ try{
+  await appendScript('/teacher/points-suite.js?v=20260829-points2','sp-points-suite');
+  await appendScript('/teacher/b1-points-runtime-fix.js?v=20260829-points2','sp-b1-runtime-fix');
+ }catch(error){window.__SP_TEACHER_POINTS_SUITE_LOADING=false;console.warn('Punkte-Werkzeuge konnten nicht vollständig nachgeladen werden',error)}
 }
-window.SPRankingRosterBackfill={sync:syncRoster};
-window.addEventListener('load',()=>{schedule(true,600);setTimeout(loadPointSuite,850)},{once:true});
+window.SPRankingRosterBackfill={sync:syncRoster,loadPointSuite};
+window.addEventListener('load',()=>{schedule(true,600);setTimeout(loadPointSuite,250)},{once:true});
 window.addEventListener('focus',()=>schedule(false,200));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')schedule(false,200)});
 document.addEventListener('click',event=>{if(event.target?.closest?.('#refreshBtn,[onclick*="SPTeacherDashboard.refresh"]'))schedule(true,500)});
 [300,900,1800,3500].forEach(delay=>schedule(false,delay));
+setTimeout(loadPointSuite,300);
 setInterval(()=>syncRoster({force:false}).catch(()=>{}),60000);
 })();
