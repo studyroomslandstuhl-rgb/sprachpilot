@@ -1,8 +1,8 @@
 (function(){
 'use strict';
-const EPOCH='20260829-points10-final';
+const EPOCH='20260829-points11-individual';
 const KEY='SP_CACHE_EPOCH';
-if(window.__SP_CACHE_EPOCH_V7)return;window.__SP_CACHE_EPOCH_V7=true;
+if(window.__SP_CACHE_EPOCH_V8)return;window.__SP_CACHE_EPOCH_V8=true;
 async function clearAppCaches(){
  const jobs=[];
  try{if('caches'in window)jobs.push(caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))))}catch(e){}
