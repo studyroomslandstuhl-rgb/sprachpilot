@@ -41,8 +41,8 @@ async function syncRoster({force=false}={}){
      const ref=database.collection('studentRankings').doc(id);let old={};
      try{const snap=await ref.get();if(snap.exists)old=snap.data()||{}}catch(e){}
      const authUid=text(student.authUid||old.authUid),name=displayName(student)!=='Teilnehmer/in'?displayName(student):text(old.displayName)||'Teilnehmer/in';
-     const auditedVersion=Math.max(point(student.pointAuditVersion),point(old.pointAuditVersion));
-     const points=auditedVersion>0?currentPoints(student):Math.max(currentPoints(student),point(old.points));
+     const studentAudit=point(student.pointAuditVersion),rankingAudit=point(old.pointAuditVersion),auditedVersion=Math.max(studentAudit,rankingAudit);
+     const points=rankingAudit>0?point(old.points):studentAudit>0?currentPoints(student):Math.max(currentPoints(student),point(old.points));
      await ref.set({studentId:id,authUid,displayName:name,courseKey:key,courseCode:text(student.courseCode||student.kurs||student.kursnummer),courseDocId:text(student.courseDocId),points,version:6,pointAuditVersion:auditedVersion,rosterBackfilled:true,updatedAt:nowTs()},{merge:true});
      written++;
     }catch(error){failed++;console.warn('Ranglisten-Roster konnte für Teilnehmer nicht gespiegelt werden',id,error)}
