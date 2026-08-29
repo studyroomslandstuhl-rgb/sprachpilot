@@ -41,8 +41,9 @@ async function syncRoster({force=false}={}){
      const ref=database.collection('studentRankings').doc(id);let old={};
      try{const snap=await ref.get();if(snap.exists)old=snap.data()||{}}catch(e){}
      const authUid=text(student.authUid||old.authUid),name=displayName(student)!=='Teilnehmer/in'?displayName(student):text(old.displayName)||'Teilnehmer/in';
-     const points=Math.max(currentPoints(student),point(old.points));
-     await ref.set({studentId:id,authUid,displayName:name,courseKey:key,courseCode:text(student.courseCode||student.kurs||student.kursnummer),courseDocId:text(student.courseDocId),points,version:5,rosterBackfilled:true,updatedAt:nowTs()},{merge:true});
+     const studentAudit=point(student.pointAuditVersion),rankingAudit=point(old.pointAuditVersion),auditedVersion=Math.max(studentAudit,rankingAudit);
+     const points=rankingAudit>0?point(old.points):studentAudit>0?currentPoints(student):Math.max(currentPoints(student),point(old.points));
+     await ref.set({studentId:id,authUid,displayName:name,courseKey:key,courseCode:text(student.courseCode||student.kurs||student.kursnummer),courseDocId:text(student.courseDocId),points,version:6,pointAuditVersion:auditedVersion,rosterBackfilled:true,updatedAt:nowTs()},{merge:true});
      written++;
     }catch(error){failed++;console.warn('Ranglisten-Roster konnte für Teilnehmer nicht gespiegelt werden',id,error)}
    }));
@@ -53,8 +54,15 @@ async function syncRoster({force=false}={}){
  }finally{running=false}
 }
 function schedule(force=false,delay=500){setTimeout(()=>syncRoster({force}).catch(()=>{}),delay)}
+function loadPointSuite(){
+ if(window.__SP_TEACHER_POINTS_SUITE_LOADING)return;
+ window.__SP_TEACHER_POINTS_SUITE_LOADING=true;
+ const script=document.createElement('script');script.src='/teacher/points-suite.js?v=1';script.async=true;
+ script.onerror=()=>{window.__SP_TEACHER_POINTS_SUITE_LOADING=false;console.warn('Punkte-Werkzeuge konnten nicht nachgeladen werden')};
+ document.head.appendChild(script);
+}
 window.SPRankingRosterBackfill={sync:syncRoster};
-window.addEventListener('load',()=>schedule(true,600),{once:true});
+window.addEventListener('load',()=>{schedule(true,600);setTimeout(loadPointSuite,850)},{once:true});
 window.addEventListener('focus',()=>schedule(false,200));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')schedule(false,200)});
 document.addEventListener('click',event=>{if(event.target?.closest?.('#refreshBtn,[onclick*="SPTeacherDashboard.refresh"]'))schedule(true,500)});
