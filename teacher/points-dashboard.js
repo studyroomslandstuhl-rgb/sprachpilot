@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_TEACHER_POINTS_DASHBOARD_V1)return;
-window.__SP_TEACHER_POINTS_DASHBOARD_V1=true;
+if(window.__SP_TEACHER_POINTS_DASHBOARD_V2)return;
+window.__SP_TEACHER_POINTS_DASHBOARD_V2=true;
 
 const point=value=>{const n=Number(value);return Number.isFinite(n)?Math.max(0,Math.round(n)):0};
 const text=value=>String(value==null?'':value).trim();
@@ -11,12 +11,10 @@ let rankingById=new Map(),loading=false,lastLoad=0,decorateTimer=null;
 
 function state(){return window.SPTeacherDashboard?.state||null}
 function studentId(student={}){return text(student.canonicalStudentId||student.docId||student.studentId||student.userId||student.id||student.__docId)}
-function studentCourse(student={}){return text(student.courseCode||student.kurs||student.kursnummer||student.courseDocId)}
+function studentCourse(student={}){return text(student.courseCode||student.kurs||student.kursnummer||student.courseDocId||student.course)}
 function studentName(student={}){return text([student.vorname||student.firstName,student.nachname||student.lastName].filter(Boolean).join(' '))||text(student.name||student.displayName)||'Teilnehmer/in'}
 function studentPoints(student={}){
   const id=studentId(student),ranking=rankingById.get(id)||{};
-  if(point(ranking.pointAuditVersion)>0)return point(ranking.points);
-  if(point(student.pointAuditVersion)>0)return Math.max(point(student.pointsTotal),point(student.rankingPoints),point(student.totals?.points));
   return Math.max(
     point(ranking.points),point(student.rankingPoints),point(student.pointsTotal),point(student.lifetimePoints),
     point(student.punkteGesamt),point(student.points),point(student.ranking?.points),point(student.totals?.points)
@@ -67,7 +65,7 @@ function decorateOverview(){
   const app=document.getElementById('app');if(!app||app.querySelector('[data-sp-point-summary]'))return;
   const students=state()?.students||[],total=students.reduce((sum,s)=>sum+studentPoints(s),0);
   const card=document.createElement('section');card.className='sp-card sp-wide';card.dataset.spPointSummary='1';
-  card.innerHTML=`<h2>Punkte</h2><p><strong style="font-size:26px;color:var(--sp-text)">${total}</strong> Punkte bei ${students.length} Teilnehmenden. Die Werte werden aus Firebase geladen; falls die Ranglisten-Sammlung nicht lesbar ist, werden die Punkte direkt aus den Teilnehmerdaten angezeigt.</p>`;
+  card.innerHTML=`<h2>Punkte</h2><p><strong style="font-size:26px;color:var(--sp-text)">${total}</strong> Punkte bei ${students.length} Teilnehmenden. Angezeigt wird je Teilnehmer der höchste gespeicherte Punktestand aus Teilnehmer- und Ranglistendaten; ein niedrigerer Spiegelwert darf den bisherigen Stand nicht mehr ersetzen.</p>`;
   const grid=app.querySelector('.sp-grid');if(grid)grid.appendChild(card);
 }
 function decorate(){
