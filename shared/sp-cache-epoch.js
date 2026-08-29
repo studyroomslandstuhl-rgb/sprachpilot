@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const EPOCH='20260829-points3';
+const EPOCH='20260829-points5';
 const KEY='SP_CACHE_EPOCH';
 if(window.__SP_CACHE_EPOCH_V4)return;window.__SP_CACHE_EPOCH_V4=true;
 async function clearAppCaches(){
