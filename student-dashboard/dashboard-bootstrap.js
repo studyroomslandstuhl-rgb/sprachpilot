@@ -56,6 +56,13 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
       throw new Error('STUDENT_UID_CHANGED_BEFORE_DASHBOARD_RENDER');
     }
 
+    // Die Punkte-Bridge muss vor jeder möglichen progress.js-Variante aktiv sein.
+    // Sie beobachtet window.SPProgress dauerhaft und patcht auch später geladene Cache-/Versionsvarianten.
+    try{
+      await import('/js/point-delta-bridge.js?v=20260829-points3');
+      try{window.SPEnsurePointDeltaBridge?.()}catch(e){}
+    }catch(error){console.warn('Globale Punkte-Bridge konnte im Dashboard noch nicht vorbereitet werden.',error)}
+
     // L8T1 speichert einzelne Antworten bewusst nur lokal. Vor dem serverautoritativen
     // Dashboard werden ausschließlich fertige Aufgaben/Prüfungen als Punkte-Meilensteine
     // nach Firebase übertragen. Dadurch gehen bereits lokal verdiente Punkte nicht verloren,
