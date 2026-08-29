@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_TEACHER_POINTS_SUITE_V1)return;
-window.__SP_TEACHER_POINTS_SUITE_V1=true;
+if(window.__SP_TEACHER_POINTS_SUITE_V2)return;
+window.__SP_TEACHER_POINTS_SUITE_V2=true;
 
 function load(src){
   return new Promise((resolve,reject)=>{
@@ -16,10 +16,10 @@ async function start(){
   try{
     await load('/shared/points-recalculator.js?v=2');
     await load('/shared/dativ-points-extension.js?v=2');
-    await load('/teacher/points-dashboard.js?v=1');
-    await load('/teacher/b1-points-alias-normalize.js?v=1');
-    await load('/teacher/b1-points-recalculate.js?v=1');
-    await load('/teacher/b1-points-control.js?v=1');
+    await load('/teacher/points-dashboard.js?v=2');
+    await load('/teacher/b1-points-alias-normalize.js?v=2');
+    await load('/teacher/b1-points-recalculate.js?v=2');
+    await load('/teacher/b1-points-control.js?v=2');
   }catch(error){console.warn('Punkte-Werkzeuge konnten nicht vollständig geladen werden',error)}
 }
 
