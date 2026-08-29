@@ -1,8 +1,8 @@
 (function(){
 'use strict';
-const EPOCH='20260829-points9-recovery';
+const EPOCH='20260829-points10-final';
 const KEY='SP_CACHE_EPOCH';
-if(window.__SP_CACHE_EPOCH_V6)return;window.__SP_CACHE_EPOCH_V6=true;
+if(window.__SP_CACHE_EPOCH_V7)return;window.__SP_CACHE_EPOCH_V7=true;
 async function clearAppCaches(){
  const jobs=[];
  try{if('caches'in window)jobs.push(caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))))}catch(e){}
@@ -15,11 +15,7 @@ async function run(){
  try{localStorage.setItem(KEY,EPOCH)}catch(e){}
  await clearAppCaches();
  const url=new URL(location.href);
- if(url.searchParams.get('spcache')!==EPOCH){
-  url.searchParams.set('spcache',EPOCH);
-  location.replace(url.href);
- }
+ if(url.searchParams.get('spcache')!==EPOCH){url.searchParams.set('spcache',EPOCH);location.replace(url.href)}
 }
-window.SPCacheEpoch={epoch:EPOCH,run};
-run().catch(()=>{});
+window.SPCacheEpoch={epoch:EPOCH,run};run().catch(()=>{});
 })();
