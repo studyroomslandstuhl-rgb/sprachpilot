@@ -10,6 +10,9 @@ const TASKS=[
  ['listen-sentence','🖼','Bild + Verb hören'],
  ['listen-write','✎','Diktat: Verb schreiben'],
  ['read-choose','🖼','Bild + Verb auswählen'],
+ ['verb-meaning','?','Verb → Bedeutung'],
+ ['meaning-verb','?','Bedeutung → Verb'],
+ ['conjugate','ich','Verb konjugieren'],
  ['read-write','▦','Satz aus Bausteinen'],
  ['dativ-use','…','Lückensatz: Artikel oder Verb'],
  ['context-write','✎','Satz mit Vorgaben schreiben'],
@@ -19,62 +22,9 @@ const LEARN=TASKS.slice(0,-1).map(x=>x[0]);
 const TITLE=Object.fromEntries(TASKS.map(x=>[x[0],x[2]]));
 const LEVELS=['A1','A2','B1','B2','C1'];
 const LEVEL_TITLES={A1:'A1 · Grundlagen',A2:'A2 · Alltag',B1:'B1 · Erweiterung',B2:'B2 · Fortgeschritten',C1:'C1 · Sicher anwenden'};
+const PRONOUNS=['ich','du','er / sie / es','wir','ihr','sie / Sie'];
 
-// A1 benutzt nur bekannten SprachPilot-Wortschatz aus Lektion 1–7.
-// Keine Adjektivdeklination. In A1 und A2 werden keine Dativpronomen geübt.
-const ENTRIES=[
- {level:'A1',verb:'antworten',form:'antwortet',meaning:'etwas auf eine Frage sagen',nom:'der Lehrer',acc:'den Lehrer',dat:'dem Lehrer',subject:'der Schüler',sentence:'Der Schüler antwortet dem Lehrer.',tableSource:'Ich antworte dir später.'},
- {level:'A1',verb:'folgen',form:'folgt',meaning:'hinter einer Person gehen',nom:'der Lehrer',acc:'den Lehrer',dat:'dem Lehrer',subject:'der Schüler',sentence:'Der Schüler folgt dem Lehrer.',tableSource:'Ich folge dem Mann unauffällig.'},
- {level:'A1',verb:'gefallen',form:'gefällt',meaning:'etwas gut finden',nom:'der Schüler',acc:'den Schüler',dat:'dem Schüler',subject:'das Lied',sentence:'Das Lied gefällt dem Schüler.',tableSource:'Gefällt dir deine neue Wohnung?'},
- {level:'A1',verb:'gehören',form:'gehört',meaning:'etwas ist von einer Person',nom:'der Schüler',acc:'den Schüler',dat:'dem Schüler',subject:'das Buch',sentence:'Das Buch gehört dem Schüler.',tableSource:'Das Auto gehört dem neuen Nachbarn.'},
- {level:'A1',verb:'glauben',form:'glaubt',meaning:'denken: Das ist richtig.',nom:'der Schüler',acc:'den Schüler',dat:'dem Schüler',subject:'der Lehrer',sentence:'Der Lehrer glaubt dem Schüler.',tableSource:'Warum glaubst du mir nicht?'},
- {level:'A1',verb:'helfen',form:'hilft',meaning:'etwas für eine Person machen',nom:'der Lehrer',acc:'den Lehrer',dat:'dem Lehrer',subject:'der Schüler',sentence:'Der Schüler hilft dem Lehrer.',tableSource:'Sie hilft dem alten Mann.'},
- {level:'A1',verb:'passieren',form:'passiert',meaning:'etwas geschieht',nom:'der Schüler',acc:'den Schüler',dat:'dem Schüler',subject:'was',sentence:'Was passiert dem Schüler?',tableSource:'Passiert dir das öfters?'},
- {level:'A1',verb:'raten',form:'rät',meaning:'sagen, was eine Person machen soll',nom:'der Schüler',acc:'den Schüler',dat:'dem Schüler',subject:'der Arzt',sentence:'Der Arzt rät dem Schüler: Geh nach Hause.',tableSource:'Der Arzt hat meinem Opa geraten, sich auszuruhen.'},
- {level:'A1',verb:'schmecken',form:'schmeckt',meaning:'Essen gut oder nicht gut finden',nom:'der Schüler',acc:'den Schüler',dat:'dem Schüler',subject:'die Suppe',sentence:'Die Suppe schmeckt dem Schüler.',tableSource:'Pizza schmeckt meinem Vater nicht.'},
- {level:'A1',verb:'wehtun',form:'tut',meaning:'Schmerzen machen',nom:'der Schüler',acc:'den Schüler',dat:'dem Schüler',subject:'der Arzt',sentence:'Der Arzt tut dem Schüler weh.',tableSource:'Ich werde dir wehtun.'},
- {level:'A1',verb:'zuhören',form:'hört',meaning:'hören, wenn eine Person spricht',nom:'der Lehrer',acc:'den Lehrer',dat:'dem Lehrer',subject:'der Schüler',sentence:'Der Schüler hört dem Lehrer zu.',tableSource:'Die Schüler hören dem Lehrer zu.'},
-
- {level:'A2',verb:'befehlen',form:'befiehlt',meaning:'sehr klar sagen, was jemand tun muss',nom:'der Soldat',acc:'den Soldaten',dat:'dem Soldaten',subject:'der General',sentence:'Der General befiehlt dem Soldaten zu warten.',tableSource:'Der General befiehlt dem Soldaten zu schießen.'},
- {level:'A2',verb:'danken',form:'dankt',meaning:'Danke sagen',nom:'die Kollegin',acc:'die Kollegin',dat:'der Kollegin',subject:'der Mann',sentence:'Der Mann dankt der Kollegin für die Hilfe.',tableSource:'Ich danke dir für deine Hilfe.'},
- {level:'A2',verb:'fehlen',form:'fehlst',meaning:'nicht da sein und vermisst werden',nom:'die Mutter',acc:'die Mutter',dat:'der Mutter',subject:'du',sentence:'Du fehlst der Mutter.',tableSource:'Du fehlst mir!'},
- {level:'A2',verb:'nachlaufen',form:'läuft',meaning:'hinter jemandem oder etwas herlaufen',nom:'der Ball',acc:'den Ball',dat:'dem Ball',subject:'das Kind',sentence:'Das Kind läuft dem Ball nach.',tableSource:'Ich laufe dem Ball nach.'},
- {level:'A2',verb:'nachrennen',form:'rennt',meaning:'schnell hinter jemandem oder etwas herrennen',nom:'das Auto',acc:'das Auto',dat:'dem Auto',subject:'der Hund',sentence:'Der Hund rennt dem Auto nach.',tableSource:'Ich renne dem Auto nach.'},
- {level:'A2',verb:'hinterherlaufen',form:'läuft',meaning:'hinter jemandem oder etwas herlaufen',nom:'der Ball',acc:'den Ball',dat:'dem Ball',subject:'das Kind',sentence:'Das Kind läuft dem Ball hinterher.',tableSource:'Ich laufe dem Ball hinterher.'},
- {level:'A2',verb:'hinterherrennen',form:'rennt',meaning:'schnell hinter jemandem oder etwas herrennen',nom:'das Auto',acc:'das Auto',dat:'dem Auto',subject:'der Hund',sentence:'Der Hund rennt dem Auto hinterher.',tableSource:'Ich renne dem Auto hinterher.'},
- {level:'A2',verb:'passen',form:'passt',meaning:'die richtige Größe oder Form haben',nom:'der Mann',acc:'den Mann',dat:'dem Mann',subject:'die Hose',sentence:'Die Hose passt dem Mann nicht.',tableSource:'Die Hose passt mir nicht mehr. Ich bin zu dick.'},
- {level:'A2',verb:'vertrauen',form:'vertraut',meaning:'glauben, dass jemand ehrlich ist',nom:'der Bruder',acc:'den Bruder',dat:'dem Bruder',subject:'der Mann',sentence:'Der Mann vertraut dem Bruder.',tableSource:'Ich vertraue meinem Bruder.'},
- {level:'A2',verb:'vergeben',form:'vergibt',meaning:'einen Fehler nicht mehr vorwerfen',nom:'der Mann',acc:'den Mann',dat:'dem Mann',subject:'die Frau',sentence:'Die Frau vergibt dem Mann den Fehler.',tableSource:'Ich kann meinem Mann den Seitensprung nicht vergeben.'},
- {level:'A2',verb:'verzeihen',form:'verzeiht',meaning:'einen Fehler nicht mehr übel nehmen',nom:'der Mann',acc:'den Mann',dat:'dem Mann',subject:'die Frau',sentence:'Die Frau verzeiht dem Mann den Fehler.',tableSource:'Ich kann meinem Mann den Seitensprung nicht verzeihen.'},
- {level:'A2',verb:'widersprechen',form:'widerspricht',meaning:'sagen, dass man anderer Meinung ist',nom:'der Mitarbeiter',acc:'den Mitarbeiter',dat:'dem Mitarbeiter',subject:'der Chef',sentence:'Der Chef widerspricht dem Mitarbeiter.',tableSource:'Der Chef widerspricht seinem Mitarbeiter.'},
- {level:'A2',verb:'zusehen',form:'sehe',meaning:'beobachten, was jemand macht',nom:'die Kollegin',acc:'die Kollegin',dat:'der Kollegin',subject:'ich',sentence:'Ich sehe der Kollegin bei der Arbeit zu.',tableSource:'Kann ich dir bei deiner Arbeit zusehen?'},
- {level:'A2',verb:'fremdgehen',form:'geht',meaning:'in einer Beziehung eine andere Person haben',nom:'der Partner',acc:'den Partner',dat:'dem Partner',subject:'die Frau',sentence:'Die Frau geht dem Partner fremd.',tableSource:'Bist du mir fremdgegangen?'},
- {level:'A2',verb:'zustimmen',form:'stimmt',meaning:'sagen, dass man dieselbe Meinung hat',nom:'das Gesetz',acc:'das Gesetz',dat:'dem Gesetz',subject:'der Politiker',sentence:'Der Politiker stimmt dem Gesetz zu.',tableSource:'Der Politiker stimmt dem neuen Gesetz zu.'},
-
- {level:'B1',verb:'ähneln',form:'ähnelt',meaning:'einer Person oder Sache ähnlich sein',nom:'der Bruder',acc:'den Bruder',dat:'dem Bruder',subject:'der Junge',sentence:'Der Junge ähnelt dem Bruder.',tableSource:'Ich ähnele meinem Bruder.'},
- {level:'B1',verb:'begegnen',form:'begegne',meaning:'jemanden zufällig treffen',nom:'der Freund',acc:'den Freund',dat:'dem Freund',subject:'ich',sentence:'Ich begegne dem Freund zufällig.',tableSource:'Ich bin heute Morgen zufällig einem alten Freund begegnet.'},
- {level:'B1',verb:'beistehen',form:'stehe',meaning:'jemanden in einer schwierigen Situation unterstützen',nom:'die Freundin',acc:'die Freundin',dat:'der Freundin',subject:'ich',sentence:'Ich stehe der Freundin in dieser Zeit bei.',tableSource:'Ich stehe dir in dieser schweren Zeit bei.'},
- {level:'B1',verb:'beitreten',form:'tritt',meaning:'Mitglied in einer Gruppe werden',nom:'der Fußballclub',acc:'den Fußballclub',dat:'dem Fußballclub',subject:'der Mann',sentence:'Der Mann tritt dem Fußballclub bei.',tableSource:'Ich bin gestern einem Fußballclub beigetreten.'},
- {level:'B1',verb:'drohen',form:'droht',meaning:'sagen, dass etwas Schlechtes passieren wird',nom:'die Schüler',acc:'die Schüler',dat:'den Schülern',subject:'der Lehrer',sentence:'Der Lehrer droht den Schülern mit Hausaufgaben.',tableSource:'Der Lehrer droht den Schülern mit extra Hausaufgaben, wenn sie nicht still sind.'},
- {level:'B1',verb:'entgegengehen',form:'gehe',meaning:'in Richtung einer Person gehen',nom:'die Schwester',acc:'die Schwester',dat:'der Schwester',subject:'ich',sentence:'Ich gehe der Schwester entgegen.',tableSource:'Ich gehe dir schon mal entgegen.'},
- {level:'B1',verb:'entgegenfahren',form:'fährt',meaning:'in Richtung einer Person fahren',nom:'die Mutter',acc:'die Mutter',dat:'der Mutter',subject:'der Mann',sentence:'Der Mann fährt der Mutter entgegen.',tableSource:'Er fährt dir schon entgegen.'},
- {level:'B1',verb:'entgegenkommen',form:'kommt',meaning:'sich in Richtung einer Person bewegen',nom:'der Chef',acc:'den Chef',dat:'dem Chef',subject:'der Kollege',sentence:'Der Kollege kommt dem Chef entgegen.',tableSource:'Kommst du mir entgegen?'},
- {level:'B1',verb:'gratulieren',form:'gratuliere',meaning:'Glückwünsche sagen',nom:'die Freundin',acc:'die Freundin',dat:'der Freundin',subject:'ich',sentence:'Ich gratuliere der Freundin zum Geburtstag.',tableSource:'Ich gratuliere dir zum Geburtstag.'},
- {level:'B1',verb:'kündigen',form:'kündigt',meaning:'ein Arbeitsverhältnis beenden',nom:'der Mitarbeiter',acc:'den Mitarbeiter',dat:'dem Mitarbeiter',subject:'die Firma',sentence:'Die Firma kündigt dem Mitarbeiter.',tableSource:'Der Chef hat mir gekündigt.'},
- {level:'B1',verb:'sich nähern',form:'nähert',meaning:'immer näher herankommen',nom:'die Beute',acc:'die Beute',dat:'der Beute',subject:'der Löwe',sentence:'Der Löwe nähert sich der Beute.',tableSource:'Der Löwe nähert sich seiner Beute.'},
- {level:'B1',verb:'schaden',form:'schadet',meaning:'eine negative Wirkung haben',nom:'der Körper',acc:'den Körper',dat:'dem Körper',subject:'zu wenig Schlaf',sentence:'Zu wenig Schlaf schadet dem Körper.',tableSource:'Du schadest dir nur selbst mit deinem schlechten Verhalten.'},
-
- {level:'B2',verb:'einfallen',form:'fällt',meaning:'plötzlich eine Idee oder Erinnerung haben',nom:'der Student',acc:'den Studenten',dat:'dem Studenten',subject:'eine Idee',sentence:'Dem Studenten fällt eine Idee ein.',tableSource:'Fällt dir noch etwas ein?'},
- {level:'B2',verb:'gehorchen',form:'gehorcht',meaning:'tun, was eine Person verlangt',nom:'der General',acc:'den General',dat:'dem General',subject:'der Soldat',sentence:'Der Soldat gehorcht dem General.',tableSource:'Der Soldat gehorcht dem General.'},
- {level:'B2',verb:'genügen',form:'genügt',meaning:'ausreichend sein',nom:'der Schüler',acc:'den Schüler',dat:'dem Schüler',subject:'eine Erklärung',sentence:'Eine Erklärung genügt dem Schüler.',tableSource:'Das genügt mir.'},
- {level:'B2',verb:'guttun',form:'tut',meaning:'eine positive Wirkung haben',nom:'das Kind',acc:'das Kind',dat:'dem Kind',subject:'die Pause',sentence:'Die Pause tut dem Kind gut.',tableSource:'Ein Urlaub würde dir guttun.'},
- {level:'B2',verb:'nützen',form:'nützt',meaning:'hilfreich sein',nom:'das Team',acc:'das Team',dat:'dem Team',subject:'der Sieg',sentence:'Der Sieg nützt dem Team.',tableSource:'Der Sieg nützt dem Team nichts mehr.'},
- {level:'B2',verb:'ausweichen',form:'weicht',meaning:'zur Seite gehen oder fahren',nom:'das Fahrrad',acc:'das Fahrrad',dat:'dem Fahrrad',subject:'der Fahrer',sentence:'Der Fahrer weicht dem Fahrrad aus.',tableSource:'Du konntest dem Hindernis zum Glück noch ausweichen.'},
-
- {level:'C1',verb:'dienen',form:'kann',meaning:'für jemanden arbeiten oder einen Zweck erfüllen',nom:'die Kundin',acc:'die Kundin',dat:'der Kundin',subject:'ich',sentence:'Wie kann ich der Kundin dienen?',tableSource:'Wie kann ich Ihnen dienen?'},
- {level:'C1',verb:'gelingen',form:'gelingt',meaning:'mit Erfolg funktionieren oder gut werden',nom:'der Schüler',acc:'den Schüler',dat:'dem Schüler',subject:'die Aufgabe',sentence:'Die Aufgabe gelingt dem Schüler.',tableSource:'Das Bild ist dir wirklich gut gelungen.'},
- {level:'C1',verb:'misslingen',form:'misslingt',meaning:'nicht gelingen',nom:'das Team',acc:'das Team',dat:'dem Team',subject:'der Versuch',sentence:'Der Versuch misslingt dem Team.',tableSource:'Der Test ist mir total misslungen.'}
-];
+const {ENTRIES,CONJ,A1_GAPS}=window.SPDativLearningData||{ENTRIES:[],CONJ:{},A1_GAPS:{}};
 
 const GROUPS=LEVELS.map((level,index)=>({
  id:index+1,level,title:LEVEL_TITLES[level],entries:ENTRIES.filter(e=>e.level===level),
@@ -83,29 +33,47 @@ const GROUPS=LEVELS.map((level,index)=>({
 
 let profile={},preview=false,locked=false,state=null,currentQuestion=null,rec=null,cardRevealed=false,currentCardEntry=null,activeAudio=null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
-const norm=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:"'`´()]/g,'').replace(/\s+/g,' ');
+const norm=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:"'`´()„“”]/g,'').replace(/\s+/g,' ');
 const answerNorm=v=>norm(v).replace(/\s+/g,'');
 const shuffle=a=>{a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const uniq=a=>[...new Set((a||[]).filter(Boolean))];
 const entryKey=e=>`${e.level}:${e.verb}`;
-const entryByKey=key=>ENTRIES.find(e=>entryKey(e)===key)||null;
+const entryByKey=key=>ENTRIES.find(e=>entryKey(e)===String(key||'').split('#')[0])||null;
 const groupById=id=>GROUPS[id-1]||null;
-const entryHash=e=>[...entryKey(e)].reduce((s,ch)=>s+ch.charCodeAt(0),0);
 
 function imageName(verb){return String(verb||'').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/\s+/g,'_').replace(/[\/]/g,'_')}
 function imageUrl(e){return `https://sprachpilot.b-cdn.net/${encodeURIComponent(imageName(e.verb))}.webp`}
 function options(answer,pool,count=4){const seen=new Set([norm(answer)]),others=[];shuffle(pool).forEach(x=>{if(x!=null&&!seen.has(norm(x))){seen.add(norm(x));others.push(x)}});return shuffle([answer,...others.slice(0,count-1)])}
+function replaceFirst(text,needle,replacement){const source=String(text||''),target=String(needle||''),i=source.indexOf(target);return i<0?source:source.slice(0,i)+replacement+source.slice(i+target.length)}
 function datArticle(e){return String(e.dat||'').trim().split(/\s+/)[0]||''}
-function wrongCasePhrase(e){return e.nom||e.acc||''}
-function sentenceWithoutEnd(e){return String(e.sentence||'').replace(/[.!?]+$/,'')}
-function replaceFirst(text,needle,replacement){const i=String(text).indexOf(String(needle));return i<0?text:String(text).slice(0,i)+replacement+String(text).slice(i+String(needle).length)}
+function wrongVerbForm(e){const forms=CONJ[e.verb]||[];return forms.find(x=>norm(x)!==norm(e.form)&&!norm(e.sentence).includes(norm(x)))||e.verb}
 function sentenceCues(e){return uniq([e.verb,e.subject,e.nom])}
 function buildBlocks(e){
- let target=sentenceWithoutEnd(e),marked=replaceFirst(target,e.dat,'{{DAT}}');
+ let target=String(e.sentence||'').replace(/[.!?]+$/,'');
+ let marked=replaceFirst(target,e.dat,'{{DAT}}');
  marked=replaceFirst(marked,e.form,'{{VERB}}');
  const parts=marked.split(/(\{\{DAT\}\}|\{\{VERB\}\})/).map(x=>x.trim()).filter(Boolean).map(x=>x==='{{DAT}}'?e.dat:x==='{{VERB}}'?e.form:x);
- const distractors=uniq([e.verb,wrongCasePhrase(e)]).filter(x=>!parts.some(p=>norm(p)===norm(x)));
+ const distractors=uniq([e.nom,e.verb,wrongVerbForm(e)]).filter(x=>!parts.some(p=>norm(p)===norm(x)));
  return{parts,bank:shuffle([...parts,...distractors]),target:e.sentence};
+}
+
+function genericGapUnits(e){
+ const article=datArticle(e),articleSentence=replaceFirst(e.sentence,article,'_____');
+ const verbSentence=replaceFirst(e.sentence,e.form,'_____');
+ return[
+  {id:`${entryKey(e)}#article`,entry:e,prompt:'Ergänze den richtigen Dativartikel.',text:articleSentence,answer:article,hintType:'dativ'},
+  {id:`${entryKey(e)}#verb`,entry:e,prompt:'Setze das Verb richtig ein.',text:verbSentence,answer:e.form,hintType:'verb'}
+ ];
+}
+function a1GapUnits(e){
+ const rows=A1_GAPS[e.verb]||[];
+ return rows.map((row,i)=>({id:`${entryKey(e)}#a1gap${i+1}`,entry:e,prompt:row[2]==='dativ'?'Ergänze den richtigen Dativartikel.':'Setze das Verb richtig ein.',text:row[0],answer:row[1],hintType:row[2]}));
+}
+function gapUnits(g){return g.entries.flatMap(e=>g.level==='A1'?a1GapUnits(e):genericGapUnits(e))}
+function taskUnitKeys(g,t){return t==='dativ-use'?gapUnits(g).map(x=>x.id):g.entries.map(entryKey)}
+function unitForKey(g,t,key){
+ if(t==='dativ-use')return gapUnits(g).find(x=>x.id===key)||null;
+ const e=entryByKey(key);return e?{id:key,entry:e}:null;
 }
 
 const userSlug=()=>[profile.email,profile.courseCode,profile.kurs,profile.kursnummer,profile.vorname,profile.nachname].filter(Boolean).join('_').toLowerCase().replace(/[^a-z0-9äöüß]+/gi,'_')||'student';
@@ -113,18 +81,44 @@ const storageKey=()=>`SP_DATIVVERBEN_V2_${userSlug()}`;
 const blankTask=total=>({total,done:[],queue:[],current:null,tries:0,hadWrong:false});
 const blankRun=()=>({tasks:{},exam:{bestPercent:0,stars:0,session:null},awards:{tasks:{},examPoints:0},completed:false});
 const blankGroup=sig=>({signature:sig,currentRun:1,runs:{'1':blankRun()}});
-const blankState=()=>({version:2,taskSchema:3,selectedGroup:1,groups:{}});
+const blankState=()=>({version:2,taskSchema:4,selectedGroup:1,groups:{}});
+
 function normalizeRun(run,g,resetTasks=false){
- run={...blankRun(),...(run||{})};run.tasks=resetTasks?{}:(run.tasks||{});const keys=g.entries.map(entryKey);
- for(const t of LEARN){const x=run.tasks[t]||blankTask(keys.length);x.total=keys.length;x.done=[...new Set((x.done||[]).filter(k=>keys.includes(k)))];x.queue=[...new Set((x.queue||[]).filter(k=>keys.includes(k)&&!x.done.includes(k)))];x.current=x.current&&keys.includes(x.current)&&!x.done.includes(x.current)?x.current:null;x.tries=Number(x.tries)||0;x.hadWrong=!!x.hadWrong;run.tasks[t]=x}
- run.exam={bestPercent:0,stars:0,session:null,...(run.exam||{})};run.awards={tasks:{},examPoints:0,...(run.awards||{})};run.awards.tasks=run.awards.tasks||{};return run;
+ run={...blankRun(),...(run||{})};
+ run.tasks=resetTasks?{}:(run.tasks||{});
+ for(const t of LEARN){
+  const keys=taskUnitKeys(g,t),x=run.tasks[t]||blankTask(keys.length);
+  x.total=keys.length;
+  x.done=[...new Set((x.done||[]).filter(k=>keys.includes(k)))];
+  x.queue=[...new Set((x.queue||[]).filter(k=>keys.includes(k)&&!x.done.includes(k)))];
+  x.current=x.current&&keys.includes(x.current)&&!x.done.includes(x.current)?x.current:null;
+  x.tries=Number(x.tries)||0;x.hadWrong=!!x.hadWrong;
+  run.tasks[t]=x;
+ }
+ run.exam={bestPercent:0,stars:0,session:null,...(run.exam||{})};
+ run.awards={tasks:{},examPoints:0,...(run.awards||{})};
+ run.awards.tasks=run.awards.tasks||{};
+ return run;
 }
-function groupState(id){const g=groupById(id);if(!g)return null;let gs=state.groups[g.signature];if(!gs)gs=state.groups[g.signature]=blankGroup(g.signature);gs.currentRun=Math.max(1,Math.min(3,Number(gs.currentRun)||1));gs.runs=gs.runs||{};for(let r=1;r<=gs.currentRun;r++)gs.runs[String(r)]=normalizeRun(gs.runs[String(r)],g,false);return gs}
+function groupState(id){
+ const g=groupById(id);if(!g)return null;
+ let gs=state.groups[g.signature];if(!gs)gs=state.groups[g.signature]=blankGroup(g.signature);
+ gs.currentRun=Math.max(1,Math.min(3,Number(gs.currentRun)||1));gs.runs=gs.runs||{};
+ for(let r=1;r<=gs.currentRun;r++)gs.runs[String(r)]=normalizeRun(gs.runs[String(r)],g,false);
+ return gs;
+}
 const currentRun=id=>{const gs=groupState(id);return gs?.runs?.[String(gs.currentRun)]||null};
 function load(){
  try{state=JSON.parse(localStorage.getItem(storageKey())||'null')||blankState()}catch{state=blankState()}
- state.groups=state.groups||{};const oldSchema=Number(state.taskSchema||0);
- if(oldSchema!==3){for(const g of GROUPS){const gs=state.groups[g.signature];if(!gs?.runs)continue;for(const k of Object.keys(gs.runs))gs.runs[k]=normalizeRun(gs.runs[k],g,true)}state.taskSchema=3}
+ state.groups=state.groups||{};
+ const oldSchema=Number(state.taskSchema||0);
+ if(oldSchema!==4){
+  for(const g of GROUPS){
+   const gs=state.groups[g.signature];if(!gs?.runs)continue;
+   for(const k of Object.keys(gs.runs))gs.runs[k]=normalizeRun(gs.runs[k],g,true);
+  }
+  state.taskSchema=4;
+ }
  GROUPS.forEach(g=>groupState(g.id));save();
 }
 function save(){if(preview)return;try{localStorage.setItem(storageKey(),JSON.stringify(state))}catch{}}
@@ -135,10 +129,31 @@ const learnDone=id=>LEARN.every(t=>taskDone(id,t));
 function taskPoints(id){return(groupState(id)?.currentRun||1)*5}
 function groupPoints(id){const gs=groupState(id);if(!gs)return 0;return Object.values(gs.runs||{}).reduce((sum,r)=>sum+Object.values(r.awards?.tasks||{}).reduce((s,n)=>s+(Number(n)||0),0)+(Number(r.awards?.examPoints)||0),0)}
 const totalPoints=()=>GROUPS.reduce((s,g)=>s+groupPoints(g.id),0);
-function nextEntry(id,t){const x=taskState(id,t),g=groupById(id);if(!x||!g)return null;if(x.current&&!x.done.includes(x.current))return entryByKey(x.current);if(!x.queue.length)x.queue=shuffle(g.entries.map(entryKey).filter(k=>!x.done.includes(k)));x.current=x.queue.shift()||null;x.tries=0;x.hadWrong=false;save();return entryByKey(x.current)}
+
+function nextUnit(id,t){
+ const x=taskState(id,t),g=groupById(id);if(!x||!g)return null;
+ const keys=taskUnitKeys(g,t);
+ if(x.current&&!x.done.includes(x.current))return unitForKey(g,t,x.current);
+ if(!x.queue.length)x.queue=shuffle(keys.filter(k=>!x.done.includes(k)));
+ x.current=x.queue.shift()||null;x.tries=0;x.hadWrong=false;save();
+ return unitForKey(g,t,x.current);
+}
 function markWrong(id,t){const x=taskState(id,t);if(!x)return 0;x.tries++;x.hadWrong=true;save();return x.tries}
-function markRight(id,t){const x=taskState(id,t),k=x?.current;if(!x||!k)return;if(x.hadWrong||x.tries>0){if(!x.done.includes(k)&&!x.queue.includes(k))x.queue.push(k)}else if(!x.done.includes(k))x.done.push(k);x.current=null;x.tries=0;x.hadWrong=false;if(taskDone(id,t)&&!currentRun(id).awards.tasks[t])currentRun(id).awards.tasks[t]=taskPoints(id);save()}
-function resetGroup(id){const g=groupById(id),gs=groupState(id);if(!g||!gs)return;const awards={};for(const[r,run]of Object.entries(gs.runs||{}))awards[r]=run.awards;state.groups[g.signature]=blankGroup(g.signature);for(const[r,a]of Object.entries(awards)){state.groups[g.signature].runs[r]=normalizeRun(blankRun(),g);state.groups[g.signature].runs[r].awards=a}save()}
+function markRight(id,t){
+ const x=taskState(id,t),k=x?.current;if(!x||!k)return;
+ if(x.hadWrong||x.tries>0){if(!x.done.includes(k)&&!x.queue.includes(k))x.queue.push(k)}
+ else if(!x.done.includes(k))x.done.push(k);
+ x.current=null;x.tries=0;x.hadWrong=false;
+ if(taskDone(id,t)&&!currentRun(id).awards.tasks[t])currentRun(id).awards.tasks[t]=taskPoints(id);
+ save();
+}
+function resetGroup(id){
+ const g=groupById(id),gs=groupState(id);if(!g||!gs)return;
+ const awards={};for(const[r,run]of Object.entries(gs.runs||{}))awards[r]=run.awards;
+ state.groups[g.signature]=blankGroup(g.signature);
+ for(const[r,a]of Object.entries(awards)){state.groups[g.signature].runs[r]=normalizeRun(blankRun(),g);state.groups[g.signature].runs[r].awards=a}
+ save();
+}
 function canRepeat(id){const gs=groupState(id),run=currentRun(id);return!!gs&&gs.currentRun<3&&learnDone(id)&&Number(run.exam.bestPercent||0)>=100}
 function nextRun(id){const gs=groupState(id),g=groupById(id);if(!canRepeat(id))return false;gs.currentRun++;gs.runs[String(gs.currentRun)]=normalizeRun(blankRun(),g);save();return true}
 
@@ -149,60 +164,210 @@ function stopMic(){if(rec)try{rec.abort()}catch{}rec=null}
 function stopAudio(){try{activeAudio?.pause()}catch{}activeAudio=null;try{speechSynthesis.cancel()}catch{}}
 function bunnySlug(value){return String(value||'').trim().toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'')}
 function speech(text,slow=false){if(!('speechSynthesis'in window))return;stopAudio();const u=new SpeechSynthesisUtterance(String(text||''));u.lang='de-DE';u.rate=slow?.62:.9;speechSynthesis.speak(u)}
-function playAudio(text,slow=false){const value=String(text||'').trim();if(!value)return;const isWord=!/\s/.test(value);if(!isWord){speech(value,slow);return}stopAudio();const candidates=[`https://sprachpilot.b-cdn.net/audio/${encodeURIComponent(bunnySlug(value))}.mp3`,`https://sprachpilot.b-cdn.net/audio/${encodeURIComponent(value)}.mp3`];let i=0;const next=()=>{if(i>=candidates.length){speech(value,slow);return}const a=new Audio(candidates[i++]);activeAudio=a;a.preload='auto';a.playbackRate=slow?.78:1;a.onerror=()=>{if(activeAudio===a)activeAudio=null;next()};a.onended=()=>{if(activeAudio===a)activeAudio=null};const p=a.play();if(p&&typeof p.catch==='function')p.catch(()=>{if(activeAudio===a)activeAudio=null;next()})};next()}
+function playAudio(text,slow=false){
+ const value=String(text||'').trim();if(!value)return;stopAudio();
+ const candidates=[`https://sprachpilot.b-cdn.net/audio/${encodeURIComponent(bunnySlug(value))}.mp3`,`https://sprachpilot.b-cdn.net/audio/${encodeURIComponent(value)}.mp3`];
+ let i=0;const next=()=>{if(i>=candidates.length){speech(value,slow);return}const a=new Audio(candidates[i++]);activeAudio=a;a.preload='auto';a.playbackRate=slow?.78:1;a.onerror=()=>{if(activeAudio===a)activeAudio=null;next()};a.onended=()=>{if(activeAudio===a)activeAudio=null};const p=a.play();if(p&&typeof p.catch==='function')p.catch(()=>{if(activeAudio===a)activeAudio=null;next()})};next();
+}
 
-function header(r){const name=[profile.vorname||profile.firstName,profile.nachname||profile.lastName].filter(Boolean).join(' ')||(preview?'Lehrer-Vorschau':'Schüler');topbar.innerHTML=`<div class="topbar-main"><a class="brand" href="/verben-bereich/"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"><div><h1>Dativverben</h1><p>${ENTRIES.length} Verben · A1 bis C1</p></div></a><div class="account-actions"><span class="account-pill">${esc(name)}</span><a class="btn secondary" href="${esc(dashboardHref())}">Dashboard</a><button class="btn secondary" data-action="logout">Abmelden</button></div></div><nav class="topnav"><a class="btn secondary" href="/verben-bereich/">← Verben</a><button class="btn secondary ${r.view==='overview'?'active-nav':''}" data-action="overview">Übersicht</button>${r.group?`<button class="btn secondary" data-action="group" data-group="${r.group}">Aufgaben</button><button class="btn danger-btn" data-action="reset-group" data-group="${r.group}">Fortschritt löschen</button>`:''}</nav>`}
+function header(r){
+ const name=[profile.vorname||profile.firstName,profile.nachname||profile.lastName].filter(Boolean).join(' ')||(preview?'Lehrer-Vorschau':'Schüler');
+ const back=r.view==='overview'?'<a class="btn secondary" href="/dativverben/">← Zurück</a>':'<a class="btn secondary" href="/verben-bereich/">← Zurück</a>';
+ topbar.innerHTML=`<div class="topbar-main"><a class="brand" href="/verben-bereich/"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot"><div><h1>Dativverben</h1><p>${ENTRIES.length} Verben · A1 bis C1</p></div></a><div class="account-actions"><span class="account-pill">${esc(name)}</span><a class="btn secondary" href="${esc(dashboardHref())}">Dashboard</a><button class="btn secondary" data-action="logout">Abmelden</button></div></div><nav class="topnav">${back}${r.view!=='overview'?'<button class="btn secondary" data-action="overview">Übersicht</button>':''}${r.group?`<button class="btn secondary" data-action="group" data-group="${r.group}">Aufgaben</button><button class="btn danger-btn" data-action="reset-group" data-group="${r.group}">Fortschritt löschen</button>`:''}</nav>`;
+}
 const previewNote=()=>preview?'<div class="preview-note">Lehrer-Vorschau · alle Aufgaben und Prüfungen sind geöffnet · nichts wird gespeichert</div>':'';
-function introBox(){return`<section class="card dativ-intro"><h2>Zuerst das Verb lernen</h2><p>Aufgaben 1–5 trainieren Bedeutung, Bild, Hören und Schreiben. In Aufgaben 6–8 baust und schreibst du ganze Sätze. Der Dativ wird nur im Satz geübt.</p><p class="small"><strong>A1:</strong> nur Wortschatz aus Lektion 1–7, keine Adjektivdeklination. <strong>A1/A2:</strong> keine Dativpronomen.</p></section>`}
-function grammarBox(level){return`<section class="card dativ-rule"><h2>Dativ im Satz</h2><p>Frage: <strong>Wem?</strong> Wähle oder schreibe den richtigen Artikel direkt im Satz.</p><div class="case-grid"><span><b>der</b> → dem</span><span><b>die</b> → der</span><span><b>das</b> → dem</span><span><b>Plural</b> → den + -n</span></div>${level==='A1'||level==='A2'?'<p class="small">Hier übst du noch keine Dativpronomen.</p>':''}</section>`}
-function scoreCard(id=0){if(preview)return'';if(!id)return`<section class="card score-card compact-score"><h2>${totalPoints()} Punkte</h2><span>gesamt</span></section>`;const gs=groupState(id),run=currentRun(id);return`<section class="card score-card"><div><p class="eyebrow">${esc(groupById(id).level)}</p><h2>Runde ${gs.currentRun} von 3</h2><p>${Object.values(run.awards.tasks||{}).reduce((s,n)=>s+(Number(n)||0),0)} Aufgabenpunkte · ${Number(run.awards.examPoints)||0} Prüfungspunkte</p>${canRepeat(id)?`<button class="btn" data-action="next-run" data-group="${id}">Runde ${gs.currentRun+1} starten</button>`:''}</div><div class="score-total">${groupPoints(id)}<span>Punkte</span></div></section>`}
-function taskCards(id){const run=currentRun(id);return TASKS.map((t,i)=>{const exam=t[0]==='exam',open=!exam||preview||learnDone(id),p=exam?Number(run.exam.bestPercent)||0:taskPercent(id,t[0]);return`<button class="task-card ${p>=100?'done-card':''} ${!open?'locked-task':''}" data-action="task" data-group="${id}" data-task="${t[0]}" ${open?'':'disabled'}><span class="task-number">${i+1}</span><span class="task-icon">${open?t[1]:'🔒'}</span><span class="task-title">${esc(t[2])}</span><div class="task-mini-progress"><span style="width:${p}%"></span></div><span class="task-status">${open?(p>=100?'Fertig':p?`${p}%`:'Starten'):'Gesperrt'}</span></button>`}).join('')}
-function renderHome(selected=0){const panels=GROUPS.map(g=>{const gs=groupState(g.id),done=LEARN.filter(t=>taskDone(g.id,t)).length,exam=Number(currentRun(g.id).exam.bestPercent)||0;return`<details class="group-panel" ${selected===g.id?'open':''}><summary data-action="group" data-group="${g.id}"><span class="group-number">${g.level}</span><span>${esc(g.title)}</span><span>${g.entries.length} Verben</span><span>Runde ${gs.currentRun}/3 · ${done}/${LEARN.length} · Prüfung ${exam}%</span></summary><div class="group-body"><div class="task-grid">${taskCards(g.id)}</div></div></details>`}).join('');app.innerHTML=`${previewNote()}${introBox()}${scoreCard(selected)}<section class="card"><div class="section-head"><h2>Niveaustufen</h2><span class="overview-total">${ENTRIES.length} Verben</span></div><div class="groups-accordion">${panels}</div></section>`}
-function renderOverview(){const sections=GROUPS.map(g=>`<section class="overview-level"><div class="section-head"><h2>${esc(g.title)}</h2><span class="overview-total">${g.entries.length} Verben</span></div><div class="dativ-overview-grid">${g.entries.map(e=>`<article class="dativ-verb-card"><div class="level-chip">${e.level}</div><img class="overview-verb-image" src="${imageUrl(e)}" alt="" onerror="this.hidden=true"><h3>${esc(e.verb)}</h3><p class="verb-meaning">${esc(e.meaning)}</p><p class="source-example">${esc(e.sentence)}</p><button class="audio-mini" data-action="audio" data-text="${esc(e.verb)}">🔊 Verb</button><button class="audio-mini" data-action="audio" data-text="${esc(e.sentence)}">🔊 Satz</button></article>`).join('')}</div></section>`).join('');app.innerHTML=`${previewNote()}${introBox()}<section class="card"><div class="section-head"><h2>Übersicht</h2><span class="overview-total">${ENTRIES.length} Verben</span></div>${sections}</section>`}
+function grammarBox(level){return`<section class="card dativ-rule"><h2>Dativ im Satz</h2><p>Frage: <strong>Wem?</strong></p><div class="case-grid"><span><b>der</b> → dem</span><span><b>die</b> → der</span><span><b>das</b> → dem</span><span><b>Plural</b> → den + -n</span></div>${level==='A1'||level==='A2'?'<p class="small">Hier werden keine Dativpronomen geübt.</p>':''}</section>`}
+function scoreCard(id=0){
+ if(preview)return'';
+ if(!id)return`<section class="card score-card compact-score"><h2>${totalPoints()} Punkte</h2><span>gesamt</span></section>`;
+ const gs=groupState(id),run=currentRun(id);
+ return`<section class="card score-card"><div><p class="eyebrow">${esc(groupById(id).level)}</p><h2>Runde ${gs.currentRun} von 3</h2><p>${Object.values(run.awards.tasks||{}).reduce((s,n)=>s+(Number(n)||0),0)} Aufgabenpunkte · ${Number(run.awards.examPoints)||0} Prüfungspunkte</p>${canRepeat(id)?`<button class="btn" data-action="next-run" data-group="${id}">Runde ${gs.currentRun+1} starten</button>`:''}</div><div class="score-total">${groupPoints(id)}<span>Punkte</span></div></section>`;
+}
+function taskCards(id){
+ const run=currentRun(id);
+ return TASKS.map((t,i)=>{const exam=t[0]==='exam',open=!exam||preview||learnDone(id),p=exam?Number(run.exam.bestPercent)||0:taskPercent(id,t[0]);return`<button class="task-card ${p>=100?'done-card':''} ${!open?'locked-task':''}" data-action="task" data-group="${id}" data-task="${t[0]}" ${open?'':'disabled'}><span class="task-number">${i+1}</span><span class="task-icon">${open?t[1]:'🔒'}</span><span class="task-title">${esc(t[2])}</span><div class="task-mini-progress"><span style="width:${p}%"></span></div><span class="task-status">${open?(p>=100?'Fertig':p?`${p}%`:'Starten'):'Gesperrt'}</span></button>`}).join('');
+}
+function renderHome(selected=0){
+ const panels=GROUPS.map(g=>{const gs=groupState(g.id),done=LEARN.filter(t=>taskDone(g.id,t)).length,exam=Number(currentRun(g.id).exam.bestPercent)||0;return`<details class="group-panel" ${selected===g.id?'open':''}><summary data-action="group" data-group="${g.id}"><span class="group-number">${g.level}</span><span>${esc(g.title)}</span><span>${g.entries.length} Verben</span><span>Runde ${gs.currentRun}/3 · ${done}/${LEARN.length} · Prüfung ${exam}%</span></summary><div class="group-body"><div class="task-grid">${taskCards(g.id)}</div></div></details>`}).join('');
+ app.innerHTML=`${previewNote()}${scoreCard(selected)}<section class="card"><div class="section-head"><h2>Niveaustufen</h2><span class="overview-total">${ENTRIES.length} Verben</span></div><div class="groups-accordion">${panels}</div></section>`;
+}
+function imageOnly(e,cls='verb-picture-question'){
+ return`<div class="${cls} image-only-media"><img src="${imageUrl(e)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="image-only-fallback" hidden>Bild nicht verfügbar</div></div>`;
+}
+function renderOverview(){
+ const sections=GROUPS.map(g=>`<section class="overview-level image-only-overview"><div class="section-head"><h2>${esc(g.title)}</h2><span class="overview-total">${g.entries.length} Verben</span></div><div class="dativ-overview-grid">${g.entries.map(e=>`<article class="overview-image-only-card">${imageOnly(e,'overview-photo')}<button class="audio-icon-only" data-action="audio" data-text="${esc(e.verb)}" aria-label="Wort anhören" title="Wort anhören">🔊</button></article>`).join('')}</div></section>`).join('');
+ app.innerHTML=`${previewNote()}<section class="card"><div class="section-head"><h2>Übersicht</h2><span class="overview-total">${ENTRIES.length} Verben</span></div>${sections}</section>`;
+}
 function progress(id,t){const x=taskState(id,t),p=taskPercent(id,t);return`<div class="task-progress-row"><span>${x.done.length} richtig · ${x.total-x.done.length} übrig</span><strong>${p}%</strong></div><div class="mini-progress"><div style="width:${p}%"></div></div>`}
 function feedback(text,ok=false){const el=document.querySelector('#feedback');if(el){el.className='feedback '+(ok?'ok':'no');el.innerHTML=text}}
-function hint(tries,q){if(tries>=3)return`Lösung: <strong>${esc(q.answer)}</strong>`;if(tries===2){if(q.hintType==='verb')return`Tipp: Achte auf die Verbform. <strong>${esc(String(q.answer).slice(0,2))}…</strong>`;if(q.hintType==='dativ')return'Tipp: Frage <strong>Wem?</strong> und achte auf dem / der / den.';return'Versuche es noch einmal.'}return q.hintType==='dativ'?'Noch nicht richtig. Frage: Wem?':'Höre, sieh oder lies noch einmal genau.'}
+function hint(tries,q){
+ if(tries>=3)return`Lösung: <strong>${esc(q.solutionLabel||q.answer)}</strong>`;
+ if(tries===2){
+  if(q.hintType==='dativ')return'Tipp 2: Frage <strong>Wem?</strong>. Achte auf dem / der / den.';
+  if(q.hintType==='meaning')return`Tipp 2: Lies die Erklärung noch einmal Wort für Wort.`;
+  if(q.hintType==='conjugation')return`Tipp 2: Achte auf Stamm, Endung und bei trennbaren Verben auf den zweiten Teil.`;
+  return`Tipp 2: Die Lösung beginnt mit <strong>${esc(String(q.answer||'').slice(0,2))}…</strong>`;
+ }
+ if(q.hintType==='dativ')return'Tipp 1: Suche zuerst die Person oder Sache nach „Wem?“.';
+ if(q.hintType==='conjugation')return'Tipp 1: Prüfe jede Zeile einzeln: ich, du, er/sie/es, wir, ihr, sie/Sie.';
+ return'Tipp 1: Höre oder lies noch einmal genau.';
+}
 
-function question(id,t,e){const g=groupById(id),verbs=g.entries.map(x=>x.verb);
+function question(id,t,unit){
+ const g=groupById(id),e=unit.entry,verbs=g.entries.map(x=>x.verb),meanings=g.entries.map(x=>x.meaning);
  if(t==='listen-word')return{kind:'mc',prompt:'Welches Verb hörst du?',answer:e.verb,options:options(e.verb,verbs),audio:e.verb,hintType:'verb'};
- if(t==='listen-sentence')return{kind:'image-audio',prompt:'Welches gehörte Verb passt zum Bild?',answer:e.verb,options:options(e.verb,verbs),image:e,hintType:'verb'};
+ if(t==='listen-sentence')return{kind:'audio-choice',prompt:'Welches gehörte Verb passt zum Bild?',answer:e.verb,options:options(e.verb,verbs),image:e,hintType:'verb'};
  if(t==='listen-write')return{kind:'input',prompt:'Höre das Verb und schreibe es.',answer:e.verb,audio:e.verb,placeholder:'Verb schreiben',hintType:'verb'};
  if(t==='read-choose')return{kind:'image-mc',prompt:'Welches Verb passt zum Bild?',answer:e.verb,options:options(e.verb,verbs),image:e,hintType:'verb'};
- if(t==='read-write'){const block=buildBlocks(e);return{kind:'blocks',prompt:'Baue den richtigen Satz. Es gibt auch falsche Bausteine.',answer:block.target,parts:block.parts,bank:block.bank,hintType:'dativ',grammar:false}};
- if(t==='dativ-use'){if(entryHash(e)%2===0){const article=datArticle(e),gap=replaceFirst(e.sentence,article,'_____');return{kind:'input',prompt:'Ergänze den richtigen Dativartikel.',subprompt:gap,answer:article,placeholder:'Artikel schreiben',hintType:'dativ',grammar:true}}const gap=replaceFirst(e.sentence,e.form,'_____');return{kind:'input',prompt:'Setze das Verb richtig ein.',subprompt:gap,answer:e.form,placeholder:'Verbform schreiben',hintType:'verb',grammar:true}};
+ if(t==='verb-meaning')return{kind:'mc',prompt:`Was bedeutet „${e.verb}“?`,answer:e.meaning,options:options(e.meaning,meanings),hintType:'meaning'};
+ if(t==='meaning-verb')return{kind:'mc',prompt:'Welches Verb passt zu dieser Bedeutung?',subprompt:e.meaning,answer:e.verb,options:options(e.verb,verbs),hintType:'meaning'};
+ if(t==='conjugate')return{kind:'conjugation',prompt:`Konjugiere „${e.verb}“.`,answer:e.verb,forms:CONJ[e.verb],hintType:'conjugation',solutionLabel:(CONJ[e.verb]||[]).join(' · ')};
+ if(t==='read-write'){const block=buildBlocks(e);return{kind:'blocks',prompt:'Baue den richtigen Satz. Es gibt auch falsche Bausteine.',answer:block.target,bank:block.bank,hintType:'dativ'};}
+ if(t==='dativ-use')return{kind:'input',prompt:unit.prompt,subprompt:unit.text,answer:unit.answer,placeholder:unit.hintType==='dativ'?'Artikel schreiben':'Verbform schreiben',hintType:unit.hintType,grammar:true};
  if(t==='context-write')return{kind:'sentence-write',prompt:'Schreibe mit den Wörtern einen richtigen Satz.',answer:e.sentence,cues:sentenceCues(e),placeholder:'Ganzen Satz schreiben',hintType:'dativ',grammar:true};
  return{kind:'input',prompt:'Verb',answer:e.verb,hintType:'verb'};
 }
-function cardImage(e){return`<div class="dativ-card-image"><img src="${imageUrl(e)}" alt="" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="dativ-image-fallback" hidden><span>Bedeutung</span><strong>${esc(e.meaning)}</strong></div></div>`}
-function imageQuestion(e){return`<div class="verb-picture-question">${cardImage(e)}</div>`}
-function body(q){const media=q.audio?`<div class="listen-box"><button class="btn" data-action="audio" data-text="${esc(q.audio)}">🔊 Hören</button><button class="btn secondary" data-action="audio-slow" data-text="${esc(q.audio)}">Langsam</button></div>`:'',sub=q.subprompt?`<div class="question-sub">${esc(q.subprompt)}</div>`:'',image=q.image?imageQuestion(q.image):'';let answer='';if(q.kind==='mc'||q.kind==='image-mc')answer=`<div class="option-grid">${q.options.map(o=>`<button class="option" data-action="answer" data-answer="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;if(q.kind==='image-audio')answer=`<div class="audio-option-grid">${q.options.map((o,i)=>`<div class="audio-option"><span>Variante ${i+1}</span><button class="btn secondary" data-action="audio-option-play" data-text="${esc(o)}">🔊 Anhören</button><button class="btn" data-action="answer" data-answer="${esc(o)}">Auswählen</button></div>`).join('')}</div>`;if(q.kind==='input'||q.kind==='sentence-write')answer=`${q.kind==='sentence-write'?`<div class="cue-row">${q.cues.map(x=>`<span class="cue-chip">${esc(x)}</span>`).join('')}</div>`:''}<div class="answer-form"><div class="answer-row"><input id="answerInput" autocomplete="off" placeholder="${esc(q.placeholder||'Antwort schreiben')}"><button class="btn" data-action="check-input">Kontrollieren</button></div></div>`;if(q.kind==='blocks')answer=`<div id="blockAnswer" class="block-answer" aria-live="polite"><span class="block-placeholder">Bausteine hier auswählen</span></div><div class="block-bank">${q.bank.map((x,i)=>`<button class="block-chip" data-action="block-word" data-index="${i}" data-word="${esc(x)}">${esc(x)}</button>`).join('')}</div><div class="actions"><button class="btn" data-action="check-blocks">Kontrollieren</button><button class="btn secondary" data-action="clear-blocks">Neu ordnen</button></div>`;return`${media}${image}<div class="question">${esc(q.prompt)}</div>${sub}${answer}<div id="feedback"></div>`}
+function body(q){
+ const media=q.audio?`<div class="listen-box"><button class="btn" data-action="audio" data-text="${esc(q.audio)}">🔊 Hören</button></div>`:'';
+ const sub=q.subprompt?`<div class="question-sub gap-context">${esc(q.subprompt)}</div>`:'';
+ const image=q.image?imageOnly(q.image):'';
+ let answer='';
+ if(q.kind==='mc'||q.kind==='image-mc')answer=`<div class="option-grid">${q.options.map(o=>`<button class="option" data-action="answer" data-answer="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+ if(q.kind==='audio-choice')answer=`<div class="audio-choice-grid">${q.options.map((o,i)=>`<button class="audio-choice" data-action="select-audio" data-value="${esc(o)}" data-index="${i}" aria-label="Verb anhören und auswählen">🔊 <span>Anhören</span></button>`).join('')}</div><div class="actions centered-actions"><button class="btn" data-action="check-audio-choice">Kontrollieren</button></div>`;
+ if(q.kind==='input'||q.kind==='sentence-write')answer=`${q.kind==='sentence-write'?`<div class="cue-row">${q.cues.map(x=>`<span class="cue-chip">${esc(x)}</span>`).join('')}</div>`:''}<div class="answer-form"><div class="answer-row"><input id="answerInput" autocomplete="off" placeholder="${esc(q.placeholder||'Antwort schreiben')}"><button class="btn" data-action="check-input">Kontrollieren</button></div></div>`;
+ if(q.kind==='blocks')answer=`<div id="blockAnswer" class="block-answer" aria-live="polite"><span class="block-placeholder">Bausteine hier auswählen</span></div><div class="block-bank">${q.bank.map((x,i)=>`<button class="block-chip" data-action="block-word" data-index="${i}" data-word="${esc(x)}">${esc(x)}</button>`).join('')}</div><div class="actions"><button class="btn" data-action="check-blocks">Kontrollieren</button><button class="btn secondary" data-action="clear-blocks">Neu ordnen</button></div>`;
+ if(q.kind==='conjugation')answer=`<div class="conjugation-wrap"><table class="conjugation-table"><thead><tr><th>Pronomen</th><th>Verbform</th></tr></thead><tbody>${PRONOUNS.map((p,i)=>`<tr><th>${esc(p)}</th><td><input class="conj-input" data-conj-index="${i}" autocomplete="off" aria-label="${esc(p)}"></td></tr>`).join('')}</tbody></table><button class="btn" data-action="check-conjugation">Kontrollieren</button></div>`;
+ return`${media}${image}<div class="question">${esc(q.prompt)}</div>${sub}${answer}<div id="feedback"></div>`;
+}
 
-function renderCards(id){const e=nextEntry(id,'cards');if(!e)return finishTask(id,'cards');currentCardEntry=e;currentQuestion={answer:e.verb,hintType:'verb'};cardRevealed=false;app.innerHTML=`<section class="card task-page card-standard-page"><div class="task-page-head"><div><p class="eyebrow">${esc(groupById(id).level)}</p><h2>Aufgabe 1 · Karteikarten</h2></div><button class="btn secondary" data-action="group" data-group="${id}">Aufgaben</button></div>${progress(id,'cards')}<div class="card-learning-note">Sieh das Bild und die Bedeutung. Drehe die Karte um. Danach sprich oder schreibe das Verb richtig.</div><div class="flip-wrap"><div id="verbFlipCard" class="flip-card dativ-standard-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="flip-face flip-front"><div class="dativ-card-front-standard">${cardImage(e)}<div class="card-translation-box"><span>Bedeutung</span><strong>${esc(e.meaning)}</strong></div></div></div><div class="flip-face flip-back"><div class="flip-back-grid dativ-flip-back-grid"><div class="flip-back-image">${cardImage(e)}</div><div class="flip-back-info"><div class="flip-word">${esc(e.verb)}</div><div class="card-details"><div><span>Beispiel</span><strong>${esc(e.sentence)}</strong></div></div><button type="button" class="btn secondary card-listen-btn" data-action="audio" data-text="${esc(e.verb)}">🔊 Verb anhören</button><button type="button" class="btn secondary card-listen-btn" data-action="audio" data-text="${esc(e.sentence)}">🔊 Satz anhören</button></div></div></div></div></div><div id="cardActions" class="actions card-actions" hidden><button class="btn" data-action="card-mic">🎤 Sprechen</button><button class="btn secondary" data-action="card-write">✍️ Schreiben</button></div><div id="cardAnswerBox" class="answer-form hidden"><div class="answer-row"><input id="cardAnswerInput" autocomplete="off" placeholder="Verb im Infinitiv"><button class="btn" data-action="card-check">Kontrollieren</button></div></div><div id="feedback" class="feedback"></div></section>`;const flip=document.querySelector('#verbFlipCard');const reveal=()=>{if(cardRevealed)return;cardRevealed=true;flip.classList.add('flipped');document.querySelector('#cardActions').hidden=false};flip.addEventListener('click',reveal);flip.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();reveal()}})}
-function cardCorrect(value){const r=route(),e=currentCardEntry;if(!r.group||!e)return;if(answerNorm(value)===answerNorm(e.verb)){feedback('Richtig.',true);markRight(r.group,'cards');setTimeout(()=>renderCards(r.group),450)}else{const tries=markWrong(r.group,'cards');feedback(hint(tries,{answer:e.verb,hintType:'verb'}))}}
+function renderCards(id){
+ const unit=nextUnit(id,'cards');if(!unit)return finishTask(id,'cards');const e=unit.entry;
+ currentCardEntry=e;currentQuestion={answer:e.verb,hintType:'verb'};cardRevealed=false;
+ app.innerHTML=`<section class="card task-page card-standard-page"><div class="task-page-head"><div><p class="eyebrow">${esc(groupById(id).level)}</p><h2>Aufgabe 1 · Karteikarten</h2></div><button class="btn secondary" data-action="group" data-group="${id}">Aufgaben</button></div>${progress(id,'cards')}<div class="card-learning-note">Sieh das Bild. Drehe die Karte um. Danach sprich oder schreibe das Verb richtig.</div><div class="flip-wrap"><div id="verbFlipCard" class="flip-card dativ-standard-card" role="button" tabindex="0" aria-label="Karte umdrehen"><div class="flip-face flip-front"><div class="dativ-card-front-standard card-front-image-only">${imageOnly(e,'card-photo-only')}</div></div><div class="flip-face flip-back"><div class="flip-back-info card-back-text-only"><div class="flip-word">${esc(e.verb)}</div><div class="card-details"><div><span>Beispiel</span><strong>${esc(e.sentence)}</strong></div></div><button type="button" class="btn secondary card-listen-btn" data-action="audio" data-text="${esc(e.verb)}">🔊 Verb anhören</button></div></div></div></div><div id="cardActions" class="actions card-actions" hidden><button class="btn" data-action="card-mic">🎤 Sprechen</button><button class="btn secondary" data-action="card-write">✍️ Schreiben</button></div><div id="cardAnswerBox" class="answer-form hidden"><div class="answer-row"><input id="cardAnswerInput" autocomplete="off" placeholder="Verb im Infinitiv"><button class="btn" data-action="card-check">Kontrollieren</button></div></div><div id="feedback" class="feedback"></div></section>`;
+ const flip=document.querySelector('#verbFlipCard');const reveal=()=>{if(cardRevealed)return;cardRevealed=true;flip.classList.add('flipped');document.querySelector('#cardActions').hidden=false};flip.addEventListener('click',reveal);flip.addEventListener('keydown',ev=>{if(ev.key==='Enter'||ev.key===' '){ev.preventDefault();reveal()}});
+}
+function cardCorrect(value){const r=route(),e=currentCardEntry;if(!r.group||!e)return;if(answerNorm(value)===answerNorm(e.verb)){feedback('Richtig.',true);markRight(r.group,'cards');setTimeout(()=>renderCards(r.group),350)}else{const tries=markWrong(r.group,'cards');feedback(hint(tries,{answer:e.verb,hintType:'verb'}))}}
 function startRecognition(expected,onResult,onFallback){const SR=window.SpeechRecognition||window.webkitSpeechRecognition;if(!SR){onFallback?.();return}try{stopMic();rec=new SR();rec.lang='de-DE';rec.interimResults=false;rec.continuous=false;rec.onresult=e=>onResult(e.results?.[0]?.[0]?.transcript||'');rec.onerror=()=>onFallback?.();rec.onnomatch=()=>onFallback?.();rec.onend=()=>{rec=null};rec.start()}catch{onFallback?.()}}
 function cardMic(){const s=document.querySelector('#feedback');if(s){s.className='feedback';s.textContent='Ich höre zu …'}startRecognition(currentCardEntry?.verb,text=>cardCorrect(text),()=>{document.querySelector('#cardAnswerBox')?.classList.remove('hidden');document.querySelector('#cardAnswerInput')?.focus();feedback('Mikrofon nicht verfügbar. Schreibe das Verb.')})}
 function cardWrite(){document.querySelector('#cardAnswerBox')?.classList.remove('hidden');document.querySelector('#cardAnswerInput')?.focus()}
-function renderTask(id,t){if(t==='exam')return renderExam(id);if(taskDone(id,t))return finishTask(id,t);if(t==='cards')return renderCards(id);const e=nextEntry(id,t);if(!e)return finishTask(id,t);currentQuestion=question(id,t,e);app.innerHTML=`${currentQuestion.grammar?grammarBox(groupById(id).level):''}<section class="card task-page"><div class="task-page-head"><div><p class="eyebrow">${esc(groupById(id).level)}</p><h2>${esc(TITLE[t])}</h2></div><button class="btn secondary" data-action="group" data-group="${id}">Aufgaben</button></div>${progress(id,t)}<div class="question-card">${body(currentQuestion)}</div></section>`;setTimeout(()=>document.querySelector('#answerInput')?.focus(),50)}
+
+function renderTask(id,t){
+ if(t==='exam')return renderExam(id);
+ if(taskDone(id,t))return finishTask(id,t);
+ if(t==='cards')return renderCards(id);
+ const unit=nextUnit(id,t);if(!unit)return finishTask(id,t);
+ currentQuestion=question(id,t,unit);
+ app.innerHTML=`${currentQuestion.grammar?grammarBox(groupById(id).level):''}<section class="card task-page"><div class="task-page-head"><div><p class="eyebrow">${esc(groupById(id).level)}</p><h2>${esc(TITLE[t])}</h2></div><button class="btn secondary" data-action="group" data-group="${id}">Aufgaben</button></div>${progress(id,t)}<div class="question-card">${body(currentQuestion)}</div></section>`;
+ setTimeout(()=>document.querySelector('#answerInput,.conj-input')?.focus(),40);
+}
 function finishTask(id,t){const gs=groupState(id),pts=Number(currentRun(id).awards.tasks[t])||0,next=LEARN[LEARN.indexOf(t)+1]||'exam';app.innerHTML=`<section class="card"><div class="finish-box"><div class="finish-icon">✓</div><h2>Gut gemacht!</h2><p>${pts} Punkte · Runde ${gs.currentRun}</p><div class="actions"><button class="btn" data-action="task" data-group="${id}" data-task="${next}">Weiter</button><button class="btn secondary" data-action="group" data-group="${id}">Aufgaben</button></div></div></section>`}
 function isCorrect(value,q){return answerNorm(value)===answerNorm(q.answer)}
-function checkTask(value){const r=route(),q=currentQuestion;if(!r.group||!r.task||!q)return;if(isCorrect(value,q)){feedback('Richtig.',true);markRight(r.group,r.task);setTimeout(()=>renderTask(r.group,r.task),450)}else{const tries=markWrong(r.group,r.task);feedback(hint(tries,q))}}
+function checkTask(value){const r=route(),q=currentQuestion;if(!r.group||!r.task||!q)return;if(isCorrect(value,q)){feedback('Richtig.',true);markRight(r.group,r.task);setTimeout(()=>renderTask(r.group,r.task),350)}else{const tries=markWrong(r.group,r.task);feedback(hint(tries,q))}}
 function answerFromInput(){const value=document.querySelector('#answerInput')?.value||'';route().task==='exam'?checkExam(value):checkTask(value)}
+
+let selectedAudioValue='';
+function selectAudio(button){document.querySelectorAll('.audio-choice').forEach(b=>b.classList.remove('selected'));button.classList.add('selected');selectedAudioValue=button.dataset.value||'';playAudio(selectedAudioValue)}
+function checkAudioChoice(){if(!selectedAudioValue){feedback('Wähle zuerst ein gehörtes Verb aus.');return}route().task==='exam'?checkExam(selectedAudioValue):checkTask(selectedAudioValue);selectedAudioValue=''}
+
 function selectedBlockText(){return[...document.querySelectorAll('#blockAnswer .selected-block')].map(el=>el.dataset.word||'').join(' ')}
 function addBlock(button){const host=document.querySelector('#blockAnswer');if(!host||button.disabled)return;host.querySelector('.block-placeholder')?.remove();const chip=document.createElement('button');chip.type='button';chip.className='selected-block';chip.dataset.word=button.dataset.word||'';chip.dataset.sourceIndex=button.dataset.index||'';chip.dataset.action='block-remove';chip.textContent=button.dataset.word||'';host.appendChild(chip);button.disabled=true}
 function removeBlock(button){const i=button.dataset.sourceIndex;const source=document.querySelector(`.block-chip[data-index="${CSS.escape(i||'')}"]`);if(source)source.disabled=false;button.remove();const host=document.querySelector('#blockAnswer');if(host&&!host.querySelector('.selected-block'))host.innerHTML='<span class="block-placeholder">Bausteine hier auswählen</span>'}
 function clearBlocks(){document.querySelectorAll('.block-chip').forEach(b=>b.disabled=false);const host=document.querySelector('#blockAnswer');if(host)host.innerHTML='<span class="block-placeholder">Bausteine hier auswählen</span>'}
 function checkBlocks(){const value=selectedBlockText();route().task==='exam'?checkExam(value):checkTask(value)}
 
-function examItems(id){const g=groupById(id),lex=['listen-word','listen-sentence','listen-write','read-choose','read-write','context-write'],items=[],entries=shuffle(g.entries);for(let i=0;i<14;i++)items.push({key:entryKey(entries[i%entries.length]),task:lex[i%lex.length]});for(let i=0;i<6;i++)items.push({key:entryKey(entries[(i+3)%entries.length]),task:'dativ-use'});return shuffle(items)}
-function renderExam(id){if(!preview&&!learnDone(id)){app.innerHTML=`<section class="card locked-card"><h2>Prüfung gesperrt</h2><p>Bearbeite zuerst alle acht Lernaufgaben zu 100 %.</p><button class="btn" data-action="group" data-group="${id}">Aufgaben</button></section>`;return}const run=currentRun(id),ex=run.exam;if(!ex.session){app.innerHTML=`<section class="card"><div class="finish-box"><div class="finish-icon">★</div><h2>Gruppenprüfung</h2><p>Die Prüfung testet die Verben mit Hören, Bildern und Schreiben und danach die Anwendung im Satz.</p><p>Bester Stand: ${ex.bestPercent||0}%</p><button class="btn" data-action="start-exam" data-group="${id}">Starten</button><button class="btn secondary" data-action="group" data-group="${id}">Aufgaben</button></div></section>`;return}if(ex.session.index>=ex.session.items.length)return finishExam(id);const item=ex.session.items[ex.session.index],e=entryByKey(item.key);currentQuestion=question(id,item.task,e);const p=Math.round(ex.session.index/ex.session.items.length*100);app.innerHTML=`${currentQuestion.grammar?grammarBox(groupById(id).level):''}<section class="card task-page"><div class="task-page-head"><div><p class="eyebrow">${esc(groupById(id).level)}</p><h2>Gruppenprüfung</h2></div><button class="btn secondary" data-action="group" data-group="${id}">Abbrechen</button></div><div class="task-progress-row"><span>${ex.session.index+1}/${ex.session.items.length}</span><strong>${p}%</strong></div><div class="mini-progress"><div style="width:${p}%"></div></div><div class="question-card">${body(currentQuestion)}</div></section>`}
-function startExam(id){currentRun(id).exam.session={items:examItems(id),index:0,correct:0};save();renderExam(id)}
-function checkExam(value){const r=route(),ex=currentRun(r.group).exam,q=currentQuestion;if(!ex.session||!q)return;const good=isCorrect(value,q);if(good)ex.session.correct++;feedback(good?'Richtig.':`Lösung: <strong>${esc(q.answer)}</strong>`,good);ex.session.index++;save();setTimeout(()=>renderExam(r.group),500)}
-function finishExam(id){const run=currentRun(id),session=run.exam.session,total=session?.items?.length||1,correct=session?.correct||0,p=Math.round(correct/total*100),stars=p>=100?3:p>=70?2:p>=50?1:0;run.exam.session=null;run.exam.bestPercent=Math.max(Number(run.exam.bestPercent)||0,p);run.exam.stars=Math.max(Number(run.exam.stars)||0,stars);const max=groupState(id).currentRun*100,earned=Math.round(max*p/100);run.awards.examPoints=Math.max(Number(run.awards.examPoints)||0,earned);run.completed=learnDone(id)&&run.exam.bestPercent>=100;save();app.innerHTML=`<section class="card"><div class="finish-box"><div class="finish-icon">✓</div><h2>${p}%</h2><div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><p>${correct}/${total} richtig</p><div class="actions"><button class="btn" data-action="start-exam" data-group="${id}">Noch einmal</button><button class="btn secondary" data-action="group" data-group="${id}">Aufgaben</button>${canRepeat(id)?`<button class="btn" data-action="next-run" data-group="${id}">Runde ${groupState(id).currentRun+1}</button>`:''}</div></div></section>`}
-function render(){stopMic();stopAudio();const r=route();header(r);if(locked){app.innerHTML='<section class="card locked-card"><h2>Dativverben sind gesperrt</h2><a class="btn" href="/verben-bereich/">Zurück zu Verben</a></section>';return}if(r.view==='overview')return renderOverview();if(r.group&&r.task)return renderTask(r.group,r.task);renderHome(r.group)}
+function conjugationValues(){return[...document.querySelectorAll('.conj-input')].map(i=>i.value||'')}
+function checkConjugation(){
+ const q=currentQuestion,r=route(),values=conjugationValues(),forms=q?.forms||[];
+ if(!q||!forms.length)return;
+ const wrong=[];values.forEach((v,i)=>{const input=document.querySelector(`.conj-input[data-conj-index="${i}"]`);const ok=answerNorm(v)===answerNorm(forms[i]);input?.classList.toggle('wrong-input',!ok);input?.classList.toggle('right-input',ok);if(!ok)wrong.push(i)});
+ if(!wrong.length){
+  feedback('Alles richtig.',true);
+  if(r.task==='exam')return checkExamConjugation(true);
+  markRight(r.group,r.task);setTimeout(()=>renderTask(r.group,r.task),450);return;
+ }
+ if(r.task==='exam')return checkExamConjugation(false);
+ const tries=markWrong(r.group,r.task);
+ if(tries>=3)feedback(`Lösung:<div class="conj-solution">${PRONOUNS.map((p,i)=>`<span><b>${esc(p)}</b> ${esc(forms[i])}</span>`).join('')}</div>`);
+ else feedback(hint(tries,q));
+}
 
-document.addEventListener('click',e=>{const b=e.target.closest('[data-action]');if(!b)return;const a=b.dataset.action,g=Number(b.dataset.group)||0,t=b.dataset.task||'';if(a==='logout')return logout();if(a==='overview')return go({view:'overview'});if(a==='group')return go({group:g});if(a==='task')return go({group:g,task:t});if(a==='reset-group'){if(!preview&&confirm(`Fortschritt von ${groupById(g)?.level||'dieser Gruppe'} löschen? Bereits verdiente Punkte bleiben erhalten.`)){resetGroup(g);render()}return}if(a==='next-run'){if(confirm(`Runde ${groupState(g).currentRun+1} starten?`)&&nextRun(g))go({group:g});return}if(a==='audio'||a==='audio-option-play')return playAudio(b.dataset.text||'',false);if(a==='audio-slow')return playAudio(b.dataset.text||'',true);if(a==='answer')return route().task==='exam'?checkExam(b.dataset.answer||''):checkTask(b.dataset.answer||'');if(a==='check-input')return answerFromInput();if(a==='block-word')return addBlock(b);if(a==='block-remove')return removeBlock(b);if(a==='clear-blocks')return clearBlocks();if(a==='check-blocks')return checkBlocks();if(a==='card-mic')return cardMic();if(a==='card-write')return cardWrite();if(a==='card-check')return cardCorrect(document.querySelector('#cardAnswerInput')?.value||'');if(a==='start-exam'){go({group:g,task:'exam'});return startExam(g)}});
-document.addEventListener('keydown',e=>{if(e.key!=='Enter')return;if(e.target?.id==='answerInput'){e.preventDefault();answerFromInput()}if(e.target?.id==='cardAnswerInput'){e.preventDefault();cardCorrect(e.target.value)}});
+function examItems(id){
+ const g=groupById(id),lex=['listen-word','listen-sentence','listen-write','read-choose','verb-meaning','meaning-verb'],items=[],entries=shuffle(g.entries);
+ for(let i=0;i<14;i++)items.push({key:entryKey(entries[i%entries.length]),task:lex[i%lex.length]});
+ for(let i=0;i<3;i++)items.push({key:entryKey(entries[(i+2)%entries.length]),task:'read-write'});
+ for(let i=0;i<3;i++)items.push({key:entryKey(entries[(i+5)%entries.length]),task:i===2?'context-write':'dativ-use'});
+ return shuffle(items);
+}
+function examUnit(id,item){
+ const g=groupById(id),e=entryByKey(item.key);if(!e)return null;
+ if(item.task==='dativ-use'){const rows=g.level==='A1'?a1GapUnits(e):genericGapUnits(e);return rows[(item.key.length+item.task.length)%rows.length]||rows[0]}
+ return{id:item.key,entry:e};
+}
+function renderExam(id){
+ if(!preview&&!learnDone(id)){app.innerHTML=`<section class="card locked-card"><h2>Prüfung gesperrt</h2><p>Bearbeite zuerst alle elf Lernaufgaben zu 100 %.</p><button class="btn" data-action="group" data-group="${id}">Aufgaben</button></section>`;return}
+ const run=currentRun(id),ex=run.exam;
+ if(!ex.session){app.innerHTML=`<section class="card"><div class="finish-box"><div class="finish-icon">★</div><h2>Gruppenprüfung</h2><p>Die Prüfung testet Hören, Bilder, Bedeutungen und die Anwendung im Satz.</p><p>Bester Stand: ${ex.bestPercent||0}%</p><button class="btn" data-action="start-exam" data-group="${id}">Starten</button><button class="btn secondary" data-action="group" data-group="${id}">Aufgaben</button></div></section>`;return}
+ if(ex.session.index>=ex.session.items.length)return finishExam(id);
+ const item=ex.session.items[ex.session.index],unit=examUnit(id,item);currentQuestion=question(id,item.task,unit);selectedAudioValue='';
+ const p=Math.round(ex.session.index/ex.session.items.length*100);
+ app.innerHTML=`${currentQuestion.grammar?grammarBox(groupById(id).level):''}<section class="card task-page"><div class="task-page-head"><div><p class="eyebrow">${esc(groupById(id).level)}</p><h2>Gruppenprüfung</h2></div><button class="btn secondary" data-action="group" data-group="${id}">Abbrechen</button></div><div class="task-progress-row"><span>${ex.session.index+1}/${ex.session.items.length}</span><strong>${p}%</strong></div><div class="mini-progress"><div style="width:${p}%"></div></div><div class="question-card">${body(currentQuestion)}</div></section>`;
+}
+function startExam(id){currentRun(id).exam.session={items:examItems(id),index:0,correct:0};save();renderExam(id)}
+function checkExam(value){const r=route(),ex=currentRun(r.group).exam,q=currentQuestion;if(!ex.session||!q)return;const good=isCorrect(value,q);if(good)ex.session.correct++;feedback(good?'Richtig.':`Lösung: <strong>${esc(q.answer)}</strong>`,good);ex.session.index++;save();setTimeout(()=>renderExam(r.group),450)}
+function checkExamConjugation(good){const r=route(),ex=currentRun(r.group).exam;if(!ex.session)return;if(good)ex.session.correct++;feedback(good?'Richtig.':'Nicht vollständig richtig.',good);ex.session.index++;save();setTimeout(()=>renderExam(r.group),450)}
+function finishExam(id){
+ const run=currentRun(id),session=run.exam.session,total=session?.items?.length||1,correct=session?.correct||0,p=Math.round(correct/total*100),stars=p>=100?3:p>=70?2:p>=50?1:0;
+ run.exam.session=null;run.exam.bestPercent=Math.max(Number(run.exam.bestPercent)||0,p);run.exam.stars=Math.max(Number(run.exam.stars)||0,stars);
+ const max=groupState(id).currentRun*100,earned=Math.round(max*p/100);run.awards.examPoints=Math.max(Number(run.awards.examPoints)||0,earned);run.completed=learnDone(id)&&run.exam.bestPercent>=100;save();
+ app.innerHTML=`<section class="card"><div class="finish-box"><div class="finish-icon">✓</div><h2>${p}%</h2><div class="stars">${'★'.repeat(stars)}${'☆'.repeat(3-stars)}</div><p>${correct}/${total} richtig</p><div class="actions"><button class="btn" data-action="start-exam" data-group="${id}">Noch einmal</button><button class="btn secondary" data-action="group" data-group="${id}">Aufgaben</button>${canRepeat(id)?`<button class="btn" data-action="next-run" data-group="${id}">Runde ${groupState(id).currentRun+1}</button>`:''}</div></div></section>`;
+}
+
+function render(){
+ stopMic();stopAudio();selectedAudioValue='';
+ const r=route();header(r);
+ if(locked){app.innerHTML='<section class="card locked-card"><h2>Dativverben sind gesperrt</h2><a class="btn" href="/verben-bereich/">Zurück</a></section>';return}
+ if(r.view==='overview')return renderOverview();
+ if(r.group&&r.task)return renderTask(r.group,r.task);
+ renderHome(r.group);
+}
+
+document.addEventListener('click',e=>{
+ const b=e.target.closest('[data-action]');if(!b)return;
+ const a=b.dataset.action,g=Number(b.dataset.group)||0,t=b.dataset.task||'';
+ if(a==='logout')return logout();
+ if(a==='overview')return go({view:'overview'});
+ if(a==='group')return go({group:g});
+ if(a==='task')return go({group:g,task:t});
+ if(a==='reset-group'){if(!preview&&confirm(`Fortschritt von ${groupById(g)?.level||'dieser Gruppe'} löschen? Bereits verdiente Punkte bleiben erhalten.`)){resetGroup(g);render()}return}
+ if(a==='next-run'){if(confirm(`Runde ${groupState(g).currentRun+1} starten?`)&&nextRun(g))go({group:g});return}
+ if(a==='audio')return playAudio(b.dataset.text||'');
+ if(a==='answer')return route().task==='exam'?checkExam(b.dataset.answer||''):checkTask(b.dataset.answer||'');
+ if(a==='select-audio')return selectAudio(b);
+ if(a==='check-audio-choice')return checkAudioChoice();
+ if(a==='check-input')return answerFromInput();
+ if(a==='block-word')return addBlock(b);
+ if(a==='block-remove')return removeBlock(b);
+ if(a==='clear-blocks')return clearBlocks();
+ if(a==='check-blocks')return checkBlocks();
+ if(a==='check-conjugation')return checkConjugation();
+ if(a==='card-mic')return cardMic();
+ if(a==='card-write')return cardWrite();
+ if(a==='card-check')return cardCorrect(document.querySelector('#cardAnswerInput')?.value||'');
+ if(a==='start-exam'){go({group:g,task:'exam'});return startExam(g)}
+});
+document.addEventListener('keydown',e=>{
+ if(e.key!=='Enter')return;
+ if(e.target?.id==='answerInput'){e.preventDefault();answerFromInput()}
+ if(e.target?.id==='cardAnswerInput'){e.preventDefault();cardCorrect(e.target.value)}
+});
 window.addEventListener('popstate',render);
 
-async function init(){const user=requireLogin();if(!user)return;profile=getActiveProfile()||{};const role=String(getActiveRole()||'').toLowerCase();preview=role==='teacher'||role==='owner';try{const raw=sessionStorage.getItem('SP_TEACHER_PREVIEW');if(raw==='1'||JSON.parse(raw||'null')?.teacherPreview===true)preview=true}catch{}try{const assignments=await loadCourseRelease(profile);locked=!preview&&!moduleOpen(assignments,'Dativverben')}catch{locked=!preview}load();render()}
+async function init(){
+ const user=requireLogin();if(!user)return;
+ profile=getActiveProfile()||{};
+ const role=String(getActiveRole()||'').toLowerCase();preview=role==='teacher'||role==='owner'||role==='lehrer'||role==='admin';
+ try{const raw=sessionStorage.getItem('SP_TEACHER_PREVIEW');if(raw==='1'||JSON.parse(raw||'null')?.teacherPreview===true)preview=true}catch{}
+ try{const assignments=await loadCourseRelease(profile);locked=!preview&&!moduleOpen(assignments,'Dativverben')}catch{locked=!preview}
+ load();render();
+}
 init().catch(error=>{console.error(error);app.innerHTML='<section class="card"><h2>Dativverben konnten nicht geladen werden</h2><p>Bitte lade die Seite neu.</p><button class="btn" onclick="location.reload()">Neu laden</button></section>'});
