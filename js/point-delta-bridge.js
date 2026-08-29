@@ -1,7 +1,7 @@
 import { db, doc, getDoc, getDocFromServer, updateDoc, increment, serverTimestamp } from '/js/firebase.js';
 import { getActiveProfile } from '/js/auth.js';
 
-const STATE_KEY='__SP_POINT_DELTA_BRIDGE_V4_STATE';
+const STATE_KEY='__SP_POINT_DELTA_BRIDGE_V5_STATE';
 const PENDING_KEY='SP_POINT_DELTA_PENDING_V2';
 const MODULE_ALIASES={'fragen-a1':'fragen','verben-a1':'verben','irregulare-verben':'verben'};
 const clamp=v=>Math.max(0,Math.min(100,Math.round(Number(v)||0)));
@@ -12,6 +12,7 @@ window[STATE_KEY]=state;
 window.__SP_POINT_DELTA_BRIDGE_V2=true;
 window.__SP_POINT_DELTA_BRIDGE_V3=true;
 window.__SP_POINT_DELTA_BRIDGE_V4=true;
+window.__SP_POINT_DELTA_BRIDGE_V5=true;
 
 function moduleKey(v){const k=clean(v||'wortschatz');return MODULE_ALIASES[k]||k}
 function topicId(p={}){return p.topicId||p.themeId||clean([p.module||'wortschatz',p.level||'A1','lektion',p.lesson||p.lektion||'', 'thema',p.theme||p.thema||''].filter(Boolean).join('_'))}
@@ -35,7 +36,7 @@ async function incrementTo(id,desired,detail={}){
       await updateDoc(doc(db,'progress',id),{
         pointsTotal:increment(gap),lifetimePoints:increment(gap),punkteGesamt:increment(gap),
         'totals.points':increment(gap),'ranking.points':increment(gap),
-        'metadata.pointDeltaBridgeVersion':4,
+        'metadata.pointDeltaBridgeVersion':5,
         'metadata.pointDeltaLastAt':serverTimestamp(),
         'metadata.pointDeltaLastDetail':{...detail,delta:gap,desired:Number(desired)||0}
       });
@@ -61,10 +62,11 @@ async function applyGap(result,beforeStored,delta,detail){
 
 function patchApi(api){
   if(!api||typeof api!=='object')return api;
-  if(api.__deltaBridgeV4)return api;
+  if(api.__deltaBridgeV5)return api;
   const rawTask=api.recordTaskProgress?.bind(api),rawExam=api.recordExamResult?.bind(api);
   if(typeof rawTask!=='function'||typeof rawExam!=='function')return api;
   api.recordTaskProgress=async function(payload={}){
+    if(payload.suppressGlobalPointDelta===true)return rawTask(payload);
     const completed=!!payload.completed||clamp(payload.percent??payload.progress??0)>=100;
     if(!completed)return rawTask(payload);
     const module=moduleKey(payload.module||'wortschatz'),id=topicId({...payload,module}),run=api.currentRun?.(id)||1,rawKey=payload.file||payload.taskKey||payload.taskTitle||'task',lock=`task|${module}|${id}|${clean(rawKey)}|${run}`;
@@ -79,6 +81,7 @@ function patchApi(api){
     })().finally(()=>state.locks.delete(lock));state.locks.set(lock,job);return job;
   };
   api.recordExamResult=async function(payload={}){
+    if(payload.suppressGlobalPointDelta===true)return rawExam(payload);
     const module=moduleKey(payload.module||'wortschatz'),id=topicId({...payload,module}),run=api.currentRun?.(id)||1,lock=`exam|${module}|${id}|${run}`;
     if(state.locks.has(lock))return state.locks.get(lock);
     const job=(async()=>{
@@ -90,12 +93,12 @@ function patchApi(api){
       return applyGap(result,beforeTotal,delta,{type:'exam',module,topicId:id,run,percent:pct});
     })().finally(()=>state.locks.delete(lock));state.locks.set(lock,job);return job;
   };
-  api.__deltaBridgeV2=true;api.__deltaBridgeV3=true;api.__deltaBridgeV4=true;
+  api.__deltaBridgeV2=true;api.__deltaBridgeV3=true;api.__deltaBridgeV4=true;api.__deltaBridgeV5=true;
   repairPending();
   return api;
 }
 
-function ensure(){const api=window.SPProgress;if(!api)return false;const patched=patchApi(api);state.current=patched;return !!patched?.__deltaBridgeV4}
+function ensure(){const api=window.SPProgress;if(!api)return false;const patched=patchApi(api);state.current=patched;return !!patched?.__deltaBridgeV5}
 function installDescriptor(){
   if(state.descriptorInstalled)return true;
   try{
