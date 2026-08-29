@@ -115,7 +115,7 @@ function matchingItems(){return[
  {type:'matching',prompt:'Ordne Beruf und Arbeitsplatz zu.',pairs:[['der Arzt','das Krankenhaus'],['der Journalist','die Zeitung'],['der Koch','die Küche'],['der Hausmeister','die Schule']]},
  {type:'matching',prompt:'Ordne Beruf und Arbeitsplatz zu.',pairs:[['der Physiotherapeut','die Praxis'],['der Mechatroniker','die Firma'],['der Polizist','die Polizei'],['der Bäcker','die Bäckerei']]},
  {type:'matching',prompt:'Ordne Beruf und Arbeitsplatz zu.',pairs:[['der Arzthelfer','die Praxis'],['der Schauspieler','das Fernsehen'],['der Friseur','der Friseursalon'],['der Taxifahrer','das Taxiunternehmen']]},
- {type:'matching',prompt:'Ordne Beruf und Arbeitsplatz zu.',pairs:[['der Krankenpfleger','das Krankenhaus'],['der Lehrer','die Schule'],['der Chef','die Firma'],['der Praktikant','die Firma']]}
+ {type:'matching',prompt:'Ordne Beruf und Arbeitsplatz zu.',pairs:[['der Krankenpfleger','das Krankenhaus'],['der Lehrer','die Schule'],['der Chef','die Firma'],['der Praktikant','das Büro']]}
 ]}
 const DIALOGS=[
  ['A: Was machst du beruflich?\nB: Ich ___ Mechatronikerin.\nA: Interessant! Und wo arbeitest du?\nB: Bei Bosch.','arbeite als'],
@@ -198,6 +198,6 @@ window.L8_CONTENT_READY=Promise.resolve(window.L8_CONTENT_READY).then(themes=>{
   {id:'arbeit-wortschatz-schreiben-v3',kind:'input',title:'Wortschatz selbst schreiben',icon:'✍️',instruction:'Schreibe das passende Wort.',items:contextInput()},
   {id:'pruefung-berufe-v3',kind:'exam',exam:true,title:'Prüfung',icon:'⭐',instruction:'Bearbeite die Prüfung.',items:examItems()}
  ];
- theme.tasks.forEach((task,index)=>task.order=index+1);theme.contentRevision='l8t1-20260829-rebuild';if(Number(document.body?.dataset?.theme)===1)window.L8_THEME=theme;return themes;
+ theme.tasks.forEach((task,index)=>task.order=index+1);theme.contentRevision='l8t1-20260829-rebuild2';if(Number(document.body?.dataset?.theme)===1)window.L8_THEME=theme;return themes;
 });
 })();
