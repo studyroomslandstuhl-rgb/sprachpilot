@@ -7,6 +7,9 @@ const TASKS={
   'listen-sentence':'Bild + Verb hören',
   'listen-write':'Diktat: Verb schreiben',
   'read-choose':'Bild + Verb auswählen',
+  'verb-meaning':'Verb → Bedeutung',
+  'meaning-verb':'Bedeutung → Verb',
+  conjugate:'Verb konjugieren',
   'read-write':'Satz aus Bausteinen',
   'dativ-use':'Lückensatz: Artikel oder Verb',
   'context-write':'Satz mit Vorgaben schreiben'
@@ -24,21 +27,25 @@ function slug(){
 function key(){return PREFIX+slug()}
 function state(){try{return JSON.parse(localStorage.getItem(key())||'null')}catch{return null}}
 function levelOf(signature,group={}){return String(group.level||signature||'').toUpperCase().match(/A1|A2|B1|B2|C1/)?.[0]||''}
-function completed(task={}){
-  const total=Number(task.total||0),done=Array.isArray(task.done)?task.done.length:Number(task.done||0);
-  return task.completed===true||(total>0&&done>=total);
+function taskInfo(task={}){
+  const total=Math.max(0,Number(task.total||0));
+  const done=Array.isArray(task.done)?task.done.length:Math.max(0,Number(task.done||0));
+  const percent=total?Math.max(0,Math.min(100,Math.round(done/total*100))):0;
+  return{total,done,percent,completed:task.completed===true||(total>0&&done>=total)};
 }
 function digestOf(data){
   if(!data?.groups)return'';
   const rows=[];
   for(const [signature,group] of Object.entries(data.groups)){
+    rows.push(`${signature}|currentRun|${Number(group?.currentRun)||1}`);
     for(const [runId,run] of Object.entries(group?.runs||{})){
       for(const taskKey of Object.keys(TASKS)){
-        const task=run?.tasks?.[taskKey]||{};
-        if(completed(task)||Number(run?.awards?.tasks?.[taskKey]||0)>0)rows.push(`${signature}|${runId}|${taskKey}`);
+        const info=taskInfo(run?.tasks?.[taskKey]||{});
+        const award=Number(run?.awards?.tasks?.[taskKey]||0);
+        if(info.done>0||info.completed||award>0)rows.push(`${signature}|${runId}|${taskKey}|${info.done}/${info.total}|${award}`);
       }
       const pct=Math.max(0,Math.min(100,Number(run?.exam?.bestPercent||run?.exam?.percent||0)||0));
-      if(pct>0||Number(run?.awards?.examPoints||0)>0)rows.push(`${signature}|${runId}|exam|${pct}`);
+      if(pct>0||Number(run?.awards?.examPoints||0)>0)rows.push(`${signature}|${runId}|exam|${pct}|${Number(run?.awards?.examPoints||0)}`);
     }
   }
   return rows.sort().join('||');
@@ -65,12 +72,12 @@ async function sync(){
       for(const [runId,run] of runs){
         const runNo=Math.max(1,Math.min(3,Number(runId)||1));setRun(topicId,runNo);
         for(const [taskKey,taskTitle] of Object.entries(TASKS)){
-          const task=run?.tasks?.[taskKey]||{};
-          if(!completed(task)&&Number(run?.awards?.tasks?.[taskKey]||0)<=0)continue;
+          const task=run?.tasks?.[taskKey]||{},info=taskInfo(task),award=Number(run?.awards?.tasks?.[taskKey]||0);
+          if(info.done<=0&&!info.completed&&award<=0)continue;
           const result=await window.SPProgress.recordTaskProgress({
             module:'dativverben',moduleTitle:'Dativverben',topicId,title,level,
-            taskKey,taskTitle,percent:100,completed:true,
-            total:Number(task.total||0),done:Array.isArray(task.done)?task.done.length:Number(task.done||task.total||0)
+            taskKey,taskTitle,percent:info.percent,completed:info.completed,
+            total:info.total,done:info.done
           });
           if(!result)throw new Error(`Dativverben-Aufgabe konnte nicht synchronisiert werden: ${level}/${taskKey}/R${runNo}`);
         }
@@ -78,7 +85,7 @@ async function sync(){
         if(pct>0||Number(run?.awards?.examPoints||0)>0){
           const result=await window.SPProgress.recordExamResult({
             module:'dativverben',moduleTitle:'Dativverben',topicId,title,level,
-            percent:pct||100,stars:Number(run?.exam?.stars||0)
+            percent:pct,stars:Number(run?.exam?.stars||0)
           });
           if(!result)throw new Error(`Dativverben-Prüfung konnte nicht synchronisiert werden: ${level}/R${runNo}`);
         }
@@ -87,7 +94,7 @@ async function sync(){
     }
     lastDigest=digest;
     try{sessionStorage.setItem('SP_DATIVVERBEN_FIREBASE_DIGEST',digest)}catch(e){}
-    try{window.dispatchEvent(new CustomEvent('SP_DATIVVERBEN_FIREBASE_SYNCED',{detail:{points:true,at:Date.now()}}))}catch(e){}
+    try{window.dispatchEvent(new CustomEvent('SP_DATIVVERBEN_FIREBASE_SYNCED',{detail:{points:true,progress:true,at:Date.now()}}))}catch(e){}
     return true;
   }catch(error){
     console.warn('Dativverben konnten noch nicht vollständig mit Firebase synchronisiert werden',error);
@@ -107,13 +114,13 @@ if(!preview){
   try{lastDigest=sessionStorage.getItem('SP_DATIVVERBEN_FIREBASE_DIGEST')||''}catch(e){}
   const rawSet=Storage.prototype.setItem;
   if(!Storage.prototype.__spDativPointsPatched){
-    Storage.prototype.setItem=function(k,v){const result=rawSet.call(this,k,v);try{if(this===localStorage&&String(k)===key())schedule(400)}catch(e){}return result};
+    Storage.prototype.setItem=function(k,v){const result=rawSet.call(this,k,v);try{if(this===localStorage&&String(k)===key())schedule(350)}catch(e){}return result};
     Storage.prototype.__spDativPointsPatched=true;
   }
-  window.addEventListener('SP_ACCOUNT_PROGRESS_SYNCED',()=>schedule(250));
-  window.addEventListener('online',()=>schedule(250));
-  window.addEventListener('focus',()=>schedule(250));
-  schedule(700);
+  window.addEventListener('SP_ACCOUNT_PROGRESS_SYNCED',()=>schedule(200));
+  window.addEventListener('online',()=>schedule(200));
+  window.addEventListener('focus',()=>schedule(200));
+  schedule(600);
 }
 
 window.SPDativFirebasePoints={sync,schedule,key};
