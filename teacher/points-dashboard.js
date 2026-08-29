@@ -15,6 +15,8 @@ function studentCourse(student={}){return text(student.courseCode||student.kurs|
 function studentName(student={}){return text([student.vorname||student.firstName,student.nachname||student.lastName].filter(Boolean).join(' '))||text(student.name||student.displayName)||'Teilnehmer/in'}
 function studentPoints(student={}){
   const id=studentId(student),ranking=rankingById.get(id)||{};
+  if(point(ranking.pointAuditVersion)>0)return point(ranking.points);
+  if(point(student.pointAuditVersion)>0)return Math.max(point(student.pointsTotal),point(student.rankingPoints),point(student.totals?.points));
   return Math.max(
     point(ranking.points),point(student.rankingPoints),point(student.pointsTotal),point(student.lifetimePoints),
     point(student.punkteGesamt),point(student.points),point(student.ranking?.points),point(student.totals?.points)
