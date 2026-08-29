@@ -6,6 +6,7 @@ const AUDIO=CDN+'audio/';
 const norm=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
 const term=item=>String(item?.term||item?.full||item?.word||'').trim();
 const slug=value=>String(value||'').trim().toLowerCase().replace(/^(der|die|das)\s+/i,'').replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+const shuffled=values=>{const a=[...(values||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 const GRAMMAR_CARD=/(arbeiten\s+(als|bei)|\b(als|bei)\b.*\barbeiten\b|ausbildung.*machen|machen.*ausbildung|^seit$|^vor$)/i;
 const GRAMMAR_TASK=/(seit|\bvor\b|arbeiten\s+als|arbeiten\s+bei|ausbildung.*machen|machen.*ausbildung|präposition|praeposition)/i;
 
@@ -46,7 +47,7 @@ function normalizeCards(theme){
  }
 }
 function timeWord(id){return (window.L8_T2_TIME_WORDS||[]).find(item=>String(item.id)===id)||{}}
-function q(type,prompt,options,answer,id,hint){const w=timeWord(id);return{type,prompt,options,answer,hint,image:w.image||imageUrl('',id+'.webp'),audio:w.audio||audioUrl('',id+'.mp3')}}
+function q(type,prompt,options,answer,id,hint){const w=timeWord(id);return{type,prompt,options:shuffled(options),answer,hint,image:w.image||imageUrl('',id+'.webp'),audio:w.audio||audioUrl('',id+'.mp3')}}
 function formsTask(){return{
  id:'zeitwoerter-artikel-plural',title:'Zeitwörter: Artikel und Plural',emoji:'🔤',icon:'🔤',kind:'choice',
  instruction:'Wähle den richtigen Artikel oder die richtige Pluralform.',
@@ -95,13 +96,14 @@ function cleanGrammarMedia(theme){
   bunnyWalk(task);
  }
 }
+function randomizeAnswers(theme){for(const task of theme.tasks||[])for(const item of task.items||[])if(Array.isArray(item?.options)&&item.options.length>1)item.options=shuffled(item.options)}
 
 window.L8_T2_CURRENT_READY=(async()=>{
  await window.L8_CONTENT_READY;
  if(window.L8_T2_TIME_REVIEW_READY)await window.L8_T2_TIME_REVIEW_READY;
  if(window.L8_T2_QUALITY_READY)await window.L8_T2_QUALITY_READY;
  const all=window.L8_ALL_THEMES||{},theme=all[2]||all['2'];if(!theme||!Array.isArray(theme.tasks))return theme;
- normalizeCards(theme);installTimeTasks(theme);cleanGrammarMedia(theme);
+ normalizeCards(theme);installTimeTasks(theme);cleanGrammarMedia(theme);randomizeAnswers(theme);
  theme.grammarOverview=[
   {title:'seit + Dativ',text:'Etwas hat in der Vergangenheit begonnen und dauert noch an.',example:'Ich arbeite seit einem Jahr bei der Firma.'},
   {title:'vor + Dativ',text:'Etwas ist zu einem Zeitpunkt in der Vergangenheit passiert.',example:'Ich habe vor einem Jahr eine Ausbildung gemacht.'},
