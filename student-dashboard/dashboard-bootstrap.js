@@ -1,4 +1,4 @@
-import '/shared/sp-cache-epoch.js?v=20260822-cache2';
+import '/shared/sp-cache-epoch.js?v=20260829-points4';
 import '/js/session-restore.js?v=4';
 import { verifySecureAccess } from '/js/secure-access-gate.js?v=1';
 
@@ -56,37 +56,39 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
       throw new Error('STUDENT_UID_CHANGED_BEFORE_DASHBOARD_RENDER');
     }
 
-    // Die Punkte-Bridge muss vor jeder möglichen progress.js-Variante aktiv sein.
-    // Sie beobachtet window.SPProgress dauerhaft und patcht auch später geladene Cache-/Versionsvarianten.
     try{
-      await import('/js/point-delta-bridge.js?v=20260829-points3');
+      await import('/js/point-delta-bridge.js?v=20260829-points4');
       try{window.SPEnsurePointDeltaBridge?.()}catch(e){}
     }catch(error){console.warn('Globale Punkte-Bridge konnte im Dashboard noch nicht vorbereitet werden.',error)}
 
-    // L8T1 speichert einzelne Antworten bewusst nur lokal. Vor dem serverautoritativen
-    // Dashboard werden ausschließlich fertige Aufgaben/Prüfungen als Punkte-Meilensteine
-    // nach Firebase übertragen. Dadurch gehen bereits lokal verdiente Punkte nicht verloren,
-    // wenn der Schüler direkt aus einer Aufgabe ins Dashboard wechselt.
     try{
-      const l8t1Points=await import('/js/l8t1-milestone-sync.js?v=20260829-3');
+      const l8t1Points=await import('/js/l8t1-milestone-sync.js?v=20260829-4');
       await Promise.race([
         l8t1Points.flushL8T1Milestones({reason:'dashboard-before-server-read'}),
-        new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'dashboard-flush-timeout'}),6000))
+        new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'dashboard-flush-timeout'}),8000))
       ]);
     }catch(error){
       console.warn('Lokale L8T1-Punkte konnten vor dem Dashboard noch nicht nach Firebase übertragen werden.',error);
     }
 
-    // Frühere eigene Themen-Synchronisierungen konnten zwar den fertigen Task nach Firebase
-    // schreiben, aber den globalen Punktestand nicht erhöhen. Wenn der Server einen klaren
-    // letzten erfolgreichen Punkte-Delta-Zeitpunkt hat, werden ausschließlich danach liegende
-    // fertige Aufgaben einmalig nachgetragen. Für das neue L8T1 gibt es zusätzlich einen eng
-    // begrenzten Fallback, weil dort die Ursache eindeutig bekannt ist.
+    // Fortschritt kann historisch unter einer alten Schüler-ID gelandet sein. Vor der
+    // Punkteprüfung werden deshalb alle bekannten Alias-Dokumente zwingend in das aktuelle
+    // kanonische progress/{studentId}-Dokument zusammengeführt.
     try{
-      const repair=await import('/js/point-stall-repair.js?v=20260829-1');
+      const aliases=await import('/student-dashboard/progress-alias-unifier.js?v=20260829-points4');
+      await Promise.race([
+        aliases.unifyProgressAliases({force:true}),
+        new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'alias-unify-timeout'}),8000))
+      ]);
+    }catch(error){
+      console.warn('Verteilte Fortschrittsstände konnten vor der Punkteberechnung noch nicht zusammengeführt werden.',error);
+    }
+
+    try{
+      const repair=await import('/js/point-stall-repair.js?v=20260829-points4');
       await Promise.race([
         repair.repairStalledPoints(),
-        new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'point-repair-timeout'}),6000))
+        new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'point-repair-timeout'}),8000))
       ]);
     }catch(error){
       console.warn('Festgefahrene Gesamtpunkte konnten vor dem Dashboard noch nicht repariert werden.',error);
@@ -105,7 +107,7 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
     try{localStorage.removeItem('SP_STUDENT_DASHBOARD_LITE_V3')}catch(e){}
     window.SP_PROGRESS_ALIAS_READY=Promise.resolve({ok:progressReady,skipped:!progressReady,reason:progressReady?'server-authoritative-progress-v2':'dashboard-direct-server-fallback'});
     try{
-      await import('./dashboard-server-v3.js?v=20260824-release6');
+      await import('./dashboard-server-v3.js?v=20260829-points4');
     }catch(error){
       console.error('Dashboard-Inhalte konnten nicht vollständig geladen werden',error);
       warning('Dashboard konnte nur teilweise geladen werden.','Die Anmeldung funktioniert, aber die aktuellen Statistiken konnten nicht vollständig aufgebaut werden.');
