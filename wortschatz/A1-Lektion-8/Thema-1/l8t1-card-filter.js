@@ -14,12 +14,12 @@ const translations={
  'arbeiten bei':{en:'to work at / for',ru:'работать в / у',tr:'bir yerde / şirkette çalışmak',uk:'працювати в / у',ar:'يعمل لدى / في',ja:'〜で／〜に勤める',ro:'a lucra la / pentru',pl:'pracować w / dla',ku:'li ... kar kirin'}
 };
 const overviewOnly=[
- {term:'eigener',type:'adjective',overviewNoImage:true,detail:'Maskulin, Nominativ: ein eigener / mein eigener + Nomen.',example:'Das ist mein eigener Arbeitsplatz.',translations:translations.eigener},
+ {term:'eigener',type:'adjective',overviewNoImage:true,detail:'Maskulin, Nominativ: ein eigener + Nomen.',example:'Das ist ein eigener Beruf.',translations:translations.eigener},
  {term:'eigene',type:'adjective',overviewNoImage:true,detail:'Feminin: eine eigene / meine eigene + Nomen.',example:'Sie hat eine eigene Firma.',translations:translations.eigene},
- {term:'eigenes',type:'adjective',overviewNoImage:true,detail:'Neutral: ein eigenes / mein eigenes + Nomen.',example:'Er hat ein eigenes Büro.',translations:translations.eigenes},
- {term:'eigenen',type:'adjective',overviewNoImage:true,detail:'Maskulin, Akkusativ: einen eigenen / meinen eigenen + Nomen.',example:'Ich habe einen eigenen Arbeitsplatz.',translations:translations.eigenen},
- {term:'arbeiten als',type:'phrase',overviewNoImage:true,overviewNoAudio:true,detail:'Mit „als“ nennt man den Beruf oder die Funktion.',example:'Ich arbeite als Koch.',translations:translations['arbeiten als']},
- {term:'arbeiten bei',type:'phrase',overviewNoImage:true,overviewNoAudio:true,detail:'Mit „bei“ nennt man den Arbeitgeber, die Firma oder die Institution.',example:'Ich arbeite bei einer Firma.',translations:translations['arbeiten bei']}
+ {term:'eigenes',type:'adjective',overviewNoImage:true,detail:'Neutral: ein eigenes + Nomen.',example:'Das ist ein eigenes Thema.',translations:translations.eigenes},
+ {term:'eigenen',type:'adjective',overviewNoImage:true,detail:'Maskulin, Akkusativ: einen eigenen + Nomen.',example:'Ich habe einen eigenen Job.',translations:translations.eigenen},
+ {term:'arbeiten als',type:'phrase',overviewNoImage:true,overviewNoAudio:true,detail:'Mit „als“ nennt man den Beruf.',example:'Ich arbeite als Koch.',translations:translations['arbeiten als']},
+ {term:'arbeiten bei',type:'phrase',overviewNoImage:true,overviewNoAudio:true,detail:'Mit „bei“ nennt man die Firma oder Institution.',example:'Ich arbeite bei einer Firma.',translations:translations['arbeiten bei']}
 ];
 function containsRequested(item){const values=[];const walk=value=>{if(value==null)return;if(typeof value==='string'){values.push(norm(value));return}if(Array.isArray(value)){value.forEach(walk);return}if(typeof value==='object')Object.values(value).forEach(walk)};walk(item);return values.some(v=>[...requested].some(word=>v===word||v.includes(` ${word} `)||v.startsWith(word+' ')||v.endsWith(' '+word)))}
 function l7Icon(task){
@@ -46,6 +46,6 @@ window.L8_CONTENT_READY=Promise.resolve(window.L8_CONTENT_READY).then(themes=>{
  const cards=theme.tasks.find(task=>task?.kind==='cards'||task?.id==='karteikarten'||/karteikart/i.test(task?.title||''));if(cards&&Array.isArray(cards.items))cards.items=cards.items.filter(item=>!blockedCards.has(norm(term(item))));
  const practice=theme.tasks.filter(task=>!task?.exam),task5=practice[4];if(task5&&Array.isArray(task5.items))task5.items=task5.items.filter(item=>!containsRequested(item));
  theme.tasks.forEach(task=>{task.icon=l7Icon(task)});
- theme.overviewOnlyItems=overviewOnly;theme.contentRevision='l8t1-card-filter-20260825-v6';theme.iconRevision='l8t1-semantic-icons-v2';if(Number(document.body?.dataset?.theme)===1)window.L8_THEME=theme;return themes;
+ theme.overviewOnlyItems=overviewOnly;theme.contentRevision='l8t1-card-filter-20260829-v7';theme.iconRevision='l8t1-semantic-icons-v2';if(Number(document.body?.dataset?.theme)===1)window.L8_THEME=theme;return themes;
 });
 })();
