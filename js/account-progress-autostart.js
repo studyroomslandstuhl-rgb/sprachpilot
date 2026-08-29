@@ -1,4 +1,5 @@
 import '/js/session-restore.js?v=4';
+import '/shared/points-recalculator.js?v=2';
 import '/shared/dativ-points-extension.js?v=2';
 
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(location.pathname)){
