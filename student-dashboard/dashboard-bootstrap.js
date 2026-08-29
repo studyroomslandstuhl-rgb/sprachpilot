@@ -61,13 +61,28 @@ if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole())){
     // nach Firebase übertragen. Dadurch gehen bereits lokal verdiente Punkte nicht verloren,
     // wenn der Schüler direkt aus einer Aufgabe ins Dashboard wechselt.
     try{
-      const l8t1Points=await import('/js/l8t1-milestone-sync.js?v=20260829-1');
+      const l8t1Points=await import('/js/l8t1-milestone-sync.js?v=20260829-3');
       await Promise.race([
         l8t1Points.flushL8T1Milestones({reason:'dashboard-before-server-read'}),
         new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'dashboard-flush-timeout'}),6000))
       ]);
     }catch(error){
       console.warn('Lokale L8T1-Punkte konnten vor dem Dashboard noch nicht nach Firebase übertragen werden.',error);
+    }
+
+    // Frühere eigene Themen-Synchronisierungen konnten zwar den fertigen Task nach Firebase
+    // schreiben, aber den globalen Punktestand nicht erhöhen. Wenn der Server einen klaren
+    // letzten erfolgreichen Punkte-Delta-Zeitpunkt hat, werden ausschließlich danach liegende
+    // fertige Aufgaben einmalig nachgetragen. Für das neue L8T1 gibt es zusätzlich einen eng
+    // begrenzten Fallback, weil dort die Ursache eindeutig bekannt ist.
+    try{
+      const repair=await import('/js/point-stall-repair.js?v=20260829-1');
+      await Promise.race([
+        repair.repairStalledPoints(),
+        new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'point-repair-timeout'}),6000))
+      ]);
+    }catch(error){
+      console.warn('Festgefahrene Gesamtpunkte konnten vor dem Dashboard noch nicht repariert werden.',error);
     }
 
     let progressReady=false;
