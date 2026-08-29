@@ -1,11 +1,10 @@
-import { db, doc, authReady } from '/js/firebase.js';
-import { runTransaction, serverTimestamp } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
+import { db, doc, getDocFromServer, setDoc, serverTimestamp } from '/js/firebase.js';
 
 const MASTER_KEY='SP_L8_T1_LOCAL_HUB_V1';
 const TOPIC='wortschatz-a1-lektion-8-thema-1';
 const RUN_KEY='SP_SCORE_RUN_'+TOPIC;
-const SYNC_VERSION=5;
-const LEDGER_VERSION=1;
+const SYNC_VERSION=6;
+const LEDGER_VERSION=2;
 let running=null,timer=null;
 const clean=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9@._-]+/g,'_').replace(/^_+|_+$/g,'');
 const parse=(value,fallback=null)=>{try{return JSON.parse(value||'')??fallback}catch(e){return fallback}};
@@ -34,47 +33,60 @@ function legacyAlreadyCredited(data,id,run,kind){
     if(kind==='exam'&&String(detail.type||'')==='exam')return true;
     if(kind==='task'&&String(detail.type||'')==='task'&&sameTask(detail.task,id))return true;
   }
-  for(const repair of [meta.pointStallRepairV2,meta.pointStallRepairV1]){
-    for(const award of Object.values(repair?.awards||{})){
-      if(String(award?.topic||'')!==TOPIC||Number(award?.run||0)!==Number(run))continue;
-      if(kind==='exam'&&/exam|pruefung|prüfung/i.test(String(award?.task||'')))return true;
-      if(kind==='task'&&sameTask(award?.task,id))return true;
-    }
+  for(const repair of [meta.pointStallRepairV2,meta.pointStallRepairV1])for(const award of Object.values(repair?.awards||{})){
+    if(String(award?.topic||'')!==TOPIC||Number(award?.run||0)!==Number(run))continue;
+    if(kind==='exam'&&/exam|pruefung|prüfung/i.test(String(award?.task||'')))return true;
+    if(kind==='task'&&sameTask(award?.task,id))return true;
   }
   return false;
+}
+function courseKey(p=profile()){return String(p.courseDocId||p.courseCode||p.kurs||p.kursnummer||p.course||localStorage.getItem('SP_COURSE_CODE')||'').trim()}
+function displayName(p=profile()){return [p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(' ').trim()||p.displayName||p.email||'Schüler/in'}
+async function mirrorTotals(studentId,total){
+  const p=profile(),course=courseKey(p),now=new Date().toISOString();
+  try{await setDoc(doc(db,'students',studentId),{pointsTotal:total,lifetimePoints:total,punkteGesamt:total,rankingPoints:total,updatedAt:serverTimestamp()},{merge:true})}catch(error){console.warn('L8T1: Punkte konnten nicht zusätzlich im Teilnehmerprofil gespiegelt werden',error)}
+  if(course){
+    try{await setDoc(doc(db,'studentRankings',studentId),{studentId,authUid:String(p.authUid||'').trim(),displayName:displayName(p),courseKey:course,points:total,version:6,l8t1PointLedger:true,updatedAt:serverTimestamp(),updatedAtClient:now},{merge:true})}catch(error){console.warn('L8T1: Punkte konnten nicht in die Rangliste gespiegelt werden',error)}
+  }
 }
 async function claimPointAward({kind,id,run,earned}){
   earned=Math.max(0,Math.round(Number(earned)||0));
   if(earned<=0)return{ok:true,delta:0,total:point(localStorage.getItem('SP_POINTS_TOTAL')),reason:'no-points'};
   const studentId=canonicalStudentId();if(!studentId)return{ok:false,reason:'canonical-student-id-missing'};
-  try{await authReady}catch(e){}
   try{
-    const ref=doc(db,'progress',studentId),awardId=kind==='exam'?`exam_run_${run}`:`task_${clean(id)}_run_${run}`;
-    const result=await runTransaction(db,async tx=>{
-      const snap=await tx.get(ref);if(!snap.exists())return{ok:false,reason:'progress-missing'};
-      const data=snap.data()||{},oldLedger=data?.metadata?.l8t1PointLedgerV1||{},awards={...(oldLedger.awards||{})},oldAward=point(awards?.[awardId]?.points);
-      if(oldAward>=earned)return{ok:true,delta:0,total:storedRecord(data),reason:'already-claimed',awardId};
-      const seeded=oldAward<=0&&legacyAlreadyCredited(data,id,run,kind);
-      if(seeded){
-        awards[awardId]={points:earned,run,kind,task:id||'',seededFromLegacy:true,updatedAt:new Date().toISOString()};
-        tx.update(ref,{'metadata.l8t1PointLedgerV1':{version:LEDGER_VERSION,awards,updatedAt:new Date().toISOString()}});
-        return{ok:true,delta:0,total:storedRecord(data),reason:'legacy-credit-seeded',awardId};
-      }
-      const delta=Math.max(0,earned-oldAward),before=storedRecord(data),total=before+delta;
-      awards[awardId]={points:earned,run,kind,task:id||'',updatedAt:new Date().toISOString()};
-      tx.update(ref,{
-        pointsTotal:total,lifetimePoints:total,punkteGesamt:total,'totals.points':total,'ranking.points':total,
-        'metadata.l8t1PointLedgerV1':{version:LEDGER_VERSION,awards,updatedAt:new Date().toISOString()},
-        'metadata.pointDeltaBridgeVersion':5,
-        'metadata.pointDeltaLastAt':serverTimestamp(),
-        'metadata.pointDeltaLastDetail':{type:kind,source:'l8t1-ledger-v1',topicId:TOPIC,task:id||'',run,delta,desired:total}
-      });
-      return{ok:true,delta,total,reason:'claimed',awardId};
-    });
-    if(result?.ok&&Number(result.total)>0){try{localStorage.setItem('SP_POINTS_TOTAL',String(Math.max(point(localStorage.getItem('SP_POINTS_TOTAL')),point(result.total))))}catch(e){}}
-    try{window.dispatchEvent(new CustomEvent('SP_L8T1_POINT_LEDGER',{detail:result}))}catch(e){}
+    const ref=doc(db,'progress',studentId),snap=await getDocFromServer(ref);if(!snap.exists())return{ok:false,reason:'progress-missing'};
+    const data=snap.data()||{},oldLedger=data?.metadata?.l8t1PointLedgerV1||{},awards={...(oldLedger.awards||{})},awardId=kind==='exam'?`exam_run_${run}`:`task_${clean(id)}_run_${run}`,oldAward=point(awards?.[awardId]?.points);
+    if(oldAward>=earned){const total=storedRecord(data);await mirrorTotals(studentId,total);return{ok:true,delta:0,total,reason:'already-claimed',awardId}}
+    const seeded=oldAward<=0&&legacyAlreadyCredited(data,id,run,kind);
+    if(seeded){
+      awards[awardId]={points:earned,run,kind,task:id||'',seededFromLegacy:true,updatedAt:new Date().toISOString()};
+      await setDoc(ref,{metadata:{...(data.metadata||{}),l8t1PointLedgerV1:{version:LEDGER_VERSION,awards,updatedAt:new Date().toISOString()}}},{merge:true});
+      const total=storedRecord(data);await mirrorTotals(studentId,total);return{ok:true,delta:0,total,reason:'legacy-credit-seeded',awardId};
+    }
+    const delta=Math.max(0,earned-oldAward),before=storedRecord(data),total=before+delta,now=new Date().toISOString();
+    awards[awardId]={points:earned,run,kind,task:id||'',updatedAt:now};
+    const metadata={
+      ...(data.metadata||{}),
+      l8t1PointLedgerV1:{version:LEDGER_VERSION,awards,updatedAt:now},
+      pointDeltaBridgeVersion:6,
+      pointDeltaLastAt:serverTimestamp(),
+      pointDeltaLastDetail:{type:kind,source:'l8t1-direct-ledger-v2',topicId:TOPIC,task:id||'',run,delta,desired:total}
+    };
+    await setDoc(ref,{
+      pointsTotal:total,lifetimePoints:total,punkteGesamt:total,
+      totals:{...(data.totals||{}),points:total,updatedAt:now},
+      ranking:{...(data.ranking||{}),points:total,updatedAt:now},
+      metadata,updatedAt:serverTimestamp(),lastActive:serverTimestamp(),lastActiveAt:now
+    },{merge:true});
+    try{localStorage.setItem('SP_POINTS_TOTAL',String(Math.max(point(localStorage.getItem('SP_POINTS_TOTAL')),total)));localStorage.setItem('SP_L8T1_LAST_POINT_SYNC',JSON.stringify({ok:true,awardId,delta,total,at:now}))}catch(e){}
+    await mirrorTotals(studentId,total);
+    const result={ok:true,delta,total,reason:'claimed',awardId};
+    try{window.dispatchEvent(new CustomEvent('SP_POINT_DELTA_APPLIED',{detail:{type:kind,topicId:TOPIC,task:id||'',run,delta,total,source:'l8t1-direct-ledger-v2'}}));window.dispatchEvent(new CustomEvent('SP_L8T1_POINT_LEDGER',{detail:result}))}catch(e){}
     return result;
-  }catch(error){console.warn('L8T1: Punkte-Ledger konnte nicht geschrieben werden',error);return{ok:false,reason:error?.message||String(error)}}
+  }catch(error){
+    try{localStorage.setItem('SP_L8T1_LAST_POINT_SYNC',JSON.stringify({ok:false,error:error?.message||String(error),at:new Date().toISOString()}))}catch(e){}
+    console.warn('L8T1: Punkte-Ledger konnte nicht geschrieben werden',error);return{ok:false,reason:error?.message||String(error)};
+  }
 }
 async function normalizeIdentity(){
   try{
@@ -89,17 +101,14 @@ async function normalizeIdentity(){
 async function api(){
   try{
     await normalizeIdentity();
-    await import('/js/point-delta-bridge.js?v=20260829-points6');
-    if(!window.SPProgress?.recordTaskProgress)await import('/js/progress.js?v=20260829-l8t1-points6');
+    await import('/js/point-delta-bridge.js?v=20260829-points7');
+    if(!window.SPProgress?.recordTaskProgress)await import('/js/progress.js?v=20260829-l8t1-points7');
     try{window.SPEnsurePointDeltaBridge?.()}catch(e){}
     return window.SPProgress?.recordTaskProgress?window.SPProgress:null;
   }catch(error){console.warn('L8T1 milestone sync: Punkte-API fehlt',error);return null}
 }
 async function reconcileCanonicalPoints(){
-  try{
-    const unifier=await import('/student-dashboard/progress-alias-unifier.js?v=20260829-points6');
-    await unifier.unifyProgressAliases({force:true});
-  }catch(error){console.warn('L8T1: verteilte Fortschrittsdaten konnten noch nicht vereinigt werden',error)}
+  try{const unifier=await import('/student-dashboard/progress-alias-unifier.js?v=20260829-points7');await unifier.unifyProgressAliases({force:true})}catch(error){console.warn('L8T1: verteilte Fortschrittsdaten konnten noch nicht vereinigt werden',error)}
 }
 async function doFlush(reason='auto'){
  const master=readMaster();if(!master)return{ok:true,reason:'no-local-l8t1',synced:0};
