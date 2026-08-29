@@ -1,6 +1,7 @@
 import { db, doc, getDoc, getDocFromServer, setDoc, serverTimestamp, collection, query, where, getDocs, limit } from "./firebase.js";
 import { getActiveProfile } from "./auth.js";
 import "/shared/points-recalculator.js?v=1";
+import "/js/point-delta-bridge.js?v=20260829-points3";
 
 const MODULE_KEYS=["fragen","wortschatz","verben","perfekt","grammatik"];
 const MODULE_ALIASES={
