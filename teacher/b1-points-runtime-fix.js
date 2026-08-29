@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_B1_POINTS_RUNTIME_FIX_V3)return;
-window.__SP_B1_POINTS_RUNTIME_FIX_V3=true;
+if(window.__SP_B1_POINTS_RUNTIME_FIX_V4)return;
+window.__SP_B1_POINTS_RUNTIME_FIX_V4=true;
 
 const COURSE='B174698';
 const text=value=>String(value==null?'':value).trim();
@@ -23,7 +23,7 @@ async function waitReady(){
  }
  return false;
 }
-async function run({force=false}={}){
+async function run({force=true}={}){
  if(running||done)return window.SPB1PointRecalculation?.lastSummary||null;
  if(!(await waitReady())){status('B1-Punkteabgleich konnte nicht gestartet werden: Punkte-Modul nicht geladen.','error');return null}
  if(!state()?.isOwner)return null;
@@ -31,7 +31,7 @@ async function run({force=false}={}){
  try{
   const summary=await window.SPB1PointRecalculation.run({force,refresh:true});
   if(!summary)return null;
-  done=true;try{sessionStorage.setItem('SP_B1_POINT_RUNTIME_FIX_V3',JSON.stringify(summary))}catch(e){}
+  done=true;try{sessionStorage.setItem('SP_B1_POINT_RUNTIME_FIX_V4',JSON.stringify(summary))}catch(e){}
   status(`B1-Punkte abgeglichen: ${summary.processed||0} TN · ${summary.restoredStudents||0} TN mit wiederhergestellten Punkten · ${summary.failed||0} Fehler.`,summary.failed?'error':'ok');
   summaryCard(summary);setTimeout(()=>window.SPTeacherPointsDashboard?.loadRankings?.(true),350);return summary;
  }catch(error){status('B1-Punkteabgleich fehlgeschlagen: '+text(error?.message||error),'error');return null}
@@ -45,6 +45,8 @@ function addButton(){
 }
 const observer=new MutationObserver(addButton);observer.observe(document.documentElement,{childList:true,subtree:true});
 [500,1200,2500].forEach(delay=>setTimeout(addButton,delay));
-setTimeout(()=>run({force:false}),1800);
+// Einmal pro neuer Dashboard-Sitzung bewusst mit force=true: Der Lauf ist raise/preserve-only,
+// muss aber auch ältere V2-Audits mit den neuen Legacy-Run- und Manual-Punkte-Regeln erneut prüfen.
+setTimeout(()=>run({force:true}),1800);
 window.SPB1PointRuntimeFix={run};
 })();
