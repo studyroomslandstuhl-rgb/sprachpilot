@@ -3,15 +3,13 @@ import { getActiveProfile, getActiveRole } from '/js/auth.js?v=login-main-4';
 
 const TASKS={
   cards:'Karteikarten',
-  'listen-word':'Hören: Verb erkennen',
-  'listen-sentence':'Hören: Verb im Satz',
-  'read-choose':'Lesen: Verb erkennen',
-  'listen-write':'Hören und schreiben',
-  'read-write':'Lesen und schreiben',
-  speak:'Verb sprechen',
-  'context-write':'Verb im Kontext schreiben',
-  'dativ-recognize':'Dativ im Satz erkennen',
-  'dativ-use':'Dativ im Satz anwenden'
+  'listen-word':'Verb hören und erkennen',
+  'listen-sentence':'Bild + Verb hören',
+  'listen-write':'Diktat: Verb schreiben',
+  'read-choose':'Bild + Verb auswählen',
+  'read-write':'Satz aus Bausteinen',
+  'dativ-use':'Lückensatz: Artikel oder Verb',
+  'context-write':'Satz mit Vorgaben schreiben'
 };
 const PREFIX='SP_DATIVVERBEN_V2_';
 const role=String(getActiveRole?.()||'').toLowerCase();
