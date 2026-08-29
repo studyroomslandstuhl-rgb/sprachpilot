@@ -1,5 +1,4 @@
 import '/shared/dativ-points-extension.js?v=2';
-import '/js/progress.js?v=points-preserve4';
 import { getActiveRole } from '/js/auth.js?v=login-main-4';
 
 if(!window.__SP_AUTHORITATIVE_POINT_REPAIR_V1){
@@ -47,9 +46,13 @@ if(!window.__SP_AUTHORITATIVE_POINT_REPAIR_V1){
     }finally{running=false}
   }
   function schedule(delay=700){clearTimeout(timer);timer=setTimeout(()=>run(),delay)}
+  function waitAndRun(tries=0){
+    if(window.SPProgress?.loadCurrentStudentProgress){schedule(100);return}
+    if(tries<80)setTimeout(()=>waitAndRun(tries+1),100);
+  }
   window.addEventListener('SP_ACCOUNT_PROGRESS_SYNCED',()=>schedule(150));
   window.addEventListener('online',()=>schedule(300));
   window.addEventListener('focus',()=>schedule(300));
-  schedule(1200);
+  waitAndRun();
   window.SPAuthoritativePointRepair={run,schedule};
 }
