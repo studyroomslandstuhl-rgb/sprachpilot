@@ -1,4 +1,5 @@
 import '/js/progress.js?v=20260831-central6';
+import '/shared/points-recalculator.js?v=20260831-global3';
 import '/js/point-delta-bridge.js?v=20260831-central6';
 import '/js/ranking-mirror.js?v=20260829-safe15';
 import { auth, authReady } from '/js/firebase.js';
@@ -10,7 +11,7 @@ import { prepareL78AccountProgressBridge, hydrateL78VisibleProgress, installL78R
 import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-authoritative-v2.js?v=20260831-central6';
 export { accountProgressReady };
 
-let wrapperRunning=null,retryTimer=null;
+let wrapperRunning=null,retryTimer=null,structuredMergeRunning=null;
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 function learningPage(){return /^\/(?:wortschatz|fragen-A1|fragen|verben|verben-A1|verben-bereich|irregulaere-verben|perfekt|grammatik|finnisch|dativverben)(?:\/|$)/i.test(location.pathname||'')}
 function parse(raw){try{return JSON.parse(raw||'null')}catch(e){return null}}
@@ -116,6 +117,18 @@ function refreshAfterProgressPreparation(result,isolation){
   try{if(restored<=0&&!switched){sessionStorage.removeItem(key);return false}if(sessionStorage.getItem(key)==='1')return false;sessionStorage.setItem(key,'1')}catch(e){if(restored<=0&&!switched)return false}
   location.reload();return true;
 }
+function startStructuredCanonicalMerge(){
+  if(structuredMergeRunning||teacherSession()||!activeStudentSession())return structuredMergeRunning;
+  structuredMergeRunning=Promise.resolve().then(async()=>{
+    try{
+      const merged=await window.SPProgress?.touch?.();
+      if(merged)try{window.dispatchEvent(new CustomEvent('SP_ALL_STRUCTURED_PROGRESS_MERGED',{detail:{studentId:merged.canonicalStudentId||merged.studentId||'',points:Math.max(Number(merged.pointsTotal)||0,Number(merged.lifetimePoints)||0,Number(merged.ranking?.points)||0),nonDestructive:true}}))}catch(e){}
+      return merged||null;
+    }catch(error){console.warn('Strukturierte Lernstände aus Geräte-/Alias-Dokumenten konnten noch nicht vollständig zusammengeführt werden',error);return null}
+    finally{structuredMergeRunning=null}
+  });
+  return structuredMergeRunning;
+}
 
 async function startInner(options={}){
   if(teacherSession())return inactiveResult('TEACHER_OR_PREVIEW_SESSION');
@@ -134,9 +147,6 @@ async function startInner(options={}){
   if(identity.hard){const result=blockedSecureResult(identity.hard);showCloudProgressRequired(result);return result}
   if(!identity.ok){scheduleRetry(1500);return inactiveResult(identity.pending||'STUDENT_IDENTITY_PENDING')}
 
-  // L7/L8 zuerst in das kontogebundene Pending-Journal übernehmen. Dadurch bleibt der
-  // lokale Gerätefortschritt auch dann erhalten, wenn die Owner-Isolation wegen einer
-  // alten Konto-ID anschließend lokale Alias-Keys quarantänisieren muss.
   let bridge={active:false,staged:0,rawMigrated:0};
   try{bridge=prepareL78AccountProgressBridge()||bridge;installL78RuntimeBridge()}catch(error){console.warn('L7/L8 Kontofortschritt konnte vor der Kontozuordnung nicht vorbereitet werden',error)}
 
@@ -156,13 +166,16 @@ async function startInner(options={}){
   try{
     restoredL78=hydrateL78VisibleProgress()||0;
     installL78RuntimeBridge();
-    // Die account-scoped Canonicalisierung kann einen neuen gemeinsamen Ledger erzeugen.
-    // Dieser muss noch in derselben Startphase in die Cloud, damit das zweite Gerät nicht
-    // erneut nur seinen alten PID-Zweig liest.
     const flushed=await window.SPAccountProgressSync?.flush?.();
     l78Flushed=!!flushed?.ok;
   }catch(error){console.warn('L7/L8 Kontofortschritt konnte nicht vollständig rekonstruiert werden',error)}
-  const enriched={...result,l7l8AccountScopedMerge:true,l78BridgeStaged:Number(bridge?.staged)||0,l78RawMigrated:Number(bridge?.rawMigrated)||0,restoredL78,l78Flushed,serverResetApplied:Number(result?.restoredStructured||0)>0,nonDestructive:true};
+
+  // Nicht blockierend: alle strukturierten Fragen-/Wortschatz-/Verben-/Perfekt-/
+  // Grammatik-/Dativ-/Finnisch-Stände aus bekannten Alias-Dokumenten werden über den
+  // bestehenden transaktionalen SPProgress-Writer in das kanonische Konto vereinigt.
+  startStructuredCanonicalMerge();
+
+  const enriched={...result,allEligibleLocalProgressMerged:true,allStructuredProgressMergeStarted:true,l7l8AccountScopedMerge:true,l78BridgeStaged:Number(bridge?.staged)||0,l78RawMigrated:Number(bridge?.rawMigrated)||0,restoredL78,l78Flushed,serverResetApplied:Number(result?.restoredStructured||0)>0,nonDestructive:true};
   if(refreshAfterProgressPreparation(enriched,isolation))return enriched;
   return enriched;
 }
