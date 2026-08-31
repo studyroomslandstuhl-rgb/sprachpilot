@@ -30,6 +30,7 @@ const WORDS=[
 ];
 window.L8_T3_VOCAB_READY=Promise.resolve(window.L8_CONTENT_READY).then(themes=>{
  const all=window.L8_ALL_THEMES||themes||{},theme=all[3]||all['3']||(Array.isArray(all)?all.find(t=>Number(t?.number)===3):null);if(!theme||!Array.isArray(theme.tasks))return themes;
+ theme.number=3;if(!theme.title)theme.title='Thema 3';
  let cards=(theme.tasks||[]).find(t=>t?.kind==='cards'||t?.id==='karteikarten'||/karteikart/i.test(String(t?.title||'')));
  if(!cards){cards={id:'karteikarten',title:'Karteikarten',kind:'cards',items:[]};theme.tasks.unshift(cards)}
  cards.id='karteikarten';cards.title='Karteikarten';cards.kind='cards';cards.emoji='📚';cards.icon='📚';cards.instruction='Lerne die Wörter aus Thema 3.';cards.items=WORDS.map(x=>({...x,translations:{...x.translations},tr:{...x.tr}}));
