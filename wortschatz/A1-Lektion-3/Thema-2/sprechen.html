@@ -1,3 +1,25 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sprechen</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="accountStrip" class="account-strip"></div>
-<div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=8"></script><script>header("Sprechen");let Q=queue('sprechen.html',WORDS);function render(){Q.cur=next(Q);if(!Q.cur){complete(area,'sprechen.html','schreiben.html');return}Q.tries=0;Q.had=false;area.innerHTML=prog(Q)+`<div class="question">Sprich Artikel + Nomen.</div><img class="food-img" src="${Q.cur.image}" onerror="fixImg(this)"><div class="actions"><button id="micBtn" class="btn mic-btn" onclick="say()"><span class="mic-icon">🎤</span>Sprechen</button><button class="btn secondary" onclick="writeIt()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans"><button class="btn" onclick="checkText()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`}function writeIt(){write.classList.remove('hidden')}function ok(){right(Q,Q.cur);fb.textContent='Richtig!';setTimeout(render,700)}function say(){startMic(micBtn,(txt)=>{let d=diagnose(txt,Q.cur);d.ok?ok():(wrong(Q),fb.innerHTML=fail(Q,d))})}function checkText(){let d=diagnose(ans.value,Q.cur);d.ok?ok():(wrong(Q),fb.innerHTML=fail(Q,d))}render();</script><script type="module" src="/js/guard.js"></script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sprechen · Mengen und Preise</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="accountStrip" class="account-strip"></div><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=8"></script><script type="module" src="/js/guard.js?v=l3t2-pedagogy1"></script>
+<script>
+header('Sprechen: Im Supermarkt');
+const ITEMS=[
+ {id:'speak1',context:'Du möchtest eine Flasche Wasser.',accepted:['Ich möchte eine Flasche Wasser bitte','Eine Flasche Wasser bitte'],solution:'Ich möchte eine Flasche Wasser, bitte.'},
+ {id:'speak2',context:'Frage nach dem Preis einer Packung Kaffee.',accepted:['Was kostet eine Packung Kaffee','Wie viel kostet eine Packung Kaffee'],solution:'Was kostet eine Packung Kaffee?'},
+ {id:'speak3',context:'Antworte: Eine Packung Kaffee kostet 4,99 €.',accepted:['Eine Packung Kaffee kostet 4 Euro 99 Cent','Eine Packung Kaffee kostet vier Euro neunundneunzig Cent','Eine Packung Kaffee kostet 4,99 Euro'],solution:'Eine Packung Kaffee kostet 4 Euro 99 Cent.'},
+ {id:'speak4',context:'Bestelle zwei Kilo Äpfel.',accepted:['Ich möchte zwei Kilo Äpfel bitte','Zwei Kilo Äpfel bitte'],solution:'Ich möchte zwei Kilo Äpfel, bitte.'},
+ {id:'speak5',context:'Bestelle 500 Gramm Käse.',accepted:['Ich möchte 500 Gramm Käse bitte','500 Gramm Käse bitte','Ich brauche 500 Gramm Käse'],solution:'Ich möchte 500 Gramm Käse, bitte.'},
+ {id:'speak6',context:'Frage nach dem Preis von zwei Flaschen Saft.',accepted:['Was kosten zwei Flaschen Saft','Wie viel kosten zwei Flaschen Saft'],solution:'Was kosten zwei Flaschen Saft?'},
+ {id:'speak7',context:'Die Verkäuferin fragt: „Sonst noch etwas?“ Du brauchst nichts mehr.',accepted:['Nein danke','Nein danke das ist alles','Nein danke, das ist alles'],solution:'Nein, danke. Das ist alles.'},
+ {id:'speak8',context:'Du möchtest eine Dose Tomaten und eine Packung Reis.',accepted:['Ich möchte eine Dose Tomaten und eine Packung Reis bitte','Eine Dose Tomaten und eine Packung Reis bitte'],solution:'Ich möchte eine Dose Tomaten und eine Packung Reis, bitte.'}
+];
+const clean=v=>String(v||'').normalize('NFC').trim().toLowerCase().replace(/[.,!?;:“”"'`´]/g,'').replace(/\s+/g,' ');
+const ok=(v,item)=>item.accepted.some(x=>clean(x)===clean(v));
+let Q=queue('sprechen.html',ITEMS);
+function render(){Q.cur=next(Q);if(!Q.cur){complete(area,'sprechen.html','index.html');return}Q.tries=0;Q.had=false;area.innerHTML=prog(Q)+`<div class="hint"><b>Situation:</b> ${Q.cur.context}</div><div class="question">Sprich einen passenden ganzen Satz.</div><div class="actions"><button id="micBtn" class="btn mic-btn" onclick="sayNow()"><span class="mic-icon">🎤</span>Sprechen</button><button class="btn secondary" onclick="writeIt()">Ich kann nicht sprechen</button></div><div id="micStatus" class="mic-status"></div><div id="write" class="hidden"><input id="ans" placeholder="Schreibe den Satz"><button class="btn" onclick="checkText()">Kontrollieren</button></div><div id="fb" class="feedback"></div>`}
+function writeIt(){write.classList.remove('hidden');ans.focus()}
+function good(){right(Q,Q.cur);fb.textContent='Richtig!';setTimeout(render,650)}
+function bad(){wrong(Q);if(Q.tries===1)fb.textContent='Noch nicht richtig. Versuch es noch einmal.';else if(Q.tries===2)fb.innerHTML='<div class="hint">Tipp: Achte auf Menge, Verpackung und kostet/kosten.</div>';else fb.innerHTML=`<div class="hint">Beispiel: ${Q.cur.solution}<br>Sprich oder schreibe die richtige Form jetzt selbst.</div>`}
+function sayNow(){startMic(micBtn,(txt)=>{if(!txt){fb.textContent='Ich konnte nichts erkennen. Bitte noch einmal sprechen oder schreiben.';return}ok(txt,Q.cur)?good():bad()})}
+function checkText(){ok(ans.value,Q.cur)?good():bad()}
+render();
+</script></body></html>
