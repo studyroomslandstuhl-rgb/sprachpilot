@@ -33,38 +33,18 @@
       if(String(localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase().startsWith('teacher'))localStorage.removeItem('SP_LOGIN_CONTEXT');
     }catch(e){}
   }
-  function clearStudentSessionFlags(){
-    try{['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_KEEP_LOGGED_IN','SP_STUDENT_ID','SP_STUDENT_AUTH_UID','SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE','SP_AUTH_ROLE','SP_LOGIN_CONTEXT','motherLanguage','muttersprache','SP_MOTHER_LANGUAGE_CODE'].forEach(k=>localStorage.removeItem(k))}catch(e){}
-  }
-  function clearInsecureActiveStudent(){
-    clearStudentSessionFlags();
-    try{localStorage.setItem('SP_SECURE_STUDENT_RELOGIN_REQUIRED','1')}catch(e){}
-  }
-  function enforceStudentRole(p){
-    if(!secureStudent(p))return;
-    clearPreviewResidue();sanitizeCourseState(p);
-    try{localStorage.setItem('SP_LOGIN_ROLE','student');localStorage.setItem('SP_ACTIVE_ROLE','student');localStorage.setItem('SP_USER_ROLE','student');localStorage.setItem('SP_STUDENT_AUTH_UID',String(p.authUid||''));localStorage.removeItem('SP_SECURE_STUDENT_RELOGIN_REQUIRED')}catch(e){}
-  }
+  function clearStudentSessionFlags(){try{['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_KEEP_LOGGED_IN','SP_STUDENT_ID','SP_STUDENT_AUTH_UID','SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE','SP_AUTH_ROLE','SP_LOGIN_CONTEXT','motherLanguage','muttersprache','SP_MOTHER_LANGUAGE_CODE'].forEach(k=>localStorage.removeItem(k))}catch(e){}}
+  function clearInsecureActiveStudent(){clearStudentSessionFlags();try{localStorage.setItem('SP_SECURE_STUDENT_RELOGIN_REQUIRED','1')}catch(e){}}
+  function enforceStudentRole(p){if(!secureStudent(p))return;clearPreviewResidue();sanitizeCourseState(p);try{localStorage.setItem('SP_LOGIN_ROLE','student');localStorage.setItem('SP_ACTIVE_ROLE','student');localStorage.setItem('SP_USER_ROLE','student');localStorage.setItem('SP_STUDENT_AUTH_UID',String(p.authUid||''));localStorage.removeItem('SP_SECURE_STUDENT_RELOGIN_REQUIRED')}catch(e){}}
   function saveBackups(p){if(!secureStudent(p))return;p=sanitizeCourseState(p);const s=JSON.stringify(p);try{BACKUP_KEYS.forEach(k=>localStorage.setItem(k,s));sessionStorage.setItem('SP_PROFILE_SESSION_BACKUP',s);sessionStorage.setItem('SP_STUDENT_PROFILE_SESSION_BACKUP',s)}catch(e){}}
   function persistProfile(p){try{const s=JSON.stringify(p);localStorage.setItem('SP_USER_PROFILE',s);localStorage.setItem('SP_STUDENT_PROFILE',s)}catch(e){}}
   function restore(){
     if(teacherSession())return null;
     let p=firstValid(PROFILE_KEYS,localStorage);
-    if(p){
-      if(realStudent(p)&&!secureStudent(p)){clearInsecureActiveStudent();return null}
-      if(secureStudent(p)){p=sanitizeCourseState(p);enforceStudentRole(p);persistProfile(p);saveBackups(p)}
-      return p;
-    }
+    if(p){if(realStudent(p)&&!secureStudent(p)){clearInsecureActiveStudent();return null}if(secureStudent(p)){p=sanitizeCourseState(p);enforceStudentRole(p);persistProfile(p);saveBackups(p)}return p}
     if(!keepLoggedIn())return null;
     p=firstSecureStudent(BACKUP_KEYS,localStorage)||firstSecureStudent(['SP_PROFILE_SESSION_BACKUP','SP_STUDENT_PROFILE_SESSION_BACKUP'],sessionStorage);
-    if(p){
-      try{
-        p=sanitizeCourseState(p);enforceStudentRole(p);persistProfile(p);
-        localStorage.setItem('SP_KEEP_LOGGED_IN','1');localStorage.setItem('SP_LOGIN_ROLE','student');localStorage.setItem('SP_ACTIVE_ROLE','student');localStorage.setItem('SP_STUDENT_AUTH_UID',String(p.authUid||''));
-        if(p.canonicalStudentId||p.studentId||p.userId)localStorage.setItem('SP_STUDENT_ID',p.canonicalStudentId||p.studentId||p.userId);
-      }catch(e){}
-      return p;
-    }
+    if(p){try{p=sanitizeCourseState(p);enforceStudentRole(p);persistProfile(p);localStorage.setItem('SP_KEEP_LOGGED_IN','1');localStorage.setItem('SP_LOGIN_ROLE','student');localStorage.setItem('SP_ACTIVE_ROLE','student');localStorage.setItem('SP_STUDENT_AUTH_UID',String(p.authUid||''));if(p.canonicalStudentId||p.studentId||p.userId)localStorage.setItem('SP_STUDENT_ID',p.canonicalStudentId||p.studentId||p.userId)}catch(e){}return p}
     return null;
   }
   function installSecureLogoutOverride(){
@@ -73,41 +53,20 @@
       const fallback=typeof window.logout==='function'?window.logout:null;
       const secureLogout=async function(){
         const p=firstSecureStudent(PROFILE_KEYS,localStorage);
-        if(!p){
-          if(fallback)return fallback();
-          clearStudentSessionFlags();location.href='/index.html';return;
-        }
-        try{
-          const module=await import('/js/student-secure-auth.js?v=1');
-          await module.secureStudentSignOut();
-        }catch(error){
-          console.error('Sichere Firebase-Abmeldung fehlgeschlagen',error);
-          try{window.alert('Abmeldung konnte nicht vollständig abgeschlossen werden. Die Sitzung bleibt aus Sicherheitsgründen aktiv. Bitte die Seite neu laden und erneut abmelden.')}catch(e){}
-          return;
-        }
-        clearStudentSessionFlags();
-        try{sessionStorage.removeItem('SP_PROFILE_SESSION_BACKUP');sessionStorage.removeItem('SP_STUDENT_PROFILE_SESSION_BACKUP')}catch(e){}
-        location.href='/index.html';
+        if(!p){if(fallback)return fallback();clearStudentSessionFlags();location.href='/index.html';return}
+        try{const module=await import('/js/student-secure-auth.js?v=1');await module.secureStudentSignOut()}
+        catch(error){console.error('Sichere Firebase-Abmeldung fehlgeschlagen',error);try{window.alert('Abmeldung konnte nicht vollständig abgeschlossen werden. Die Sitzung bleibt aus Sicherheitsgründen aktiv. Bitte die Seite neu laden und erneut abmelden.')}catch(e){}return}
+        clearStudentSessionFlags();try{sessionStorage.removeItem('SP_PROFILE_SESSION_BACKUP');sessionStorage.removeItem('SP_STUDENT_PROFILE_SESSION_BACKUP')}catch(e){}location.href='/index.html';
       };
-      secureLogout.__spSecureStudentLogout=true;
-      window.logout=secureLogout;
+      secureLogout.__spSecureStudentLogout=true;window.logout=secureLogout;
     }catch(e){}
   }
   function installPointBridge(){
-    try{
-      const p=firstSecureStudent(PROFILE_KEYS,localStorage);
-      if(!p||teacherSession())return;
-      import('/js/point-delta-bridge.js?v=20260829-points3').then(()=>{try{window.SPEnsurePointDeltaBridge?.()}catch(e){}}).catch(error=>console.warn('Punkte-Bridge konnte noch nicht geladen werden',error));
-    }catch(e){}
+    try{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(!p||teacherSession())return;import('/js/point-delta-bridge.js?v=20260831-central1').then(()=>{try{window.SPEnsurePointDeltaBridge?.()}catch(e){}}).catch(error=>console.warn('Punkte-Kompatibilitätsbridge konnte noch nicht geladen werden',error))}catch(e){}
   }
 
-  restore();
-  installPointBridge();
-  // guard.js setzt window.logout unmittelbar nach diesem Modul. Der Timer läuft
-  // erst danach und ersetzt ausschließlich die Schüler-Abmeldung durch die sichere Variante.
-  setTimeout(installSecureLogoutOverride,0);
-  setTimeout(installSecureLogoutOverride,500);
-  setTimeout(installPointBridge,250);
+  restore();installPointBridge();
+  setTimeout(installSecureLogoutOverride,0);setTimeout(installSecureLogoutOverride,500);setTimeout(installPointBridge,250);
   window.addEventListener('SP_STUDENT_IDENTITY_NORMALIZED',()=>{setTimeout(installSecureLogoutOverride,0);setTimeout(installPointBridge,0)});
   window.addEventListener('storage',()=>{restore();installPointBridge()});
   document.addEventListener('visibilitychange',()=>{if(!document.hidden){restore();installPointBridge()}else{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(p&&!teacherSession())saveBackups(p)}});
