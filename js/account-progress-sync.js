@@ -4,7 +4,7 @@ import '/js/ranking-mirror.js?v=20260829-safe15';
 import { auth, authReady } from '/js/firebase.js';
 import { getActiveProfile } from '/js/auth.js';
 import { currentFirebaseUser } from '/js/student-secure-auth.js?v=1';
-import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity5';
+import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity6';
 import { isolateLocalProgressOwner } from '/js/account-progress-owner-isolation.js?v=3';
 import { prepareL78AccountProgressBridge, hydrateL78VisibleProgress, installL78RuntimeBridge } from '/js/account-progress-l78-bridge.js?v=20260831-central6';
 import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-authoritative-v2.js?v=20260831-central6';
