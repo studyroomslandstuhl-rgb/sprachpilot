@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_TEACHER_POINTS_DASHBOARD_V6)return;
-window.__SP_TEACHER_POINTS_DASHBOARD_V6=true;
+if(window.__SP_TEACHER_POINTS_DASHBOARD_V7)return;
+window.__SP_TEACHER_POINTS_DASHBOARD_V7=true;
 
 const MODULES=['fragen','wortschatz','verben','perfekt','grammatik','dativverben'];
 const point=v=>{const n=Number(v);return Number.isFinite(n)?Math.max(0,Math.round(n)):0};
@@ -94,9 +94,9 @@ function mergeProgress(base={},incoming={}){
  const out={...base,...incoming};for(const m of MODULES){const mod={...(base[m]||{})};for(const[k,t]of Object.entries(incoming[m]||{})){if(t&&typeof t==='object'&&!Array.isArray(t)&&(t.tasks||t.current||t.lifetime||t.progressPercent!=null||t.exam))mod[k]=mergeTopic(mod[k]||{},t);else mod[k]=mergeGeneric(mod[k],t,k)}out[m]=mod}out.metadata=mergeGeneric(base.metadata||{},incoming.metadata||{},'metadata');if(base.finnischVerben||incoming.finnischVerben)out.finnischVerben=mergeGeneric(base.finnischVerben||{},incoming.finnischVerben||{},'finnischVerben');out.ranking={...(base.ranking||{}),...(incoming.ranking||{}),points:Math.max(point(base.ranking?.points),point(incoming.ranking?.points))};out.totals={...(base.totals||{}),...(incoming.totals||{}),points:Math.max(point(base.totals?.points),point(incoming.totals?.points))};out.pointsTotal=Math.max(point(base.pointsTotal),point(incoming.pointsTotal));out.lifetimePoints=Math.max(point(base.lifetimePoints),point(incoming.lifetimePoints));out.punkteGesamt=Math.max(point(base.punkteGesamt),point(incoming.punkteGesamt));out.aliasIds=uniq([...(base.aliasIds||[]),...(incoming.aliasIds||[]),base.id,incoming.id,base.studentId,incoming.studentId,base.userId,incoming.userId,base.docId,incoming.docId]);return out
 }
 
-async function mergeOneStudent(student){
+async function mergeOneStudent(student,{force=false}={}){
  const database=db(),core=await ensureCore(),rows=await progressRows(student),canonical=text(student.canonicalStudentId)||studentId(student)||idsFor(student)[0];if(!database||!core||!canonical||!rows.length)return{ok:false,reason:'no-data'};
- if(rows.some(r=>Number(r.metadata?.cloudReconciliationV4?.version||0)>=4))return{ok:true,skipped:true,canonical,reason:'already-reconciled-v4'};
+ if(!force&&rows.some(r=>Number(r.metadata?.cloudReconciliationV4?.version||0)>=4))return{ok:true,skipped:true,canonical,reason:'already-reconciled-v4'};
  let structured={};const entryMap=new Map(),ledgerGroups=new Map();
  for(const row of rows){structured=mergeProgress(structured,row);for(const entry of clientEntries(row)){const old=entryMap.get(entry.key);entryMap.set(entry.key,{key:entry.key,value:old?core.mergeValues(old.value,entry.value):entry.value,updatedAt:Math.max(old?.updatedAt||0,entry.updatedAt)});const match=ledgerMatch(entry.key);if(!match)continue;let ledger;try{ledger=JSON.parse(entry.value)}catch(e){continue}if(!ledger||typeof ledger!=='object')continue;const pair=`${match.lesson}:${match.theme}`;if(!ledgerGroups.has(pair))ledgerGroups.set(pair,[]);ledgerGroups.get(pair).push({rowId:row.id,key:entry.key,...match,ledger})}}
  const legacyThemes=[],canonicalPid=cleanPid(canonical);
@@ -136,5 +136,5 @@ const observer=new MutationObserver(()=>decorate());observer.observe(document.do
 document.addEventListener('click',e=>{if(e.target?.closest?.('#refreshBtn,[onclick*="SPTeacherDashboard.refresh"]'))setTimeout(()=>loadRankings(true),450)});
 window.addEventListener('SP_RANKING_ROSTER_BACKFILLED',()=>loadRankings(true));window.addEventListener('SP_B1_POINTS_RECALCULATED',()=>loadRankings(true));window.addEventListener('SP_GLOBAL_POINTS_RECONCILED',()=>loadRankings(true));
 [250,600,1200,2200,4000].forEach(delay=>setTimeout(()=>{decorate();loadRankings(delay>=1200)},delay));scheduleAutomaticV4();
-window.SPTeacherPointsDashboard={loadRankings,studentPoints,decorate,runLegacyDeviceMerge,mergeOneStudent,reconciliationStudents,version:6,reconciliationVersion:4};
+window.SPTeacherPointsDashboard={loadRankings,studentPoints,decorate,runLegacyDeviceMerge,mergeOneStudent,reconciliationStudents,version:7,reconciliationVersion:4};
 })();
