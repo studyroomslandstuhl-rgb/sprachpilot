@@ -6,7 +6,7 @@ const AUDIO=CDN+'audio/';
 const tr=(en,ru,tr,uk,ar,ja,ro,pl,ku)=>({en,ru,tr,uk,ar,ja,ro,pl,ku});
 const item=(term,type,stem,translations,extra={})=>({term,type,image:CDN+stem+'.webp',audio:AUDIO+stem+'.mp3',audioFile:AUDIO+stem+'.mp3',translations,tr:translations,...extra});
 const WORDS=[
- item('die Erfahrung','noun','berufserfahrung',tr('experience','опыт','deneyim','досвід','خبرة','経験','experiență','doświadczenie','ezmûn'),{plural:'die Erfahrungen'}),
+ item('die Erfahrung','noun','berufserfahrung',tr('experience','опыт','deneyim','досвід','خبرة','経験','experiență','doświadczenie','ezmûn'),{plural:'die Erfahrungen',audio:AUDIO+'erfahrung.mp3',audioFile:AUDIO+'erfahrung.mp3'}),
  item('das Café','noun','cafe',tr('café','кафе','kafe','кафе','مقهى','カフェ','cafenea','kawiarnia','kafe'),{plural:'die Cafés'}),
  item('der Stress','noun','stress',tr('stress','стресс','stres','стрес','توتر / ضغط','ストレス','stres','stres','stres')),
  item('der Kellner','noun','kellner',tr('waiter','официант','garson','офіціант','نادل','ウェイター','chelner','kelner','garson'),{plural:'die Kellner'}),
@@ -34,12 +34,8 @@ window.L8_T3_VOCAB_READY=Promise.resolve(window.L8_CONTENT_READY).then(themes=>{
  if(!cards){cards={id:'karteikarten',title:'Karteikarten',kind:'cards',items:[]};theme.tasks.unshift(cards)}
  cards.id='karteikarten';cards.title='Karteikarten';cards.kind='cards';cards.emoji='📚';cards.icon='📚';cards.instruction='Lerne die Wörter aus Thema 3.';cards.items=WORDS.map(x=>({...x,translations:{...x.translations},tr:{...x.tr}}));
  theme.vocabularyOverviewItems=cards.items;
- theme.grammarOverview=[
-  {title:'war',text:'Präteritum von sein'},
-  {title:'hatte',text:'Präteritum von haben'}
- ];
- theme.translationRevision='l8t3-standard-languages-v1';
- theme.mediaRevision='l8t3-bunny-v1';
+ theme.grammarOverview=[{title:'war',text:'Präteritum von sein'},{title:'hatte',text:'Präteritum von haben'}];
+ theme.translationRevision='l8t3-standard-languages-v1';theme.mediaRevision='l8t3-bunny-v2';
  if(Number(document.body?.dataset?.theme)===3)window.L8_THEME=theme;
  return themes;
 });
