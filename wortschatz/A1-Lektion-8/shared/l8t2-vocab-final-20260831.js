@@ -12,6 +12,7 @@ const DATA={
  zeigen:{term:'zeigen – hat gezeigt',answer:'zeigen',stem:'zeigen',tr:{en:'to show',ru:'показывать',tr:'göstermek',uk:'показувати',ar:'يُري',ja:'見せる',ro:'a arăta',pl:'pokazywać',ku:'nîşan dan',fa:'نشان دادن',fr:'montrer',es:'mostrar',it:'mostrare'}},
  stehen:{term:'zur Verfügung stehen',answer:'zur Verfügung stehen',stem:'zur_verfuegung_stehen',tr:{en:'to be available / at someone’s disposal',ru:'быть в распоряжении / быть доступным',tr:'hazır bulunmak / kullanımda olmak',uk:'бути в розпорядженні / бути доступним',ar:'يكون متاحًا / يكون تحت التصرّف',ja:'利用できる / 用意されている',ro:'a fi la dispoziție / a fi disponibil',pl:'być do dyspozycji / być dostępny',ku:'berdest bûn',fa:'در دسترس بودن',fr:'être à disposition / être disponible',es:'estar a disposición / estar disponible',it:'essere a disposizione / essere disponibile'}}
 };
+const ANREDE={term:'die Anrede',type:'noun',plural:'die Anreden',image:CDN+'anrede.webp',audio:AUDIO+'anrede.mp3',audioFile:AUDIO+'anrede.mp3',translations:{en:'form of address / salutation',ru:'обращение',tr:'hitap',uk:'звертання',ar:'صيغة المخاطبة / التحية',ja:'呼びかけ / 敬称',ro:'formulă de adresare',pl:'forma zwrotu / zwrot grzecznościowy',ku:'bangkirin / awayê axaftin',fa:'خطاب / شیوه خطاب',fr:'formule d’adresse',es:'tratamiento / fórmula de saludo',it:'formula di apertura / appellativo'},tr:{en:'form of address / salutation',ru:'обращение',tr:'hitap',uk:'звертання',ar:'صيغة المخاطبة / التحية',ja:'呼びかけ / 敬称',ro:'formulă de adresare',pl:'forma zwrotu / zwrot grzecznościowy',ku:'bangkirin / awayê axaftin',fa:'خطاب / شیوه خطاب',fr:'formule d’adresse',es:'tratamiento / fórmula de saludo',it:'formula di apertura / appellativo'}};
 function keyFor(item){
  const n=norm(term(item));
  if(!n)return'';
@@ -42,6 +43,15 @@ function fixSimpleMedia(item){
  if(!stem)return item;
  item.image=CDN+stem+'.webp';item.audio=AUDIO+stem+'.mp3';item.audioFile=AUDIO+stem+'.mp3';return item;
 }
+function ensureAnrede(list){
+ const items=Array.isArray(list)?list:[];
+ const found=items.find(x=>norm(term(x))==='die anrede'||norm(term(x))==='anrede');
+ if(found){Object.assign(found,{...ANREDE,translations:{...ANREDE.translations},tr:{...ANREDE.tr}});return items}
+ const entry={...ANREDE,translations:{...ANREDE.translations},tr:{...ANREDE.tr}};
+ const grussIndex=items.findIndex(x=>/^(der )?gru(ss|ß)$/i.test(term(x)));
+ if(grussIndex>=0)items.splice(grussIndex+1,0,entry);else items.push(entry);
+ return items;
+}
 function cleanList(list,ensure=false){
  const out=[],seen=new Set();
  for(const original of Array.isArray(list)?list:[]){
@@ -50,7 +60,7 @@ function cleanList(list,ensure=false){
   if(key&&DATA[key]){if(seen.has(key))continue;seen.add(key);out.push(canonical(key,original));continue}
   out.push(fixSimpleMedia(original));
  }
- if(ensure){for(const key of ['dauern','heiraten','zeigen','stehen'])if(!seen.has(key))out.push(canonical(key))}
+ if(ensure){for(const key of ['dauern','heiraten','zeigen','stehen'])if(!seen.has(key))out.push(canonical(key));ensureAnrede(out)}
  return out;
 }
 window.L8_T2_VOCAB_FINAL_READY=Promise.resolve(window.L8_T2_MEDIA_FIXES_READY||window.L8_T2_EXTRA_TRANSLATIONS_READY||window.L8_T2_VOCAB_READY||window.L8_T2_TRANSLATIONS_READY||window.L8_T2_CURRENT_READY||window.L8_CONTENT_READY).then(()=>{
