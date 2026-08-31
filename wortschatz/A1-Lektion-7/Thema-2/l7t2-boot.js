@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7t2-firebase-progress-v15';
+const version='l7t2-firebase-progress-v16';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 function currentTask(){const id=new URLSearchParams(location.search).get('task');return window.L7S?.task?.(id)||null}
 function concise(){if(page!=='task')return;const task=currentTask();if(!task?.spL7T2Write)return;document.querySelectorAll('.l7-answer-box label').forEach(label=>{if(label.textContent!=='Antwort')label.textContent='Antwort'})}
@@ -14,7 +14,7 @@ load('/shared/sp-cache-epoch.js?v=20260831-sync-device-merge8').catch(()=>{})
  .then(()=>load('../shared/l7-state-safety.js?v=1'))
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
  .then(()=>load('../shared/l7-wrong-queue-v4.js?v=10'))
- .then(()=>{window.SPL7WrongQueueV8?.install?.();return load('../shared/l7-theme-score.js?v=20260831-firebase-progress2')})
+ .then(()=>{window.SPL7WrongQueueV8?.install?.();return load('../shared/l7-theme-score.js?v=20260831-firebase-progress3')})
  .then(()=>load('../shared/l7-score-repeat-fix.js?v=1'))
  .then(()=>load('../shared/l7-score-live-sync.js?v=20260831-central8'))
  .then(()=>page==='task'?window.L7ThemeScore?.seedFromCloud?.(theme):null)
