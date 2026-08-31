@@ -1,7 +1,8 @@
-import { db, doc, setDoc, serverTimestamp } from '/js/firebase.js';
+import { db, doc, serverTimestamp } from '/js/firebase.js';
 import { getActiveProfile, getActiveRole } from '/js/auth.js';
+import '/shared/points-recalculator.js?v=2';
+import { runTransaction } from 'https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js';
 
-const MODULES=['fragen','wortschatz','verben','perfekt','grammatik'];
 const CARRY_ID='perfekt-recovered-points';
 let syncing=false,timer=0;
 const point=v=>{const n=Number(v);return Number.isFinite(n)&&n>0?n:0};
@@ -10,28 +11,31 @@ const uniq=a=>[...new Set((a||[]).filter(Boolean).map(String))];
 function profile(){return getActiveProfile()||{}}
 function course(p=profile()){return p.kurs||p.kursnummer||p.courseCode||p.course||localStorage.getItem('SP_COURSE_CODE')||''}
 function fallbackId(p=profile()){return cleanId((p.courseDocId||course(p)||'kurs')+'_'+(String(p.email||'').trim().toLowerCase()||p.vorname||p.firstName||'student'))}
-function ids(p=profile()){const api=window.SPProgress;if(api?.idCandidates){try{const list=api.idCandidates(p);if(Array.isArray(list)&&list.length)return uniq(list)}catch{}}return uniq([p.docId,p.studentId,p.userId,p.uid,p.id,localStorage.getItem('SP_STUDENT_ID'),fallbackId(p)])}
+function ids(p=profile()){const api=window.SPProgress;if(api?.idCandidates){try{const list=api.idCandidates(p);if(Array.isArray(list)&&list.length)return uniq(list)}catch{}}return uniq([p.canonicalStudentId,p.docId,p.studentId,p.userId,p.uid,p.id,...(Array.isArray(p.aliasIds)?p.aliasIds:[]),localStorage.getItem('SP_STUDENT_ID'),fallbackId(p)])}
 function isPreview(){const role=String(getActiveRole()||localStorage.getItem('SP_LOGIN_ROLE')||'').toLowerCase();if(['teacher','lehrer','admin'].includes(role))return true;try{const raw=sessionStorage.getItem('SP_TEACHER_PREVIEW');return raw==='1'||JSON.parse(raw||'null')?.teacherPreview===true}catch{return false}}
-function isTopic(v){return !!(v&&typeof v==='object'&&!Array.isArray(v)&&(v.lifetime||v.tasks||v.exam||v.current||v.progressPercent!=null))}
-function modulePoints(mod={},exclude=''){let total=0;for(const[key,topic]of Object.entries(mod||{})){if(key===exclude||key==='state'||key==='progress'||key==='totals'||!isTopic(topic))continue;total+=point(topic?.lifetime?.points)}return total}
-function allModulePoints(progress={}){let total=0;for(const key of MODULES)total+=modulePoints(progress[key]||{});return total}
-function storedPoints(progress={}){return Math.max(point(progress?.ranking?.points),point(progress?.totals?.points),point(progress?.pointsTotal),point(progress?.lifetimePoints),point(progress?.punkteGesamt),point(localStorage.getItem('SP_POINTS_TOTAL')))}
-function localPerfektTarget(){const recovery=window.SPPerfektRegroupRecovery;let floor=0,active=0;try{floor=point(recovery?.pointFloor?.())}catch{}try{active=point(recovery?.activePoints?.())}catch{}return Math.max(floor,active)}
+function storedPoints(progress={}){return Math.max(point(progress?.ranking?.points),point(progress?.totals?.points),point(progress?.pointsTotal),point(progress?.lifetimePoints),point(progress?.punkteGesamt),point(progress?.points),point(localStorage.getItem('SP_POINTS_TOTAL')))}
 function displayName(p){return[p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(' ')||p.displayName||p.email||'Schüler/in'}
+async function getProgress(){if(!window.SPProgress){try{await import('/js/progress.js?v=20260831-central2')}catch{}}try{return await window.SPProgress?.loadCurrentStudentProgress?.()||{}}catch{return{}}}
+function mergeRun(local={},cloud={}){const out={...cloud,...local},tasks={};for(const key of new Set([...Object.keys(cloud.tasks||{}),...Object.keys(local.tasks||{})])){const a=local.tasks?.[key]||{},b=cloud.tasks?.[key]||{},done=uniq([...(b.done||[]),...(a.done||[])]),total=Math.max(Number(a.total)||0,Number(b.total)||0);tasks[key]={...b,...a,done,total,completed:!!(a.completed||b.completed||(total>0&&done.length>=total))}}out.tasks=tasks;out.awards={tasks:{},examPoints:Math.max(Number(local.awards?.examPoints)||0,Number(cloud.awards?.examPoints)||0)};for(const key of new Set([...Object.keys(cloud.awards?.tasks||{}),...Object.keys(local.awards?.tasks||{})]))out.awards.tasks[key]=Math.max(Number(local.awards?.tasks?.[key])||0,Number(cloud.awards?.tasks?.[key])||0);out.exam={...(cloud.exam||{}),...(local.exam||{}),bestPercent:Math.max(Number(local.exam?.bestPercent)||0,Number(cloud.exam?.bestPercent)||0),stars:Math.max(Number(local.exam?.stars)||0,Number(cloud.exam?.stars)||0)};out.completed=!!(local.completed||cloud.completed);return out}
+function mergeGroups(local={},cloud={}){const out={};for(const id of new Set([...Object.keys(cloud||{}),...Object.keys(local||{})])){const a=local?.[id]||{},b=cloud?.[id]||{},runs={};for(const runId of new Set([...Object.keys(b.runs||{}),...Object.keys(a.runs||{})]))runs[runId]=mergeRun(a.runs?.[runId]||{},b.runs?.[runId]||{});out[id]={...b,...a,signature:a.signature||b.signature||'',verbs:uniq([...(b.verbs||[]),...(a.verbs||[])]),currentRun:Math.max(Number(a.currentRun)||1,Number(b.currentRun)||1),runs}}return out}
 function groupMetadata(){try{const detailed=window.SPPerfektRegroupRecovery?.metadata?.();if(detailed&&Object.keys(detailed).length)return detailed}catch{}const visible=window.SP_PERFEKT_RELEASE_SYNC?.visible||[],out={};for(let i=0;i<visible.length;i+=20){const verbs=visible.slice(i,i+20),id=String(Math.floor(i/20)+1).padStart(2,'0');out[id]={signature:'release|'+verbs.join('|'),verbs:verbs.slice(),currentRun:1,runs:{}}}return out}
-async function getProgress(){if(!window.SPProgress){try{await import('/js/progress.js?v=points-preserve3')}catch{}}try{return await window.SPProgress?.loadCurrentStudentProgress?.()||{}}catch{return{}}}
+function groupPoints(groups={}){let total=0;for(const group of Object.values(groups||{})){try{total+=point(window.SPPointRecalculator?.groupPoints?.(group)?.points)}catch{}}return total}
+function evidence(progress={}){try{return point(window.SPPointRecalculator?.calculate?.(progress)?.total)}catch{return 0}}
 async function sync(){
  if(syncing||isPreview())return;syncing=true;
  try{
-  const p=profile(),progress=await getProgress(),id=ids(p)[0];if(!id)return;
-  const previousStored=storedPoints(progress),perfekt={...(progress.perfekt||{})},actual=modulePoints(perfekt,CARRY_ID),target=Math.max(localPerfektTarget(),actual),carryNeeded=Math.max(0,target-actual),oldCarry=perfekt[CARRY_ID]||{};
-  if(carryNeeded>0)perfekt[CARRY_ID]={...oldCarry,title:'Perfekt · wiederhergestellte Punkte',moduleTitle:'Perfekt',level:'A1',technicalRecovery:true,progressPercent:Number(oldCarry.progressPercent)||0,current:{...(oldCarry.current||{}),updatedAt:new Date().toISOString()},lifetime:{...(oldCarry.lifetime||{}),points:carryNeeded}};
-  else if(perfekt[CARRY_ID])perfekt[CARRY_ID]={...perfekt[CARRY_ID],lifetime:{...(perfekt[CARRY_ID].lifetime||{}),points:0}};
-  const nowIso=new Date().toISOString(),metadata={...(progress.metadata||{}),perfektGroups:groupMetadata()},next={...progress,perfekt,metadata},evidencePoints=allModulePoints(next),rankingPoints=Math.max(previousStored,evidencePoints),c=course(p);
-  const patch={perfekt,metadata,ranking:{...(progress.ranking||{}),points:rankingPoints,updatedAt:nowIso},totals:{...(progress.totals||{}),points:rankingPoints,updatedAt:nowIso},lifetimePoints:rankingPoints,pointsTotal:rankingPoints,punkteGesamt:rankingPoints,studentId:id,userId:id,docId:id,canonicalStudentId:id,aliasIds:ids(p),studentName:displayName(p),email:p.email||progress.email||'',kurs:c||progress.kurs||'',kursnummer:c||progress.kursnummer||'',courseCode:c||progress.courseCode||'',lastActive:serverTimestamp(),updatedAt:serverTimestamp(),lastActiveAt:nowIso,lastPage:location.pathname};
-  await setDoc(doc(db,'progress',id),patch,{merge:true});
-  try{localStorage.setItem('SP_POINTS_TOTAL',String(rankingPoints));localStorage.setItem('SP_PERFEKT_FIREBASE_POINTS_SYNC',nowIso)}catch{}
-  window.SP_PERFEKT_FIREBASE_SYNC={ok:true,perfektPoints:actual+carryNeeded,target,evidencePoints,previousStored,rankingPoints,autoLowering:false,at:nowIso}
+  const p=profile(),progress=await getProgress(),id=String(p.canonicalStudentId||ids(p)[0]||'');if(!id)return;const localGroups=groupMetadata(),nowIso=new Date().toISOString(),c=course(p),ref=doc(db,'progress',id);let result=null;
+  await runTransaction(db,async tx=>{
+    const snap=await tx.get(ref),server=snap.exists()?(snap.data()||{}):{},serverGroups=server?.metadata?.perfektGroups||{},groups=mergeGroups(localGroups,serverGroups),beforeGroup=groupPoints(serverGroups),afterGroup=groupPoints(groups),metadata={...(server.metadata||{})};
+    const hasBaseline=Object.prototype.hasOwnProperty.call(metadata,'perfektPointsBaselineV2'),savedBaseline=point(metadata.perfektPointsBaselineV2),baseline=Math.max(savedBaseline,beforeGroup),delta=hasBaseline?Math.max(0,afterGroup-baseline):0;
+    const perfekt={...(server.perfekt||{})},actualTopics=Object.entries(perfekt).filter(([key])=>key!==CARRY_ID).reduce((sum,[,topic])=>sum+point(topic?.lifetime?.points),0),carryNeeded=Math.max(0,afterGroup-actualTopics),oldCarry=perfekt[CARRY_ID]||{};
+    if(carryNeeded>0)perfekt[CARRY_ID]={...oldCarry,title:'Perfekt · wiederhergestellte Punkte',moduleTitle:'Perfekt',level:'A1',technicalRecovery:true,progressPercent:Number(oldCarry.progressPercent)||0,current:{...(oldCarry.current||{}),updatedAt:nowIso},lifetime:{...(oldCarry.lifetime||{}),points:carryNeeded}};
+    else if(perfekt[CARRY_ID])perfekt[CARRY_ID]={...perfekt[CARRY_ID],lifetime:{...(perfekt[CARRY_ID].lifetime||{}),points:0}};
+    metadata.perfektGroups=groups;metadata.perfektPointsBaselineV2=afterGroup;metadata.perfektPointsSyncV2={at:nowIso,beforeGroup,afterGroup,delta,baselineInitialized:!hasBaseline,autoLowering:false,transactional:true};
+    const draft={...server,perfekt,metadata},structured=evidence(draft),floor=Math.max(storedPoints(server),storedPoints(progress)),rankingPoints=Math.max(structured,floor+delta),patch={perfekt,metadata,ranking:{...(server.ranking||{}),points:rankingPoints,updatedAt:nowIso},totals:{...(server.totals||{}),points:rankingPoints,updatedAt:nowIso},lifetimePoints:rankingPoints,pointsTotal:rankingPoints,punkteGesamt:rankingPoints,studentId:id,userId:id,docId:id,canonicalStudentId:id,aliasIds:uniq([...(server.aliasIds||[]),...ids(p)]),studentName:displayName(p),email:p.email||server.email||'',kurs:c||server.kurs||'',kursnummer:c||server.kursnummer||'',courseCode:c||server.courseCode||'',lastActive:serverTimestamp(),updatedAt:serverTimestamp(),lastActiveAt:nowIso,lastPage:location.pathname};
+    tx.set(ref,patch,{merge:true});result={perfektPoints:afterGroup,delta,rankingPoints,structuredPoints:structured,baselineInitialized:!hasBaseline};
+  });
+  if(result){try{localStorage.setItem('SP_POINTS_TOTAL',String(Math.max(point(localStorage.getItem('SP_POINTS_TOTAL')),result.rankingPoints)));localStorage.setItem('SP_PERFEKT_FIREBASE_POINTS_SYNC',nowIso)}catch{}window.SP_PERFEKT_FIREBASE_SYNC={ok:true,...result,autoLowering:false,transactional:true,at:nowIso}}
  }catch(error){console.warn('Perfekt-Punkte/Fortschritt konnten nicht mit Firebase/Rangliste synchronisiert werden',error);window.SP_PERFEKT_FIREBASE_SYNC={ok:false,error:String(error?.message||error),at:new Date().toISOString()}}
  finally{syncing=false}
 }
