@@ -14,7 +14,7 @@ async function prepareAccountProgress(){
  }catch(error){console.warn('L7T3 Kontofortschritt konnte vor dem Rendern noch nicht abgeschlossen werden',error);return null}
 }
 function addOrderPolish(){if(page!=='task')return;const taskId=String(new URLSearchParams(location.search).get('task')||'');if(taskId!=='t3-partizip-bauen-v2'||document.getElementById('sp-l7t3-order-polish'))return;const style=document.createElement('style');style.id='sp-l7t3-order-polish';style.textContent=`.l7-actions:has([data-action="check-order"]){display:flex!important;gap:10px!important;align-items:stretch!important}.l7-actions:has([data-action="check-order"])>button{flex:1 1 0!important;width:0!important;min-width:0!important;display:flex!important;align-items:center!important;justify-content:center!important}.l7-actions [data-action="check-order"]{order:1!important}.l7-actions [data-action="reset-order"]{order:2!important}.l7-actions [data-action="undo"]{order:3!important}@media(max-width:520px){.l7-actions:has([data-action="check-order"]){gap:7px!important}.l7-actions:has([data-action="check-order"])>button{padding-left:7px!important;padding-right:7px!important}}`;document.head.appendChild(style)}
-load('/shared/sp-cache-epoch.js?v=20260831-sync-device-merge5').catch(()=>{})
+load('/shared/sp-cache-epoch.js?v=20260831-sync-device-merge8').catch(()=>{})
  .then(()=>load('/js/progress-role-guard.js?v=20260831-central8'))
  .then(()=>prepareAccountProgress())
  .then(()=>Promise.resolve(window.L7_THEME_READY))
