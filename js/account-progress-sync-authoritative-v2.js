@@ -1,4 +1,4 @@
-import '/js/account-progress-cloud-core.js?v=3';
+import '/js/account-progress-cloud-core.js?v=20260831-central4';
 import { db, doc, getDocFromServer, setDoc, serverTimestamp } from '/js/firebase.js';
 import { getActiveProfile, getActiveRole } from '/js/auth.js';
 import { currentFirebaseUser } from '/js/student-secure-auth.js?v=1';
@@ -16,7 +16,7 @@ const FLUSH_DELAY=650;
 const nativeSet=Storage.prototype.setItem;
 const nativeRemove=Storage.prototype.removeItem;
 let started=false,patched=false,hydrating=true,applying=false,activeId='',ownerUid='';
-let tracked=new Set(),dirty=new Set(),remoteCache=new Map(),flushTimer=null,flushPromise=null,refreshPromise=null;
+let tracked=new Set(),dirty=new Set(),remoteCache=new Map(),flushTimer=null,flushPromise=null,refreshPromise=null,startPromise=null;
 let readyResolve=()=>{};
 export const accountProgressReady=new Promise(resolve=>{readyResolve=resolve});
 try{window.SPAccountProgressReady=accountProgressReady}catch(e){}
@@ -24,11 +24,12 @@ try{window.SPAccountProgressReady=accountProgressReady}catch(e){}
 function parse(v,f=null){return core.parse(v,f)}
 function uniq(values){return [...new Set((values||[]).filter(Boolean).map(v=>String(v).trim()).filter(Boolean))]}
 function profile(){return getActiveProfile?.()||parse(localStorage.getItem('SP_USER_PROFILE'),null)||parse(localStorage.getItem('SP_STUDENT_PROFILE'),null)||{}}
-function role(){return String(getActiveRole?.()||localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase()}
-function isStudent(){const p=profile();return role()==='student'&&!!(p.canonicalStudentId||p.docId||p.studentId||p.userId||p.email)&&!p.teacherPreview&&!p.previewOnly&&!p.isTeacher}
+function role(){return String(getActiveRole?.()||localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').trim().toLowerCase()}
+function isStudent(){const p=profile(),r=role();return ['student','schueler','schüler'].includes(r)&&!!(p.canonicalStudentId||p.docId||p.studentId||p.userId||p.email)&&!p.teacherPreview&&!p.previewOnly&&!p.studentCoursePreview&&!p.isTeacher}
 function canonicalId(p=profile()){return String(p.canonicalStudentId||p.docId||p.studentId||p.userId||localStorage.getItem('SP_STUDENT_ID')||'').trim()}
 function ids(p=profile()){return uniq([p.canonicalStudentId,p.docId,p.studentId,p.userId,p.id,...(Array.isArray(p.aliasIds)?p.aliasIds:[]),localStorage.getItem('SP_STUDENT_ID')])}
 function secureOwner(){const p=profile(),user=currentFirebaseUser?.(),expected=String(p.authUid||localStorage.getItem('SP_STUDENT_AUTH_UID')||'').trim();return user&&!user.isAnonymous&&user.emailVerified===true&&expected&&String(user.uid)===expected?user:null}
+function pending(reason='STUDENT_AUTH_PENDING'){return{active:false,blocked:false,pending:true,reason,serverAuthoritative:false,nonDestructive:true,authorityVersion:AUTHORITY_VERSION}}
 function journalKey(){return `${PENDING_PREFIX}${core.clean(ownerUid)}_${core.clean(activeId)}`}
 function loadJournal(){try{return core.validJournal(localStorage.getItem(journalKey()),ownerUid,activeId)}catch(e){return core.validJournal(null,ownerUid,activeId)}}
 function saveJournal(journal){try{nativeSet.call(localStorage,journalKey(),JSON.stringify(journal));return true}catch(e){console.error('Pending-Fortschrittsjournal konnte nicht gespeichert werden',e);return false}}
@@ -41,7 +42,7 @@ function topicNumbers(key,topic){const all=[key,topic?.topicId,topic?.themeId,to
 function stateFromTask(task){if(!task||typeof task!=='object')return null;const pct=Math.max(0,Math.min(100,Number(task.percent??task.progress??0)||0));const doneRaw=Array.isArray(task.done)?task.done.length:Number(task.done)||0;const total=Math.max(1,Number(task.total)||doneRaw||((task.completed||pct>=100)?1:0));const done=Math.max(0,Math.min(total,doneRaw||((task.completed||pct>=100)?total:Math.round(total*pct/100))));if(done<=0)return null;return{total,done:[...Array(done).keys()],queue:[...Array(total).keys()].filter(i=>i>=done),current:null,tries:0,hadWrong:false,completed:done>=total,percent:Math.round(done/total*100),run:Number(task.run)||1}}
 function l6t4LocalFile(file){const f=String(file||'');if(/^dialoge\.html/i.test(f))return'task-dialog-abc';if(/^task-/.test(f)||f==='plural-sprechen.html')return f;if(/^task\.html\?/i.test(f)){try{const id=new URLSearchParams(f.split('?')[1]||'').get('task');if(id)return'task-'+id}catch(e){}}return f}
 function localKeysFor(lesson,theme,file){const lt=`${lesson}|${theme}`,prefix={'4|1':'SP_L4_T1_V2_','4|2':'SP_L4_T2_FINAL_V3_','4|3':'SP_L4_T3_V2_','5|1':'SP_L5_T1_V1_','5|2':'SP_L5_T2_V1_','5|3':'SP_L5_T3_V2_','6|2':'SP_L6_T2_V1_','6|3':'SP_L6_T3_V1_'}[lt];if(prefix)return[prefix+file];if(lt==='6|1')return['SP_L6_T1_V1_'+(localStorage.getItem('SP_L6_T1_EXTRA_WEATHER')==='1'?'EXTRA_':'BOOK_')+file];if(lt==='6|4')return['SP_L6_T4_V2_'+l6t4LocalFile(file)];return[]}
-function localPrefixesFor(lesson,theme){const lt=`${lesson}|${theme}`,prefix={'4|1':'SP_L4_T1_V2_','4|2':'SP_L4_T2_FINAL_V3_','4|3':'SP_L4_T3_V2_','5|1':'SP_L5_T1_V1_','5|2':'SP_L5_T2_V1_','5|3':'SP_L5_T3_V2_','6|1':'SP_L6_T1_V1_','6|2':'SP_L6_T2_V1_','6|3':'SP_L6_T3_V1_','6|4':'SP_L6_T4_V2_'}[lt];return prefix?[prefix]:[]}
+function localPrefixesFor(lesson,theme){const lt=`${lesson}|${theme}`,prefix={'4|1':'SP_L4_T1_V2_','4|2':'SP_L4_T2_FINAL_V3_','4|3':'SP_L4_T3_V2_','5|1':'SP_L5_T1_V1_','5|2':'SP_L5_T2_V1_','5|3':'SP_L5_T3_V2_','6|1':'SP_L6_T1_V1_','6|2':'SP_L6_T2_V1_','6|3':'SP_L6_T3_V2_','6|4':'SP_L6_T4_V2_'}[lt];return prefix?[prefix]:[]}
 function runStorageKey(lesson,theme){return`SP_SCORE_RUN_wortschatz-a1-lektion-${lesson}-thema-${theme}`}
 function clearVisibleWhenRunAdvanced(lesson,theme,serverRun){const key=runStorageKey(lesson,theme),localRun=Math.max(1,Number(localStorage.getItem(key))||1);if(serverRun<=localRun)return 0;const prefixes=localPrefixesFor(lesson,theme),remove=[];for(let i=0;i<localStorage.length;i++){const k=String(localStorage.key(i)||'');if(prefixes.some(prefix=>k.startsWith(prefix)))remove.push(k)}applying=true;try{remove.forEach(k=>nativeRemove.call(localStorage,k));nativeSet.call(localStorage,key,String(serverRun))}finally{applying=false}return remove.length}
 function recoverStructuredLessons(docs){let restored=0;const canonicalRows=(docs||[]).filter(row=>String(row.id)===String(activeId)),rows=canonicalRows.length?canonicalRows:(docs||[]);for(const row of rows){for(const[key,topic]of Object.entries(row.data?.wortschatz||{})){if(!topic||typeof topic!=='object')continue;const nums=topicNumbers(key,topic);if(!nums.lesson||!nums.theme)continue;const run=Math.max(1,Math.min(3,Number(topic.currentRun||topic.current?.run||((Number(topic.lifetime?.resets)||0)+1))||1));restored+=clearVisibleWhenRunAdvanced(nums.lesson,nums.theme,run);for(const[file,task]of Object.entries(topic.tasks||{})){if(Number(task?.run||run)!==run)continue;const state=stateFromTask({...task,run});if(!state)continue;const raw=JSON.stringify(state);for(const localKey of localKeysFor(nums.lesson,nums.theme,file)){const old=localStorage.getItem(localKey),merged=old===null?raw:core.mergeValues(old,raw);if(old===null||String(merged)!==String(old)){safeSet(localKey,merged);restored++}}}safeSet(runStorageKey(nums.lesson,nums.theme),String(run))}}return restored}
@@ -52,6 +53,25 @@ async function flush(){if(flushPromise)return flushPromise;if(!started||hydratin
 function scheduleFlush(delay=FLUSH_DELAY){clearTimeout(flushTimer);flushTimer=setTimeout(()=>flush(),delay)}
 async function refreshFromCloud(){if(refreshPromise||!started||hydrating||!activeId)return refreshPromise;refreshPromise=(async()=>{try{const remote=await readServerRemote(),applied=await reconcileSnapshot(remote,{writeBack:true});if(dirty.size)await flush();try{window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_REFRESHED',{detail:{studentId:activeId,serverAuthoritative:true,nonDestructive:true,semanticMerge:true,authorityVersion:AUTHORITY_VERSION,...applied}}))}catch(e){}return{ok:true,...applied}}catch(error){return{ok:false,error}}finally{refreshPromise=null}})();return refreshPromise}
 function blocked(error){const result={active:false,blocked:true,reason:String(error?.message||error||'CLOUD_PROGRESS_SERVER_REQUIRED'),serverAuthoritative:false,nonDestructive:true,authorityVersion:AUTHORITY_VERSION};try{window.SP_ACCOUNT_PROGRESS_SYNC_BLOCKED=result;window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_SYNC_BLOCKED',{detail:result}))}catch(e){}return result}
-export async function startAccountProgressSync(){if(started)return accountProgressReady;started=true;if(!isStudent()){hydrating=false;readyResolve({active:false});return accountProgressReady}const user=secureOwner();if(!user){hydrating=false;const result=blocked('SECURE_STUDENT_AUTH_REQUIRED');readyResolve(result);return accountProgressReady}ownerUid=String(user.uid);activeId=canonicalId();if(!activeId){hydrating=false;const result=blocked('STUDENT_ID_MISSING');readyResolve(result);return accountProgressReady}try{const remote=await readServerRemote();patchStorage();const applied=await reconcileSnapshot(remote,{writeBack:true});hydrating=false;if(dirty.size)await flush();const result={active:true,studentId:activeId,authorityMode:'structured-semantic-merge-v5',authorityVersion:AUTHORITY_VERSION,serverAuthoritative:true,nonDestructive:true,semanticMerge:true,source:'firestore-server-plus-local',sourceDocs:remote.docs.length,authorityRepaired:!remote.authorityReady,...applied};try{window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_READY',{detail:result}))}catch(e){}readyResolve(result);return accountProgressReady}catch(error){hydrating=false;console.error('Cloud-Fortschritt konnte nicht sicher zusammengeführt werden; lokaler Lernstand bleibt unverändert.',error);const result=blocked(error);readyResolve(result);return accountProgressReady}}
+async function startReady(){
+ const user=secureOwner();
+ if(!user)return pending();
+ const canonical=canonicalId();
+ if(!canonical)return blocked('STUDENT_ID_MISSING');
+ ownerUid=String(user.uid);activeId=canonical;started=true;hydrating=true;
+ try{
+  const remote=await readServerRemote();patchStorage();const applied=await reconcileSnapshot(remote,{writeBack:true});hydrating=false;if(dirty.size)await flush();
+  const result={active:true,studentId:activeId,authorityMode:'structured-semantic-merge-v5',authorityVersion:AUTHORITY_VERSION,serverAuthoritative:true,nonDestructive:true,semanticMerge:true,source:'firestore-server-plus-local',sourceDocs:remote.docs.length,authorityRepaired:!remote.authorityReady,...applied};
+  try{window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_READY',{detail:result}))}catch(e){}readyResolve(result);return result;
+ }catch(error){hydrating=false;console.error('Cloud-Fortschritt konnte nicht sicher zusammengeführt werden; lokaler Lernstand bleibt unverändert.',error);const result=blocked(error);readyResolve(result);return result}
+}
+export async function startAccountProgressSync(){
+ if(started)return accountProgressReady;
+ if(startPromise)return startPromise;
+ if(!isStudent()){hydrating=false;const result={active:false,blocked:false,reason:'NO_ACTIVE_STUDENT_SESSION'};readyResolve(result);return result}
+ if(!secureOwner())return pending();
+ startPromise=startReady().finally(()=>{startPromise=null});
+ return startPromise;
+}
 window.addEventListener('online',()=>{if(started&&!hydrating){refreshFromCloud();if(dirty.size)scheduleFlush(100)}});window.addEventListener('focus',()=>{if(started&&!hydrating)refreshFromCloud()});document.addEventListener('visibilitychange',()=>{if(!document.hidden&&started&&!hydrating)refreshFromCloud();else if(document.hidden&&started&&!hydrating&&dirty.size)flush()});window.addEventListener('pagehide',()=>{if(started&&!hydrating&&dirty.size)flush()});
 window.SPAccountProgressSync={start:startAccountProgressSync,flush,refresh:refreshFromCloud,ready:accountProgressReady,field:FIELD,version:core.STATE_VERSION,authorityVersion:AUTHORITY_VERSION,serverAuthoritative:true,nonDestructive:true,semanticMerge:true};
