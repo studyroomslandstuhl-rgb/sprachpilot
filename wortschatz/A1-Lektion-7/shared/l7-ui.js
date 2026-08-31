@@ -2,7 +2,7 @@
 'use strict';
 const S=window.L7S,T=S.T;
 let R={},order=[];
-const VERSION='l7-progress3';
+const VERSION='l7-progress4';
 const href=t=>`task.html?task=${encodeURIComponent(t.id)}&v=${VERSION}`;
 const note=()=>S.preview()?'<div class="l7-preview">Lehrer-Vorschau: Es werden keine Teilnehmerpunkte und keine Teilnehmerfortschritte gespeichert.</div>':'';
 const accepted=i=>[i.answer,i.word,...(i.answers||[])].filter(Boolean);
@@ -97,8 +97,9 @@ function check(v){
  const ok=kind==='speak'&&i.open?String(v).trim().split(/\s+/).length>=4:accepted(i).some(a=>S.norm(a)===S.norm(v)||(kind==='order'&&compact(a)===compact(v)));
  S.attempt(theme,t.id,t.items.length,index,ok);
  if(ok)return correct();
- S.wrong(theme,t.id,t.items.length);
- task(theme,t.id)
+ const tries=Number(S.wrong(theme,t.id,t.items.length))||1;
+ const feedback=document.getElementById('feedback');if(feedback)feedback.innerHTML=help(i,tries);
+ document.getElementById('answerInput')?.focus();
 }
 function correct(){
  const{theme,t,index}=R,st=S.load(theme,t.id,t.items.length),repeat=st.hadWrong||st.tries>0;
