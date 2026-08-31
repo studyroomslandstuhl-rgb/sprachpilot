@@ -1,3 +1,23 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Schreiben</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="accountStrip" class="account-strip"></div>
-<div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=8"></script><script>header("Schreiben");let Q=queue('schreiben.html',WORDS);function render(){Q.cur=next(Q);if(!Q.cur){complete(area,'schreiben.html','artikel.html');return}Q.tries=0;Q.had=false;area.innerHTML=prog(Q)+`<div class="question">Schreibe Artikel + Nomen.</div>`<img class="food-img" src="${Q.cur.image}" onerror="fixImg(this)">`<input id="ans"><button class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`}function check(){let d=diagnose(ans.value,Q.cur);if(d.ok){right(Q,Q.cur);fb.textContent='Richtig!';setTimeout(render,700)}else{wrong(Q);fb.innerHTML=fail(Q,d)}}render();</script><script type="module" src="/js/guard.js"></script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Schreiben · Mengen und Preise</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="accountStrip" class="account-strip"></div><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=8"></script><script type="module" src="/js/guard.js?v=l3t2-pedagogy1"></script>
+<script>
+header('Schreiben: Mengen und Preise');
+const ITEMS=[
+ {id:'shop1',context:'Preisschild: 1 Flasche Wasser – 0,79 €',prompt:'Frage nach dem Preis.',accepted:['Was kostet eine Flasche Wasser'],solution:'Was kostet eine Flasche Wasser?'},
+ {id:'shop2',context:'1 Flasche Wasser – 0,79 €',prompt:'Antworte mit einem ganzen Satz.',accepted:['Eine Flasche Wasser kostet 79 Cent','Eine Flasche Wasser kostet 0,79 Euro','Eine Flasche Wasser kostet 0.79 Euro'],solution:'Eine Flasche Wasser kostet 79 Cent.'},
+ {id:'shop3',context:'Du möchtest Kaffee kaufen.',prompt:'Bestelle eine Packung Kaffee.',accepted:['Ich möchte eine Packung Kaffee bitte','Eine Packung Kaffee bitte'],solution:'Ich möchte eine Packung Kaffee, bitte.'},
+ {id:'shop4',context:'Preisschild: 1 Packung Kaffee – 4,99 €',prompt:'Frage nach dem Preis.',accepted:['Was kostet eine Packung Kaffee'],solution:'Was kostet eine Packung Kaffee?'},
+ {id:'shop5',context:'Du kaufst Äpfel nach Gewicht.',prompt:'Bestelle zwei Kilo Äpfel.',accepted:['Ich möchte zwei Kilo Äpfel bitte','Zwei Kilo Äpfel bitte'],solution:'Ich möchte zwei Kilo Äpfel, bitte.'},
+ {id:'shop6',context:'Du möchtest Tomaten in einer Dose.',prompt:'Schreibe eine Bestellung.',accepted:['Ich möchte eine Dose Tomaten bitte','Eine Dose Tomaten bitte'],solution:'Ich möchte eine Dose Tomaten, bitte.'},
+ {id:'shop7',context:'Zwei Flaschen Saft kosten zusammen 3,98 €.',prompt:'Frage nach dem Preis im Plural.',accepted:['Was kosten zwei Flaschen Saft'],solution:'Was kosten zwei Flaschen Saft?'},
+ {id:'shop8',context:'Du brauchst 500 Gramm Käse.',prompt:'Schreibe deine Bestellung.',accepted:['Ich möchte 500 Gramm Käse bitte','500 Gramm Käse bitte','Ich brauche 500 Gramm Käse'],solution:'Ich möchte 500 Gramm Käse, bitte.'},
+ {id:'shop9',context:'Im Laden: Du findest den Preis nicht.',prompt:'Frage höflich nach dem Preis einer Tüte Chips.',accepted:['Wie viel kostet eine Tüte Chips','Was kostet eine Tüte Chips'],solution:'Wie viel kostet eine Tüte Chips?'},
+ {id:'shop10',context:'Die Verkäuferin sagt: „Sonst noch etwas?“',prompt:'Du brauchst nichts mehr. Antworte höflich.',accepted:['Nein danke','Nein, danke','Nein danke das ist alles','Nein, danke, das ist alles'],solution:'Nein, danke. Das ist alles.'}
+];
+const clean=v=>String(v||'').normalize('NFC').trim().toLowerCase().replace(/[.,!?;:“”"'`´]/g,'').replace(/\s+/g,' ');
+const ok=(v,item)=>item.accepted.some(x=>clean(x)===clean(v));
+let Q=queue('schreiben.html',ITEMS);
+function render(){Q.cur=next(Q);if(!Q.cur){complete(area,'schreiben.html','sprechen.html');return}Q.tries=0;Q.had=false;area.innerHTML=prog(Q)+`<div class="hint"><b>Situation:</b> ${Q.cur.context}</div><div class="question">${Q.cur.prompt}</div><textarea id="ans" rows="3" style="width:100%;box-sizing:border-box" placeholder="Schreibe einen ganzen Satz."></textarea><button class="btn" onclick="check()">Kontrollieren</button><div id="fb" class="feedback"></div>`;ans.focus()}
+function check(){if(ok(ans.value,Q.cur)){right(Q,Q.cur);fb.textContent='Richtig!';setTimeout(render,650);return}wrong(Q);if(Q.tries===1)fb.textContent='Noch nicht richtig. Lies die Situation genau.';else if(Q.tries===2)fb.innerHTML='<div class="hint">Tipp: Achte auf kostet/kosten, Menge und Verpackung.</div>';else fb.innerHTML=`<div class="hint">Beispiel: ${Q.cur.solution}<br>Schreibe die richtige Form jetzt selbst.</div>`}
+render();
+</script></body></html>
