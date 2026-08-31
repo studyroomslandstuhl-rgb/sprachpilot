@@ -1,10 +1,10 @@
 (function(root){
   'use strict';
-  const CORE_REVISION=9;
+  const CORE_REVISION=10;
   if(Number(root.SPAccountProgressCloudCore?.CORE_REVISION||0)>=CORE_REVISION)return;
 
   const AUTHORITY_VERSION=1;
-  const STATE_VERSION=8;
+  const STATE_VERSION=9;
   const INTERNAL_PREFIX='SP_ACCOUNT_PROGRESS_';
   const MAX_ENTRY_CHARS=180000;
   const MAX_ENTRIES=700;
@@ -20,6 +20,12 @@
     // und konnten dadurch Fortschritt verschiedener Themen vermischen. Ab V2 werden
     // ausschließlich themenspezifische Standard-Schlüssel synchronisiert.
     if(/^SP_TASK_STATE_(?!V2_)/i.test(k))return true;
+    // L4-L6 besitzen bereits strukturierte Firebase-Themenstände via progress.js.
+    // Die rohen Browserzustände dürfen nicht zusätzlich als zweite Cloud-Wahrheit
+    // transportiert werden, sonst kann ein alter Geräte-Run einen Reset rückgängig machen.
+    if(/^SP_L4_T1_V2_/i.test(k)||/^SP_L4_T2_FINAL_V3_/i.test(k)||/^SP_L4_T3_V2_/i.test(k))return true;
+    if(/^SP_L5_T1_V1_/i.test(k)||/^SP_L5_T2_V1_/i.test(k)||/^SP_L5_T3_V2_/i.test(k))return true;
+    if(/^SP_L6_T1_V1_/i.test(k)||/^SP_L6_T2_V1_/i.test(k)||/^SP_L6_T3_V1_/i.test(k)||/^SP_L6_T4_V2_/i.test(k))return true;
     // L7/L8 besitzen eine absichtlich nicht monotone Übungsansicht. Sichtbare Rohstände
     // werden nicht kontoweit gemergt; synchronisiert werden die Run-Ledger.
     if(/^SP_L[78]_.+_T\d+_/i.test(k))return true;
@@ -90,7 +96,7 @@
     if(depth>10)return strength(JSON.stringify(a))>=strength(JSON.stringify(b))?a:b;
     if(Array.isArray(a)&&Array.isArray(b))return unionArray(a,b);
     if(typeof a==='object'&&typeof b==='object'&&!Array.isArray(a)&&!Array.isArray(b)){
-      const ta=timeOf(a),tb=timeOf(b),newer=tb>=ta?b:a,out={...(tb>=ta?a:b),...(tb>=ta?b:a)};
+      const ta=timeOf(a),tb=timeOf(b),out={...(tb>=ta?a:b),...(tb>=ta?b:a)};
       for(const child of new Set([...Object.keys(a),...Object.keys(b)]))out[child]=mergeParsed(a[child],b[child],child,depth+1);
       normalizeTaskLike(out,a,b);
       return out;
