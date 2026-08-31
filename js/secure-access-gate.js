@@ -6,15 +6,30 @@ const STUDENT_SESSION_KEYS=[
   'SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE','SP_AUTH_ROLE','SP_LOGIN_CONTEXT'
 ];
 
+function parse(raw){try{return JSON.parse(raw||'null')}catch(e){return null}}
 function profile(){
-  try{return getActiveProfile?.()||JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')||{}}
+  try{return getActiveProfile?.()||parse(localStorage.getItem('SP_USER_PROFILE'))||parse(localStorage.getItem('SP_STUDENT_PROFILE'))||{}}
   catch(e){return{}}
 }
+function teacherProfile(){return parse(localStorage.getItem('SP_TEACHER_PROFILE'))||{}}
 function role(){return String(getActiveRole?.()||localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').trim().toLowerCase()}
 function teacherRole(value=role()){return ['teacher','lehrer','admin','owner','superadmin'].includes(value)}
 function studentRole(value=role()){return ['student','schueler','schüler'].includes(value)}
+function previewMarker(){
+  try{
+    const local=localStorage.getItem('SP_TEACHER_PREVIEW'),session=sessionStorage.getItem('SP_TEACHER_PREVIEW');
+    if(local==='1'||session==='1')return true;
+    return !!(parse(local)?.teacherPreview||parse(session)?.teacherPreview);
+  }catch(e){return false}
+}
+function secureTeacherPreview(p={},firebaseUser=null){
+  if(!(p.previewOnly===true||p.studentCoursePreview===true||p.teacherPreview===true||previewMarker()))return false;
+  const t=teacherProfile(),expected=String(t.uid||localStorage.getItem('SP_TEACHER_UID')||localStorage.getItem('SP_TEACHER_ID')||'').trim();
+  if(!expected||!firebaseUser||firebaseUser.isAnonymous||!firebaseUser.uid)return false;
+  return String(firebaseUser.uid)===expected;
+}
 function secureStudentProfile(p={}){
-  return p.secureAuth===true&&Number(p.authVersion||0)>=2&&!!String(p.authUid||'').trim()&&!p.teacherPreview&&!p.previewOnly&&!p.isTeacher;
+  return p.secureAuth===true&&Number(p.authVersion||0)>=2&&!!String(p.authUid||'').trim()&&!p.teacherPreview&&!p.previewOnly&&!p.studentCoursePreview&&!p.isTeacher;
 }
 function clearActiveStudentSession(){
   try{STUDENT_SESSION_KEYS.forEach(key=>localStorage.removeItem(key));localStorage.setItem('SP_SECURE_STUDENT_RELOGIN_REQUIRED','1')}catch(e){}
@@ -39,6 +54,13 @@ export async function verifySecureAccess({allowTeacher=true,redirect=true,mark=t
   firebaseUser=auth.currentUser||firebaseUser||null;
   const activeRole=role(),p=profile();
 
+  if(allowTeacher&&secureTeacherPreview(p,firebaseUser)){
+    const result={ok:true,type:'teacher-preview',uid:String(firebaseUser.uid),profile:p,user:firebaseUser,preview:true};
+    try{window.SP_SECURE_ACCESS=result;window.dispatchEvent(new CustomEvent('SP_SECURE_ACCESS_CONFIRMED',{detail:{type:'teacher-preview',uid:String(firebaseUser.uid)}}))}catch(e){}
+    if(mark)markVisible();
+    return result;
+  }
+
   if(allowTeacher&&teacherRole(activeRole)){
     // Der eigentliche Lehrer-Datenzugriff bleibt zusätzlich durch Firestore Rules geschützt.
     // Für die Sichtbarkeit von Lerninhalten genügt eine echte, nicht-anonyme Firebase-Sitzung.
@@ -50,7 +72,9 @@ export async function verifySecureAccess({allowTeacher=true,redirect=true,mark=t
   }
 
   if(!studentRole(activeRole)||!secureStudentProfile(p)){
-    if(studentRole(activeRole))clearActiveStudentSession();
+    // Eine echte Lehrer-Kursvorschau darf niemals wie ein fehlerhafter Schülerlogin
+    // bereinigt werden. Nicht verifizierte/stale Preview-Marker verleihen aber keinen Zugriff.
+    if(studentRole(activeRole)&&!(p.previewOnly||p.studentCoursePreview||p.teacherPreview||previewMarker()))clearActiveStudentSession();
     return fail('SECURE_STUDENT_PROFILE_REQUIRED',{redirect});
   }
 
