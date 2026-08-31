@@ -1,10 +1,10 @@
 (function(){
   if(location.pathname.includes('/wortschatz/A1-Lektion-5/')){
-    window.__SP_PROGRESS_STANDARD_V3=true;
+    window.__SP_PROGRESS_STANDARD_V4=true;
     return;
   }
-  if(window.__SP_PROGRESS_STANDARD_V3)return;
-  window.__SP_PROGRESS_STANDARD_V3=true;
+  if(window.__SP_PROGRESS_STANDARD_V4)return;
+  window.__SP_PROGRESS_STANDARD_V4=true;
 
   let refreshRunning=false;
   let refreshQueued=false;
@@ -25,7 +25,8 @@
     if(path.includes('/fragen-A1/')||path.includes('/fragen/'))return {module:'fragen',moduleTitle:'Fragen',level:'A1',lesson:'',theme:'',topicId:'fragen-a1',title:'Fragen A1'};
     return {module:'allgemein',moduleTitle:'Allgemein',level:'',lesson:'',theme:'',topicId:cleanId(path),title:path};
   }
-  function stateKey(file){return 'SP_TASK_STATE_'+fileName(file)}
+  function scopeKey(){return cleanId(pathInfo().module+'-'+pathInfo().topicId)}
+  function stateKey(file){return 'SP_TASK_STATE_V2_'+scopeKey()+'_'+cleanId(fileName(file))}
   function doneArray(total){total=Math.max(1,Math.round(Number(total)||100));return Array.from({length:total},(_,i)=>i)}
   function percentFromState(st,total){
     if(!st||typeof st!=='object')return 0;
@@ -36,37 +37,13 @@
     if(t>0&&done>=0)return clamp(done/t*100);
     return 0;
   }
-  function directPercent(file,total){
-    const f=fileName(file);
-    let best=percentFromState(readJson(stateKey(f),null),total);
-    best=Math.max(best,percentFromState(readJson('SP_TASK_STATE_'+cleanId(f),null),total));
-    return best;
-  }
-  function legacyPercent(file,total){
-    const f=fileName(file);
-    const candidates=[f,cleanId(f),f.replace(/\.html$/i,''),cleanId(f.replace(/\.html$/i,''))];
-    let best=0;
-    for(let i=0;i<localStorage.length;i++){
-      const key=localStorage.key(i)||'';
-      if(!/^(SP_|A1_|L\d|sprachpilot)/i.test(key))continue;
-      const obj=readJson(key,null);
-      if(!obj||typeof obj!=='object'||Array.isArray(obj))continue;
-      for(const name of candidates){
-        best=Math.max(best,percentFromState(obj[name],total));
-        best=Math.max(best,percentFromState(obj.tasks&&obj.tasks[name],total));
-        if(obj.doneTasks&&obj.doneTasks[name])best=100;
-        if(obj.done&&obj.done[name])best=100;
-        if(obj.completed&&obj.completed[name])best=100;
-      }
-    }
-    return best;
-  }
+  function scopedPercent(file,total){return percentFromState(readJson(stateKey(file),null),total)}
   function standardPercent(file,total){
     const now=Date.now();
     if(now-percentCacheAt>500){percentCache.clear();percentCacheAt=now}
-    const key=fileName(file)+'|'+String(total||'');
+    const key=stateKey(file)+'|'+String(total||'');
     if(percentCache.has(key))return percentCache.get(key);
-    const value=Math.max(directPercent(file,total),legacyPercent(file,total));
+    const value=scopedPercent(file,total);
     percentCache.set(key,value);
     return value;
   }
@@ -76,23 +53,22 @@
     const data=payload(file,percent,total,done);
     try{
       if(window.SPProgress&&typeof window.SPProgress.recordTaskProgress==='function')window.SPProgress.recordTaskProgress(data);
-      else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:'recordTaskProgress',payload:data});import('/js/progress.js?v=standard-progress').catch(function(){})}
+      else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:'recordTaskProgress',payload:data});import('/js/progress.js?v=standard-progress-v2').catch(function(){})}
     }catch(e){}
   }
   function saveState(file,state){
     const f=fileName(file);
     const total=Number(state&&state.total)||Number(state&&state.done&&state.done.length)||100;
     const pct=percentFromState(state,total);
-    const old=readJson(stateKey(f),{});
-    const oldPct=percentFromState(old,total);
-    const merged={...(old||{}),...(state||{}),total:Math.max(Number(old&&old.total||0),Number(total||0))||total};
-    if(pct>=oldPct){writeJson(stateKey(f),merged);clearPercentCache();queueFirebase(f,pct,merged.total,Array.isArray(merged.done)?merged.done.length:Number(merged.done||0));scheduleRefresh()}
+    const key=stateKey(f),old=readJson(key,{}),oldPct=percentFromState(old,total);
+    const merged={...(old||{}),...(state||{}),total:Math.max(Number(old&&old.total||0),Number(total||0))||total,scope:scopeKey(),task:f,updatedAt:new Date().toISOString()};
+    if(pct>=oldPct){writeJson(key,merged);clearPercentCache();queueFirebase(f,pct,merged.total,Array.isArray(merged.done)?merged.done.length:Number(merged.done||0));scheduleRefresh()}
   }
   function markComplete(file,total){
-    const f=fileName(file);
-    total=Math.max(1,Math.round(Number(total)||Number((readJson(stateKey(f),{})||{}).total)||100));
-    const state={total,queue:[],done:doneArray(total),current:null,tries:0,completed:true,percent:100,updatedAt:new Date().toISOString()};
-    writeJson(stateKey(f),state);
+    const f=fileName(file),key=stateKey(f);
+    total=Math.max(1,Math.round(Number(total)||Number((readJson(key,{})||{}).total)||100));
+    const state={total,queue:[],done:doneArray(total),current:null,tries:0,completed:true,percent:100,scope:scopeKey(),task:f,updatedAt:new Date().toISOString()};
+    writeJson(key,state);
     clearPercentCache();
     queueFirebase(f,100,total,total);
     scheduleRefresh();
@@ -139,8 +115,8 @@
   }
   function patchFunction(name,wrapper){
     const fn=window[name];
-    if(typeof fn!=='function'||fn.__spStandard)return false;
-    const patched=wrapper(fn);patched.__spStandard=true;window[name]=patched;return true;
+    if(typeof fn!=='function'||fn.__spStandardV4)return false;
+    const patched=wrapper(fn);patched.__spStandardV4=true;window[name]=patched;return true;
   }
   function patch(){
     patchFunction('pctFor',old=>function(file,total){return Math.max(clamp(old.apply(this,arguments)),standardPercent(file,total))});
@@ -154,7 +130,7 @@
     patchFunction('resetOneTask',old=>function(file){try{localStorage.removeItem(stateKey(file));clearPercentCache()}catch(e){}return old.apply(this,arguments)});
     scheduleRefresh();
   }
-  window.SPProgressStandard={taskPercent:standardPercent,markComplete,saveState,stateKey,pathInfo,refreshVisibleProgress,scheduleRefresh};
+  window.SPProgressStandard={taskPercent:standardPercent,markComplete,saveState,stateKey,pathInfo,refreshVisibleProgress,scheduleRefresh,version:4};
   patch();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',patch);else setTimeout(patch,0);
   setTimeout(patch,250);setTimeout(patch,1000);setTimeout(patch,2200);setTimeout(scheduleRefresh,3200);
