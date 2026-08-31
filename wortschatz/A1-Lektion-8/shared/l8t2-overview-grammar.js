@@ -8,6 +8,7 @@ function item(row){return`<article class="l8t2-grammar-item"><h4>${esc(row.title
 function render(){
  if(document.getElementById('l8t2GrammarOverview'))return true;
  const intro=document.querySelector('.l8-overview-intro');if(!intro)return false;
+ intro.querySelector('p')?.remove();
  const rows=theme()?.grammarOverview||[];if(!rows.length)return true;
  const section=document.createElement('section');section.id='l8t2GrammarOverview';section.className='l8-card l8t2-grammar-overview';
  section.innerHTML=`<div class="l8-overview-eyebrow">GRAMMATIK</div><h2>Grammatische Strukturen</h2><div class="l8t2-grammar-groups">${grouped(rows).map(group=>`<div class="l8t2-grammar-group"><h3>${esc(group.title)}</h3><div class="l8t2-grammar-grid">${group.rows.map(item).join('')}</div></div>`).join('')}</div>`;
