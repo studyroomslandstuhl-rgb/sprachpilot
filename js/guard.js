@@ -1,6 +1,6 @@
 import "/js/session-restore.js?v=20260831-central3";
 import { logout } from "/js/auth.js";
-import { verifySecureAccess } from "/js/secure-access-gate.js?v=20260831-central4";
+import { verifySecureAccess } from "/js/secure-access-gate.js?v=20260831-central6";
 import { installSpHeader } from "/js/sp-header.js?v=theme-standard2";
 
 const SECURE_ACCESS=await verifySecureAccess({allowTeacher:true,redirect:true,mark:true});
@@ -49,7 +49,7 @@ if(FULL_FIREBASE&&IS_SECURE_STUDENT){
  aliasRepairPromise=import("/student-dashboard/progress-alias-unifier.js?v=20260831-central3").then(module=>module.unifyProgressAliases()).catch(error=>{console.warn("Verteilte Schüler-Fortschritte konnten noch nicht zusammengeführt werden",error);return null});
  window.SP_PROGRESS_ALIAS_READY=aliasRepairPromise;
 }
-if(FULL_FIREBASE&&IS_SECURE_STUDENT){aliasRepairPromise.finally(()=>import("/js/account-progress-sync.js?v=20260831-central5").then(module=>module.startAccountProgressSync()).catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error)))}
+if(FULL_FIREBASE&&IS_SECURE_STUDENT){aliasRepairPromise.finally(()=>import("/js/account-progress-sync.js?v=20260831-central6").then(module=>module.startAccountProgressSync()).catch(error=>console.warn("Account-Fortschritt Sync konnte nicht gestartet werden",error)))}
 function shouldInstallGlobalHeader(){if(IS_WORTSCHATZ_LESSON_OVERVIEW)return false;if(IS_WORTSCHATZ_EXERCISE)return true;return !document.querySelector(".topbar")&&!document.querySelector("header.topbar")}
 function installHeaderOnce(){if(!SECURE_ACCESS?.ok)return;if(!shouldInstallGlobalHeader())return;try{installSpHeader()}catch(e){}}
 function setStar(el){if(el&&el.textContent!=="⭐")el.textContent="⭐"}
@@ -71,7 +71,7 @@ if(IS_L3T1){import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-stability.js?v=3").cat
 if(IS_L3T2){import("/wortschatz/A1-Lektion-3/Thema-2/l3t2-task-fix.js?v=3").catch(()=>{})}
 if(IS_L6T2){import("/wortschatz/A1-Lektion-6/Thema-2/l6t2-stability.js?v=1").catch(()=>{})}
 if(IS_L6T3){import("/wortschatz/A1-Lektion-6/Thema-3/l6t3-theme-score-v2.js?v=3").catch(()=>{})}
-if((IS_L6T4||IS_L7_THEME_OVERVIEW||IS_L8_THEME_OVERVIEW)&&!PERFORMANCE_SYNC_OFF)import("/js/progress.js?v=20260831-central3").catch(()=>{});
+if((IS_L6T4||IS_L7_THEME_OVERVIEW||IS_L8_THEME_OVERVIEW)&&!PERFORMANCE_SYNC_OFF)import("/js/progress.js?v=20260831-central6").catch(()=>{});
 if(USES_STANDARD_PROGRESS)import("/js/sp-progress-standard.js?v=20260831-central3").catch(()=>{});
 if(NEEDS_EXAM_UNLOCK_FIX&&!PERFORMANCE_SYNC_OFF){setTimeout(()=>import("/js/exam-unlock-fix.js?v=4").catch(()=>{}),120)}
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
