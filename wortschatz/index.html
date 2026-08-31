@@ -63,7 +63,7 @@ footer{text-align:center;color:var(--sp-muted);margin-top:24px;font-size:14px}
 </section>
 <footer>© SprachPilot</footer>
 </div>
-<script type="module" src="/js/account-progress-autostart.js?v=5"></script>
+<script type="module" src="/js/account-progress-autostart.js?v=20260831-central3"></script>
 <script type="module">
 import { loadCourseRelease, lessonOpen } from "/js/course-releases.js?v=release-core-20260701b";
 import { logout, dashboardHref } from "/js/auth.js?v=20260709-login-fix";
@@ -95,18 +95,12 @@ function hasReleaseData(data){return !!(data&&typeof data==="object"&&(data.enab
 function moduleOpen(data){if(!hasReleaseData(data))return false;if(data.releaseMode==="all"||data.releaseMode==="open"||data.defaultLocked===false)return true;return trueVal(data,[["enabledModules","Wortschatz"],["enabledModules","wortschatz"],["releases","Wortschatz","enabled"],["releases","wortschatz","enabled"]])}
 function lessonReleased(data,lesson){
   if(!hasReleaseData(data))return false;
-
-  // Zentrale Freigabelogik: Bei alten widersprüchlichen Alias-Einträgen gewinnt eine bestätigte Freigabe.
   if(lessonOpen(data,"Wortschatz",lesson))return true;
-
   const modulePaths=[["enabledModules","Wortschatz"],["enabledModules","wortschatz"],["releases","Wortschatz","enabled"],["releases","wortschatz","enabled"]];
   const moduleExplicitOff=!trueVal(data,modulePaths)&&falseVal(data,modulePaths);
   if(moduleExplicitOff)return false;
-
   const lPaths=[["enabledLessons",lesson],["enabledLessons","Wortschatz/"+lesson],["enabledLessons","wortschatz/"+lesson],["releases","Wortschatz","lessons",lesson,"enabled"],["releases","wortschatz","lessons",lesson,"enabled"]];
   if(falseVal(data,lPaths))return false;
-
-  // Legacy-Fallback: Ein früher separat freigegebenes Thema/Aufgabe muss weiterhin über seine Lektion erreichbar bleiben.
   const prefixes=[lesson+"/","Wortschatz/"+lesson+"/","wortschatz/"+lesson+"/"];
   if(Object.keys(data.enabledThemes||{}).some(k=>data.enabledThemes[k]===true&&prefixes.some(p=>String(k).startsWith(p))))return true;
   if(Object.keys(data.enabledTasks||{}).some(k=>data.enabledTasks[k]===true&&prefixes.some(p=>String(k).startsWith(p))))return true;
