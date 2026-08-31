@@ -18,7 +18,6 @@ function applyT2(theme){
  for(const item of cards.items||[]){
   if(norm(term(item))!=='spater')continue;
   item.image=CDN+'spaet.webp';
-  // Nur das Bild wurde geändert. Die bestehende Aussprache von „später“ bleibt erhalten.
  }
  theme.vocabularyOverviewItems=cards.items;
 }
@@ -27,16 +26,12 @@ function applyT3(theme){
  if(!theme)return;
  const cards=cardsOf(theme);if(!cards)return;
  cards.items=Array.isArray(cards.items)?cards.items:[];
- let experience=cards.items.find(x=>norm(term(x))==='erfahrung');
+ const experience=cards.items.find(x=>norm(term(x))==='erfahrung');
  if(experience)experience.image=CDN+'erfahrung.webp';
  let colleague=cards.items.find(x=>norm(term(x))==='kollegin');
  if(!colleague){
-  colleague={
-   term:'die Kollegin',type:'noun',plural:'die Kolleginnen',
-   image:CDN+'kollegin.webp',audio:AUDIO+'kollegin.mp3',audioFile:AUDIO+'kollegin.mp3',
-   translations:translations('female colleague','коллега / сотрудница','kadın iş arkadaşı','колега / співробітниця','زميلة','女性の同僚','colegă','koleżanka z pracy','hevalkara jin','همکار زن','collègue','compañera de trabajo','collega'),
-   tr:translations('female colleague','коллега / сотрудница','kadın iş arkadaşı','колега / співробітниця','زميلة','女性の同僚','colegă','koleżanka z pracy','hevalkara jin','همکار زن','collègue','compañera de trabajo','collega')
-  };
+  const colleagueTranslations=translations('female colleague','коллега / сотрудница','kadın iş arkadaşı','колега / співробітниця','زميلة','女性の同僚','colegă','koleżanka z pracy','hevalkara jin','همکار زن','collègue','compañera de trabajo','collega');
+  colleague={term:'die Kollegin',type:'noun',plural:'die Kolleginnen',image:CDN+'kollegin.webp',audio:AUDIO+'kollegin.mp3',audioFile:AUDIO+'kollegin.mp3',translations:{...colleagueTranslations},tr:{...colleagueTranslations}};
   const maleIndex=cards.items.findIndex(x=>norm(term(x))==='kollege');
   if(maleIndex>=0)cards.items.splice(maleIndex+1,0,colleague);else cards.items.push(colleague);
  }
@@ -58,8 +53,7 @@ function frequencyTask(){
    input('Schreibe neu: Ich arbeite drei Tage pro Woche.','Ich arbeite dreimal pro Woche.','','Nutze dreimal.'),
    input('Schreibe neu: Ich arbeite vier Tage pro Woche.','Ich arbeite viermal pro Woche.','','Nutze viermal.'),
    input('Schreibe neu: Ich arbeite fünf Tage pro Woche.','Ich arbeite fünfmal pro Woche.','','Nutze fünfmal.'),
-   input('Schreibe neu: Ich arbeite sechs Tage pro Woche.','Ich arbeite sechsmal pro Woche.','','Nutze sechsmal.'),
-   input('Schreibe neu: Ich habe zwei Schichten pro Woche.','Ich habe zweimal pro Woche eine Schicht.','','Formuliere die Häufigkeit mit zweimal.')
+   input('Schreibe neu: Ich arbeite sechs Tage pro Woche.','Ich arbeite sechsmal pro Woche.','','Nutze sechsmal.')
   ]
  };
 }
@@ -89,11 +83,8 @@ function applyT4(theme){
   const proBase=old.find(x=>norm(term(x))==='pro stunde')||old.find(x=>norm(term(x))==='pro')||{};
   cards.items=old.filter(item=>!REMOVE_T4.has(norm(term(item))));
   if(!cards.items.some(x=>norm(term(x))==='pro')){
-   cards.items.push({
-    ...proBase,term:'pro',type:'preposition',detail:'Präposition · Bedeutung: je / für jede Einheit',example:'15 Euro pro Stunde · dreimal pro Woche',
-    translations:translations('per / for each','на / за каждую единицу','başına','на / за кожну одиницю','لكل','～あたり','pe / pentru fiecare','na / za','ji bo her','به ازای','par','por','per'),
-    tr:translations('per / for each','на / за каждую единицу','başına','на / за кожну одиницю','لكل','～あたり','pe / pentru fiecare','na / za','ji bo her','به ازای','par','por','per')
-   });
+   const proTranslations=translations('per / for each','на / за каждую единицу','başına','на / за кожну одиницю','لكل','～あたり','pe / pentru fiecare','na / za','ji bo her','به ازای','par','por','per');
+   cards.items.push({...proBase,term:'pro',type:'preposition',detail:'Präposition · Bedeutung: je / für jede Einheit',example:'15 Euro pro Stunde · dreimal pro Woche',image:'',audio:'',audioFile:'',wordAudio:'',translations:{...proTranslations},tr:{...proTranslations}});
   }
   for(const item of cards.items){
    const n=norm(term(item));
@@ -107,7 +98,6 @@ function applyT4(theme){
   cards.icon='🃏';cards.emoji='🃏';
   theme.vocabularyOverviewItems=cards.items;
  }
- // Die alten isolierten Wochentags-/Häufigkeitsfragen werden ersetzt durch echte Umformulierungsaufgaben.
  theme.tasks=Array.isArray(theme.tasks)?theme.tasks:[];
  const regularIndex=theme.tasks.findIndex(t=>t?.id==='regelmaessige-zeiten');
  if(regularIndex>=0)theme.tasks.splice(regularIndex,1);
@@ -117,7 +107,6 @@ function applyT4(theme){
  let insertAt=regularIndex>=0?regularIndex:theme.tasks.findIndex(t=>t?.id==='fuer-seit-vor');
  if(insertAt<1){const exam=theme.tasks.findIndex(t=>t?.exam);insertAt=exam>=0?exam:Math.max(1,theme.tasks.length)}
  theme.tasks.splice(insertAt,0,frequencyTask(),weekdayTask());
- // Auch zusätzliche reine Wortschatzlisten dürfen die entfernten Formen nicht wieder anzeigen.
  for(const key of ['overviewOnlyItems','vocabularyOverviewItems']){
   if(!Array.isArray(theme[key]))continue;
   theme[key]=theme[key].filter(item=>!REMOVE_T4.has(norm(term(item))));
