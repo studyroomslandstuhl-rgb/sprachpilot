@@ -21,7 +21,7 @@ window.__SP_POINT_DELTA_BRIDGE_V6=true;
 function pending(){try{return JSON.parse(localStorage.getItem(PENDING_KEY)||'null')}catch(e){return null}}
 function clearPending(){try{localStorage.removeItem(PENDING_KEY)}catch(e){}}
 
-async function repairPendingPointDelta(){
+async function repairLegacyPending(){
   if(repairing)return false;
   const p=pending();
   if(!p?.id||!point(p.desired)){clearPending();return true}
@@ -52,16 +52,16 @@ async function repairPendingPointDelta(){
 
 function ensure(){
   const api=window.SPProgress;if(api)api.__deltaBridgeV6=true;
-  repairPendingPointDelta();
+  repairLegacyPending();
   return true;
 }
 
 window.SPEnsurePointDeltaBridge=ensure;
-window.SPRepairPendingPointDelta=repairPendingPointDelta;
-window.addEventListener('online',repairPendingPointDelta);
+window.SPRepairPendingPointDelta=repairLegacyPending;
+window.addEventListener('online',repairLegacyPending);
 window.addEventListener('pageshow',ensure);
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')ensure()});
 ensure();
 
 export function ensurePointDeltaBridge(){return ensure()}
-export function repairPendingPointDelta(){return repairPendingPointDelta()}
+export function repairPendingPointDelta(){return repairLegacyPending()}
