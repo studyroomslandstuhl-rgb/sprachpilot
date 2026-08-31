@@ -9,7 +9,7 @@ window.L8_T2_OVERVIEW_CONFIG_READY=Promise.resolve(window.L8_T2_TRANSLATIONS_REA
   {group:'Zeitpräpositionen',title:'vor + Dativ',text:'Etwas ist zu einem Zeitpunkt in der Vergangenheit passiert und ist fertig.'},
   {group:'Nomen und Verben mit festen Präpositionen',title:'eine Ausbildung machen als (Beruf)'},
   {group:'Nomen und Verben mit festen Präpositionen',title:'arbeiten als + Beruf'},
-  {group:'Nomen und Verben mit festen Präpositionen',title:'arbeiten bei + Arbeitgeber/Firma'}
+  {group:'Nomen und Verben mit festen Präpositionen',title:'arbeiten bei + Name des Arbeitgebers/Firma'}
  ];
  if(window.L8_THEME&&Number(window.L8_THEME.number)===2)window.L8_THEME=theme;
  window.L8_T2_OVERVIEW_CONFIG_PENDING=false;return theme;
