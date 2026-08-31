@@ -1,5 +1,5 @@
-import '/js/progress.js?v=20260831-central4';
-import '/js/point-delta-bridge.js?v=20260831-central4';
+import '/js/progress.js?v=20260831-central6';
+import '/js/point-delta-bridge.js?v=20260831-central6';
 import '/js/ranking-mirror.js?v=20260829-safe15';
 import { auth, authReady } from '/js/firebase.js';
 import { getActiveProfile } from '/js/auth.js';
