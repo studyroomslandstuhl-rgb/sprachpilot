@@ -1,3 +1,27 @@
-<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sprechen</title><link rel="stylesheet" href="style.css"></head><body>
-<div id="accountStrip" class="account-strip"></div>
-<script type="module" src="/js/guard.js?v=l3t1stable3"></script><div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div><script src="app.js?v=42"></script><script src="l3t1-stability.js?v=3"></script><script src="l3t1-image-fix.js?v=3"></script><script>header("Sprechen");let Q=queueFor('sprechen.html',activeWords());function render(){Q.cur=nextItem(Q);if(!Q.cur){complete(area,'sprechen.html','schreiben.html');return}Q.tries=0;Q.had=false;area.innerHTML=prog(Q)+`<div class="question">Sprich Artikel + Nomen.</div><img class="food-img" src="${Q.cur.image}" onerror="fixImg(this)"><div class="actions"><button id="mic" class="btn" onclick="say()">Sprechen</button><button class="btn secondary" onclick="showWrite()">Ich kann nicht sprechen</button></div><div id="writeBox" class="hidden"><input id="ans" placeholder="Artikel + Nomen"><button class="btn" onclick="checkText()">Kontrollieren</button></div><div id="micStatus" class="hint hidden"></div><div id="fb" class="feedback"></div>`}function showWrite(){writeBox.classList.remove('hidden')}function ok(){right(Q,Q.cur);fb.textContent='Richtig!';setTimeout(render,700)}function say(){mic.disabled=true;micStatus.classList.remove('hidden');micStatus.textContent='Mikrofon aktiv ...';speech((txt)=>{mic.disabled=false;micStatus.classList.add('hidden');if(!txt){fb.innerHTML='Ich konnte dich nicht hören.';return}let d=diagnose(txt,Q.cur);d.ok?ok():(wrong(Q),fb.innerHTML=fail(Q,d))})}function checkText(){let d=diagnose(ans.value,Q.cur);d.ok?ok():(wrong(Q),fb.innerHTML=fail(Q,d))}render();</script></body></html>
+<!DOCTYPE html><html lang="de"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Sprechen · Einkaufen</title><link rel="stylesheet" href="style.css"></head><body>
+<div id="accountStrip" class="account-strip"></div><script type="module" src="/js/guard.js?v=l3t1stable3"></script>
+<div class="container"><section class="hero"></section><div class="actions"><a class="btn secondary" href="index.html">← Zurück</a></div><section class="card" id="area"></section><footer>© SprachPilot</footer></div>
+<script src="app.js?v=42"></script><script src="l3t1-stability.js?v=3"></script>
+<script>
+header('Sprechen: Im Geschäft');
+const ITEMS=[
+ {id:'tee',situation:'Im Café: Du möchtest einen Tee.',accepted:['Ich möchte einen Tee bitte','Einen Tee bitte','Ich möchte Tee bitte'],solution:'Ich möchte einen Tee, bitte.'},
+ {id:'brot',situation:'Im Geschäft: Frage, ob es Brot gibt.',accepted:['Haben Sie Brot'],solution:'Haben Sie Brot?'},
+ {id:'tomate',situation:'Du möchtest Tomaten kaufen.',accepted:['Ich möchte Tomaten bitte','Tomaten bitte'],solution:'Ich möchte Tomaten, bitte.'},
+ {id:'milch',situation:'Du brauchst Milch.',accepted:['Ich brauche Milch'],solution:'Ich brauche Milch.'},
+ {id:'apfel',situation:'Du möchtest ein Kilo Äpfel.',accepted:['Ich möchte ein Kilo Äpfel bitte','Ein Kilo Äpfel bitte'],solution:'Ich möchte ein Kilo Äpfel, bitte.'},
+ {id:'butter',situation:'Du möchtest keine Butter.',accepted:['Ich möchte keine Butter','Ich brauche keine Butter'],solution:'Ich möchte keine Butter.'},
+ {id:'wasser',situation:'Frage nach dem Preis einer Flasche Wasser.',accepted:['Was kostet eine Flasche Wasser'],solution:'Was kostet eine Flasche Wasser?'},
+ {id:'kaffee',situation:'Du möchtest Kaffee, aber keinen Tee.',accepted:['Ich möchte Kaffee aber keinen Tee','Ich möchte einen Kaffee aber keinen Tee'],solution:'Ich möchte Kaffee, aber keinen Tee.'}
+];
+const clean=v=>String(v||'').normalize('NFC').trim().toLowerCase().replace(/[.,!?;:“”"'`´]/g,'').replace(/\s+/g,' ');
+const ok=(v,item)=>item.accepted.some(x=>clean(x)===clean(v));
+let Q=queueFor('sprechen.html',ITEMS);
+function render(){Q.cur=nextItem(Q);if(!Q.cur){complete(area,'sprechen.html','index.html');return}Q.tries=0;Q.had=false;area.innerHTML=prog(Q)+`<div class="hint"><b>Situation:</b> ${Q.cur.situation}</div><div class="question">Sprich einen passenden ganzen Satz.</div><div class="actions"><button id="mic" class="btn" onclick="sayNow()">🎤 Sprechen</button><button class="btn secondary" onclick="showWrite()">Ich kann nicht sprechen</button></div><div id="writeBox" class="hidden"><input id="ans" placeholder="Schreibe den Satz"><button class="btn" onclick="checkText()">Kontrollieren</button></div><div id="micStatus" class="hint hidden"></div><div id="fb" class="feedback"></div>`}
+function showWrite(){writeBox.classList.remove('hidden');ans.focus()}
+function good(){right(Q,Q.cur);fb.textContent='Richtig!';setTimeout(render,650)}
+function bad(){wrong(Q);if(Q.tries===1)fb.textContent='Noch nicht richtig. Versuch es noch einmal.';else if(Q.tries===2)fb.innerHTML='<div class="hint">Tipp: Sprich höflich und als ganzen Satz.</div>';else fb.innerHTML=`<div class="hint">Beispiel: ${Q.cur.solution}<br>Sprich oder schreibe den Satz jetzt selbst.</div>`}
+function sayNow(){mic.disabled=true;micStatus.classList.remove('hidden');micStatus.textContent='Ich höre zu …';speech((txt)=>{mic.disabled=false;micStatus.classList.add('hidden');if(!txt){fb.textContent='Ich konnte nichts erkennen. Versuch es noch einmal oder schreibe.';return}ok(txt,Q.cur)?good():bad()})}
+function checkText(){ok(ans.value,Q.cur)?good():bad()}
+render();
+</script></body></html>
