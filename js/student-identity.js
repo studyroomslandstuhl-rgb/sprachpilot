@@ -73,14 +73,34 @@ async function assertSecurityLookupReady(){
   if(await securityLookupReady())return true;
   throw new Error('SECURITY_MIGRATION_NOT_READY');
 }
+function canonicalLink(id,data={}){
+  const linked=String(data.canonicalStudentId||'').trim();
+  return linked&&linked!==String(id||'').trim()?linked:'';
+}
+async function followCanonicalStudent(record,uid='',course='',courseDocId=''){
+  let current=record,aliases=[];const seen=new Set();
+  for(let depth=0;current&&depth<8;depth++){
+    const id=String(current.id||'').trim(),data=current.data||{};if(!id||seen.has(id))break;seen.add(id);aliases.push(id,...(Array.isArray(data.aliasIds)?data.aliasIds:[]));
+    const next=canonicalLink(id,data);if(!next||seen.has(next))break;
+    try{
+      const snap=await getDoc(doc(db,'students',next));if(!snap.exists())break;const nextData=snap.data()||{},owner=String(nextData.authUid||'').trim();
+      if(uid&&owner&&owner!==uid)break;if((course||courseDocId)&&!courseMatches(nextData,course,courseDocId))break;
+      current={id:snap.id||next,data:nextData};
+    }catch(e){break}
+  }
+  return current?{...current,aliases:uniq(aliases)}:record;
+}
 async function findStudentByAuthUidAndCourse(uid,course,courseDocId=''){
   if(!uid)return null;
   try{
-    // Die Query ist absichtlich ausschließlich nach der eigenen Firebase-UID gefiltert.
-    // Firestore Rules erlauben Schüler-Listen nur in genau diesem Eigentümerbereich.
+    // Die Query ist ausschließlich nach der verifizierten Firebase-UID gefiltert.
+    // Bei historischen Alias-Zeilen folgt die Auflösung anschließend ausdrücklich
+    // canonicalStudentId, statt den zuerst gefundenen lokalen Alias zur Wahrheit zu machen.
     const snap=await getDocs(query(collection(db,'students'),where('authUid','==',uid),limit(30)));
-    const match=snap.docs.find(d=>courseMatches(d.data()||{},course,courseDocId));
-    if(match)return{id:match.id,data:match.data()||{}};
+    const matches=snap.docs.filter(d=>courseMatches(d.data()||{},course,courseDocId));
+    if(!matches.length)return null;
+    const direct=matches.find(d=>{const data=d.data()||{},canonical=String(data.canonicalStudentId||'').trim();return canonical&&canonical===String(d.id)})||matches[0];
+    return followCanonicalStudent({id:direct.id,data:direct.data()||{}},uid,course,courseDocId);
   }catch(e){console.warn('UID-Schülerlookup fehlgeschlagen',e)}
   return null;
 }
@@ -94,7 +114,7 @@ async function directLegacyStudent(email,course,courseDocId=''){
       const snap=await getDoc(doc(db,'students',id));
       if(snap.exists()){
         const data=snap.data()||{};
-        if(normEmail(data.email)===mail&&courseMatches(data,course,courseDocId))return{id:snap.id||id,data};
+        if(normEmail(data.email)===mail&&courseMatches(data,course,courseDocId))return followCanonicalStudent({id:snap.id||id,data},'',course,courseDocId);
       }
     }catch(e){}
   }
@@ -112,24 +132,31 @@ async function directLegacyStudent(email,course,courseDocId=''){
       const studentSnap=await getDoc(doc(db,'students',canonical));
       if(!studentSnap.exists())continue;
       const data=studentSnap.data()||{};
-      if(normEmail(data.email)===mail&&courseMatches(data,course,courseDocId))return{id:studentSnap.id||canonical,data};
+      if(normEmail(data.email)===mail&&courseMatches(data,course,courseDocId))return followCanonicalStudent({id:studentSnap.id||canonical,data},'',course,courseDocId);
     }catch(e){}
   }
   return null;
 }
 async function resolveCanonical(profile){
-  const p=profile||{},candidates=candidateIds(p);
-  for(const id of candidates){
-    try{const snap=await getDoc(doc(db,'students',id));if(snap.exists())return{id:snap.id||id,data:snap.data()||{},aliases:candidates}}catch(e){}
-  }
-  const user=currentVerifiedUser(),email=emailOf(p),course=courseOf(p),courseDocId=String(p.courseDocId||'').trim();
+  const p=profile||{},candidates=candidateIds(p),user=currentVerifiedUser(),email=emailOf(p),course=courseOf(p),courseDocId=String(p.courseDocId||'').trim();
+  // Eine verifizierte Firebase-UID ist die stärkste Identität. Sie wird vor lokalen
+  // Alt-IDs geprüft, damit Handy und Tablet nicht auf unterschiedlichen Alias-Dokumenten
+  // weiterarbeiten, nur weil dort noch alte studentId/docId-Werte gespeichert sind.
   if(user){
     const byUid=await findStudentByAuthUidAndCourse(user.uid,course,courseDocId);
-    if(byUid)return{id:byUid.id,data:byUid.data||{},aliases:candidates};
+    if(byUid)return{id:byUid.id,data:byUid.data||{},aliases:uniq([...candidates,...(byUid.aliases||[])])};
+  }
+  for(const id of candidates){
+    try{
+      const snap=await getDoc(doc(db,'students',id));if(!snap.exists())continue;const data=snap.data()||{},owner=String(data.authUid||'').trim();
+      if(user&&owner&&owner!==user.uid)continue;
+      const resolved=await followCanonicalStudent({id:snap.id||id,data},user?.uid||'',course,courseDocId);
+      if(resolved)return{id:resolved.id,data:resolved.data||{},aliases:uniq([...candidates,...(resolved.aliases||[])])};
+    }catch(e){}
   }
   if(email&&course&&await securityLookupReady()){
     const found=await directLegacyStudent(email,course,courseDocId);
-    if(found)return{id:found.id,data:found.data||{},aliases:candidates};
+    if(found)return{id:found.id,data:found.data||{},aliases:uniq([...candidates,...(found.aliases||[])])};
   }
   return null;
 }
@@ -223,7 +250,7 @@ async function createStudentRecord(pending,user,courseLoaded){
 function profileFromRecord(record,user,courseData={}){
   const remote=record.data||{},canonical=String(record.id||'').trim();
   const course=remote.kurs||remote.courseCode||remote.kursnummer||'';
-  const aliases=uniq([canonical,...(Array.isArray(remote.aliasIds)?remote.aliasIds:[]),remote.canonicalStudentId,remote.docId,remote.studentId,remote.userId]);
+  const aliases=uniq([canonical,...(record.aliases||[]),...(Array.isArray(remote.aliasIds)?remote.aliasIds:[]),remote.canonicalStudentId,remote.docId,remote.studentId,remote.userId]);
   return{
     ...remote,
     assignments:courseData||remote.assignments||{},
