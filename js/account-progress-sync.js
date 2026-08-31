@@ -1,13 +1,13 @@
-import '/js/progress.js?v=20260829-safe15';
-import '/js/point-delta-bridge.js?v=20260829-safe15';
+import '/js/progress.js?v=20260831-central1';
+import '/js/point-delta-bridge.js?v=20260831-central1';
 import '/js/ranking-mirror.js?v=20260829-safe15';
 import { authReady } from '/js/firebase.js';
 import { getActiveProfile } from '/js/auth.js';
 import { currentFirebaseUser } from '/js/student-secure-auth.js?v=1';
 import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity5';
 import { isolateLocalProgressOwner } from '/js/account-progress-owner-isolation.js?v=3';
-import { prepareL78AccountProgressBridge, hydrateL78VisibleProgress, installL78RuntimeBridge } from '/js/account-progress-l78-bridge.js?v=1';
-import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-authoritative-v2.js?v=4';
+import { prepareL78AccountProgressBridge, hydrateL78VisibleProgress, installL78RuntimeBridge } from '/js/account-progress-l78-bridge.js?v=2';
+import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-authoritative-v2.js?v=5';
 export { accountProgressReady };
 
 function learningPage(){return /^\/(?:wortschatz|fragen-A1|fragen|verben|verben-A1|verben-bereich|irregulaere-verben|perfekt|grammatik|finnisch)(?:\/|$)/i.test(location.pathname||'')}
@@ -39,7 +39,7 @@ function refreshAfterProgressPreparation(result,isolation){
   if(!learningPage())return false;
   const studentId=String(result?.studentId||isolation?.currentId||localStorage.getItem('SP_STUDENT_ID')||'student');
   const page=String(location.pathname||'')+String(location.search||'');
-  const key='SP_ACCOUNT_PROGRESS_RENDERED_V7_'+studentId+'_'+page;
+  const key='SP_ACCOUNT_PROGRESS_RENDERED_V8_'+studentId+'_'+page;
   const restored=Math.max(0,Number(result?.restored)||0)+Math.max(0,Number(result?.restoredStructured)||0)+Math.max(0,Number(result?.rescuedLocal)||0)+Math.max(0,Number(result?.restoredL78)||0);
   const switched=!!isolation?.switchedAccount&&Math.max(0,Number(isolation?.quarantined)||0)>0;
   try{if(restored<=0&&!switched){sessionStorage.removeItem(key);return false}if(sessionStorage.getItem(key)==='1')return false;sessionStorage.setItem(key,'1')}catch(e){if(restored<=0&&!switched)return false}
@@ -71,7 +71,7 @@ export async function startAccountProgressSync(options={}){
   if(result?.blocked){showCloudProgressRequired(result);return result}
   let restoredL78=0;
   try{restoredL78=hydrateL78VisibleProgress()||0;installL78RuntimeBridge()}catch(error){console.warn('L7/L8 Kontofortschritt konnte nicht vollständig rekonstruiert werden',error)}
-  const enriched={...result,l78BridgeStaged:Number(bridge?.staged)||0,restoredL78,serverResetApplied:false,nonDestructive:true};
+  const enriched={...result,l78BridgeStaged:Number(bridge?.staged)||0,restoredL78,serverResetApplied:Number(result?.restoredStructured||0)>0,nonDestructive:true};
   if(refreshAfterProgressPreparation(enriched,isolation))return enriched;
   return enriched;
 }
