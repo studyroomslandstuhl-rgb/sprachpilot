@@ -1,10 +1,10 @@
 (function(){
   if(location.pathname.includes('/wortschatz/A1-Lektion-5/')){
-    window.__SP_PROGRESS_STANDARD_V4=true;
+    window.__SP_PROGRESS_STANDARD_V5=true;
     return;
   }
-  if(window.__SP_PROGRESS_STANDARD_V4)return;
-  window.__SP_PROGRESS_STANDARD_V4=true;
+  if(window.__SP_PROGRESS_STANDARD_V5)return;
+  window.__SP_PROGRESS_STANDARD_V5=true;
 
   let refreshRunning=false;
   let refreshQueued=false;
@@ -25,7 +25,8 @@
     if(path.includes('/fragen-A1/')||path.includes('/fragen/'))return {module:'fragen',moduleTitle:'Fragen',level:'A1',lesson:'',theme:'',topicId:'fragen-a1',title:'Fragen A1'};
     return {module:'allgemein',moduleTitle:'Allgemein',level:'',lesson:'',theme:'',topicId:cleanId(path),title:path};
   }
-  function scopeKey(){return cleanId(pathInfo().module+'-'+pathInfo().topicId)}
+  function scopeKey(){const info=pathInfo();return cleanId(info.module+'-'+info.topicId)}
+  function currentScopeRun(info=pathInfo()){return Math.max(1,Math.min(3,Math.round(Number(localStorage.getItem('SP_SCORE_RUN_'+info.topicId)||1)||1)))}
   function stateKey(file){return 'SP_TASK_STATE_V2_'+scopeKey()+'_'+cleanId(fileName(file))}
   function doneArray(total){total=Math.max(1,Math.round(Number(total)||100));return Array.from({length:total},(_,i)=>i)}
   function percentFromState(st,total){
@@ -47,13 +48,13 @@
     percentCache.set(key,value);
     return value;
   }
-  function payload(file,percent,total,done){const info=pathInfo();const f=fileName(file);return {...info,file:f,taskKey:f,taskTitle:f.replace(/\.html$/i,'').replace(/-/g,' '),percent:clamp(percent),completed:clamp(percent)>=100,total:Number(total||100),done:Number(done||0)}}
+  function payload(file,percent,total,done){const info=pathInfo(),f=fileName(file),run=currentScopeRun(info);return {...info,file:f,taskKey:f,taskTitle:f.replace(/\.html$/i,'').replace(/-/g,' '),run,percent:clamp(percent),completed:clamp(percent)>=100,total:Number(total||100),done:Number(done||0)}}
   function queueFirebase(file,percent,total,done){
     if(clamp(percent)<=0)return;
     const data=payload(file,percent,total,done);
     try{
       if(window.SPProgress&&typeof window.SPProgress.recordTaskProgress==='function')window.SPProgress.recordTaskProgress(data);
-      else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:'recordTaskProgress',payload:data});import('/js/progress.js?v=standard-progress-v2').catch(function(){})}
+      else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:'recordTaskProgress',payload:data});import('/js/progress.js?v=20260831-central2').catch(function(){})}
     }catch(e){}
   }
   function saveState(file,state){
@@ -115,8 +116,8 @@
   }
   function patchFunction(name,wrapper){
     const fn=window[name];
-    if(typeof fn!=='function'||fn.__spStandardV4)return false;
-    const patched=wrapper(fn);patched.__spStandardV4=true;window[name]=patched;return true;
+    if(typeof fn!=='function'||fn.__spStandardV5)return false;
+    const patched=wrapper(fn);patched.__spStandardV5=true;window[name]=patched;return true;
   }
   function patch(){
     patchFunction('pctFor',old=>function(file,total){return Math.max(clamp(old.apply(this,arguments)),standardPercent(file,total))});
@@ -130,7 +131,7 @@
     patchFunction('resetOneTask',old=>function(file){try{localStorage.removeItem(stateKey(file));clearPercentCache()}catch(e){}return old.apply(this,arguments)});
     scheduleRefresh();
   }
-  window.SPProgressStandard={taskPercent:standardPercent,markComplete,saveState,stateKey,pathInfo,refreshVisibleProgress,scheduleRefresh,version:4};
+  window.SPProgressStandard={taskPercent:standardPercent,markComplete,saveState,stateKey,pathInfo,refreshVisibleProgress,scheduleRefresh,version:5};
   patch();
   if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',patch);else setTimeout(patch,0);
   setTimeout(patch,250);setTimeout(patch,1000);setTimeout(patch,2200);setTimeout(scheduleRefresh,3200);
