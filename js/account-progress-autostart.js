@@ -1,6 +1,6 @@
 import '/js/session-restore.js?v=20260831-central3';
-import '/shared/points-recalculator.js?v=2';
-import '/shared/dativ-points-extension.js?v=4';
+import '/shared/points-recalculator.js?v=20260831-global3';
+import '/shared/dativ-points-extension.js?v=20260831-global3';
 
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(location.pathname))import('/wortschatz/lesson-colors-pastel.js?v=4').catch(()=>{});
 
@@ -23,11 +23,8 @@ function activeStudentSession(){
   return !!(p&&typeof p==='object'&&(p.canonicalStudentId||p.docId||p.studentId||p.userId||p.email));
 }
 
-// Ein Einstieg für den Kontofortschritt. Ohne echte aktive Schüler-Sitzung wird überhaupt kein
-// Schüler-Sync gestartet. Lehrer-Kursvorschauen dürfen auch bei sichtbarer Rolle "student"
-// keinen Schüler-Sync importieren.
 if(activeStudentSession()){
-  import('/js/account-progress-sync.js?v=20260831-central8')
+  import('/js/account-progress-sync.js?v=20260831-global9')
     .then(mod=>mod.startAccountProgressSync?.())
     .catch(error=>console.warn('Account-Fortschritt Sync konnte nicht gestartet werden',error));
 }
