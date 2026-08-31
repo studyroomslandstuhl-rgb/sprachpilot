@@ -1,7 +1,7 @@
 import { db, doc, getDoc, getDocFromServer, serverTimestamp, collection, query, where, getDocs, limit } from "./firebase.js";
 import { getActiveProfile } from "./auth.js";
 import "/shared/points-recalculator.js?v=1";
-import "/js/point-delta-bridge.js?v=20260831-central2";
+import "/js/point-delta-bridge.js?v=20260831-central6";
 import { runTransaction } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
 const MODULE_KEYS=["fragen","wortschatz","verben","perfekt","grammatik","dativverben"];
@@ -28,7 +28,7 @@ function profile(){try{return getActiveProfile()||read("SP_USER_PROFILE")||read(
 function course(p=profile()){return p.kurs||p.kursnummer||p.courseCode||p.course||localStorage.getItem("SP_COURSE_CODE")||""}
 function email(p=profile()){return String(p.email||"").trim().toLowerCase()}
 function fallbackId(p=profile()){return cleanId((p.courseDocId||course(p)||"kurs")+"_"+(email(p)||p.vorname||p.firstName||"student"))}
-function idCandidates(p=profile()){return uniq([p.canonicalStudentId,p.docId,p.studentId,p.userId,p.uid,p.id,...(Array.isArray(p.aliasIds)?p.aliasIds:[]),localStorage.getItem("SP_STUDENT_ID"),fallbackId(p)])}
+function idCandidates(p=profile()){return uniq([p.canonicalStudentId,p.docId,p.studentId,p.userId,p.authUid,p.uid,p.id,...(Array.isArray(p.aliasIds)?p.aliasIds:[]),localStorage.getItem("SP_STUDENT_ID"),fallbackId(p)])}
 function primaryIds(p=profile()){return idCandidates(p).slice(0,12)}
 function studentId(p=profile()){return String(p.canonicalStudentId||idCandidates(p)[0]||fallbackId(p))}
 function name(p=profile()){return [p.vorname||p.firstName||p.name,p.nachname||p.lastName].filter(Boolean).join(" ")||p.displayName||p.email||"Schüler/in"}
