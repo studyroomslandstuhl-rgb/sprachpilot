@@ -2,7 +2,7 @@
 'use strict';
 if(window.L7ThemeStandard)return;
 
-const VERSION='l7-theme-standard10';
+const VERSION='l7-theme-standard13';
 const COMMON_EMOJIS=Object.freeze({'karteikarten':'🃏','bild-erklaerung-wort':'🖼️','artikel-plural':'🔤','infinitiv-partizip':'🔁','memory':'🧠','partizip-waehlen':'✅','partizip-schreiben':'✍️','fehler-korrigieren':'🛠️','saetze-ordnen':'🧩','saetze-bilden':'✍️','ja-nein-fragen':'💬','w-fragen':'❓','bildimpulse':'🖼️','fragen-antworten':'💬','eigene-saetze':'✍️'});
 const THEME_EMOJIS=Object.freeze({
   1:Object.freeze({'karteikarten':'🃏','bild-erklaerung-wort':'🖼️','artikel-plural':'🔤','koennen-formen':'💪','wollen-formen':'🎯','verbform-waehlen':'✅','aussagen-ordnen':'🧩','ja-nein-fragen':'💬','w-fragen':'❓','faehigkeiten-abstufen':'📊','bildimpulse':'🖼️','fragen-antworten':'💬','partnerinterview':'🎤','wollen-moechten':'⚖️','dialoge-ergaenzen':'💬','hoeren-wuensche':'🎧','eigene-faehigkeiten':'💪','eigene-plaene':'📅'}),
@@ -24,7 +24,7 @@ function fallbackEmoji(task){const text=`${task?.id||''} ${task?.title||''}`.toL
 function taskEmoji(theme,task){if(task?.exam)return'⭐';const id=String(task?.id||'').toLowerCase();return THEME_EMOJIS[theme]?.[id]||COMMON_EMOJIS[id]||fallbackEmoji(task)}
 function taskCard(theme,task,number){const percent=percentage(theme,task),locked=!!task.exam&&!L7S.allDone(theme),emoji=taskEmoji(theme,task);if(locked)return `<div id="task-${esc(task.id)}" class="module exam-locked" aria-disabled="true"><div class="num">${number}. ${esc(task.title)}</div><div class="icon exam-icon">⭐</div><p>Prüfung wird freigeschaltet, wenn alle Lernaufgaben 100% erreicht haben.</p><div class="progress"><div class="bar" style="width:0%"></div></div><div class="small">gesperrt</div><div class="start">Prüfung gesperrt</div></div>`;return `<a id="task-${esc(task.id)}" class="module ${percent>=100?'done':''}" href="${taskHref(task)}"><div class="num">${number}. ${esc(task.title)}</div><div class="icon ${task.exam?'exam-icon':''}">${esc(emoji)}</div><p>${esc(task.description||'Aufgabe bearbeiten.')}</p><div class="progress"><div class="bar" style="width:${percent}%"></div></div><div class="small">${percent}%</div><div class="start">${percent>=100?'Fertig':'Starten'}</div></a>`}
 function previewNote(){if(!window.L7S?.preview?.())return'';return '<div class="sp-teacher-preview-note">Lehrer-Vorschau: Es werden keine Teilnehmerpunkte und keine Teilnehmerfortschritte gespeichert.</div>'}
-async function reconcile(theme){try{await import('/wortschatz/A1-Lektion-7/shared/l7-score-reconcile.js?v=1');await window.SPL7ScoreReconcile?.run?.(theme)}catch(error){console.warn('L7 Punktabgleich',error)}}
+async function reconcile(theme){try{await import('/wortschatz/A1-Lektion-7/shared/l7-score-reconcile.js?v=20260831-central7');await window.SPL7ScoreReconcile?.run?.(theme)}catch(error){console.warn('L7 Punktabgleich',error)}}
 async function render(themeNumber){
  const theme=Number(themeNumber),root=document.getElementById('app'),data=window.L7_THEME;if(!root||!data||!window.L7S)return;
  const tasksBefore=Array.isArray(data.tasks)?data.tasks:[],percentagesBefore=tasksBefore.map(task=>percentage(theme,task)),averageBefore=percentagesBefore.length?Math.round(percentagesBefore.reduce((sum,value)=>sum+value,0)/percentagesBefore.length):0,completedBefore=percentagesBefore.filter(value=>value>=100).length;
