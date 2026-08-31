@@ -1,10 +1,10 @@
 (function(){
 'use strict';
-if(window.__SP_L8T1_TASK_EMOJI_V4)return;
-window.__SP_L8T1_TASK_EMOJI_V4=true;
+if(window.__SP_L8T1_TASK_EMOJI_V5)return;
+window.__SP_L8T1_TASK_EMOJI_V5=true;
 
 const EMOJI_BY_ID={
- 'karteikarten':'📚',
+ 'karteikarten':'🃏',
  'berufe-bild-v3':'🖼️',
  'berufspaare-v3':'👥',
  'nomen-singular-plural-v3':'🔢',
@@ -23,7 +23,7 @@ const EMOJI_BY_ID={
 };
 
 const EMOJI_BY_KIND={
- cards:'📚',
+ cards:'🃏',
  choice:'✅',
  dualinput:'🔢',
  order:'🧩',
