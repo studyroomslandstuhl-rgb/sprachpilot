@@ -4,8 +4,8 @@ if(window.SPL7ScoreReconcile)return;
 const clean=s=>String(s||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'');
 async function api(){
  try{
-  if(!window.SPProgress?.idCandidates)await import('/js/progress.js?v=15');
-  await import('/js/point-delta-bridge.js?v=2');
+  if(!window.SPProgress?.idCandidates)await import('/js/progress.js?v=20260831-central6');
+  await import('/js/point-delta-bridge.js?v=20260831-central6');
  }catch(e){}
  return window.SPProgress||null
 }
