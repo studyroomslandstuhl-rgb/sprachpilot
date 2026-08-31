@@ -1,22 +1,10 @@
 (function(){
 'use strict';
-const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-device-merge-v17';
+const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-device-merge-v18';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
-function sleep(ms){return new Promise(resolve=>setTimeout(resolve,ms))}
-async function prepareAccountProgress(){
- try{
-  const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();
-  if(['teacher','lehrer','admin','owner','superadmin'].includes(role))return null;
-  const mod=await import('/js/account-progress-sync.js?v=20260831-central8');
-  const work=Promise.resolve(mod.startAccountProgressSync?.({reason:'l7t3-before-render',authWaitMs:6000,identityWaitMs:5000}));
-  // Bei einem echten kurzfristigen Netzproblem darf die Lektion trotzdem benutzbar bleiben.
-  return await Promise.race([work,sleep(7000).then(()=>({active:false,pending:true,reason:'L7T3_SYNC_WAIT_TIMEOUT'}))]);
- }catch(error){console.warn('L7T3 Kontofortschritt konnte vor dem Rendern noch nicht abgeschlossen werden',error);return null}
-}
 function addOrderPolish(){if(page!=='task')return;const taskId=String(new URLSearchParams(location.search).get('task')||'');if(taskId!=='t3-partizip-bauen-v2'||document.getElementById('sp-l7t3-order-polish'))return;const style=document.createElement('style');style.id='sp-l7t3-order-polish';style.textContent=`.l7-actions:has([data-action="check-order"]){display:flex!important;gap:10px!important;align-items:stretch!important}.l7-actions:has([data-action="check-order"])>button{flex:1 1 0!important;width:0!important;min-width:0!important;display:flex!important;align-items:center!important;justify-content:center!important}.l7-actions [data-action="check-order"]{order:1!important}.l7-actions [data-action="reset-order"]{order:2!important}.l7-actions [data-action="undo"]{order:3!important}@media(max-width:520px){.l7-actions:has([data-action="check-order"]){gap:7px!important}.l7-actions:has([data-action="check-order"])>button{padding-left:7px!important;padding-right:7px!important}}`;document.head.appendChild(style)}
 load('/shared/sp-cache-epoch.js?v=20260831-sync-device-merge8').catch(()=>{})
  .then(()=>load('/js/progress-role-guard.js?v=20260831-central8'))
- .then(()=>prepareAccountProgress())
  .then(()=>Promise.resolve(window.L7_THEME_READY))
  .then(()=>load('../shared/l7-state-safety.js?v=1'))
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
