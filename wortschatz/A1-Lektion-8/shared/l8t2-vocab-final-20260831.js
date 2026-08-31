@@ -1,0 +1,64 @@
+(function(){
+'use strict';
+if(window.__SP_L8T2_VOCAB_FINAL_20260831)return;window.__SP_L8T2_VOCAB_FINAL_20260831=true;
+window.L8_T2_VOCAB_FINAL_PENDING=true;
+const CDN='https://sprachpilot.b-cdn.net/';
+const AUDIO=CDN+'audio/';
+const norm=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
+const term=item=>String(item?.term||item?.full||item?.word||'').trim();
+const DATA={
+ dauern:{term:'dauern',detail:'hat gedauert',stem:'dauern',tr:{en:'to last / take time',ru:'длиться',tr:'sürmek',uk:'тривати',ar:'يستغرق',ja:'かかる / 続く',ro:'a dura',pl:'trwać',ku:'dom kirin',fa:'طول کشیدن',fr:'durer',es:'durar',it:'durare'}},
+ heiraten:{term:'heiraten',detail:'hat geheiratet',stem:'heiraten',tr:{en:'to marry / get married',ru:'жениться / выходить замуж',tr:'evlenmek',uk:'одружуватися',ar:'يتزوج',ja:'結婚する',ro:'a se căsători',pl:'brać ślub',ku:'zewicîn',fa:'ازدواج کردن',fr:'se marier',es:'casarse',it:'sposarsi'}},
+ zeigen:{term:'zeigen',detail:'hat gezeigt',stem:'zeigen',tr:{en:'to show',ru:'показывать',tr:'göstermek',uk:'показувати',ar:'يُري',ja:'見せる',ro:'a arăta',pl:'pokazywać',ku:'nîşan dan',fa:'نشان دادن',fr:'montrer',es:'mostrar',it:'mostrare'}},
+ stehen:{term:'zur Verfügung stehen',stem:'zur_verfuegung_stehen',tr:{en:'to be available / at someone’s disposal',ru:'быть в распоряжении / быть доступным',tr:'hazır bulunmak / kullanımda olmak',uk:'бути в розпорядженні / бути доступним',ar:'يكون متاحًا / يكون تحت التصرّف',ja:'利用できる / 用意されている',ro:'a fi la dispoziție / a fi disponibil',pl:'być do dyspozycji / być dostępny',ku:'berdest bûn',fa:'در دسترس بودن',fr:'être à disposition / être disponible',es:'estar a disposición / estar disponible',it:'essere a disposizione / essere disponibile'}}
+};
+function keyFor(item){
+ const n=norm(term(item));
+ if(!n)return'';
+ if(n==='zur verfugung stellen'||n==='zur verfuegung stellen')return'remove';
+ if(n==='zur verfugung stehen'||n==='zur verfuegung stehen')return'stehen';
+ if(n==='dauern'||n==='hat gedauert'||n==='dauern hat gedauert'||n==='hat gedauert dauern')return'dauern';
+ if(n==='heiraten'||n==='hat geheiratet'||n==='heiraten hat geheiratet'||n==='hat geheiratet heiraten')return'heiraten';
+ if(n==='zeigen'||n==='hat gezeigt'||n==='zeigen hat gezeigt'||n==='hat gezeigt zeigen')return'zeigen';
+ return'';
+}
+function canonical(key,base={}){
+ const d=DATA[key];
+ const item={...base,term:d.term,type:'verb'};
+ delete item.full;delete item.word;
+ if(d.detail)item.detail=d.detail;else if(item.detail&&/zur\s+verf[üu]gung\s+stellen/i.test(String(item.detail)))delete item.detail;
+ item.image=CDN+d.stem+'.webp';
+ item.audio=AUDIO+d.stem+'.mp3';
+ item.audioFile=AUDIO+d.stem+'.mp3';
+ item.translations={...(base.translations&&typeof base.translations==='object'?base.translations:{}),...d.tr};
+ item.tr={...(base.tr&&typeof base.tr==='object'?base.tr:{}),...d.tr};
+ return item;
+}
+function fixSimpleMedia(item){
+ const n=norm(term(item));
+ let stem='';
+ if(n==='gerade')stem='gerade';
+ else if(n==='spater')stem='spaeter';
+ if(!stem)return item;
+ item.image=CDN+stem+'.webp';item.audio=AUDIO+stem+'.mp3';item.audioFile=AUDIO+stem+'.mp3';return item;
+}
+function cleanList(list,ensure=false){
+ const out=[],seen=new Set();
+ for(const original of Array.isArray(list)?list:[]){
+  const key=keyFor(original);
+  if(key==='remove')continue;
+  if(key&&DATA[key]){if(seen.has(key))continue;seen.add(key);out.push(canonical(key,original));continue}
+  out.push(fixSimpleMedia(original));
+ }
+ if(ensure){for(const key of ['dauern','heiraten','zeigen','stehen'])if(!seen.has(key))out.push(canonical(key))}
+ return out;
+}
+window.L8_T2_VOCAB_FINAL_READY=Promise.resolve(window.L8_T2_MEDIA_FIXES_READY||window.L8_T2_EXTRA_TRANSLATIONS_READY||window.L8_T2_VOCAB_READY||window.L8_T2_TRANSLATIONS_READY||window.L8_T2_CURRENT_READY||window.L8_CONTENT_READY).then(()=>{
+ const all=window.L8_ALL_THEMES||{},theme=all[2]||all['2'];if(!theme)return theme;
+ const cards=(theme.tasks||[]).find(t=>t?.kind==='cards'||t?.id==='karteikarten'||/karteikart/i.test(String(t?.title||'')));
+ if(cards)cards.items=cleanList(cards.items,true);
+ if(Array.isArray(theme.overviewOnlyItems))theme.overviewOnlyItems=cleanList(theme.overviewOnlyItems,false);
+ if(window.L8_THEME&&Number(window.L8_THEME.number)===2)window.L8_THEME=theme;
+ window.L8_T2_VOCAB_FINAL_PENDING=false;return theme;
+}).catch(error=>{window.L8_T2_VOCAB_FINAL_PENDING=false;console.error('L8T2 finale Wortschatzkorrektur',error);throw error});
+})();
