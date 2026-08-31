@@ -6,7 +6,7 @@ import { getActiveProfile } from '/js/auth.js';
 import { currentFirebaseUser } from '/js/student-secure-auth.js?v=1';
 import { normalizeStudentIdentity } from '/js/student-identity.js?v=identity6';
 import { isolateLocalProgressOwner } from '/js/account-progress-owner-isolation.js?v=3';
-import { prepareL78AccountProgressBridge, hydrateL78VisibleProgress, installL78RuntimeBridge } from '/js/account-progress-l78-bridge.js?v=20260831-central6';
+import { prepareL78AccountProgressBridge, hydrateL78VisibleProgress, installL78RuntimeBridge } from '/js/account-progress-l78-bridge.js?v=20260831-central8';
 import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-authoritative-v2.js?v=20260831-central6';
 export { accountProgressReady };
 
@@ -110,7 +110,7 @@ function refreshAfterProgressPreparation(result,isolation){
   if(!learningPage())return false;
   const studentId=String(result?.studentId||isolation?.currentId||localStorage.getItem('SP_STUDENT_ID')||'student');
   const page=String(location.pathname||'')+String(location.search||'');
-  const key='SP_ACCOUNT_PROGRESS_RENDERED_V13_'+studentId+'_'+page;
+  const key='SP_ACCOUNT_PROGRESS_RENDERED_V14_'+studentId+'_'+page;
   const restored=Math.max(0,Number(result?.restoredStructured)||0)+Math.max(0,Number(result?.rescuedLocal)||0)+Math.max(0,Number(result?.pendingApplied)||0)+Math.max(0,Number(result?.restoredL78)||0);
   const switched=!!isolation?.switchedAccount&&Math.max(0,Number(isolation?.quarantined)||0)>0;
   try{if(restored<=0&&!switched){sessionStorage.removeItem(key);return false}if(sessionStorage.getItem(key)==='1')return false;sessionStorage.setItem(key,'1')}catch(e){if(restored<=0&&!switched)return false}
@@ -152,9 +152,17 @@ async function startInner(options={}){
     if(authBlockingResult(result)){showCloudProgressRequired(result);return result}
     scheduleRetry(1800);return inactiveResult(result.reason||'CLOUD_SYNC_RETRY',{pending:true,code:result.code||''})
   }
-  let restoredL78=0;
-  try{restoredL78=hydrateL78VisibleProgress()||0;installL78RuntimeBridge()}catch(error){console.warn('L7/L8 Kontofortschritt konnte nicht vollständig rekonstruiert werden',error)}
-  const enriched={...result,l78BridgeStaged:Number(bridge?.staged)||0,l78RawMigrated:Number(bridge?.rawMigrated)||0,restoredL78,serverResetApplied:Number(result?.restoredStructured||0)>0,nonDestructive:true};
+  let restoredL78=0,l78Flushed=false;
+  try{
+    restoredL78=hydrateL78VisibleProgress()||0;
+    installL78RuntimeBridge();
+    // Die account-scoped Canonicalisierung kann einen neuen gemeinsamen Ledger erzeugen.
+    // Dieser muss noch in derselben Startphase in die Cloud, damit das zweite Gerät nicht
+    // erneut nur seinen alten PID-Zweig liest.
+    const flushed=await window.SPAccountProgressSync?.flush?.();
+    l78Flushed=!!flushed?.ok;
+  }catch(error){console.warn('L7/L8 Kontofortschritt konnte nicht vollständig rekonstruiert werden',error)}
+  const enriched={...result,l7l8AccountScopedMerge:true,l78BridgeStaged:Number(bridge?.staged)||0,l78RawMigrated:Number(bridge?.rawMigrated)||0,restoredL78,l78Flushed,serverResetApplied:Number(result?.restoredStructured||0)>0,nonDestructive:true};
   if(refreshAfterProgressPreparation(enriched,isolation))return enriched;
   return enriched;
 }
