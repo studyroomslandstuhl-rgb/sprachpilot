@@ -1,14 +1,14 @@
 import { db, doc, getDoc, getDocFromServer, serverTimestamp, collection, query, where, getDocs, limit } from "./firebase.js";
 import { getActiveProfile } from "./auth.js";
 import "/shared/points-recalculator.js?v=1";
-import "/js/point-delta-bridge.js?v=20260831-central1";
+import "/js/point-delta-bridge.js?v=20260831-central2";
 import { runTransaction } from "https://www.gstatic.com/firebasejs/10.12.5/firebase-firestore.js";
 
-const MODULE_KEYS=["fragen","wortschatz","verben","perfekt","grammatik"];
+const MODULE_KEYS=["fragen","wortschatz","verben","perfekt","grammatik","dativverben"];
 const MODULE_ALIASES={
   "fragen":"fragen","fragen-a1":"fragen","wortschatz":"wortschatz",
   "verben":"verben","verben-a1":"verben","irregulare-verben":"verben",
-  "perfekt":"perfekt","grammatik":"grammatik"
+  "perfekt":"perfekt","grammatik":"grammatik","dativverben":"dativverben","dativ-verben":"dativverben"
 };
 const RULES={
   taskPoints(run){run=Number(run)||1;return run===1?5:run===2?10:run===3?15:0},
@@ -21,6 +21,7 @@ function now(){return new Date().toISOString()}
 function cleanId(s){return String(s||"").trim().toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"").replace(/[^a-z0-9]+/g,"-").replace(/^-|-$/g,"")||"item"}
 function normalizeModuleKey(value){const key=cleanId(value||"wortschatz");return MODULE_ALIASES[key]||key}
 function clamp(v){return Math.max(0,Math.min(100,Math.round(Number(v)||0)))}
+function clampRun(v){return Math.max(1,Math.min(3,Math.round(Number(v)||1)))}
 function uniq(a){return [...new Set((a||[]).filter(Boolean).map(String))]}
 function read(k){try{return JSON.parse(localStorage.getItem(k)||"null")}catch(e){return null}}
 function profile(){try{return getActiveProfile()||read("SP_USER_PROFILE")||read("SP_STUDENT_PROFILE")||{}}catch(e){return {}}}
@@ -37,8 +38,10 @@ function isTopicRecord(k,v){return !TECH.has(k)&&!!(v&&typeof v==="object"&&!Arr
 function point(v){const n=Number(v);return Number.isFinite(n)?Math.max(0,n):0}
 function topicId(p){return p.topicId||p.themeId||cleanId([p.module||"wortschatz",p.level||"A1","lektion",p.lesson||p.lektion||"","thema",p.theme||p.thema||""].filter(Boolean).join("_"))}
 function runKey(scope){return `SP_SCORE_RUN_${scope}`}
-function currentRun(scope){return Math.max(1,Math.min(3,Math.round(Number(localStorage.getItem(runKey(scope))||1)||1)))}
-function setRun(scope,run){localStorage.setItem(runKey(scope),String(Math.max(1,Math.min(3,Math.round(Number(run)||1))))}
+function currentRun(scope){return clampRun(localStorage.getItem(runKey(scope))||1)}
+function setRun(scope,run){localStorage.setItem(runKey(scope),String(clampRun(run)))}
+function explicitRun(payload={}){return payload.run!==undefined&&payload.run!==null&&String(payload.run)!==''}
+function requestedRun(payload,id){return explicitRun(payload)?clampRun(payload.run):currentRun(id)}
 function mergeRuns(a={},b={}){const out={};for(const k of new Set([...Object.keys(a||{}),...Object.keys(b||{})]))out[k]=Math.max(Number(a?.[k]||0),Number(b?.[k]||0));return out}
 function mergeTaskRunMaps(a={},b={}){const out={};for(const k of new Set([...Object.keys(a||{}),...Object.keys(b||{})]))out[k]=mergeRuns(a?.[k]||{},b?.[k]||{});return out}
 function exactTopicPoints(topic){try{return Number(window.SPPointRecalculator?.topicPoints?.(topic)?.points)||0}catch(e){return 0}}
@@ -46,7 +49,7 @@ function taskDoneCount(t={}){return Array.isArray(t.done)?t.done.length:Math.max
 function topicRun(t={}){
   let run=Math.max(1,Number(t.currentRun)||0,Number(t.current?.run)||0,Number(t.exam?.run)||0,Math.min(3,(Number(t.lifetime?.resets)||0)+1));
   for(const task of Object.values(t.tasks||{}))run=Math.max(run,Number(task?.run)||0);
-  return Math.max(1,Math.min(3,Math.round(run||1)));
+  return clampRun(run||1);
 }
 function taskIsCurrent(task={},source={},targetRun=1){
   const explicit=Number(task.run)||0;if(explicit)return explicit===targetRun;
@@ -134,7 +137,7 @@ async function writeProgress(next,event=null){
     await runTransaction(db,async tx=>{
       const snap=await tx.get(ref),server=snap.exists()?(snap.data()||{}):{},delta=eventDelta(server,event),floor=storedPoints(server,next),combined=mergeProgress(next,server);
       combined.studentId=id;combined.userId=id;combined.docId=id;combined.canonicalStudentId=id;combined.aliasIds=uniq([...idCandidates(p),...(combined.aliasIds||[])]);combined.kurs=kurs||combined.kurs||"";combined.kursnummer=kurs||combined.kursnummer||"";combined.courseCode=kurs||combined.courseCode||"";combined.studentName=name(p);combined.email=p.email||combined.email||"";combined.muttersprache=p.muttersprache||p.motherLanguage||combined.muttersprache||"";combined.lastActive=serverTimestamp();combined.updatedAt=serverTimestamp();combined.lastActiveAt=now();combined.lastPage=location.pathname;
-      combined.totals=recalcTotals(combined);const evidence=Number(combined.totals.points)||0,safe=Math.max(evidence,floor+delta);combined.totals.points=safe;combined.lifetimePoints=safe;combined.pointsTotal=safe;combined.punkteGesamt=safe;combined.ranking={...(combined.ranking||{}),points:safe,updatedAt:now()};combined.metadata={...(combined.metadata||{}),pointAudit:{...(combined.metadata?.pointAudit||{}),version:8,autoLoweringDisabled:true,transactionalAwards:true,lastEvidenceCheckAt:now(),evidencePoints:evidence,preservedPoints:safe,lastAward:event?{type:event.type,module:event.module,topicId:event.topicId,run:event.run,targetAward:event.targetAward,delta}:null}};
+      combined.totals=recalcTotals(combined);const evidence=Number(combined.totals.points)||0,safe=Math.max(evidence,floor+delta);combined.totals.points=safe;combined.lifetimePoints=safe;combined.pointsTotal=safe;combined.punkteGesamt=safe;combined.ranking={...(combined.ranking||{}),points:safe,updatedAt:now()};combined.metadata={...(combined.metadata||{}),pointAudit:{...(combined.metadata?.pointAudit||{}),version:9,autoLoweringDisabled:true,transactionalAwards:true,runAwareHistoricalSync:true,lastEvidenceCheckAt:now(),evidencePoints:evidence,preservedPoints:safe,lastAward:event?{type:event.type,module:event.module,topicId:event.topicId,run:event.run,targetAward:event.targetAward,delta}:null}};
       tx.set(ref,combined,{merge:true});result=combined;appliedDelta=delta;
     });
   }catch(e){console.warn("Progress transaction failed",id,e);try{localStorage.setItem("SP_PROGRESS_LAST_ERROR",JSON.stringify({at:now(),id,message:e?.message||String(e)}))}catch(x){}return null}
@@ -146,21 +149,32 @@ function taskTitle(file){return String(file||"Aufgabe").replace(/\.html$/i,"").r
 async function recordTaskProgress(payload={}){
   if(!canWrite())return null;
   try{
-    const moduleKey=normalizeModuleKey(payload.module||"wortschatz"),id=topicId({...payload,module:moduleKey}),run=currentRun(id),rawKey=payload.file||payload.taskKey||payload.taskTitle||"task",pointsKey=cleanId(rawKey),current=await readProgress(),mod={...(current[moduleKey]||{})},topic={...(mod[id]||{})};
-    const existingRun=topicRun(topic);if(existingRun>run)setRun(id,existingRun);const activeRun=Math.max(run,existingRun),tasks={...(topic.tasks||{})},old=taskIsCurrent(tasks[rawKey]||tasks[pointsKey]||{},topic,activeRun)?(tasks[rawKey]||tasks[pointsKey]||{}):{};
-    let percent=clamp(payload.percent??payload.progress??0);if(!payload.allowDecrease)percent=Math.max(percent,clamp(old.percent||0));const completed=!!payload.completed||percent>=100,lifetime={...(topic.lifetime||{})},taskPointRuns=mergeTaskRunMaps(lifetime.taskPointRuns||{},{}),thisRuns=mergeRuns(taskPointRuns[pointsKey]||{},old.pointsByRun||{});if(completed&&!thisRuns[String(activeRun)])thisRuns[String(activeRun)]=RULES.taskPoints(activeRun);taskPointRuns[pointsKey]=thisRuns;
-    tasks[rawKey]={...old,key:rawKey,file:payload.file||old.file||rawKey,title:payload.taskTitle||old.title||taskTitle(payload.file||rawKey),percent,completed,total:Number(payload.total||old.total||0),done:Number(payload.done||old.done||0),lastActiveAt:now(),completedAt:completed?(old.completedAt||now()):(old.completedAt||null),points:Object.values(thisRuns).reduce((s,v)=>s+Math.max(0,Number(v)||0),0),pointsByRun:thisRuns,run:activeRun};
-    const currentTasks={};for(const[k,t]of Object.entries(tasks))if(Number(t?.run||activeRun)===activeRun)currentTasks[k]=t;const values=Object.values(currentTasks),avg=values.length?clamp(values.reduce((s,t)=>s+Number(t.percent||0),0)/values.length):percent,done=values.filter(t=>t.completed).length;
-    lifetime.taskPointRuns=taskPointRuns;lifetime.completedTasks=Math.max(Number(lifetime.completedTasks||0),done);lifetime.resets=Math.max(Number(lifetime.resets||0),activeRun-1);topic.title=payload.title||topic.title||`A1 Lektion ${payload.lesson||""} · Thema ${payload.theme||""}`;topic.moduleTitle=payload.moduleTitle||topic.moduleTitle||"Wortschatz";topic.level=payload.level||topic.level||"A1";topic.lesson=payload.lesson||topic.lesson||"";topic.theme=payload.theme||topic.theme||"";topic.currentRun=activeRun;topic.progressPercent=avg;topic.completedTasks=done;topic.totalTasks=Math.max(Number(topic.totalTasks||0),values.length);topic.tasks=currentTasks;topic.current={run:activeRun,percent:avg,completedTasks:done,totalTasks:topic.totalTasks,updatedAt:now()};topic.lifetime=lifetime;topic.lifetime.points=exactTopicPoints(topic);mod[id]=topic;current[moduleKey]=mod;
-    return await writeProgress(current,{type:'task',module:moduleKey,topicId:id,rawKey,pointsKey,run:activeRun,targetAward:completed?RULES.taskPoints(activeRun):0});
+    const moduleKey=normalizeModuleKey(payload.module||"wortschatz"),id=topicId({...payload,module:moduleKey}),incomingRun=requestedRun(payload,id),current=await readProgress(),mod={...(current[moduleKey]||{})},topic={...(mod[id]||{})},existingRun=topicRun(topic),historical=explicitRun(payload)&&incomingRun<existingRun,activeRun=historical?incomingRun:Math.max(incomingRun,existingRun),rawKey=payload.file||payload.taskKey||payload.taskTitle||"task",pointsKey=cleanId(rawKey);
+    if(!explicitRun(payload)&&existingRun>incomingRun)setRun(id,existingRun);else if(!historical&&activeRun>currentRun(id))setRun(id,activeRun);
+    const lifetime={...(topic.lifetime||{})},taskPointRuns=mergeTaskRunMaps(lifetime.taskPointRuns||{},{}),existingVisible=historical?{}:{...(topic.tasks||{})},currentTasks={};
+    if(!historical&&activeRun===existingRun){for(const[k,t]of Object.entries(existingVisible))if(taskIsCurrent(t,topic,activeRun))currentTasks[k]=t}
+    const old=historical?{}:(currentTasks[rawKey]||currentTasks[pointsKey]||{});let percent=clamp(payload.percent??payload.progress??0);if(!payload.allowDecrease&&!historical)percent=Math.max(percent,clamp(old.percent||0));const completed=!!payload.completed||percent>=100,thisRuns=mergeRuns(taskPointRuns[pointsKey]||{},old.pointsByRun||{});if(completed&&!thisRuns[String(activeRun)])thisRuns[String(activeRun)]=RULES.taskPoints(activeRun);taskPointRuns[pointsKey]=thisRuns;
+    lifetime.taskPointRuns=taskPointRuns;lifetime.completedTasks=Math.max(Number(lifetime.completedTasks||0),completed?1:0);lifetime.resets=Math.max(Number(lifetime.resets||0),existingRun-1,activeRun-1);
+    topic.title=payload.title||topic.title||`A1 Lektion ${payload.lesson||""} · Thema ${payload.theme||""}`;topic.moduleTitle=payload.moduleTitle||topic.moduleTitle||"Wortschatz";topic.level=payload.level||topic.level||"A1";topic.lesson=payload.lesson||topic.lesson||"";topic.theme=payload.theme||topic.theme||"";topic.lifetime=lifetime;
+    if(!historical){
+      currentTasks[rawKey]={...old,key:rawKey,file:payload.file||old.file||rawKey,title:payload.taskTitle||old.title||taskTitle(payload.file||rawKey),percent,completed,total:Number(payload.total||old.total||0),done:Number(payload.done||old.done||0),lastActiveAt:now(),completedAt:completed?(old.completedAt||now()):(old.completedAt||null),points:Object.values(thisRuns).reduce((s,v)=>s+Math.max(0,Number(v)||0),0),pointsByRun:thisRuns,run:activeRun};
+      const values=Object.values(currentTasks),avg=values.length?clamp(values.reduce((s,t)=>s+Number(t.percent||0),0)/values.length):percent,done=values.filter(t=>t.completed).length;topic.currentRun=activeRun;topic.progressPercent=avg;topic.completedTasks=done;topic.totalTasks=Math.max(Number(topic.totalTasks||0),values.length);topic.tasks=currentTasks;topic.current={run:activeRun,percent:avg,completedTasks:done,totalTasks:topic.totalTasks,updatedAt:now()};
+    }
+    topic.lifetime.points=exactTopicPoints(topic);mod[id]=topic;current[moduleKey]=mod;
+    return await writeProgress(current,{type:'task',module:moduleKey,topicId:id,rawKey,pointsKey,run:activeRun,targetAward:completed?RULES.taskPoints(activeRun):0,historical});
   }catch(e){console.warn("SPProgress task sync failed",e);return null}
 }
 async function recordExamResult(payload={}){
   if(!canWrite())return null;
   try{
-    const moduleKey=normalizeModuleKey(payload.module||"wortschatz"),id=topicId({...payload,module:moduleKey}),run=currentRun(id),current=await readProgress(),mod={...(current[moduleKey]||{})},topic={...(mod[id]||{})};const existingRun=topicRun(topic);if(existingRun>run)setRun(id,existingRun);const activeRun=Math.max(run,existingRun),exam=examIsCurrent(topic,activeRun)?{...(topic.exam||{})}:{},percent=clamp(payload.percent??payload.scorePercent??payload.score??0),earned=RULES.examEarned(activeRun,percent),maxScore=RULES.examMax(activeRun),lifetime={...(topic.lifetime||{})},examRuns=mergeRuns(lifetime.examPointRuns||{},{});examRuns[String(activeRun)]=Math.max(Number(examRuns[String(activeRun)]||0),earned);const attempts=Number(exam.attempts||0)+1,stars=Number(payload.stars??(percent>=100?3:percent>=70?2:percent>=50?1:0));
-    topic.exam={...exam,run:activeRun,attempted:true,unlocked:true,attempts,lastScore:earned,lastPercent:percent,lastStars:stars,lastAttemptAt:now(),bestScore:Math.max(Number(exam.bestScore||0),earned),bestPercent:Math.max(Number(exam.bestPercent||0),percent),percent:Math.max(Number(exam.percent||0),percent),stars:Math.max(Number(exam.stars||0),stars),maxScore,completed:percent>=100||exam.completed===true};lifetime.examPointRuns=examRuns;lifetime.resets=Math.max(Number(lifetime.resets||0),activeRun-1);lifetime.bestExamPercent=Math.max(Number(lifetime.bestExamPercent||0),percent);lifetime.bestStars=Math.max(Number(lifetime.bestStars||0),stars);lifetime.examAttempts=Math.max(Number(lifetime.examAttempts||0),attempts);topic.lifetime=lifetime;topic.currentRun=activeRun;topic.examUnlocked=true;topic.current={...(topic.current||{}),run:activeRun,updatedAt:now()};topic.title=payload.title||topic.title||`A1 Lektion ${payload.lesson||""} · Thema ${payload.theme||""}`;topic.moduleTitle=payload.moduleTitle||topic.moduleTitle||"Wortschatz";topic.level=payload.level||topic.level||"A1";topic.lesson=payload.lesson||topic.lesson||"";topic.theme=payload.theme||topic.theme||"";topic.lifetime.points=exactTopicPoints(topic);mod[id]=topic;current[moduleKey]=mod;
-    return await writeProgress(current,{type:'exam',module:moduleKey,topicId:id,run:activeRun,targetAward:earned});
+    const moduleKey=normalizeModuleKey(payload.module||"wortschatz"),id=topicId({...payload,module:moduleKey}),incomingRun=requestedRun(payload,id),current=await readProgress(),mod={...(current[moduleKey]||{})},topic={...(mod[id]||{})},existingRun=topicRun(topic),historical=explicitRun(payload)&&incomingRun<existingRun,activeRun=historical?incomingRun:Math.max(incomingRun,existingRun),percent=clamp(payload.percent??payload.scorePercent??payload.score??0),earned=RULES.examEarned(activeRun,percent),maxScore=RULES.examMax(activeRun),lifetime={...(topic.lifetime||{})},examRuns=mergeRuns(lifetime.examPointRuns||{},{});
+    if(!explicitRun(payload)&&existingRun>incomingRun)setRun(id,existingRun);else if(!historical&&activeRun>currentRun(id))setRun(id,activeRun);
+    examRuns[String(activeRun)]=Math.max(Number(examRuns[String(activeRun)]||0),earned);lifetime.examPointRuns=examRuns;lifetime.resets=Math.max(Number(lifetime.resets||0),existingRun-1,activeRun-1);lifetime.bestExamPercent=Math.max(Number(lifetime.bestExamPercent||0),percent);lifetime.bestStars=Math.max(Number(lifetime.bestStars||0),Number(payload.stars||0));lifetime.examAttempts=Math.max(Number(lifetime.examAttempts||0),1);topic.lifetime=lifetime;topic.title=payload.title||topic.title||`A1 Lektion ${payload.lesson||""} · Thema ${payload.theme||""}`;topic.moduleTitle=payload.moduleTitle||topic.moduleTitle||"Wortschatz";topic.level=payload.level||topic.level||"A1";topic.lesson=payload.lesson||topic.lesson||"";topic.theme=payload.theme||topic.theme||"";
+    if(!historical){
+      const exam=examIsCurrent(topic,activeRun)?{...(topic.exam||{})}:{},attempts=Number(exam.attempts||0)+1,stars=Number(payload.stars??(percent>=100?3:percent>=70?2:percent>=50?1:0));topic.exam={...exam,run:activeRun,attempted:true,unlocked:true,attempts,lastScore:earned,lastPercent:percent,lastStars:stars,lastAttemptAt:now(),bestScore:Math.max(Number(exam.bestScore||0),earned),bestPercent:Math.max(Number(exam.bestPercent||0),percent),percent:Math.max(Number(exam.percent||0),percent),stars:Math.max(Number(exam.stars||0),stars),maxScore,completed:percent>=100||exam.completed===true};topic.currentRun=activeRun;topic.examUnlocked=true;topic.current={...(topic.current||{}),run:activeRun,updatedAt:now()};lifetime.bestStars=Math.max(Number(lifetime.bestStars||0),stars);lifetime.examAttempts=Math.max(Number(lifetime.examAttempts||0),attempts);
+    }
+    topic.lifetime.points=exactTopicPoints(topic);mod[id]=topic;current[moduleKey]=mod;
+    return await writeProgress(current,{type:'exam',module:moduleKey,topicId:id,run:activeRun,targetAward:earned,historical});
   }catch(e){console.warn("SPProgress exam sync failed",e);return null}
 }
 async function recordThemeReset(payload={}){
