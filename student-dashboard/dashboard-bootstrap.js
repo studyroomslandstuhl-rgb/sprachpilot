@@ -1,5 +1,5 @@
 import '/shared/sp-cache-epoch.js?v=20260829-points7';
-import '/js/session-restore.js?v=5';
+import '/js/session-restore.js?v=20260831-central2';
 import { verifySecureAccess } from '/js/secure-access-gate.js?v=1';
 
 function readProfile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')||{}}catch(e){return{}}}
