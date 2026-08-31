@@ -1,8 +1,8 @@
 (function(){
 'use strict';
-if(window.__SP_TEACHER_POINTS_SUITE_V6)return;
-window.__SP_TEACHER_POINTS_SUITE_V6=true;
-const FINAL='20260829-points11-individual';
+if(window.__SP_TEACHER_POINTS_SUITE_V7)return;
+window.__SP_TEACHER_POINTS_SUITE_V7=true;
+const FINAL='20260831-points12-device-merge';
 function load(path){
   const src=path+(path.includes('?')?'&':'?')+'v='+FINAL;
   return new Promise((resolve,reject)=>{
@@ -15,7 +15,8 @@ function load(path){
 }
 async function start(){
   try{
-    // Ab jetzt keine automatische Kurs-Neuberechnung mehr. Diese Suite liest nur.
+    // Standardmäßig keine automatische Kurs-Neuberechnung. Die einzige Schreibaktion ist
+    // die ausdrücklich angeklickte einmalige Altgeräte-Zusammenführung im Punkte-Dashboard.
     await load('/shared/points-recalculator.js');
     await load('/shared/dativ-points-extension.js');
     await load('/teacher/points-dashboard.js');
@@ -23,5 +24,5 @@ async function start(){
   }catch(error){console.warn('Punkte-Prüfwerkzeuge konnten nicht vollständig geladen werden',error)}
 }
 if(document.readyState==='complete')setTimeout(start,120);else window.addEventListener('load',()=>setTimeout(start,120),{once:true});
-window.SPTeacherPointsSuite={start,version:FINAL,mode:'read-only-individual'};
+window.SPTeacherPointsSuite={start,version:FINAL,mode:'read-only-default-manual-device-merge'};
 })();
