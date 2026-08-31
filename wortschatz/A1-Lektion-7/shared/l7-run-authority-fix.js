@@ -35,19 +35,19 @@ function foldInvalidRuns(ledger,targetRun){
  }
  ledger.currentRun=targetRun;return ledger;
 }
-function stampAuthority(ledger,reason,bump=true){ledger.runAuthorityEpoch=Math.max(1,Number(ledger.runAuthorityEpoch)||0)+(bump?1:0);ledger.runAuthorityAt=now();ledger.runAuthorityReason=reason;ledger.runAuthorityPruneAbove=Math.max(1,Math.min(3,Number(ledger.currentRun)||1));ledger.expectedPracticeTaskIds=practiceTasks().map(task=>String(task.id));return ledger}
+function stampAuthority(ledger,reason,{bump=false,floor=0}={}){const run=Math.max(1,Math.min(3,Number(ledger.currentRun)||1)),baseEpoch=Math.max(Number(ledger.runAuthorityEpoch)||0,run,Number(floor)||0);ledger.runAuthorityEpoch=bump?baseEpoch+1:baseEpoch;ledger.runAuthorityAt=now();ledger.runAuthorityReason=reason;ledger.runAuthorityPruneAbove=run;ledger.expectedPracticeTaskIds=practiceTasks().map(task=>String(task.id));return ledger}
 function repair(theme,{forceStamp=false}={}){
  theme=Number(theme||document.body.dataset.theme||0);if(!theme||window.L7S?.preview?.())return null;
  let ledger=base.read(theme),wanted=Math.max(1,Math.min(3,Number(ledger.currentRun)||1)),proven=highestProvenRun(ledger),changed=false;
  ledger.expectedPracticeTaskIds=practiceTasks().map(task=>String(task.id));
- if(proven<wanted){ledger=foldInvalidRuns(ledger,proven);stampAuthority(ledger,'invalid-device-run-split-repaired',true);changed=true}
- else if(forceStamp||!Number(ledger.runAuthorityEpoch)){stampAuthority(ledger,wanted>1?'validated-existing-repeat':'authoritative-run-1',false);changed=true}
+ if(proven<wanted){ledger=foldInvalidRuns(ledger,proven);stampAuthority(ledger,'invalid-device-run-split-repaired',{bump:true,floor:wanted});changed=true}
+ else if(forceStamp||!Number(ledger.runAuthorityEpoch)){stampAuthority(ledger,wanted>1?'validated-existing-repeat':'authoritative-run-1',{bump:false,floor:wanted});changed=true}
  if(changed){base.write(theme,ledger);try{window.SPAccountProgressSync?.flush?.()}catch(e){}}
  return ledger;
 }
 const originalRecordState=base.recordState?.bind(base);if(originalRecordState)base.recordState=function(theme,id,state){repair(theme);const result=originalRecordState(theme,id,state);repair(theme);return result};
 const originalInit=base.initOverview?.bind(base);if(originalInit)base.initOverview=async function(theme){repair(theme);const result=await originalInit(theme);repair(theme);base.renderSummary?.(theme);return base.summary?.(theme)||result};
-const originalStartRepeat=base.startRepeat?.bind(base);if(originalStartRepeat)base.startRepeat=function(theme,skipConfirm=false){theme=Number(theme);repair(theme,{forceStamp:true});const before=base.read(theme),beforeEpoch=Math.max(1,Number(before.runAuthorityEpoch)||1),ok=originalStartRepeat(theme,skipConfirm);if(ok){const ledger=base.read(theme);ledger.runAuthorityEpoch=Math.max(beforeEpoch+1,Number(ledger.runAuthorityEpoch)||0);ledger.runAuthorityAt=now();ledger.runAuthorityReason='explicit-repeat-start';ledger.runAuthorityPruneAbove=Math.max(1,Math.min(3,Number(ledger.currentRun)||1));ledger.expectedPracticeTaskIds=practiceTasks().map(task=>String(task.id));base.write(theme,ledger);try{window.SPAccountProgressSync?.flush?.()}catch(e){}}return ok};
+const originalStartRepeat=base.startRepeat?.bind(base);if(originalStartRepeat)base.startRepeat=function(theme,skipConfirm=false){theme=Number(theme);repair(theme,{forceStamp:true});const before=base.read(theme),beforeEpoch=Math.max(1,Number(before.runAuthorityEpoch)||1),ok=originalStartRepeat(theme,skipConfirm);if(ok){const ledger=base.read(theme),run=Math.max(1,Math.min(3,Number(ledger.currentRun)||1));ledger.runAuthorityEpoch=Math.max(beforeEpoch+1,run,Number(ledger.runAuthorityEpoch)||0);ledger.runAuthorityAt=now();ledger.runAuthorityReason='explicit-repeat-start';ledger.runAuthorityPruneAbove=run;ledger.expectedPracticeTaskIds=practiceTasks().map(task=>String(task.id));base.write(theme,ledger);try{window.SPAccountProgressSync?.flush?.()}catch(e){}}return ok};
 repair(Number(document.body.dataset.theme||0));
 window.SPL7RunAuthorityFix={repair,previousRunComplete,highestProvenRun};
 })();
