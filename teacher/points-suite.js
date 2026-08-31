@@ -1,8 +1,8 @@
 (function(){
 'use strict';
-if(window.__SP_TEACHER_POINTS_SUITE_V9)return;
-window.__SP_TEACHER_POINTS_SUITE_V9=true;
-const FINAL='20260831-points14-cloud-reconciliation-v3';
+if(window.__SP_TEACHER_POINTS_SUITE_V10)return;
+window.__SP_TEACHER_POINTS_SUITE_V10=true;
+const FINAL='20260831-global-progress-points-v4';
 function load(path){
   const src=path+(path.includes('?')?'&':'?')+'v='+FINAL;
   return new Promise((resolve,reject)=>{
@@ -15,8 +15,9 @@ function load(path){
 }
 async function start(){
   try{
-    // Keine automatische Kurs-Neuberechnung. Die einzige Schreibaktion ist die bewusst
-    // gestartete einmalige Cloud-Reconciliation im Punkte-Dashboard.
+    // V4 vereinigt einmalig alle bereits in Firebase bekannten Geräte-/Alias-Stände und
+    // berechnet danach einen nicht sinkenden Gesamtpunktestand. Weitere Schüler-Logins
+    // halten die kanonischen Stände anschließend über den normalen Account-Sync zusammen.
     await load('/shared/points-recalculator.js');
     await load('/shared/dativ-points-extension.js');
     await load('/teacher/points-dashboard.js');
@@ -24,5 +25,5 @@ async function start(){
   }catch(error){console.warn('Punkte-Prüfwerkzeuge konnten nicht vollständig geladen werden',error)}
 }
 if(document.readyState==='complete')setTimeout(start,120);else window.addEventListener('load',()=>setTimeout(start,120),{once:true});
-window.SPTeacherPointsSuite={start,version:FINAL,mode:'read-only-default-manual-cloud-reconciliation'};
+window.SPTeacherPointsSuite={start,version:FINAL,mode:'automatic-once-v4-plus-manual-high-watermark-reconciliation'};
 })();
