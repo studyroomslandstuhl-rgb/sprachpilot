@@ -1,8 +1,8 @@
 (function(){
 'use strict';
-if(window.__SP_TEACHER_POINTS_SUITE_V7)return;
-window.__SP_TEACHER_POINTS_SUITE_V7=true;
-const FINAL='20260831-points12-device-merge';
+if(window.__SP_TEACHER_POINTS_SUITE_V8)return;
+window.__SP_TEACHER_POINTS_SUITE_V8=true;
+const FINAL='20260831-points13-device-merge-safe';
 function load(path){
   const src=path+(path.includes('?')?'&':'?')+'v='+FINAL;
   return new Promise((resolve,reject)=>{
@@ -15,8 +15,8 @@ function load(path){
 }
 async function start(){
   try{
-    // Standardmäßig keine automatische Kurs-Neuberechnung. Die einzige Schreibaktion ist
-    // die ausdrücklich angeklickte einmalige Altgeräte-Zusammenführung im Punkte-Dashboard.
+    // Keine automatische Kurs-Neuberechnung. Die einzige Schreibaktion ist die bewusst
+    // gestartete einmalige Altgeräte-Zusammenführung im Punkte-Dashboard.
     await load('/shared/points-recalculator.js');
     await load('/shared/dativ-points-extension.js');
     await load('/teacher/points-dashboard.js');
