@@ -1,5 +1,5 @@
-import '/js/progress.js?v=15';
-import '/js/point-delta-bridge.js?v=2';
+import '/js/progress.js?v=20260831-central1';
+import '/js/point-delta-bridge.js?v=20260831-central1';
 
 const RULES={
   taskPoints(run){run=Number(run)||1;if(run===1)return 5;if(run===2)return 10;if(run===3)return 15;return 0},
@@ -62,14 +62,14 @@ function drainGenericProgressQueue(){
 }
 function drainQueues(){const tq=Array.isArray(window.SP_L3_TASK_DONE_QUEUE)?window.SP_L3_TASK_DONE_QUEUE.splice(0):[];tq.forEach(file=>awardTask(file));const eq=Array.isArray(window.SP_L3_EXAM_QUEUE)?window.SP_L3_EXAM_QUEUE.splice(0):[];eq.forEach(r=>awardExam(r||{percent:100}));drainGenericProgressQueue()}
 function patch(){
-  if(window.__SP_SCORING_PATCHED_V15)return;window.__SP_SCORING_PATCHED_V15=true;
+  if(window.__SP_SCORING_PATCHED_V16)return;window.__SP_SCORING_PATCHED_V16=true;
   const later=()=>{
-    if(typeof window.complete==='function'&&!window.complete.__spScoringV15){const old=window.complete;window.complete=function(area,file,nextFile){const out=old.apply(this,arguments);if(isExamFile(file))awardExam({percent:100});else awardTask(file);return out};window.complete.__spScoringV15=true}
-    if(typeof window.done==='function'&&!window.done.__spScoringV15){const old=window.done;window.done=function(file,total){const out=old.apply(this,arguments);awardTask(file,{payload:{total:Number(total||100),done:Number(total||100)}});return out};window.done.__spScoringV15=true}
-    if(typeof window.finishTask==='function'&&!window.finishTask.__spScoringV15){const old=window.finishTask;window.finishTask=function(file){const out=old.apply(this,arguments);if(isExamFile(file))awardExam({percent:100});else awardTask(file);return out};window.finishTask.__spScoringV15=true}
-    if(typeof window.saveTask==='function'&&!window.saveTask.__spScoringV15){const old=window.saveTask;window.saveTask=function(file,st){const out=old.apply(this,arguments),percent=statePercent(st||{});if(isExamFile(file))awardExam({percent});else if(percent>=100)awardTask(file,{payload:{total:Number(st?.total||100),done:Number(st?.done?.length||st?.done||100)}});return out};window.saveTask.__spScoringV15=true}
-    if(typeof window.saveExamResult==='function'&&!window.saveExamResult.__spScoringV15){const old=window.saveExamResult;window.saveExamResult=function(result){const out=old.apply(this,arguments);awardExam(result||{});return out};window.saveExamResult.__spScoringV15=true}
-    if(typeof window.syncExam==='function'&&!window.syncExam.__spScoringV15){const old=window.syncExam;window.syncExam=function(result){const out=old.apply(this,arguments);awardExam(result||{});return out};window.syncExam.__spScoringV15=true}
+    if(typeof window.complete==='function'&&!window.complete.__spScoringV16){const old=window.complete;window.complete=function(area,file,nextFile){const out=old.apply(this,arguments);if(isExamFile(file))awardExam({percent:100});else awardTask(file);return out};window.complete.__spScoringV16=true}
+    if(typeof window.done==='function'&&!window.done.__spScoringV16){const old=window.done;window.done=function(file,total){const out=old.apply(this,arguments);awardTask(file,{payload:{total:Number(total||100),done:Number(total||100)}});return out};window.done.__spScoringV16=true}
+    if(typeof window.finishTask==='function'&&!window.finishTask.__spScoringV16){const old=window.finishTask;window.finishTask=function(file){const out=old.apply(this,arguments);if(isExamFile(file))awardExam({percent:100});else awardTask(file);return out};window.finishTask.__spScoringV16=true}
+    if(typeof window.saveTask==='function'&&!window.saveTask.__spScoringV16){const old=window.saveTask;window.saveTask=function(file,st){const out=old.apply(this,arguments),percent=statePercent(st||{});if(isExamFile(file))awardExam({percent});else if(percent>=100)awardTask(file,{payload:{total:Number(st?.total||100),done:Number(st?.done?.length||st?.done||100)}});return out};window.saveTask.__spScoringV16=true}
+    if(typeof window.saveExamResult==='function'&&!window.saveExamResult.__spScoringV16){const old=window.saveExamResult;window.saveExamResult=function(result){const out=old.apply(this,arguments);awardExam(result||{});return out};window.saveExamResult.__spScoringV16=true}
+    if(typeof window.syncExam==='function'&&!window.syncExam.__spScoringV16){const old=window.syncExam;window.syncExam=function(result){const out=old.apply(this,arguments);awardExam(result||{});return out};window.syncExam.__spScoringV16=true}
     drainQueues();
   };
   hydrateRetryQueue();later();document.addEventListener('DOMContentLoaded',later);setTimeout(later,250);setTimeout(later,900);setTimeout(drainGenericProgressQueue,1800);
