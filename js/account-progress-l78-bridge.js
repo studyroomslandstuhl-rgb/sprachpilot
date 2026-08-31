@@ -1,4 +1,4 @@
-import '/js/account-progress-cloud-core.js?v=3';
+import '/js/account-progress-cloud-core.js?v=20260831-central6';
 
 const core=window.SPAccountProgressCloudCore;
 if(!core)throw new Error('L78_ACCOUNT_PROGRESS_CORE_MISSING');
@@ -16,9 +16,9 @@ function ownerUid(){const p=profile();return String(p.authUid||localStorage.getI
 function journalKey(){return `${PENDING_PREFIX}${core.clean(ownerUid())}_${core.clean(canonicalId())}`}
 function migrationKey(){return `${MIGRATION_PREFIX}${core.clean(ownerUid())}_${core.clean(canonicalId())}`}
 function pidClean(value){return String(value||'').trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_').replace(/^_+|_+$/g,'')}
-function currentPid(){const p=profile();return pidClean(p.canonicalStudentId||p.docId||p.studentId||p.userId||p.uid||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_'))||'student'}
+function currentPid(){const p=profile();return pidClean(p.canonicalStudentId||p.docId||p.studentId||p.userId||p.authUid||p.uid||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_'))||'student'}
 function legacyPid(){const p=profile();return pidClean([p.email,p.kurs,p.kursnummer,p.courseCode,p.vorname,p.firstName,p.nachname,p.lastName].filter(Boolean).join('_'))}
-function allowedLedgerPids(){const p=profile(),values=[currentPid(),canonicalId(),p.canonicalStudentId,p.docId,p.studentId,p.userId,p.uid,p.id,p.email,...(Array.isArray(p.aliasIds)?p.aliasIds:[]),legacyPid(),localStorage.getItem('SP_L7_STABLE_PID')];return new Set(values.map(pidClean).filter(value=>value&&value!=='student'))}
+function allowedLedgerPids(){const p=profile(),values=[currentPid(),canonicalId(),p.canonicalStudentId,p.docId,p.studentId,p.userId,p.authUid,p.uid,p.id,p.email,...(Array.isArray(p.aliasIds)?p.aliasIds:[]),legacyPid(),localStorage.getItem('SP_L7_STABLE_PID')];return new Set(values.map(pidClean).filter(value=>value&&value!=='student'))}
 function freshJournal(){return{ownerUid:ownerUid(),studentId:canonicalId(),entries:{}}}
 function loadJournal(){const raw=parse(localStorage.getItem(journalKey()),null);if(!raw||String(raw.ownerUid||'')!==ownerUid()||String(raw.studentId||'')!==canonicalId())return freshJournal();raw.entries=raw.entries&&typeof raw.entries==='object'?raw.entries:{};return raw}
 function saveJournal(journal){localStorage.setItem(journalKey(),JSON.stringify(journal))}
@@ -96,6 +96,14 @@ export function hydrateL78VisibleProgress(){
   return restored;
 }
 
+function refreshL7Overview(){
+  if(!/\/A1-Lektion-7\//i.test(location.pathname)||document.body?.dataset?.page!=='theme'||!window.L7S||!window.L7_THEME)return;
+  const theme=Number(document.body.dataset.theme||0),tasks=Array.isArray(window.L7_THEME.tasks)?window.L7_THEME.tasks:[];if(!theme||!tasks.length)return;
+  const percentages=[];
+  for(const task of tasks){const pct=Number(window.L7S.pct?.(theme,task.id,task.items?.length||0))||0;percentages.push(pct);const node=document.getElementById(`task-${task.id}`);if(!node)continue;node.classList.toggle('done',pct>=100);const bar=node.querySelector('.progress .bar');if(bar)bar.style.width=`${pct}%`;const small=node.querySelector('.small');if(small&&!node.classList.contains('exam-locked'))small.textContent=`${pct}%`;const start=node.querySelector('.start');if(start&&!node.classList.contains('exam-locked'))start.textContent=pct>=100?'Fertig':'Starten'}
+  const average=percentages.length?Math.round(percentages.reduce((sum,value)=>sum+value,0)/percentages.length):0,completed=percentages.filter(value=>value>=100).length,totalCircle=document.getElementById('totalCircle'),totalText=document.getElementById('totalText'),totalBar=document.getElementById('totalBar');if(totalCircle)totalCircle.textContent=`${average}%`;if(totalText)totalText.textContent=`${completed} / ${tasks.length} Aufgaben abgeschlossen`;if(totalBar)totalBar.style.width=`${average}%`;window.L7ThemeScore?.renderSummary?.(theme)
+}
+function announceVisibleChange(changed){if(changed<=0)return;try{window.dispatchEvent(new CustomEvent('SP_L78_VISIBLE_PROGRESS_CHANGED',{detail:{changed}}))}catch(e){}refreshL7Overview()}
 function cloneState(state){try{const raw=JSON.stringify(state||{});if(raw.length>120000)return null;return JSON.parse(raw)}catch(e){return null}}
 function wrapThemeScore(score,lesson){
   if(!score||score.__spAccountStateBridgeV2)return !!score;if(typeof score.recordState!=='function'||typeof score.read!=='function'||typeof score.write!=='function')return false;
@@ -111,5 +119,5 @@ function wrapThemeScore(score,lesson){
   score.__spAccountStateBridgeV2=true;return true;
 }
 function installResetTracking(){const previousRemove=Storage.prototype.removeItem;if(previousRemove?.__spL78ResetTrackingV1)return;const wrapped=function(key){const raw=String(key||''),match=raw.match(/^SP_L([78])_(?!PREVIEW(?:_|$)|EXAM_SYNCED(?:_|$)|STABLE_PID$).+_T(\d+)_/i);const result=previousRemove.apply(this,arguments);if(this===localStorage&&match&&!hydratingVisible){try{localStorage.setItem(resetKey(Number(match[1]),Number(match[2])),String(Date.now()))}catch(e){}}return result};try{Object.defineProperty(wrapped,'__spL78ResetTrackingV1',{value:true})}catch(e){wrapped.__spL78ResetTrackingV1=true}Storage.prototype.removeItem=wrapped}
-function installRefreshListener(){if(refreshListenerInstalled)return;refreshListenerInstalled=true;window.addEventListener('SP_ACCOUNT_PROGRESS_REFRESHED',()=>setTimeout(()=>{try{hydrateL78VisibleProgress()}catch(error){console.warn('L7/L8 Cloud-Refresh konnte nicht angewendet werden',error)}},0))}
+function installRefreshListener(){if(refreshListenerInstalled)return;refreshListenerInstalled=true;window.addEventListener('SP_ACCOUNT_PROGRESS_REFRESHED',()=>setTimeout(()=>{try{announceVisibleChange(hydrateL78VisibleProgress())}catch(error){console.warn('L7/L8 Cloud-Refresh konnte nicht angewendet werden',error)}},0))}
 export function installL78RuntimeBridge(){installResetTracking();installRefreshListener();if(runtimeInstallStarted)return;runtimeInstallStarted=true;const wanted=/\/A1-Lektion-7\//i.test(location.pathname)?7:/\/A1-Lektion-8\//i.test(location.pathname)?8:0;if(!wanted)return;let tries=0;const timer=setInterval(()=>{tries++;const score=wanted===7?window.L7ThemeScore:window.L8ThemeScore;if(wrapThemeScore(score,wanted)||tries>160)clearInterval(timer)},50)}
