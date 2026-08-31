@@ -25,7 +25,14 @@ function clean(v){return String(v||'').trim().toLowerCase().replace(/[^a-z0-9ä�
 function legacyPid(){const p=profile();return[p.email,p.kurs,p.kursnummer,p.courseCode,p.vorname,p.firstName,p.nachname,p.lastName].filter(Boolean).join('_').toLowerCase().replace(/[^a-z0-9äöüß]+/gi,'_')||(preview()?'teacher':'student')}
 function pid(){
  const cacheKey=preview()?'SP_L7_PREVIEW_PID':'SP_L7_STABLE_PID',p=profile();
- const resolved=clean(p.uid||p.authUid||p.userId||p.id||p.email||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_'));
+ // Für echte Schüler ist die kanonische Schüler-ID die stabile Geräte-ID. Alte uid-/E-Mail-
+ // Varianten bleiben über candidateKeys/identityMatch lesbar, werden aber nicht mehr als neue
+ // Wahrheit weitergeschrieben.
+ const resolved=clean(preview()?(
+   p.uid||p.authUid||p.userId||p.id||p.email
+ ):(
+   p.canonicalStudentId||p.docId||p.studentId||p.userId||p.authUid||p.uid||p.id||p.email
+ )||[p.kurs||p.kursnummer||p.courseCode,p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_'));
  const fallback=clean(localStorage.getItem(cacheKey));
  const value=resolved||fallback||(preview()?'teacher':'student');
  if(value&&value!=='student'&&value!=='teacher')try{localStorage.setItem(cacheKey,value)}catch(e){}
@@ -43,7 +50,7 @@ function normalizeState(x,total){
  return{...base,...x,total,done,queue,current:currentValid,tries:Math.max(0,Number(x?.tries||0)),hadWrong:x?.hadWrong===true,wrongTries,firstSeen:ids(x?.firstSeen,total),firstCorrect:Math.max(0,Number(x?.firstCorrect||0)),answers:x?.answers&&typeof x.answers==='object'?x.answers:{}}
 }
 function scoreState(x){return(x.done?.length||0)*100000+(x.current!=null?1000:0)+(x.firstSeen?.length||0)*10+(x.queue?.length?1:0)}
-function identityMatch(key){const text=String(key||''),id=pid();if(preview())return text.includes(`_${id}_`);const p=profile(),strong=[p.uid,p.authUid,p.userId,p.id,p.email].map(clean).filter(Boolean);if(strong.length)return strong.some(x=>text.includes(x));const fallback=[p.kurs,p.kursnummer,p.courseCode,p.vorname,p.firstName,p.nachname,p.lastName].map(clean).filter(Boolean);return fallback.length>=2&&fallback.filter(x=>text.includes(x)).length>=2}
+function identityMatch(key){const text=String(key||''),id=pid();if(preview())return text.includes(`_${id}_`);const p=profile(),strong=[p.canonicalStudentId,p.docId,p.studentId,p.userId,p.authUid,p.uid,p.id,p.email,localStorage.getItem('SP_L7_STABLE_PID')].map(clean).filter(Boolean);if(strong.length)return strong.some(x=>text.includes(x));const fallback=[p.kurs,p.kursnummer,p.courseCode,p.vorname,p.firstName,p.nachname,p.lastName].map(clean).filter(Boolean);return fallback.length>=2&&fallback.filter(x=>text.includes(x)).length>=2}
 function candidateKeys(theme,task,storage){
  const suffix=`_T${theme}_${task}`,keys=[k(theme,task)],old=`${preview()?'SP_L7_PREVIEW':'SP_L7'}_${legacyPid()}${suffix}`;
  if(!keys.includes(old))keys.push(old);
