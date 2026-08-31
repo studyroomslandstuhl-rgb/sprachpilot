@@ -46,7 +46,7 @@ function reset(theme){if(preview()){alert('In der Lehrer-Vorschau werden keine T
 function norm(v){return String(v??'').normalize('NFC').trim().toLowerCase().replace(/[.,!?;:“”"'`´()]/g,'').replace(/\s+/g,' ')}
 function equal(answer,expected){const a=norm(answer);return(Array.isArray(expected)?expected:[expected]).some(x=>norm(x)===a)}
 let activeAudio=null;
-function say(text,audioFile){if(activeAudio){try{activeAudio.pause();activeAudio.currentTime=0}catch(e){}activeAudio=null}if(audioFile){const raw=String(audioFile||''),src=/^https?:\/\//i.test(raw)?raw:`https://sprachpilot.b-cdn.net/audio/${raw.replace(/^audio\//i,'')}`;const a=new Audio(src);activeAudio=a;a.onerror=()=>{if(activeAudio===a)activeAudio=null;tts(text)};a.onended=()=>{if(activeAudio===a)activeAudio=null};a.play().catch(()=>tts(text));return}tts(text)}
+function say(text,audioFile){if(activeAudio){try{activeAudio.pause();activeAudio.currentTime=0}catch(e){}activeAudio=null}if(audioFile){const raw=String(audioFile||''),src=/^https?:\/\//i.test(raw)?raw:`https://sprachpilot.b-cdn.net/audio/${raw.replace(/^audio\//i,'')}`;const a=new Audio(src);activeAudio=a;a.onerror=()=>{if(activeAudio===a)activeAudio=null};a.onended=()=>{if(activeAudio===a)activeAudio=null};a.play().catch(()=>{if(activeAudio===a)activeAudio=null});return}tts(text)}
 function tts(text){if(!('speechSynthesis'in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=.84;speechSynthesis.speak(u)}catch(e){}}
 window.L8S={profile,preview,pid,key,load,save,nextIndex,wrong,right,completeFree,pct,allDone,reset,norm,equal,say};
 })();
