@@ -5,37 +5,22 @@
 <meta name="viewport" content="width=device-width,initial-scale=1">
 <title>SprachPilot - Lektion 4: Wohnen</title>
 <link rel="stylesheet" href="/css/sp-header.css">
-<link rel="stylesheet" href="/css/sp-lesson-overview.css?v=l4design3">
+<link rel="stylesheet" href="/css/sp-lesson-overview.css?v=l4pedagogy1">
 </head>
 <body>
 <script type="module" src="/js/guard.js?v=lesson-colors3"></script>
 <div id="lessonOverview"></div>
-
 <script type="module">
-import { renderLessonOverview } from "/js/sp-lesson-overview.js?v=lesson-overview-fix1";
-
+import { renderLessonOverview } from "/js/sp-lesson-overview.js?v=l4pedagogy1";
 renderLessonOverview({
-  module: "wortschatz",
-  lessonId: "A1-Lektion-4",
-  lessonNumber: 4,
-  lessonTitle: "Lektion 4: Wohnen",
-  subtitle: "Wortschatz · A1 Lektion 4 · Wohnen",
-  backHref: "../index.html",
-
-  color: {
-    main: "#F6D96B",
-    dark: "#6D5A00",
-    soft: "#FFF9DC",
-    line: "#EADF9F",
-    bg2: "#F9E79A"
-  },
-
-  themes: [
-    {id:"Thema-1",number:"1",title:"Wohnung & Zimmer",text:"Wohnung, Zimmer, Räume und Fragen mit Wo.",href:"Thema-1/",chips:["Wohnung","Küche","Bad","Wo?"],tasks:["karteikarten.html","hoeren.html","bild-wort.html","wort-bild.html","artikel.html","plural.html","memory.html","schreiben.html","sprechen.html"]},
-    {id:"Thema-2",number:"2",title:"Möbel & Elektrogeräte",text:"Möbel, Elektrogeräte, Artikel, Plural und Pronomen.",href:"Thema-2/",chips:["Tisch","Bett","Lampe","er/es/sie"],tasks:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","kategorien.html","dialoge.html"]},
-    {id:"Thema-3",number:"3",title:"Farben & Adjektive",text:"Farben, Gegenteile und einfache Sätze mit ist/sind.",href:"Thema-3/",chips:["rot","schön","klein","gefällt"],tasks:["karteikarten.html","hoeren.html","bild-wort.html","wort-bild.html","artikel.html","plural.html","memory.html","schreiben.html","sprechen.html"]},
-    {id:"Thema-4",number:"4",title:"Wohnung suchen",text:"Anzeigen lesen, Miete verstehen und Wohnungen vergleichen.",href:"Thema-4/",chips:["Miete","qm","Kaution","Anzeige"],tasks:["karteikarten.html","hoeren.html","paare.html","anzeige-lesen.html","welche-anzeige.html","schreiben.html"]},
-    {id:"Thema-5",number:"5",title:"Am Telefon",text:"Kleinanzeigen, Möbel kaufen und kurze Telefongespräche.",href:"Thema-5/",chips:["noch da?","Adresse","Preis","Termin"],tasks:["karteikarten.html","hoeren.html","rollenspiel.html","schreiben.html","sprechen.html"]}
+  module:"wortschatz",lessonId:"A1-Lektion-4",lessonNumber:4,lessonTitle:"Lektion 4: Wohnen",subtitle:"Wortschatz · A1 Lektion 4 · Wohnen",backHref:"../index.html",
+  color:{main:"#F6D96B",dark:"#6D5A00",soft:"#FFF9DC",line:"#EADF9F",bg2:"#F9E79A"},
+  themes:[
+    {id:"Thema-1",number:"1",title:"Wohnung & Zimmer",text:"Wohnung und Räume verstehen, Artikel und Plural üben und Fragen mit Wo? beantworten.",href:"Thema-1/",chips:["Wohnung","Räume","Wo?","Artikel"],tasks:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","wo-ist.html","ist-hier.html"]},
+    {id:"Thema-2",number:"2",title:"Möbel & Elektrogeräte",text:"Möbel und Geräte erkennen, beschreiben, kategorisieren und in kurzen Dialogen benutzen.",href:"Thema-2/",chips:["Möbel","Geräte","Plural","Dialoge"],tasks:["karteikarten.html","hoeren.html","artikel-klick.html","artikel.html","plural.html","bild-wort.html","wort-bild.html","kategorien.html","dialoge.html"]},
+    {id:"Thema-3",number:"3",title:"Farben & Adjektive",text:"Farben hören, Gegenteile verstehen, nicht/kein unterscheiden und Wohnungen beschreiben.",href:"Thema-3/",chips:["Farben","Gegenteile","gefällt","Sätze"],tasks:["karteikarten.html","hoeren.html","farben.html","memory.html","gegenteile.html","kein.html","reaktionen.html","gefallen.html","saetze-bauen.html","schreiben.html"]},
+    {id:"Thema-4",number:"4",title:"Wohnung suchen",text:"Wohnungsanzeigen lesen, wichtige Angaben verstehen und passende Wohnungen auswählen.",href:"Thema-4/",chips:["Anzeige","Miete","qm","Kaution"],tasks:["karteikarten.html","hoeren.html","schreibe-mit-artikel.html","artikel.html","plural.html","paare-finden.html","woerter-verstehen.html","anzeige-lesen.html","welche-anzeige-passt.html","reihenfolge.html"]},
+    {id:"Thema-5",number:"5",title:"Am Telefon",text:"Auf Kleinanzeigen reagieren: fragen, hören, Preis und Adresse klären und einen Abholtermin vereinbaren.",href:"Thema-5/",chips:["noch da?","Preis","Adresse","Termin"],tasks:["task.html?task=cards","task.html?task=listen","task.html?task=available","task.html?task=details","task.html?task=appointment","task.html?task=read-ad","task.html?task=dialog","task.html?task=message","task.html?task=roleplay"]}
   ]
 });
 </script>
