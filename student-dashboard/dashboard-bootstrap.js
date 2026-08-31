@@ -1,4 +1,6 @@
-import '/shared/sp-cache-epoch.js?v=20260829-points7';
+import '/shared/sp-cache-epoch.js?v=20260831-global-progress-sync9';
+import '/shared/points-recalculator.js?v=20260831-global3';
+import '/shared/dativ-points-extension.js?v=20260831-global3';
 import '/js/session-restore.js?v=20260831-central2';
 import { verifySecureAccess } from '/js/secure-access-gate.js?v=1';
 
@@ -31,12 +33,12 @@ else{
     revealDashboard();
     let normalizedProfile=readProfile();
     if(!alreadyCanonicalSecureProfile(normalizedProfile,access.uid)){
-      try{const identity=await import('/js/student-identity.js?v=identity5');normalizedProfile=await identity.normalizeStudentIdentity(normalizedProfile,{silent:true})||normalizedProfile}
+      try{const identity=await import('/js/student-identity.js?v=identity6');normalizedProfile=await identity.normalizeStudentIdentity(normalizedProfile,{silent:true})||normalizedProfile}
       catch(error){console.error('Sichere Schüleridentität konnte vor dem Dashboard nicht bestätigt werden',error);location.replace('/login/?redirect='+encodeURIComponent(location.pathname+location.search));throw error}
     }
     if(String(normalizedProfile?.authUid||'')!==String(access.uid||'')){location.replace('/login/?redirect='+encodeURIComponent(location.pathname+location.search));throw new Error('STUDENT_UID_CHANGED_BEFORE_DASHBOARD_RENDER')}
 
-    try{await import('/js/point-delta-bridge.js?v=20260831-central2');try{window.SPEnsurePointDeltaBridge?.()}catch(e){}}
+    try{await import('/js/point-delta-bridge.js?v=20260831-central6');try{window.SPEnsurePointDeltaBridge?.()}catch(e){}}
     catch(error){console.warn('Punkte-Kompatibilitätsbridge konnte im Dashboard noch nicht vorbereitet werden.',error)}
 
     try{
@@ -45,24 +47,21 @@ else{
     }catch(error){console.warn('Lokale L8T1-Fortschritte konnten vor dem Dashboard noch nicht an den zentralen Fortschrittsschreiber übergeben werden.',error)}
 
     try{
-      const aliases=await import('/student-dashboard/progress-alias-unifier.js?v=20260831-central2');
+      const aliases=await import('/student-dashboard/progress-alias-unifier.js?v=20260831-central3');
       await Promise.race([aliases.unifyProgressAliases({force:true}),new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'alias-unify-timeout'}),8000))]);
     }catch(error){console.warn('Verteilte Fortschrittsstände konnten noch nicht zusammengeführt werden.',error)}
 
-    // Keine automatische Punkte-Neuberechnung/Reparatur beim bloßen Öffnen des Dashboards.
-    // Historische Teilnehmerstände werden nur gezielt repariert; normale neue Punkte kommen
-    // aus dem transaktionalen Fortschrittsschreiber.
     let progressReady=false;
     try{
-      const progressModule=await import('/js/account-progress-sync.js?v=20260831-central2');
-      const progressState=await progressModule.startAccountProgressSync();
+      const progressModule=await import('/js/account-progress-sync.js?v=20260831-global9');
+      const progressState=await progressModule.startAccountProgressSync({reason:'student-dashboard-global-merge'});
       progressReady=progressState?.blocked!==true&&progressState?.nonDestructive===true&&Number(progressState?.authorityVersion||0)>=5;
       if(!progressReady)console.warn('Dashboard nutzt direkten Firebase-Stand, Kontosynchronisierung ist noch nicht vollständig bereit.',progressState);
     }catch(error){console.warn('Kontosynchronisierung im Dashboard verzögert; direkter Firebase-Stand wird trotzdem geladen.',error)}
 
     try{localStorage.removeItem('SP_STUDENT_DASHBOARD_LITE_V3')}catch(e){}
-    window.SP_PROGRESS_ALIAS_READY=Promise.resolve({ok:progressReady,skipped:!progressReady,reason:progressReady?'non-destructive-progress-v5':'dashboard-direct-server-fallback'});
-    try{await import('./dashboard-server-v3.js?v=20260829-points7')}
+    window.SP_PROGRESS_ALIAS_READY=Promise.resolve({ok:progressReady,skipped:!progressReady,reason:progressReady?'global-non-destructive-progress':'dashboard-direct-server-fallback'});
+    try{await import('./dashboard-server-v3.js?v=20260831-global9')}
     catch(error){console.error('Dashboard-Inhalte konnten nicht vollständig geladen werden',error);warning('Dashboard konnte nur teilweise geladen werden.','Die Anmeldung funktioniert, aber die aktuellen Statistiken konnten nicht vollständig aufgebaut werden.')}
     revealDashboard();
   }catch(error){
