@@ -84,8 +84,8 @@ async function mirrorRanking(result){
     courseKey:course,
     courseCode:String(p.courseCode||p.kurs||p.kursnummer||result.courseCode||result.kurs||result.kursnummer||course).trim(),
     points,
-    version:6,
-    pointAuditVersion:Math.max(8,Number(result?.metadata?.pointAudit?.version)||0),
+    version:7,
+    pointAuditVersion:Math.max(9,Number(result?.metadata?.pointAudit?.version)||0),
     dativverbenSynced:true,
     updatedAt:serverTimestamp()
   };
@@ -117,7 +117,7 @@ async function sync({force=false}={}){
           const task=run?.tasks?.[taskKey]||{},info=taskInfo(task),award=Number(run?.awards?.tasks?.[taskKey]||0);
           if(info.done<=0&&!info.completed&&award<=0)continue;
           const result=await window.SPProgress.recordTaskProgress({
-            module:'dativverben',moduleTitle:'Dativverben',topicId,title,level,
+            module:'dativverben',moduleTitle:'Dativverben',topicId,title,level,run:runNo,
             taskKey,taskTitle,percent:info.percent,completed:info.completed,
             total:info.total,done:info.done
           });
@@ -127,7 +127,7 @@ async function sync({force=false}={}){
         const pct=Math.max(0,Math.min(100,Number(run?.exam?.bestPercent||run?.exam?.percent||0)||0));
         if(pct>0||Number(run?.awards?.examPoints||0)>0){
           const result=await window.SPProgress.recordExamResult({
-            module:'dativverben',moduleTitle:'Dativverben',topicId,title,level,
+            module:'dativverben',moduleTitle:'Dativverben',topicId,title,level,run:runNo,
             percent:pct,stars:Number(run?.exam?.stars||0)
           });
           if(!result)throw new Error(`Dativverben-Prüfung konnte nicht synchronisiert werden: ${level}/R${runNo}`);
@@ -139,7 +139,7 @@ async function sync({force=false}={}){
     if(latestResult)await mirrorRanking(latestResult);
     lastDigest=digest;
     try{sessionStorage.setItem('SP_DATIVVERBEN_FIREBASE_DIGEST',digest)}catch(e){}
-    try{window.dispatchEvent(new CustomEvent('SP_DATIVVERBEN_FIREBASE_SYNCED',{detail:{points:true,progress:true,ranking:true,total:pointsOf(latestResult||{}),at:Date.now()}}))}catch(e){}
+    try{window.dispatchEvent(new CustomEvent('SP_DATIVVERBEN_FIREBASE_SYNCED',{detail:{points:true,progress:true,ranking:true,total:pointsOf(latestResult||{}),explicitRuns:true,at:Date.now()}}))}catch(e){}
     return true;
   }catch(error){
     console.warn('Dativverben konnten noch nicht vollständig mit Firebase synchronisiert werden',error);
@@ -156,8 +156,6 @@ function schedule(delay=100,force=false){
 }
 
 if(!preview){
-  // Nicht auf einen alten Session-Digest vertrauen: Beim Öffnen der Seite wird der lokale
-  // Dativstand immer einmal gegen Firebase abgeglichen. So werden bereits verdiente Punkte nachgetragen.
   lastDigest='';
   const rawSet=Storage.prototype.setItem;
   if(!Storage.prototype.__spDativPointsPatched){
