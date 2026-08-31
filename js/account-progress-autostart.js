@@ -1,18 +1,12 @@
-import '/js/session-restore.js?v=4';
+import '/js/session-restore.js?v=5';
 import '/shared/points-recalculator.js?v=2';
 import '/shared/dativ-points-extension.js?v=2';
 
-if(/^\/wortschatz\/?(?:index\.html)?$/i.test(location.pathname)){
-  import('/wortschatz/lesson-colors-pastel.js?v=4').catch(()=>{});
-}
+if(/^\/wortschatz\/?(?:index\.html)?$/i.test(location.pathname))import('/wortschatz/lesson-colors-pastel.js?v=4').catch(()=>{});
 
-import('/js/account-progress-sync.js?v=13')
-  .then(async mod=>{
-    await mod.startAccountProgressSync?.();
-    import('/js/authoritative-point-repair.js?v=2').catch(error=>{
-      console.warn('Sicherer Punktestand konnte nicht vorbereitet werden',error);
-    });
-  })
-  .catch(error=>{
-    console.warn('Account-Fortschritt Sync konnte nicht gestartet werden',error);
-  });
+// Ein Einstieg für den Kontofortschritt. Keine zusätzliche automatische Punkte-Reparatur
+// beim Seitenstart; neue Punkte werden transaktional in progress.js vergeben und alte
+// Teilnehmerstände nur gezielt repariert.
+import('/js/account-progress-sync.js?v=20260831-central1')
+  .then(mod=>mod.startAccountProgressSync?.())
+  .catch(error=>console.warn('Account-Fortschritt Sync konnte nicht gestartet werden',error));
