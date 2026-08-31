@@ -7,10 +7,10 @@ const AUDIO=CDN+'audio/';
 const norm=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
 const term=item=>String(item?.term||item?.full||item?.word||'').trim();
 const DATA={
- dauern:{term:'dauern',detail:'hat gedauert',stem:'dauern',tr:{en:'to last / take time',ru:'длиться',tr:'sürmek',uk:'тривати',ar:'يستغرق',ja:'かかる / 続く',ro:'a dura',pl:'trwać',ku:'dom kirin',fa:'طول کشیدن',fr:'durer',es:'durar',it:'durare'}},
- heiraten:{term:'heiraten',detail:'hat geheiratet',stem:'heiraten',tr:{en:'to marry / get married',ru:'жениться / выходить замуж',tr:'evlenmek',uk:'одружуватися',ar:'يتزوج',ja:'結婚する',ro:'a se căsători',pl:'brać ślub',ku:'zewicîn',fa:'ازدواج کردن',fr:'se marier',es:'casarse',it:'sposarsi'}},
- zeigen:{term:'zeigen',detail:'hat gezeigt',stem:'zeigen',tr:{en:'to show',ru:'показывать',tr:'göstermek',uk:'показувати',ar:'يُري',ja:'見せる',ro:'a arăta',pl:'pokazywać',ku:'nîşan dan',fa:'نشان دادن',fr:'montrer',es:'mostrar',it:'mostrare'}},
- stehen:{term:'zur Verfügung stehen',stem:'zur_verfuegung_stehen',tr:{en:'to be available / at someone’s disposal',ru:'быть в распоряжении / быть доступным',tr:'hazır bulunmak / kullanımda olmak',uk:'бути в розпорядженні / бути доступним',ar:'يكون متاحًا / يكون تحت التصرّف',ja:'利用できる / 用意されている',ro:'a fi la dispoziție / a fi disponibil',pl:'być do dyspozycji / być dostępny',ku:'berdest bûn',fa:'در دسترس بودن',fr:'être à disposition / être disponible',es:'estar a disposición / estar disponible',it:'essere a disposizione / essere disponibile'}}
+ dauern:{term:'dauern – hat gedauert',answer:'dauern',stem:'dauern',tr:{en:'to last / take time',ru:'длиться',tr:'sürmek',uk:'тривати',ar:'يستغرق',ja:'かかる / 続く',ro:'a dura',pl:'trwać',ku:'dom kirin',fa:'طول کشیدن',fr:'durer',es:'durar',it:'durare'}},
+ heiraten:{term:'heiraten – hat geheiratet',answer:'heiraten',stem:'heiraten',tr:{en:'to marry / get married',ru:'жениться / выходить замуж',tr:'evlenmek',uk:'одружуватися',ar:'يتزوج',ja:'結婚する',ro:'a se căsători',pl:'brać ślub',ku:'zewicîn',fa:'ازدواج کردن',fr:'se marier',es:'casarse',it:'sposarsi'}},
+ zeigen:{term:'zeigen – hat gezeigt',answer:'zeigen',stem:'zeigen',tr:{en:'to show',ru:'показывать',tr:'göstermek',uk:'показувати',ar:'يُري',ja:'見せる',ro:'a arăta',pl:'pokazywać',ku:'nîşan dan',fa:'نشان دادن',fr:'montrer',es:'mostrar',it:'mostrare'}},
+ stehen:{term:'zur Verfügung stehen',answer:'zur Verfügung stehen',stem:'zur_verfuegung_stehen',tr:{en:'to be available / at someone’s disposal',ru:'быть в распоряжении / быть доступным',tr:'hazır bulunmak / kullanımda olmak',uk:'бути в розпорядженні / бути доступним',ar:'يكون متاحًا / يكون تحت التصرّف',ja:'利用できる / 用意されている',ro:'a fi la dispoziție / a fi disponibil',pl:'być do dyspozycji / być dostępny',ku:'berdest bûn',fa:'در دسترس بودن',fr:'être à disposition / être disponible',es:'estar a disposición / estar disponible',it:'essere a disposizione / essere disponibile'}}
 };
 function keyFor(item){
  const n=norm(term(item));
@@ -24,9 +24,9 @@ function keyFor(item){
 }
 function canonical(key,base={}){
  const d=DATA[key];
- const item={...base,term:d.term,type:'verb'};
- delete item.full;delete item.word;
- if(d.detail)item.detail=d.detail;else if(item.detail&&/zur\s+verf[üu]gung\s+stellen/i.test(String(item.detail)))delete item.detail;
+ const oldAnswers=Array.isArray(base.answers)?base.answers:[],oldAccepted=Array.isArray(base.accepted)?base.accepted:[];
+ const item={...base,term:d.term,type:'verb',answers:[...new Set([d.answer,...oldAnswers])],accepted:[...new Set([d.answer,...oldAccepted])]};
+ delete item.full;delete item.word;delete item.detail;
  item.image=CDN+d.stem+'.webp';
  item.audio=AUDIO+d.stem+'.mp3';
  item.audioFile=AUDIO+d.stem+'.mp3';
