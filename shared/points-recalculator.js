@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-if(window.SPPointRecalculator?.version>=2)return;
+if(window.SPPointRecalculator?.version>=3)return;
 const MODULES=['fragen','wortschatz','verben','perfekt','grammatik'];
 const TECH=new Set(['state','progress','totals','metadata','profile','updatedAt','lastActive','lastPage','known','learned','unknown','unsure','activeVerbs','learnedVerbs']);
 const clamp=v=>Math.max(0,Math.min(100,Math.round(Number(v)||0)));
@@ -42,9 +42,6 @@ function topicPoints(topic={}){
  const legacy=legacyRunState(topic),taskMap=taskStateMap(topic);let tasks=0,taskTotal=0,legacyTaskRuns=0;
  for(const item of taskMap.values()){
   const counted=new Set(item.runs);
-  // Ein Reset/finishedRun ist nur möglich, nachdem der vorige Durchgang beendet wurde.
-  // Darum dürfen bei alten Datensätzen fehlende Aufgaben-Runmarker für diese bereits
-  // abgeschlossenen Durchgänge konservativ rekonstruiert werden.
   if(legacy.hasLegacyMarkers){
    for(let run=1;run<=legacy.previous&&run<=3;run++)if(!counted.has(run)){counted.add(run);legacyTaskRuns++}
    if(item.completed&&legacy.current<=3&&!counted.has(legacy.current)){counted.add(legacy.current);legacyTaskRuns++}
@@ -104,14 +101,30 @@ function metadataFallback(progress,module,topics){
  }
  return extra;
 }
+function levelOf(key,record={}){
+ const direct=String(record.level||'').toUpperCase().match(/A1|A2|B1|B2|C1/)?.[0];if(direct)return direct;
+ const raw=String(record.signature||key||'').toUpperCase();return raw.match(/(?:^|[^A-Z0-9])(A1|A2|B1|B2|C1)(?:[^A-Z0-9]|$)/)?.[1]||clean(key)||'unknown';
+}
+function dativverbenPoints(progress={}){
+ const byLevel=new Map();
+ for(const[key,topic]of Object.entries(progress?.dativverben||{})){
+  if(!topic||typeof topic!=='object'||Array.isArray(topic)||!(topic.tasks||topic.lifetime||topic.exam||topic.current||topic.progressPercent!=null))continue;
+  const points=positive(topicPoints(topic).points),level=levelOf(key,topic);byLevel.set(level,Math.max(byLevel.get(level)||0,points));
+ }
+ for(const[key,group]of Object.entries(progress?.metadata?.dativverbenGroups||{})){
+  if(!group||typeof group!=='object')continue;const points=positive(groupPoints(group).points),level=levelOf(key,group);byLevel.set(level,Math.max(byLevel.get(level)||0,points));
+ }
+ return [...byLevel.values()].reduce((sum,value)=>sum+positive(value),0);
+}
 function finnishPoints(progress={}){let total=0;for(const group of Object.values(progress?.finnischVerben?.groups||{}))total+=groupPoints(group).points;return total;}
 function calculate(progress={}){
  const breakdown={},topicDetails={};let total=0;
  for(const module of MODULES){const topics=moduleAudit(progress,module);const topicTotal=[...topics.values()].reduce((sum,x)=>sum+x.points,0);const fallback=metadataFallback(progress,module,topics);breakdown[module]=topicTotal+fallback;topicDetails[module]=[...topics.values()];total+=breakdown[module];}
+ const dativ=dativverbenPoints(progress);breakdown.dativverben=dativ;topicDetails.dativverben=Object.entries(progress?.dativverben||{}).filter(([,topic])=>topic&&typeof topic==='object');total+=dativ;
  const finnisch=finnishPoints(progress);if(finnisch){breakdown.finnischVerben=finnisch;total+=finnisch;}
- return {total,breakdown,topics:topicDetails,version:2};
+ return {total,breakdown,topics:topicDetails,version:3};
 }
 function stored(progress={}){return Math.max(positive(progress?.ranking?.points),positive(progress?.totals?.points),positive(progress?.pointsTotal),positive(progress?.lifetimePoints),positive(progress?.punkteGesamt),positive(progress?.points));}
 function audit(progress={}){const exact=calculate(progress);return {...exact,stored:stored(progress),difference:exact.total-stored(progress),inflatedBy:Math.max(0,stored(progress)-exact.total)};}
-window.SPPointRecalculator={calculate,audit,topicPoints,groupPoints,taskPoints,examMax,examEarned,legacyRunState,version:2};
+window.SPPointRecalculator={calculate,audit,topicPoints,groupPoints,dativverbenPoints,taskPoints,examMax,examEarned,legacyRunState,builtinDativverben:true,version:3};
 })();
