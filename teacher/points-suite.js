@@ -1,8 +1,8 @@
 (function(){
 'use strict';
-if(window.__SP_TEACHER_POINTS_SUITE_V10)return;
-window.__SP_TEACHER_POINTS_SUITE_V10=true;
-const FINAL='20260831-global-progress-points-v4';
+if(window.__SP_TEACHER_POINTS_SUITE_V11)return;
+window.__SP_TEACHER_POINTS_SUITE_V11=true;
+const FINAL='20260831-global-progress-points-v5-all-students';
 function load(path){
   const src=path+(path.includes('?')?'&':'?')+'v='+FINAL;
   return new Promise((resolve,reject)=>{
@@ -16,8 +16,8 @@ function load(path){
 async function start(){
   try{
     // V4 vereinigt einmalig alle bereits in Firebase bekannten Geräte-/Alias-Stände und
-    // berechnet danach einen nicht sinkenden Gesamtpunktestand. Weitere Schüler-Logins
-    // halten die kanonischen Stände anschließend über den normalen Account-Sync zusammen.
+    // berechnet danach einen nicht sinkenden Gesamtpunktestand. Der Schüler-Inspector
+    // liest danach alle Schüler und alle bekannten Progress-/Ranking-Quellen nur lesend.
     await load('/shared/points-recalculator.js');
     await load('/shared/dativ-points-extension.js');
     await load('/teacher/points-dashboard.js');
@@ -25,5 +25,5 @@ async function start(){
   }catch(error){console.warn('Punkte-Prüfwerkzeuge konnten nicht vollständig geladen werden',error)}
 }
 if(document.readyState==='complete')setTimeout(start,120);else window.addEventListener('load',()=>setTimeout(start,120),{once:true});
-window.SPTeacherPointsSuite={start,version:FINAL,mode:'automatic-once-v4-plus-manual-high-watermark-reconciliation'};
+window.SPTeacherPointsSuite={start,version:FINAL,mode:'automatic-once-v4-plus-all-student-readonly-audit'};
 })();
