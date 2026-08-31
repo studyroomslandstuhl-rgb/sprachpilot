@@ -27,7 +27,7 @@ function activeStudentSession(){
 // Schüler-Sync gestartet. Lehrer-Kursvorschauen dürfen auch bei sichtbarer Rolle "student"
 // keinen Schüler-Sync importieren.
 if(activeStudentSession()){
-  import('/js/account-progress-sync.js?v=20260831-central4')
+  import('/js/account-progress-sync.js?v=20260831-central5')
     .then(mod=>mod.startAccountProgressSync?.())
     .catch(error=>console.warn('Account-Fortschritt Sync konnte nicht gestartet werden',error));
 }
