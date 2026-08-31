@@ -1,4 +1,4 @@
-import '/js/session-restore.js?v=5';
+import '/js/session-restore.js?v=20260831-central2';
 import '/shared/points-recalculator.js?v=2';
 import '/shared/dativ-points-extension.js?v=4';
 
