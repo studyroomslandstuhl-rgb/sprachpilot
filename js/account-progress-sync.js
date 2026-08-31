@@ -1,5 +1,5 @@
-import '/js/progress.js?v=20260831-central1';
-import '/js/point-delta-bridge.js?v=20260831-central1';
+import '/js/progress.js?v=20260831-central2';
+import '/js/point-delta-bridge.js?v=20260831-central2';
 import '/js/ranking-mirror.js?v=20260829-safe15';
 import { authReady } from '/js/firebase.js';
 import { getActiveProfile } from '/js/auth.js';
@@ -10,7 +10,7 @@ import { prepareL78AccountProgressBridge, hydrateL78VisibleProgress, installL78R
 import { accountProgressReady, startAccountProgressSync as startSafeAccountProgressSync } from '/js/account-progress-sync-authoritative-v2.js?v=5';
 export { accountProgressReady };
 
-function learningPage(){return /^\/(?:wortschatz|fragen-A1|fragen|verben|verben-A1|verben-bereich|irregulaere-verben|perfekt|grammatik|finnisch)(?:\/|$)/i.test(location.pathname||'')}
+function learningPage(){return /^\/(?:wortschatz|fragen-A1|fragen|verben|verben-A1|verben-bereich|irregulaere-verben|perfekt|grammatik|finnisch|dativverben)(?:\/|$)/i.test(location.pathname||'')}
 function profile(){return getActiveProfile?.()||{}}
 function secureStudentOwner(){
   const p=profile(),user=currentFirebaseUser();
@@ -39,7 +39,7 @@ function refreshAfterProgressPreparation(result,isolation){
   if(!learningPage())return false;
   const studentId=String(result?.studentId||isolation?.currentId||localStorage.getItem('SP_STUDENT_ID')||'student');
   const page=String(location.pathname||'')+String(location.search||'');
-  const key='SP_ACCOUNT_PROGRESS_RENDERED_V8_'+studentId+'_'+page;
+  const key='SP_ACCOUNT_PROGRESS_RENDERED_V9_'+studentId+'_'+page;
   const restored=Math.max(0,Number(result?.restored)||0)+Math.max(0,Number(result?.restoredStructured)||0)+Math.max(0,Number(result?.rescuedLocal)||0)+Math.max(0,Number(result?.restoredL78)||0);
   const switched=!!isolation?.switchedAccount&&Math.max(0,Number(isolation?.quarantined)||0)>0;
   try{if(restored<=0&&!switched){sessionStorage.removeItem(key);return false}if(sessionStorage.getItem(key)==='1')return false;sessionStorage.setItem(key,'1')}catch(e){if(restored<=0&&!switched)return false}
