@@ -62,7 +62,7 @@
     }catch(e){}
   }
   function installPointBridge(){
-    try{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(!p||teacherSession())return;import('/js/point-delta-bridge.js?v=20260831-central1').then(()=>{try{window.SPEnsurePointDeltaBridge?.()}catch(e){}}).catch(error=>console.warn('Punkte-Kompatibilitätsbridge konnte noch nicht geladen werden',error))}catch(e){}
+    try{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(!p||teacherSession())return;import('/js/point-delta-bridge.js?v=20260831-central2').then(()=>{try{window.SPEnsurePointDeltaBridge?.()}catch(e){}}).catch(error=>console.warn('Punkte-Kompatibilitätsbridge konnte noch nicht geladen werden',error))}catch(e){}
   }
 
   restore();installPointBridge();
