@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-if(window.__SP_L7_SCORE_LIVE_SYNC_V3)return;window.__SP_L7_SCORE_LIVE_SYNC_V3=true;
+if(window.__SP_L7_SCORE_LIVE_SYNC_V4)return;window.__SP_L7_SCORE_LIVE_SYNC_V4=true;
 const theme=()=>Number(document.body?.dataset?.theme||0);
 let running=false,timer=null;
 async function syncNow(){
@@ -9,8 +9,8 @@ async function syncNow(){
  running=true;
  try{
   await Promise.allSettled([
-   import('/js/progress.js?v=20260831-central3'),
-   import('/js/point-delta-bridge.js?v=20260831-central3'),
+   import('/js/progress.js?v=20260831-central6'),
+   import('/js/point-delta-bridge.js?v=20260831-central6'),
    import('/js/ranking-mirror.js?v=20260829-safe15')
   ]);
   const ok=await S.syncFirebase(t,{allowTaskPage:true});
@@ -28,5 +28,5 @@ window.addEventListener('online',()=>schedule(100));
 document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')schedule(100);else syncNow()});
 window.addEventListener('pagehide',()=>{syncNow()});
 [500,1600,4500,12000].forEach(ms=>setTimeout(()=>syncNow(),ms));
-window.SPL7ScoreLiveSync={sync:syncNow,schedule,version:3};
+window.SPL7ScoreLiveSync={sync:syncNow,schedule,version:4};
 })();
