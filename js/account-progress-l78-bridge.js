@@ -26,7 +26,7 @@ function resetKey(lesson,theme){return`SP_THEME_RESET_A1_L${lesson}_T${theme}`}
 function runKey(lesson,theme){return`SP_SCORE_RUN_wortschatz-a1-lektion-${lesson}-thema-${theme}`}
 function ledgerKey(lesson,theme,version=1,pid=currentPid()){return`SP_THEME_SCORE_A1_L${lesson}_T${theme}_V${version}_${pid}`}
 function rawStateKeys(lesson,theme,id,ledgerPid){const pids=[String(ledgerPid||'').trim(),currentPid()].filter(Boolean);return [...new Set(pids)].map(pid=>`SP_L${lesson}_${pid}_T${theme}_${id}`)}
-function ledgerRows(){const allowed=allowedLedgerPids(),rows=[];for(let i=0;i<localStorage.length;i++){const key=String(localStorage.key(i)||''),match=key.match(/^SP_THEME_SCORE_A1_L([78])_T(\d+)_V(\d+)_(.+)$/i);if(!match)continue;if(!allowed.has(pidClean(match[4])))continue;const ledger=parse(localStorage.getItem(key),null);if(!ledger||typeof ledger!=='object')continue;rows.push({key,lesson:Number(match[1]),theme:Number(match[2]),version:Number(match[3])||1,pid:match[4],ledger})}return rows}
+function ledgerRows({accountScoped=false}={}){const allowed=allowedLedgerPids(),rows=[];for(let i=0;i<localStorage.length;i++){const key=String(localStorage.key(i)||''),match=key.match(/^SP_THEME_SCORE_A1_L([78])_T(\d+)_V(\d+)_(.+)$/i);if(!match)continue;if(!accountScoped&&!allowed.has(pidClean(match[4])))continue;const ledger=parse(localStorage.getItem(key),null);if(!ledger||typeof ledger!=='object')continue;rows.push({key,lesson:Number(match[1]),theme:Number(match[2]),version:Number(match[3])||1,pid:match[4],ledger})}return rows}
 function pairKey(lesson,theme){return`${Number(lesson)}:${Number(theme)}`}
 function allowedThemePairs(rows=ledgerRows()){return new Set(rows.map(row=>pairKey(row.lesson,row.theme)))}
 function stageableBridgeKey(key,pairs){const k=String(key||''),ledger=k.match(/^SP_THEME_SCORE_A1_L([78])_T(\d+)_V\d+_(.+)$/i);if(ledger)return allowedLedgerPids().has(pidClean(ledger[3]));const run=k.match(/^SP_SCORE_RUN_wortschatz-a1-lektion-([78])-thema-(\d+)$/i);if(run)return pairs.has(pairKey(run[1],run[2]));const reset=k.match(/^SP_THEME_RESET_A1_L([78])_T(\d+)$/i);if(reset)return pairs.has(pairKey(reset[1],reset[2]));return false}
@@ -43,7 +43,7 @@ function mergedLedgerRows(rows=ledgerRows()){
   return [...merged.values()];
 }
 function bestLedgerRows(rows=ledgerRows()){return mergedLedgerRows(rows)}
-function canonicalizeLedgers(){let copied=0;for(const row of mergedLedgerRows()){const target=ledgerKey(row.lesson,row.theme,row.version,currentPid()),raw=JSON.stringify(row.ledger),old=localStorage.getItem(target),merged=old===null?raw:core.mergeValues(old,raw);if(old===null||String(merged)!==String(old)){localStorage.setItem(target,merged);copied++}}return copied}
+function canonicalizeLedgers({accountScoped=false}={}){let copied=0;for(const row of mergedLedgerRows(ledgerRows({accountScoped}))){const target=ledgerKey(row.lesson,row.theme,row.version,currentPid()),raw=JSON.stringify(row.ledger),old=localStorage.getItem(target),merged=old===null?raw:core.mergeValues(old,raw);if(old===null||String(merged)!==String(old)){localStorage.setItem(target,merged);copied++}}return copied}
 function migrateExistingRawStateIntoLedgers(rows=ledgerRows()){
   let migrated=0;
   for(const row of rows){
@@ -83,8 +83,12 @@ function writeVisibleState(lesson,theme,id,ledgerPid,state){if(!state||typeof st
 export function hydrateL78VisibleProgress(){
   let restored=0;const cleared=new Set();hydratingVisible=true;
   try{
-    canonicalizeLedgers();
-    for(const row of mergedLedgerRows()){
+    // Nach erfolgreicher Kontozuordnung und Cloud-Hydrierung gehört jeder L7/L8-Ledger,
+    // der jetzt im lokalen Account-Snapshot liegt, zu genau diesem Schüler. Deshalb dürfen
+    // hier auch historische Geräte-PIDs vereinigt werden, die auf dem aktuellen Gerät nie
+    // als Alias gespeichert waren. Vor der Kontozuordnung bleibt prepareL78... weiterhin streng.
+    canonicalizeLedgers({accountScoped:true});
+    for(const row of mergedLedgerRows(ledgerRows({accountScoped:true}))){
       const {lesson,theme,pid,ledger}=row,run=Math.max(1,Math.min(3,Number(ledger.currentRun)||1)),pair=pairKey(lesson,theme);try{localStorage.setItem(runKey(lesson,theme),String(run))}catch(e){}
       const resetAt=Math.max(0,Number(localStorage.getItem(resetKey(lesson,theme)))||0);if(resetAt&&!cleared.has(pair)){clearVisibleTheme(lesson,theme,pid);cleared.add(pair)}
       const exact=ledger.clientStates&&typeof ledger.clientStates==='object'?ledger.clientStates:{},exactIds=new Set();
