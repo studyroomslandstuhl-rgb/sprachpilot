@@ -1,17 +1,17 @@
 (function(){
 'use strict';
-const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-retry-v12';
+const theme=Number(document.body.dataset.theme||3),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t3-retry-v13';
 function load(src){return new Promise((resolve,reject)=>{const s=document.createElement('script');s.src=src;s.onload=resolve;s.onerror=reject;document.body.appendChild(s)})}
 function addOrderPolish(){if(page!=='task')return;const taskId=String(new URLSearchParams(location.search).get('task')||'');if(taskId!=='t3-partizip-bauen-v2'||document.getElementById('sp-l7t3-order-polish'))return;const style=document.createElement('style');style.id='sp-l7t3-order-polish';style.textContent=`.l7-actions:has([data-action="check-order"]){display:flex!important;gap:10px!important;align-items:stretch!important}.l7-actions:has([data-action="check-order"])>button{flex:1 1 0!important;width:0!important;min-width:0!important;display:flex!important;align-items:center!important;justify-content:center!important}.l7-actions [data-action="check-order"]{order:1!important}.l7-actions [data-action="reset-order"]{order:2!important}.l7-actions [data-action="undo"]{order:3!important}@media(max-width:520px){.l7-actions:has([data-action="check-order"]){gap:7px!important}.l7-actions:has([data-action="check-order"])>button{padding-left:7px!important;padding-right:7px!important}}`;document.head.appendChild(style)}
-load('/shared/sp-cache-epoch.js?v=20260822-cache2').catch(()=>{})
+load('/shared/sp-cache-epoch.js?v=20260831-central3').catch(()=>{})
  .then(()=>load('/js/progress-role-guard.js?v=20260823-points1'))
  .then(()=>Promise.resolve(window.L7_THEME_READY))
  .then(()=>load('../shared/l7-state-safety.js?v=1'))
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
  .then(()=>load('../shared/l7-wrong-queue-v4.js?v=10'))
- .then(()=>{window.SPL7WrongQueueV8?.install?.();return load('../shared/l7-theme-score.js?v=20260823-points1')})
+ .then(()=>{window.SPL7WrongQueueV8?.install?.();return load('../shared/l7-theme-score.js?v=20260831-central3')})
  .then(()=>load('../shared/l7-score-repeat-fix.js?v=1'))
- .then(()=>load('../shared/l7-score-live-sync.js?v=20260823-points1'))
+ .then(()=>load('../shared/l7-score-live-sync.js?v=20260831-central3'))
  .then(()=>load('../shared/l7-exam-gate.js?v=2'))
  .then(()=>{window.SPL7StrictExamGate?.install?.();window.L7T3CardImages?.installRenderer?.();return load('l7t3-bunny-audio.js?v=3')})
  .then(()=>{
