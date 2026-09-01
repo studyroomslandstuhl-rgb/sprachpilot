@@ -3,9 +3,13 @@
     if(typeof ReleaseDraft==='undefined'||ReleaseDraft.__parentRulesInstalled)return;
     ReleaseDraft.__parentRulesInstalled=true;
 
+    function findLesson(lessonKey){
+      try{return (RELEASE_CATALOG.lessons||[]).find(l=>l.key===lessonKey)||null}catch(e){return null;}
+    }
+
     function findTheme(lessonKey,themeKey){
       try{
-        const lesson=(RELEASE_CATALOG.lessons||[]).find(l=>l.key===lessonKey);
+        const lesson=findLesson(lessonKey);
         return lesson?(lesson.themes||[]).find(t=>t.key===themeKey):null;
       }catch(e){return null;}
     }
@@ -61,6 +65,18 @@
         if(value&&this.enableLesson)this.enableLesson(lessonKey);
       }
       setThemeChildren(lessonKey,themeKey,value);
+    };
+
+    // Ein Häkchen an einer ganzen Lektion bedeutet wirklich: alle Themen,
+    // Aufgaben und Wortschatzlisten dieser Lektion bekommen denselben Status.
+    const oldSetLesson=ReleaseDraft.setLesson?.bind(ReleaseDraft);
+    ReleaseDraft.setLesson=function(lessonKey,value){
+      if(oldSetLesson)oldSetLesson(lessonKey,value);
+      else if(value&&this.enableLesson)this.enableLesson(lessonKey);
+      const lesson=findLesson(lessonKey);
+      (lesson&&lesson.themes||[]).forEach(theme=>{
+        if(theme&&theme.key)this.setTheme(lessonKey,theme.key,!!value);
+      });
     };
 
     const oldOpen=ReleaseDraft.open?.bind(ReleaseDraft);
