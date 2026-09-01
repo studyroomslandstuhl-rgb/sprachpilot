@@ -9,11 +9,10 @@ function readJson(key){try{const raw=localStorage.getItem(key);return raw?JSON.p
 function profile(){return readJson('SP_USER_PROFILE')||readJson('SP_STUDENT_PROFILE')||{}}
 function role(){return String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||localStorage.getItem('SP_USER_ROLE')||'').toLowerCase()}
 function preview(){
- const r=role(),context=String(localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase(),p=profile(),explicit=p.previewOnly===true||p.teacherPreview===true||p.studentCoursePreview===true;
- if(['student','schueler','schüler'].includes(r)&&context!=='teacher-student-preview'&&!explicit)return false;
- if(['teacher','lehrer','admin','owner','superadmin'].includes(r))return true;
- if(context!=='teacher-student-preview'||!explicit)return false;
- return sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1';
+ const context=String(localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase(),p=profile();
+ const explicit=p.previewOnly===true||p.teacherPreview===true||p.studentCoursePreview===true;
+ const flag=sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1';
+ return context==='teacher-student-preview'&&(explicit||flag);
 }
 function browserId(){let id=clean(localStorage.getItem('SP_L8_BROWSER_PID_V2'));if(id)return id;try{id='browser_'+crypto.randomUUID().replace(/-/g,'')}catch(e){id='browser_'+Date.now().toString(36)+Math.random().toString(36).slice(2)};try{localStorage.setItem('SP_L8_BROWSER_PID_V2',id)}catch(e){}return id}
 function pid(){
