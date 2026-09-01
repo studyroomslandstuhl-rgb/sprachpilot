@@ -11,7 +11,20 @@
 header('Prüfung');
 const FILE='pruefung.html';
 const need=[['karteikarten.html',WORDS.length],['artikel.html',12],['hoeren-schreiben.html',13],['hoeren-bild.html',WORDS.filter(w=>w&&w.image).length],['bild-wort.html',WORDS.filter(w=>w&&(w.image||w.cue)).length],['hoeren.html',13],['schilder.html',10],['lesen.html',6],['tv-programm.html',6],['zuordnen.html',10],['saetze-bauen.html',8],['mini-dialoge.html',8],['jede-zeit.html',16]];
-const q=[['Schreibe die Uhrzeit in den Satz: <strong>20:15 Uhr</strong><br><br>Der Film fängt um ___ an.',['20:15 Uhr','20 Uhr 15']],['Die Kita ist von Montag bis Freitag ___.',['geöffnet']],['Ich vereinbare einen ___.',['Termin']],['Die Bibliothek ist an Feiertagen ___.',['geschlossen']],['z.B. = ___.',['zum Beispiel']],['jeden ___',['Tag']],['jede ___',['Woche']],['jedes ___',['Wochenende']],['Ich möchte ein Buch ___.',['ausleihen']],['Emil geht in die / in den ___.',['Kita','Kindergarten']],['Ich bin ___ fertig.',['total']],['Das Geschäft ist den ganzen ___ geöffnet.',['Tag']]];
+const q=[
+['Schreibe einen Satz.<br><br><strong>Angaben:</strong> Film / Viertel vor neun / anfangen',['Der Film fängt um 20:45 Uhr an.','Der Film fängt um 20.45 Uhr an.']],
+['Schreibe das passende Wort: <strong>geöffnet</strong> oder <strong>geschlossen</strong>.<br><br>Die Kita ist von Montag bis Freitag ___.',['geöffnet']],
+['Ergänze den Satz mit dem passenden Nomen.<br><br>Ich vereinbare einen ___.',['Termin']],
+['Schreibe das Gegenteil von <strong>geöffnet</strong>.<br><br>Die Bibliothek ist an Feiertagen ___.',['geschlossen']],
+['Schreibe die Abkürzung aus.<br><br>z. B. = ___.',['zum Beispiel']],
+['Ergänze mit der richtigen Form von <strong>jeder</strong>.<br><br>___ Tag',['jeden']],
+['Ergänze mit der richtigen Form von <strong>jeder</strong>.<br><br>___ Woche',['jede']],
+['Ergänze mit der richtigen Form von <strong>jeder</strong>.<br><br>___ Wochenende',['jedes']],
+['Ergänze den Satz mit dem passenden Verb.<br><br>Ich möchte ein Buch ___.',['ausleihen']],
+['Ergänze mit <strong>Kita</strong> oder <strong>Kindergarten</strong>.<br><br>Emil geht in die / in den ___.',['Kita','Kindergarten']],
+['Ergänze den Satz mit dem passenden Wort.<br><br>Ich bin ___ fertig.',['total']],
+['Ergänze mit <strong>Tag</strong>, <strong>Woche</strong> oder <strong>Wochenende</strong>.<br><br>Das Geschäft ist den ganzen ___ geöffnet.',['Tag']]
+];
 let i=0,score=0;
 function unlocked(){return need.every(x=>pctFor(x[0],x[1])>=100)}
 function renderLock(){area.innerHTML='<div class="question">Prüfung noch gesperrt</div><div class="hint">Bearbeiten Sie zuerst alle Aufgaben.</div><div class="exam-lock">'+need.map(x=>'<a href="'+x[0]+'">'+x[0].replace('.html','')+': '+pctFor(x[0],x[1])+'%</a>').join('')+'</div><div class="actions"><a class="btn secondary" href="index.html">Zum Menü</a></div>'}
