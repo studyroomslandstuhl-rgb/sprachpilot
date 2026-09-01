@@ -6,7 +6,6 @@ window.__SP_L8T2_VOCAB_PRACTICE_UI_20260901=true;
 const base=window.L8UI;
 if(!base||typeof base.taskPage!=='function')return;
 const originalTaskPage=base.taskPage;
-const originalTaskEmoji=base.taskEmoji;
 const S=()=>window.L8S;
 const T=()=>window.L8_THEME;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
@@ -15,8 +14,8 @@ function currentTask(){const id=new URLSearchParams(location.search).get('task')
 function taskNumber(task){const i=(T()?.tasks||[]).findIndex(x=>x.id===task.id);return i>=0?i+1:''}
 function previewNote(){return S()?.preview?.()?'<div class="sp-teacher-preview-note">Lehrer-Vorschau: Es werden keine Teilnehmerpunkte und keine Teilnehmerfortschritte gespeichert.</div>':''}
 function taskHead(task,state){
- const pct=Math.round((state.done?.length||0)/Math.max(1,task.items.length)*100),emoji=originalTaskEmoji?originalTaskEmoji(task):(task.emoji||'✅');
- return `<section class="l8-card l8-task-head"><div class="l8-task-title-block"><span class="l8-task-kicker">Aufgabe ${taskNumber(task)}</span><h1>${esc(task.title)}</h1><p>${esc(emoji)} ${esc(task.instruction||'')}</p></div><div class="l8-progress-row"><span>${state.done.length} von ${task.items.length} fertig</span><strong>${pct}%</strong></div><div class="l8-progress"><div style="width:${pct}%"></div></div></section>`;
+ const total=Math.max(1,task.items.length),done=state.done?.length||0,pct=Math.round(done/total*100),emoji=task.emoji||task.icon||'✅';
+ return `<section class="l8-card l8-task-head"><div class="l8-task-title-block"><span class="l8-task-kicker">Aufgabe ${taskNumber(task)}</span><h1>${esc(task.title)}</h1><p>${esc(emoji)} ${esc(task.instruction||'')}</p></div><div class="l8-progress-row"><span>${done} von ${task.items.length} fertig</span><strong>${pct}%</strong></div><div class="l8-progress"><div style="width:${pct}%"></div></div></section>`;
 }
 function feedback(type,text){const box=document.getElementById('feedback');if(box)box.innerHTML=`<div class="l8-feedback ${type}">${esc(text)}</div>`}
 function imageSrc(raw){const v=String(raw||'').trim();if(!v)return'';if(/^https?:\/\//i.test(v))return v;return `https://sprachpilot.b-cdn.net/${v.replace(/^\/+/, '')}`}
@@ -46,16 +45,22 @@ function renderListening(task,root){
  });
 }
 
-function savedMatches(state){
- try{const raw=state?.answers?.[0];if(!raw)return new Set();const a=JSON.parse(raw);return new Set(Array.isArray(a)?a.map(String):[])}catch(e){return new Set()}
+function migrateOldMemory(task){
+ let state=S().load(T().number,task.id,task.items.length);
+ if((state.done||[]).length>1)return state;
+ try{
+  const old=JSON.parse(String(state.answers?.[0]||''));
+  if(Array.isArray(old)&&old.length){
+   for(const raw of old){const i=Number(raw);if(Number.isInteger(i)&&i>=0&&i<task.items.length&&!state.done.includes(i)){let r=S().right(T().number,task.id,task.items.length,i,'memory-pair');if(r.needsReview)r=S().right(T().number,task.id,task.items.length,i,'memory-pair');state=r.s}}
+  }
+ }catch(e){}
+ return S().load(T().number,task.id,task.items.length);
 }
-function saveMatches(task,state,matched){state.answers=state.answers&&typeof state.answers==='object'?state.answers:{};state.answers[0]=JSON.stringify([...matched]);S().save(T().number,task.id,state)}
 function renderMemory(task,root){
- let state=S().load(T().number,task.id,task.items.length),idx=S().nextIndex(T().number,task.id,task.items.length);
- if(idx==null||idx<0)return finish(task,root);
- state=S().load(T().number,task.id,task.items.length);
- const item=task.items[idx],pairs=(item.pairs||[]).map((p,i)=>({...p,_id:String(i)})).filter(p=>p.term&&p.image);
- const matched=savedMatches(state);
+ let state=migrateOldMemory(task);
+ const pairs=(task.items||[]).map((p,i)=>({...p,_id:String(i),_index:i})).filter(p=>p.term&&p.image);
+ const matched=new Set((state.done||[]).map(String));
+ if(pairs.length&&matched.size>=pairs.length)return finish(task,root);
  const cards=[];
  pairs.forEach(p=>{
   cards.push({pair:p._id,side:'word',text:p.term});
@@ -64,15 +69,26 @@ function renderMemory(task,root){
  const board=stableShuffle(cards,`${T().number}|${task.id}|memory|${S().pid?.()||''}`);
  root.innerHTML=`<div class="l8-wrap">${previewNote()}${taskHead(task,state)}<section class="l8-card l8-exercise l8-memory-exercise"><div class="l8-memory-status"><strong>${matched.size} von ${pairs.length} Paaren gefunden</strong></div><div class="l8-memory-grid">${board.map((c,i)=>`<button class="l8-memory-card ${matched.has(c.pair)?'matched revealed':''}" type="button" data-pair="${esc(c.pair)}" data-side="${esc(c.side)}" data-card="${i}" ${matched.has(c.pair)?'disabled':''}><span class="l8-memory-front">?</span><span class="l8-memory-back">${c.side==='image'?`<img src="${esc(imageSrc(c.image))}" alt="" loading="lazy">`:`<strong>${esc(c.text)}</strong>`}</span></button>`).join('')}</div><div id="feedback"></div></section></div>`;
  let open=[],locked=false;
- const status=()=>{const el=root.querySelector('.l8-memory-status strong');if(el)el.textContent=`${matched.size} von ${pairs.length} Paaren gefunden`};
+ const refreshProgress=()=>{
+  state=S().load(T().number,task.id,task.items.length);
+  const done=state.done?.length||0,pct=Math.round(done/Math.max(1,task.items.length)*100);
+  const status=root.querySelector('.l8-memory-status strong');if(status)status.textContent=`${done} von ${pairs.length} Paaren gefunden`;
+  const row=root.querySelector('.l8-progress-row');if(row)row.innerHTML=`<span>${done} von ${task.items.length} fertig</span><strong>${pct}%</strong>`;
+  const bar=root.querySelector('.l8-task-head .l8-progress > div');if(bar)bar.style.width=`${pct}%`;
+  return done;
+ };
  root.querySelectorAll('.l8-memory-card:not(.matched)').forEach(card=>card.onclick=()=>{
   if(locked||card.classList.contains('revealed')||card.classList.contains('matched'))return;
   card.classList.add('revealed');open.push(card);
   if(open.length<2)return;
   locked=true;const [a,b]=open,same=a.dataset.pair===b.dataset.pair&&a.dataset.side!==b.dataset.side;
   if(same){
-   matched.add(a.dataset.pair);a.classList.add('matched');b.classList.add('matched');a.disabled=true;b.disabled=true;open=[];locked=false;saveMatches(task,state,matched);status();feedback('good','Paar gefunden!');
-   if(matched.size>=pairs.length){setTimeout(()=>{S().right(T().number,task.id,task.items.length,idx,'memory-complete');finish(task,root)},650)}
+   const pairIndex=Number(a.dataset.pair);
+   let r=S().right(T().number,task.id,task.items.length,pairIndex,task.items[pairIndex]?.term||'memory-pair');
+   if(r.needsReview)r=S().right(T().number,task.id,task.items.length,pairIndex,task.items[pairIndex]?.term||'memory-pair');
+   matched.add(a.dataset.pair);a.classList.add('matched');b.classList.add('matched');a.disabled=true;b.disabled=true;open=[];locked=false;
+   const done=refreshProgress();feedback('good','Paar gefunden!');
+   if(done>=pairs.length)setTimeout(()=>finish(task,root),650);
   }else{
    feedback('warn','Das passt noch nicht zusammen.');
    setTimeout(()=>{a.classList.remove('revealed');b.classList.remove('revealed');open=[];locked=false},800);
