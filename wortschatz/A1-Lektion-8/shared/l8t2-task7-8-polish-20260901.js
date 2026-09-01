@@ -3,19 +3,54 @@
 if(window.__SP_L8T2_TASK7_8_POLISH_20260901)return;
 window.__SP_L8T2_TASK7_8_POLISH_20260901=true;
 
+const EMRE='https://sprachpilot.b-cdn.net/audio/l8t2_aufgabe7_bewerbung_emre.mp3';
+const AYLIN='https://sprachpilot.b-cdn.net/audio/l8t2_aufgabe8_bewerbung_aylin.mp3';
+const choice=(section,prompt,options,answer)=>({type:'choice',section,prompt,options,answer});
+const input=(section,prompt,answers)=>({type:'input',section,prompt,answer:Array.isArray(answers)?answers:[answers]});
+
 function apply(theme){
  if(!theme||!Array.isArray(theme.tasks))return theme;
 
  const listen=theme.tasks.find(t=>t?.id==='bewerbung-hoeren-gesamt');
  if(listen){
-  listen.acceptDigitWords=true;
+  listen.title='Zwei Bewerbungsgespräche';
+  listen.instruction='Höre beide Gespräche und bearbeite die Fragen.';
+  listen.kind='listening-two';listen.icon='☎️';listen.emoji='☎️';listen.acceptDigitWords=true;
+  delete listen.audio;delete listen.audioFile;
+  listen.sections=[
+   {id:1,title:'Gespräch 1 – Emre',instruction:'Höre das Gespräch und wähle die richtige Antwort.',audio:EMRE,audioFile:EMRE,mode:'choice'},
+   {id:2,title:'Gespräch 2 – Aylin',instruction:'Höre das Gespräch und beantworte die Fragen in vollständigen Sätzen.',audio:AYLIN,audioFile:AYLIN,mode:'input'}
+  ];
+  listen.items=[
+   choice(1,'Wo wohnt Emre jetzt?',['In Köln.','In Bonn.','In Düsseldorf.'],'In Köln.'),
+   choice(1,'Wie lange wohnt Emre schon in Köln?',['Seit drei Jahren.','Vor drei Jahren.','Drei Monate.'],'Seit drei Jahren.'),
+   choice(1,'Wann ist Emre nach Deutschland gekommen?',['Vor fünf Jahren.','Seit fünf Jahren.','Fünf Monate.'],'Vor fünf Jahren.'),
+   choice(1,'Welche Ausbildung hat Emre gemacht?',['Koch.','Kellner.','Architekt.'],'Koch.'),
+   choice(1,'Wann hat Emre die Ausbildung angefangen?',['Vor vier Jahren.','Seit vier Jahren.','Vier Jahre.'],'Vor vier Jahren.'),
+   choice(1,'Wie lange hat die Ausbildung gedauert?',['Zwei Jahre.','Seit zwei Jahren.','Vor zwei Jahren.'],'Zwei Jahre.'),
+   choice(1,'Wie lange hat Emre nach der Ausbildung im Restaurant gearbeitet?',['Acht Monate.','Seit acht Monaten.','Vor acht Monaten.'],'Acht Monate.'),
+   choice(1,'Seit wann besucht Emre einen Deutschkurs?',['Seit einem Jahr.','Vor einem Jahr.','Ein Jahr lang vor der Ausbildung.'],'Seit einem Jahr.'),
+   choice(1,'Seit wann arbeitet Emre im Café?',['Seit zehn Monaten.','Vor zehn Monaten.','Zehn Jahre.'],'Seit zehn Monaten.'),
+   choice(1,'Wie lange lernt Emre schon Deutsch?',['Seit zwei Jahren.','Vor zwei Jahren.','Zwei Monate.'],'Seit zwei Jahren.'),
+
+   input(2,'Wo wohnt Aylin jetzt?',['Aylin wohnt jetzt in Köln.','Aylin wohnt in Köln.','Sie wohnt jetzt in Köln.','Sie wohnt in Köln.','Jetzt wohnt Aylin in Köln.']),
+   input(2,'Wie lange lebt Aylin schon in Deutschland?',['Aylin lebt seit sechs Jahren in Deutschland.','Sie lebt seit sechs Jahren in Deutschland.','Seit sechs Jahren lebt Aylin in Deutschland.','Seit sechs Jahren lebt sie in Deutschland.']),
+   input(2,'Wann hat Aylin ihre Ausbildung angefangen?',['Aylin hat ihre Ausbildung vor drei Jahren angefangen.','Sie hat ihre Ausbildung vor drei Jahren angefangen.','Vor drei Jahren hat Aylin ihre Ausbildung angefangen.','Vor drei Jahren hat sie ihre Ausbildung angefangen.']),
+   input(2,'Wie lange hat die Ausbildung gedauert?',['Die Ausbildung hat ein Jahr gedauert.','Ihre Ausbildung hat ein Jahr gedauert.','Aylins Ausbildung hat ein Jahr gedauert.','Die Ausbildung dauerte ein Jahr.']),
+   input(2,'Wie lange hat der Deutschkurs gedauert?',['Der Deutschkurs hat vier Monate gedauert.','Der Kurs hat vier Monate gedauert.','Ihr Deutschkurs hat vier Monate gedauert.','Der Deutschkurs dauerte vier Monate.']),
+   input(2,'Wann hat Aylin ihre erste Stelle angefangen?',['Aylin hat ihre erste Stelle vor circa eineinhalb Jahren angefangen.','Sie hat ihre erste Stelle vor circa eineinhalb Jahren angefangen.','Vor circa eineinhalb Jahren hat Aylin ihre erste Stelle angefangen.','Vor circa eineinhalb Jahren hat sie ihre erste Stelle angefangen.','Aylin hat ihre erste Stelle vor ungefähr eineinhalb Jahren angefangen.']),
+   input(2,'Seit wann arbeitet Aylin in Teilzeit?',['Aylin arbeitet seit acht Monaten in Teilzeit.','Sie arbeitet seit acht Monaten in Teilzeit.','Seit acht Monaten arbeitet Aylin in Teilzeit.','Seit acht Monaten arbeitet sie in Teilzeit.']),
+   input(2,'Wie lange möchte Aylin das Praktikum machen?',['Aylin möchte das Praktikum zwei Monate machen.','Sie möchte das Praktikum zwei Monate machen.','Aylin möchte zwei Monate ein Praktikum machen.','Sie möchte zwei Monate ein Praktikum machen.','Das Praktikum soll zwei Monate dauern.']),
+   input(2,'Wann kann Aylin mit dem Praktikum anfangen?',['Aylin kann in drei Wochen mit dem Praktikum anfangen.','Sie kann in drei Wochen mit dem Praktikum anfangen.','In drei Wochen kann Aylin mit dem Praktikum anfangen.','In drei Wochen kann sie mit dem Praktikum anfangen.']),
+   input(2,'Wie lange hat Aylin in Düsseldorf gewohnt?',['Aylin hat zwei Jahre in Düsseldorf gewohnt.','Sie hat zwei Jahre in Düsseldorf gewohnt.','Zwei Jahre hat Aylin in Düsseldorf gewohnt.','Zwei Jahre hat sie in Düsseldorf gewohnt.'])
+  ];
  }
 
  const email=theme.tasks.find(t=>t?.id==='bewerbung-lueckentext');
  if(email){
   email.title='Bewerbung per E-Mail – Lückentext';
   email.instruction='Lies die E-Mail und ergänze die fehlenden Wörter und Zeitangaben.';
-  email.emailLayout=true;
+  email.emailLayout=true;email.icon='📧';email.emoji='📧';
   email.items=[{
    type:'dialog-blanks',
    lines:[
@@ -53,7 +88,7 @@ function apply(theme){
   }];
  }
 
- theme.contentRevision='l8t2-task7-8-polish-20260901-v1';
+ theme.contentRevision='l8t2-task7-8-polish-20260901-v2';
  return theme;
 }
 
