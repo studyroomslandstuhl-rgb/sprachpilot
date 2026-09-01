@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const EPOCH='20260901-course-release-fix2';
+const EPOCH='20260901-course-release-save-fix3';
 const KEY='SP_CACHE_EPOCH';
 const RELEASE_ASSETS=[
  '/js/course-releases.js?v=20260901-course-release-fix2',
@@ -11,9 +11,11 @@ const RELEASE_ASSETS=[
  '/js/student-login-v2.js?v=20260825-link5',
  '/dativverben/access.js?v=20260901-course-release-fix2',
  '/dativverben/access.js?v=2',
- '/teacher/release-course-code-fix.js?v=teacher-lite1'
+ '/teacher/release-course-code-fix.js?v=teacher-lite1',
+ '/teacher/release-parent-rules.js?v=teacher-lite1',
+ '/teacher/releases.js?v=teacher-lite1'
 ];
-if(window.__SP_CACHE_EPOCH_V12)return;window.__SP_CACHE_EPOCH_V12=true;
+if(window.__SP_CACHE_EPOCH_V13)return;window.__SP_CACHE_EPOCH_V13=true;
 async function clearAppCaches(){
  const jobs=[];
  try{if('caches'in window)jobs.push(caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))))}catch(e){}
