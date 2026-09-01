@@ -68,18 +68,13 @@ function apply(theme){
  const removeIds=new Set(['wortschatz-hoeren-bild','wortschatz-memory-bedeutung','wortschatz-memory-bild-wort']);
  theme.tasks=theme.tasks.filter(t=>!removeIds.has(String(t?.id||'')));
  const memPool=memoryPool(theme),listenPool=listeningPool(theme);
- if(memPool.length>=2){
-  const memory=buildMemory(memPool);
-  const cardsIndex=theme.tasks.findIndex(t=>t?.kind==='cards'||t?.id==='karteikarten'||/karteikart/i.test(String(t?.title||'')));
-  const insertAt=cardsIndex>=0?cardsIndex+1:0;
-  theme.tasks.splice(insertAt,0,memory);
- }
- if(listenPool.length>=4){
-  const listening=buildListening(listenPool);
-  const examAt=theme.tasks.findIndex(t=>t?.exam);
-  if(examAt>=0)theme.tasks.splice(examAt,0,listening);else theme.tasks.push(listening);
- }
- theme.contentRevision='l8t2-vocab-practice-20260901-v3';
+ const cardsIndex=theme.tasks.findIndex(t=>t?.kind==='cards'||t?.id==='karteikarten'||/karteikart/i.test(String(t?.title||'')));
+ const insertAt=cardsIndex>=0?cardsIndex+1:0;
+ const insert=[];
+ if(memPool.length>=2)insert.push(buildMemory(memPool));
+ if(listenPool.length>=4)insert.push(buildListening(listenPool));
+ if(insert.length)theme.tasks.splice(insertAt,0,...insert);
+ theme.contentRevision='l8t2-vocab-practice-20260901-v4';
  return theme;
 }
 
