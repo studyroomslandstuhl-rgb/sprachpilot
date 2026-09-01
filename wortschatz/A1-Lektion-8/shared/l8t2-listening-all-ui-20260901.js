@@ -26,6 +26,25 @@ function choiceHtml(item,index,saved,done,wrong){
 function inputHtml(item,index,saved,done,wrong){
  return `<div class="l8-listen-question ${done?'is-done':''} ${wrong?'is-wrong':''}" data-q="${index}"><div class="l8-listen-qhead"><strong>${index+1}.</strong><span>${esc(item.prompt)}</span></div><input class="l8-input l8-listen-text" data-input-q="${index}" autocomplete="off" value="${esc(saved||'')}" ${done?'disabled':''} placeholder="Antworte in einem vollständigen Satz.">${wrong?'<div class="l8-listen-mini">Noch nicht richtig.</div>':''}</div>`;
 }
+function canonicalNumberText(value){
+ return S().norm(value)
+  .replace(/\bzwei\b/g,'2')
+  .replace(/\bdrei\b/g,'3')
+  .replace(/\bvier\b/g,'4')
+  .replace(/\bfünf\b/g,'5')
+  .replace(/\bfuenf\b/g,'5')
+  .replace(/\bsechs\b/g,'6')
+  .replace(/\bsieben\b/g,'7')
+  .replace(/\bacht\b/g,'8')
+  .replace(/\bneun\b/g,'9')
+  .replace(/\bzehn\b/g,'10');
+}
+function equalAnswer(value,expected,task){
+ if(S().equal(value,expected))return true;
+ if(!task?.acceptDigitWords)return false;
+ const v=canonicalNumberText(value),all=Array.isArray(expected)?expected:[expected];
+ return all.some(x=>canonicalNumberText(x)===v);
+}
 function render(task,root){
  const total=task.items.length,state=S().load(T().number,task.id,total),doneSet=new Set(state.done||[]);
  if(doneSet.size>=total){
@@ -53,8 +72,8 @@ function render(task,root){
   if(missing){const box=document.getElementById('feedback');if(box)box.innerHTML='<div class="l8-feedback warn">Beantworte zuerst alle offenen Fragen.</div>';return}
   task.items.forEach((item,index)=>{
    if(already.has(index))return;
-   const value=values[index],expected=item.type==='choice'?item.answer:item.answer;
-   if(S().equal(value,expected)){
+   const value=values[index],expected=item.answer;
+   if(equalAnswer(value,expected,task)){
     const r=S().right(T().number,task.id,total,index,value);
     if(r.needsReview)S().right(T().number,task.id,total,index,value);
    }else S().wrong(T().number,task.id,total,index,value);
