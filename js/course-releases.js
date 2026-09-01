@@ -12,9 +12,18 @@ function profileCourseRaw(profile=profileFromStorage()){
  const direct=[profile.courseCode,profile.kurs,profile.kursnummer,profile.course].filter(v=>clean(v));
  return direct.length?direct:[localStorage.getItem("SP_COURSE_CODE")].filter(v=>clean(v))
 }
-function activeCourseValues(profile=profileFromStorage()){return uniq(profileCourseRaw(profile).flatMap(variants)).map(norm).filter(Boolean)}
+function profileCourseIdentityRaw(profile=profileFromStorage()){
+ return uniq([...profileCourseRaw(profile),profile.courseDocId,profile.courseId,profile.courseName,profile.code].filter(v=>clean(v)))
+}
+function activeCourseValues(profile=profileFromStorage()){return uniq(profileCourseIdentityRaw(profile).flatMap(variants)).map(norm).filter(Boolean)}
 function rowCourseValues(data={},id=""){return uniq([id,data.id,data.courseDocId,data.courseId,data.courseCode,data.kurs,data.kursnummer,data.code,data.name,data.courseName].flatMap(variants)).map(norm).filter(Boolean)}
 function matchesActiveCourse(data={},id="",profile=profileFromStorage()){const wanted=activeCourseValues(profile);if(!wanted.length)return true;const got=rowCourseValues(data,id);return got.some(v=>wanted.includes(v))}
+function timestampValue(value){
+ try{if(value&&typeof value.toMillis==="function")return value.toMillis()}catch(e){}
+ if(value&&typeof value.seconds==="number")return value.seconds*1000+Math.floor(Number(value.nanoseconds||0)/1000000);
+ const parsed=Date.parse(value||"");return Number.isFinite(parsed)?parsed:0
+}
+function releaseUpdatedAt(data={}){return Math.max(timestampValue(data.updatedAt),timestampValue(data.releaseUpdatedAt),timestampValue(data.createdAt))}
 export function courseCodes(profile=profileFromStorage()){
  const primary=profileCourseRaw(profile);
  const secondary=[profile.courseDocId,profile.courseId,profile.courseName,profile.code];
@@ -32,7 +41,10 @@ async function queryCourse(field,value,profile){
  try{
   const snap=await withTimeout(getDocsFromServer(query(collection(db,"courses"),where(field,"==",String(value)),limit(5))),2500,null);
   if(!snap||snap.empty)return null;
-  for(const d of snap.docs){const data={...(d.data()||{}),id:d.id};if(matchesActiveCourse(data,d.id,profile))return data}
+  const rows=[];
+  for(const d of snap.docs){const data={...(d.data()||{}),id:d.id};if(matchesActiveCourse(data,d.id,profile))rows.push(data)}
+  rows.sort((a,b)=>releaseUpdatedAt(b)-releaseUpdatedAt(a));
+  return rows[0]||null
  }catch(e){}
  return null
 }
@@ -54,9 +66,18 @@ export async function loadCourseRelease(profile=profileFromStorage()){
  const lookup=(async()=>{
   const primary=uniq(profileCourseRaw(profile).flatMap(variants));
   const secondary=uniq([profile.courseDocId,profile.courseId,profile.courseName,profile.code].flatMap(variants));
-  for(const code of [...primary,...secondary]){const d=await readCourseDoc(code,profile);if(hasReleaseData(d))return rememberRelease(profile,d)}
+
+  // Ein im Schülerprofil gespeichertes Kursdokument ist die stärkste Identität.
+  // So wird nicht versehentlich ein altes Kurscode-Duplikat vor dem echten Kurs gelesen.
+  for(const code of secondary){const d=await readCourseDoc(code,profile);if(hasReleaseData(d))return rememberRelease(profile,d)}
+
+  // Bei alten Profilen ohne courseDocId kann es mehrere Dokumente mit demselben Kurscode geben.
+  // In diesem Fall gewinnt innerhalb der passenden Treffer der zuletzt aktualisierte Freigabestand.
   const fields=["courseCode","kurs","kursnummer","code","name","courseName","courseDocId","courseId"];
   for(const field of fields){for(const code of primary.length?primary:secondary){const d=await queryCourse(field,code,profile);if(hasReleaseData(d))return rememberRelease(profile,d)}}
+
+  // Letzter Fallback: Kurscode war selbst die Dokument-ID, aber in den Feldern nicht hinterlegt.
+  for(const code of primary){const d=await readCourseDoc(code,profile);if(hasReleaseData(d))return rememberRelease(profile,d)}
   return fallback||{}
  })();
  const result=await withTimeout(lookup,10000,null);
