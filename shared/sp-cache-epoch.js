@@ -10,7 +10,8 @@ const RELEASE_ASSETS=[
  '/js/student-login-v2.js?v=20260901-course-release-fix2',
  '/js/student-login-v2.js?v=20260825-link5',
  '/dativverben/access.js?v=20260901-course-release-fix2',
- '/dativverben/access.js?v=2'
+ '/dativverben/access.js?v=2',
+ '/teacher/release-course-code-fix.js?v=teacher-lite1'
 ];
 if(window.__SP_CACHE_EPOCH_V12)return;window.__SP_CACHE_EPOCH_V12=true;
 async function clearAppCaches(){
