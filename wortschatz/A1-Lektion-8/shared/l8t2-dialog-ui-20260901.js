@@ -22,9 +22,14 @@ function taskHead(task,state){
  return `<section class="l8-card l8-task-head"><div class="l8-task-title-block"><span class="l8-task-kicker">Aufgabe ${taskNumber(task)}</span><h1>${esc(task.title)}</h1><p>${esc(emoji)} ${esc(task.instruction||'')}</p></div><div class="l8-progress-row"><span>${state.done.length} von ${task.items.length} fertig</span><strong>${pct}%</strong></div><div class="l8-progress"><div style="width:${pct}%"></div></div></section>`;
 }
 function imageSrc(raw){const v=String(raw||'').trim();if(!v)return'';if(/^https?:\/\//i.test(v))return v;return `https://sprachpilot.b-cdn.net/${v.replace(/^\/+/, '')}`}
+function numberHint(blank){
+ const answers=Array.isArray(blank?.answers)?blank.answers:[blank?.answers];
+ for(const answer of answers){const m=String(answer||'').match(/\b\d+\b/);if(m)return m[0]}
+ return '';
+}
 function blankHtml(blank,index,value){
- const src=imageSrc(blank?.image);
- return `<span class="l8-dialog-blank"><input class="l8-input l8-dialog-input" data-dialog-blank="${index}" autocomplete="off" value="${esc(value||'')}" aria-label="Lücke ${index+1}">${src?`<img src="${esc(src)}" alt="" loading="lazy">`:''}</span>`;
+ const src=imageSrc(blank?.image),num=numberHint(blank);
+ return `<span class="l8-dialog-blank"><input class="l8-input l8-dialog-input" data-dialog-blank="${index}" autocomplete="off" value="${esc(value||'')}" aria-label="Lücke ${index+1}">${src?`<span class="l8-dialog-image-hint"><img src="${esc(src)}" alt="" loading="lazy">${num?`<strong class="l8-dialog-number">${esc(num)}</strong>`:''}</span>`:''}</span>`;
 }
 function lineHtml(line,item,saved){
  const raw=String(line||''),m=raw.match(/^([^:]{1,20}):\s*(.*)$/),speaker=m?m[1]:'',text=m?m[2]:raw;
@@ -78,6 +83,6 @@ function patchedTaskPage(){
 window.L8UI={...base,taskPage:patchedTaskPage};
 const style=document.createElement('style');
 style.id='sp-l8t2-dialog-ui-20260901';
-style.textContent=`.l8-dialog-exercise{max-width:920px;margin-inline:auto}.l8-dialog{display:grid;gap:14px}.l8-dialog-line{display:flex;gap:10px;align-items:flex-start;font-size:18px;line-height:1.65}.l8-dialog-speaker{min-width:28px;color:var(--lesson-main-dark,var(--l8-dark))}.l8-dialog-line>span{flex:1}.l8-dialog-blank{display:inline-flex;align-items:center;gap:7px;vertical-align:middle;margin:2px 4px}.l8-dialog-input{width:145px;min-width:105px;padding:8px 10px!important}.l8-dialog-blank img{width:48px;height:48px;object-fit:cover;border-radius:10px;border:1px solid var(--lesson-line,var(--l8-line));background:#fff}@media(max-width:620px){.l8-dialog-line{font-size:16px}.l8-dialog-input{width:118px}.l8-dialog-blank img{width:42px;height:42px}}`;
+style.textContent=`.l8-dialog-exercise{max-width:920px;margin-inline:auto}.l8-dialog{display:grid;gap:14px}.l8-dialog-line{display:flex;gap:10px;align-items:flex-start;font-size:18px;line-height:1.65}.l8-dialog-speaker{min-width:28px;color:var(--lesson-main-dark,var(--l8-dark))}.l8-dialog-line>span{flex:1}.l8-dialog-blank{display:inline-flex;align-items:center;gap:7px;vertical-align:middle;margin:2px 4px}.l8-dialog-input{width:145px;min-width:105px;padding:8px 10px!important}.l8-dialog-image-hint{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}.l8-dialog-blank img{width:48px;height:48px;object-fit:cover;border-radius:10px;border:1px solid var(--lesson-line,var(--l8-line));background:#fff}.l8-dialog-number{font-size:18px;line-height:1;color:var(--lesson-main-dark,var(--l8-dark));font-weight:800}@media(max-width:620px){.l8-dialog-line{font-size:16px}.l8-dialog-input{width:118px}.l8-dialog-blank img{width:42px;height:42px}.l8-dialog-number{font-size:17px}}`;
 document.head.appendChild(style);
 })();
