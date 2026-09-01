@@ -28,9 +28,21 @@ const q=[
 let i=0,score=0;
 function unlocked(){return need.every(x=>pctFor(x[0],x[1])>=100)}
 function renderLock(){area.innerHTML='<div class="question">Prüfung noch gesperrt</div><div class="hint">Bearbeiten Sie zuerst alle Aufgaben.</div><div class="exam-lock">'+need.map(x=>'<a href="'+x[0]+'">'+x[0].replace('.html','')+': '+pctFor(x[0],x[1])+'%</a>').join('')+'</div><div class="actions"><a class="btn secondary" href="index.html">Zum Menü</a></div>'}
-function startExam(){if(unlocked())show();else renderLock()}
-area.innerHTML='<div class="hint">Fortschritt wird geprüft …</div>';
-Promise.resolve(typeof spL5T4SyncNow==='function'?spL5T4SyncNow():null).catch(()=>null).finally(startExam);
+function backgroundSync(){if(typeof spL5T4SyncNow!=='function')return Promise.resolve();return Promise.resolve(spL5T4SyncNow()).catch(()=>null)}
+function startExamFast(){
+  if(unlocked()){
+    show();
+    setTimeout(()=>backgroundSync(),0);
+    return;
+  }
+  area.innerHTML='<div class="hint">Fortschritt wird geprüft …</div>';
+  const sync=backgroundSync();
+  Promise.race([sync,new Promise(resolve=>setTimeout(resolve,3000))]).finally(()=>{
+    if(unlocked())show();else renderLock();
+  });
+  sync.then(()=>{if(i===0&&unlocked()&&!area.querySelector('input'))show()});
+}
+startExamFast();
 function show(){if(i>=q.length){done();return}area.innerHTML='<div class="small">Aufgabe '+(i+1)+' / '+q.length+'</div><div class="question">'+q[i][0]+'</div><input id="ans" placeholder="Antwort"><div class="actions"><button class="btn" onclick="check()">Weiter</button></div>'}
 function check(){const sols=Array.isArray(q[i][1])?q[i][1]:[q[i][1]];if(sols.some(s=>simple(ans.value)===simple(s)))score++;i++;show()}
 function done(){const percent=Math.round(score/q.length*100),stars=percent>=100?3:percent>=70?2:percent>=50?1:0;spL5T4SaveExamResult({score,maxScore:q.length,percent,stars});area.innerHTML='<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="hint">Ergebnis: '+score+' / '+q.length+' = '+percent+'%</div><div class="actions"><a class="btn" href="index.html">Zum Thema</a></div></div>'}
