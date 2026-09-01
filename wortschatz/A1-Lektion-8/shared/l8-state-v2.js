@@ -15,11 +15,25 @@ function preview(){
  return context==='teacher-student-preview'&&(explicit||flag);
 }
 function browserId(){let id=clean(localStorage.getItem('SP_L8_BROWSER_PID_V2'));if(id)return id;try{id='browser_'+crypto.randomUUID().replace(/-/g,'')}catch(e){id='browser_'+Date.now().toString(36)+Math.random().toString(36).slice(2)};try{localStorage.setItem('SP_L8_BROWSER_PID_V2',id)}catch(e){}return id}
-function pid(){
+function resolvedProfileId(){
  const p=profile(),course=p.kurs||p.kursnummer||p.courseCode||p.course||localStorage.getItem('SP_COURSE_CODE')||'',name=[p.vorname||p.firstName,p.nachname||p.lastName].filter(Boolean).join('_');
  const candidates=[p.authUid,p.canonicalStudentId,p.courseDocId,p.docId,p.studentId,p.uid,p.userId,p.id,localStorage.getItem('SP_STUDENT_ID'),p.email,course&&(p.email||name)?`${course}_${p.email||name}`:''];
- const resolved=candidates.map(clean).find(Boolean);
- return resolved||(preview()?'teacher_preview':browserId());
+ return candidates.map(clean).find(Boolean)||'';
+}
+function pid(){
+ if(preview())return'teacher_preview';
+ const resolved=resolvedProfileId();
+ let active=clean(localStorage.getItem('SP_L8_ACTIVE_PID_V2'));
+ let owner=clean(localStorage.getItem('SP_L8_ACTIVE_OWNER_V2'));
+ if(resolved){
+  if(!active){active=resolved;try{localStorage.setItem('SP_L8_ACTIVE_PID_V2',active)}catch(e){}}
+  else if(owner&&owner!==resolved){active=resolved;try{localStorage.setItem('SP_L8_ACTIVE_PID_V2',active)}catch(e){}}
+  if(owner!==resolved){owner=resolved;try{localStorage.setItem('SP_L8_ACTIVE_OWNER_V2',owner)}catch(e){}}
+  return active;
+ }
+ if(active)return active;
+ active=browserId();try{localStorage.setItem('SP_L8_ACTIVE_PID_V2',active)}catch(e){}
+ return active;
 }
 const prefix=()=>preview()?'SP_L8V2_PREVIEW':'SP_L8V2';
 function runNo(theme){const key=`SP_SCORE_RUN_wortschatz-a1-lektion-8-thema-${Number(theme)}`;return Math.max(1,Math.min(3,Number(localStorage.getItem(key))||1))}
