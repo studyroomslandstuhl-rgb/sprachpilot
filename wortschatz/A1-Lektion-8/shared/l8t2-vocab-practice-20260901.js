@@ -7,31 +7,23 @@ const norm=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u03
 const term=item=>String(item?.term||item?.full||item?.word||'').trim();
 const img=item=>String(item?.image||item?.img||'').trim();
 const audio=item=>String(item?.audioFile||item?.audio||'').trim();
-const hasMeaning=item=>{
- const bags=[item?.translations,item?.tr,item?.translation,item?.i18n];
- return bags.some(x=>typeof x==='string'?x.trim():x&&typeof x==='object'&&Object.values(x).some(v=>typeof v==='string'&&v.trim()));
-};
-const cloneCard=item=>({
- term:term(item),
- image:img(item),
- audio:audio(item),
- audioFile:audio(item),
- translations:item?.translations&&typeof item.translations==='object'?{...item.translations}:item?.translations,
- tr:item?.tr&&typeof item.tr==='object'?{...item.tr}:item?.tr,
- translation:item?.translation&&typeof item.translation==='object'?{...item.translation}:item?.translation,
- i18n:item?.i18n&&typeof item.i18n==='object'?{...item.i18n}:item?.i18n
-});
+const cloneCard=item=>({term:term(item),image:img(item),audio:audio(item),audioFile:audio(item)});
 
 const PRIORITY=[
  'die bewerbung','das praktikum','die abteilung','der leiter','die leiterin','die wirtschaft','das diplom','das buro','die information','der gruss','die anrede','die stelle','die ausbildung','die berufserfahrung','der arbeitgeber','die arbeitgeberin','die firma','der lebenslauf','das anschreiben','das bewerbungsfoto','das bewerbungsgesprach','der berufliche werdegang','das zeugnis','der abschluss','die berufsschule','das studium','dauern hat gedauert','heiraten hat geheiratet','zeigen hat gezeigt','zur verfugung stehen','gerade','spater','eigentlich'
 ];
 const rank=item=>{const n=norm(term(item));const i=PRIORITY.findIndex(x=>n===x||n.startsWith(x+' '));return i<0?999:i};
-function candidates(theme){
- const cards=(theme.tasks||[]).find(t=>t?.kind==='cards'||t?.id==='karteikarten'||/karteikart/i.test(String(t?.title||'')));
- const raw=(cards?.items||[]).filter(x=>term(x)&&img(x)&&audio(x));
+function cardTask(theme){return (theme.tasks||[]).find(t=>t?.kind==='cards'||t?.id==='karteikarten'||/karteikart/i.test(String(t?.title||'')))}
+function uniqueCards(items,requireAudio=false){
  const seen=new Set();
- return raw.filter(x=>{const k=norm(term(x));if(!k||seen.has(k))return false;seen.add(k);return true}).sort((a,b)=>rank(a)-rank(b));
+ return (items||[]).filter(x=>{
+  const k=norm(term(x));
+  if(!k||!img(x)||(requireAudio&&!audio(x))||seen.has(k))return false;
+  seen.add(k);return true;
+ }).sort((a,b)=>rank(a)-rank(b));
 }
+function memoryPool(theme){return uniqueCards(cardTask(theme)?.items||[],false)}
+function listeningPool(theme){return uniqueCards(cardTask(theme)?.items||[],true)}
 function optionSet(pool,index){
  const target=pool[index],out=[target];
  const offsets=[5,11,17,23,3,7,13,19];
@@ -54,25 +46,31 @@ function buildListening(pool){
  };
 }
 function buildMemory(pool){
- const selected=pool.filter(hasMeaning).slice(0,Math.min(10,pool.filter(hasMeaning).length));
  return {
-  id:'wortschatz-memory-bedeutung',
+  id:'wortschatz-memory-bild-wort',
   title:'Wortschatz-Memory',
-  instruction:'Finde die Paare: Wort und Bedeutung.',
+  instruction:'Finde die Paare: Bild und Wort.',
   kind:'vocab-memory',icon:'🧠',emoji:'🧠',
-  items:[{type:'vocab-memory',pairs:selected.map(cloneCard)}]
+  items:[{type:'vocab-memory',pairs:pool.map(cloneCard)}]
  };
 }
 function apply(theme){
  if(!theme||!Array.isArray(theme.tasks))return theme;
- theme.tasks=theme.tasks.filter(t=>!['wortschatz-hoeren-bild','wortschatz-memory-bedeutung'].includes(String(t?.id||'')));
- const pool=candidates(theme);
- if(pool.length<4)return theme;
- const listening=buildListening(pool),memory=buildMemory(pool);
- const insert=[listening];if(memory.items[0].pairs.length>=4)insert.push(memory);
- const examAt=theme.tasks.findIndex(t=>t?.exam);
- if(examAt>=0)theme.tasks.splice(examAt,0,...insert);else theme.tasks.push(...insert);
- theme.contentRevision='l8t2-vocab-practice-20260901-v1';
+ const removeIds=new Set(['wortschatz-hoeren-bild','wortschatz-memory-bedeutung','wortschatz-memory-bild-wort']);
+ theme.tasks=theme.tasks.filter(t=>!removeIds.has(String(t?.id||'')));
+ const memPool=memoryPool(theme),listenPool=listeningPool(theme);
+ if(memPool.length>=2){
+  const memory=buildMemory(memPool);
+  const cardsIndex=theme.tasks.findIndex(t=>t?.kind==='cards'||t?.id==='karteikarten'||/karteikart/i.test(String(t?.title||'')));
+  const insertAt=cardsIndex>=0?cardsIndex+1:0;
+  theme.tasks.splice(insertAt,0,memory);
+ }
+ if(listenPool.length>=4){
+  const listening=buildListening(listenPool);
+  const examAt=theme.tasks.findIndex(t=>t?.exam);
+  if(examAt>=0)theme.tasks.splice(examAt,0,listening);else theme.tasks.push(listening);
+ }
+ theme.contentRevision='l8t2-vocab-practice-20260901-v2';
  return theme;
 }
 
