@@ -7,7 +7,7 @@ const base=window.L8UI;
 if(!base||typeof base.taskPage!=='function')return;
 const originalTaskPage=base.taskPage;
 const originalTaskEmoji=base.taskEmoji;
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const S=()=>window.L8S;
 const T=()=>window.L8_THEME;
 
@@ -37,7 +37,7 @@ function lineHtml(line,item,saved){
   const hit=part.match(/^\{\{(\d+)\}\}$/);if(!hit)return esc(part);
   const i=Number(hit[1]);return blankHtml(item.blanks?.[i],i,saved[i]||'');
  }).join('');
- return `<div class="l8-dialog-line">${speaker?`<strong class="l8-dialog-speaker">${esc(speaker)}:</strong>`:''}<span>${parts}</span></div>`;
+ return `<div class="l8-dialog-line ${raw===''?'is-empty':''}">${speaker?`<strong class="l8-dialog-speaker">${esc(speaker)}:</strong>`:''}<span>${parts}</span></div>`;
 }
 function feedback(type,text){const box=document.getElementById('feedback');if(box)box.innerHTML=`<div class="l8-feedback ${type}">${esc(text)}</div>`}
 function finish(task,root){
@@ -48,7 +48,8 @@ function render(task,root){
  if(idx==null||idx<0)return finish(task,root);
  state=S().load(T().number,task.id,task.items.length);
  const item=task.items[idx],savedRaw=String(state.answers?.[idx]||''),saved=savedRaw.includes('|||')?savedRaw.split('|||'):[];
- root.innerHTML=`<div class="l8-wrap">${previewNote()}${taskHead(task,state)}<section class="l8-card l8-exercise l8-dialog-exercise"><div class="l8-dialog">${(item.lines||[]).map(line=>lineHtml(line,item,saved)).join('')}</div><div class="l8-row l8-center-actions"><button class="l8-btn primary" id="dialogCheck" type="button">Prüfen</button></div><div id="feedback"></div></section></div>`;
+ const emailClass=task.emailLayout?' l8-email-exercise':'';
+ root.innerHTML=`<div class="l8-wrap">${previewNote()}${taskHead(task,state)}<section class="l8-card l8-exercise l8-dialog-exercise${emailClass}"><div class="l8-dialog">${(item.lines||[]).map(line=>lineHtml(line,item,saved)).join('')}</div><div class="l8-row l8-center-actions"><button class="l8-btn primary" id="dialogCheck" type="button">Prüfen</button></div><div id="feedback"></div></section></div>`;
  const inputs=[...root.querySelectorAll('[data-dialog-blank]')];
  const checkNow=()=>{
   const values=inputs.map(input=>input.value.trim());
@@ -57,7 +58,7 @@ function render(task,root){
   const stored=values.join('|||');
   if(correct){
    const r=S().right(T().number,task.id,task.items.length,idx,stored);
-   feedback('good',r.needsReview?'Richtig. Dieser Dialog kommt am Ende noch einmal.':'Richtig!');
+   feedback('good',r.needsReview?'Richtig. Dieser Text kommt am Ende noch einmal.':'Richtig!');
    setTimeout(()=>render(task,root),550);
   }else{
    const r=S().wrong(T().number,task.id,task.items.length,idx,stored),n=r.tries;
@@ -83,6 +84,6 @@ function patchedTaskPage(){
 window.L8UI={...base,taskPage:patchedTaskPage};
 const style=document.createElement('style');
 style.id='sp-l8t2-dialog-ui-20260901';
-style.textContent=`.l8-dialog-exercise{max-width:920px;margin-inline:auto}.l8-dialog{display:grid;gap:14px}.l8-dialog-line{display:flex;gap:10px;align-items:flex-start;font-size:18px;line-height:1.65}.l8-dialog-speaker{min-width:28px;color:var(--lesson-main-dark,var(--l8-dark))}.l8-dialog-line>span{flex:1}.l8-dialog-blank{display:inline-flex;align-items:center;gap:7px;vertical-align:middle;margin:2px 4px}.l8-dialog-input{width:145px;min-width:105px;padding:8px 10px!important}.l8-dialog-image-hint{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}.l8-dialog-blank img{width:48px;height:48px;object-fit:cover;border-radius:10px;border:1px solid var(--lesson-line,var(--l8-line));background:#fff}.l8-dialog-number{font-size:18px;line-height:1;color:var(--lesson-main-dark,var(--l8-dark));font-weight:800}@media(max-width:620px){.l8-dialog-line{font-size:16px}.l8-dialog-input{width:118px}.l8-dialog-blank img{width:42px;height:42px}.l8-dialog-number{font-size:17px}}`;
+style.textContent=`.l8-dialog-exercise{max-width:920px;margin-inline:auto}.l8-dialog{display:grid;gap:14px}.l8-dialog-line{display:flex;gap:10px;align-items:flex-start;font-size:18px;line-height:1.65}.l8-dialog-line.is-empty{min-height:10px}.l8-dialog-speaker{min-width:28px;color:var(--lesson-main-dark,var(--l8-dark))}.l8-dialog-line>span{flex:1}.l8-dialog-blank{display:inline-flex;align-items:center;gap:7px;vertical-align:middle;margin:2px 4px}.l8-dialog-input{width:145px;min-width:105px;padding:8px 10px!important}.l8-dialog-image-hint{display:inline-flex;align-items:center;gap:7px;white-space:nowrap}.l8-dialog-blank img{width:48px;height:48px;object-fit:cover;border-radius:10px;border:1px solid var(--lesson-line,var(--l8-line));background:#fff}.l8-dialog-number{font-size:18px;line-height:1;color:var(--lesson-main-dark,var(--l8-dark));font-weight:800}.l8-email-exercise{background:#f4f7fa}.l8-email-exercise .l8-dialog{background:#fff;border:1px solid #d8e0e7;border-radius:16px;padding:22px 24px;box-shadow:0 8px 24px rgba(32,56,74,.07);gap:10px}.l8-email-exercise .l8-dialog-line:nth-child(-n+3){font-size:15px;line-height:1.45;padding:5px 0;border-bottom:1px solid #eef2f5}.l8-email-exercise .l8-dialog-line:nth-child(-n+3) .l8-dialog-speaker{min-width:62px;color:#607384}.l8-email-exercise .l8-dialog-line:nth-child(3){margin-bottom:8px}.l8-email-exercise .l8-dialog-line:nth-child(n+5){line-height:1.75}.l8-email-exercise .l8-dialog-input{background:#fffdf2}@media(max-width:620px){.l8-dialog-line{font-size:16px}.l8-dialog-input{width:118px}.l8-dialog-blank img{width:42px;height:42px}.l8-dialog-number{font-size:17px}.l8-email-exercise .l8-dialog{padding:16px 14px}.l8-email-exercise .l8-dialog-line:nth-child(-n+3){font-size:13px}.l8-email-exercise .l8-dialog-line:nth-child(-n+3) .l8-dialog-speaker{min-width:52px}}`;
 document.head.appendChild(style);
 })();
