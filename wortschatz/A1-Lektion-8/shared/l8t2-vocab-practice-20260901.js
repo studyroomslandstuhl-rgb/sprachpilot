@@ -3,11 +3,20 @@
 if(window.__SP_L8T2_VOCAB_PRACTICE_20260901)return;
 window.__SP_L8T2_VOCAB_PRACTICE_20260901=true;
 
+const CDN='https://sprachpilot.b-cdn.net/';
 const norm=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim();
 const term=item=>String(item?.term||item?.full||item?.word||'').trim();
-const img=item=>String(item?.image||item?.img||'').trim();
+const slug=v=>String(v||'').split('–')[0].trim().replace(/^(der|die|das)\s+/i,'').toLowerCase().replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'');
+const IMAGE_SPECIAL={'spater':'spaet.webp','erfahrung':'erfahrung.webp','kollegin':'kollegin.webp','spass haben':'spass.webp'};
+const imageFor=item=>{
+ const raw=String(item?.image||item?.img||'').trim();
+ if(raw)return raw;
+ const special=IMAGE_SPECIAL[norm(term(item)).replace(/^(der|die|das)\s+/,'')];
+ if(special)return CDN+special;
+ const s=slug(term(item));return s?CDN+s+'.webp':'';
+};
 const audio=item=>String(item?.audioFile||item?.audio||'').trim();
-const cloneCard=item=>({term:term(item),image:img(item),audio:audio(item),audioFile:audio(item)});
+const cloneCard=item=>({term:term(item),image:imageFor(item),audio:audio(item),audioFile:audio(item)});
 
 const PRIORITY=[
  'die bewerbung','das praktikum','die abteilung','der leiter','die leiterin','die wirtschaft','das diplom','das buro','die information','der gruss','die anrede','die stelle','die ausbildung','die berufserfahrung','der arbeitgeber','die arbeitgeberin','die firma','der lebenslauf','das anschreiben','das bewerbungsfoto','das bewerbungsgesprach','der berufliche werdegang','das zeugnis','der abschluss','die berufsschule','das studium','dauern hat gedauert','heiraten hat geheiratet','zeigen hat gezeigt','zur verfugung stehen','gerade','spater','eigentlich'
@@ -18,7 +27,7 @@ function uniqueCards(items,requireAudio=false){
  const seen=new Set();
  return (items||[]).filter(x=>{
   const k=norm(term(x));
-  if(!k||!img(x)||(requireAudio&&!audio(x))||seen.has(k))return false;
+  if(!k||!imageFor(x)||(requireAudio&&!audio(x))||seen.has(k))return false;
   seen.add(k);return true;
  }).sort((a,b)=>rank(a)-rank(b));
 }
@@ -70,7 +79,7 @@ function apply(theme){
   const examAt=theme.tasks.findIndex(t=>t?.exam);
   if(examAt>=0)theme.tasks.splice(examAt,0,listening);else theme.tasks.push(listening);
  }
- theme.contentRevision='l8t2-vocab-practice-20260901-v2';
+ theme.contentRevision='l8t2-vocab-practice-20260901-v3';
  return theme;
 }
 
