@@ -4,12 +4,25 @@ let stateV2Promise=null;
 function ensureStateV2(){
  if(window.__SP_L8_STATE_V2&&window.L8S?.stateSchema===2&&typeof window.L8S?.runNo==='function')return Promise.resolve();
  if(stateV2Promise)return stateV2Promise;
- stateV2Promise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='../shared/l8-state-v2.js?v=20260825-nullfix1';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
+ stateV2Promise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='../shared/l8-state-v2.js?v=20260901-audiofinal1';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
  return stateV2Promise;
+}
+async function waitForFinalContent(){
+ let gate=window.L8_CONTENT_READY;
+ if(gate){try{await Promise.resolve(gate)}catch(error){console.error('L8 Inhalte konnten nicht vollständig vorbereitet werden',error)}}
+ const latest=window.L8_CONTENT_READY;
+ if(latest&&latest!==gate){try{await Promise.resolve(latest)}catch(error){console.error('L8 finale Inhalte konnten nicht vollständig vorbereitet werden',error)}}
+}
+function reinstallSafeAudio(){
+ try{window.L8AudioCoreSafeV3?.install?.()}catch(error){console.error('L8 sichere Audiofunktion konnte nicht installiert werden',error)}
 }
 function norm(value){return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim()}
 function resolveThemeNumber(){const fromBody=Number(document.body?.dataset?.theme||0);const fromPath=Number(location.pathname.match(/\/Thema-(\d+)\//i)?.[1]||0);return fromBody||fromPath||Number(window.L8_THEME?.number||0)||0}
 function normalizeThemeIdentity(){const n=resolveThemeNumber();if(!n)return null;const all=window.L8_ALL_THEMES||{},theme=all[n]||all[String(n)]||(Array.isArray(all)?all.find(t=>Number(t?.number)===n):null)||window.L8_THEME;if(!theme)return null;theme.number=n;if(!theme.title)theme.title=`Thema ${n}`;window.L8_THEME=theme;return theme}
+function finalizeCardMedia(theme){
+ if(!theme)return;
+ try{window.L8CardBunnyStandardV4?.patchTheme?.(theme)}catch(error){console.error('L8 Bunny-Medien der Karteikarten konnten nicht finalisiert werden',error)}
+}
 function taskText(task){
  const items=(Array.isArray(task?.items)?task.items:[]).slice(0,6).map(item=>`${item?.type||''} ${item?.prompt||''} ${item?.context||''} ${item?.hint||''}`).join(' ');
  return norm(`${task?.id||''} ${task?.title||''} ${task?.kind||''} ${task?.instruction||''} ${task?.intro||''} ${items}`);
@@ -54,11 +67,15 @@ function polishTaskEmojis(){
 }
 async function start(){
  try{await ensureStateV2()}catch(error){console.error('L8 Fortschrittssystem konnte nicht geladen werden',error)}
- normalizeThemeIdentity();
- if(window.L8_T2_TIME_REVIEW_PENDING||window.L8_T2_QUALITY_PENDING||!window.L8_THEME||!window.L8S||!window.L8UI||window.L8S.stateSchema!==2){setTimeout(start,30);return}
+ reinstallSafeAudio();
+ await waitForFinalContent();
+ const theme=normalizeThemeIdentity();
+ if(window.L8_T2_TIME_REVIEW_PENDING||window.L8_T2_QUALITY_PENDING||window.L8_T2_VOCAB_PENDING||window.L8_T2_VOCAB_FINAL_PENDING||!theme||!window.L8S||!window.L8UI||window.L8S.stateSchema!==2){setTimeout(start,30);return}
+ finalizeCardMedia(theme);
+ reinstallSafeAudio();
  normalizeThemeIdentity();
  if(document.body.dataset.page==='theme')window.L8UI.themeOverview();else window.L8UI.taskPage();
- [0,80,250,700,1500].forEach(ms=>setTimeout(()=>{normalizeThemeIdentity();polishHeader();polishTaskEmojis()},ms));
+ [0,80,250,700,1500].forEach(ms=>setTimeout(()=>{const t=normalizeThemeIdentity();finalizeCardMedia(t);reinstallSafeAudio();polishHeader();polishTaskEmojis()},ms));
 }
 window.L8TaskEmoji=taskEmoji;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
