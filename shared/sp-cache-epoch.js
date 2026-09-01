@@ -1,8 +1,8 @@
 (function(){
 'use strict';
-const EPOCH='20260831-global-progress-sync9';
+const EPOCH='20260901-course-release-fix2';
 const KEY='SP_CACHE_EPOCH';
-if(window.__SP_CACHE_EPOCH_V11)return;window.__SP_CACHE_EPOCH_V11=true;
+if(window.__SP_CACHE_EPOCH_V12)return;window.__SP_CACHE_EPOCH_V12=true;
 async function clearAppCaches(){
  const jobs=[];
  try{if('caches'in window)jobs.push(caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))))}catch(e){}
