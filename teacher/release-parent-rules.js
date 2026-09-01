@@ -42,12 +42,13 @@
 
     async function syncLegacyAssignments(){
       try{
-        if(!window.db||!ReleaseDraft.courseCode)return;
+        const database=typeof Courses!=='undefined'&&Courses.database?Courses.database():(window.db||null);
+        if(!database||!ReleaseDraft.courseCode)return;
         const wortschatz=enabledWortschatzLessons();
         const payload={wortschatz:wortschatz,updatedAt:new Date().toISOString(),source:'teacher-release-dashboard'};
-        await db.collection('assignments').doc(String(ReleaseDraft.courseCode)).set(payload,{merge:false});
+        await database.collection('assignments').doc(String(ReleaseDraft.courseCode)).set(payload,{merge:false});
         if(ReleaseDraft.courseName&&String(ReleaseDraft.courseName)!==String(ReleaseDraft.courseCode)){
-          await db.collection('assignments').doc(String(ReleaseDraft.courseName)).set(payload,{merge:false});
+          await database.collection('assignments').doc(String(ReleaseDraft.courseName)).set(payload,{merge:false});
         }
       }catch(e){console.warn('Legacy assignments sync failed',e)}
     }
@@ -116,10 +117,58 @@
       return data;
     };
 
-    const oldSave=ReleaseDraft.save?.bind(ReleaseDraft);
+    function setDashboardStatus(message,kind){
+      const el=document.getElementById('spStatus');
+      if(!el)return;
+      el.textContent=message;
+      el.className='sp-status'+(kind?' '+kind:'');
+    }
+
+    // Ein einziger, sichtbarer Save-Handler. Keine verketteten Save-Overrides mehr.
     ReleaseDraft.save=async function(){
-      if(oldSave)await oldSave();
-      await syncLegacyAssignments();
+      if(this.__saveInFlight)return;
+      if(!this.courseName||!this.data){
+        setDashboardStatus('Keine Freigabe ausgewählt.','error');
+        alert('Keine Freigabe ausgewählt.');
+        return;
+      }
+
+      const button=document.querySelector('.save-btn');
+      const originalText=button?button.textContent:'Speichern';
+      this.__saveInFlight=true;
+      if(button){button.disabled=true;button.textContent='Speichert …';}
+      setDashboardStatus('Freigaben werden gespeichert …','');
+
+      try{
+        const payload=this.normalizeBeforeSave();
+        const doc=String(this.courseName||'').trim();
+        const code=String(this.courseCode||payload.courseCode||payload.kurs||payload.kursnummer||'').trim();
+        payload.courseDocId=doc;
+        if(code){payload.courseCode=code;payload.kurs=code;payload.kursnummer=code;}
+        if(!payload.courseName)payload.courseName=code||doc;
+
+        await Courses.update(doc,payload);
+        await syncLegacyAssignments();
+
+        setDashboardStatus('Freigaben gespeichert.','ok');
+        if(button)button.textContent='Gespeichert ✓';
+      }catch(error){
+        console.error('Freigaben konnten nicht gespeichert werden',error);
+        const message=String(error&&error.message||error||'Unbekannter Fehler');
+        setDashboardStatus('Speichern fehlgeschlagen: '+message,'error');
+        if(button)button.textContent='Fehler';
+        alert('Freigaben konnten nicht gespeichert werden: '+message);
+      }finally{
+        this.__saveInFlight=false;
+        if(button){
+          setTimeout(()=>{
+            if(document.body.contains(button)){
+              button.disabled=false;
+              button.textContent=originalText;
+            }
+          },1400);
+        }
+      }
     };
   }
   install();
