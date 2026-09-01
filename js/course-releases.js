@@ -24,6 +24,20 @@ function timestampValue(value){
  const parsed=Date.parse(value||"");return Number.isFinite(parsed)?parsed:0
 }
 function releaseUpdatedAt(data={}){return Math.max(timestampValue(data.updatedAt),timestampValue(data.releaseUpdatedAt),timestampValue(data.createdAt))}
+function releaseSignalScore(data={}){
+ let score=0;
+ const scan=(value,depth=0)=>{
+  if(depth>6||value==null)return;
+  if(value===true){score+=3;return}
+  if(value===false){score+=1;return}
+  if(typeof value!=="object")return;
+  for(const item of Object.values(value))scan(item,depth+1)
+ };
+ [data.enabledModules,data.enabledLessons,data.enabledThemes,data.enabledTasks,data.enabledWords,data.enabledSets,data.releases].forEach(scan);
+ if(data.releaseMode==="all"||data.releaseMode==="open")score+=10;
+ if(data.defaultLocked===false)score+=10;
+ return score
+}
 export function courseCodes(profile=profileFromStorage()){
  const primary=profileCourseRaw(profile);
  const secondary=[profile.courseDocId,profile.courseId,profile.courseName,profile.code];
@@ -39,11 +53,11 @@ async function readCourseDoc(id,profile){
 }
 async function queryCourse(field,value,profile){
  try{
-  const snap=await withTimeout(getDocsFromServer(query(collection(db,"courses"),where(field,"==",String(value)),limit(5))),2500,null);
+  const snap=await withTimeout(getDocsFromServer(query(collection(db,"courses"),where(field,"==",String(value)),limit(20))),2500,null);
   if(!snap||snap.empty)return null;
   const rows=[];
   for(const d of snap.docs){const data={...(d.data()||{}),id:d.id};if(matchesActiveCourse(data,d.id,profile))rows.push(data)}
-  rows.sort((a,b)=>releaseUpdatedAt(b)-releaseUpdatedAt(a));
+  rows.sort((a,b)=>releaseUpdatedAt(b)-releaseUpdatedAt(a)||releaseSignalScore(b)-releaseSignalScore(a));
   return rows[0]||null
  }catch(e){}
  return null
@@ -67,16 +81,20 @@ export async function loadCourseRelease(profile=profileFromStorage()){
   const primary=uniq(profileCourseRaw(profile).flatMap(variants));
   const secondary=uniq([profile.courseDocId,profile.courseId,profile.courseName,profile.code].flatMap(variants));
 
-  // Ein im Schülerprofil gespeichertes Kursdokument ist die stärkste Identität.
-  // So wird nicht versehentlich ein altes Kurscode-Duplikat vor dem echten Kurs gelesen.
+  // Kurscode beschreibt den logischen Kurs. Bei alten Dubletten gewinnt der zuletzt
+  // aktualisierte Datensatz, weil Freigaben im Lehrer-Dashboard genau dort gespeichert werden.
+  const fields=["courseCode","kurs","kursnummer","code","name","courseName"];
+  for(const field of fields){
+   for(const code of primary){
+    const d=await queryCourse(field,code,profile);
+    if(hasReleaseData(d))return rememberRelease(profile,d)
+   }
+  }
+
+  // Wenn kein Kurscode-Feld gefunden wurde, verwenden wir die gespeicherte Dokument-ID.
   for(const code of secondary){const d=await readCourseDoc(code,profile);if(hasReleaseData(d))return rememberRelease(profile,d)}
 
-  // Bei alten Profilen ohne courseDocId kann es mehrere Dokumente mit demselben Kurscode geben.
-  // In diesem Fall gewinnt innerhalb der passenden Treffer der zuletzt aktualisierte Freigabestand.
-  const fields=["courseCode","kurs","kursnummer","code","name","courseName","courseDocId","courseId"];
-  for(const field of fields){for(const code of primary.length?primary:secondary){const d=await queryCourse(field,code,profile);if(hasReleaseData(d))return rememberRelease(profile,d)}}
-
-  // Letzter Fallback: Kurscode war selbst die Dokument-ID, aber in den Feldern nicht hinterlegt.
+  // Letzter Fallback für sehr alte Kurse, bei denen der Kurscode selbst die Dokument-ID ist.
   for(const code of primary){const d=await readCourseDoc(code,profile);if(hasReleaseData(d))return rememberRelease(profile,d)}
   return fallback||{}
  })();
