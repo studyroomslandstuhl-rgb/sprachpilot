@@ -12,11 +12,13 @@
       payload.kurs=code||payload.kurs||doc;
       payload.kursnummer=code||payload.kursnummer||doc;
       payload.courseDocId=doc||payload.courseDocId||code;
-      payload.courseName=payload.courseName||doc||code;
+      payload.courseName=payload.courseName||code||doc;
+
+      // Freigaben gehören genau in das im Lehrer-Dashboard ausgewählte Kursdokument.
+      // Früher wurde zusätzlich unter dem Kurscode ein zweites Dokument geschrieben.
+      // Das erzeugte doppelte Kursstände und konnte Schüler auf einem veralteten Stand halten.
       await Courses.update(doc,payload);
-      if(code&&code!==doc){
-        try{await Courses.update(code,payload)}catch(e){console.warn('Freigabe konnte nicht zusätzlich unter Kurscode gespeichert werden',e)}
-      }
+
       alert('Freigabe gespeichert.');
       TeacherApp.render();
     };
