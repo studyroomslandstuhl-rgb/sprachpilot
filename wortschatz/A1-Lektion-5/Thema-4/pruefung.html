@@ -11,20 +11,76 @@
 header('Prüfung');
 const FILE='pruefung.html';
 const need=[['karteikarten.html',WORDS.length],['artikel.html',12],['hoeren-schreiben.html',13],['hoeren-bild.html',WORDS.filter(w=>w&&w.image).length],['bild-wort.html',WORDS.filter(w=>w&&(w.image||w.cue)).length],['hoeren.html',13],['schilder.html',10],['lesen.html',6],['tv-programm.html',6],['zuordnen.html',10],['saetze-bauen.html',8],['mini-dialoge.html',8],['jede-zeit.html',16]];
+
 const q=[
-['Schreibe einen Satz.<br><br><strong>Angaben:</strong> Film / Viertel vor neun / anfangen',['Der Film fängt um 20:45 Uhr an.','Der Film fängt um 20.45 Uhr an.']],
-['Schreibe das passende Wort: <strong>geöffnet</strong> oder <strong>geschlossen</strong>.<br><br>Die Kita ist von Montag bis Freitag ___.',['geöffnet']],
-['Ergänze den Satz mit dem passenden Nomen.<br><br>Ich vereinbare einen ___.',['Termin']],
-['Schreibe das Gegenteil von <strong>geöffnet</strong>.<br><br>Die Bibliothek ist an Feiertagen ___.',['geschlossen']],
-['Schreibe die Abkürzung aus.<br><br>z. B. = ___.',['zum Beispiel']],
-['Ergänze mit der richtigen Form von <strong>jeder</strong>.<br><br>___ Tag',['jeden']],
-['Ergänze mit der richtigen Form von <strong>jeder</strong>.<br><br>___ Woche',['jede']],
-['Ergänze mit der richtigen Form von <strong>jeder</strong>.<br><br>___ Wochenende',['jedes']],
-['Ergänze den Satz mit dem passenden Verb.<br><br>Ich möchte ein Buch ___.',['ausleihen']],
-['Ergänze mit <strong>Kita</strong> oder <strong>Kindergarten</strong>.<br><br>Emil geht in die / in den ___.',['Kita','Kindergarten']],
-['Ergänze den Satz mit dem passenden Wort.<br><br>Ich bin ___ fertig.',['total']],
-['Ergänze mit <strong>Tag</strong>, <strong>Woche</strong> oder <strong>Wochenende</strong>.<br><br>Das Geschäft ist den ganzen ___ geöffnet.',['Tag']]
+  {
+    type:'text',
+    prompt:'Schreibe einen Satz.<br><br><strong>Angaben:</strong> Film / Viertel vor neun / anfangen',
+    answers:['Der Film fängt um 20:45 Uhr an.','Der Film fängt um 20.45 Uhr an.']
+  },
+  {
+    type:'text',
+    prompt:'Lies die Öffnungszeiten und antworte mit einem Satz.<br><br><div class="open-text"><strong>Stadtbibliothek</strong><br>Samstag: 10:00–16:00 Uhr</div><br><strong>Wann ist die Bibliothek am Samstag geöffnet?</strong>',
+    answers:['Die Bibliothek ist am Samstag von 10:00 bis 16:00 Uhr geöffnet.','Die Bibliothek ist am Samstag von 10.00 bis 16.00 Uhr geöffnet.','Die Bibliothek ist am Samstag von 10 Uhr bis 16 Uhr geöffnet.']
+  },
+  {
+    type:'text',
+    prompt:'Schreibe einen Satz.<br><br><strong>Angaben:</strong> Geschäft / Mittwoch / 13:00 Uhr / schließen',
+    answers:['Das Geschäft schließt am Mittwoch um 13:00 Uhr.','Das Geschäft schließt am Mittwoch um 13.00 Uhr.','Das Geschäft schließt am Mittwoch um 13 Uhr.']
+  },
+  {
+    type:'text',
+    prompt:'Ergänze das passende Verb.<br><br>Ich möchte einen Termin ___.',
+    answers:['vereinbaren']
+  },
+  {
+    type:'text',
+    prompt:'Ergänze das passende Verb.<br><br>In der Bibliothek kann ich ein Buch ___.',
+    answers:['ausleihen']
+  },
+  {
+    type:'text',
+    prompt:'Ergänze mit der richtigen Form von <strong>jeder</strong>.<br><br>Die Bibliothek ist ___ Samstag geöffnet.',
+    answers:['jeden']
+  },
+  {
+    type:'choice',
+    prompt:'Lies das Schild. Ist die Aussage richtig oder falsch?<br><br><div class="open-text"><strong>Praxis Dr. Weber</strong><br>Mo: 08:00–12:00 und 14:00–17:00 Uhr<br>Di: 08:00–12:00 Uhr<br>Mi: geschlossen<br>Do: 08:00–12:00 und 14:00–17:00 Uhr<br>Fr: 08:00–12:00 Uhr</div><br><strong>Aussage:</strong> Am Donnerstag kann man um 13:00 Uhr zur Praxis kommen.',
+    options:[{label:'Richtig',value:'richtig'},{label:'Falsch',value:'falsch'}],
+    answer:'falsch'
+  },
+  {
+    type:'text',
+    prompt:'Schreibe die Abkürzung aus.<br><br>z. B. = ___.',
+    answers:['zum Beispiel']
+  },
+  {
+    type:'text',
+    prompt:'Wie heißt das Wort?<br><br>Die Zeiten, wann ein Geschäft öffnet und schließt, heißen ___.',
+    answers:['Öffnungszeiten','die Öffnungszeiten']
+  },
+  {
+    type:'text',
+    prompt:'Ergänze das passende Verb.<br><br>Der Film fängt um 20:15 Uhr an und ___ um 22:00 Uhr.',
+    answers:['endet']
+  },
+  {
+    type:'choice',
+    prompt:'Lies das Schild. Wähle a, b oder c.<br><br><div class="open-text"><strong>Stadtbibliothek</strong><br>Mo: geschlossen<br>Di–Fr: 10:00–18:00 Uhr<br>Sa: 10:00–14:00 Uhr<br>So: geschlossen<br>Feiertage: geschlossen</div><br><strong>Wann kannst du die Bibliothek besuchen?</strong>',
+    options:[
+      {label:'a) Montag um 11:00 Uhr',value:'a'},
+      {label:'b) Samstag um 13:00 Uhr',value:'b'},
+      {label:'c) Sonntag um 12:00 Uhr',value:'c'}
+    ],
+    answer:'b'
+  },
+  {
+    type:'text',
+    prompt:'Schreibe einen Satz.<br><br><strong>Angaben:</strong> Bibliothek / Feiertag / geschlossen',
+    answers:['Die Bibliothek ist am Feiertag geschlossen.','Die Bibliothek ist an Feiertagen geschlossen.']
+  }
 ];
+
 let i=0,score=0;
 function unlocked(){return need.every(x=>pctFor(x[0],x[1])>=100)}
 function renderLock(){area.innerHTML='<div class="question">Prüfung noch gesperrt</div><div class="hint">Bearbeiten Sie zuerst alle Aufgaben.</div><div class="exam-lock">'+need.map(x=>'<a href="'+x[0]+'">'+x[0].replace('.html','')+': '+pctFor(x[0],x[1])+'%</a>').join('')+'</div><div class="actions"><a class="btn secondary" href="index.html">Zum Menü</a></div>'}
@@ -40,10 +96,34 @@ function startExamFast(){
   Promise.race([sync,new Promise(resolve=>setTimeout(resolve,3000))]).finally(()=>{
     if(unlocked())show();else renderLock();
   });
-  sync.then(()=>{if(i===0&&unlocked()&&!area.querySelector('input'))show()});
+  sync.then(()=>{if(i===0&&unlocked()&&!area.querySelector('input')&&!area.querySelector('.choice'))show()});
 }
 startExamFast();
-function show(){if(i>=q.length){done();return}area.innerHTML='<div class="small">Aufgabe '+(i+1)+' / '+q.length+'</div><div class="question">'+q[i][0]+'</div><input id="ans" placeholder="Antwort"><div class="actions"><button class="btn" onclick="check()">Weiter</button></div>'}
-function check(){const sols=Array.isArray(q[i][1])?q[i][1]:[q[i][1]];if(sols.some(s=>simple(ans.value)===simple(s)))score++;i++;show()}
+
+function show(){
+  if(i>=q.length){done();return}
+  const item=q[i];
+  const head='<div class="small">Aufgabe '+(i+1)+' / '+q.length+'</div><div class="question">'+item.prompt+'</div>';
+  if(item.type==='choice'){
+    area.innerHTML=head+'<div class="choice-grid">'+item.options.map(o=>'<button class="choice" type="button" onclick="checkChoice(\''+o.value+'\')">'+o.label+'</button>').join('')+'</div>';
+  }else{
+    area.innerHTML=head+'<input id="ans" placeholder="Antwort"><div class="actions"><button class="btn" onclick="checkText()">Weiter</button></div>';
+    const input=document.getElementById('ans');
+    if(input)input.addEventListener('keydown',e=>{if(e.key==='Enter')checkText()});
+  }
+}
+function checkText(){
+  const item=q[i];
+  const sols=Array.isArray(item.answers)?item.answers:[item.answers];
+  const input=document.getElementById('ans');
+  if(input&&sols.some(s=>simple(input.value)===simple(s)))score++;
+  i++;
+  show();
+}
+function checkChoice(value){
+  if(simple(value)===simple(q[i].answer))score++;
+  i++;
+  show();
+}
 function done(){const percent=Math.round(score/q.length*100),stars=percent>=100?3:percent>=70?2:percent>=50?1:0;spL5T4SaveExamResult({score,maxScore:q.length,percent,stars});area.innerHTML='<div class="finish-box"><div class="finish-icon">✓</div><div class="question">Prüfung fertig</div><div class="hint">Ergebnis: '+score+' / '+q.length+' = '+percent+'%</div><div class="actions"><a class="btn" href="index.html">Zum Thema</a></div></div>'}
 </script></body></html>
