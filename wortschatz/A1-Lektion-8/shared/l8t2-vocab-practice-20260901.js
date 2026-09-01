@@ -50,7 +50,7 @@ function buildListening(pool){
   id:'wortschatz-hoeren-bild',
   title:'Wortschatz hören',
   instruction:'Höre das Wort und wähle das passende Bild.',
-  kind:'vocab-listen-image',icon:'🎧',emoji:'🎧',
+  kind:'vocab-listen-image',icon:'👂',emoji:'👂',
   items:selected.map((card,i)=>({type:'vocab-listen-image',term:term(card),audio:audio(card),audioFile:audio(card),answer:term(card),options:optionSet(pool,i)}))
  };
 }
@@ -60,7 +60,7 @@ function buildMemory(pool){
   title:'Wortschatz-Memory',
   instruction:'Finde die Paare: Bild und Wort.',
   kind:'vocab-memory',icon:'🧠',emoji:'🧠',
-  items:[{type:'vocab-memory',pairs:pool.map(cloneCard)}]
+  items:pool.map(card=>({type:'vocab-memory-pair',...cloneCard(card)}))
  };
 }
 function apply(theme){
@@ -74,7 +74,7 @@ function apply(theme){
  if(memPool.length>=2)insert.push(buildMemory(memPool));
  if(listenPool.length>=4)insert.push(buildListening(listenPool));
  if(insert.length)theme.tasks.splice(insertAt,0,...insert);
- theme.contentRevision='l8t2-vocab-practice-20260901-v4';
+ theme.contentRevision='l8t2-vocab-practice-20260901-v5';
  return theme;
 }
 
