@@ -1,5 +1,5 @@
 import { getActiveProfile, getActiveRole } from '/js/auth.js?v=login-main-4';
-import { loadCourseRelease, moduleOpen } from '/js/course-releases.js?v=verb-stable3';
+import { loadCourseRelease, moduleOpen } from '/js/course-releases.js?v=20260901-course-release-fix2';
 
 const LEVELS=['A1','A2','B1','B2','C1'];
 const COUNTS={A1:11,A2:15,B1:12,B2:6,C1:3};
