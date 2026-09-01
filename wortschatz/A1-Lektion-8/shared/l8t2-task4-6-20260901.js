@@ -53,33 +53,33 @@ const TASK5=[
  order(['Sie','hat','vor','fünf','Jahren','als','Kellnerin','angefangen.'],'Sie hat vor fünf Jahren als Kellnerin angefangen.')
 ];
 
-const TEXT1='Maria arbeitet seit zwei Jahren in einem Café. Vor drei Jahren hat sie eine Ausbildung als Kellnerin gemacht. Die Ausbildung hat sechs Monate gedauert. Danach hat sie einige Monate eine Stelle gesucht. Erst dann hat sie im Café angefangen. Heute kennt sie die Arbeit im Service sehr gut.';
-const TEXT2='Amir wollte Krankenpfleger werden. Vor vier Jahren hat er seine Ausbildung angefangen. Nach drei Jahren war die Ausbildung fertig. Seit einem Jahr arbeitet er in einem Krankenhaus. Dort arbeitet er oft mit einem großen Team und hat viel Kontakt mit Menschen.';
-const TEXT3='Lena hat vor fünf Jahren eine Ausbildung als Köchin angefangen. Die Ausbildung hat zwei Jahre gedauert. Danach hat sie ein Jahr in einem Restaurant gearbeitet. Seit zwei Jahren arbeitet sie in einem kleinen Café. Dort kocht sie mittags und hilft manchmal auch im Service.';
-const TEXT4='Daniel arbeitet seit sechs Jahren bei derselben Firma. Am Anfang war er Arbeiter und hatte wenig Erfahrung. Nach zwei Jahren hat er einen Kurs gemacht. Der Kurs hat sechs Monate gedauert. Danach bekam er andere Aufgaben. Seit dreieinhalb Jahren arbeitet er selbstständiger und hilft neuen Kollegen.';
-const TEXT5='Sofia hat vor vier Jahren ihre Ausbildung als Friseurin beendet. Danach hat sie zwei Jahre in einem großen Salon gearbeitet. Seit zwei Jahren arbeitet sie in einem kleinen Salon in ihrer Nähe. Dort hat sie weniger Kollegen, aber mehr eigene Kunden. Sie sagt, die Arbeit ist heute ruhiger als früher.';
+const TEXT1='Maria hat ihre Ausbildung als Kellnerin vor vier Jahren angefangen. Nach einem Jahr war die Ausbildung fertig. Danach hat sie sechs Monate eine Stelle gesucht. Dann hat sie in einem Hotel angefangen und dort ein Jahr gearbeitet. Seit eineinhalb Jahren arbeitet sie in einem Café. Am Wochenende ist dort oft viel Stress, aber Maria arbeitet gern im Service.';
+const TEXT2='Amir ist vor sechs Jahren nach Deutschland gekommen. Zuerst hat er acht Monate einen Deutschkurs besucht. Vor vier Jahren hat er dann eine Ausbildung als Krankenpfleger angefangen. Drei Jahre später hatte er seinen Abschluss. Heute arbeitet er in einem Krankenhaus. Dort hat er vor ungefähr einem Jahr angefangen.';
+const TEXT3='Lena wollte zuerst in einem Büro arbeiten. Vor fünf Jahren hat sie aber eine Ausbildung als Köchin angefangen. Zwei Jahre später war die Ausbildung fertig. Danach war sie ein Jahr in einem großen Restaurant. Dann hat sie die Stelle gewechselt. Seit zwei Jahren arbeitet sie in einem kleinen Café und kocht dort mittags. Manchmal hilft sie auch im Service.';
+const TEXT4='Daniel ist seit sechs Jahren bei derselben Firma. In den ersten zwei Jahren war er Arbeiter und hatte noch wenig Berufserfahrung. Danach hat er einen Kurs gemacht. Der Kurs hat ein halbes Jahr gedauert. Erst nach dem Kurs bekam er andere Aufgaben. Heute arbeitet Daniel selbstständiger und zeigt neuen Kollegen die Arbeit.';
+const TEXT5='Sofia hat ihre Ausbildung als Friseurin vor vier Jahren beendet. Danach arbeitete sie zwei Jahre in einem großen Salon mit vielen Kollegen. Dann wollte sie näher an ihrer Wohnung arbeiten und wechselte den Arbeitgeber. Seitdem arbeitet sie in einem kleinen Salon. Dort hat sie weniger Kollegen, aber mehr eigene Kunden. Sie sagt, dass ihre Arbeit heute ruhiger ist.';
 
 const TASK6=[
- tf(TEXT1,'Die Ausbildung von Maria hat drei Jahre gedauert.','Falsch'),
- tf(TEXT1,'Maria hat nicht direkt nach der Ausbildung im Café angefangen.','Richtig'),
- tf(TEXT1,'Maria arbeitet länger im Café, als ihre Ausbildung gedauert hat.','Richtig'),
- tf(TEXT1,'Maria hat heute Berufserfahrung im Service.','Richtig'),
- tf(TEXT2,'Amir hat eine Ausbildung als Krankenpfleger gemacht.','Richtig'),
- tf(TEXT2,'Amirs Ausbildung hat drei Jahre gedauert.','Richtig'),
- tf(TEXT2,'Amir arbeitet seit dem Beginn seiner Ausbildung im Krankenhaus.','Falsch'),
- tf(TEXT2,'Amir hat seine Ausbildung ungefähr vor einem Jahr beendet.','Richtig'),
- tf(TEXT3,'Lena hat nach der Ausbildung sofort im Café angefangen.','Falsch'),
- tf(TEXT3,'Lena hat insgesamt Erfahrung in einem Restaurant und in einem Café.','Richtig'),
- tf(TEXT3,'Lenas Ausbildung war länger als ihre bisherige Arbeit im Café.','Falsch'),
- tf(TEXT3,'Lena arbeitet heute nur im Service und kocht nicht mehr.','Falsch'),
- tf(TEXT4,'Daniel arbeitet heute noch genau so wie an seinem ersten Arbeitstag.','Falsch'),
- tf(TEXT4,'Daniel hatte schon viel Erfahrung, als er bei der Firma angefangen hat.','Falsch'),
- tf(TEXT4,'Der Kurs begann ungefähr zwei Jahre nach Daniels Arbeitsbeginn.','Richtig'),
- tf(TEXT4,'Daniel kann heute neue Kollegen bei der Arbeit unterstützen.','Richtig'),
- tf(TEXT5,'Sofia hat ihre Ausbildung vor vier Jahren beendet.','Richtig'),
- tf(TEXT5,'Sofia arbeitet seit vier Jahren im gleichen Salon.','Falsch'),
- tf(TEXT5,'Im kleinen Salon hat Sofia mehr eigene Kunden als früher.','Richtig'),
- tf(TEXT5,'Sofia findet ihre heutige Arbeit stressiger als früher.','Falsch')
+ tf(TEXT1,'Maria hat nach ihrer Ausbildung sofort eine Stelle gefunden.','Falsch'),
+ tf(TEXT1,'Maria hat insgesamt länger gearbeitet als ihre Ausbildung gedauert hat.','Richtig'),
+ tf(TEXT1,'Maria arbeitet heute bei demselben Arbeitgeber wie direkt nach der Ausbildung.','Falsch'),
+ tf(TEXT1,'Maria hat ihre Ausbildung ungefähr vor drei Jahren beendet.','Richtig'),
+ tf(TEXT2,'Amir hat schon vor seiner Ausbildung Deutsch gelernt.','Richtig'),
+ tf(TEXT2,'Amir arbeitet ungefähr so lange im Krankenhaus, wie ein Drittel seiner Ausbildung gedauert hat.','Richtig'),
+ tf(TEXT2,'Amir hat seine Ausbildung direkt nach seiner Ankunft in Deutschland angefangen.','Falsch'),
+ tf(TEXT2,'Amirs Ausbildung war vor ungefähr einem Jahr fertig.','Richtig'),
+ tf(TEXT3,'Lena hat nach ihrer Ausbildung zuerst in einem Café gearbeitet.','Falsch'),
+ tf(TEXT3,'Lena hat heute mehr als drei Jahre Berufserfahrung nach der Ausbildung.','Richtig'),
+ tf(TEXT3,'Lena arbeitet seit dem Ende ihrer Ausbildung beim gleichen Arbeitgeber.','Falsch'),
+ tf(TEXT3,'Lenas Ausbildung und ihre bisherige Arbeit im Café waren gleich lang.','Richtig'),
+ tf(TEXT4,'Daniel bekam die neuen Aufgaben schon vor dem Kurs.','Falsch'),
+ tf(TEXT4,'Als Daniel den Kurs angefangen hat, arbeitete er schon ungefähr zwei Jahre bei der Firma.','Richtig'),
+ tf(TEXT4,'Daniel hat heute mehr Berufserfahrung als am Anfang.','Richtig'),
+ tf(TEXT4,'Daniel arbeitet heute wahrscheinlich nicht mehr nur als einfacher Arbeiter mit den gleichen Aufgaben wie früher.','Richtig'),
+ tf(TEXT5,'Sofia hat nach ihrer Ausbildung nur bei einem Arbeitgeber gearbeitet.','Falsch'),
+ tf(TEXT5,'Sofia arbeitet seit ungefähr zwei Jahren im kleinen Salon.','Richtig'),
+ tf(TEXT5,'Sofia hat heute mehr Kollegen als früher.','Falsch'),
+ tf(TEXT5,'Der Wechsel des Arbeitgebers hat auch Sofias Arbeitsweg verändert.','Richtig')
 ];
 
 function apply(theme){
@@ -101,7 +101,8 @@ function apply(theme){
   task5.items=TASK5.map(item=>({...item,tokens:[...item.tokens]}));
  }
  if(task6){
-  task6.instruction='Lies den Text und entscheide: richtig oder falsch.';
+  task6.title='Biografien verstehen';
+  task6.instruction='Lies genau und entscheide: richtig oder falsch.';
   task6.kind='choice';task6.icon='📖';task6.emoji='📖';
   delete task6.intro;
   task6.items=TASK6.map(item=>({...item,options:[...item.options]}));
