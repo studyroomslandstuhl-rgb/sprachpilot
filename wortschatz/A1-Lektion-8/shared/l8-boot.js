@@ -4,7 +4,7 @@ let stateV2Promise=null;
 function ensureStateV2(){
  if(window.__SP_L8_STATE_V2&&window.L8S?.stateSchema===2&&typeof window.L8S?.runNo==='function')return Promise.resolve();
  if(stateV2Promise)return stateV2Promise;
- stateV2Promise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='../shared/l8-state-v2.js?v=20260901-audiofinal1';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
+ stateV2Promise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='../shared/l8-state-v2.js?v=20260901-progressfix1';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
  return stateV2Promise;
 }
 async function waitForFinalContent(){
