@@ -124,6 +124,27 @@
       el.className='sp-status'+(kind?' '+kind:'');
     }
 
+    function firestoreSafeKey(key){
+      const text=String(key||'');
+      if(!/^__.*__$/.test(text))return text;
+      if(text==='__exam__')return 'task.html?task=exam';
+      const core=text.replace(/^__+|__+$/g,'')||'field';
+      return 'sp_'+core;
+    }
+
+    function sanitizeFirestoreObject(value){
+      if(Array.isArray(value))return value.map(sanitizeFirestoreObject);
+      if(!value||typeof value!=='object'||value instanceof Date)return value;
+      const out={};
+      Object.entries(value).forEach(([key,item])=>{
+        const safeKey=firestoreSafeKey(key);
+        const safeValue=sanitizeFirestoreObject(item);
+        if(safeKey in out&&typeof out[safeKey]==='boolean'&&typeof safeValue==='boolean')out[safeKey]=out[safeKey]||safeValue;
+        else out[safeKey]=safeValue;
+      });
+      return out;
+    }
+
     // Ein einziger, sichtbarer Save-Handler. Keine verketteten Save-Overrides mehr.
     ReleaseDraft.save=async function(){
       if(this.__saveInFlight)return;
@@ -140,7 +161,8 @@
       setDashboardStatus('Freigaben werden gespeichert …','');
 
       try{
-        const payload=this.normalizeBeforeSave();
+        const normalized=this.normalizeBeforeSave();
+        const payload=sanitizeFirestoreObject(normalized);
         const doc=String(this.courseName||'').trim();
         const code=String(this.courseCode||payload.courseCode||payload.kurs||payload.kursnummer||'').trim();
         payload.courseDocId=doc;
@@ -148,6 +170,7 @@
         if(!payload.courseName)payload.courseName=code||doc;
 
         await Courses.update(doc,payload);
+        this.data=payload;
         await syncLegacyAssignments();
 
         setDashboardStatus('Freigaben gespeichert.','ok');
