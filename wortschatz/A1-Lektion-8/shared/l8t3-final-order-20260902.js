@@ -1,0 +1,8 @@
+(function(){
+'use strict';
+if(window.__SP_L8T3_FINAL_ORDER_20260902_V1)return;window.__SP_L8T3_FINAL_ORDER_20260902_V1=true;
+const ORDER=['karteikarten','wortschatz-bild-verstehen','wortschatz-hoeren-bild','wortschatz-bedeutung-wort',null,'sein-haben-praeteritum-tabellen','war-oder-hatte-richtige-form','gegenwart-vergangenheit-sortieren','drei-grosse-dialoge-sein-haben','saetze-bauen-subjekt-verb-zeitform-v2','lesen-erster-job-fuenf-texte','hoeren-arbeit-frueher-heute-fuenf-dialoge','text-vor-fuenf-jahren-umschreiben'];
+function themeOf(all){return all?.[3]||all?.['3']||(Array.isArray(all)?all.find(t=>Number(t?.number)===3):null)}
+function apply(theme){if(!theme||!Array.isArray(theme.tasks))return theme;const tasks=[...theme.tasks],exam=tasks.find(t=>t?.exam),context=tasks.find(t=>!t?.exam&&Array.isArray(t?.items)&&t.items.some(i=>(i.options||[]).includes('Berufserfahrung'))&&String(t?.id)!=='wortschatz-bild-verstehen');const byId=new Map(tasks.map(t=>[String(t?.id||''),t]));const wanted=ORDER.map(id=>id===null?context:byId.get(id)).filter(Boolean);const used=new Set(wanted);const rest=tasks.filter(t=>!t?.exam&&!used.has(t));theme.tasks=[...wanted,...rest,...(exam?[exam]:[])];theme.contentRevision='l8t3-final-order-20260902-v1';return theme}
+const previous=window.L8_CONTENT_READY;window.L8_T3_FINAL_ORDER_READY=Promise.resolve(previous).then(themes=>{const all=window.L8_ALL_THEMES||themes||{},theme=themeOf(all);apply(theme);if(Number(document.body?.dataset?.theme||0)===3&&theme)window.L8_THEME=theme;return themes}).catch(error=>{console.error('L8T3 finale Reihenfolge',error);return window.L8_ALL_THEMES||{}});window.L8_CONTENT_READY=window.L8_T3_FINAL_ORDER_READY;window.L8T3FinalOrder20260902={apply};
+})();
