@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L8T3_RESTRUCTURE_20260902_V6)return;
-window.__SP_L8T3_RESTRUCTURE_20260902_V6=true;
+if(window.__SP_L8T3_RESTRUCTURE_20260902_V7)return;
+window.__SP_L8T3_RESTRUCTURE_20260902_V7=true;
 
 const I=(prompt,answer,context='',hint='')=>({type:'input',prompt,answer:Array.isArray(answer)?answer:[answer],context,hint});
 const C=(prompt,options,answer,context='',hint='')=>({type:'choice',prompt,options,answer,context,hint});
@@ -85,14 +85,42 @@ function extendWorkTask(task){
  return task;
 }
 
+function sentenceTask(){
+ const rows=[
+  ['Ich arbeite heute in einem Café.','Ich','arbeite','Präsens'],
+  ['Meine Kollegin arbeitet oft im Restaurant.','Meine Kollegin','arbeitet','Präsens'],
+  ['Wir haben heute wenig Stress.','Wir','haben','Präsens'],
+  ['Der Chef ist sehr professionell.','Der Chef','ist','Präsens'],
+  ['Ihr habt viel Spaß bei der Arbeit.','Ihr','habt','Präsens'],
+  ['Ich habe vor zwei Jahren im Restaurant gearbeitet.','Ich','habe gearbeitet','Perfekt'],
+  ['Meine Kollegin hat eine Ausbildung gemacht.','Meine Kollegin','hat gemacht','Perfekt'],
+  ['Wir haben schon viel Berufserfahrung gesammelt.','Wir','haben gesammelt','Perfekt'],
+  ['Der Koch hat gestern lange gearbeitet.','Der Koch','hat gearbeitet','Perfekt'],
+  ['Die Architektin hat in einem großen Büro gearbeitet.','Die Architektin','hat gearbeitet','Perfekt'],
+  ['Früher war ich Kellnerin.','Ich','war','Präteritum'],
+  ['Du hattest damals wenig Berufserfahrung.','Du','hattest','Präteritum'],
+  ['Unser Team war früher sehr klein.','Unser Team','war','Präteritum'],
+  ['Wir hatten oft viel Stress.','Wir','hatten','Präteritum'],
+  ['Die Kollegen waren immer sehr nett.','Die Kollegen','waren','Präteritum']
+ ];
+ return {
+  id:'saetze-bauen-und-analysieren',title:'Sätze bauen',kind:'sentence-analysis',icon:'🏗️',emoji:'🏗️',spL8T3SentenceAnalysis:true,
+  instruction:'Baue den Satz. Bestimme danach Subjekt, Verb und Zeitform.',
+  items:rows.map(([sentence,subject,verb,tense],index)=>({
+   type:'sentence-analysis',sentence,subject,verb,tense,index,
+   tokens:sentence.replace(/[.!?]$/,'').split(/\s+/),
+   answer:[sentence.replace(/[.!?]$/,''),sentence]
+  }))
+ };
+}
+
 function apply(theme){
  if(!theme||!Array.isArray(theme.tasks))return theme;
  const old=theme.tasks.map(safeTask).filter(Boolean);
  const keep1=safeTask(old[0]);
  const keep5=extendWorkTask(safeTask(old[4]));
- const keep12=safeTask(old[11]);
  const exam=safeTask(old.find(t=>t?.exam));
- const candidates=[keep1,conjugationTask(),formsTask(),contextTask(),keep5,keep12];
+ const candidates=[keep1,conjugationTask(),formsTask(),contextTask(),keep5,sentenceTask()];
  if(exam&&!candidates.includes(exam))candidates.push(exam);
  const seen=new Set();
  theme.tasks=candidates.filter(task=>{
@@ -104,7 +132,7 @@ function apply(theme){
  });
  theme.title='Meine Arbeit früher';
  theme.subtitle='sein und haben im Präteritum konjugieren und Wortschatz zur Arbeit anwenden.';
- theme.contentRevision='l8t3-restructure-20260902-v6';
+ theme.contentRevision='l8t3-restructure-20260902-v7';
  return theme;
 }
 
@@ -120,5 +148,5 @@ window.L8_T3_RESTRUCTURE_READY=Promise.resolve(previous).then(themes=>{
  return window.L8_ALL_THEMES||{};
 });
 window.L8_CONTENT_READY=window.L8_T3_RESTRUCTURE_READY;
-window.L8T3Restructure20260902={apply,version:6};
+window.L8T3Restructure20260902={apply,version:7};
 })();
