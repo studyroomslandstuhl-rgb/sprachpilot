@@ -16,6 +16,10 @@ const PENDING_KEYS=['L8_T2_TIME_REVIEW_PENDING','L8_T2_QUALITY_PENDING','L8_T2_V
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 let stateV2Promise=null;
 let started=false;
+function readJson(key){try{return JSON.parse(localStorage.getItem(key)||'null')||{}}catch(e){return{}}}
+function teacherAccess(){const roles=['teacher','lehrer','admin','owner','superadmin'];const stored=['SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE','SP_AUTH_ROLE'].map(key=>String(localStorage.getItem(key)||'').trim().toLowerCase());if(stored.some(value=>roles.includes(value)))return true;const access=String(window.SP_SECURE_ACCESS?.type||'').toLowerCase();if(access==='teacher'||access==='teacher-preview')return true;if(window.spTeacherCanSeeAll===true)return true;const profiles=[readJson('SP_TEACHER_PROFILE'),readJson('SP_USER_PROFILE')];return profiles.some(p=>p?.isTeacher===true||p?.teacher===true||p?.admin===true||p?.owner===true||roles.includes(String(p?.role||p?.loginRole||p?.type||p?.accountType||'').toLowerCase()))}
+function installTeacherExamAccess(){if(!teacherAccess()||!window.L8S)return false;try{window.L8S.preview=()=>true}catch(e){}try{window.L8S.allDone=()=>true}catch(e){}try{window.spTeacherCanSeeAll=true}catch(e){}return true}
+function ensureTeacherExamReader(){if(!teacherAccess())return;import('/js/sp-teacher-exam-reader.js?v=20260902-1').then(()=>setTimeout(()=>window.SPTeacherExamReader?.run?.(),0)).catch(()=>{})}
 
 function ensureStateV2(){
  if(window.__SP_L8_STATE_V2&&window.L8S?.stateSchema===2&&typeof window.L8S?.runNo==='function')return Promise.resolve(true);
@@ -37,27 +41,8 @@ function ensureStateV2(){
  });
  return stateV2Promise;
 }
-
-function uniqueReadyPromises(){
- const seen=new Set(),out=[];
- for(const key of READY_KEYS){
-  const value=window[key];
-  if(!value||typeof value.then!=='function'||seen.has(value))continue;
-  seen.add(value);
-  out.push(Promise.resolve(value));
- }
- return out;
-}
-
-async function waitForContent(){
- const promises=uniqueReadyPromises();
- if(!promises.length)return 'empty';
- return Promise.race([
-  Promise.allSettled(promises).then(()=> 'settled'),
-  sleep(WAIT_MS).then(()=> 'timeout')
- ]);
-}
-
+function uniqueReadyPromises(){const seen=new Set(),out=[];for(const key of READY_KEYS){const value=window[key];if(!value||typeof value.then!=='function'||seen.has(value))continue;seen.add(value);out.push(Promise.resolve(value))}return out}
+async function waitForContent(){const promises=uniqueReadyPromises();if(!promises.length)return'empty';return Promise.race([Promise.allSettled(promises).then(()=>'settled'),sleep(WAIT_MS).then(()=>'timeout')])}
 function norm(value){return String(value||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,' ').trim()}
 function resolveThemeNumber(){const fromBody=Number(document.body?.dataset?.theme||0);const fromPath=Number(location.pathname.match(/\/Thema-(\d+)\//i)?.[1]||0);return fromBody||fromPath||Number(window.L8_THEME?.number||0)||0}
 function normalizeThemeIdentity(){const n=resolveThemeNumber();if(!n)return null;const all=window.L8_ALL_THEMES||{},theme=all[n]||all[String(n)]||(Array.isArray(all)?all.find(t=>Number(t?.number)===n):null)||window.L8_THEME;if(!theme)return null;theme.number=n;if(!theme.title)theme.title=`Thema ${n}`;window.L8_THEME=theme;return theme}
@@ -68,30 +53,22 @@ function taskEmoji(task){const text=taskText(task),types=new Set((Array.isArray(
 function polishHeader(){const t=normalizeThemeIdentity();if(!t)return;const n=resolveThemeNumber();const taskId=new URLSearchParams(location.search).get('task');const task=(t.tasks||[]).find(x=>x.id===taskId);const subtitle=document.querySelector('.sp-header__subtitle');if(subtitle)subtitle.textContent=task?`${task.title} · A1 Lektion 8 · Thema ${n}`:`${t.title} · A1 Lektion 8 · Thema ${n}`;document.querySelectorAll('.sp-header__nav-link').forEach(link=>{if(String(link.textContent||'').trim()==='Übersicht'&&link.tagName==='A')link.setAttribute('href','uebersicht.html')})}
 function polishTaskEmojis(){const t=normalizeThemeIdentity();if(!t||!Array.isArray(t.tasks))return;if(document.body.dataset.page==='theme'){document.querySelectorAll('.l8-task-card').forEach((card,index)=>{const task=t.tasks[index],node=card.querySelector('.emoji');if(task&&node)node.textContent=taskEmoji(task)});return}const taskId=new URLSearchParams(location.search).get('task'),task=t.tasks.find(item=>String(item?.id)===String(taskId));const line=document.querySelector('.l8-task-title-block p');if(task&&line)line.textContent=`${taskEmoji(task)} ${task.instruction||''}`}
 function showStartError(message){const root=document.getElementById('app');if(root)root.innerHTML=`<div class="l8-wrap"><section class="l8-card"><h2>Die Seite konnte nicht vollständig geladen werden.</h2><p>${message}</p><button class="l8-btn" type="button" onclick="location.reload()">Neu laden</button></section></div>`}
-
 async function start(){
- if(started)return;
- started=true;
+ if(started)return;started=true;
  const [stateReady,contentState]=await Promise.all([ensureStateV2(),waitForContent()]);
+ installTeacherExamAccess();
  const theme=normalizeThemeIdentity();
- if(contentState==='timeout'){
-  for(const key of PENDING_KEYS)if(window[key])console.warn(`L8T2: ${key} nach ${WAIT_MS} ms noch aktiv; Start wird nicht weiter blockiert.`);
- }
+ if(contentState==='timeout'){for(const key of PENDING_KEYS)if(window[key])console.warn(`L8T2: ${key} nach ${WAIT_MS} ms noch aktiv; Start wird nicht weiter blockiert.`)}
  if(!stateReady||!window.L8S||window.L8S.stateSchema!==2){showStartError('Das Fortschrittssystem ist nicht bereit.');return}
  if(!theme||!window.L8UI){showStartError('Die Lerninhalte oder die Benutzeroberfläche sind nicht bereit.');return}
-
- finalizeCardMedia(theme);
- reinstallSafeAudio();
+ installTeacherExamAccess();
+ finalizeCardMedia(theme);reinstallSafeAudio();
  try{window.L8T2BiographyPairs?.install?.()}catch(error){console.error('L8T2 Biografien-UI',error)}
  try{window.L8T2BiographyWrite?.install?.()}catch(error){console.error('L8T2 Biografie-Schreib-UI',error)}
-
- if(document.body.dataset.page==='theme')window.L8UI.themeOverview();
- else window.L8UI.taskPage();
-
- [0,120,450].forEach(ms=>setTimeout(()=>{const t=normalizeThemeIdentity();finalizeCardMedia(t);reinstallSafeAudio();polishHeader();polishTaskEmojis()},ms));
+ if(document.body.dataset.page==='theme')window.L8UI.themeOverview();else window.L8UI.taskPage();
+ ensureTeacherExamReader();
+ [0,120,450,900].forEach(ms=>setTimeout(()=>{const t=normalizeThemeIdentity();finalizeCardMedia(t);reinstallSafeAudio();installTeacherExamAccess();polishHeader();polishTaskEmojis();window.SPTeacherExamReader?.run?.()},ms));
 }
-
 window.L8TaskEmoji=taskEmoji;
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});
-else start();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
