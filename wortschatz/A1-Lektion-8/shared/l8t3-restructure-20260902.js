@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L8T3_RESTRUCTURE_20260902_V8)return;
-window.__SP_L8T3_RESTRUCTURE_20260902_V8=true;
+if(window.__SP_L8T3_RESTRUCTURE_20260902_V9)return;
+window.__SP_L8T3_RESTRUCTURE_20260902_V9=true;
 
 const I=(prompt,answer,context='',hint='')=>({type:'input',prompt,answer:Array.isArray(answer)?answer:[answer],context,hint});
 const C=(prompt,options,answer,context='',hint='')=>({type:'choice',prompt,options,answer,context,hint});
@@ -23,14 +23,51 @@ function formsTask(){
  return {id:'war-oder-hatte-richtige-form',title:'war oder hatte? Richtige Form',kind:'input',icon:'🧩',emoji:'🧩',instruction:'Lies den Satz. Entscheide zwischen sein und haben und schreibe die richtige Präteritumform.',intro:'Du brauchst nicht immer nur war oder hatte. Achte auf das Subjekt: war, warst, waren, wart oder hatte, hattest, hatten, hattet.',items:rows.map(([prompt,answer,hint])=>I(prompt,answer,'',hint))};
 }
 
-function contextTask(){
- return {id:'sein-haben-fuenf-texte',title:'Früher oder heute? Fünf Texte',kind:'input',icon:'🕰️',emoji:'🕰️',instruction:'Lies fünf kurze Texte und setze die passende Form von sein oder haben ein.',intro:'Achte auf die Zeit: früher, damals oder vor ... → Präteritum. Heute oder jetzt → Präsens. Entscheide danach zwischen sein und haben.',items:[
-  I('Text 1: Ergänze die Lücke.','war','Früher arbeitete Maria in einem großen Restaurant. Die Arbeit ___ sehr stressig. Heute arbeitet sie in einem kleinen Café und die Arbeit ist ruhig.','Früher + Beschreibung → war.'),
-  I('Text 2: Ergänze die Lücke.','hatte','Mein erster Job war in einer Bäckerei. Ich war neu und ich ___ noch keine Berufserfahrung. Heute habe ich schon viel Erfahrung.','Früher + Erfahrung haben → hatte.'),
-  I('Text 3: Ergänze die Lücke.','habe','Heute arbeite ich in einem Café. Mein Team ist nett und ich ___ viel Spaß bei der Arbeit. Früher hatte ich oft Stress.','Heute + Spaß haben → habe.'),
-  I('Text 4: Ergänze die Lücke.','war','Vor zwei Jahren ___ ich Kellnerin in einem Restaurant. Heute bin ich Köchin und arbeite in einer Kantine.','Vor zwei Jahren + Beruf → war.'),
-  I('Text 5: Ergänze die Lücke.','ist','Paul arbeitet jetzt in einem Architekturbüro. Sein Chef ___ sehr professionell und das Team ist freundlich. Früher war sein Chef oft unfreundlich.','Jetzt + Beschreibung → ist.')
- ]};
+function dialogClozeTask(){
+ const items=[
+  {answer:['war'],verb:'sein',time:'letztes Jahr'},{answer:['hattet'],verb:'haben',time:'letztes Jahr'},{answer:['hatten'],verb:'haben',time:'letztes Jahr'},
+  {answer:['war'],verb:'sein',time:'früher'},{answer:['hattest'],verb:'haben',time:'damals'},{answer:['hatte'],verb:'haben',time:'damals'},
+  {answer:['ist'],verb:'sein',time:'heute'},{answer:['habt'],verb:'haben',time:'jetzt'},{answer:['haben'],verb:'haben',time:'heute'},
+  {answer:['war'],verb:'sein',time:'vor drei Jahren'},{answer:['waren'],verb:'sein',time:'damals'},{answer:['hatten'],verb:'haben',time:'damals'},
+  {answer:['war'],verb:'sein',time:'früher'},{answer:['ist'],verb:'sein',time:'heute'},{answer:['haben'],verb:'haben',time:'heute'}
+ ];
+ const dialogues=[
+  {title:'Urlaub am Meer',icon:'🏖️',clue:'letztes Jahr',lines:[
+   {speaker:'Mia',text:'Wie war euer Urlaub letztes Jahr?'},
+   {speaker:'Omar',before:'Der Urlaub ',blank:0,after:' toll.'},
+   {speaker:'Mia',before:'',blank:1,after:' ihr viel Stress mit der Reise?'},
+   {speaker:'Omar',before:'Nein, wir ',blank:2,after:' keinen Stress.'}
+  ]},
+  {title:'Mein erster Job',icon:'🍽️',clue:'früher · damals',lines:[
+   {speaker:'Sara',text:'Was warst du früher von Beruf?'},
+   {speaker:'Nina',before:'Früher ',blank:3,after:' ich Kellnerin.'},
+   {speaker:'Sara',before:'',blank:4,after:' du damals schon Berufserfahrung?'},
+   {speaker:'Nina',before:'Nein, damals ',blank:5,after:' ich keine Erfahrung.'}
+  ]},
+  {title:'Arbeit heute',icon:'☕',clue:'heute · jetzt',lines:[
+   {speaker:'Leo',text:'Wie ist deine Arbeit heute?'},
+   {speaker:'Amir',before:'Heute ',blank:6,after:' mein Team sehr nett.'},
+   {speaker:'Leo',before:'',blank:7,after:' ihr jetzt viel Stress?'},
+   {speaker:'Amir',before:'Nein, wir ',blank:8,after:' heute viel Spaß.'}
+  ]},
+  {title:'Ausbildung',icon:'🎓',clue:'vor drei Jahren · damals',lines:[
+   {speaker:'Elena',text:'Wie war deine Ausbildung vor drei Jahren?'},
+   {speaker:'Paul',before:'Sie ',blank:9,after:' sehr interessant.'},
+   {speaker:'Elena',before:'',blank:10,after:' eure Lehrer damals nett?'},
+   {speaker:'Paul',before:'Ja, wir ',blank:11,after:' damals ein gutes Team.'}
+  ]},
+  {title:'Früher und heute',icon:'🔄',clue:'früher · heute',lines:[
+   {speaker:'Lina',text:'Wie war dein Chef früher?'},
+   {speaker:'Ben',before:'Früher ',blank:12,after:' er sehr streng.'},
+   {speaker:'Lina',before:'Und wie ',blank:13,after:' er heute?'},
+   {speaker:'Ben',before:'Heute ',blank:14,after:' wir wenig Stress und viel Spaß.'}
+  ]}
+ ];
+ return {
+  id:'dialoge-sein-haben-zeitwoerter',title:'Dialoge: früher oder heute?',kind:'dialog-cloze',icon:'🗣️',emoji:'🗣️',spL8T3DialogCloze:true,
+  instruction:'Lies den Dialog. Achte auf die Zeitwörter und die Bedeutung. Schreibe die richtige Form von sein oder haben.',
+  intro:'Schreibe nur die Verbform, zum Beispiel: war, hatte, ist, habe, waren, hatten.',items,dialogues
+ };
 }
 
 function refineWorkTask(task){
@@ -86,13 +123,13 @@ function apply(theme){
  const keep1=safeTask(old[0]);
  const keep5=refineWorkTask(safeTask(old[4]));
  const exam=safeTask(old.find(t=>t?.exam));
- const candidates=[keep1,conjugationTask(),formsTask(),contextTask(),keep5,sentenceTask()];
+ const candidates=[keep1,conjugationTask(),formsTask(),dialogClozeTask(),keep5,sentenceTask()];
  if(exam&&!candidates.includes(exam))candidates.push(exam);
  const seen=new Set();
  theme.tasks=candidates.filter(task=>{if(!task)return false;const key=String(task.id||'');if(key&&seen.has(key))return false;if(key)seen.add(key);return true});
  theme.title='Meine Arbeit früher';
  theme.subtitle='sein und haben im Präteritum konjugieren und Wortschatz zur Arbeit anwenden.';
- theme.contentRevision='l8t3-restructure-20260902-v8';
+ theme.contentRevision='l8t3-restructure-20260902-v9';
  return theme;
 }
 
@@ -105,5 +142,5 @@ window.L8_T3_RESTRUCTURE_READY=Promise.resolve(previous).then(themes=>{
  return themes;
 }).catch(error=>{console.error('L8T3 Umbau konnte nicht angewendet werden',error);return window.L8_ALL_THEMES||{}});
 window.L8_CONTENT_READY=window.L8_T3_RESTRUCTURE_READY;
-window.L8T3Restructure20260902={apply,version:8};
+window.L8T3Restructure20260902={apply,version:9};
 })();
