@@ -29,6 +29,12 @@ function ensureTeacherExamReader(){
  if(!teacherAccess())return;
  import('/js/sp-teacher-exam-reader.js?v=20260902-1').then(()=>setTimeout(()=>window.SPTeacherExamReader?.run?.(),0)).catch(()=>{});
 }
+function ensureTaskAutoscroll(){
+ if(document.body?.dataset?.page!=='task'||window.__SP_L8_TASK_AUTOSCROLL_V2)return;
+ const existing=[...document.scripts].some(s=>String(s.src||'').includes('l8-task-autoscroll.js?v=20260902-2'));
+ if(existing)return;
+ const s=document.createElement('script');s.src='../shared/l8-task-autoscroll.js?v=20260902-2';document.body.appendChild(s);
+}
 function ensureStateV2(){
  if(window.__SP_L8_STATE_V2&&window.L8S?.stateSchema===2&&typeof window.L8S?.runNo==='function')return Promise.resolve();
  if(stateV2Promise)return stateV2Promise;
@@ -66,6 +72,7 @@ function taskText(task){
 function taskEmoji(task){
  const text=taskText(task),types=new Set((Array.isArray(task?.items)?task.items:[]).map(item=>String(item?.type||'').toLowerCase()));
  if(task?.exam||/prufung|exam/.test(text))return'⭐';
+ const explicit=String(task?.emoji||task?.icon||'').trim();if(explicit)return explicit;
  if(/karte|card/.test(text)||task?.kind==='cards')return'📚';
  if(/memory/.test(text))return'🧠';
  if(/hor|listen|audio/.test(text)||(task?.items||[]).some(item=>item?.audio||item?.audioFile))return'🎧';
@@ -76,7 +83,6 @@ function taskEmoji(task){
  if(/ordnen|order|reihenfolge|redemittel/.test(text)||types.has('order'))return'🧩';
  if(/schreib|write|lucke|text|brief|information|markier|plural/.test(text)||types.has('input')||types.has('free'))return'✍️';
  if(/wahl|choice|artikel|richtig|falsch|uberschrift|fehler/.test(text)||types.has('choice'))return'✅';
- if(task?.icon)return String(task.icon);
  return'✅';
 }
 function polishHeader(){
@@ -128,8 +134,9 @@ async function start(){
  normalizeThemeIdentity();
  installTeacherExamAccess();
  if(document.body.dataset.page==='theme')window.L8UI.themeOverview();else window.L8UI.taskPage();
+ ensureTaskAutoscroll();
  ensureTeacherExamReader();
- [0,80,250,700,1500].forEach(ms=>setTimeout(()=>{const t=normalizeThemeIdentity();finalizeCardMedia(t);reinstallSafeAudio();installTeacherExamAccess();polishHeader();polishTaskEmojis();window.SPTeacherExamReader?.run?.()},ms));
+ [0,80,250,700,1500].forEach(ms=>setTimeout(()=>{const t=normalizeThemeIdentity();finalizeCardMedia(t);reinstallSafeAudio();installTeacherExamAccess();ensureTaskAutoscroll();polishHeader();polishTaskEmojis();window.SPTeacherExamReader?.run?.()},ms));
 }
 window.L8TaskEmoji=taskEmoji;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
