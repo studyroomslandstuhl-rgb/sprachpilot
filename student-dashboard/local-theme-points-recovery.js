@@ -1,5 +1,5 @@
-import '/js/progress.js?v=16';
-import '/js/point-delta-bridge.js?v=2';
+import '/js/progress.js?v=20260831-central4';
+import '/js/point-delta-bridge.js?v=20260831-central6';
 
 const clean=value=>String(value||'').trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_').replace(/^_+|_+$/g,'');
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')||{}}catch(e){return{}}}
@@ -37,29 +37,29 @@ async function recoverOne(entry,api){
    const cut=pendingKey.indexOf(':'),run=Math.max(1,Math.min(3,Number(pendingKey.slice(0,cut))||1)),id=pendingKey.slice(cut+1),data=ledger.runs?.[String(run)]||ledger.runs?.[run]||{},item=data.tasks?.[id];
    if(!item){delete taskPending[pendingKey];continue}
    localStorage.setItem(runStorage,String(run));
-   const result=await api.recordTaskProgress({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson,theme,topicId:topicId(lesson,theme),title:`A1 Lektion ${lesson} · Thema ${theme}`,file:`task.html?task=${id}`,taskKey:id,taskTitle:item.title||id,total:Number(item.total)||1,done:Number(item.done)||0,percent:Number(item.percent)||0,completed:!!item.completed});
+   const result=await api.recordTaskProgress({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson,theme,topicId:topicId(lesson,theme),title:`A1 Lektion ${lesson} · Thema ${theme}`,file:`task.html?task=${id}`,taskKey:id,taskTitle:item.title||id,total:Number(item.total)||1,done:Number(item.done)||0,percent:Number(item.percent)||0,completed:!!item.completed,run});
    if(result){delete taskPending[pendingKey];recovered+=item.completed?taskPoints(run):0}
   }
   for(const pendingKey of examKeys){
    const run=Math.max(1,Math.min(3,Number(pendingKey)||1)),data=ledger.runs?.[String(run)]||ledger.runs?.[run]||{},percent=Math.max(0,Math.min(100,Number(data.examBestPercent)||0));
    if(!percent){delete examPending[pendingKey];continue}
    localStorage.setItem(runStorage,String(run));
-   const result=await api.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson,theme,topicId:topicId(lesson,theme),title:`A1 Lektion ${lesson} · Thema ${theme}`,percent,scorePercent:percent,stars:Number(data.examStars)||0});
+   const result=await api.recordExamResult({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson,theme,topicId:topicId(lesson,theme),title:`A1 Lektion ${lesson} · Thema ${theme}`,percent,scorePercent:percent,stars:Number(data.examStars)||0,run});
    if(result){delete examPending[pendingKey];recovered+=Math.round(examMax(run)*percent/100)}
   }
  }finally{localStorage.setItem(runStorage,String(restore))}
  ledger.pending={...pending,tasks:taskPending,exams:examPending};ledger.updatedAt=new Date().toISOString();try{localStorage.setItem(key,JSON.stringify(ledger))}catch(e){}
  return recovered;
 }
-async function recover(){
+export async function recover(options={}){
  const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();if(['teacher','lehrer','admin','owner'].includes(role))return 0;
- try{if(window.SP_PROGRESS_ALIAS_READY)await window.SP_PROGRESS_ALIAS_READY}catch(e){}
+ if(!options.skipAliasWait){try{if(window.SP_PROGRESS_ALIAS_READY)await window.SP_PROGRESS_ALIAS_READY}catch(e){}}
  const api=window.SPProgress;if(!api?.recordTaskProgress)return 0;let recovered=0;
  for(const entry of ledgers()){try{recovered+=await recoverOne(entry,api)}catch(e){console.warn('Lokale Themenpunkte konnten noch nicht synchronisiert werden',entry.key,e)}}
  if(recovered>0){try{window.dispatchEvent(new CustomEvent('SP_POINT_DELTA_APPLIED',{detail:{type:'local-theme-recovery',recovered}}))}catch(e){}}
  return recovered;
 }
 window.SP_LOCAL_THEME_POINTS_RECOVERY={recover};
-setTimeout(recover,400);
-window.addEventListener('online',()=>setTimeout(recover,150));
-document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(recover,150)});
+setTimeout(()=>recover({skipAliasWait:true}),400);
+window.addEventListener('online',()=>setTimeout(()=>recover({skipAliasWait:true}),150));
+document.addEventListener('visibilitychange',()=>{if(!document.hidden)setTimeout(()=>recover({skipAliasWait:true}),150)});
