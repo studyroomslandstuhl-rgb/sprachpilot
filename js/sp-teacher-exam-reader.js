@@ -75,7 +75,10 @@ function renderReader(){
  const m=model();if(!m)return false;
  const id=qs.get('task');const exam=m.theme.tasks.find(t=>t?.exam&&String(t.id)===String(id));if(!exam)return false;
  const root=document.getElementById('app');if(!root)return false;
+ const renderKey=`${m.lesson}:${m.theme.number||''}:${exam.id}`;
+ if(root.dataset.spTeacherExamReader===renderKey)return true;
  const items=Array.isArray(exam.items)?exam.items:[];
+ root.dataset.spTeacherExamReader=renderKey;
  root.innerHTML=`<div class="sp-ter-wrap"><section class="sp-ter-head"><div><div class="sp-ter-kicker">Lehreransicht · Lektion ${m.lesson} · Thema ${esc(m.theme.number||'')}</div><h1>⭐ ${esc(exam.title||'Prüfung')}</h1><p>${esc(exam.instruction||exam.description||'Vollständige Prüfungsansicht')}</p></div><div class="sp-ter-actions"><a class="sp-ter-btn" href="index.html">← Themenübersicht</a><a class="sp-ter-btn primary" href="${esc(testHref(exam.id))}">Prüfung testen</a></div></section><section class="sp-ter-note">Alle ${items.length} Prüfungsfragen sind hier sichtbar. Diese Ansicht verändert keine Teilnehmerpunkte und keinen Teilnehmerfortschritt.</section><section class="sp-ter-list">${items.map((item,i)=>itemHtml(item,i+1)).join('')}</section></div>`;
  document.title=`Lehreransicht · ${exam.title||'Prüfung'}`;
  return true
