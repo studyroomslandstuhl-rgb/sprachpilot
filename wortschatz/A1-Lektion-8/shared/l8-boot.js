@@ -2,15 +2,15 @@
 'use strict';
 let stateV2Promise=null;
 let startAttempts=0;
-const CONTENT_WAIT_MS=3500;
+const CONTENT_WAIT_MS=700;
 const RETRY_MS=120;
-const MAX_PENDING_RETRIES=35;
-const MAX_CORE_RETRIES=60;
+const MAX_PENDING_RETRIES=6;
+const MAX_CORE_RETRIES=30;
 
 function ensureStateV2(){
  if(window.__SP_L8_STATE_V2&&window.L8S?.stateSchema===2&&typeof window.L8S?.runNo==='function')return Promise.resolve();
  if(stateV2Promise)return stateV2Promise;
- stateV2Promise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='../shared/l8-state-v2.js?v=20260902-stable1';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
+ stateV2Promise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='../shared/l8-state-v2.js?v=20260902-previewfix1';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
  return stateV2Promise;
 }
 function waitWithTimeout(gate,label){
@@ -98,12 +98,12 @@ async function start(){
   console.error('L8 Start abgebrochen: Kernkomponenten fehlen.');renderLoadError();return;
  }
  if(contentPending&&startAttempts<MAX_PENDING_RETRIES){scheduleRetry();return}
- if(contentPending)console.warn('L8T2: veraltete Pending-Flags werden nach dem Zeitlimit ignoriert.');
+ if(contentPending)console.warn('L8T2: veraltete Pending-Flags werden nach kurzem Zeitlimit ignoriert.');
  finalizeCardMedia(theme);
  reinstallSafeAudio();
  normalizeThemeIdentity();
  if(document.body.dataset.page==='theme')window.L8UI.themeOverview();else window.L8UI.taskPage();
- [0,80,250,700,1500].forEach(ms=>setTimeout(()=>{const t=normalizeThemeIdentity();finalizeCardMedia(t);reinstallSafeAudio();polishHeader();polishTaskEmojis()},ms));
+ [0,80,250,700].forEach(ms=>setTimeout(()=>{const t=normalizeThemeIdentity();finalizeCardMedia(t);reinstallSafeAudio();polishHeader();polishTaskEmojis()},ms));
 }
 window.L8TaskEmoji=taskEmoji;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
