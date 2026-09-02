@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L8T3_RESTRUCTURE_20260902_V9)return;
-window.__SP_L8T3_RESTRUCTURE_20260902_V9=true;
+if(window.__SP_L8T3_RESTRUCTURE_20260902_V10)return;
+window.__SP_L8T3_RESTRUCTURE_20260902_V10=true;
 
 const I=(prompt,answer,context='',hint='')=>({type:'input',prompt,answer:Array.isArray(answer)?answer:[answer],context,hint});
 const C=(prompt,options,answer,context='',hint='')=>({type:'choice',prompt,options,answer,context,hint});
@@ -25,48 +25,60 @@ function formsTask(){
 
 function dialogClozeTask(){
  const items=[
-  {answer:['war'],verb:'sein',time:'letztes Jahr'},{answer:['hattet'],verb:'haben',time:'letztes Jahr'},{answer:['hatten'],verb:'haben',time:'letztes Jahr'},
-  {answer:['war'],verb:'sein',time:'früher'},{answer:['hattest'],verb:'haben',time:'damals'},{answer:['hatte'],verb:'haben',time:'damals'},
-  {answer:['ist'],verb:'sein',time:'heute'},{answer:['habt'],verb:'haben',time:'jetzt'},{answer:['haben'],verb:'haben',time:'heute'},
-  {answer:['war'],verb:'sein',time:'vor drei Jahren'},{answer:['waren'],verb:'sein',time:'damals'},{answer:['hatten'],verb:'haben',time:'damals'},
-  {answer:['war'],verb:'sein',time:'früher'},{answer:['ist'],verb:'sein',time:'heute'},{answer:['haben'],verb:'haben',time:'heute'}
+  {answer:['waren'],verb:'sein',time:'letztes Jahr'},
+  {answer:['war'],verb:'sein',time:'damals'},
+  {answer:['hattet'],verb:'haben',time:'letztes Jahr'},
+  {answer:['hatten'],verb:'haben',time:'damals'},
+  {answer:['war'],verb:'sein',time:'meistens / letztes Jahr'},
+  {answer:['hattet'],verb:'haben',time:'im Urlaub letztes Jahr'},
+  {answer:['hatten'],verb:'haben',time:'an einem Tag / damals'},
+  {answer:['war'],verb:'sein',time:'damals'},
+  {answer:['hattet'],verb:'haben',time:'jeden Morgen / im Urlaub'},
+  {answer:['war'],verb:'sein',time:'auf der Hinfahrt / letztes Jahr'},
+  {answer:['waren'],verb:'sein',time:'nach der langen Fahrt'},
+  {answer:['hattet'],verb:'haben',time:'trotzdem / im Urlaub'},
+  {answer:['ist'],verb:'sein',time:'dieses Jahr'},
+  {answer:['habt'],verb:'haben',time:'jetzt / dieses Jahr'},
+  {answer:['haben'],verb:'haben',time:'jetzt'}
  ];
- const dialogues=[
-  {title:'Urlaub am Meer',icon:'🏖️',clue:'letztes Jahr',lines:[
-   {speaker:'Mia',text:'Wie war euer Urlaub letztes Jahr?'},
-   {speaker:'Omar',before:'Der Urlaub ',blank:0,after:' toll.'},
-   {speaker:'Mia',before:'',blank:1,after:' ihr viel Stress mit der Reise?'},
-   {speaker:'Omar',before:'Nein, wir ',blank:2,after:' keinen Stress.'}
-  ]},
-  {title:'Mein erster Job',icon:'🍽️',clue:'früher · damals',lines:[
-   {speaker:'Sara',text:'Was warst du früher von Beruf?'},
-   {speaker:'Nina',before:'Früher ',blank:3,after:' ich Kellnerin.'},
-   {speaker:'Sara',before:'',blank:4,after:' du damals schon Berufserfahrung?'},
-   {speaker:'Nina',before:'Nein, damals ',blank:5,after:' ich keine Erfahrung.'}
-  ]},
-  {title:'Arbeit heute',icon:'☕',clue:'heute · jetzt',lines:[
-   {speaker:'Leo',text:'Wie ist deine Arbeit heute?'},
-   {speaker:'Amir',before:'Heute ',blank:6,after:' mein Team sehr nett.'},
-   {speaker:'Leo',before:'',blank:7,after:' ihr jetzt viel Stress?'},
-   {speaker:'Amir',before:'Nein, wir ',blank:8,after:' heute viel Spaß.'}
-  ]},
-  {title:'Ausbildung',icon:'🎓',clue:'vor drei Jahren · damals',lines:[
-   {speaker:'Elena',text:'Wie war deine Ausbildung vor drei Jahren?'},
-   {speaker:'Paul',before:'Sie ',blank:9,after:' sehr interessant.'},
-   {speaker:'Elena',before:'',blank:10,after:' eure Lehrer damals nett?'},
-   {speaker:'Paul',before:'Ja, wir ',blank:11,after:' damals ein gutes Team.'}
-  ]},
-  {title:'Früher und heute',icon:'🔄',clue:'früher · heute',lines:[
-   {speaker:'Lina',text:'Wie war dein Chef früher?'},
-   {speaker:'Ben',before:'Früher ',blank:12,after:' er sehr streng.'},
-   {speaker:'Lina',before:'Und wie ',blank:13,after:' er heute?'},
-   {speaker:'Ben',before:'Heute ',blank:14,after:' wir wenig Stress und viel Spaß.'}
-  ]}
- ];
+ const dialogues=[{
+  title:'Unser Urlaub',icon:'🏝️',clue:'letztes Jahr · damals · dieses Jahr · jetzt',lines:[
+   {speaker:'Lena',text:'Hallo Amir! Du warst doch letztes Jahr mit deiner Familie im Urlaub. Wo wart ihr?'},
+   {speaker:'Amir',before:'Letztes Jahr ',blank:0,after:' wir in Spanien, direkt am Meer.'},
+   {speaker:'Lena',text:'Oh, schön! Wie war euer Hotel?'},
+   {speaker:'Amir',before:'Das Hotel ',blank:1,after:' damals klein, aber sehr schön und ruhig.'},
+   {speaker:'Lena',before:'',blank:2,after:' ihr ein großes Zimmer?'},
+   {speaker:'Amir',before:'Ja, wir ',blank:3,after:' ein Familienzimmer mit Balkon. Vom Balkon konnte man das Meer sehen.'},
+   {speaker:'Lena',text:'Und wie war das Wetter?'},
+   {speaker:'Amir',before:'Das Wetter ',blank:4,after:' meistens warm und sonnig. Wir waren fast jeden Tag am Strand.'},
+   {speaker:'Lena',before:'',blank:5,after:' ihr auch Regen?'},
+   {speaker:'Amir',before:'Ja. An einem Tag ',blank:6,after:' wir starken Regen. Da sind wir nicht an den Strand gegangen.'},
+   {speaker:'Lena',text:'Was habt ihr an diesem Tag gemacht?'},
+   {speaker:'Amir',text:'Wir waren in der Stadt, haben ein Museum besucht und waren danach in einem Café.'},
+   {speaker:'Lena',text:'Und das Essen? Wie war es?'},
+   {speaker:'Amir',before:'Das Essen ',blank:7,after:' sehr gut. Besonders Fisch, Reis und Gemüse waren lecker.'},
+   {speaker:'Lena',before:'',blank:8,after:' ihr im Hotel auch Frühstück?'},
+   {speaker:'Amir',text:'Ja, jeden Morgen. Mittags haben wir oft nur etwas Kleines gegessen und abends waren wir im Restaurant.'},
+   {speaker:'Lena',text:'Seid ihr mit dem Auto gefahren?'},
+   {speaker:'Amir',before:'Ja. Die Hinfahrt ',blank:9,after:' ziemlich lang. Wir waren fast zwölf Stunden unterwegs.'},
+   {speaker:'Lena',before:'Und die Kinder? ',blank:10,after:' sie nach der Fahrt sehr müde?'},
+   {speaker:'Amir',text:'Ja, aber am nächsten Morgen waren sie wieder fit. Sie wollten sofort zum Strand.'},
+   {speaker:'Lena',before:'',blank:11,after:' ihr im Urlaub trotzdem viel Spaß?'},
+   {speaker:'Amir',text:'Ja, sehr viel! Wir waren schwimmen, haben kleine Ausflüge gemacht und haben viele Fotos gemacht.'},
+   {speaker:'Lena',text:'War der Urlaub teuer?'},
+   {speaker:'Amir',text:'Das Hotel war nicht billig, aber wir haben beim Essen und bei den Ausflügen nicht so viel Geld ausgegeben.'},
+   {speaker:'Lena',text:'Und was macht ihr dieses Jahr?'},
+   {speaker:'Amir',before:'Dieses Jahr ',blank:12,after:' unser Urlaub in Österreich. Wir möchten in die Berge.'},
+   {speaker:'Lena',before:'',blank:13,after:' ihr jetzt schon ein Hotel?'},
+   {speaker:'Amir',before:'Ja, wir ',blank:14,after:' schon ein kleines Hotel in den Bergen. Es hat auch ein Schwimmbad.'},
+   {speaker:'Lena',text:'Das klingt toll. Dann wünsche ich euch einen schönen Urlaub!'},
+   {speaker:'Amir',text:'Danke! Ich freue mich schon.'}
+  ]
+ }];
  return {
-  id:'dialoge-sein-haben-zeitwoerter',title:'Dialoge: früher oder heute?',kind:'dialog-cloze',icon:'🗣️',emoji:'🗣️',spL8T3DialogCloze:true,
-  instruction:'Lies den Dialog. Achte auf die Zeitwörter und die Bedeutung. Schreibe die richtige Form von sein oder haben.',
-  intro:'Schreibe nur die Verbform, zum Beispiel: war, hatte, ist, habe, waren, hatten.',items,dialogues
+  id:'grosser-urlaubsdialog-sein-haben',title:'Großer Dialog: Urlaub',kind:'dialog-cloze',icon:'🏝️',emoji:'🏝️',spL8T3DialogCloze:true,
+  instruction:'Lies den großen Dialog. Achte auf Zeitwörter und Bedeutung. Schreibe die richtige Form von sein oder haben.',
+  items,dialogues
  };
 }
 
@@ -129,7 +141,7 @@ function apply(theme){
  theme.tasks=candidates.filter(task=>{if(!task)return false;const key=String(task.id||'');if(key&&seen.has(key))return false;if(key)seen.add(key);return true});
  theme.title='Meine Arbeit früher';
  theme.subtitle='sein und haben im Präteritum konjugieren und Wortschatz zur Arbeit anwenden.';
- theme.contentRevision='l8t3-restructure-20260902-v9';
+ theme.contentRevision='l8t3-restructure-20260902-v10';
  return theme;
 }
 
@@ -142,5 +154,5 @@ window.L8_T3_RESTRUCTURE_READY=Promise.resolve(previous).then(themes=>{
  return themes;
 }).catch(error=>{console.error('L8T3 Umbau konnte nicht angewendet werden',error);return window.L8_ALL_THEMES||{}});
 window.L8_CONTENT_READY=window.L8_T3_RESTRUCTURE_READY;
-window.L8T3Restructure20260902={apply,version:9};
+window.L8T3Restructure20260902={apply,version:10};
 })();
