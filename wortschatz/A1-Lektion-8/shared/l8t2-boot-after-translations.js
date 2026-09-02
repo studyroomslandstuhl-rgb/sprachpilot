@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L8T2_BOOT_AFTER_TRANSLATIONS_V10)return;
-window.__SP_L8T2_BOOT_AFTER_TRANSLATIONS_V10=true;
+if(window.__SP_L8T2_BOOT_AFTER_TRANSLATIONS_V11)return;
+window.__SP_L8T2_BOOT_AFTER_TRANSLATIONS_V11=true;
 
 const READY_KEYS=[
  'L8_T2_TIME_REVIEW_READY','L8_T2_QUALITY_READY','L8_T2_CURRENT_READY','L8_T2_TRANSLATIONS_READY',
@@ -11,7 +11,7 @@ const READY_KEYS=[
  'L8_T2_VOCAB_PRACTICE_READY'
 ];
 const PENDING_KEYS=['L8_T2_TIME_REVIEW_PENDING','L8_T2_QUALITY_PENDING','L8_T2_VOCAB_PENDING','L8_T2_VOCAB_FINAL_PENDING'];
-const TIMEOUT_MS=4000;
+const TIMEOUT_MS=700;
 const sleep=ms=>new Promise(resolve=>setTimeout(resolve,ms));
 
 function uniquePromises(){
@@ -55,7 +55,7 @@ function loadBoot(){
  installTaskUIs();
  const script=document.createElement('script');
  script.id='sp-l8t2-shared-boot';
- script.src='../shared/l8-boot.js?v=20260902-stable1';
+ script.src='../shared/l8-boot.js?v=20260902-fast2';
  script.onerror=()=>{const root=document.getElementById('app');if(root)root.innerHTML='<div class="l8-wrap"><section class="l8-card"><h2>Die Seite konnte nicht gestartet werden.</h2><p>Bitte lade die Seite neu.</p><button class="l8-btn" type="button" onclick="location.reload()">Neu laden</button></section></div>'};
  document.body.appendChild(script);
 }
