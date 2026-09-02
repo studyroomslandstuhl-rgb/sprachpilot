@@ -8,11 +8,13 @@ function currentPids(){
  const aliases=Array.isArray(p.aliasIds)?p.aliasIds:[];
  const runtimeAliases=Array.isArray(window.SP_PROGRESS_ALIAS_UNIFIER?.aliases)?window.SP_PROGRESS_ALIAS_UNIFIER.aliases:[];
  const values=[
-  p.canonicalStudentId,p.docId,p.studentId,p.userId,p.uid,p.id,p.email,fallback,
+  p.authUid,p.canonicalStudentId,p.courseDocId,p.docId,p.studentId,p.userId,p.uid,p.id,p.email,fallback,
   ...aliases,...runtimeAliases,
   localStorage.getItem('SP_STUDENT_ID'),
   localStorage.getItem('SP_ACCOUNT_PROGRESS_OWNER'),
-  localStorage.getItem('SP_L7_STABLE_PID')
+  localStorage.getItem('SP_L7_STABLE_PID'),
+  localStorage.getItem('SP_L8_ACTIVE_PID_V2'),
+  localStorage.getItem('SP_L8_ACTIVE_OWNER_V2')
  ];
  return new Set(values.map(clean).filter(Boolean));
 }
