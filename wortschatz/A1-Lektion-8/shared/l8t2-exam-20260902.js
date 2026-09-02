@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L8T2_EXAM_20260902_V3)return;
-window.__SP_L8T2_EXAM_20260902_V3=true;
+if(window.__SP_L8T2_EXAM_20260902_V4)return;
+window.__SP_L8T2_EXAM_20260902_V4=true;
 const CDN='https://sprachpilot.b-cdn.net/';
 const C=(label,prompt,options,answer,context='')=>({type:'choice',label,prompt,options,answer,context});
 const I=(label,prompt,answer,context='',hint='')=>({type:'input',label,prompt,answer:Array.isArray(answer)?answer:[answer],context,hint});
@@ -17,7 +17,7 @@ const EXAM_ITEMS=[
  IMG('Bild → Plural','Schreibe den Plural mit Artikel.',CDN+'tourist.webp',['die Touristen','Touristen'],'Der Singular ist: der Tourist.'),
  IMG('Bild → Plural','Schreibe den Plural mit Artikel.',CDN+'touristin.webp',['die Touristinnen','Touristinnen'],'Der Singular ist: die Touristin.'),
  IMG('Bild → Plural','Schreibe den Plural mit Artikel.',CDN+'buero.webp',['die Büros','die Bueros','Büros','Bueros'],'Der Singular ist: das Büro.'),
- IMG('Bild → Plural','Schreibe den Plural mit Artikel.',CDN+'beruf.webp',['die Berufe','Berufe'],'Der Singular ist: der Beruf.'),
+ IMG('Bild → Plural','Schreibe den Plural mit Artikel.',CDN+'reisefuehrer.webp',['die Reiseführer','die Reisefuehrer','Reiseführer','Reisefuehrer'],'Der Singular ist: der Reiseführer.'),
  I('seit oder vor?','Ich arbeite ___ drei Jahren in einem Hotel.','seit','','Die Arbeit dauert bis heute.'),
  I('seit oder vor?','Ich habe ___ drei Jahren meine Ausbildung beendet.','vor','','Das Ereignis ist abgeschlossen.'),
  I('seit oder vor?','Mina wohnt ___ Januar in Köln.','seit','','Sie wohnt heute noch dort.'),
@@ -40,11 +40,11 @@ function apply(theme){
  exam.instruction='Löse die Aufgaben. Schreibe und baue die Antworten selbst.';
  exam.items=EXAM_ITEMS.map(item=>({...item,options:item.options?[...item.options]:undefined,tokens:item.tokens?[...item.tokens]:undefined,answer:Array.isArray(item.answer)?[...item.answer]:item.answer}));
  delete exam.audio;delete exam.audioFile;delete exam.listening;
- theme.contentRevision='l8t2-exam-20260902-v3-production';
+ theme.contentRevision='l8t2-exam-20260902-v4-production';
  return theme;
 }
 const previous=window.L8_CONTENT_READY;
 window.L8_T2_EXAM_READY=Promise.resolve(previous).then(themes=>{const all=window.L8_ALL_THEMES||themes||{},theme=themeOf(all,2);apply(theme);if(Number(document.body?.dataset?.theme||0)===2&&theme)window.L8_THEME=theme;return themes});
 window.L8_CONTENT_READY=window.L8_T2_EXAM_READY;
-window.L8T2Exam20260902={apply,version:3};
+window.L8T2Exam20260902={apply,version:4};
 })();
