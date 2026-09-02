@@ -1,7 +1,9 @@
 (function(){
 'use strict';
-if(window.__SP_L8T2_DIRECT_BOOT_V1)return;
-window.__SP_L8T2_DIRECT_BOOT_V1=true;
+if(window.__SP_L8T2_DIRECT_BOOT_V2)return;
+window.__SP_L8T2_DIRECT_BOOT_V2=true;
+
+const MAX_WAIT_MS=300;
 
 function theme(){
  const all=window.L8_ALL_THEMES||{};
@@ -27,7 +29,7 @@ function finalize(){
  else window.L8UI.taskPage();
 }
 
-Promise.resolve(window.L8_CONTENT_READY)
- .catch(error=>console.error('L8T2 Inhalte',error))
- .finally(()=>queueMicrotask(finalize));
+const ready=Promise.resolve(window.L8_CONTENT_READY).catch(error=>console.error('L8T2 Inhalte',error));
+const timeout=new Promise(resolve=>setTimeout(resolve,MAX_WAIT_MS));
+Promise.race([ready,timeout]).finally(()=>queueMicrotask(finalize));
 })();
