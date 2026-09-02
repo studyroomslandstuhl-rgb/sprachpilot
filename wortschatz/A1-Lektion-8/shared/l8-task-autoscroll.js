@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-if(window.__SP_L8_TASK_AUTOSCROLL_V3)return;window.__SP_L8_TASK_AUTOSCROLL_V3=true;
+if(window.__SP_L8_TASK_AUTOSCROLL_V3)return;window.__SP_L8_TASK_AUTOSCROLL_V3=true;window.__SP_L8_TASK_AUTOSCROLL_V2=true;
 if(document.body.dataset.page!=='task')return;
 let finished=false;
 const visible=node=>!!(node&&node.isConnected&&node.getClientRects().length);
