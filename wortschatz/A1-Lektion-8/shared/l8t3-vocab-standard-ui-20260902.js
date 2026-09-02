@@ -1,7 +1,9 @@
 (function(){
 'use strict';
-if(window.__SP_L8T3_VOCAB_STANDARD_UI_20260902_V1)return;window.__SP_L8T3_VOCAB_STANDARD_UI_20260902_V1=true;
+if(window.__SP_L8T3_VOCAB_STANDARD_UI_20260902_V2)return;window.__SP_L8T3_VOCAB_STANDARD_UI_20260902_V2=true;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+function hash(text){let h=2166136261;for(const c of String(text||'')){h^=c.charCodeAt(0);h=Math.imul(h,16777619)}return h>>>0}
+function stableShuffle(values,seedText){const a=[...(values||[])];let seed=hash(seedText)||1;for(let i=a.length-1;i>0;i--){seed=(Math.imul(seed,1664525)+1013904223)>>>0;const j=seed%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
 function themeNo(){return Number(window.L8_THEME?.number||document.body?.dataset?.theme||3)}
 function taskNo(task){const i=(window.L8_THEME?.tasks||[]).findIndex(t=>String(t?.id)===String(task?.id));return i>=0?i+1:''}
 function load(task){return window.L8S.load(themeNo(),task.id,task.items.length)}
@@ -13,7 +15,7 @@ function finish(icon,text){document.getElementById('app').innerHTML=`<div class=
 function listenImage(task){
  const root=document.getElementById('app'),S=window.L8S;if(!root||!S)return false;let state=load(task);if(state.done.length>=task.items.length){finish('👂','Du hast die Wörter gehört und erkannt.');return true}
  const idx=current(task);if(idx==null){finish('👂','Du hast die Wörter gehört und erkannt.');return true}state=load(task);const item=task.items[idx];
- const options=[...(item.options||[])];
+ const options=stableShuffle(item.options||[],`${task.id}|${idx}`);
  root.innerHTML=`<div class="l8-wrap">${head(task,state,'👂')}<section class="l8-card sp-t3-vocab-card" data-sp-task-stage><button class="l8-btn l8-audio sp-vs-listen" id="spVsListen" type="button">🔊 Anhören</button><div class="sp-vs-images">${options.map((o,n)=>`<button type="button" class="sp-vs-image" data-vs-image="${esc(o.term)}" aria-label="Bild ${n+1}"><img src="${esc(o.image)}" alt="" onerror="this.closest('button').classList.add('missing');this.hidden=true"><span class="fallback">Bild ${n+1}</span></button>`).join('')}</div>${note(state,idx,item)}</section></div>`;
  document.getElementById('spVsListen')?.addEventListener('click',()=>S.say(item.audioText||'',item.audioFile||''));
  document.querySelectorAll('[data-vs-image]').forEach(btn=>btn.addEventListener('click',()=>{const value=btn.dataset.vsImage;if(S.equal(value,item.answer))S.right(themeNo(),task.id,task.items.length,idx,value);else S.wrong(themeNo(),task.id,task.items.length,idx,value);listenImage(task)}));
