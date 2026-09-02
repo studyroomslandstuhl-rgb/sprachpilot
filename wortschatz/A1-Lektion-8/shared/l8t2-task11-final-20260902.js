@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L8T2_TASK11_FINAL_20260902_V1)return;
-window.__SP_L8T2_TASK11_FINAL_20260902_V1=true;
+if(window.__SP_L8T2_TASK11_FINAL_20260902_V2)return;
+window.__SP_L8T2_TASK11_FINAL_20260902_V2=true;
 
 const FORBIDDEN=['arbeitgeberin','lebenslauf','studium','anschreiben','zeugnis','zeugnisse'];
 const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').toLowerCase().replace(/[„“”"'`´.,!?;:()]/g,' ').replace(/\s+/g,' ').trim();
@@ -26,22 +26,22 @@ function build(theme){
  const add=(keys,item)=>{if(has(known,...keys))items.push(item)};
 
  add(['die Berufserfahrung','Berufserfahrung'],input(
-  'Im Restaurant habe ich viel ___ gesammelt.',
+  'Ich habe viel ___ gesammelt.',
   ['Berufserfahrung','Erfahrung'],
-  'Beide Synonyme sind richtig: Berufserfahrung oder Erfahrung.'
+  'Beide Antworten sind richtig: Berufserfahrung oder Erfahrung.'
  ));
  add(['das Praktikum','Praktikum'],input(
-  'Nach der Ausbildung mache ich ein ___ in einem Hotel.',
+  'Ich mache ein ___ bei einer Firma.',
   'Praktikum',
   'Das Wort wurde in den Karteikarten gelernt.'
  ));
  add(['das Diplom','Diplom'],input(
-  'Das Dokument aus meiner Ausbildung heißt ___.',
+  'Nach der Ausbildung bekomme ich ein ___.',
   'Diplom',
   'Das Wort wurde in den Karteikarten gelernt.'
  ));
  add(['die Abteilung','Abteilung'],input(
-  'Ich arbeite in einer kleinen ___ der Firma.',
+  'Ich arbeite in einer ___ in der Firma.',
   'Abteilung',
   'Das Wort wurde in den Karteikarten gelernt.'
  ));
@@ -76,7 +76,7 @@ function build(theme){
   'Alternative für „jetzt“.'
  ));
  add(['später'],input(
-  'Jetzt arbeite ich im Café. ___ möchte ich in einem Restaurant arbeiten.',
+  'Jetzt arbeite ich im Café. ___ arbeite ich im Restaurant.',
   ['Später','später'],
   'Nicht jetzt, sondern später.'
  ));
@@ -93,10 +93,10 @@ function build(theme){
  add(['da'],input(
   'Ist dein Chef heute ___?',
   'da',
-  'Hier bedeutet das Wort: anwesend.'
+  'Das Wort aus den Karteikarten.'
  ));
  add(['zur Verfügung stehen','zur Verfuegung stehen'],input(
-  'Der Computer soll den Mitarbeitern ___.',
+  'Der Computer soll mir ___.',
   ['zur Verfügung stehen','zur Verfuegung stehen'],
   'Schreibe die ganze Redewendung.'
  ));
@@ -109,18 +109,18 @@ function build(theme){
 
 function apply(theme){
  if(!theme||!Array.isArray(theme.tasks))return theme;
- const task=theme.tasks.find(t=>['biografien-luecken','wortschatz-im-kontext-v2','wortschatz-im-kontext-v3'].includes(String(t?.id||'')))
+ const task=theme.tasks.find(t=>['biografien-luecken','wortschatz-im-kontext-v2','wortschatz-im-kontext-v3','wortschatz-im-kontext-v4'].includes(String(t?.id||'')))
    || theme.tasks.find(t=>String(t?.title||'').toLowerCase()==='wörter im kontext');
  if(!task)return theme;
  const items=build(theme);
- task.id='wortschatz-im-kontext-v3';
+ task.id='wortschatz-im-kontext-v4';
  task.title='Wörter im Kontext';
  task.instruction='Ergänze nur Wörter, die du in den Karteikarten von Thema 2 gelernt hast.';
  task.kind='input';task.icon='✍️';task.emoji='✍️';delete task.intro;delete task.emailLayout;
  task.items=items;
  task.spVocabularySource='cards-only';
  task.forbiddenVocabulary=[...FORBIDDEN];
- theme.contentRevision=String(theme.contentRevision||'')+'-task11-final-cards-only-v1';
+ theme.contentRevision=String(theme.contentRevision||'')+'-task11-final-cards-only-v2';
  return theme;
 }
 
@@ -133,5 +133,5 @@ window.L8_T2_TASK11_FINAL_READY=Promise.resolve(previous).then(themes=>{
  return themes;
 });
 window.L8_CONTENT_READY=window.L8_T2_TASK11_FINAL_READY;
-window.L8T2Task11Final20260902={apply,build,version:1};
+window.L8T2Task11Final20260902={apply,build,version:2};
 })();
