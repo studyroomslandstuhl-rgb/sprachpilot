@@ -13,7 +13,7 @@ function apply(theme){
 
  const listen=theme.tasks.find(t=>t?.id==='bewerbung-hoeren-gesamt');
  if(listen){
-  listen.title='Zwei Bewerbungsgespräche';
+  listen.title='Zwei Gespräche';
   listen.instruction='Höre beide Gespräche und bearbeite die Fragen.';
   listen.kind='listening-two';listen.icon='☎️';listen.emoji='☎️';listen.acceptDigitWords=true;
   delete listen.audio;delete listen.audioFile;
@@ -67,7 +67,7 @@ function apply(theme){
      '{{4}} einem Jahr arbeite ich in einem Café.',
      'Dort arbeite ich im Team und habe viel {{5}}.',
      '',
-     'Ich freue mich auf ein {{6}}.',
+     'Ich freue mich auf Ihre {{6}}.',
      '',
      '{{7}}',
      'Maria Petrenko'
@@ -79,7 +79,7 @@ function apply(theme){
      {answers:['Ausbildung']},
      {answers:['Seit']},
      {answers:['Berufserfahrung','Erfahrung']},
-     {answers:['Bewerbungsgespräch','Vorstellungsgespräch']},
+     {answers:['Antwort']},
      {answers:['Mit freundlichen Grüßen','Mit freundlichen Gruessen']}
     ]
    },
@@ -98,7 +98,7 @@ function apply(theme){
      '{{4}} zwei Jahren arbeite ich in einem Restaurant.',
      'Die Arbeit macht mir viel {{5}}.',
      '',
-     'Kann ich nächste Woche zu einem {{6}} kommen?',
+     'Ich freue mich auf Ihre {{6}}.',
      '',
      '{{7}}',
      'Emre Kaya'
@@ -110,7 +110,7 @@ function apply(theme){
      {answers:['gedauert']},
      {answers:['Seit']},
      {answers:['Spaß','Spass']},
-     {answers:['Bewerbungsgespräch','Vorstellungsgespräch','Gespräch']},
+     {answers:['Antwort']},
      {answers:['Mit freundlichen Grüßen','Mit freundlichen Gruessen']}
     ]
    },
@@ -119,24 +119,23 @@ function apply(theme){
     lines:[
      'An: frau.berger@buero.de',
      'Von: olena@email.de',
-     'Betreff: Termin für das Bewerbungsgespräch',
+     'Betreff: Ihre E-Mail',
      '',
      '{{0}} Frau Berger,',
      '',
      'vielen Dank für Ihre E-Mail.',
-     'Ich komme gern am Dienstag zum {{1}}.',
-     '{{2}} drei Jahren arbeite ich als Architektin.',
-     '{{3}} fünf Jahren habe ich meine Ausbildung angefangen.',
-     'Ich habe viel {{4}} und arbeite gern mit Kollegen zusammen.',
+     'Ich komme gern am Dienstag.',
+     '{{1}} drei Jahren arbeite ich als Architektin.',
+     '{{2}} fünf Jahren habe ich meine Ausbildung angefangen.',
+     'Ich habe viel {{3}} und arbeite gern mit Kollegen zusammen.',
      '',
-     'Vielen {{5}}.',
+     'Vielen {{4}}.',
      '',
-     '{{6}}',
+     '{{5}}',
      'Olena Bondar'
     ],
     blanks:[
      {answers:['Sehr geehrte','Sehr geehrte Frau Berger']},
-     {answers:['Bewerbungsgespräch','Vorstellungsgespräch','Gespräch']},
      {answers:['Seit']},
      {answers:['Vor']},
      {answers:['Berufserfahrung','Erfahrung']},
@@ -147,7 +146,7 @@ function apply(theme){
   ];
  }
 
- theme.contentRevision='l8t2-task7-8-polish-20260902-v3';
+ theme.contentRevision='l8t2-task7-8-polish-20260902-v4';
  return theme;
 }
 
