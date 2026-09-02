@@ -23,6 +23,38 @@ function warning(title,text){
   document.getElementById('spDashboardRetry').onclick=async()=>{const btn=document.getElementById('spDashboardRetry');if(btn)btn.disabled=true;try{const ok=typeof window.SP_DASHBOARD_RETRY==='function'?await window.SP_DASHBOARD_RETRY():false;if(ok){box.remove();return}location.reload()}catch(e){location.reload()}};
 }
 function fatalVisible(title,text){revealDashboard();warning(title,text)}
+function timeoutValue(ms,value){return new Promise(resolve=>setTimeout(()=>resolve(value),ms))}
+async function withTimeout(promise,ms,fallback){try{return await Promise.race([Promise.resolve(promise),timeoutValue(ms,fallback)])}catch(error){return fallback}}
+
+async function runBackgroundSyncs(){
+  const bridgeReady=import('/js/point-delta-bridge.js?v=20260831-central6').then(()=>{try{window.SPEnsurePointDeltaBridge?.()}catch(e){};return true}).catch(error=>{console.warn('Punkte-Kompatibilitätsbridge konnte noch nicht vorbereitet werden.',error);return false});
+
+  const l8Job=(async()=>{
+    await bridgeReady;
+    try{
+      const mod=await import('/js/l8t1-milestone-sync.js?v=20260831-central2');
+      return await withTimeout(mod.flushL8T1Milestones({reason:'dashboard-background-sync'}),4000,{ok:false,reason:'dashboard-flush-timeout'});
+    }catch(error){console.warn('Lokale L8T1-Fortschritte werden später synchronisiert.',error);return{ok:false}}
+  })();
+
+  const aliasJob=(async()=>{
+    try{
+      const mod=await import('/student-dashboard/progress-alias-unifier.js?v=20260831-central3');
+      return await withTimeout(mod.unifyProgressAliases({force:true}),4000,{ok:false,reason:'alias-unify-timeout'});
+    }catch(error){console.warn('Fortschritts-Aliasse werden später zusammengeführt.',error);return{ok:false}}
+  })();
+
+  const accountJob=(async()=>{
+    try{
+      const mod=await import('/js/account-progress-sync.js?v=20260831-global9');
+      return await withTimeout(mod.startAccountProgressSync({reason:'student-dashboard-background-merge'}),5000,{ok:false,blocked:true,reason:'account-sync-timeout'});
+    }catch(error){console.warn('Kontosynchronisierung läuft später weiter.',error);return{ok:false,blocked:true}}
+  })();
+
+  const [l8,aliases,progress]=await Promise.all([l8Job,aliasJob,accountJob]);
+  const progressReady=progress?.blocked!==true&&progress?.nonDestructive===true&&Number(progress?.authorityVersion||0)>=5;
+  return{ok:progressReady,l8,aliases,progress};
+}
 
 clearStaleTeacherPreview();
 if(['teacher','lehrer','admin','owner','superadmin'].includes(activeRole()))location.replace('/teacher/index.html');
@@ -31,6 +63,7 @@ else{
     const access=await verifySecureAccess({allowTeacher:false,redirect:true,mark:false});
     if(!access?.ok||access.type!=='student')throw new Error('SECURE_STUDENT_DASHBOARD_ACCESS_REQUIRED');
     revealDashboard();
+
     let normalizedProfile=readProfile();
     if(!alreadyCanonicalSecureProfile(normalizedProfile,access.uid)){
       try{const identity=await import('/js/student-identity.js?v=identity6');normalizedProfile=await identity.normalizeStudentIdentity(normalizedProfile,{silent:true})||normalizedProfile}
@@ -38,32 +71,19 @@ else{
     }
     if(String(normalizedProfile?.authUid||'')!==String(access.uid||'')){location.replace('/login/?redirect='+encodeURIComponent(location.pathname+location.search));throw new Error('STUDENT_UID_CHANGED_BEFORE_DASHBOARD_RENDER')}
 
-    try{await import('/js/point-delta-bridge.js?v=20260831-central6');try{window.SPEnsurePointDeltaBridge?.()}catch(e){}}
-    catch(error){console.warn('Punkte-Kompatibilitätsbridge konnte im Dashboard noch nicht vorbereitet werden.',error)}
-
-    try{
-      const l8t1Points=await import('/js/l8t1-milestone-sync.js?v=20260831-central2');
-      await Promise.race([l8t1Points.flushL8T1Milestones({reason:'dashboard-before-server-read'}),new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'dashboard-flush-timeout'}),10000))]);
-    }catch(error){console.warn('Lokale L8T1-Fortschritte konnten vor dem Dashboard noch nicht an den zentralen Fortschrittsschreiber übergeben werden.',error)}
-
-    try{
-      const aliases=await import('/student-dashboard/progress-alias-unifier.js?v=20260831-central3');
-      await Promise.race([aliases.unifyProgressAliases({force:true}),new Promise(resolve=>setTimeout(()=>resolve({ok:false,reason:'alias-unify-timeout'}),8000))]);
-    }catch(error){console.warn('Verteilte Fortschrittsstände konnten noch nicht zusammengeführt werden.',error)}
-
-    let progressReady=false;
-    try{
-      const progressModule=await import('/js/account-progress-sync.js?v=20260831-global9');
-      const progressState=await progressModule.startAccountProgressSync({reason:'student-dashboard-global-merge'});
-      progressReady=progressState?.blocked!==true&&progressState?.nonDestructive===true&&Number(progressState?.authorityVersion||0)>=5;
-      if(!progressReady)console.warn('Dashboard nutzt direkten Firebase-Stand, Kontosynchronisierung ist noch nicht vollständig bereit.',progressState);
-    }catch(error){console.warn('Kontosynchronisierung im Dashboard verzögert; direkter Firebase-Stand wird trotzdem geladen.',error)}
-
     try{localStorage.removeItem('SP_STUDENT_DASHBOARD_LITE_V3')}catch(e){}
-    window.SP_PROGRESS_ALIAS_READY=Promise.resolve({ok:progressReady,skipped:!progressReady,reason:progressReady?'global-non-destructive-progress':'dashboard-direct-server-fallback'});
-    try{await import('./dashboard-server-v3.js?v=20260831-global9')}
+
+    // Wichtig für die Startgeschwindigkeit: Statistiken sofort vom kanonischen Firebase-Dokument
+    // laden. Aufwendige Reparatur-/Merge-Synchronisierungen laufen parallel und blockieren das
+    // Dashboard nicht mehr bis zu 18+ Sekunden.
+    const backgroundSync=runBackgroundSyncs();
+    window.SP_PROGRESS_ALIAS_READY=backgroundSync.then(result=>({ok:result.ok,skipped:!result.ok,reason:result.ok?'global-non-destructive-progress':'dashboard-direct-server-fallback'}));
+
+    try{await import('./dashboard-server-v3.js?v=20260902-fast-start1')}
     catch(error){console.error('Dashboard-Inhalte konnten nicht vollständig geladen werden',error);warning('Dashboard konnte nur teilweise geladen werden.','Die Anmeldung funktioniert, aber die aktuellen Statistiken konnten nicht vollständig aufgebaut werden.')}
     revealDashboard();
+
+    backgroundSync.then(()=>setTimeout(()=>{try{window.SP_DASHBOARD_RETRY?.()}catch(e){}},120)).catch(()=>{});
   }catch(error){
     console.error('Schüler-Dashboard Startfehler',error);
     setTimeout(()=>{if(!document.documentElement.dataset.spDashboardAuth&&document.visibilityState!=='hidden')fatalVisible('Dashboard konnte nicht geöffnet werden.','Bitte melde dich erneut an oder lade die Seite neu.')},500);
