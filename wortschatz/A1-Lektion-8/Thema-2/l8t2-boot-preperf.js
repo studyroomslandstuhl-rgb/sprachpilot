@@ -7,16 +7,13 @@ function loadCore(){
  if(document.getElementById('sp-l8t2-core-boot'))return;
  const script=document.createElement('script');
  script.id='sp-l8t2-core-boot';
- script.src='l8t2-core-boot-preperf.js?v=20260902-perffix1';
+ script.src='l8t2-core-boot-preperf.js?v=20260902-teacher-exams1';
  script.onerror=()=>{
   const root=document.getElementById('app');
   if(root)root.innerHTML='<div class="l8-wrap"><section class="l8-card"><h2>Die Seite konnte nicht gestartet werden.</h2><button class="l8-btn" type="button" onclick="location.reload()">Neu laden</button></section></div>';
  };
  document.body.appendChild(script);
 }
-
-// Nicht auf eine einzelne READY-Promise warten: einige L8T2-Patches hängen sich
-// nacheinander an L8_CONTENT_READY. Der Core übernimmt das Warten mit Timeout.
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadCore,{once:true});
 else loadCore();
 })();
