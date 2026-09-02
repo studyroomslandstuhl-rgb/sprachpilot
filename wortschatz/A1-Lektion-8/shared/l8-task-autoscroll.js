@@ -24,7 +24,13 @@ function findTarget(){
   '.sp-pw-card',
   '.sp-t4-task-card',
   '.sp-ter-list',
-  '.sp-production-exam'
+  '.sp-production-exam',
+  '.l8-finish',
+  '.sp-rv-finish',
+  '.sp-lg-finish',
+  '.sp-vs-finish',
+  '.sp-uf-finish',
+  '.sp-exam-finish'
  ];
  for(const selector of selectors){const node=root.querySelector(selector);if(visible(node))return node}
  const control=[...root.querySelectorAll('input,textarea,select,button')].find(node=>visible(node)&&!node.closest('.l8-task-head,.sp-rv-head,.sp-lg-head,.sp-ter-head,.sp-uf-head,.sp-exam-head'));
