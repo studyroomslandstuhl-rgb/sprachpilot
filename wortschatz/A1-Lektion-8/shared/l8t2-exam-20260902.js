@@ -1,10 +1,9 @@
 (function(){
 'use strict';
-if(window.__SP_L8T2_EXAM_20260902)return;
-window.__SP_L8T2_EXAM_20260902=true;
+if(window.__SP_L8T2_EXAM_20260902_V2)return;
+window.__SP_L8T2_EXAM_20260902_V2=true;
 
 const C=(prompt,options,answer,context='')=>({type:'choice',prompt,options,answer,context,hint:''});
-
 const EXAM_ITEMS=[
  C('Was bedeutet „die Ausbildung“?',['Man lernt einen Beruf.','Man sucht eine Wohnung.','Man macht Urlaub.'],'Man lernt einen Beruf.'),
  C('Was bedeutet „die Erfahrung“?',['Man hat etwas schon gemacht und kennt es.','Man hat heute frei.','Man arbeitet nur am Abend.'],'Man hat etwas schon gemacht und kennt es.'),
@@ -27,26 +26,29 @@ const EXAM_ITEMS=[
  C('Welche Frage passt bei einem Telefonat wegen einer Stelle?',['Ist die Stelle noch frei?','Wie alt ist Ihr Sofa?','Wo ist das Schwimmbad?'],'Ist die Stelle noch frei?'),
  C('Welche Reihenfolge ist logisch?',['Ausbildung → Praktikum/erste Erfahrung → Arbeit','Arbeit → Geburt → Ausbildung','Bewerbung → Grundschule → Geburt'],'Ausbildung → Praktikum/erste Erfahrung → Arbeit')
 ];
-
 function themeOf(all,n){return all?.[n]||all?.[String(n)]||(Array.isArray(all)?all.find(t=>Number(t?.number)===n):null)}
+function stripAudio(item){
+ if(!item||typeof item!=='object')return item;
+ for(const key of ['audio','audioFile','wordAudio','tts','listen','speech'])delete item[key];
+ return item;
+}
 function apply(theme){
  if(!theme||!Array.isArray(theme.tasks))return theme;
  let exam=theme.tasks.find(t=>t?.exam);
- if(!exam){
-  exam={id:'pruefung',exam:true};
-  theme.tasks.push(exam);
- }
+ if(!exam){exam={id:'pruefung',exam:true};theme.tasks.push(exam)}
  exam.exam=true;
  exam.title='Prüfung';
  exam.kind='choice';
  exam.icon='⭐';exam.emoji='⭐';
- exam.instruction='Prüfe Wortschatz, seit/vor, Berufswege und einfache Bewerbungssätze.';
- exam.items=EXAM_ITEMS;
- theme.contentRevision='l8t2-exam-20260902-v1';
+ exam.instruction='Prüfe Wortschatz, seit/vor, Berufswege und einfache Bewerbungssätze. Ohne Hörverstehen.';
+ exam.items=EXAM_ITEMS.map(item=>stripAudio({...item}));
+ delete exam.audio;delete exam.audioFile;delete exam.listening;
+ exam.noAudio=true;
+ theme.contentRevision='l8t2-exam-20260902-v2-no-audio';
  return theme;
 }
-
-window.L8_T2_EXAM_READY=Promise.resolve(window.L8_CONTENT_READY).then(themes=>{
+const previous=window.L8_CONTENT_READY;
+window.L8_T2_EXAM_READY=Promise.resolve(previous).then(themes=>{
  const all=window.L8_ALL_THEMES||themes||{};
  const theme=themeOf(all,2);
  apply(theme);
@@ -54,5 +56,5 @@ window.L8_T2_EXAM_READY=Promise.resolve(window.L8_CONTENT_READY).then(themes=>{
  return themes;
 });
 window.L8_CONTENT_READY=window.L8_T2_EXAM_READY;
-window.L8T2Exam20260902={apply};
+window.L8T2Exam20260902={apply,version:2};
 })();
