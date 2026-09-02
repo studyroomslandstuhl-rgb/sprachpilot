@@ -2,10 +2,10 @@
 'use strict';
 let stateV2Promise=null;
 let startAttempts=0;
-const CONTENT_WAIT_MS=700;
+const CONTENT_WAIT_MS=3500;
 const RETRY_MS=120;
-const MAX_PENDING_RETRIES=6;
-const MAX_CORE_RETRIES=30;
+const MAX_PENDING_RETRIES=35;
+const MAX_CORE_RETRIES=60;
 
 function ensureStateV2(){
  if(window.__SP_L8_STATE_V2&&window.L8S?.stateSchema===2&&typeof window.L8S?.runNo==='function')return Promise.resolve();
@@ -98,12 +98,12 @@ async function start(){
   console.error('L8 Start abgebrochen: Kernkomponenten fehlen.');renderLoadError();return;
  }
  if(contentPending&&startAttempts<MAX_PENDING_RETRIES){scheduleRetry();return}
- if(contentPending)console.warn('L8T2: veraltete Pending-Flags werden nach kurzem Zeitlimit ignoriert.');
+ if(contentPending)console.warn('L8T2: veraltete Pending-Flags werden nach dem Zeitlimit ignoriert.');
  finalizeCardMedia(theme);
  reinstallSafeAudio();
  normalizeThemeIdentity();
  if(document.body.dataset.page==='theme')window.L8UI.themeOverview();else window.L8UI.taskPage();
- [0,80,250,700].forEach(ms=>setTimeout(()=>{const t=normalizeThemeIdentity();finalizeCardMedia(t);reinstallSafeAudio();polishHeader();polishTaskEmojis()},ms));
+ [0,80,250,700,1500].forEach(ms=>setTimeout(()=>{const t=normalizeThemeIdentity();finalizeCardMedia(t);reinstallSafeAudio();polishHeader();polishTaskEmojis()},ms));
 }
 window.L8TaskEmoji=taskEmoji;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
