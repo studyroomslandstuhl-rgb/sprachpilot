@@ -54,7 +54,7 @@ async function runBackgroundSyncs(){
   const [l8,aliases,progress]=await Promise.all([l8Job,aliasJob,accountJob]);
   let localThemes=0;
   try{
-    const mod=await import('/student-dashboard/local-theme-points-recovery.js?v=20260902-l8-all1');
+    const mod=await import('/student-dashboard/local-theme-points-recovery.js?v=20260902-l8-all2');
     localThemes=await withTimeout(mod.recover({skipAliasWait:true}),5000,0);
   }catch(error){console.warn('Lokale L7/L8-Themenpunkte werden später synchronisiert.',error)}
   const progressReady=progress?.blocked!==true&&progress?.nonDestructive===true&&Number(progress?.authorityVersion||0)>=5;
