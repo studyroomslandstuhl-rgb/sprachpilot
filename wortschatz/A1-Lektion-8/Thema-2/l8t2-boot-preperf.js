@@ -1,10 +1,22 @@
 (function(){
 'use strict';
-if(window.__SP_L8T2_BOOT_PREPERF)return;
-window.__SP_L8T2_BOOT_PREPERF=true;
-Promise.resolve(window.L8_T2_TASK3_SEIT_VOR_READY||window.L8_T2_TASK2_PLURAL_READY||window.L8_T2_VOCAB_FINAL_READY||window.L8_T2_MEDIA_FIXES_READY||window.L8_T2_EXTRA_TRANSLATIONS_READY||window.L8_T2_VOCAB_READY||window.L8_T2_TRANSLATIONS_READY||window.L8_T2_CURRENT_READY||window.L8_CONTENT_READY).catch(()=>{}).finally(()=>{
+if(window.__SP_L8T2_BOOT_PERF_FIX)return;
+window.__SP_L8T2_BOOT_PERF_FIX=true;
+
+function loadCore(){
+ if(document.getElementById('sp-l8t2-core-boot'))return;
  const script=document.createElement('script');
- script.src='l8t2-core-boot-preperf.js?v=20260902-preperf1';
+ script.id='sp-l8t2-core-boot';
+ script.src='l8t2-core-boot-preperf.js?v=20260902-perffix1';
+ script.onerror=()=>{
+  const root=document.getElementById('app');
+  if(root)root.innerHTML='<div class="l8-wrap"><section class="l8-card"><h2>Die Seite konnte nicht gestartet werden.</h2><button class="l8-btn" type="button" onclick="location.reload()">Neu laden</button></section></div>';
+ };
  document.body.appendChild(script);
-});
+}
+
+// Nicht auf eine einzelne READY-Promise warten: einige L8T2-Patches hängen sich
+// nacheinander an L8_CONTENT_READY. Der Core übernimmt das Warten mit Timeout.
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',loadCore,{once:true});
+else loadCore();
 })();
