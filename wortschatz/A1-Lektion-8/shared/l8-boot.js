@@ -1,17 +1,31 @@
 (function(){
 'use strict';
 let stateV2Promise=null;
+let startAttempts=0;
+const CONTENT_WAIT_MS=3500;
+const RETRY_MS=120;
+const MAX_PENDING_RETRIES=35;
+const MAX_CORE_RETRIES=60;
+
 function ensureStateV2(){
  if(window.__SP_L8_STATE_V2&&window.L8S?.stateSchema===2&&typeof window.L8S?.runNo==='function')return Promise.resolve();
  if(stateV2Promise)return stateV2Promise;
- stateV2Promise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='../shared/l8-state-v2.js?v=20260901-progressfix1';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
+ stateV2Promise=new Promise((resolve,reject)=>{const s=document.createElement('script');s.src='../shared/l8-state-v2.js?v=20260902-stable1';s.onload=resolve;s.onerror=reject;document.head.appendChild(s)});
  return stateV2Promise;
 }
+function waitWithTimeout(gate,label){
+ if(!gate||typeof gate.then!=='function')return Promise.resolve();
+ let timer=null;
+ return Promise.race([
+  Promise.resolve(gate).catch(error=>{console.error(label,error)}),
+  new Promise(resolve=>{timer=setTimeout(()=>{console.warn(`${label}: Zeitlimit erreicht; Seite startet mit dem bereits vorbereiteten Stand.`);resolve()},CONTENT_WAIT_MS)})
+ ]).finally(()=>{if(timer)clearTimeout(timer)});
+}
 async function waitForFinalContent(){
- let gate=window.L8_CONTENT_READY;
- if(gate){try{await Promise.resolve(gate)}catch(error){console.error('L8 Inhalte konnten nicht vollständig vorbereitet werden',error)}}
+ const first=window.L8_CONTENT_READY;
+ await waitWithTimeout(first,'L8 Inhalte konnten nicht vollständig vorbereitet werden');
  const latest=window.L8_CONTENT_READY;
- if(latest&&latest!==gate){try{await Promise.resolve(latest)}catch(error){console.error('L8 finale Inhalte konnten nicht vollständig vorbereitet werden',error)}}
+ if(latest&&latest!==first)await waitWithTimeout(latest,'L8 finale Inhalte konnten nicht vollständig vorbereitet werden');
 }
 function reinstallSafeAudio(){
  try{window.L8AudioCoreSafeV3?.install?.()}catch(error){console.error('L8 sichere Audiofunktion konnte nicht installiert werden',error)}
@@ -65,12 +79,26 @@ function polishTaskEmojis(){
  const line=document.querySelector('.l8-task-title-block p');
  if(task&&line)line.textContent=`${taskEmoji(task)} ${task.instruction||''}`;
 }
+function renderLoadError(){
+ const root=document.getElementById('app');
+ if(!root)return;
+ root.innerHTML='<div class="l8-wrap"><section class="l8-card"><h2>Die Aufgabe konnte nicht vollständig geladen werden.</h2><p>Bitte lade die Seite neu.</p><button class="l8-btn" type="button" onclick="location.reload()">Neu laden</button></section></div>';
+}
+function scheduleRetry(){setTimeout(start,RETRY_MS)}
 async function start(){
+ startAttempts++;
  try{await ensureStateV2()}catch(error){console.error('L8 Fortschrittssystem konnte nicht geladen werden',error)}
  reinstallSafeAudio();
  await waitForFinalContent();
  const theme=normalizeThemeIdentity();
- if(window.L8_T2_TIME_REVIEW_PENDING||window.L8_T2_QUALITY_PENDING||window.L8_T2_VOCAB_PENDING||window.L8_T2_VOCAB_FINAL_PENDING||!theme||!window.L8S||!window.L8UI||window.L8S.stateSchema!==2){setTimeout(start,30);return}
+ const coreMissing=!theme||!window.L8S||!window.L8UI||window.L8S.stateSchema!==2;
+ const contentPending=!!(window.L8_T2_TIME_REVIEW_PENDING||window.L8_T2_QUALITY_PENDING||window.L8_T2_VOCAB_PENDING||window.L8_T2_VOCAB_FINAL_PENDING);
+ if(coreMissing){
+  if(startAttempts<MAX_CORE_RETRIES){scheduleRetry();return}
+  console.error('L8 Start abgebrochen: Kernkomponenten fehlen.');renderLoadError();return;
+ }
+ if(contentPending&&startAttempts<MAX_PENDING_RETRIES){scheduleRetry();return}
+ if(contentPending)console.warn('L8T2: veraltete Pending-Flags werden nach dem Zeitlimit ignoriert.');
  finalizeCardMedia(theme);
  reinstallSafeAudio();
  normalizeThemeIdentity();
@@ -78,5 +106,5 @@ async function start(){
  [0,80,250,700,1500].forEach(ms=>setTimeout(()=>{const t=normalizeThemeIdentity();finalizeCardMedia(t);reinstallSafeAudio();polishHeader();polishTaskEmojis()},ms));
 }
 window.L8TaskEmoji=taskEmoji;
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start);else start();
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
 })();
