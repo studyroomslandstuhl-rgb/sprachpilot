@@ -4,7 +4,6 @@ if(window.__SP_L8T3_RESTRUCTURE_20260902)return;
 window.__SP_L8T3_RESTRUCTURE_20260902=true;
 
 const I=(prompt,answer,context='',hint='')=>({type:'input',prompt,answer:Array.isArray(answer)?answer:[answer],context,hint});
-const C=(prompt,options,answer,context='',hint='')=>({type:'choice',prompt,options,answer,context,hint});
 
 function themeOf(all,n){return all?.[n]||all?.[String(n)]||(Array.isArray(all)?all.find(t=>Number(t?.number)===n):null)}
 
@@ -48,15 +47,15 @@ function contextTask(){
  return {
   id:'sein-haben-fuenf-texte',
   title:'Früher oder heute? Fünf Texte',
-  kind:'choice',icon:'📖',emoji:'📖',
+  kind:'input',icon:'📖',emoji:'📖',
   instruction:'Lies fünf kurze Texte und setze die passende Form von sein oder haben ein.',
   intro:'Achte auf die Zeit: früher / damals / gestern → Präteritum. heute / jetzt → Präsens. Achte auch auf die Bedeutung: Mit sein beschreibst du Personen oder Situationen; mit haben nennst du z. B. Stress, Zeit, Spaß oder Erfahrung.',
   items:[
-   C('Text 1: Was passt in die Lücke?',['war','hatte','ist','hat'],'war','Früher arbeitete Maria in einem großen Restaurant. Die Arbeit ___ sehr stressig. Heute arbeitet sie in einem kleinen Café und die Arbeit ist ruhig.','Früher + Beschreibung der Arbeit → sein im Präteritum.'),
-   C('Text 2: Was passt in die Lücke?',['hatte','war','habe','bin'],'hatte','Mein erster Job war in einer Bäckerei. Ich war neu und ich ___ noch keine Berufserfahrung. Heute habe ich schon viel Erfahrung.','Früher + Berufserfahrung haben → hatte.'),
-   C('Text 3: Was passt in die Lücke?',['habe','bin','hatte','war'],'habe','Heute arbeite ich in einem Café. Mein Team ist nett und ich ___ viel Spaß bei der Arbeit. Früher hatte ich oft Stress.','Heute + Spaß haben → habe.'),
-   C('Text 4: Was passt in die Lücke?',['war','hatte','bin','habe'],'war','Vor zwei Jahren ___ ich Kellnerin in einem Restaurant. Heute bin ich Köchin und arbeite in einer Kantine.','Vor zwei Jahren + Beruf/Person → sein im Präteritum.'),
-   C('Text 5: Was passt in die Lücke?',['ist','hat','war','hatte'],'ist','Paul arbeitet jetzt in einem Architekturbüro. Sein Chef ___ sehr professionell und das Team ist freundlich. Früher war sein Chef oft unfreundlich.','Jetzt + Beschreibung des Chefs → sein im Präsens.')
+   I('Text 1: Ergänze die Lücke.','war','Früher arbeitete Maria in einem großen Restaurant. Die Arbeit ___ sehr stressig. Heute arbeitet sie in einem kleinen Café und die Arbeit ist ruhig.','Früher + Beschreibung der Arbeit → sein im Präteritum.'),
+   I('Text 2: Ergänze die Lücke.','hatte','Mein erster Job war in einer Bäckerei. Ich war neu und ich ___ noch keine Berufserfahrung. Heute habe ich schon viel Erfahrung.','Früher + Berufserfahrung haben → hatte.'),
+   I('Text 3: Ergänze die Lücke.','habe','Heute arbeite ich in einem Café. Mein Team ist nett und ich ___ viel Spaß bei der Arbeit. Früher hatte ich oft Stress.','Heute + Spaß haben → habe.'),
+   I('Text 4: Ergänze die Lücke.','war','Vor zwei Jahren ___ ich Kellnerin in einem Restaurant. Heute bin ich Köchin und arbeite in einer Kantine.','Vor zwei Jahren + Beruf/Person → sein im Präteritum.'),
+   I('Text 5: Ergänze die Lücke.','ist','Paul arbeitet jetzt in einem Architekturbüro. Sein Chef ___ sehr professionell und das Team ist freundlich. Früher war sein Chef oft unfreundlich.','Jetzt + Beschreibung des Chefs → sein im Präsens.')
   ]
  };
 }
@@ -76,7 +75,7 @@ function apply(theme){
  theme.tasks=next.filter(task=>{const key=String(task?.id||'');if(!key)return true;if(seen.has(key))return false;seen.add(key);return true});
  theme.title='Meine Arbeit früher';
  theme.subtitle='sein und haben im Präteritum konjugieren und aus dem Kontext zwischen früher und heute unterscheiden.';
- theme.contentRevision='l8t3-restructure-20260902-v1';
+ theme.contentRevision='l8t3-restructure-20260902-v2';
  return theme;
 }
 
