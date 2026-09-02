@@ -23,10 +23,11 @@ function install(){
  const originalRecord=score.recordState.bind(score);
  score.recordState=function(theme,id,state){
   const result=originalRecord(theme,id,state);
-  if(Number(theme)===THEME)schedule(80);
+  if(Number(theme)===THEME){syncNow();schedule(1200)}
   return result;
  };
- [180,1200,4000].forEach(ms=>setTimeout(syncNow,ms));
+ syncNow();
+ [800,2500,6000].forEach(ms=>setTimeout(syncNow,ms));
  window.addEventListener('online',()=>schedule(50));
  document.addEventListener('visibilitychange',()=>{if(!document.hidden)schedule(50)});
 }
