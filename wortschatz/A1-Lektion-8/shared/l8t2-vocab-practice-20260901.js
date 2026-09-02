@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L8T2_VOCAB_PRACTICE_LIGHT_20260902)return;
-window.__SP_L8T2_VOCAB_PRACTICE_LIGHT_20260902=true;
+if(window.__SP_L8T2_VOCAB_PRACTICE_LIGHT_20260902_V2)return;
+window.__SP_L8T2_VOCAB_PRACTICE_LIGHT_20260902_V2=true;
 
 const CDN='https://sprachpilot.b-cdn.net/';
 const AUDIO=CDN+'audio/';
@@ -12,13 +12,14 @@ const IMAGE_SPECIAL={'spater':'spaet.webp','erfahrung':'erfahrung.webp','kollegi
 const imageFor=item=>{const raw=String(item?.image||item?.img||'').trim();if(raw)return raw;const special=IMAGE_SPECIAL[norm(term(item)).replace(/^(der|die|das)\s+/,'')];if(special)return CDN+special;const s=slug(term(item));return s?CDN+s+'.webp':''};
 const audioFor=item=>{const raw=String(item?.audioFile||item?.audio||'').trim();if(raw)return raw;const s=slug(term(item));return s?AUDIO+s+'.mp3':''};
 const cloneCard=item=>({term:term(item),image:imageFor(item),audio:audioFor(item),audioFile:audioFor(item)});
-const FALLBACK=[
- ['die Bewerbung','bewerbung'],['das Praktikum','praktikum'],['die Abteilung','abteilung'],['der Leiter','leiter'],['die Leiterin','leiterin'],['die Wirtschaft','wirtschaft'],['das Diplom','diplom'],['das Büro','buero'],['die Information','information'],['der Gruß','gruss'],['die Anrede','anrede'],['die Stelle','stelle'],['die Ausbildung','ausbildung'],['die Berufserfahrung','berufserfahrung'],['die Firma','firma'],['der Lebenslauf','lebenslauf'],['das Anschreiben','anschreiben'],['das Zeugnis','zeugnis'],['der Abschluss','abschluss'],['das Studium','studium']
-].map(([word,stem])=>({term:word,image:CDN+stem+'.webp',audio:AUDIO+stem+'.mp3',audioFile:AUDIO+stem+'.mp3'}));
 function cardTask(theme){return (theme.tasks||[]).find(t=>t?.kind==='cards'||t?.id==='karteikarten'||/karteikart/i.test(String(t?.title||'')))}
+function sourceItems(theme){
+ const overview=Array.isArray(theme?.vocabularyOverviewItems)&&theme.vocabularyOverviewItems.length?theme.vocabularyOverviewItems:null;
+ return overview||(cardTask(theme)?.items||[]);
+}
 function pool(theme){
  const out=[],seen=new Set();
- for(const item of [...(cardTask(theme)?.items||[]),...FALLBACK]){const k=norm(term(item));if(!k||seen.has(k))continue;const card=cloneCard(item);if(!card.image)continue;seen.add(k);out.push(card)}
+ for(const item of sourceItems(theme)){const k=norm(term(item));if(!k||seen.has(k))continue;const card=cloneCard(item);if(!card.image)continue;seen.add(k);out.push(card)}
  return out;
 }
 function listeningPool(theme){return pool(theme).filter(x=>x.audioFile||x.audio)}
@@ -35,11 +36,11 @@ function apply(theme){
  if(memPool.length>=2)insert.push(buildMemory(memPool));
  if(listenPool.length>=4)insert.push(buildListening(listenPool));
  if(insert.length)theme.tasks.splice(insertAt,0,...insert);
- theme.contentRevision='l8t2-vocab-practice-light-20260902';
+ theme.contentRevision='l8t2-vocab-practice-overview-only-20260902-v2';
  return theme;
 }
 const previous=window.L8_CONTENT_READY;
 window.L8_T2_VOCAB_PRACTICE_READY=Promise.resolve(previous).then(themes=>{const all=window.L8_ALL_THEMES||themes||{},theme=all[2]||all['2']||(Array.isArray(all)?all.find(t=>Number(t?.number)===2):null);apply(theme);if(Number(document.body?.dataset?.theme||0)===2&&theme)window.L8_THEME=theme;return themes});
 window.L8_CONTENT_READY=window.L8_T2_VOCAB_PRACTICE_READY;
-window.L8T2VocabPractice={apply};
+window.L8T2VocabPractice={apply,version:2};
 })();
