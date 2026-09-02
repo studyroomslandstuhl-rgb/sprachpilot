@@ -5,6 +5,7 @@ const VERSION=2;
 const clean=v=>String(v||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/[^a-z0-9@._-]+/g,'_').replace(/^_+|_+$/g,'');
 const unique=a=>[...new Set((a||[]).map(Number).filter(Number.isInteger))];
 const shuffled=values=>{const a=[...(values||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
+const previewMemory=new Map();
 function readJson(key){try{const raw=localStorage.getItem(key);return raw?JSON.parse(raw):null}catch(e){return null}}
 function profile(){return readJson('SP_USER_PROFILE')||readJson('SP_STUDENT_PROFILE')||{}}
 function role(){return String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||localStorage.getItem('SP_USER_ROLE')||'').toLowerCase()}
@@ -50,8 +51,19 @@ function normalizeState(raw,total){
  const missing=[...Array(total).keys()].filter(i=>!done.includes(i)&&i!==current&&!queue.includes(i)&&!reviewQueue.includes(i));queue.push(...shuffled(missing));
  return{...base,...x,schema:VERSION,total,done,queue,reviewQueue,current,review,tries,firstSeen:unique(x.firstSeen).filter(i=>validIndex(i,total)),firstCorrect:Math.max(0,Number(x.firstCorrect)||0),answers:x.answers&&typeof x.answers==='object'?x.answers:{}};
 }
-function load(theme,task,total){try{return normalizeState(JSON.parse(localStorage.getItem(key(theme,task))||'null'),total)}catch(e){return blank(total)}}
-function save(theme,task,state,doSync=true){const out=normalizeState(state,Math.max(0,Number(state?.total)||0));out.updatedAt=new Date().toISOString();if(!preview())localStorage.setItem(key(theme,task),JSON.stringify(out));if(doSync)try{window.L8ThemeScore?.recordState?.(theme,task,out)}catch(e){}return out}
+function load(theme,task,total){
+ const storageKey=key(theme,task);
+ if(preview())return normalizeState(previewMemory.get(storageKey)||null,total);
+ try{return normalizeState(JSON.parse(localStorage.getItem(storageKey)||'null'),total)}catch(e){return blank(total)}
+}
+function save(theme,task,state,doSync=true){
+ const out=normalizeState(state,Math.max(0,Number(state?.total)||0));out.updatedAt=new Date().toISOString();
+ const storageKey=key(theme,task);
+ if(preview()){previewMemory.set(storageKey,out);return out}
+ localStorage.setItem(storageKey,JSON.stringify(out));
+ if(doSync)try{window.L8ThemeScore?.recordState?.(theme,task,out)}catch(e){}
+ return out;
+}
 function first(s,index,ok){if(!s.firstSeen.includes(index)){s.firstSeen.push(index);if(ok)s.firstCorrect++}}
 function nextIndex(theme,task,total){const s=load(theme,task,total);if(validIndex(s.current,total)&&!s.done.includes(Number(s.current)))return Number(s.current);while(s.queue.length&&s.done.includes(s.queue[0]))s.queue.shift();if(!s.queue.length){while(s.reviewQueue.length&&s.done.includes(s.reviewQueue[0]))s.reviewQueue.shift()}if(!s.queue.length&&!s.reviewQueue.length){const missing=[...Array(total).keys()].filter(i=>!s.done.includes(i));if(missing.length)s.queue=shuffled(missing.filter(i=>Number(s.review?.[i]||0)!==2));if(!s.queue.length)s.reviewQueue=shuffled(missing)}const next=s.queue.length?s.queue.shift():s.reviewQueue.shift();s.current=validIndex(next,total)?Number(next):null;save(theme,task,s,false);return s.current}
 function wrong(theme,task,total,index,answer){const s=load(theme,task,total),i=Number(index);if(!validIndex(i,total))return{s,tries:0,stage:0};first(s,i,false);s.current=i;s.answers[i]=answer;s.tries[i]=Number(s.tries[i]||0)+1;if(!s.review[i])s.review[i]=1;save(theme,task,s);return{s,tries:s.tries[i],stage:Number(s.review[i]||1)}}
