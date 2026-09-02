@@ -85,6 +85,8 @@ Bei **Lese- und Hörverstehen** darf eine Aufgabe nicht dadurch lösbar sein, da
 - Jedes vorgesehene Audio benutzt Bunny Storage: `https://sprachpilot.b-cdn.net/audio/name.mp3`.
 - In Hör-Aufgaben wird eine echte `audioFile`-/Bunny-Verknüpfung hinterlegt. TTS ist nur technischer Fallback, nicht die geplante Hauptquelle.
 - Bild- und Audioverknüpfungen werden beim Überarbeiten eines Themas mitkontrolliert.
+- **Hören → Bild startet nicht automatisch.** Lernende klicken selbst auf den Audio-Knopf.
+- Bei Hören → Bild werden standardmäßig **vier Bilder** gezeigt. Auf dem Handy stehen sie kompakt in einem **2×2-Raster**, nicht als große Einzelbilder untereinander.
 
 ## Übersetzungen
 
@@ -112,12 +114,24 @@ Karteikarten orientieren sich am akzeptierten Standard aus Lektion 8 Thema 1:
 - Nomen mit Artikel; Plural wird angezeigt, wenn vorhanden,
 - Medien immer über Bunny Storage.
 
-## Navigation und Scrollen
+## Navigation, Fortschritt und Scrollen
 
 - Beim Öffnen **jeder Aufgabe** wird automatisch zur eigentlichen Aufgabe nach unten gescrollt. Das gilt auch für Sonder-UIs und nicht nur für Standardaufgaben.
+- Der Scroll darf erst ausgelöst werden, wenn die **echte Arbeitsfläche** gerendert ist; die Lade-Karte zählt nicht als Ziel.
 - `Zurück` in einer Aufgabe führt zur Themenübersicht.
 - `Zurück` in der Themenübersicht führt zur Lektionsübersicht.
+- Beim Zurückkehren zur Themenübersicht wird zur **zuletzt bearbeiteten Aufgabe** gescrollt.
+- Aufgaben- und Themenübersicht verwenden dasselbe Fortschrittssystem und dieselben State-Schlüssel.
+- Nach dem Zurückkehren müssen Prozentzahl, Aufgabenbalken und Gesamtbalken sofort den aktuellen Fortschritt zeigen, auch bei Browser-Back/BFCache.
 - Übersicht/Statistik und Lehrerfunktionen dürfen durch Aufgabenpatches nicht verloren gehen.
+
+## Schreibaufgaben
+
+- Wenn das Lernziel ausdrücklich **Schreiben** ist, muss der Text tatsächlich geschrieben werden; Sprechen/Mikrofon ersetzt die Schreibproduktion nicht.
+- Freie Texte werden nicht durch wortgleichen Mustervergleich bewertet.
+- Bewertet werden vor allem vollständige Inhalte, grammatisch passende Formen und korrekte Verbposition.
+- Sinnvolle Varianten der Subjektposition werden akzeptiert.
+- Ein bereits eingeführter Name oder das passende Pronomen können akzeptiert werden, sofern der Satz grammatisch eindeutig und korrekt bleibt.
 
 ## Emojis
 
@@ -138,6 +152,7 @@ Karteikarten orientieren sich am akzeptierten Standard aus Lektion 8 Thema 1:
 
 - Präteritum wird in Lektion 8 Thema 3 ausschließlich mit **sein** und **haben** verwendet.
 - Andere Verben stehen bei Vergangenheitsbezug im **Perfekt**.
+- Aufgaben zum Unterscheiden von Gegenwart und Vergangenheit dürfen sowohl Präsens als auch Perfekt enthalten; Präteritum bleibt auf sein/haben beschränkt.
 - Keine Präteritumformen anderer Verben in Beispielen, Dialogen, Texten oder Aufgaben.
 - Die Begriffe **Gegenwart** und **Vergangenheit** werden ausdrücklich mitgeübt.
 
