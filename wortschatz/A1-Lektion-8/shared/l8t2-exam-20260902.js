@@ -1,60 +1,50 @@
 (function(){
 'use strict';
-if(window.__SP_L8T2_EXAM_20260902_V2)return;
-window.__SP_L8T2_EXAM_20260902_V2=true;
-
-const C=(prompt,options,answer,context='')=>({type:'choice',prompt,options,answer,context,hint:''});
+if(window.__SP_L8T2_EXAM_20260902_V3)return;
+window.__SP_L8T2_EXAM_20260902_V3=true;
+const CDN='https://sprachpilot.b-cdn.net/';
+const C=(label,prompt,options,answer,context='')=>({type:'choice',label,prompt,options,answer,context});
+const I=(label,prompt,answer,context='',hint='')=>({type:'input',label,prompt,answer:Array.isArray(answer)?answer:[answer],context,hint});
+const IMG=(label,prompt,image,answer,hint='')=>({type:'image-input',label,prompt,image,answer:Array.isArray(answer)?answer:[answer],hint});
+const O=(label,prompt,tokens,answer,context='')=>({type:'order',label,prompt,tokens,answer:Array.isArray(answer)?answer:[answer],context});
 const EXAM_ITEMS=[
- C('Was bedeutet „die Ausbildung“?',['Man lernt einen Beruf.','Man sucht eine Wohnung.','Man macht Urlaub.'],'Man lernt einen Beruf.'),
- C('Was bedeutet „die Erfahrung“?',['Man hat etwas schon gemacht und kennt es.','Man hat heute frei.','Man arbeitet nur am Abend.'],'Man hat etwas schon gemacht und kennt es.'),
- C('Welcher Plural ist richtig?',['die Berufe','die Berüfe','die Berufen'],'die Berufe','Singular: der Beruf'),
- C('Welcher Plural ist richtig?',['die Jahre','die Jahren','die Jähre'],'die Jahre','Singular: das Jahr'),
- C('Was passt?',['seit','vor','für'],'seit','Ich arbeite ___ zwei Jahren in einem Café.'),
- C('Was passt?',['vor','seit','für'],'vor','Ich habe ___ drei Jahren meine Ausbildung gemacht.'),
- C('Welche Frage passt zur Antwort „Seit Januar.“?',['Seit wann arbeitest du hier?','Wann hast du die Ausbildung beendet?','Wie alt bist du?'],'Seit wann arbeitest du hier?'),
- C('Welche Antwort passt?',['Vor einem Jahr.','Seit einem Jahr.','Für einem Jahr.'],'Vor einem Jahr.','Wann hast du dein Praktikum gemacht?'),
- C('Welcher Satz ist richtig?',['Seit Mai arbeite ich als Verkäuferin.','Seit Mai habe ich als Verkäuferin gearbeitet.','Vor Mai arbeite ich als Verkäuferin.'],'Seit Mai arbeite ich als Verkäuferin.'),
- C('Welcher Satz ist richtig?',['Vor zwei Jahren habe ich ein Praktikum gemacht.','Seit zwei Jahren habe ich ein Praktikum gemacht.','Für zwei Jahren habe ich ein Praktikum gemacht.'],'Vor zwei Jahren habe ich ein Praktikum gemacht.'),
- C('Lies den Text. Was macht Amir heute?',['Er arbeitet als Koch.','Er macht ein Praktikum.','Er sucht eine Schule.'],'Er arbeitet als Koch.','Amir hat vor drei Jahren seine Ausbildung als Koch beendet. Seit zwei Jahren arbeitet er in einem Restaurant.'),
- C('Lies den Text. Seit wann arbeitet Amir im Restaurant?',['seit zwei Jahren','vor zwei Jahren','für zwei Jahren'],'seit zwei Jahren','Amir hat vor drei Jahren seine Ausbildung als Koch beendet. Seit zwei Jahren arbeitet er in einem Restaurant.'),
- C('Lies den Text. Was hat Lea gemacht?',['ein Praktikum','eine Wohnung','einen Führerschein'],'ein Praktikum','Lea hat vor einem Jahr ein Praktikum in einem Hotel gemacht. Jetzt sucht sie eine Ausbildung.'),
- C('Lies den Text. Was sucht Lea jetzt?',['eine Ausbildung','ein Hotelzimmer','einen Arzt'],'eine Ausbildung','Lea hat vor einem Jahr ein Praktikum in einem Hotel gemacht. Jetzt sucht sie eine Ausbildung.'),
- C('Welcher Satz passt in eine formelle Bewerbung?',['Sehr geehrte Frau Müller,','Hallo Müller!','Liebe Freundin,'],'Sehr geehrte Frau Müller,'),
- C('Welcher Satz nennt Berufserfahrung?',['Ich habe bereits ein Praktikum im Verkauf gemacht.','Ich wohne in Köln.','Heute ist Dienstag.'],'Ich habe bereits ein Praktikum im Verkauf gemacht.'),
- C('Welcher Satz ist höflich?',['Ich möchte mich gern bewerben.','Gib mir die Stelle.','Ich will den Job sofort.'],'Ich möchte mich gern bewerben.'),
- C('Welcher Abschluss passt zu einer Bewerbung?',['Mit freundlichen Grüßen','Bis später!','Tschüss!'],'Mit freundlichen Grüßen'),
- C('Welche Frage passt bei einem Telefonat wegen einer Stelle?',['Ist die Stelle noch frei?','Wie alt ist Ihr Sofa?','Wo ist das Schwimmbad?'],'Ist die Stelle noch frei?'),
- C('Welche Reihenfolge ist logisch?',['Ausbildung → Praktikum/erste Erfahrung → Arbeit','Arbeit → Geburt → Ausbildung','Bewerbung → Grundschule → Geburt'],'Ausbildung → Praktikum/erste Erfahrung → Arbeit')
+ C('Bedeutung → Wort','Man lernt systematisch einen Beruf. Welches Wort passt?',['die Ausbildung','das Praktikum','die Bewerbung'],'die Ausbildung'),
+ C('Bedeutung → Wort','Dokument mit Schule, Ausbildung und bisherigen Arbeitsstationen. Welches Wort passt?',['der Lebenslauf','das Anschreiben','das Bewerbungsfoto'],'der Lebenslauf'),
+ C('Wort → Bedeutung','Was bedeutet „die Berufserfahrung“?',['Erfahrung aus früherer Arbeit.','Eine Schule für Kinder.','Eine Reise in ein anderes Land.'],'Erfahrung aus früherer Arbeit.'),
+ C('Wort → Bedeutung','Was bedeutet „das Vorstellungsgespräch“?',['Ein Gespräch mit einer Firma vor einer möglichen Einstellung.','Ein Gespräch mit Freunden im Café.','Eine schriftliche Prüfung in der Berufsschule.'],'Ein Gespräch mit einer Firma vor einer möglichen Einstellung.'),
+ IMG('Bild → Wort','Schreibe das Wort mit Artikel.',CDN+'praktikum.webp',['das Praktikum','Praktikum'],'Achte auf den Artikel.'),
+ IMG('Bild → Wort','Schreibe das Wort mit Artikel.',CDN+'bewerbung.webp',['die Bewerbung','Bewerbung'],'Achte auf den Artikel.'),
+ IMG('Bild → Plural','Schreibe den Plural mit Artikel.',CDN+'tourist.webp',['die Touristen','Touristen'],'Der Singular ist: der Tourist.'),
+ IMG('Bild → Plural','Schreibe den Plural mit Artikel.',CDN+'touristin.webp',['die Touristinnen','Touristinnen'],'Der Singular ist: die Touristin.'),
+ IMG('Bild → Plural','Schreibe den Plural mit Artikel.',CDN+'buero.webp',['die Büros','die Bueros','Büros','Bueros'],'Der Singular ist: das Büro.'),
+ IMG('Bild → Plural','Schreibe den Plural mit Artikel.',CDN+'beruf.webp',['die Berufe','Berufe'],'Der Singular ist: der Beruf.'),
+ I('seit oder vor?','Ich arbeite ___ drei Jahren in einem Hotel.','seit','','Die Arbeit dauert bis heute.'),
+ I('seit oder vor?','Ich habe ___ drei Jahren meine Ausbildung beendet.','vor','','Das Ereignis ist abgeschlossen.'),
+ I('seit oder vor?','Mina wohnt ___ Januar in Köln.','seit','','Sie wohnt heute noch dort.'),
+ I('seit oder vor?','Omar hat ___ einem Monat eine Bewerbung geschickt.','vor','','Das Ereignis war in der Vergangenheit.'),
+ I('seit oder vor?','Wir lernen ___ sechs Monaten Deutsch.','seit','','Der Zeitraum dauert noch an.'),
+ O('Frage → Antwort','Baue eine passende Antwort.',['Ich','arbeite','seit','zwei','Jahren','im','Café'],['Ich arbeite seit zwei Jahren im Café','Ich arbeite seit zwei Jahren im Café.'],'Seit wann arbeitest du im Café?'),
+ O('Frage → Antwort','Baue eine passende Antwort.',['Ich','habe','vor','drei','Jahren','meine','Ausbildung','angefangen'],['Ich habe vor drei Jahren meine Ausbildung angefangen','Ich habe vor drei Jahren meine Ausbildung angefangen.'],'Wann hast du deine Ausbildung angefangen?'),
+ O('Frage → Antwort','Baue eine passende Antwort.',['Das','Praktikum','hat','sechs','Monate','gedauert'],['Das Praktikum hat sechs Monate gedauert','Das Praktikum hat sechs Monate gedauert.'],'Wie lange hat das Praktikum gedauert?'),
+ O('Frage → Antwort','Baue eine passende Antwort.',['Seit','einem','Jahr','arbeite','ich','in','Teilzeit'],['Seit einem Jahr arbeite ich in Teilzeit','Seit einem Jahr arbeite ich in Teilzeit.'],'Seit wann arbeitest du in Teilzeit?'),
+ O('Frage → Antwort','Baue eine passende Antwort.',['Ich','möchte','mich','um','die','Stelle','bewerben'],['Ich möchte mich um die Stelle bewerben','Ich möchte mich um die Stelle bewerben.'],'Was sagst du in einer Bewerbung?')
 ];
 function themeOf(all,n){return all?.[n]||all?.[String(n)]||(Array.isArray(all)?all.find(t=>Number(t?.number)===n):null)}
-function stripAudio(item){
- if(!item||typeof item!=='object')return item;
- for(const key of ['audio','audioFile','wordAudio','tts','listen','speech'])delete item[key];
- return item;
-}
 function apply(theme){
  if(!theme||!Array.isArray(theme.tasks))return theme;
  let exam=theme.tasks.find(t=>t?.exam);
- if(!exam){exam={id:'pruefung',exam:true};theme.tasks.push(exam)}
- exam.exam=true;
- exam.title='Prüfung';
- exam.kind='choice';
- exam.icon='⭐';exam.emoji='⭐';
- exam.instruction='Prüfe Wortschatz, seit/vor, Berufswege und einfache Bewerbungssätze. Ohne Hörverstehen.';
- exam.items=EXAM_ITEMS.map(item=>stripAudio({...item}));
+ if(!exam){exam={exam:true};theme.tasks.push(exam)}
+ exam.id='pruefung-l8t2-produktiv-v1';
+ exam.exam=true;exam.spProductionExam=true;exam.noAudio=true;
+ exam.title='Prüfung';exam.kind='mixed-production';exam.icon='⭐';exam.emoji='⭐';
+ exam.instruction='Löse die Aufgaben. Schreibe und baue die Antworten selbst.';
+ exam.items=EXAM_ITEMS.map(item=>({...item,options:item.options?[...item.options]:undefined,tokens:item.tokens?[...item.tokens]:undefined,answer:Array.isArray(item.answer)?[...item.answer]:item.answer}));
  delete exam.audio;delete exam.audioFile;delete exam.listening;
- exam.noAudio=true;
- theme.contentRevision='l8t2-exam-20260902-v2-no-audio';
+ theme.contentRevision='l8t2-exam-20260902-v3-production';
  return theme;
 }
 const previous=window.L8_CONTENT_READY;
-window.L8_T2_EXAM_READY=Promise.resolve(previous).then(themes=>{
- const all=window.L8_ALL_THEMES||themes||{};
- const theme=themeOf(all,2);
- apply(theme);
- if(Number(document.body?.dataset?.theme||0)===2&&theme)window.L8_THEME=theme;
- return themes;
-});
+window.L8_T2_EXAM_READY=Promise.resolve(previous).then(themes=>{const all=window.L8_ALL_THEMES||themes||{},theme=themeOf(all,2);apply(theme);if(Number(document.body?.dataset?.theme||0)===2&&theme)window.L8_THEME=theme;return themes});
 window.L8_CONTENT_READY=window.L8_T2_EXAM_READY;
-window.L8T2Exam20260902={apply,version:2};
+window.L8T2Exam20260902={apply,version:3};
 })();
