@@ -1,7 +1,7 @@
 (function(){
-'use strict';if(window.__SP_L8T1_EXAM_SAFEGUARD_20260902)return;window.__SP_L8T1_EXAM_SAFEGUARD_20260902=true;
+'use strict';if(window.__SP_L8T1_EXAM_SAFEGUARD_20260902_V2)return;window.__SP_L8T1_EXAM_SAFEGUARD_20260902_V2=true;
 function themeOf(all){return all?.[1]||all?.['1']||(Array.isArray(all)?all.find(t=>Number(t?.number)===1):null)}
-function fallback(){return{id:'pruefung-berufe-sicher-v1',kind:'exam',exam:true,title:'Prüfung',icon:'⭐',emoji:'⭐',instruction:'Löse die 15 Aufgaben.',items:[
+function exam(){return{id:'pruefung-berufe-sicher-v2',kind:'exam',exam:true,title:'Prüfung',icon:'⭐',emoji:'⭐',instruction:'Löse die 15 Aufgaben.',items:[
  {type:'choice',prompt:'Was ist die feminine Form von „der Chef“?',options:['die Chefinnen','die Chefin','der Chef'],answer:'die Chefin'},
  {type:'choice',prompt:'Was bedeutet „arbeitslos“?',options:['keinen Job haben','bei einer Firma angestellt sein','eine eigene Firma haben'],answer:'keinen Job haben'},
  {type:'choice',prompt:'Was bedeutet „selbstständig“?',options:['eine eigene Firma oder Praxis haben','keinen Beruf kennen','bei jeder Firma angestellt sein'],answer:'eine eigene Firma oder Praxis haben'},
@@ -18,5 +18,5 @@ function fallback(){return{id:'pruefung-berufe-sicher-v1',kind:'exam',exam:true,
  {type:'input',prompt:'Ich habe eine eigene Praxis. Ich bin ___.',answer:['selbstständig']},
  {type:'order',prompt:'Bilde eine passende Antwort.',tokens:['Ich','arbeite','als','Journalistin.'],answer:['Ich arbeite als Journalistin.','Ich arbeite als Journalistin']}
 ]}}
-const previous=window.L8_CONTENT_READY;window.L8_T1_EXAM_SAFEGUARD_READY=Promise.resolve(previous).then(themes=>{const all=window.L8_ALL_THEMES||themes||{},theme=themeOf(all);if(!theme||!Array.isArray(theme.tasks))return themes;let exam=theme.tasks.find(t=>t?.exam);if(!exam){exam=fallback()}else{exam.exam=true;exam.title='Prüfung';exam.icon='⭐';exam.emoji='⭐';if((exam.items||[]).length>15)exam.items=exam.items.slice(0,15)}theme.tasks=[...theme.tasks.filter(t=>t!==exam&&!t?.exam),exam];if(Number(document.body?.dataset?.theme||0)===1)window.L8_THEME=theme;return themes}).catch(error=>{console.error('L8T1 Prüfungsabsicherung',error);return window.L8_ALL_THEMES||{}});window.L8_CONTENT_READY=window.L8_T1_EXAM_SAFEGUARD_READY;
+const previous=window.L8_CONTENT_READY;window.L8_T1_EXAM_SAFEGUARD_READY=Promise.resolve(previous).then(themes=>{const all=window.L8_ALL_THEMES||themes||{},theme=themeOf(all);if(!theme||!Array.isArray(theme.tasks))return themes;theme.tasks=[...theme.tasks.filter(t=>!t?.exam),exam()];theme.contentRevision=String(theme.contentRevision||'l8t1')+'-exam15-v2';if(Number(document.body?.dataset?.theme||0)===1)window.L8_THEME=theme;return themes}).catch(error=>{console.error('L8T1 Prüfungsabsicherung',error);return window.L8_ALL_THEMES||{}});window.L8_CONTENT_READY=window.L8_T1_EXAM_SAFEGUARD_READY;
 })();
