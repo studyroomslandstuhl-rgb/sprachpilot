@@ -48,47 +48,106 @@ function apply(theme){
 
  const email=theme.tasks.find(t=>t?.id==='bewerbung-lueckentext');
  if(email){
-  email.title='Bewerbung per E-Mail – Lückentext';
-  email.instruction='Lies die E-Mail und ergänze die fehlenden Wörter und Zeitangaben.';
+  email.title='Bewerbung per E-Mail – 3 Lückentexte';
+  email.instruction='Lies die drei E-Mails und ergänze die fehlenden Wörter und Zeitangaben.';
   email.emailLayout=true;email.icon='📧';email.emoji='📧';
-  email.items=[{
-   type:'dialog-blanks',
-   lines:[
-    'An: bewerbung@hotel-rheinblick.de',
-    'Von: aylin.yilmaz@email.de',
-    'Betreff: Bewerbung als Köchin',
-    '',
-    '{{0}} Frau Berger,',
-    '',
-    'ich möchte mich um die {{1}} als Köchin in Ihrem Restaurant bewerben.',
-    '',
-    '{{2}} drei Jahren habe ich meine {{3}} als Köchin angefangen. Die Ausbildung hat zwei Jahre {{4}}.',
-    '{{5}} einem Jahr arbeite ich in einem Café. Dort habe ich viel {{6}} gesammelt.',
-    '',
-    'Im Anhang finden Sie meinen {{7}}, mein {{8}} und mein {{9}}.',
-    'Ich freue mich über eine Einladung zu einem {{10}}.',
-    '',
-    '{{11}}',
-    'Aylin Yilmaz'
-   ],
-   blanks:[
-    {answers:['Sehr geehrte','Sehr geehrte Frau Berger']},
-    {answers:['Stelle']},
-    {answers:['Vor']},
-    {answers:['Ausbildung']},
-    {answers:['gedauert']},
-    {answers:['Seit']},
-    {answers:['Berufserfahrung']},
-    {answers:['Lebenslauf']},
-    {answers:['Anschreiben']},
-    {answers:['Zeugnis']},
-    {answers:['Bewerbungsgespräch','Vorstellungsgespräch']},
-    {answers:['Mit freundlichen Grüßen','Mit freundlichen Gruessen']}
-   ]
-  }];
+  email.items=[
+   {
+    type:'dialog-blanks',
+    lines:[
+     'An: bewerbung@restaurant-mitte.de',
+     'Von: maria@email.de',
+     'Betreff: Bewerbung als Kellnerin',
+     '',
+     '{{0}} Frau Klein,',
+     '',
+     'ich möchte mich um die {{1}} als Kellnerin in Ihrem Restaurant bewerben.',
+     '',
+     '{{2}} zwei Jahren habe ich meine {{3}} gemacht.',
+     '{{4}} einem Jahr arbeite ich in einem Café.',
+     'Dort arbeite ich im Team und habe viel {{5}}.',
+     '',
+     'Ich freue mich auf ein {{6}}.',
+     '',
+     '{{7}}',
+     'Maria Petrenko'
+    ],
+    blanks:[
+     {answers:['Sehr geehrte','Sehr geehrte Frau Klein']},
+     {answers:['Stelle']},
+     {answers:['Vor']},
+     {answers:['Ausbildung']},
+     {answers:['Seit']},
+     {answers:['Berufserfahrung','Erfahrung']},
+     {answers:['Bewerbungsgespräch','Vorstellungsgespräch']},
+     {answers:['Mit freundlichen Grüßen','Mit freundlichen Gruessen']}
+    ]
+   },
+   {
+    type:'dialog-blanks',
+    lines:[
+     'An: herr.weber@hotel-stadt.de',
+     'Von: emre@email.de',
+     'Betreff: Bewerbung als Koch',
+     '',
+     '{{0}} Herr Weber,',
+     '',
+     'ich interessiere mich für die {{1}} als Koch in Ihrem Hotel.',
+     '{{2}} vier Jahren habe ich meine Ausbildung als Koch angefangen.',
+     'Die Ausbildung hat zwei Jahre {{3}}.',
+     '{{4}} zwei Jahren arbeite ich in einem Restaurant.',
+     'Die Arbeit macht mir viel {{5}}.',
+     '',
+     'Kann ich nächste Woche zu einem {{6}} kommen?',
+     '',
+     '{{7}}',
+     'Emre Kaya'
+    ],
+    blanks:[
+     {answers:['Sehr geehrter','Sehr geehrter Herr Weber']},
+     {answers:['Stelle']},
+     {answers:['Vor']},
+     {answers:['gedauert']},
+     {answers:['Seit']},
+     {answers:['Spaß','Spass']},
+     {answers:['Bewerbungsgespräch','Vorstellungsgespräch','Gespräch']},
+     {answers:['Mit freundlichen Grüßen','Mit freundlichen Gruessen']}
+    ]
+   },
+   {
+    type:'dialog-blanks',
+    lines:[
+     'An: frau.berger@buero.de',
+     'Von: olena@email.de',
+     'Betreff: Termin für das Bewerbungsgespräch',
+     '',
+     '{{0}} Frau Berger,',
+     '',
+     'vielen Dank für Ihre E-Mail.',
+     'Ich komme gern am Dienstag zum {{1}}.',
+     '{{2}} drei Jahren arbeite ich als Architektin.',
+     '{{3}} fünf Jahren habe ich meine Ausbildung angefangen.',
+     'Ich habe viel {{4}} und arbeite gern mit Kollegen zusammen.',
+     '',
+     'Vielen {{5}}.',
+     '',
+     '{{6}}',
+     'Olena Bondar'
+    ],
+    blanks:[
+     {answers:['Sehr geehrte','Sehr geehrte Frau Berger']},
+     {answers:['Bewerbungsgespräch','Vorstellungsgespräch','Gespräch']},
+     {answers:['Seit']},
+     {answers:['Vor']},
+     {answers:['Berufserfahrung','Erfahrung']},
+     {answers:['Dank']},
+     {answers:['Mit freundlichen Grüßen','Mit freundlichen Gruessen']}
+    ]
+   }
+  ];
  }
 
- theme.contentRevision='l8t2-task7-8-polish-20260901-v2';
+ theme.contentRevision='l8t2-task7-8-polish-20260902-v3';
  return theme;
 }
 
