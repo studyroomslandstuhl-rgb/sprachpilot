@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L8T3_REVIEW_UI_20260902_V1)return;
-window.__SP_L8T3_REVIEW_UI_20260902_V1=true;
+if(window.__SP_L8T3_REVIEW_UI_20260902_V2)return;
+window.__SP_L8T3_REVIEW_UI_20260902_V2=true;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function themeNo(){return Number(window.L8_THEME?.number||document.body?.dataset?.theme||3)}
 function taskNo(task){const i=(window.L8_THEME?.tasks||[]).findIndex(t=>t?.id===task?.id);return i>=0?i+1:''}
@@ -9,12 +9,20 @@ function load(task){return window.L8S.load(themeNo(),task.id,task.items.length)}
 function pct(task,state){return Math.round((state.done.length/Math.max(1,task.items.length))*100)}
 function current(task){const i=window.L8S.nextIndex(themeNo(),task.id,task.items.length);return Number.isInteger(i)?i:null}
 function answerText(item){return Array.isArray(item.answer)?item.answer[0]:item.answer}
-function note(state,index,item){
+function noteTime(state,index,item){
  const tries=Number(state.tries?.[index]||0),review=Number(state.review?.[index]||0);
  if(review===2)return '<div class="sp-rv-note hint">Richtig korrigiert. Dieser Satz kommt noch einmal.</div>';
  if(tries===1)return '<div class="sp-rv-note bad">Noch nicht richtig. Prüfe Zeitwort und Verbform.</div>';
  if(tries===2)return '<div class="sp-rv-note hint">Hinweis: heute/jetzt = Gegenwart. früher/damals/gestern/vor ... = Vergangenheit.</div>';
  if(tries>=3)return `<div class="sp-rv-note hint">Richtige Gruppe: <strong>${esc(answerText(item))}</strong>.</div>`;
+ return ''
+}
+function noteImage(state,index,item){
+ const tries=Number(state.tries?.[index]||0),review=Number(state.review?.[index]||0);
+ if(review===2)return '<div class="sp-rv-note hint">Richtig korrigiert. Dieses Bild kommt noch einmal.</div>';
+ if(tries===1)return '<div class="sp-rv-note bad">Noch nicht richtig. Schau noch einmal genau auf die dargestellte Situation.</div>';
+ if(tries===2)return '<div class="sp-rv-note hint">Hinweis: Denke an Bedeutung, Beruf oder Ort – nicht nur an die Form des Wortes.</div>';
+ if(tries>=3)return `<div class="sp-rv-note hint">Passendes Wort: <strong>${esc(answerText(item))}</strong>. Wähle es jetzt selbst.</div>`;
  return ''
 }
 function progress(task,state){const p=pct(task,state);return `<div class="sp-rv-progress"><span>${state.done.length} von ${task.items.length} fertig</span><strong>${p}%</strong></div><div class="sp-rv-bar"><span style="width:${p}%"></span></div>`}
@@ -28,7 +36,7 @@ function renderTime(task){
  const present=state.done.map(i=>task.items[i]).filter(x=>answerText(x)==='Gegenwart');
  const past=state.done.map(i=>task.items[i]).filter(x=>answerText(x)==='Vergangenheit');
  const rows=list=>list.length?list.map(x=>`<div class="sp-time-row">${esc(x.sentence)}</div>`).join(''):'<div class="sp-time-empty">Noch kein Satz</div>';
- root.innerHTML=`<div class="l8-wrap"><section class="l8-card sp-rv-head"><div class="sp-rv-kicker">Aufgabe ${taskNo(task)}</div><h1>🕒 ${esc(task.title)}</h1><p>${esc(task.instruction)}</p><div class="sp-rv-intro">${esc(task.intro||'')}</div>${progress(task,state)}</section><section class="l8-card sp-time-card"><div class="sp-time-current"><div class="sp-time-label">Ordne diesen Satz zu:</div><div class="sp-time-sentence">${esc(item.sentence)}</div><div class="sp-time-actions"><button type="button" data-time-answer="Gegenwart">☀️ Gegenwart</button><button type="button" data-time-answer="Vergangenheit">🕰️ Vergangenheit</button></div>${note(state,idx,item)}</div><div class="sp-time-tables"><section><h3>☀️ Gegenwart</h3>${rows(present)}</section><section><h3>🕰️ Vergangenheit</h3>${rows(past)}</section></div></section></div>`;
+ root.innerHTML=`<div class="l8-wrap"><section class="l8-card sp-rv-head"><div class="sp-rv-kicker">Aufgabe ${taskNo(task)}</div><h1>🕒 ${esc(task.title)}</h1><p>${esc(task.instruction)}</p><div class="sp-rv-intro">${esc(task.intro||'')}</div>${progress(task,state)}</section><section class="l8-card sp-time-card"><div class="sp-time-current"><div class="sp-time-label">Ordne diesen Satz zu:</div><div class="sp-time-sentence">${esc(item.sentence)}</div><div class="sp-time-actions"><button type="button" data-time-answer="Gegenwart">☀️ Gegenwart</button><button type="button" data-time-answer="Vergangenheit">🕰️ Vergangenheit</button></div>${noteTime(state,idx,item)}</div><div class="sp-time-tables"><section><h3>☀️ Gegenwart</h3>${rows(present)}</section><section><h3>🕰️ Vergangenheit</h3>${rows(past)}</section></div></section></div>`;
  document.querySelectorAll('[data-time-answer]').forEach(btn=>btn.addEventListener('click',()=>{
   const value=btn.dataset.timeAnswer;
   if(S.equal(value,item.answer))S.right(themeNo(),task.id,task.items.length,idx,value);else S.wrong(themeNo(),task.id,task.items.length,idx,value);
@@ -42,7 +50,7 @@ function renderImage(task){
  let state=load(task);if(state.done.length>=task.items.length){finish(task,'🖼️','Du hast den Wortschatz über Bilder wiederholt.');return true}
  const idx=current(task);if(idx==null){finish(task,'🖼️','Du hast den Wortschatz über Bilder wiederholt.');return true}
  state=load(task);const item=task.items[idx];
- root.innerHTML=`<div class="l8-wrap"><section class="l8-card sp-rv-head"><div class="sp-rv-kicker">Aufgabe ${taskNo(task)} · Bild ${idx+1} von ${task.items.length}</div><h1>🖼️ ${esc(task.title)}</h1><p>${esc(task.instruction)}</p>${progress(task,state)}</section><section class="l8-card sp-img-card"><div class="sp-img-box"><img src="${esc(item.image)}" alt="" onerror="this.closest('.sp-img-box').classList.add('missing');this.hidden=true"></div><div class="sp-img-prompt">${esc(item.prompt)}</div><div class="sp-img-options">${(item.options||[]).map(o=>`<button type="button" data-img-answer="${esc(o)}">${esc(o)}</button>`).join('')}</div>${note(state,idx,item)}</section></div>`;
+ root.innerHTML=`<div class="l8-wrap"><section class="l8-card sp-rv-head"><div class="sp-rv-kicker">Aufgabe ${taskNo(task)} · Bild ${idx+1} von ${task.items.length}</div><h1>🖼️ ${esc(task.title)}</h1><p>${esc(task.instruction)}</p>${progress(task,state)}</section><section class="l8-card sp-img-card"><div class="sp-img-box"><img src="${esc(item.image)}" alt="" onerror="this.closest('.sp-img-box').classList.add('missing');this.hidden=true"></div><div class="sp-img-prompt">${esc(item.prompt)}</div><div class="sp-img-options">${(item.options||[]).map(o=>`<button type="button" data-img-answer="${esc(o)}">${esc(o)}</button>`).join('')}</div>${noteImage(state,idx,item)}</section></div>`;
  document.querySelectorAll('[data-img-answer]').forEach(btn=>btn.addEventListener('click',()=>{
   const value=btn.dataset.imgAnswer;
   if(S.equal(value,item.answer))S.right(themeNo(),task.id,task.items.length,idx,value);else S.wrong(themeNo(),task.id,task.items.length,idx,value);
