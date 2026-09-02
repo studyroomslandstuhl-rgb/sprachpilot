@@ -14,21 +14,23 @@ const FIELDS=[
  ['Dauer der Ausbildung','3 Jahre'],
  ['Arbeit','Restaurant in Köln · seit 3 Jahren']
 ];
+const WORD_HELP=['eorbgen','tnhwo','tieS','roV','uAslibudgn','nöhKic','rhJae','ertabteit','sReutranat','faErrhngu'];
 
 function apply(theme){
  if(!theme||!Array.isArray(theme.tasks))return theme;
  const task=theme.tasks.find(t=>t?.id==='biografie-schreiben');
  if(!task)return theme;
  task.title='Biografie schreiben';
- task.instruction='Schreibe aus den Angaben eine kurze Biografie.';
+ task.instruction='Schreibe aus den Angaben eine kurze Biografie. Nutze die Wörter oben als Hilfe.';
  task.kind='free';task.icon='✍️';task.emoji='✍️';
  task.items=[{
   type:'free',min:4,
   prompt:'Schreibe einen zusammenhängenden Text. Du darfst die Reihenfolge ändern und mehrere Angaben in einem Satz verbinden.',
   context:FIELDS.map(([label,value])=>`${label}: ${value}`).join('\n'),
-  formFields:FIELDS.map(([label,value])=>({label,value}))
+  formFields:FIELDS.map(([label,value])=>({label,value})),
+  scrambledHelp:WORD_HELP
  }];
- theme.contentRevision='l8t2-biography-form-write-20260902-v1';
+ theme.contentRevision='l8t2-biography-form-write-20260902-v2';
  return theme;
 }
 
@@ -57,7 +59,7 @@ function renderForm(){
  if(task?.id!=='biografie-schreiben')return;
  const box=document.querySelector('.l8-exercise .l8-context');if(!box||box.dataset.spFormReady==='1')return;
  box.dataset.spFormReady='1';box.classList.add('sp-bio-form');
- box.innerHTML=`<div class="sp-bio-form-title">Informationen</div>${FIELDS.map(([label,value])=>`<div class="sp-bio-form-row"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join('')}`;
+ box.innerHTML=`<div class="sp-bio-word-help"><strong>Wörter als Hilfe:</strong><div>${WORD_HELP.map(word=>`<span>${esc(word)}</span>`).join('')}</div></div><div class="sp-bio-form-title">Informationen</div>${FIELDS.map(([label,value])=>`<div class="sp-bio-form-row"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join('')}`;
 }
 function install(){
  const taskId=String(new URLSearchParams(location.search).get('task')||'');
@@ -77,7 +79,7 @@ function install(){
   if(box)box.innerHTML='<div class="l8-feedback good">Der Text enthält alle Informationen. Die Zeitangaben sind korrekt.</div>';
   button.disabled=true;setTimeout(()=>window.L8UI?.taskPage?.(),650);
  },true);
- if(!document.getElementById('sp-l8t2-biography-form-style')){const style=document.createElement('style');style.id='sp-l8t2-biography-form-style';style.textContent='.sp-bio-form{display:grid!important;gap:0!important;padding:0!important;overflow:hidden}.sp-bio-form-title{font-weight:900;font-size:18px;padding:14px 16px;background:var(--lesson-soft,var(--l8-soft));color:var(--lesson-main-dark,var(--l8-dark))}.sp-bio-form-row{display:grid;grid-template-columns:minmax(130px,.75fr) minmax(0,1.25fr);gap:12px;padding:11px 16px;border-top:1px solid var(--lesson-line,var(--l8-line));align-items:center}.sp-bio-form-row span{font-weight:800;color:var(--lesson-main-dark,var(--l8-dark))}.sp-bio-form-row strong{font-weight:700}.l8-feedback ul{margin:8px 0 0 20px;padding:0}.l8-feedback li+li{margin-top:5px}@media(max-width:620px){.sp-bio-form-row{grid-template-columns:1fr;gap:3px}}';document.head.appendChild(style)}
+ if(!document.getElementById('sp-l8t2-biography-form-style')){const style=document.createElement('style');style.id='sp-l8t2-biography-form-style';style.textContent='.sp-bio-form{display:grid!important;gap:0!important;padding:0!important;overflow:hidden}.sp-bio-word-help{padding:14px 16px;background:#fff8dc;border-bottom:1px solid var(--lesson-line,var(--l8-line))}.sp-bio-word-help>strong{display:block;margin-bottom:9px;color:var(--lesson-main-dark,var(--l8-dark))}.sp-bio-word-help>div{display:flex;flex-wrap:wrap;gap:8px}.sp-bio-word-help span{display:inline-block;padding:6px 10px;border:1px solid var(--lesson-line,var(--l8-line));border-radius:999px;background:#fff;font-weight:800;letter-spacing:.04em}.sp-bio-form-title{font-weight:900;font-size:18px;padding:14px 16px;background:var(--lesson-soft,var(--l8-soft));color:var(--lesson-main-dark,var(--l8-dark))}.sp-bio-form-row{display:grid;grid-template-columns:minmax(130px,.75fr) minmax(0,1.25fr);gap:12px;padding:11px 16px;border-top:1px solid var(--lesson-line,var(--l8-line));align-items:center}.sp-bio-form-row span{font-weight:800;color:var(--lesson-main-dark,var(--l8-dark))}.sp-bio-form-row strong{font-weight:700}.l8-feedback ul{margin:8px 0 0 20px;padding:0}.l8-feedback li+li{margin-top:5px}@media(max-width:620px){.sp-bio-form-row{grid-template-columns:1fr;gap:3px}}';document.head.appendChild(style)}
 }
 
 window.L8_T2_TASK10_BIOGRAFIE_TEXT_READY=Promise.resolve(window.L8_CONTENT_READY).then(themes=>{
