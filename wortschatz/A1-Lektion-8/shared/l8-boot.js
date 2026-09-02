@@ -7,6 +7,28 @@ const RETRY_MS=120;
 const MAX_PENDING_RETRIES=35;
 const MAX_CORE_RETRIES=60;
 
+function readJson(key){try{return JSON.parse(localStorage.getItem(key)||'null')||{}}catch(e){return{}}}
+function teacherAccess(){
+ const roles=['teacher','lehrer','admin','owner','superadmin'];
+ const stored=['SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE','SP_AUTH_ROLE'].map(key=>String(localStorage.getItem(key)||'').trim().toLowerCase());
+ if(stored.some(value=>roles.includes(value)))return true;
+ const access=String(window.SP_SECURE_ACCESS?.type||'').toLowerCase();
+ if(access==='teacher'||access==='teacher-preview')return true;
+ if(window.spTeacherCanSeeAll===true)return true;
+ const profiles=[readJson('SP_TEACHER_PROFILE'),readJson('SP_USER_PROFILE')];
+ return profiles.some(p=>p?.isTeacher===true||p?.teacher===true||p?.admin===true||p?.owner===true||roles.includes(String(p?.role||p?.loginRole||p?.type||p?.accountType||'').toLowerCase()));
+}
+function installTeacherExamAccess(){
+ if(!teacherAccess()||!window.L8S)return false;
+ try{window.L8S.preview=()=>true}catch(e){}
+ try{window.L8S.allDone=()=>true}catch(e){}
+ try{window.spTeacherCanSeeAll=true}catch(e){}
+ return true;
+}
+function ensureTeacherExamReader(){
+ if(!teacherAccess())return;
+ import('/js/sp-teacher-exam-reader.js?v=20260902-1').then(()=>setTimeout(()=>window.SPTeacherExamReader?.run?.(),0)).catch(()=>{});
+}
 function ensureStateV2(){
  if(window.__SP_L8_STATE_V2&&window.L8S?.stateSchema===2&&typeof window.L8S?.runNo==='function')return Promise.resolve();
  if(stateV2Promise)return stateV2Promise;
@@ -88,9 +110,11 @@ function scheduleRetry(){setTimeout(start,RETRY_MS)}
 async function start(){
  startAttempts++;
  try{await ensureStateV2()}catch(error){console.error('L8 Fortschrittssystem konnte nicht geladen werden',error)}
+ installTeacherExamAccess();
  reinstallSafeAudio();
  await waitForFinalContent();
  const theme=normalizeThemeIdentity();
+ installTeacherExamAccess();
  const coreMissing=!theme||!window.L8S||!window.L8UI||window.L8S.stateSchema!==2;
  const contentPending=!!(window.L8_T2_TIME_REVIEW_PENDING||window.L8_T2_QUALITY_PENDING||window.L8_T2_VOCAB_PENDING||window.L8_T2_VOCAB_FINAL_PENDING);
  if(coreMissing){
@@ -102,8 +126,10 @@ async function start(){
  finalizeCardMedia(theme);
  reinstallSafeAudio();
  normalizeThemeIdentity();
+ installTeacherExamAccess();
  if(document.body.dataset.page==='theme')window.L8UI.themeOverview();else window.L8UI.taskPage();
- [0,80,250,700,1500].forEach(ms=>setTimeout(()=>{const t=normalizeThemeIdentity();finalizeCardMedia(t);reinstallSafeAudio();polishHeader();polishTaskEmojis()},ms));
+ ensureTeacherExamReader();
+ [0,80,250,700,1500].forEach(ms=>setTimeout(()=>{const t=normalizeThemeIdentity();finalizeCardMedia(t);reinstallSafeAudio();installTeacherExamAccess();polishHeader();polishTaskEmojis();window.SPTeacherExamReader?.run?.()},ms));
 }
 window.L8TaskEmoji=taskEmoji;
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',start,{once:true});else start();
