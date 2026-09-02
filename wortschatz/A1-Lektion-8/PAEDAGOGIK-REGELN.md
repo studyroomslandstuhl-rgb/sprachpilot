@@ -27,6 +27,29 @@ Geeignete Wortschatzaufgaben sind zum Beispiel:
 
 Nicht jedes Thema braucht dieselben Wortschatzaufgaben. Die Auswahl soll abwechslungsreich sein, aber das Grundmuster **Karteikarten + 2–4 Wortschatzübungen** bleibt bestehen.
 
+## Prüfungen
+
+Prüfungen prüfen **aktive Leistung** und dürfen keine reine Wiedererkennungs- oder Abschreibübung sein.
+
+- **Maximal 25 %** der Prüfungsitems dürfen Multiple Choice sein.
+- Mindestens **75 %** verlangen aktive Produktion: schreiben, Satz bauen, Form einsetzen, Wort/Plural aus einem Bild produzieren oder eine Antwort aus Bausteinen formulieren.
+- Multiple-Choice-Antworten werden immer gemischt. Die richtige Lösung darf keine feste Position haben.
+- Prüfungen kopieren keine Lernaufgabe 1:1.
+- Bei Texten/Hörtexten darf die Antwort nicht einfach wortgleich im Text stehen und nur abgeschrieben werden.
+- Prüfungsfragen verlangen Transfer: Bedeutung verstehen, passende Form bilden, Informationen kombinieren oder selbst formulieren.
+- Geeignete Prüfungsformate sind insbesondere:
+  - Bedeutung → Wort auswählen oder schreiben,
+  - Wort → Bedeutung auswählen,
+  - Bild → Wort schreiben,
+  - Bild → Plural schreiben,
+  - Frage + Satzbausteine → vollständige Antwort bauen,
+  - Lückensatz → passende Form selbst schreiben,
+  - Zeitangaben wie `seit`, `vor`, `für` im Kontext selbst einsetzen,
+  - Verbform selbst bilden,
+  - kurze schriftliche Antwort oder Mini-Text produzieren.
+- Prüfungen enthalten eine sinnvolle Mischung mehrerer Aufgabentypen und nicht 20 Varianten derselben Multiple-Choice-Frage.
+- Die bestehende Prüfungs-Punkte- und Wiederholungslogik bleibt erhalten.
+
 ## Kurze Namen und Aufgabenstellungen
 
 - Aufgabennamen sind **kurz und eindeutig**, wie in Lektion 7 und Lektion 8 Thema 1.
