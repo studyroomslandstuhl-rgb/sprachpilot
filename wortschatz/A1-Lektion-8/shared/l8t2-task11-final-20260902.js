@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L8T2_TASK11_FINAL_20260902_V2)return;
-window.__SP_L8T2_TASK11_FINAL_20260902_V2=true;
+if(window.__SP_L8T2_TASK11_FINAL_20260902_V3)return;
+window.__SP_L8T2_TASK11_FINAL_20260902_V3=true;
 
 const FORBIDDEN=['arbeitgeberin','lebenslauf','studium','anschreiben','zeugnis','zeugnisse'];
 const norm=v=>String(v||'').normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').toLowerCase().replace(/[„“”"'`´.,!?;:()]/g,' ').replace(/\s+/g,' ').trim();
@@ -107,20 +107,32 @@ function build(theme){
  });
 }
 
+function visibleTask11(theme){
+ const normalIndexes=[];
+ theme.tasks.forEach((task,index)=>{if(!task?.exam)normalIndexes.push(index)});
+ const index=normalIndexes[10];
+ if(Number.isInteger(index))return{index,task:theme.tasks[index]};
+ const fallbackIndex=theme.tasks.findIndex(t=>['bewerbung-lueckentext','biografien-luecken','wortschatz-im-kontext-v2','wortschatz-im-kontext-v3','wortschatz-im-kontext-v4','wortschatz-im-kontext-v5'].includes(String(t?.id||'')));
+ return fallbackIndex>=0?{index:fallbackIndex,task:theme.tasks[fallbackIndex]}:null;
+}
+
 function apply(theme){
  if(!theme||!Array.isArray(theme.tasks))return theme;
- const task=theme.tasks.find(t=>['biografien-luecken','wortschatz-im-kontext-v2','wortschatz-im-kontext-v3','wortschatz-im-kontext-v4'].includes(String(t?.id||'')))
-   || theme.tasks.find(t=>String(t?.title||'').toLowerCase()==='wörter im kontext');
- if(!task)return theme;
+ const slot=visibleTask11(theme);if(!slot)return theme;
  const items=build(theme);
- task.id='wortschatz-im-kontext-v4';
- task.title='Wörter im Kontext';
- task.instruction='Ergänze nur Wörter, die du in den Karteikarten von Thema 2 gelernt hast.';
- task.kind='input';task.icon='✍️';task.emoji='✍️';delete task.intro;delete task.emailLayout;
- task.items=items;
- task.spVocabularySource='cards-only';
- task.forbiddenVocabulary=[...FORBIDDEN];
- theme.contentRevision=String(theme.contentRevision||'')+'-task11-final-cards-only-v2';
+ const replacement={
+  ...slot.task,
+  id:'wortschatz-im-kontext-v5',
+  title:'Wörter im Kontext',
+  instruction:'Ergänze nur Wörter, die du in den Karteikarten von Thema 2 gelernt hast.',
+  kind:'input',icon:'✍️',emoji:'✍️',
+  items,
+  spVocabularySource:'cards-only',
+  forbiddenVocabulary:[...FORBIDDEN]
+ };
+ delete replacement.intro;delete replacement.emailLayout;delete replacement.sections;delete replacement.audio;delete replacement.audioFile;
+ theme.tasks.splice(slot.index,1,replacement);
+ theme.contentRevision=String(theme.contentRevision||'')+'-visible-task11-final-cards-only-v3';
  return theme;
 }
 
@@ -133,5 +145,5 @@ window.L8_T2_TASK11_FINAL_READY=Promise.resolve(previous).then(themes=>{
  return themes;
 });
 window.L8_CONTENT_READY=window.L8_T2_TASK11_FINAL_READY;
-window.L8T2Task11Final20260902={apply,build,version:2};
+window.L8T2Task11Final20260902={apply,build,visibleTask11,version:3};
 })();
