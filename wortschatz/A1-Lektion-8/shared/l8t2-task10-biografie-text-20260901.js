@@ -60,8 +60,10 @@ function renderForm(){
  box.innerHTML=`<div class="sp-bio-form-title">Informationen</div>${FIELDS.map(([label,value])=>`<div class="sp-bio-form-row"><span>${esc(label)}</span><strong>${esc(value)}</strong></div>`).join('')}`;
 }
 function install(){
+ const taskId=String(new URLSearchParams(location.search).get('task')||'');
+ if(taskId!=='biografie-schreiben')return;
  if(window.__SP_L8T2_BIOGRAPHY_WRITE_UI_20260902)return;window.__SP_L8T2_BIOGRAPHY_WRITE_UI_20260902=true;
- const root=document.getElementById('app');if(root){new MutationObserver(renderForm).observe(root,{childList:true,subtree:true});renderForm()}
+ const root=document.getElementById('app');if(root){const observer=new MutationObserver(()=>{renderForm();if(document.querySelector('.sp-bio-form'))observer.disconnect()});observer.observe(root,{childList:true,subtree:true});renderForm()}
  document.addEventListener('click',event=>{
   const button=event.target?.closest?.('#saveFree');if(!button)return;
   const id=new URLSearchParams(location.search).get('task'),task=(window.L8_THEME?.tasks||[]).find(t=>String(t?.id)===String(id));
