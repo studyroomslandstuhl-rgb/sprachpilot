@@ -1,16 +1,17 @@
 (function(){
 'use strict';
-if(window.__SP_L8T3_LISTENING_CONTENT_20260903_V1)return;
-window.__SP_L8T3_LISTENING_CONTENT_20260903_V1=true;
+if(window.__SP_L8T3_LISTENING_CONTENT_20260903_V2)return;
+window.__SP_L8T3_LISTENING_CONTENT_20260903_V2=true;
 
 function themeOf(all){return all?.[3]||all?.['3']||(Array.isArray(all)?all.find(t=>Number(t?.number)===3):null)}
 const C=(prompt,options,answer)=>({type:'choice',prompt,options,answer});
+const AUDIO_BASE='https://sprachpilot.b-cdn.net/audio/';
 const FILES=[
- 'l8t3_auf8_dialog_01_sara.mp3',
- 'l8t3_auf8_dialog_02_karim.mp3',
- 'l8t3_auf8_dialog_03_nina.mp3',
- 'l8t3_auf8_dialog_04_amir.mp3',
- 'l8t3_auf8_dialog_05_elena.mp3'
+ 'l8t3_a12_dialog_01_sara.mp3',
+ 'l8t3_a12_dialog_02_karim.mp3',
+ 'l8t3_a12_dialog_03_nina.mp3',
+ 'l8t3_a12_dialog_04_amir.mp3',
+ 'l8t3_a12_dialog_05_elena.mp3'
 ];
 
 const DIALOGUES=[
@@ -69,8 +70,8 @@ function apply(theme){
  const dialogues=[];
  DIALOGUES.forEach((d,index)=>{
   const start=items.length;
-  d.qs.forEach(q=>items.push({...q,context:d.title,audio:d.audio}));
-  dialogues.push({title:d.title,audio:d.audio,fileName:FILES[index],questionIndexes:[start,start+1,start+2]});
+  d.qs.forEach(q=>items.push({...q,context:d.title,audio:d.audio,audioFile:AUDIO_BASE+FILES[index]}));
+  dialogues.push({title:d.title,audio:d.audio,audioFile:AUDIO_BASE+FILES[index],fileName:FILES[index],questionIndexes:[start,start+1,start+2]});
  });
  task.items=items;
  task.dialogues=dialogues;
@@ -81,7 +82,7 @@ function apply(theme){
  task.intro='Höre genau: Früher und heute sind nicht immer besser oder schlechter.';
  task.spTeacherReview={transcripts:DIALOGUES.map(d=>({title:d.title,transcript:d.audio,questions:d.qs.map(q=>({type:'3er-Auswahl',prompt:q.prompt,options:q.options.slice(),answer:q.answer}))}))};
  task.contentNote='Transkripte sind als Lehrkraft-Reviewdaten hinterlegt und werden Lernenden nicht automatisch angezeigt.';
- task.contentRevision=String(task.contentRevision||'')+'-listening-content-20260903-v1';
+ task.contentRevision=String(task.contentRevision||'')+'-listening-content-20260903-v2-bunny';
  return theme;
 }
 
@@ -92,5 +93,5 @@ window.L8_T3_LISTENING_CONTENT_READY=Promise.resolve(previous).then(themes=>{
  return themes;
 }).catch(error=>{console.error('L8T3 A12 Hörinhalt konnte nicht aktualisiert werden',error);return window.L8_ALL_THEMES||{}});
 window.L8_CONTENT_READY=window.L8_T3_LISTENING_CONTENT_READY;
-window.L8T3ListeningContent20260903={apply,dialogues:DIALOGUES,version:1};
+window.L8T3ListeningContent20260903={apply,dialogues:DIALOGUES,fileNames:FILES.slice(),version:2};
 })();
