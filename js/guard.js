@@ -11,7 +11,7 @@ const path=location.pathname;
 if(/\/wortschatz\/A1-Lektion-(?:3|4|5)(?:\/|$)/i.test(path))import("/js/lesson-button-colors.js?v=2").catch(()=>{});
 const IS_L6T3_PATH=path.includes("/wortschatz/A1-Lektion-6/Thema-3/");
 if(!IS_L6T3_PATH){
-  import("/js/sp-teacher-unlocked.js?v=3").catch(()=>{});
+  import("/js/sp-teacher-unlocked.js?v=20260903-perf1").catch(()=>{});
   import("/js/sp-assets.js?v=20260903-perf1").catch(()=>{});
   import("/js/sp-image-guard.js?v=20260903-perf1").catch(()=>{});
 }
