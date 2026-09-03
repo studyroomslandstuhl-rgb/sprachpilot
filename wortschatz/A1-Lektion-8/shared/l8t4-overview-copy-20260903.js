@@ -19,12 +19,12 @@ window.L8_CONTENT_READY=Promise.resolve(previous).then(themes=>{
   'l8t4-telefon-saetze':'Wähle den passenden Satz.',
   'l8t4-telefon-dialoge-v2':'Ergänze die Telefongespräche.',
   'l8t4-schreiben-nachfrage':'Schreibe eine kurze Nachricht.',
-  'pruefung':'Bearbeite die Prüfung.'
+  'pruefung':'Test dein Wissen!'
  };
  for(const task of theme.tasks){
   const id=String(task?.id||'');
   if(short[id])task.instruction=short[id];
-  else if(task?.exam)task.instruction='Bearbeite die Prüfung.';
+  else if(task?.exam)task.instruction='Test dein Wissen!';
   else if(task?.spL8T4ListeningGroups)task.instruction='Höre und beantworte die Fragen.';
   else if(task?.spL8T4PersonAds)task.instruction='Welche Stelle passt zur Person?';
  }
