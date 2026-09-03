@@ -5,13 +5,13 @@ window.__SP_L8T4_EXAM_SINGLE_ATTEMPT_20260903=true;
 const S=()=>window.L8S,T=()=>window.L8_THEME,themeNo=()=>Number(T()?.number||4);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const load=t=>S().load(themeNo(),t.id,t.items.length);
+function shuffle(values,seedText){const a=[...(values||[])];let h=2166136261;for(const ch of String(seedText)){h^=ch.charCodeAt(0);h=Math.imul(h,16777619)}for(let i=a.length-1;i>0;i--){h=(Math.imul(h,1664525)+1013904223)>>>0;const j=h%(i+1);[a[i],a[j]]=[a[j],a[i]]}return a}
 function submit(task,item,idx,value,forced=null){
  if(!String(value||'').trim())return;
- const st=load(task),ok=forced===null?S().equal(value,item.answer):!!forced;
- st.firstSeen=Array.isArray(st.firstSeen)?st.firstSeen:[];
- if(!st.firstSeen.includes(idx)){st.firstSeen.push(idx);if(ok)st.firstCorrect=(Number(st.firstCorrect)||0)+1}
- st.answers=st.answers||{};st.answers[idx]=value;
- st.examResults=st.examResults&&typeof st.examResults==='object'?st.examResults:{};st.examResults[idx]=ok;
+ const st=load(task);st.firstSeen=Array.isArray(st.firstSeen)?st.firstSeen:[];st.examResults=st.examResults&&typeof st.examResults==='object'?st.examResults:{};
+ const seen=st.firstSeen.includes(idx),computed=forced===null?S().equal(value,item.answer):!!forced,ok=Object.prototype.hasOwnProperty.call(st.examResults,idx)?!!st.examResults[idx]:(seen?false:computed);
+ if(!seen){st.firstSeen.push(idx);if(ok)st.firstCorrect=(Number(st.firstCorrect)||0)+1}
+ st.answers=st.answers||{};st.answers[idx]=value;st.examResults[idx]=ok;
  if(!st.done.includes(idx))st.done.push(idx);
  st.queue=(st.queue||[]).filter(x=>Number(x)!==Number(idx));st.reviewQueue=(st.reviewQueue||[]).filter(x=>Number(x)!==Number(idx));
  st.current=null;if(st.review)delete st.review[idx];if(st.tries)delete st.tries[idx];
@@ -29,7 +29,7 @@ function render(task){
  st=load(task);st.examOrder=Array.isArray(st.examOrder)?st.examOrder:[];if(!st.examOrder.includes(idx)){st.examOrder.push(idx);S().save(themeNo(),task.id,st,false);st=load(task)}
  const pos=st.examOrder.indexOf(idx)+1,item=task.items[idx],pct=Math.round(st.done.length/Math.max(1,task.items.length)*100);
  let answer='';
- if(item.type==='choice')answer=`<div class="sp-exam-options">${(item.options||[]).map(o=>`<button type="button" data-exam-answer="${esc(o)}">${esc(o)}</button>`).join('')}</div>`;
+ if(item.type==='choice'){const opts=shuffle(item.options,`${task.id}|${idx}|${S().pid()}`);answer=`<div class="sp-exam-options">${opts.map(o=>`<button type="button" data-exam-answer="${esc(o)}">${esc(o)}</button>`).join('')}</div>`}
  else if(item.type==='free')answer=`<textarea class="l8-input sp-exam-free" id="spExamFree" placeholder="Antwort"></textarea><button class="l8-btn primary" id="spExamFreeNext" type="button">Weiter</button>`;
  else answer=`<div class="sp-exam-input"><input class="l8-input" id="spExamInput" autocomplete="off" placeholder="Antwort"><button class="l8-btn primary" id="spExamNext" type="button">Weiter</button></div>`;
  root.innerHTML=`<div class="l8-wrap"><section class="l8-card sp-exam-head"><div class="sp-exam-kicker">Prüfung</div><h1>⭐ Prüfung</h1><div class="sp-exam-progress"><span>Frage ${pos} von ${task.items.length}</span><strong>${pct}%</strong></div><div class="sp-exam-bar"><span style="width:${pct}%"></span></div></section><section class="l8-card sp-exam-card">${item.context?`<div class="sp-exam-context">${esc(item.context).replace(/\n/g,'<br>')}</div>`:''}${item.image?`<div class="sp-exam-image"><img src="${esc(item.image)}" alt=""></div>`:''}<div class="sp-exam-prompt">${esc(item.prompt)}</div>${answer}</section></div>`;
