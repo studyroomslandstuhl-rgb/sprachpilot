@@ -36,7 +36,7 @@ function build(){
   }),
   email({
    to:'personal@cafe-sonne.de',from:'ali@email.de',subject:'Arbeit im Café',salutation:salutationMale('Schulz'),name:'Ali Demir',
-   body:['ich möchte gern bei Ihnen arbeiten.','Ich habe ein {{1}} in einem Café gemacht.','Dort war ich in einer kleinen {{2}}.','Ich habe dabei viel {{3}} gesammelt.'],
+   body:['ich möchte gern bei Ihnen arbeiten.','Ich habe ein {{1}} in einem Café gemacht.','Dort war ich in einer kleinen {{2}}.','Dort habe ich viel {{3}} gesammelt.'],
    blanks:[internship(),department(),experience('Diplom')]
   }),
   email({
@@ -51,7 +51,7 @@ function build(){
   }),
   email({
    to:'personal@firma-west.de',from:'aylin@email.de',subject:'Arbeit in der Firma',salutation:salutationFemale('Wolf'),name:'Aylin Yilmaz',
-   body:['ich möchte gern bei Ihnen arbeiten.','Ich arbeite jetzt in einer {{1}}.','Vorher habe ich ein {{2}} bei einer Firma gemacht.','Dort habe ich viel {{3}} gesammelt.'],
+   body:['ich möchte gern bei Ihnen arbeiten.','Ich arbeite jetzt in einer {{1}}.','Ich habe ein {{2}} bei einer Firma gemacht.','Dort habe ich viel {{3}} gesammelt.'],
    blanks:[department(),internship(),experience('Diplom')]
   }),
   email({
@@ -61,7 +61,7 @@ function build(){
   }),
   email({
    to:'personal@hotel-zentrum.de',from:'nadia@email.de',subject:'Arbeit im Hotel',salutation:salutationFemale('Koch'),name:'Nadia Melnyk',
-   body:['ich möchte gern bei Ihnen arbeiten.','Ich arbeite zurzeit in einer {{1}}.','Dort habe ich viel {{2}} gesammelt.','Nach meiner Ausbildung habe ich ein {{3}} bekommen.'],
+   body:['ich möchte gern bei Ihnen arbeiten.','Ich arbeite jetzt in einer {{1}}.','Dort habe ich viel {{2}} gesammelt.','Nach meiner Ausbildung habe ich ein {{3}} bekommen.'],
    blanks:[department(),experience('Praktikum'),diploma()]
   }),
   email({
