@@ -27,6 +27,15 @@ Geeignete Wortschatzaufgaben sind zum Beispiel:
 
 Nicht jedes Thema braucht dieselben Wortschatzaufgaben. Die Auswahl soll abwechslungsreich sein, aber das Grundmuster **Karteikarten + 2–4 Wortschatzübungen** bleibt bestehen.
 
+## Abwechslungsreiche Aufgabenmodi
+
+- Innerhalb eines Themas werden **bewusst unterschiedliche Interaktionsmodi** verwendet. Nicht mehrere aufeinanderfolgende Aufgaben mit demselben Schema `Multiple Choice`, `Lücke schreiben` oder `Wörter ordnen`, wenn ein sinnvoller anderer Modus möglich ist.
+- Unterschiedliche Lernziele sollen auch unterschiedlich erlebt werden, zum Beispiel durch **Tabellen, Sortieren, Zuordnen, Memory, Dialoge, Buchstabensalat, Zwei-Schritt-Entscheidungen, Lese-Detektiv, Zeitleisten, Satzanalyse, Hörstationen und freie Produktion**.
+- Ein neuer Modus muss dem Lernziel dienen und darf nicht nur dekorativ sein.
+- Wenn zwei Aufgaben denselben sprachlichen Inhalt wiederholen, soll sich die **Interaktion deutlich unterscheiden**.
+- Innerhalb einer Lektion sollen sowohl rezeptive als auch produktive Modi vorkommen: auswählen, zuordnen, hören, lesen, sprechen und schreiben.
+- Für Hörverstehensaufgaben wird für die Lehrkraft eine **Kontrollgrundlage mit vollständigem Transkript und allen Aufgaben/Lösungen** hinterlegt. Das Transkript wird Lernenden nicht automatisch angezeigt, außer die Aufgabe sieht dies didaktisch ausdrücklich vor.
+
 ## Prüfungen
 
 Prüfungen prüfen **aktive Leistung** und dürfen keine reine Wiedererkennungs- oder Abschreibübung sein.
