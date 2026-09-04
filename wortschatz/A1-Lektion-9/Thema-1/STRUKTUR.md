@@ -2,17 +2,16 @@
 
 ## Was muss man machen? – müssen, man und Anleitungen
 
-## Lernziele
+## Verbindliche Lernziele
 
 Die Lernenden können:
 
 - **müssen** vollständig konjugieren,
-- mit **man muss** allgemeine Regeln und notwendige Schritte formulieren,
-- Modalverbsätze mit Infinitiv am Satzende bilden,
-- Ja-/Nein-Fragen und W-Fragen mit müssen bilden,
-- Abläufe mit **zuerst, dann, danach, zum Schluss** strukturieren,
-- kurze Anleitungen verstehen, ordnen, sprechen und schreiben,
-- in einfachen Behördensituationen nach notwendigen Unterlagen fragen.
+- **man** als unbestimmtes Subjekt verwenden: `man muss`,
+- notwendige Handlungen in Behörde, Autovermietung und am Fahrkartenautomaten ausdrücken,
+- kurze Anweisungen verstehen, geben und in der richtigen Reihenfolge ausführen,
+- Abläufe mit **zuerst, danach, dann, zum Schluss** strukturieren,
+- neue Verben mit ihrer **Perfektform** lernen und in Wortschatzaufgaben wiedererkennen.
 
 ## Grammatik
 
@@ -28,11 +27,11 @@ Die Lernenden können:
 
 ### man
 
-**man** bedeutet eine Person oder Menschen allgemein. Das Verb steht in der 3. Person Singular.
+**man** bedeutet Menschen allgemein oder eine nicht näher bestimmte Person. Das Verb steht in der 3. Person Singular.
 
-- Man muss das Formular ausfüllen.
-- Man muss hier ankreuzen.
+- Man muss den Antrag ausfüllen.
 - Man muss den Ausweis mitbringen.
+- Man muss zuerst das Ziel wählen.
 
 ### Satzbau
 
@@ -40,122 +39,130 @@ Die Lernenden können:
 - Ja-/Nein-Frage: `Müssen + Subjekt + weitere Satzteile + Infinitiv?`
 - W-Frage: `Fragewort + müssen + Subjekt + weitere Satzteile + Infinitiv?`
 
-Beispiele:
-
-- Ich muss den Antrag ausfüllen.
-- Man muss zuerst das Ziel auswählen.
-- Musst du den Reisepass mitbringen?
-- Muss man hier unterschreiben?
-- Was muss ich mitbringen?
-- Wo muss man ankreuzen?
-
 ## Reihenfolge
 
 - zuerst
-- dann
 - danach
+- dann
 - zum Schluss
 
-Beispiel Fahrkartenautomat:
+Beispiel:
 
-1. Man muss zuerst das Ziel auswählen.
-2. Dann muss man Erwachsene oder Kind auswählen.
-3. Danach muss man bezahlen.
+1. Zuerst muss man das Ziel wählen.
+2. Danach muss man Erwachsene auswählen.
+3. Dann muss man bezahlen.
 4. Zum Schluss muss man die Fahrkarte nehmen.
 
-## Kernwortschatz
+## Verbindlicher Wortschatz
 
-### Grammatik und Reihenfolge
-
-- müssen
-- man
-- zuerst
-- dann
-- danach
-- zum Schluss
-
-### Dokumente und Behörde
+### Nomen
 
 - der Führerschein – die Führerscheine
-- der Antrag – die Anträge
-- das Formular – die Formulare
-- die Papiere
-- die Unterlagen
-- das Dokument – die Dokumente
-- die Behörde – die Behörden
+- das Ticket – die Tickets
 - das Amt – die Ämter
-- die Urkunde – die Urkunden
-- die Bescheinigung – die Bescheinigungen
-- der Ausweis – die Ausweise
-- der Reisepass – die Reisepässe
-
-### Handlungen
-
-- ausfüllen
-- auswählen
-- wählen
-- ankreuzen
-- bezahlen
-- eingeben
-- drücken
-- bestätigen
-- unterschreiben
-- mitbringen
-
-### Anleitungen
-
-- das Ziel – die Ziele
+- die Europäische Union – kein Plural
+- die Fahrt – die Fahrten
 - die Fahrkarte – die Fahrkarten
-- der Fahrkartenautomat – die Fahrkartenautomaten
-- die Kaffeemaschine – die Kaffeemaschinen
-- das Kind – die Kinder
-- der/die Erwachsene – die Erwachsenen
+- der Antrag – die Anträge
+- der Ausweis – die Ausweise
+- die Papiere – nur Plural
+- der Automat – die Automaten
+- das Ziel – die Ziele
+- der Erwachsene – die Erwachsenen
+- die Erwachsene – die Erwachsenen
+- die Autovermietung – die Autovermietungen
+- die Unterlagen – nur Plural
+- das Dokument – die Dokumente
+- das Wechselgeld – kein Plural
 
-## Freiwilliger Zusatzwortschatz
+### Adjektive / Adverbien / Grammatik
 
-Dieser Wortschatz wird technisch getrennt geführt und kann von Lernenden aktiviert oder ausgelassen werden:
+- gültig
+- ausländisch
+- europäisch
+- jung
+- bar
+- man
+- zuerst
+- danach
+- dann
+- zum Schluss
 
-- die Ausländerbehörde – die Ausländerbehörden
-- das Jobcenter – die Jobcenter
-- das Bürgeramt – die Bürgerämter
-- das Bürgerbüro – die Bürgerbüros
-- das Sozialamt – die Sozialämter
-- das Standesamt – die Standesämter
-- das Jugendamt – die Jugendämter
-- die Arbeitsagentur – die Arbeitsagenturen
-- das Arbeitsamt – die Arbeitsämter
+### Verben mit Perfekt
 
-## Verbindliche Aufgabenfolge
+- müssen – **hat gemusst**
+- mieten – **hat gemietet**
+- ausfüllen – **hat ausgefüllt**
+- mitbringen – **hat mitgebracht**
+- unterschreiben – **hat unterschrieben**
+- funktionieren – **hat funktioniert**
+- wählen – **hat gewählt**
+- auswählen – **hat ausgewählt**
+- abholen – **hat abgeholt**
+- wiederholen – **hat wiederholt**
+- stempeln – **hat gestempelt**
 
-1. Karteikarten: Kernwortschatz
-2. Freiwilligen Zusatzwortschatz aktivieren oder überspringen
-3. Bild oder Erklärung → Wort
-4. Artikel und Plural
-5. müssen: Formen lernen
-6. man: Bedeutung und richtige Verbform
-7. Verbform auswählen
-8. Aussagesätze mit müssen ordnen
-9. Ja-/Nein-Fragen mit müssen ordnen
-10. W-Fragen mit müssen ordnen
-11. zuerst / dann / danach / zum Schluss
-12. Anleitung ordnen: Fahrkartenautomat
-13. Anleitung bauen: Kaffeemaschine
-14. Frage und Antwort verbinden
-15. Dokumente und Behörden zuordnen
-16. Mini-Dialog: Was muss ich mitbringen?
-17. Eigene kurze Anleitung schreiben oder sprechen
-18. Hören: kurze Anleitungen verstehen
-19. Themenprüfung
+### Feste Verbindungen
 
-## Methodische Orientierung an L7T1
+- einen Antrag stellen – **hat einen Antrag gestellt**
+- einen Antrag ausfüllen – **hat einen Antrag ausgefüllt**
+- den Ausweis mitbringen
+- die Papiere unterschreiben
+- das Ziel wählen
+- Erwachsene auswählen
 
-Wie bei **können / wollen** in L7T1 wird zuerst die Konjugation automatisiert. Danach folgen Satzbau, Ja-/Nein-Fragen und W-Fragen. Erst anschließend kommen freie und kommunikative Anwendungen. Die neuen Inhalte **man** und die Reihenfolgewörter werden schrittweise ergänzt.
+## Leitkontexte
+
+### Behörde
+
+- Was muss ich in der Behörde machen?
+- Ich muss einen Antrag stellen.
+- Ich muss einen Antrag ausfüllen.
+- Ich muss den Ausweis mitbringen.
+- Ich muss die Papiere unterschreiben.
+
+### Fahrkartenautomat
+
+Die Lernenden verstehen einen kurzen Ablauf und ordnen die Schritte mit den Reihenfolgewörtern.
+
+### Autovermietung
+
+Wortschatz wie Führerschein, gültig, ausländisch, europäisch, mieten, Autovermietung und abholen wird in kurzen realistischen Dialogen verwendet.
+
+## Vorbereitung Übersicht und Karteikarten
+
+Die Karteikarten orientieren sich am Standard von L8T1:
+
+- Vorderseite: Bild + Übersetzung in der Muttersprache,
+- Rückseite: deutsches Wort, Wortart, bei Nomen Artikel + Plural, bei Verben Infinitiv + Perfekt,
+- Bunny Storage für Bild und Audio,
+- Hörknopf,
+- Sprechen und Schreiben,
+- Verben werden nicht nur im Infinitiv, sondern auch mit ihrer Perfektform gelernt und getestet.
+
+Bildnamen werden ohne Artikel und mit `_` gebildet, z. B. `fuehrerschein.webp`, `europaeische_union.webp`, `einen_antrag_stellen.webp`.
+
+## Geplante Aufgabenfolge
+
+1. Karteikarten: Wortschatz + Perfektformen
+2. Bild oder Erklärung → Wort
+3. Nomen: Artikel und Plural
+4. Verben: Infinitiv ↔ Perfekt
+5. müssen vollständig konjugieren
+6. man + muss
+7. Aussagesätze mit müssen
+8. Fragen mit müssen
+9. zuerst / danach / dann / zum Schluss
+10. Anweisungen am Fahrkartenautomaten verstehen
+11. Behördengespräch: Was muss ich machen?
+12. Anleitung hören und Schritte ordnen
+13. eigene kurze Anleitung geben
+14. Themenprüfung
 
 ## Qualitätsregeln
 
-- Keine Nebensätze als Zielgrammatik.
-- Bei Satzbauaufgaben muss der Infinitiv am Satzende stehen.
-- Fragen und Aussagen werden getrennt trainiert.
-- Anleitungen enthalten kurze, realistische Einzelschritte.
-- Der Zusatzwortschatz darf die Kernaufgaben und Prüfungsfreischaltung nicht blockieren.
-- Zusatzwortschatz zählt nur dann als Lerninhalt, wenn er vom Lernenden aktiviert wurde.
+- A1-Satzbau.
+- Geschlossene Aufgaben haben eindeutige Lösungen.
+- Keine unnötigen Nebensätze als Zielgrammatik.
+- Alle neuen Verben enthalten verbindlich die Perfektform.
+- Perfektformen werden in Karteikarten und späteren Wortschatzaufgaben mitgetestet.
