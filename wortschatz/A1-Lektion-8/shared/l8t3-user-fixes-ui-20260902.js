@@ -38,18 +38,8 @@ function evaluateWriting(text){
  const family=sentenceWith(ss,['familie',/\bhat\b/,'besucht']);if(!family)missing.push('Familie: am Wochenende besucht.');
  const forbidden=[];const whole=' '+norm(text)+' ';[' wohnte ',' arbeitete ',' traf ',' besuchte '].forEach(x=>{if(whole.includes(x))forbidden.push(x.trim())});
  const present=[];
- const presentChecks=[
-  [[/\b(elena|sie)\b/,/\bist\b/,/\b(24|vierundzwanzig)\b/],'ist 24'],
-  [[/\b(elena|sie)\b/,/\bwohnt\b/],'wohnt'],
-  [[/\b(elena|sie)\b/,/\barbeitet\b/],'arbeitet'],
-  [['restaurant',/\bist\b/,'voll'],'Restaurant ist'],
-  [[/\b(elena|sie)\b/,/\bhat\b/,/erfahrung/],'hat Erfahrung'],
-  [['chef',/\bist\b/,'professionell'],'Chef ist'],
-  [[/\b(elena|sie)\b/,/\bhat\b/,'stress'],'hat Stress'],
-  [[/\b(elena|sie)\b/,/\btrifft\b/,'freunde'],'trifft'],
-  [[/\b(elena|sie)\b/,/\bbesucht\b/,'familie'],'besucht']
- ];
- presentChecks.forEach(([tests,label])=>{if(sentenceWith(ss,tests))present.push(label)});
+ const presentPatterns=[[/\b(elena|sie) ist (24|vierundzwanzig)\b/,'ist 24'],[/\b(sie|elena) wohnt\b/,'wohnt'],[/\b(sie|elena) arbeitet\b/,'arbeitet'],[/restaurant ist .*voll/,'Restaurant ist'],[/\b(elena|sie) hat .*erfahrung\b/,'hat Erfahrung'],[/chef ist .*professionell/,'Chef ist'],[/\b(elena|sie) hat .*stress\b/,'hat Stress'],[/\b(sie|elena) trifft .*freunde\b/,'trifft'],[/\b(sie|elena) besucht .*familie\b/,'besucht']];
+ presentPatterns.forEach(([re,label])=>{if(ss.some(sentence=>re.test(sentence)))present.push(label)});
  const perfectProblems=[];if(home&&!perfectOkay(home,'gewohnt'))perfectProblems.push('hat … gewohnt');if(job&&!perfectOkay(job,'gearbeitet'))perfectProblems.push('hat … gearbeitet');if(friends&&!perfectOkay(friends,'getroffen'))perfectProblems.push('hat … getroffen');if(family&&!perfectOkay(family,'besucht'))perfectProblems.push('hat … besucht');
  const duplicateProblems=[];[['gewohnt',home],['gearbeitet',job],['getroffen',friends],['besucht',family]].forEach(([word,sentence])=>{if(sentence&&wordCount(sentence,word)>1)duplicateProblems.push(word)});
  const verbEndProblems=[];const finalPatterns=[/24 .* war$/, /restaurant .* voll .* war$/, /erfahrung .* hatte$/, /stress .* hatte$/, /professionell .* streng .* war$/];ss.forEach(s=>finalPatterns.forEach(re=>{if(re.test(s))verbEndProblems.push(s)}));
