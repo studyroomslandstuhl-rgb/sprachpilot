@@ -16,7 +16,8 @@ Die Lernenden können:
 - **müssen, können, wollen, mögen und möchten** in eindeutigen Kontexten unterscheiden,
 - Anweisungen hören und Schritte in eine richtige Reihenfolge bringen,
 - Abläufe mit **zuerst, dann, danach und zum Schluss** formulieren,
-- kurze Anweisungstexte selbst schreiben und Lückentexte verstehen.
+- kurze Anweisungstexte selbst schreiben und Lückentexte verstehen,
+- in einem einfachen Behördengespräch selbst Fragen stellen und passende Antworten formulieren.
 
 ## Grammatik
 
@@ -188,9 +189,39 @@ In die Lücken kommen unter anderem:
 
 Der gesamte Text muss gelesen werden, damit die Lösung klar wird.
 
-### 11. ⭐ Themenprüfung
+### 11. 🗣️ Dialog im Amt
 
-Die Prüfung ist bis zum Abschluss aller Lernaufgaben mit 100 % gesperrt.
+Vier kurze Behördensituationen mit insgesamt **16 Gesprächsschritten**:
+
+1. einen Antrag stellen,
+2. ausländischer Führerschein,
+3. Antrag auf Kindergeld,
+4. ein Dokument abholen.
+
+Der Mitarbeiter / die Mitarbeiterin spricht oder zeigt einen Satz. Die Lernenden müssen darauf selbst reagieren und eine passende Frage oder Antwort **sprechen oder schreiben**.
+
+Typische Sprachhandlungen:
+
+- `Was muss ich machen?`
+- `Was muss ich zuerst machen?`
+- `Muss ich meinen Ausweis mitbringen?`
+- `Welche Unterlagen muss ich mitbringen?`
+- `Wo muss ich unterschreiben?`
+- `Muss ich einen Antrag stellen?`
+- `Kann ich den Antrag hier ausfüllen?`
+- `Wann kann ich das Dokument abholen?`
+
+Pro Gesprächsschritt sind mehrere grammatisch richtige Formulierungen als Lösung möglich. Die Aufgabe ist trotzdem streng: Nur eine tatsächlich korrekte vollständige Formulierung wird als richtig gespeichert. Sprechen und Schreiben sind gleichwertig; bei Mikrofonproblemen bleibt der Schreibweg erhalten.
+
+Die dreistufige Hilfe gilt auch hier:
+
+1. noch einmal selbst formulieren,
+2. sprachlicher Hinweis,
+3. eine mögliche vollständige Antwort wird gezeigt, muss danach aber selbst korrekt gesprochen oder geschrieben werden.
+
+### 12. ⭐ Themenprüfung
+
+Die Prüfung ist bis zum Abschluss aller **elf Lernaufgaben** mit 100 % gesperrt.
 
 In der Prüfung gibt es **keine neuen Höraufgaben**.
 
@@ -205,15 +236,15 @@ Geprüft werden:
 
 ## Technische Qualitätsregeln
 
-- Jede Aufgabe besitzt einen eigenen Link über `task.html?task=...`.
+- Die normalen Aufgaben besitzen eigene Links über `task.html?task=...`; der freie Behördendialog besitzt `dialog.html` als eigene interaktive Seite.
 - Fortschritt wird lokal sofort gespeichert und mit dem zentralen Firebase-Fortschritt synchronisiert.
 - Punkte folgen dem SprachPilot-Standard: Aufgaben 5 / 10 / 15 Punkte in Durchlauf 1 / 2 / 3; Prüfung maximal 100 / 200 / 300 Punkte.
 - Die Prüfung selbst wird nicht zusätzlich als normale 5-/10-/15-Punkte-Aufgabe gezählt.
-- Prüfung erst nach 100 % aller zehn Lernaufgaben.
+- Prüfung erst nach 100 % aller elf Lernaufgaben.
 - Dreistufige Hilfe nach Fehlern:
   1. noch einmal versuchen,
   2. konkreter Hinweis,
-  3. Lösung anzeigen, aber die richtige Antwort muss weiterhin selbst eingegeben oder gewählt werden.
+  3. Lösung anzeigen, aber die richtige Antwort muss weiterhin selbst eingegeben, gesprochen oder gewählt werden.
 - Eine Antwort wird nur dann als richtig gespeichert, wenn die verlangte Form korrekt gesprochen, geschrieben oder gewählt wurde.
 - Groß-/Kleinschreibung und Satzzeichen werden bei der technischen Prüfung normalisiert; falsche Wörter, falsche Artikel oder falsche Verbformen werden nicht akzeptiert.
 - Sprechaufgaben haben immer einen Schreib-Fallback.
