@@ -23,6 +23,7 @@ function norm(v){return String(v||'').toLowerCase().normalize('NFD').replace(/[\
 function sentences(text){return String(text||'').split(/[.!?]+|\n+/).map(norm).filter(Boolean)}
 function sentenceWith(list,required){return list.find(s=>required.every(r=>r instanceof RegExp?r.test(s):s.includes(norm(r))))||''}
 function perfectOkay(sentence,participle){const words=sentence.split(' '),aux=words.findIndex(w=>w==='hat'||w==='haben'),part=words.findIndex(w=>w===norm(participle));return aux>=0&&part>aux}
+function wordCount(sentence,word){const re=new RegExp(`\\b${norm(word)}\\b`,'g');return (String(sentence||'').match(re)||[]).length}
 function evaluateWriting(text){
  const ss=sentences(text),missing=[];
  const age=sentenceWith(ss,[/\b(elena|sie)\b/,/\bwar\b/,/\b(24|vierundzwanzig)\b/]);if(!age)missing.push('Alter: Elena war 24.');
@@ -37,12 +38,23 @@ function evaluateWriting(text){
  const family=sentenceWith(ss,['familie',/\bhat\b/,'besucht']);if(!family)missing.push('Familie: am Wochenende besucht.');
  const forbidden=[];const whole=' '+norm(text)+' ';[' wohnte ',' arbeitete ',' traf ',' besuchte '].forEach(x=>{if(whole.includes(x))forbidden.push(x.trim())});
  const present=[];
- const presentPatterns=[[/\b(elena|sie) ist (24|vierundzwanzig)\b/,'ist 24'],[/\b(sie|elena) wohnt\b/,'wohnt'],[/\b(sie|elena) arbeitet\b/,'arbeitet'],[/restaurant ist .*voll/,'Restaurant ist'],[/\b(elena|sie) hat .*erfahrung\b/,'hat Erfahrung'],[/chef ist .*professionell/,'Chef ist'],[/\b(elena|sie) hat .*stress\b/,'hat Stress'],[/\b(sie|elena) trifft .*freunde\b/,'trifft'],[/\b(sie|elena) besucht .*familie\b/,'besucht']];
- presentPatterns.forEach(([re,label])=>{if(re.test(whole))present.push(label)});
+ const presentChecks=[
+  [[/\b(elena|sie)\b/,/\bist\b/,/\b(24|vierundzwanzig)\b/],'ist 24'],
+  [[/\b(elena|sie)\b/,/\bwohnt\b/],'wohnt'],
+  [[/\b(elena|sie)\b/,/\barbeitet\b/],'arbeitet'],
+  [['restaurant',/\bist\b/,'voll'],'Restaurant ist'],
+  [[/\b(elena|sie)\b/,/\bhat\b/,/erfahrung/],'hat Erfahrung'],
+  [['chef',/\bist\b/,'professionell'],'Chef ist'],
+  [[/\b(elena|sie)\b/,/\bhat\b/,'stress'],'hat Stress'],
+  [[/\b(elena|sie)\b/,/\btrifft\b/,'freunde'],'trifft'],
+  [[/\b(elena|sie)\b/,/\bbesucht\b/,'familie'],'besucht']
+ ];
+ presentChecks.forEach(([tests,label])=>{if(sentenceWith(ss,tests))present.push(label)});
  const perfectProblems=[];if(home&&!perfectOkay(home,'gewohnt'))perfectProblems.push('hat … gewohnt');if(job&&!perfectOkay(job,'gearbeitet'))perfectProblems.push('hat … gearbeitet');if(friends&&!perfectOkay(friends,'getroffen'))perfectProblems.push('hat … getroffen');if(family&&!perfectOkay(family,'besucht'))perfectProblems.push('hat … besucht');
+ const duplicateProblems=[];[['gewohnt',home],['gearbeitet',job],['getroffen',friends],['besucht',family]].forEach(([word,sentence])=>{if(sentence&&wordCount(sentence,word)>1)duplicateProblems.push(word)});
  const verbEndProblems=[];const finalPatterns=[/24 .* war$/, /restaurant .* voll .* war$/, /erfahrung .* hatte$/, /stress .* hatte$/, /professionell .* streng .* war$/];ss.forEach(s=>finalPatterns.forEach(re=>{if(re.test(s))verbEndProblems.push(s)}));
- const contentScore=10-missing.length;const grammarOk=!forbidden.length&&!present.length&&!perfectProblems.length&&!verbEndProblems.length;const complete=contentScore===10&&grammarOk&&ss.length>=8;
- return{complete,contentScore,total:10,missing,forbidden,present,perfectProblems,verbEndProblems,sentenceCount:ss.length}
+ const contentScore=10-missing.length;const grammarOk=!forbidden.length&&!present.length&&!perfectProblems.length&&!duplicateProblems.length&&!verbEndProblems.length;const complete=contentScore===10&&grammarOk&&ss.length>=8;
+ return{complete,contentScore,total:10,missing,forbidden,present,perfectProblems,duplicateProblems,verbEndProblems,sentenceCount:ss.length}
 }
 function writingFeedback(result,tries){
  const rows=[`<div class="sp-pw-score"><strong>Inhalt: ${result.contentScore}/${result.total}</strong><strong>Grammatik: ${result.complete?'✓':'prüfen'}</strong></div>`];
@@ -51,6 +63,7 @@ function writingFeedback(result,tries){
  if(result.forbidden.length)rows.push(`<div class="sp-pw-block"><b>Falsches Präteritum:</b> ${esc(result.forbidden.join(', '))}. Benutze bei diesen Verben Perfekt.</div>`);
  if(result.present.length)rows.push(`<div class="sp-pw-block"><b>Noch Gegenwart im Text:</b> ${esc(result.present.join(', '))}.</div>`);
  if(result.perfectProblems.length)rows.push(`<div class="sp-pw-block"><b>Perfekt/Verbposition prüfen:</b> ${esc(result.perfectProblems.join(', '))}.</div>`);
+ if(result.duplicateProblems.length)rows.push(`<div class="sp-pw-block"><b>Verb doppelt:</b> ${esc(result.duplicateProblems.join(', '))}. Schreibe die Verbform nur einmal.</div>`);
  if(result.verbEndProblems.length)rows.push('<div class="sp-pw-block"><b>Verbposition prüfen:</b> Im Hauptsatz steht das konjugierte Verb nicht am Satzende.</div>');
  if(tries>=3)rows.push('<details class="sp-pw-model"><summary>Beispiel anzeigen</summary><p>Vor fünf Jahren war Elena 24 Jahre alt. Sie hat in Homburg gewohnt. Sie hat als Kellnerin in einem großen Restaurant gearbeitet. Das Restaurant war sehr voll. Elena hatte wenig Berufserfahrung. Ihr Chef war professionell, aber streng. Elena hatte oft Stress, aber sie hatte auch viel Spaß mit ihren Kollegen. Nach der Arbeit hat sie oft ihre Freunde getroffen. Am Wochenende hat sie ihre Familie besucht.</p></details>');
  return rows.join('')
