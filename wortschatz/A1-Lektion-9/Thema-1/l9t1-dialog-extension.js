@@ -1,0 +1,23 @@
+(function(){
+'use strict';
+const TASK_ID='behoerden-dialog',TOTAL=16,TOPIC='wortschatz-a1-lektion-9-thema-1';
+const ids=[...Array(TOTAL)].map((_,i)=>`d${i+1}`);
+function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')}catch(e){return{}}}
+function pid(){const p=profile();return String(p.canonicalStudentId||p.studentId||p.uid||p.email||localStorage.getItem('SP_STUDENT_ID')||'student').toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_')}
+const key=()=>`SP_L9_${pid()}_T1_${TASK_ID}`;
+function read(){try{return JSON.parse(localStorage.getItem(key())||'{}')||{}}catch(e){return{}}}
+function percent(){const s=read(),done=[...new Set((s.done||[]).filter(x=>ids.includes(x)))].length;return Math.round(done/TOTAL*100)}
+function completed(){return percent()>=100}
+async function hydrate(){try{const mod=await import('/js/progress.js?v=20260831-central6'),api=window.SPProgress||mod;if(!api?.loadCurrentStudentProgress)return;const all=await api.loadCurrentStudentProgress(),topic=all?.wortschatz?.[TOPIC],cloud=topic?.tasks?.['dialog.html']||topic?.tasks?.[TASK_ID];if(!cloud)return;const n=Math.min(TOTAL,Math.max(Number(cloud.done)||0,Math.round(TOTAL*Number(cloud.percent||0)/100)));const s=read();s.done=[...new Set([...(s.done||[]),...ids.slice(0,n)])];s.wrong=s.wrong||{};s.answers=s.answers||{};localStorage.setItem(key(),JSON.stringify(s))}catch(e){console.warn('L9T1 Dialog restore',e)}}
+function taskProgress(card){const text=card?.querySelector('.task-bottom span')?.textContent||'';const m=text.match(/(\d+)%/);return Number(m?.[1]||0)}
+function patchOverview(){if(document.body.dataset.page!=='theme')return;const grid=document.querySelector('.task-grid');if(!grid)return;let exam=[...grid.querySelectorAll('.task-card')].find(a=>String(a.getAttribute('href')||'').includes('task=pruefung')||/Prüfung/i.test(a.querySelector('h3')?.textContent||''));if(!exam)return;
+ let card=document.getElementById('l9t1-dialog-card');const p=percent();if(!card){card=document.createElement('a');card.id='l9t1-dialog-card';card.className='task-card';card.href='dialog.html';card.innerHTML=`<div class="task-top"><span class="task-num">11</span><strong></strong></div><div class="task-icon">🗣️</div><h3>Dialog im Amt</h3><p>Sprich oder schreibe im Gespräch. Mehrere richtige Antworten sind möglich.</p><div class="progress"><span></span></div><div class="task-bottom"><span></span><strong>Starten</strong></div>`;grid.insertBefore(card,exam)}
+ card.classList.toggle('done',p>=100);card.querySelector('.progress span').style.width=p+'%';card.querySelector('.task-bottom span').textContent=p+'%';card.querySelector('.task-bottom strong').textContent=p>=100?'Fertig':'Starten';card.querySelector('.task-top strong').textContent=p>=100?'✓':'';
+ const examNum=exam.querySelector('.task-num');if(examNum)examNum.textContent='12';const coreCards=[...grid.querySelectorAll('.task-card')].filter(x=>x!==exam&&x!==card);const coreDone=coreCards.filter(x=>x.classList.contains('done')).length,dialogDone=p>=100?1:0,done=coreDone+dialogDone,coreAll=coreCards.length>0&&coreDone===coreCards.length;
+ if(!(coreAll&&completed())){exam.classList.add('locked');exam.setAttribute('href','#');exam.onclick=e=>e.preventDefault();const bottom=exam.querySelector('.task-bottom span');if(bottom)bottom.textContent='Erst alle Aufgaben 100%'}else{exam.classList.remove('locked');exam.setAttribute('href','task.html?task=pruefung');exam.onclick=null}
+ const values=coreCards.map(taskProgress),avg=Math.round((values.reduce((a,b)=>a+b,0)+p)/(coreCards.length+1));const circle=document.querySelector('.hero .circle');if(circle)circle.textContent=avg+'%';const bar=document.querySelector('.hero .progress span');if(bar)bar.style.width=avg+'%';const muted=document.querySelector('.hero .muted');if(muted)muted.textContent=String(muted.textContent||'').replace(/\d+ von \d+ Lernaufgaben abgeschlossen/,`${done} von ${coreCards.length+1} Lernaufgaben abgeschlossen`)
+}
+function guardExam(){if(document.body.dataset.page!=='task')return;const q=new URLSearchParams(location.search);if(q.get('task')==='pruefung'&&!completed())location.replace('index.html#l9t1-dialog-card')}
+const ready=hydrate().then(()=>{guardExam();patchOverview();const obs=new MutationObserver(()=>patchOverview());obs.observe(document.documentElement,{childList:true,subtree:true});return true});
+window.L9T1DialogExtension={ready,percent,completed,patchOverview,TASK_ID,TOTAL};
+})();
