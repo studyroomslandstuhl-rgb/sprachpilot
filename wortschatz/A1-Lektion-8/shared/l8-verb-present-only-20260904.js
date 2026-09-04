@@ -10,6 +10,11 @@ function presentOnly(value){
  const raw=String(value||'').trim();
  return perfectTail.test(raw)?raw.replace(perfectTail,'').trim():raw;
 }
+function perfectOnly(value){
+ const raw=String(value||'').trim();
+ const m=raw.match(/\s*(?:–|—|-)\s*((?:hat|ist)\s+.+)$/i);
+ return m?String(m[1]||'').trim():'';
+}
 
 function isVerb(item,raw){
  const type=String(item?.type||item?.wordType||item?.category||'').trim().toLowerCase();
@@ -30,6 +35,8 @@ function applyItem(item){
  if(!item||typeof item!=='object')return;
  const raw=rawTerm(item);
  if(!raw||!isVerb(item,raw))return;
+ const perfect=perfectOnly(raw);
+ if(perfect&&!item.perfectForm)item.perfectForm=perfect;
  const present=presentOnly(raw);
  if(!present||present===raw)return;
 
