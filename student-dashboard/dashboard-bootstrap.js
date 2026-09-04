@@ -1,5 +1,5 @@
 import '/shared/sp-cache-epoch.js?v=20260831-global-progress-sync9';
-import '/shared/points-recalculator.js?v=20260831-global3';
+import '/shared/points-recalculator.js?v=20260904-l8-dashboard1';
 import '/shared/dativ-points-extension.js?v=20260831-global3';
 import '/js/session-restore.js?v=20260831-central2';
 import { verifySecureAccess } from '/js/secure-access-gate.js?v=1';
@@ -54,7 +54,7 @@ async function runBackgroundSyncs(){
   const [l8,aliases,progress]=await Promise.all([l8Job,aliasJob,accountJob]);
   let localThemes=0;
   try{
-    const mod=await import('/student-dashboard/local-theme-points-recovery.js?v=20260902-l8-all2');
+    const mod=await import('/student-dashboard/local-theme-points-recovery.js?v=20260904-l8-all3');
     localThemes=await withTimeout(mod.recover({skipAliasWait:true}),5000,0);
   }catch(error){console.warn('Lokale L7/L8-Themenpunkte werden später synchronisiert.',error)}
   const progressReady=progress?.blocked!==true&&progress?.nonDestructive===true&&Number(progress?.authorityVersion||0)>=5;
@@ -84,7 +84,7 @@ else{
     const backgroundSync=runBackgroundSyncs();
     window.SP_PROGRESS_ALIAS_READY=backgroundSync.then(result=>({ok:result.ok,skipped:!result.ok,reason:result.ok?'global-non-destructive-progress':'dashboard-direct-server-fallback'}));
 
-    try{await import('./dashboard-server-v3.js?v=20260902-fast-start1')}
+    try{await import('./dashboard-server-v3.js?v=20260904-l8points2')}
     catch(error){console.error('Dashboard-Inhalte konnten nicht vollständig geladen werden',error);warning('Dashboard konnte nur teilweise geladen werden.','Die Anmeldung funktioniert, aber die aktuellen Statistiken konnten nicht vollständig aufgebaut werden.')}
     revealDashboard();
 
