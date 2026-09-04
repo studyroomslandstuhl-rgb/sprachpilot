@@ -10,10 +10,9 @@ const t1Core=[
  word('muessen','müssen','modal','Grammatik',{perfect:'hat gemusst',example:'Was muss man hier machen?'}),
  word('man','man','pronoun','Grammatik',{example:'Man muss den Antrag ausfüllen.'}),
  word('zuerst','zuerst','adverb','Reihenfolge',{example:'Zuerst muss man das Ziel wählen.'}),
- word('danach','danach','adverb','Reihenfolge',{example:'Danach muss man bezahlen.'}),
- word('dann','dann','adverb','Reihenfolge',{example:'Dann muss man die Fahrkarte nehmen.'}),
- word('zum_schluss','zum Schluss','phrase','Reihenfolge',{example:'Zum Schluss muss man die Papiere unterschreiben.'}),
-
+ word('danach','danach','adverb','Reihenfolge',{example:'Danach muss man Erwachsene auswählen.'}),
+ word('dann','dann','adverb','Reihenfolge',{example:'Dann muss man bezahlen.'}),
+ word('zum_schluss','zum Schluss','phrase','Reihenfolge',{example:'Zum Schluss muss man die Fahrkarte nehmen.'}),
  noun('fuehrerschein','der','Führerschein','die Führerscheine','Dokumente & Mobilität','Der Führerschein ist gültig.'),
  noun('ticket','das','Ticket','die Tickets','Dokumente & Mobilität','Ich brauche ein Ticket.'),
  noun('amt','das','Amt','die Ämter','Behörde','Ich muss zum Amt.'),
@@ -36,7 +35,6 @@ const t1Core=[
  noun('unterlagen','die','Unterlagen','nur Plural','Dokumente & Behörde','Welche Unterlagen muss ich mitbringen?'),
  noun('dokument','das','Dokument','die Dokumente','Dokumente & Behörde','Das Dokument ist wichtig.'),
  noun('wechselgeld','das','Wechselgeld','kein Plural','Bezahlen','Der Automat gibt Wechselgeld.'),
-
  word('ausfuellen','ausfüllen','verb','Handlungen',{perfect:'hat ausgefüllt',example:'Man muss den Antrag ausfüllen.'}),
  word('mitbringen','mitbringen','verb','Handlungen',{perfect:'hat mitgebracht',example:'Man muss den Ausweis mitbringen.'}),
  word('unterschreiben','unterschreiben','verb','Handlungen',{perfect:'hat unterschrieben',example:'Man muss die Papiere unterschreiben.'}),
@@ -95,9 +93,39 @@ const t3Core=[
 const t4Core=[
  word('allein','allein','adverb','Personen',{example:'Die Person kommt allein.'}),
  noun('behoerde','die','Behörde','die Behörden','Behörde','Ich habe einen Termin bei der Behörde.'),
+ noun('meldebehoerde','die','Meldebehörde','die Meldebehörden','Behörde','Ich bin wegen der Anmeldung bei der Meldebehörde.'),
+ noun('anmeldung_behoerde','die','Anmeldung','die Anmeldungen','Behörde','Ich bin wegen der Anmeldung hier.'),
  noun('person','die','Person','die Personen','Personendaten','Die Person füllt das Formular aus.'),
  noun('geburtsname','der','Geburtsname','die Geburtsnamen','Personendaten','Wie ist Ihr Geburtsname?'),
  noun('geschlecht','das','Geschlecht','die Geschlechter','Personendaten','Bitte geben Sie das Geschlecht an.')
+];
+
+const t5Core=[
+ noun('buergeramt','das','Bürgeramt','die Bürgerämter','Behörden','Für viele Anmeldungen geht man zum Bürgeramt.'),
+ noun('buergerbuero','das','Bürgerbüro','die Bürgerbüros','Behörden','Das Bürgerbüro hilft bei vielen Anliegen.'),
+ noun('meldebehoerde_t5','die','Meldebehörde','die Meldebehörden','Behörden','Bei der Meldebehörde meldet man den Wohnsitz an.'),
+ noun('auslaenderbehoerde','die','Ausländerbehörde','die Ausländerbehörden','Behörden','Ich habe einen Termin bei der Ausländerbehörde.'),
+ noun('standesamt','das','Standesamt','die Standesämter','Behörden','Das Standesamt stellt Urkunden aus.'),
+ noun('jobcenter','das','Jobcenter','die Jobcenter','Behörden','Ich habe einen Termin beim Jobcenter.'),
+ noun('agentur_fuer_arbeit','die','Agentur für Arbeit','die Agenturen für Arbeit','Behörden','Die Agentur für Arbeit hilft bei der Arbeitssuche.'),
+ noun('finanzamt','das','Finanzamt','die Finanzämter','Behörden','Das Finanzamt ist für Steuern zuständig.'),
+ noun('sozialamt','das','Sozialamt','die Sozialämter','Behörden','Ich brauche Informationen vom Sozialamt.'),
+ noun('jugendamt','das','Jugendamt','die Jugendämter','Behörden','Das Jugendamt hilft Familien.'),
+ noun('fahrerlaubnisbehoerde','die','Fahrerlaubnisbehörde','die Fahrerlaubnisbehörden','Behörden','Ich brauche einen Termin bei der Fahrerlaubnisbehörde.'),
+ noun('kfz_zulassungsstelle','die','Kfz-Zulassungsstelle','die Kfz-Zulassungsstellen','Behörden','Ich möchte mein Auto anmelden.'),
+ noun('gesundheitsamt','das','Gesundheitsamt','die Gesundheitsämter','Behörden','Ich habe einen Termin beim Gesundheitsamt.'),
+ noun('reisepass','der','Reisepass','die Reisepässe','Unterlagen','Bitte bringen Sie den Reisepass mit.'),
+ noun('aufenthaltstitel','der','Aufenthaltstitel','die Aufenthaltstitel','Unterlagen','Ich möchte meinen Aufenthaltstitel verlängern.'),
+ noun('geburtsurkunde','die','Geburtsurkunde','die Geburtsurkunden','Unterlagen','Ich brauche eine Geburtsurkunde.'),
+ noun('heiratsurkunde','die','Heiratsurkunde','die Heiratsurkunden','Unterlagen','Bitte bringen Sie die Heiratsurkunde mit.'),
+ noun('meldebescheinigung','die','Meldebescheinigung','die Meldebescheinigungen','Unterlagen','Ich brauche eine Meldebescheinigung.'),
+ noun('wohnungsgeberbestaetigung','die','Wohnungsgeberbestätigung','die Wohnungsgeberbestätigungen','Unterlagen','Für die Anmeldung brauche ich eine Wohnungsgeberbestätigung.'),
+ noun('mietvertrag','der','Mietvertrag','die Mietverträge','Unterlagen','Ich habe den Mietvertrag dabei.'),
+ noun('arbeitsvertrag','der','Arbeitsvertrag','die Arbeitsverträge','Unterlagen','Bitte bringen Sie den Arbeitsvertrag mit.'),
+ noun('passfoto','das','Passfoto','die Passfotos','Unterlagen','Ich brauche ein Passfoto.'),
+ noun('steuer_id','die','Steuer-ID','die Steuer-IDs','Unterlagen','Wie lautet Ihre Steuer-ID?'),
+ noun('fahrzeugpapiere','die','Fahrzeugpapiere','nur Plural','Unterlagen','Bitte bringen Sie die Fahrzeugpapiere mit.'),
+ noun('versicherungsnachweis','der','Versicherungsnachweis','die Versicherungsnachweise','Unterlagen','Für die Anmeldung brauche ich einen Versicherungsnachweis.')
 ];
 
 window.L9_THEMES={
@@ -109,20 +137,33 @@ window.L9_THEMES={
   tasks:['Karteikarten: Wortschatz + Perfektformen','Bild oder Erklärung → Wort','Nomen: Artikel und Plural','Verben: Infinitiv und Perfekt','müssen vollständig konjugieren','man + muss','Aussagen mit müssen','Fragen mit müssen','Reihenfolge: zuerst – danach – dann – zum Schluss','Anweisungen am Fahrkartenautomaten verstehen','Behördengespräch: Was muss ich machen?','Anleitung hören und Schritte ordnen','Eigene kurze Anleitung geben','Themenprüfung']
  },
  2:{
-  title:'Mach das bitte!',subtitle:'Imperativ · du, ihr, Sie · Modalpartikeln · Sprachschule',chips:['Imperativ','du · ihr · Sie','doch · bitte · mal','Sprachschule'],
+  title:'Mach das bitte!',subtitle:'Imperativ bilden und verstehen · du, ihr, Sie · doch, bitte, mal',chips:['Imperativ','du · ihr · Sie','doch · bitte · mal','Anweisungen'],
   coreVocabulary:t2Core,
-  tasks:['Karteikarten: Wortschatz + Perfektformen','Imperativ erkennen','du-Imperativ bilden','ihr-Imperativ bilden','Sie-Imperativ bilden','Imperativ mit trennbaren Verben','doch · bitte · mal passend einsetzen','Anweisungen verstehen','Anweisungen in der Sprachschule geben','Mini-Dialoge ergänzen','Eigene Anweisungen sprechen oder schreiben','Themenprüfung']
+  tasks:['Karteikarten: Wortschatz + Perfektformen','Imperativ oder Aussagesatz?','du · ihr · Sie unterscheiden','du-Imperativ bilden','ihr-Imperativ bilden','Sie-Imperativ bilden','dieselbe Anweisung in du / ihr / Sie','trennbare Verben im Imperativ','Imperativform aus dem Kontext auswählen','gehörte Anweisung verstehen','passende Anweisung auswählen','doch · bitte · mal ergänzen','Sprachschule: Dialoge ergänzen','eigene Anweisungen sprechen oder schreiben','Mischaufgabe Imperativ','Themenprüfung']
  },
  3:{
-  title:'Was darf man?',subtitle:'dürfen · erlaubt und verboten · Regeln',chips:['dürfen','man darf','erlaubt','verboten','Regeln'],
-  grammar:{modal:'dürfen',forms:['ich darf','du darfst','er/sie/es darf','wir dürfen','ihr dürft','sie/Sie dürfen','man darf']},
+  title:'Was darf man?',subtitle:'dürfen · müssen · erlaubt und verboten · Regeln',chips:['dürfen','müssen','darf nicht ≠ muss nicht','erlaubt · verboten','Regeln'],
+  grammar:{modal:'dürfen',forms:['ich darf','du darfst','er/sie/es darf','wir dürfen','ihr dürft','sie/Sie dürfen','man darf'],contrasts:['ich darf = erlaubt','ich darf nicht = verboten','ich muss = notwendig','ich muss nicht = nicht notwendig']},
   coreVocabulary:t3Core,
-  tasks:['Karteikarten: Wortschatz + Perfektformen','dürfen konjugieren','man darf / man darf nicht','Verbform auswählen','Aussagen und Fragen mit dürfen','erlaubt oder verboten','Schilder und Regeln verstehen','Gepäck: abgeben oder mitnehmen','Regeln selbst formulieren','Themenprüfung']
+  examples:['Ich darf hier parken.','Ich darf hier nicht parken.','Ich muss hier warten.','Ich muss hier nicht warten.'],
+  tasks:['Karteikarten: Wortschatz + Perfektformen','dürfen vollständig konjugieren','man darf / man darf nicht','Aussagen und Fragen mit dürfen','erlaubt oder verboten','Schilder und Regeln verstehen','darf / darf nicht / muss / muss nicht','Bedeutung: erlaubt / verboten / notwendig / nicht notwendig','dürfen oder müssen aus dem Kontext','Regel-Dialoge ergänzen','Gepäck: abgeben oder mitnehmen','eigene Regeln formulieren','Mischaufgabe dürfen + müssen','Themenprüfung']
  },
- 4:{title:'Auf der Behörde',subtitle:'Personendaten · Gespräche am Schalter',chips:['Behörde','Personendaten','Gespräch'],coreVocabulary:t4Core,tasks:['Wortschatz und Inhalte werden mit Thema 4 weiter festgelegt.']}
+ 4:{
+  title:'Bei der Behörde',subtitle:'Anmeldung · Personendaten · verstehen und um Hilfe bitten',chips:['Meldebehörde','Anmeldung','Personendaten','Hilfe','nachfragen'],
+  coreVocabulary:t4Core,
+  examples:['Guten Tag. Ich möchte mich anmelden.','Ich verstehe das nicht.','Können Sie das bitte wiederholen?','Können Sie bitte langsamer sprechen?','Was bedeutet das?'],
+  tasks:['Karteikarten: neuer Wortschatz','Personendaten erkennen','Frage und persönliche Angabe verbinden','Anmeldung: Anliegen verstehen','typische Fragen am Schalter','passende Antwort auswählen','Nichtverstehen ausdrücken','um Hilfe / Wiederholung / Erklärung bitten','Dialogbausteine ordnen','Lückendialog: Meldebehörde','Hören: Gespräch am Schalter','Angaben und Unterlagen erkennen','Gespräch mit Auswahlhilfen','Sprechen mit Schreib-Fallback','Rollenspiel Bürger/in – Mitarbeiter/in','Themenprüfung']
+ },
+ 5:{
+  title:'Welche Behörde brauche ich?',subtitle:'wichtige Behörden · Unterlagen · Anliegen · Verständigung',chips:['Behörden','Unterlagen','Anliegen','müssen · dürfen','Gespräch'],
+  coreVocabulary:t5Core,
+  examples:['Welche Behörde brauche ich?','Welche Unterlagen brauche ich?','Muss ich den Ausweis mitbringen?','Mir fehlt noch ein Dokument.','Können Sie mir bitte helfen?'],
+  tasks:['Karteikarten: Behörden','Karteikarten: Unterlagen','Beschreibung → Behörde','Erklärung → Unterlage','Behörde und Anliegen verbinden','Behörde und typische Unterlagen verbinden','Welche Behörde brauche ich?','Welche Unterlagen brauche ich?','muss / muss nicht / darf / darf nicht im Behördenkontext','Dokument vorhanden / fehlt / mitbringen','Frage und Antwort verbinden','Dialoge am Schalter','Hören: Behörde und Unterlagen','Ablauf: zuerst – danach – dann – zum Schluss','um Hilfe / Erklärung / Wiederholung bitten','Rollenspiel mit Behörde und Unterlagenkarte','freie Sprechaufgabe mit Schreib-Fallback','Behörde – Anliegen – Unterlagen','Themenprüfung']
+ }
 };
 window.L9_T1_WORDS=t1Core;
 window.L9_T2_WORDS=t2Core;
 window.L9_T3_WORDS=t3Core;
 window.L9_T4_WORDS=t4Core;
+window.L9_T5_WORDS=t5Core;
 })();
