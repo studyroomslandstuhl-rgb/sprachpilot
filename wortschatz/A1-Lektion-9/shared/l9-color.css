@@ -1,3 +1,7 @@
+@import url("../../A1-Lektion-8/shared/l8-color.css?v=20260904-l9-l8base2");
+
+/* Lektion 9 benutzt exakt die Layout-/Kartenbasis von Lektion 8.
+   Nur die Farbvariablen werden auf Grün gesetzt. */
 :root{
  --lesson-main:#8FCF9A;
  --lesson-main-dark:#3E7D4D;
@@ -12,6 +16,15 @@
  --lesson-muted:#63756A;
  --lesson-on-main:#23472B;
  --lesson-shadow:0 12px 28px rgba(62,125,77,.16);
+ --l8-main:var(--lesson-main);
+ --l8-dark:var(--lesson-main-dark);
+ --l8-soft:var(--lesson-soft);
+ --l8-line:var(--lesson-line);
+ --l8-bg:var(--lesson-bg);
+ --l8-ink:var(--lesson-text);
+ --l8-good:#217A4B;
+ --l8-bad:#A72A2A;
+ --l8-warn:#8A6517;
  --l9-main:var(--lesson-main);
  --l9-dark:var(--lesson-main-dark);
  --l9-soft:var(--lesson-soft);
@@ -22,12 +35,12 @@
  --l9-bad:#A72A2A;
  --l9-warn:#8A6517;
 }
-*{box-sizing:border-box}
+
 body{
- margin:0;
- font-family:Arial,Helvetica,sans-serif;
- color:var(--lesson-text);
- background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.42) 310px,rgba(255,255,255,.1)),linear-gradient(135deg,var(--lesson-main),var(--lesson-main-light));
- min-height:100vh;
+ color:var(--lesson-text)!important;
+ background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.42) 310px,rgba(255,255,255,.1)),linear-gradient(135deg,var(--lesson-main),var(--lesson-main-light))!important;
 }
 .sp-header{background:var(--lesson-main)!important}
+.l8-progress-circle{background:var(--lesson-main)!important;box-shadow:0 12px 26px rgba(62,125,77,.18)!important}
+.l8-progress>div{background:linear-gradient(135deg,var(--lesson-main-dark),var(--lesson-main))!important}
+.l8-input:focus,textarea.l8-input:focus{outline-color:rgba(143,207,154,.28)!important;border-color:var(--lesson-main-dark)!important}
