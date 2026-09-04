@@ -1,17 +1,22 @@
 # Lektion 9 · Thema 1
 
-## Was muss man machen? – müssen, man und Anleitungen
+## Was muss man machen? – müssen, man und Anweisungen
 
-## Verbindliche Lernziele
+Thema 1 orientiert sich methodisch an Lektion 7 Thema 1: zuerst Wortschatz sichern, danach das neue Modalverb systematisch aufbauen und anschließend in realistischen Kontexten anwenden.
+
+## Lernziele
 
 Die Lernenden können:
 
+- den verbindlichen Wortschatz aus den Karteikarten verstehen, sprechen und schreiben,
+- alle neuen Verben zusätzlich mit ihrer Perfektform lernen,
 - **müssen** vollständig konjugieren,
-- **man** als unbestimmtes Subjekt verwenden: `man muss`,
-- notwendige Handlungen in Behörde, Autovermietung und am Fahrkartenautomaten ausdrücken,
-- kurze Anweisungen verstehen, geben und in der richtigen Reihenfolge ausführen,
-- Abläufe mit **zuerst, danach, dann, zum Schluss** strukturieren,
-- neue Verben mit ihrer **Perfektform** lernen und in Wortschatzaufgaben wiedererkennen.
+- Modalverbsätze mit Infinitiv am Satzende bilden,
+- **man** als unbestimmtes Subjekt verwenden,
+- **müssen, können, wollen, mögen und möchten** in eindeutigen Kontexten unterscheiden,
+- Anweisungen hören und Schritte in eine richtige Reihenfolge bringen,
+- Abläufe mit **zuerst, dann, danach und zum Schluss** formulieren,
+- kurze Anweisungstexte selbst schreiben und Lückentexte verstehen.
 
 ## Grammatik
 
@@ -19,150 +24,200 @@ Die Lernenden können:
 
 - ich muss
 - du musst
-- er/sie/es muss
+- er / sie / es muss
 - wir müssen
 - ihr müsst
-- sie/Sie müssen
+- sie / Sie müssen
 - man muss
 
-### man
+Satzmuster:
 
-**man** bedeutet Menschen allgemein oder eine nicht näher bestimmte Person. Das Verb steht in der 3. Person Singular.
+`Subjekt + müssen + weitere Satzteile + Infinitiv am Satzende`
 
+Beispiele:
+
+- Maria muss morgen ihr Kind vom Kindergarten abholen.
+- Morgen muss Ali seinen Ausweis zum Amt mitbringen.
 - Man muss den Antrag ausfüllen.
-- Man muss den Ausweis mitbringen.
-- Man muss zuerst das Ziel wählen.
 
-### Satzbau
+## Verbindliche Aufgabenfolge
 
-- Aussage: `Subjekt + müssen + weitere Satzteile + Infinitiv`
-- Ja-/Nein-Frage: `Müssen + Subjekt + weitere Satzteile + Infinitiv?`
-- W-Frage: `Fragewort + müssen + Subjekt + weitere Satzteile + Infinitiv?`
+### 1. 🃏 Karteikarten
 
-## Reihenfolge
+Voller Wortschatz von L9T1.
 
-- zuerst
-- danach
-- dann
-- zum Schluss
+- Bunny-Bild und Bunny-Audio,
+- Wort und Bedeutung,
+- bei Nomen Artikel und Plural,
+- bei Verben Infinitiv und Perfekt,
+- Beispielsatz,
+- Sprechen oder Schreiben.
+
+Eine Karte gilt erst als richtig, wenn das deutsche Wort korrekt gesprochen oder geschrieben wurde. Wird die Lösung angezeigt, muss die richtige Antwort anschließend trotzdem selbst eingegeben oder gesprochen werden.
+
+### 2. 🎧 Hören & Bild
+
+18 Items.
+
+- Ein Wort wird gehört.
+- Vier Bilder stehen zur Auswahl.
+- Das passende Bild muss gewählt werden.
+
+### 3. 🧩 Bedeutung finden
+
+20 Items.
+
+- Eine Bedeutung wird in einfachem A1-Deutsch vorgegeben.
+- Vier Wörter stehen zur Auswahl.
+- Das passende Wort muss gewählt werden.
 
 Beispiel:
 
-1. Zuerst muss man das Ziel wählen.
-2. Danach muss man Erwachsene auswählen.
-3. Dann muss man bezahlen.
-4. Zum Schluss muss man die Fahrkarte nehmen.
+> Ein Formular oder Dokument, das man ausfüllt, wenn man etwas braucht, zum Beispiel Geld, Hilfe oder eine Wohnung.
 
-## Verbindlicher Wortschatz
+Lösung: **der Antrag**
 
-### Nomen
+### 4. 🎤 Bild & Sprechen
 
-- der Führerschein – die Führerscheine
-- das Ticket – die Tickets
-- das Amt – die Ämter
-- die Europäische Union – kein Plural
-- die Fahrt – die Fahrten
-- die Fahrkarte – die Fahrkarten
-- der Antrag – die Anträge
-- der Ausweis – die Ausweise
-- die Papiere – nur Plural
-- der Automat – die Automaten
-- das Ziel – die Ziele
-- der Erwachsene – die Erwachsenen
-- die Erwachsene – die Erwachsenen
-- die Autovermietung – die Autovermietungen
-- die Unterlagen – nur Plural
-- das Dokument – die Dokumente
-- das Wechselgeld – kein Plural
+20 Items.
 
-### Adjektive / Adverbien / Grammatik
+- Ein Bild wird gezeigt.
+- Das passende Wort muss gesprochen werden.
+- Schreiben ist immer als Fallback möglich.
+- Bei Nomen gehört der Artikel zur korrekten Antwort.
 
-- gültig
-- ausländisch
-- europäisch
-- jung
-- bar
-- man
-- zuerst
-- danach
-- dann
-- zum Schluss
+### 5. ✍️ müssen konjugieren
 
-### Verben mit Perfekt
+Eine Tabelle mit allen Formen:
 
-- müssen – **hat gemusst**
-- mieten – **hat gemietet**
-- ausfüllen – **hat ausgefüllt**
-- mitbringen – **hat mitgebracht**
-- unterschreiben – **hat unterschrieben**
-- funktionieren – **hat funktioniert**
-- wählen – **hat gewählt**
-- auswählen – **hat ausgewählt**
-- abholen – **hat abgeholt**
-- wiederholen – **hat wiederholt**
-- stempeln – **hat gestempelt**
+| Pronomen | Form |
+| --- | --- |
+| ich | muss |
+| du | musst |
+| er / sie / es | muss |
+| wir | müssen |
+| ihr | müsst |
+| sie / Sie | müssen |
+| man | muss |
 
-### Feste Verbindungen
+Die Lernenden füllen die rechte Spalte selbst aus.
 
-- einen Antrag stellen – **hat einen Antrag gestellt**
-- einen Antrag ausfüllen – **hat einen Antrag ausgefüllt**
-- den Ausweis mitbringen
-- die Papiere unterschreiben
-- das Ziel wählen
-- Erwachsene auswählen
+### 6. 🖼️ müssen + Verb vom Bild
 
-## Leitkontexte
+20 unterschiedliche Sätze.
 
-### Behörde
+Jeder Satz hat zwei Lücken:
 
-- Was muss ich in der Behörde machen?
-- Ich muss einen Antrag stellen.
-- Ich muss einen Antrag ausfüllen.
-- Ich muss den Ausweis mitbringen.
-- Ich muss die Papiere unterschreiben.
+1. richtige konjugierte Form von **müssen**,
+2. Infinitiv des Verbs vom Bild am Satzende.
 
-### Fahrkartenautomat
+Beispiel:
 
-Die Lernenden verstehen einen kurzen Ablauf und ordnen die Schritte mit den Reihenfolgewörtern.
+> Maria ___ morgen ihr Kind vom Kindergarten ___.
 
-### Autovermietung
+Bild: **abholen**
 
-Wortschatz wie Führerschein, gültig, ausländisch, europäisch, mieten, Autovermietung und abholen wird in kurzen realistischen Dialogen verwendet.
+Lösung:
 
-## Vorbereitung Übersicht und Karteikarten
+> Maria muss morgen ihr Kind vom Kindergarten abholen.
 
-Die Karteikarten orientieren sich am Standard von L8T1:
+Die Subjekte wechseln. Das Subjekt steht abwechselnd auf Position 1 oder nach einem vorangestellten Satzteil auf Position 3. **man** kommt mehrfach vor.
 
-- Vorderseite: Bild + Übersetzung in der Muttersprache,
-- Rückseite: deutsches Wort, Wortart, bei Nomen Artikel + Plural, bei Verben Infinitiv + Perfekt,
-- Bunny Storage für Bild und Audio,
-- Hörknopf,
-- Sprechen und Schreiben,
-- Verben werden nicht nur im Infinitiv, sondern auch mit ihrer Perfektform gelernt und getestet.
+### 7. 💬 Welches Modalverb passt?
 
-Bildnamen werden ohne Artikel und mit `_` gebildet, z. B. `fuehrerschein.webp`, `europaeische_union.webp`, `einen_antrag_stellen.webp`.
+20 Items.
 
-## Geplante Aufgabenfolge
+Im Kontext wird zwischen folgenden Modalverben unterschieden:
 
-1. Karteikarten: Wortschatz + Perfektformen
-2. Bild oder Erklärung → Wort
-3. Nomen: Artikel und Plural
-4. Verben: Infinitiv ↔ Perfekt
-5. müssen vollständig konjugieren
-6. man + muss
-7. Aussagesätze mit müssen
-8. Fragen mit müssen
-9. zuerst / danach / dann / zum Schluss
-10. Anweisungen am Fahrkartenautomaten verstehen
-11. Behördengespräch: Was muss ich machen?
-12. Anleitung hören und Schritte ordnen
-13. eigene kurze Anleitung geben
-14. Themenprüfung
+- müssen,
+- können,
+- wollen,
+- mögen,
+- möchten.
 
-## Qualitätsregeln
+Die Items bestehen aus einzelnen Sätzen, kurzen Kontexten oder Mini-Dialogen. Die Bedeutung muss eindeutig erkennbar sein. Es wird die korrekte konjugierte Form gewählt.
 
-- A1-Satzbau.
-- Geschlossene Aufgaben haben eindeutige Lösungen.
-- Keine unnötigen Nebensätze als Zielgrammatik.
-- Alle neuen Verben enthalten verbindlich die Perfektform.
-- Perfektformen werden in Karteikarten und späteren Wortschatzaufgaben mitgetestet.
+### 8. 🎧 Anweisungen hören und ordnen
+
+Fünf Hörtexte:
+
+1. Waschmaschine benutzen,
+2. Kaffeemaschine benutzen,
+3. Fahrkartenautomat bedienen,
+4. Auto tanken,
+5. Kindergeld-Antrag bei der Familienkasse stellen.
+
+Pro Hörtext gibt es vier Schritte.
+
+Die Lernenden sehen eine Linie **1 – 2 – 3 – 4** und ordnen:
+
+- zuerst die vier Bilder,
+- danach die vier passenden schriftlichen Schrittbeschreibungen.
+
+Die schriftlichen Sätze sind bewusst anders formuliert als der gehörte Text. Sie benutzen einfache Synonyme oder Paraphrasen, damit tatsächlich Hörverstehen geprüft wird.
+
+### 9. 📝 Anleitung selbst schreiben
+
+Drei Bildfolgen mit jeweils sechs Schritten = 18 Schreibitems.
+
+Die Lernenden schreiben die Schritte selbst und benutzen verbindlich:
+
+1. zuerst,
+2. dann,
+3. danach,
+4. dann,
+5. danach,
+6. zum Schluss.
+
+Alle Sätze werden mit **man + müssen** formuliert.
+
+Beispiel:
+
+> Zuerst muss man das Ziel wählen.
+
+### 10. 📄 Anweisungen im Text
+
+Fünf kurze Anweisungstexte mit jeweils vier Lücken = 20 Lücken.
+
+In die Lücken kommen unter anderem:
+
+- Formen von müssen,
+- man,
+- Wörter aus den Karteikarten,
+- typische Verben und Nomen aus Thema 1.
+
+Der gesamte Text muss gelesen werden, damit die Lösung klar wird.
+
+### 11. ⭐ Themenprüfung
+
+Die Prüfung ist bis zum Abschluss aller Lernaufgaben mit 100 % gesperrt.
+
+In der Prüfung gibt es **keine neuen Höraufgaben**.
+
+Geprüft werden:
+
+- Wortschatz und Bedeutungen,
+- Perfektformen aller neuen Verben und festen Verbverbindungen,
+- vollständige Konjugation von müssen,
+- Modalverbwahl im Kontext,
+- Satzbau mit man, müssen und Infinitiv,
+- Reihenfolge bei Anweisungen.
+
+## Technische Qualitätsregeln
+
+- Jede Aufgabe besitzt einen eigenen Link über `task.html?task=...`.
+- Fortschritt wird lokal sofort gespeichert und mit dem zentralen Firebase-Fortschritt synchronisiert.
+- Punkte folgen dem SprachPilot-Standard: Aufgaben 5 / 10 / 15 Punkte in Durchlauf 1 / 2 / 3; Prüfung maximal 100 / 200 / 300 Punkte.
+- Die Prüfung selbst wird nicht zusätzlich als normale 5-/10-/15-Punkte-Aufgabe gezählt.
+- Prüfung erst nach 100 % aller zehn Lernaufgaben.
+- Dreistufige Hilfe nach Fehlern:
+  1. noch einmal versuchen,
+  2. konkreter Hinweis,
+  3. Lösung anzeigen, aber die richtige Antwort muss weiterhin selbst eingegeben oder gewählt werden.
+- Eine Antwort wird nur dann als richtig gespeichert, wenn die verlangte Form korrekt gesprochen, geschrieben oder gewählt wurde.
+- Groß-/Kleinschreibung und Satzzeichen werden bei der technischen Prüfung normalisiert; falsche Wörter, falsche Artikel oder falsche Verbformen werden nicht akzeptiert.
+- Sprechaufgaben haben immer einen Schreib-Fallback.
+- Bunny Storage: `https://sprachpilot.b-cdn.net/name.webp` und `https://sprachpilot.b-cdn.net/audio/name.mp3`.
+- Bilder sind 800 × 800 px `.webp` und werden ohne Artikel benannt.
+- Nach 100 % erscheint der Feedback-Screen **„Gut gemacht!“**.
+- Aufgabenstellungen sind kurz, klar und im Imperativ.
