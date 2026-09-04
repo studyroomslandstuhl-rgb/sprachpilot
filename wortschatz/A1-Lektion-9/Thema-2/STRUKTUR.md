@@ -8,32 +8,75 @@ Die Lernenden können:
 
 - Imperativformen für **du**, **ihr** und **Sie** erkennen und bilden,
 - kurze Anweisungen verstehen und geben,
-- höfliche Anweisungen mit **bitte** formulieren,
-- bekannte Handlungen aus Thema 1 im Imperativ verwenden.
+- trennbare Verben im Imperativ richtig verwenden,
+- Anweisungen mit **doch, bitte, mal** natürlicher und höflicher formulieren,
+- Situationen in Sprachschule, Anmeldung und Kasse sprachlich bewältigen,
+- neue Verben zusammen mit ihrer **Perfektform** lernen.
+
+## Verbindlicher Wortschatz
+
+### Verben mit Perfekt
+
+- erklären – **hat erklärt**
+- ausmachen – **hat ausgemacht**
+- zuhören – **hat zugehört**
+- aufstehen – **ist aufgestanden**
+- warten – **hat gewartet**
+- lachen – **hat gelacht**
+- aufhören – **hat aufgehört**
+
+### Adverbien / Modalpartikeln
+
+- leiser
+- laut
+- doch
+- bitte
+- mal
+
+### Nomen
+
+- die Gebühr – die Gebühren
+- die Kasse – die Kassen
+- die Anmeldung – die Anmeldungen
+- die Kursgebühr – die Kursgebühren
+- der Stock – die Stockwerke
+- der Unterricht – kein Plural
+- die Sprachschule – die Sprachschulen
 
 ## Zielmuster
 
-- Wähl das Ziel aus.
-- Füllt das Formular aus.
-- Kreuzen Sie hier an.
-- Unterschreiben Sie bitte hier.
-- Drück auf den Knopf.
+- Erklär das bitte noch einmal.
+- Erklärt das bitte noch einmal.
+- Erklären Sie das bitte noch einmal.
+- Mach das Handy aus.
+- Hört bitte zu.
+- Stehen Sie bitte auf.
+- Warte mal hier.
+- Hör doch bitte auf.
+- Sprich bitte leiser.
+- Bezahlen Sie die Kursgebühr an der Kasse.
+- Die Anmeldung ist im ersten Stock.
+- Der Unterricht ist im zweiten Stock.
 
 ## Geplante Aufgaben
 
-1. Imperativ erkennen
-2. du-Imperativ bilden
-3. ihr-Imperativ bilden
-4. Sie-Imperativ bilden
-5. Form auswählen
-6. Anweisungen ordnen
-7. Bild / Situation → Anweisung
-8. kurze Dialoge ergänzen
-9. eigene Anweisung sprechen oder schreiben
-10. Themenprüfung
+1. Karteikarten: Wortschatz + Perfektformen
+2. Imperativ erkennen
+3. du-Imperativ bilden
+4. ihr-Imperativ bilden
+5. Sie-Imperativ bilden
+6. trennbare Verben im Imperativ
+7. doch / bitte / mal passend einsetzen
+8. kurze Anweisungen verstehen
+9. Situationen in Sprachschule, Anmeldung und Kasse
+10. Dialoge ergänzen
+11. eigene Anweisungen sprechen oder schreiben
+12. Themenprüfung
 
 ## Qualitätsregeln
 
-- A1-Sätze, kurze Verben und bekannte Situationen.
+- A1-Sätze und realistische kurze Situationen.
 - du / ihr / Sie werden sichtbar getrennt.
-- Kein unnötiger Grammatik-Metatext in den Aufgaben.
+- Trennbare Verben werden korrekt getrennt.
+- **doch, bitte, mal** werden kommunikativ geübt, nicht als komplizierte Grammatiktheorie.
+- Alle neuen Verben werden zusätzlich mit Perfektform gelernt und getestet.
