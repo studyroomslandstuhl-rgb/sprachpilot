@@ -1,0 +1,1 @@
+(function(){'use strict';const id=new URLSearchParams(location.search).get('task');if(id!=='karteikarten')return;document.querySelectorAll('link[href*="l9t1.css"],link[href*="l9-l8-green-fix.css"]').forEach(link=>{link.disabled=true});})();
