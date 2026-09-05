@@ -21,7 +21,6 @@ async function render(config={}){
  root.innerHTML=`<div class="l8-wrap sp-vocab-overview"><section class="l8-card sp-vocab-intro"><div class="sp-vocab-eyebrow">${esc(config.eyebrow||'WORTSCHATZÜBERSICHT')}</div><h1>${esc(config.title||'Wortschatz')}</h1><p>${esc(config.description||'Hier siehst und hörst du die Wörter und Redewendungen aus diesem Thema.')}</p></section>${order.filter(k=>groups[k]?.length).map(k=>`<section class="l8-card sp-vocab-group"><div class="sp-vocab-group-head"><h2>${esc(labels[k]||k)}</h2><span>${groups[k].length} Wörter</span></div><div class="sp-vocab-list">${groups[k].map(row).join('')}</div></section>`).join('')}<footer>© SprachPilot</footer></div>`;
  root.addEventListener('click',e=>{const b=e.target.closest('[data-sp-vocab-audio]');if(!b)return;const item=items[Number(b.dataset.spVocabAudio)];if(item)play(item,b)});
  if(config.headerSubtitle){const setHeader=()=>{const subtitle=document.querySelector('.sp-header__subtitle');if(subtitle)subtitle.textContent=config.headerSubtitle};setHeader();[80,250,700].forEach(ms=>setTimeout(setHeader,ms))}
- document.documentElement.classList.remove('sp-header-first');document.documentElement.classList.add('sp-header-ready');
  window.addEventListener('beforeunload',stop,{once:true});
 }
 window.SPWordOverviewStandard={render,stop,typeOf,waitForHeader};
