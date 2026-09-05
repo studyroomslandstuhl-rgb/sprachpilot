@@ -8,8 +8,11 @@
 <meta http-equiv="Expires" content="0">
 <script>
 (function(){
- if(new URLSearchParams(location.search).get('task')==='exam'){
-  location.replace('pruefung-ohne-audio.html?v=202607292304');
+ const qs=new URLSearchParams(location.search);
+ if(qs.get('task')==='exam'){
+  const target=new URL('pruefung-ohne-audio.html?v=20260905-teacher-standard1',location.href);
+  if(qs.get('teacherExamRead')==='1')target.searchParams.set('teacherExamRead','1');
+  location.replace(target.href);
  }
 })();
 </script>
