@@ -93,23 +93,22 @@ Beispiele:
 
 ## Verbindliche Aufgabenfolge
 
-1. Karteikarten: Wortschatz + Perfektformen
-2. Imperativ oder normaler Aussagesatz?
-3. du / ihr / Sie unterscheiden
-4. du-Imperativ bilden
-5. ihr-Imperativ bilden
-6. Sie-Imperativ bilden
-7. dieselbe Anweisung in du / ihr / Sie umformen
-8. trennbare Verben im Imperativ
-9. Imperativform aus dem Kontext auswählen
-10. gehörte Anweisung verstehen
-11. passende Anweisung zur Situation auswählen
-12. **doch / bitte / mal** passend ergänzen
-13. Unterschiede zwischen neutraler, höflicher und natürlicher Aufforderung erkennen
-14. kurze Dialoge in Sprachschule, Anmeldung und Kasse ergänzen
-15. eigene Anweisungen sprechen oder schreiben
-16. Mischaufgabe: bilden + verstehen + passende Form wählen
-17. Themenprüfung
+1. Imperativ oder normaler Aussagesatz?
+2. du / ihr / Sie unterscheiden
+3. du-Imperativ bilden
+4. ihr-Imperativ bilden
+5. Sie-Imperativ bilden
+6. dieselbe Anweisung in du / ihr / Sie umformen
+7. trennbare Verben im Imperativ
+8. Imperativform aus dem Kontext auswählen
+9. gehörte Anweisung verstehen
+10. passende Anweisung zur Situation auswählen
+11. **doch / bitte / mal** passend ergänzen
+12. Unterschiede zwischen neutraler, höflicher und natürlicher Aufforderung erkennen
+13. kurze Dialoge in Sprachschule, Anmeldung und Kasse ergänzen
+14. eigene Anweisungen sprechen oder schreiben
+15. Mischaufgabe: bilden + verstehen + passende Form wählen
+16. Themenprüfung
 
 ## Qualitätsregeln
 
