@@ -1,8 +1,8 @@
-html.sp-header-first #app,
-html.sp-header-first #lessonOverview{
+html.sp-header-first #app > :not(.sp-header),
+html.sp-header-first #lessonOverview > :not(.sp-header){
   visibility:hidden!important;
 }
-html.sp-header-ready #app,
-html.sp-header-ready #lessonOverview{
+html.sp-header-ready #app > *,
+html.sp-header-ready #lessonOverview > *{
   visibility:visible!important;
 }
