@@ -2,7 +2,7 @@
 'use strict';
 const LANGS={en:['en','english','englisch'],ru:['ru','russian','russisch'],tr:['tr','turkish','türkisch','tuerkisch'],uk:['uk','ua','ukrainian','ukrainisch'],ar:['ar','arabic','arabisch'],ja:['ja','japanese','japanisch'],ro:['ro','romanian','rumänisch','rumaenisch'],pl:['pl','polish','polnisch'],ku:['ku','kurdish','kurdisch','kurmancî','kurmanci']};
 const T={
- leiser:{en:'quieter',ru:'тише',tr:'daha sessiz',uk:'тихіше',ar:'بصوت أخفض',ja:'もっと静かに',ro:'mai încet',pl:'ciszej',ku:'deng kêmتر'},
+ leiser:{en:'quieter',ru:'тише',tr:'daha sessiz',uk:'тихіше',ar:'بصوت أخفض',ja:'もっと静かに',ro:'mai încet',pl:'ciszej',ku:'deng kêmtir'},
  erklaeren:{en:'to explain',ru:'объяснять',tr:'açıklamak',uk:'пояснювати',ar:'يشرح',ja:'説明する',ro:'a explica',pl:'wyjaśniać',ku:'rave kirin'},
  laut:{en:'loud / loudly',ru:'громко',tr:'yüksek sesle',uk:'голосно',ar:'بصوت عالٍ',ja:'大きな声で',ro:'tare / cu voce tare',pl:'głośno',ku:'bi dengê bilind'},
  ausmachen:{en:'to switch off',ru:'выключать',tr:'kapatmak',uk:'вимикати',ar:'يطفئ / يغلق',ja:'消す',ro:'a opri',pl:'wyłączać',ku:'vemirandin'},
