@@ -14,9 +14,9 @@ window.L9T2={
  tasks:[{
   id:'karteikarten',
   kind:'cards',
-  icon:'📚',
-  title:'Karteikarten: Wortschatz + Perfektformen',
-  description:'Lerne die neuen Wörter. Sprich oder schreibe die richtige Antwort.'
+  title:'Karteikarten',
+  instruction:'Lerne die Wörter.',
+  items:cards
  }]
 };
 })();
