@@ -1,0 +1,9 @@
+.l9-dialog-gap-card{display:grid;gap:14px;max-width:760px;margin:0 auto 18px;padding:18px;border:1px solid var(--lesson-line);border-radius:18px;background:var(--lesson-soft)}
+.l9-dialog-line{font-size:18px;line-height:1.65}
+.l9-dialog-gap-inline{display:inline-flex;align-items:center;gap:8px;vertical-align:middle}
+.l9-dialog-input{width:190px!important;min-width:150px!important;display:inline-block!important}
+.l9-dialog-hint-image{width:58px;height:58px;flex:0 0 58px;border-radius:12px;overflow:hidden;background:#fff;border:1px solid var(--lesson-line)}
+.l9-dialog-hint-image img{width:100%;height:100%;object-fit:contain;display:block}
+.l9-article-input{width:88px!important;min-width:88px!important;display:inline-block!important;text-align:center}
+.l9-case-sentence{line-height:2.2}
+@media(max-width:640px){.l9-dialog-line{font-size:16px}.l9-dialog-gap-inline{display:inline-grid;grid-template-columns:minmax(120px,1fr) 52px;max-width:100%}.l9-dialog-input{width:100%!important;min-width:0!important}.l9-dialog-hint-image{width:52px;height:52px;flex-basis:52px}.l9-article-input{width:76px!important;min-width:76px!important}}
