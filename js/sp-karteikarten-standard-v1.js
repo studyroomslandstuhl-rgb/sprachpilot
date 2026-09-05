@@ -6,9 +6,10 @@ if(window.__SP_KARTEIKARTEN_STANDARD_V1)return;window.__SP_KARTEIKARTEN_STANDARD
 
 /*
  * SprachPilot Karteikarten-Standard V1
- * Verbindliche visuelle Referenz: A1 Lektion 8 · Thema 1 · ?task=karteikarten
- * Variable Teile: ausschließlich Farbe (CSS-Variablen / data-sp-card-lesson) und Inhalt.
- * Layout, Maße, Buttons, Responsive-Verhalten und DOM-Normalisierung bleiben identisch.
+ * Verbindliche Referenz: A1 Lektion 8 · Thema 1 · ?task=karteikarten
+ * Variabel: ausschließlich Farbe und Karteninhalt.
+ * Nicht variabel: Texte der Aufgabe/Bedienung, Layout, Maße, DOM-Struktur,
+ * Flip-Verhalten, Hilfelogik, Button-Reihenfolge und responsive Darstellung.
  */
 document.body.classList.add('sp-karteikarten-standard','sp-l8t1-card-standard');
 
@@ -27,7 +28,9 @@ const CSS=[
 ];
 CSS.forEach(href=>{if(document.querySelector(`link[href^="${href.split('?')[0]}"]`))return;const link=document.createElement('link');link.rel='stylesheet';link.href=href;document.head.appendChild(link)});
 
-const style=document.createElement('style');style.id='sp-karteikarten-standard-v1-style';style.textContent=`
+const style=document.createElement('style');
+style.id='sp-karteikarten-standard-v1-style';
+style.textContent=`
 body.sp-karteikarten-standard{background:linear-gradient(180deg,var(--lesson-bg),#fff)!important}
 body.sp-karteikarten-standard .l8-wrap{width:min(980px,calc(100% - 18px))!important;padding-top:10px!important}
 body.sp-karteikarten-standard .l8-task-head{margin-bottom:16px!important}
@@ -62,17 +65,49 @@ body.sp-karteikarten-standard .l8-card-write.l7-answer-box input{width:100%!impo
 document.head.appendChild(style);
 
 function add(node,...classes){if(node)node.classList.add(...classes)}
+
+function enforceContract(){
+ const title=document.querySelector('.l8-task-title-block h1');
+ if(title&&title.textContent!=='Karteikarten')title.textContent='Karteikarten';
+ const instruction=document.querySelector('.l8-task-title-block p');
+ if(instruction&&instruction.textContent!=='📚 Lerne die Wörter.')instruction.textContent='📚 Lerne die Wörter.';
+ const mic=document.getElementById('cardMic');
+ if(mic)mic.textContent='🎤 Sprechen';
+ const write=document.getElementById('cardWrite');
+ if(write)write.textContent='✍️ Schreiben';
+ const listen=document.getElementById('cardListen')||document.querySelector('.l8-card-listen');
+ if(listen)listen.textContent='🔊 Anhören';
+ const check=document.getElementById('cardCheck');
+ if(check)check.textContent='Prüfen';
+ const input=document.getElementById('cardInput');
+ if(input)input.setAttribute('placeholder','Wort schreiben');
+ document.querySelectorAll('.l8-card-detail').forEach(node=>{
+  const label=String(node.querySelector('span')?.textContent||'').trim();
+  if(label&&!/^(Plural|Beispiel)$/i.test(label))node.remove();
+ });
+ document.querySelectorAll('.l8-wrap>footer').forEach(node=>node.remove());
+}
+
 function normalizeCard(){
- const card=document.querySelector('.l8-flip-card');if(!card||card.dataset.spCardStandard==='1')return false;card.dataset.spCardStandard='1';card.dataset.spL7Match='1';
- const wrap=card.closest('.l8-flip-wrap');add(wrap,'flip-wrap');add(card,'flip-card');
- const front=card.querySelector('.l8-flip-front');add(front,'flip-face','flip-front');const frontVisual=front?.querySelector('.l8-card-visual');add(frontVisual,'visual');const frontTr=front?.querySelector('.l8-card-translation');add(frontTr,'card-translation-box');
- const back=card.querySelector('.l8-flip-back');add(back,'flip-face','flip-back');const grid=back?.querySelector('.l8-flip-back-grid');add(grid,'flip-back-grid');const imageBox=back?.querySelector('.l8-back-image');add(imageBox,'flip-back-image');if(imageBox&&!imageBox.querySelector(':scope > .visual')){const img=imageBox.querySelector('img');if(img){const visual=document.createElement('div');visual.className='visual small-visual pure-visual';img.replaceWith(visual);visual.appendChild(img)}}
- const info=back?.querySelector('.l8-back-info');add(info,'flip-back-info');add(info?.querySelector('.l8-flip-word'),'flip-word');const tr=info?.querySelector('.l8-card-translation');add(tr,'card-translation-box','back-translation');
- if(info){const details=[...info.querySelectorAll(':scope > .l8-card-detail')];const detailWrap=document.createElement('div');detailWrap.className='card-details';details.forEach(node=>{const label=String(node.querySelector('span')?.textContent||'').trim();if(/^info$/i.test(label))node.remove();else detailWrap.appendChild(node)});const listen=info.querySelector('#cardListen,.l8-card-listen');if(detailWrap.children.length)info.insertBefore(detailWrap,listen||null);if(listen){add(listen,'btn','secondary','card-listen-btn');listen.textContent='🔊 Anhören'}}
- const actions=document.querySelector('.l8-card-actions');add(actions,'actions','card-actions');const mic=document.getElementById('cardMic');if(mic){add(mic,'btn');mic.textContent='🎤 Sprechen'}const write=document.getElementById('cardWrite');if(write){add(write,'btn','secondary');write.textContent='✍️ Schreiben'}const answer=document.getElementById('cardWriteBox');add(answer,'l7-answer-box');
+ enforceContract();
+ const card=document.querySelector('.l8-flip-card');
+ if(!card)return false;
+ if(card.dataset.spCardStandard!=='1'){
+  card.dataset.spCardStandard='1';card.dataset.spL7Match='1';
+  const wrap=card.closest('.l8-flip-wrap');add(wrap,'flip-wrap');add(card,'flip-card');
+  const front=card.querySelector('.l8-flip-front');add(front,'flip-face','flip-front');const frontVisual=front?.querySelector('.l8-card-visual');add(frontVisual,'visual');const frontTr=front?.querySelector('.l8-card-translation');add(frontTr,'card-translation-box');
+  const back=card.querySelector('.l8-flip-back');add(back,'flip-face','flip-back');const grid=back?.querySelector('.l8-flip-back-grid');add(grid,'flip-back-grid');const imageBox=back?.querySelector('.l8-back-image');add(imageBox,'flip-back-image');if(imageBox&&!imageBox.querySelector(':scope > .visual')){const img=imageBox.querySelector('img');if(img){const visual=document.createElement('div');visual.className='visual small-visual pure-visual';img.replaceWith(visual);visual.appendChild(img)}}
+  const info=back?.querySelector('.l8-back-info');add(info,'flip-back-info');add(info?.querySelector('.l8-flip-word'),'flip-word');const tr=info?.querySelector('.l8-card-translation');add(tr,'card-translation-box','back-translation');
+  if(info){const details=[...info.querySelectorAll(':scope > .l8-card-detail')];const detailWrap=document.createElement('div');detailWrap.className='card-details';details.forEach(node=>detailWrap.appendChild(node));const listenButton=info.querySelector('#cardListen,.l8-card-listen');if(detailWrap.children.length)info.insertBefore(detailWrap,listenButton||null);if(listenButton)add(listenButton,'btn','secondary','card-listen-btn')}
+  const actions=document.querySelector('.l8-card-actions');add(actions,'actions','card-actions');const micButton=document.getElementById('cardMic');const writeButton=document.getElementById('cardWrite');if(micButton)add(micButton,'btn');if(writeButton)add(writeButton,'btn','secondary');const answer=document.getElementById('cardWriteBox');add(answer,'l7-answer-box');
+ }
+ enforceContract();
  return true;
 }
-const root=document.getElementById('app');if(root)new MutationObserver(()=>normalizeCard()).observe(root,{childList:true,subtree:true});[0,40,120,350,900].forEach(ms=>setTimeout(normalizeCard,ms));
 
-window.SPCardTaskStandard={version:1,reference:'A1-Lektion-8/Thema-1?task=karteikarten',normalizeCard};
+const root=document.getElementById('app');
+if(root)new MutationObserver(()=>normalizeCard()).observe(root,{childList:true,subtree:true});
+[0,40,120,350,900].forEach(ms=>setTimeout(normalizeCard,ms));
+
+window.SPCardTaskStandard={version:'1.1',reference:'A1-Lektion-8/Thema-1?task=karteikarten',normalizeCard,enforceContract};
 })();
