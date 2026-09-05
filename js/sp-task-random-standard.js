@@ -20,8 +20,10 @@ function shuffleOptions(item){
  const keys=['options','choices','alternatives','o'];
  for(const key of keys){
   const list=item[key];if(!Array.isArray(list)||list.length<2)continue;
-  const oldCorrectIndex=Number.isInteger(Number(item.correctIndex))?Number(item.correctIndex):null;
-  const oldAnswerIndex=Number.isInteger(Number(item.answerIndex))?Number(item.answerIndex):null;
+  const hasCorrectIndex=item.correctIndex!=null&&Number.isInteger(Number(item.correctIndex));
+  const hasAnswerIndex=item.answerIndex!=null&&Number.isInteger(Number(item.answerIndex));
+  const oldCorrectIndex=hasCorrectIndex?Number(item.correctIndex):null;
+  const oldAnswerIndex=hasAnswerIndex?Number(item.answerIndex):null;
   const correctValue=oldCorrectIndex!=null?list[oldCorrectIndex]:undefined;
   const answerValue=oldAnswerIndex!=null?list[oldAnswerIndex]:undefined;
   fisherYates(list);
@@ -66,6 +68,7 @@ function randomizeData(){
  return changed;
 }
 function textKey(node){return String(node?.dataset?.value||node?.dataset?.answer||node?.value||node?.textContent||'').trim()}
+function relabel(order){order.forEach((node,index)=>{const label=node.querySelector?.('.letter,.option-letter,.choice-letter,[data-option-letter]');if(label)label.textContent=String.fromCharCode(65+index)})}
 function randomizeRenderedOptions(){
  const selectors=['.l8-options','.l7-options','.options','[data-options]','.answer-options','.choice-options','.image-options'];
  document.querySelectorAll(selectors.join(',')).forEach(box=>{
@@ -73,12 +76,12 @@ function randomizeRenderedOptions(){
   if(children.length<2)return;
   const signature=children.map(textKey).sort().join('\u241f');if(renderedContainers.get(box)===signature)return;
   const order=[...children];for(let i=order.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[order[i],order[j]]=[order[j],order[i]]}
-  order.forEach(n=>box.appendChild(n));renderedContainers.set(box,signature);
+  order.forEach(n=>box.appendChild(n));relabel(order);renderedContainers.set(box,signature);
  });
 }
 function run(){randomizeData();randomizeRenderedOptions()}
 if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',run,{once:true});else run();
 [0,40,120,300,700,1400].forEach(ms=>setTimeout(run,ms));
 try{let timer=null;new MutationObserver(()=>{clearTimeout(timer);timer=setTimeout(randomizeRenderedOptions,35)}).observe(document.documentElement,{childList:true,subtree:true})}catch(e){}
-window.SPTaskRandomStandard={version:'1.0',shuffle:fisherYates,randomizeData,randomizeRenderedOptions,lesson,theme,taskId};
+window.SPTaskRandomStandard={version:'1.1',shuffle:fisherYates,randomizeData,randomizeRenderedOptions,lesson,theme,taskId};
 })();
