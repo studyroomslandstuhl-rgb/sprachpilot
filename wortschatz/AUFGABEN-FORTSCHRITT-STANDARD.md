@@ -33,12 +33,14 @@ Am Ende einer Aufgabe muss sichtbar sein, dass die Punkte gespeichert wurden bzw
 - `SP_POINTS_TOTAL` darf nicht als eigenes, isoliertes Punktesystem einer Lektion geführt werden; es ist nur der lokale Spiegel des zentral berechneten Gesamtwerts.
 - Themenübersichten zeigen den zentralen Gesamtpunktestand und den aktuellen Durchlauf.
 
-## 4. Automatisches Scrollen
+## 4. Automatisches Scrollen – IMMER
 
-- Beim Öffnen einer Aufgabe wird automatisch bis zur eigentlichen Aufgabenkarte gescrollt.
-- Nach einer richtigen Antwort und dem Wechsel zum nächsten Item wird wieder zur aktiven Aufgabenkarte gescrollt.
-- Bei einer falschen Antwort bleibt die aktuelle Aufgabe stehen; ein reines Feedback-Update darf den Benutzer nicht unnötig neu positionieren.
-- Standardlaufzeit: `/js/sp-task-runtime-standard.js`.
+- Jede geöffnete Aufgabe scrollt automatisch bis zur eigentlichen aktiven Aufgabenkarte.
+- Das gilt beim ersten Öffnen, nach dem Rendern, nach dem Wechsel zur nächsten Teilaufgabe, nach einer richtigen Antwort, nach erneutem Laden und nach dynamischen DOM-Änderungen der Aufgabe.
+- Der Schüler soll nicht nach jedem neuen Item manuell wieder nach unten scrollen müssen.
+- Ziel ist immer die aktuelle Aufgaben-/Übungskarte, nicht die globale Kopfzeile oder Fortschrittskarte.
+- Zentrale Standarddatei: `/js/sp-task-autoscroll.js`.
+- `/js/sp-task-runtime-standard.js` darf zusätzlich scrollen, aber der globale Auto-Scroll-Standard ist maßgeblich.
 
 ## 5. Lehrer-Vorschau
 
