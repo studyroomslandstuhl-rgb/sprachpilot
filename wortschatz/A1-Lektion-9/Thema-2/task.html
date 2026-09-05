@@ -1,1 +1,106 @@
-<!DOCTYPE html><html lang="de" data-sp-card-standard="v1"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0"><meta http-equiv="Pragma" content="no-cache"><meta http-equiv="Expires" content="0"><title>Lektion 9 · Thema 2 · Karteikarten</title><script>document.documentElement.setAttribute('data-sp-card-lesson','9')</script><link rel="stylesheet" href="../shared/l9-color.css?v=20260905-l9t2cards5"><link rel="stylesheet" href="/css/sp-card-standard-colors.css?v=20260905-l9t2cards5"><link rel="stylesheet" href="/wortschatz/A1-Lektion-9/Thema-1/l9t1-l8-standard.css?v=20260905-l8standard1"></head><body data-theme="2" data-page="task"><main id="app"><div class="l8-wrap"><section class="l8-card">Aufgabe wird geladen …</section></div></main><script>window.__L9T2_BOOT_OK=false;window.addEventListener('error',function(){const a=document.getElementById('app');if(a&&!window.__L9T2_BOOT_OK)a.innerHTML='<div class="l8-wrap"><section class="l8-card"><h1>Karteikarten</h1><p>Die Aufgabe konnte nicht vollständig geladen werden. Bitte Seite neu laden.</p></section></div>'})</script><script src="./l9t2-data.js?v=20260905-l9t2cards5"></script><script src="./l9t2-translations.js?v=20260905-l9t2cards5"></script><script src="./l9t2-card-app.js?v=20260905-l9t2cards5"></script><script>window.__L9T2_BOOT_OK=!!document.querySelector('.l8-card-stage,.l8-finish');</script><script src="/js/sp-karteikarten-standard-v1.js?v=20260905-l9t2cards5"></script><script type="module" src="/js/guard.js?v=20260905-l9t2cards5"></script><script src="/js/sp-task-runtime-standard.js?v=20260905-l9t2cards5"></script></body></html>
+<!DOCTYPE html>
+<html lang="de" data-sp-card-standard="v1">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta http-equiv="Cache-Control" content="no-store, no-cache, must-revalidate, max-age=0">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
+<title>Lektion 9 · Thema 2 · Karteikarten</title>
+<script>document.documentElement.setAttribute('data-sp-card-lesson','9');</script>
+<link rel="stylesheet" href="../shared/l9-color.css?v=20260905-l9t2cards6">
+<link rel="stylesheet" href="/css/sp-card-standard-colors.css?v=20260905-l9t2cards6">
+<link rel="stylesheet" href="/wortschatz/A1-Lektion-9/Thema-1/l9t1-l8-standard.css?v=20260905-l8standard1">
+<style>
+/* Kritischer Kartenstil liegt absichtlich direkt auf der Seite: Die Aufgabe darf nie auf externe JS/CSS-Initialisierung warten. */
+.l8-flip-wrap{max-width:690px;margin:0 auto;perspective:1200px}
+.l8-flip-card{position:relative;width:100%;min-height:390px;transform-style:preserve-3d;transition:transform .45s ease;cursor:pointer}
+.l8-flip-card.flipped{transform:rotateY(180deg)}
+.l8-flip-face{position:absolute;inset:0;backface-visibility:hidden;-webkit-backface-visibility:hidden;border:2px solid var(--lesson-line);border-radius:22px;background:#fff;padding:18px;overflow:auto}
+.l8-flip-front{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:16px;text-align:center}
+.l8-flip-back{transform:rotateY(180deg);display:flex;align-items:center;justify-content:center}
+.l8-card-visual{width:300px;height:300px;max-width:78vw;max-height:42vh;margin:0 auto;border-radius:22px;overflow:hidden;background:#fff}
+.l8-card-visual img{display:block;width:100%;height:100%;object-fit:contain}
+.l8-card-translation{width:min(100%,520px);margin:0 auto;padding:10px 12px;border:2px solid var(--lesson-line);border-radius:14px;background:var(--lesson-soft);display:grid;gap:3px;text-align:center}
+.l8-card-translation span{font-size:12px;font-weight:900;color:var(--lesson-main-dark)}
+.l8-card-translation strong{font-size:19px;line-height:1.25}
+.l8-flip-back-grid{width:100%;display:grid;grid-template-columns:120px minmax(0,1fr);gap:12px;align-items:center}
+.l8-back-image,.l8-back-image .visual{width:120px;height:120px;border-radius:16px;overflow:hidden;background:#fff}
+.l8-back-image img{display:block;width:100%;height:100%;object-fit:contain}
+.l8-back-info{min-width:0;display:grid;gap:7px}
+.l8-flip-word{font-size:25px;line-height:1.15;text-align:center;color:var(--lesson-main-dark);font-weight:950}
+.card-details{display:grid;gap:7px}
+.l8-card-detail{padding:8px 9px;border:1px solid var(--lesson-line);border-radius:12px;background:#fff;display:grid;grid-template-columns:82px minmax(0,1fr);gap:8px}
+.l8-card-detail span{font-weight:900;color:var(--lesson-main-dark)}
+.l8-card-actions{max-width:690px;margin:14px auto!important;display:flex;gap:10px;justify-content:center}
+.l8-card-actions .l8-btn{flex:1 1 0;min-height:48px}
+.l8-card-write{max-width:690px;margin:14px auto}
+@media(max-width:700px){.l8-flip-back-grid{grid-template-columns:1fr}.l8-back-image,.l8-back-image .visual{width:100px;height:100px;margin:0 auto}.l8-card-actions{display:grid;grid-template-columns:1fr 1fr}.l8-flip-word{font-size:23px}}
+</style>
+</head>
+<body data-theme="2" data-page="task">
+<main id="app"></main>
+<script>
+(function(){
+'use strict';
+var CDN='https://sprachpilot.b-cdn.net/';
+var cards=[
+{id:'leiser',full:'leiser',plural:'',example:'Sprich bitte leiser.',image:CDN+'leiser.webp',audio:CDN+'audio/leiser.mp3',en:'quieter'},
+{id:'erklaeren',full:'erklären',plural:'',example:'Erklären Sie das bitte noch einmal.',image:CDN+'erklaeren.webp',audio:CDN+'audio/erklaeren.mp3',en:'to explain'},
+{id:'laut',full:'laut',plural:'',example:'Sprich bitte nicht so laut.',image:CDN+'laut.webp',audio:CDN+'audio/laut.mp3',en:'loud'},
+{id:'ausmachen',full:'ausmachen',plural:'',example:'Mach bitte das Handy aus.',image:CDN+'ausmachen.webp',audio:CDN+'audio/ausmachen.mp3',en:'to switch off'},
+{id:'zuhoeren',full:'zuhören',plural:'',example:'Hör bitte zu.',image:CDN+'zuhoeren.webp',audio:CDN+'audio/zuhoeren.mp3',en:'to listen'},
+{id:'aufstehen',full:'aufstehen',plural:'',example:'Steh bitte auf.',image:CDN+'aufstehen.webp',audio:CDN+'audio/aufstehen.mp3',en:'to stand up / get up'},
+{id:'warten',full:'warten',plural:'',example:'Warten Sie bitte hier.',image:CDN+'warten.webp',audio:CDN+'audio/warten.mp3',en:'to wait'},
+{id:'gebuehr',full:'die Gebühr',plural:'die Gebühren',example:'Die Gebühr ist 50 Euro.',image:CDN+'gebuehr.webp',audio:CDN+'audio/gebuehr.mp3',en:'fee'},
+{id:'kasse',full:'die Kasse',plural:'die Kassen',example:'Bezahlen Sie bitte an der Kasse.',image:CDN+'kasse.webp',audio:CDN+'audio/kasse.mp3',en:'cash desk / checkout'},
+{id:'lachen',full:'lachen',plural:'',example:'Die Kursteilnehmer lachen.',image:CDN+'lachen.webp',audio:CDN+'audio/lachen.mp3',en:'to laugh'},
+{id:'aufhoeren',full:'aufhören',plural:'',example:'Hör bitte auf.',image:CDN+'aufhoeren.webp',audio:CDN+'audio/aufhoeren.mp3',en:'to stop'},
+{id:'doch',full:'doch',plural:'',example:'Komm doch bitte rein.',image:CDN+'doch.webp',audio:CDN+'audio/doch.mp3',en:'do / after all'},
+{id:'bitte',full:'bitte',plural:'',example:'Warten Sie bitte hier.',image:CDN+'bitte.webp',audio:CDN+'audio/bitte.mp3',en:'please'},
+{id:'mal',full:'mal',plural:'',example:'Hör mal zu.',image:CDN+'mal.webp',audio:CDN+'audio/mal.mp3',en:'just / once'},
+{id:'anmeldung',full:'die Anmeldung',plural:'die Anmeldungen',example:'Die Anmeldung ist im ersten Stock.',image:CDN+'anmeldung.webp',audio:CDN+'audio/anmeldung.mp3',en:'registration'},
+{id:'kursgebuehr',full:'die Kursgebühr',plural:'die Kursgebühren',example:'Die Kursgebühr bezahlt man an der Kasse.',image:CDN+'kursgebuehr.webp',audio:CDN+'audio/kursgebuehr.mp3',en:'course fee'},
+{id:'stock',full:'der Stock',plural:'die Stockwerke',example:'Der Unterricht ist im zweiten Stock.',image:CDN+'stock.webp',audio:CDN+'audio/stock.mp3',en:'floor / storey'},
+{id:'unterricht',full:'der Unterricht',plural:'kein Plural',example:'Der Unterricht beginnt um neun.',image:CDN+'unterricht.webp',audio:CDN+'audio/unterricht.mp3',en:'lesson / class'},
+{id:'sprachschule',full:'die Sprachschule',plural:'die Sprachschulen',example:'Ich lerne Deutsch in einer Sprachschule.',image:CDN+'sprachschule.webp',audio:CDN+'audio/sprachschule.mp3',en:'language school'}
+];
+window.L9T2={title:'Mach das bitte!',cards:cards,tasks:[{id:'karteikarten',kind:'cards',title:'Karteikarten',instruction:'Lerne die Wörter.'}]};
+var root=document.getElementById('app');
+function esc(v){return String(v==null?'':v).replace(/[&<>"']/g,function(c){return {'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]})}
+function norm(v){return String(v==null?'':v).trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:“”"'`´()]/g,'').replace(/\s+/g,' ')}
+function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')}catch(e){return{}}}
+function pid(){var p=profile();return String(p.canonicalStudentId||p.studentId||p.uid||p.email||localStorage.getItem('SP_STUDENT_ID')||'student').toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_')}
+function preview(){var r=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();return ['teacher','lehrer','admin','owner','superadmin'].indexOf(r)>=0||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}
+function store(){return preview()?sessionStorage:localStorage}
+function key(){return 'SP_L9_'+pid()+'_T2_karteikarten'}
+function state(){var s={done:[],wrong:{},review:{},reviewFirstCorrect:{}};try{var x=JSON.parse(store().getItem(key())||'{}');for(var k in x)s[k]=x[k]}catch(e){}s.done=Array.isArray(s.done)?s.done:[];s.wrong=s.wrong||{};s.review=s.review||{};s.reviewFirstCorrect=s.reviewFirstCorrect||{};return s}
+function save(s){try{store().setItem(key(),JSON.stringify(s));window.dispatchEvent(new Event('storage'))}catch(e){}}
+function head(){var s=state(),p=Math.round(s.done.length/cards.length*100);return '<section class="l8-card l8-task-head"><div class="l8-task-title-block"><span class="l8-task-kicker">Aufgabe 1</span><h1>Karteikarten</h1><p>🃏 Lerne die Wörter.</p></div><div class="l8-progress-row"><span>'+s.done.length+' von '+cards.length+' fertig</span><strong>'+p+'%</strong></div><div class="l8-progress"><div style="width:'+p+'%"></div></div></section>'}
+function previewNote(){return preview()?'<div class="sp-teacher-preview-note">Lehrer-Vorschau: Es werden keine Teilnehmerpunkte und keine Teilnehmerfortschritte gespeichert.</div>':''}
+function next(){var s=state();for(var i=0;i<cards.length;i++){if(s.done.indexOf(cards[i].id)<0&&!s.reviewFirstCorrect[cards[i].id])return cards[i]}for(var j=0;j<cards.length;j++)if(s.done.indexOf(cards[j].id)<0)return cards[j];return null}
+function wrong(c){var s=state();s.wrong[c.id]=(Number(s.wrong[c.id])||0)+1;s.review[c.id]=true;save(s);return s.wrong[c.id]}
+function right(c){var s=state();if(s.review[c.id]&&!s.reviewFirstCorrect[c.id]){s.reviewFirstCorrect[c.id]=true;delete s.wrong[c.id];save(s);return true}if(s.done.indexOf(c.id)<0)s.done.push(c.id);delete s.wrong[c.id];delete s.review[c.id];delete s.reviewFirstCorrect[c.id];save(s);return false}
+function help(c,n){if(n===1)return '<div class="l8-feedback bad">Noch nicht richtig. Versuch es noch einmal.</div>';if(n===2)return '<div class="l8-feedback warn"><strong>Hinweis:</strong> Lies das Beispiel: '+esc(c.example)+'</div>';return '<div class="l8-feedback warn"><strong>Lösung:</strong> '+esc(c.full)+'<br>Sprich oder schreibe das Wort jetzt selbst.</div>'}
+function speak(c){var fallback=function(){try{if(!('speechSynthesis' in window))return;var u=new SpeechSynthesisUtterance(c.full);u.lang='de-DE';u.rate=.84;speechSynthesis.cancel();speechSynthesis.speak(u)}catch(e){}};try{var a=new Audio(c.audio);a.onerror=fallback;var p=a.play();if(p&&p.catch)p.catch(fallback)}catch(e){fallback()}}
+function finish(){root.innerHTML='<div class="l8-wrap">'+previewNote()+head()+'<section class="l8-card l8-finish"><div class="l8-finish-icon">✓</div><h2>Gut gemacht!</h2><p>Du hast diese Aufgabe zu 100% abgeschlossen.</p><div class="l8-row l8-center-actions"><a class="l8-btn primary" href="./index.html">Zur Übersicht</a></div></section></div>';window.__L9T2_BOOT_OK=true}
+function draw(){var c=next();if(!c){finish();return}root.innerHTML='<div class="l8-wrap l8-card-standard">'+previewNote()+head()+'<section class="l8-card l8-card-stage"><div class="l8-flip-wrap"><div class="l8-flip-card" id="l8FlipCard" tabindex="0" role="button" aria-label="Karte umdrehen"><div class="l8-flip-face l8-flip-front"><div class="l8-card-visual"><img src="'+esc(c.image)+'" alt=""></div><div class="l8-card-translation"><span>Englisch</span><strong>'+esc(c.en)+'</strong></div></div><div class="l8-flip-face l8-flip-back"><div class="l8-flip-back-grid"><div class="l8-back-image"><div class="visual"><img src="'+esc(c.image)+'" alt=""></div></div><div class="l8-back-info"><div class="l8-flip-word">'+esc(c.full)+'</div><div class="l8-card-translation"><span>Englisch</span><strong>'+esc(c.en)+'</strong></div><div class="card-details">'+(c.plural?'<div class="l8-card-detail"><span>Plural</span><strong>'+esc(c.plural)+'</strong></div>':'')+'<div class="l8-card-detail"><span>Beispiel</span><strong>'+esc(c.example)+'</strong></div></div><button class="l8-btn l8-audio" id="cardListen" type="button">🔊 Anhören</button></div></div></div></div></div><div class="l8-row l8-center-actions l8-card-actions"><button class="l8-btn primary" id="cardMic" type="button">🎤 Sprechen</button><button class="l8-btn" id="cardWrite" type="button">✍️ Schreiben</button></div><div class="l8-card-write" id="cardWriteBox" hidden><div class="l8-answer-row"><input class="l8-input" id="cardInput" autocomplete="off" placeholder="Wort schreiben"><button class="l8-btn primary" id="cardCheck" type="button">Prüfen</button></div></div><div id="feedback"></div></section></div>';window.__L9T2_BOOT_OK=true;
+var flip=document.getElementById('l8FlipCard');function doFlip(){if(flip.classList.contains('flipped'))return;flip.classList.add('flipped');document.getElementById('feedback').innerHTML=help(c,wrong(c))}flip.onclick=doFlip;flip.onkeydown=function(e){if(e.key==='Enter'||e.key===' '){e.preventDefault();doFlip()}};
+document.getElementById('cardListen').onclick=function(e){e.stopPropagation();speak(c)};
+document.getElementById('cardWrite').onclick=function(){document.getElementById('cardWriteBox').hidden=false;document.getElementById('cardInput').focus()};
+function check(){var input=document.getElementById('cardInput'),v=norm(input.value);if(!v)return;if(norm(c.full)===v){var again=right(c);document.getElementById('feedback').innerHTML='<div class="l8-feedback good">'+(again?'Richtig. Diese Karte kommt später noch einmal.':'Richtig!')+'</div>';setTimeout(draw,500)}else document.getElementById('feedback').innerHTML=help(c,wrong(c))}
+document.getElementById('cardCheck').onclick=check;document.getElementById('cardInput').onkeydown=function(e){if(e.key==='Enter')check()};
+document.getElementById('cardMic').onclick=function(){var R=window.SpeechRecognition||window.webkitSpeechRecognition;if(!R){document.getElementById('cardWrite').click();return}try{var r=new R();r.lang='de-DE';r.interimResults=false;r.maxAlternatives=5;r.onresult=function(e){for(var i=0;i<e.results[0].length;i++){if(norm(e.results[0][i].transcript)===norm(c.full)){var again=right(c);document.getElementById('feedback').innerHTML='<div class="l8-feedback good">'+(again?'Richtig. Diese Karte kommt später noch einmal.':'Richtig!')+'</div>';setTimeout(draw,500);return}}document.getElementById('feedback').innerHTML=help(c,wrong(c))};r.onerror=function(){document.getElementById('cardWrite').click()};r.start()}catch(e){document.getElementById('cardWrite').click()}};
+}
+draw();
+/* Gemeinsame Systeme kommen erst NACH der sichtbaren Karte. Fehler dort dürfen den Start nicht blockieren. */
+setTimeout(function(){
+ function add(src,type){try{var s=document.createElement('script');s.src=src;if(type)s.type=type;document.body.appendChild(s)}catch(e){}}
+ add('/js/sp-karteikarten-standard-v1.js?v=20260905-l9t2cards6');
+ add('/js/guard.js?v=20260905-l9t2cards6','module');
+ add('/js/sp-task-runtime-standard.js?v=20260905-l9t2cards6');
+},50);
+})();
+</script>
+</body>
+</html>
