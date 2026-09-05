@@ -14,6 +14,8 @@ window.L9T2={
  tasks:[{
   id:'karteikarten',
   kind:'cards',
+  icon:'🃏',
+  emoji:'🃏',
   title:'Karteikarten',
   instruction:'Lerne die Wörter.',
   items:cards
