@@ -1,0 +1,33 @@
+.sp-vocab-overview{padding-top:10px}
+.sp-vocab-overview .sp-vocab-intro h1{margin:4px 0 14px;color:var(--lesson-main-dark);font-size:34px}
+.sp-vocab-overview .sp-vocab-intro p{font-size:19px;line-height:1.5;margin:0}
+.sp-vocab-eyebrow{font-size:13px;font-weight:950;letter-spacing:.08em;color:var(--lesson-main-dark)}
+.sp-vocab-group-head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}
+.sp-vocab-group-head h2{margin:0;color:var(--lesson-main-dark);font-size:29px}
+.sp-vocab-group-head span{padding:8px 13px;border:1px solid var(--lesson-line);border-radius:999px;background:var(--lesson-soft);color:var(--lesson-main-dark);font-weight:900}
+.sp-vocab-list{display:grid;gap:14px}
+.sp-vocab-word{display:grid;grid-template-columns:140px minmax(0,1fr) 110px;gap:18px;align-items:center;padding:15px;border:2px solid var(--lesson-line);border-radius:22px;background:#fff}
+.sp-vocab-image{width:140px;height:140px;border-radius:18px;overflow:hidden;background:var(--lesson-soft);display:grid;place-items:center}
+.sp-vocab-image img{width:100%;height:100%;object-fit:cover;display:block}
+.sp-vocab-fallback{padding:10px;text-align:center;font-weight:900;color:var(--lesson-main-dark)}
+.sp-vocab-content h3{margin:0 0 7px;color:var(--lesson-main-dark);font-size:25px}
+.sp-vocab-meta,.sp-vocab-example{margin:4px 0;line-height:1.4}
+.sp-vocab-example{font-style:italic;color:var(--lesson-muted)}
+.sp-vocab-translation{margin-top:10px;padding-top:9px;border-top:1px solid var(--lesson-line);font-size:15px}
+.sp-vocab-translation b{color:var(--lesson-main-dark)}
+.sp-vocab-translation span{color:var(--lesson-muted)}
+.sp-vocab-audio{min-height:54px;border:3px solid var(--lesson-main-dark);border-radius:16px;background:#fff;color:var(--lesson-main-dark);font-size:20px;font-weight:900;cursor:pointer}
+.sp-vocab-audio span{display:block;font-size:13px;margin-top:2px}
+.sp-vocab-audio.playing{background:var(--lesson-soft);border-color:var(--lesson-main)}
+@media(max-width:720px){
+ .sp-vocab-word{grid-template-columns:105px minmax(0,1fr);gap:12px;padding:12px}
+ .sp-vocab-image{width:105px;height:105px}
+ .sp-vocab-audio{grid-column:1/-1;width:100%}
+ .sp-vocab-content h3{font-size:21px}
+ .sp-vocab-group-head h2{font-size:25px}
+}
+@media(max-width:480px){
+ .sp-vocab-word{grid-template-columns:82px minmax(0,1fr)}
+ .sp-vocab-image{width:82px;height:82px}
+ .sp-vocab-intro h1{font-size:29px}
+}
