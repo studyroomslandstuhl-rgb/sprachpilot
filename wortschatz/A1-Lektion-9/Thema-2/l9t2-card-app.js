@@ -23,7 +23,6 @@ function load(){
  return s;
 }
 function save(s){try{store().setItem(key(),JSON.stringify(s))}catch(e){}}
-function percent(){return D.cards.length?Math.round(load().done.length/D.cards.length*100):0}
 function previewNote(){return preview()?'<div class="sp-teacher-preview-note">Lehrer-Vorschau: Es werden keine Teilnehmerpunkte und keine Teilnehmerfortschritte gespeichert.</div>':''}
 function taskHead(){const s=load(),n=D.cards.length,p=n?Math.round(s.done.length/n*100):0;return`<section class="l8-card l8-task-head"><div class="l8-task-title-block"><span class="l8-task-kicker">Aufgabe 1</span><h1>Karteikarten</h1><p>🃏 Lerne die Wörter.</p></div><div class="l8-progress-row"><span>${s.done.length} von ${n} fertig</span><strong>${p}%</strong></div><div class="l8-progress"><div style="width:${p}%"></div></div></section>`}
 function feedback(type,text){const box=document.getElementById('feedback');if(box)box.innerHTML=`<div class="l8-feedback ${type}">${text}</div>`}
@@ -69,14 +68,16 @@ async function syncTask(){
  api.recordTaskProgress({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:9,theme:2,topicId:TOPIC,title:'A1 Lektion 9 · Thema 2',file:'task.html?task=karteikarten',taskTitle:'Karteikarten',percent:p,completed:p>=100,total,done}).catch?.(()=>{});
 }
 async function hydrate(){
- if(preview())return;
- const api=await ensureProgress();if(!api?.loadCurrentStudentProgress)return;
+ if(preview())return false;
+ const before=load().done.length;
+ const api=await ensureProgress();if(!api?.loadCurrentStudentProgress)return false;
  try{
   const all=await api.loadCurrentStudentProgress(),topic=all?.wortschatz?.[TOPIC],cloud=topic?.tasks?.['task.html?task=karteikarten']||topic?.tasks?.karteikarten;
-  if(!cloud)return;
+  if(!cloud)return false;
   const ids=D.cards.map(x=>x.id),n=Math.min(ids.length,Math.max(Number(cloud.done)||0,Math.round(ids.length*Number(cloud.percent||0)/100)));
   const s=load();for(const id of ids.slice(0,n))if(!s.done.includes(id))s.done.push(id);save(s);
- }catch(e){console.warn('L9T2 restore',e)}
+  return s.done.length!==before;
+ }catch(e){console.warn('L9T2 restore',e);return false}
 }
 function finish(){
  root.innerHTML=`<div class="l8-wrap">${previewNote()}${taskHead()}<section class="l8-card l8-finish"><div class="l8-finish-icon">✓</div><h2>Gut gemacht!</h2><p>Du hast diese Aufgabe zu 100% abgeschlossen.</p><div class="l8-row l8-center-actions"><a class="l8-btn primary" href="./index.html">Zur Übersicht</a></div></section></div>`;
@@ -96,5 +97,8 @@ function drawCard(){
  document.getElementById('cardInput').onkeydown=e=>{if(e.key==='Enter')check(e.target.value)};
  document.getElementById('cardMic').onclick=()=>mic(cardAccepted(card),v=>check(v));
 }
-(async()=>{await hydrate();drawCard()})();
+
+/* Wichtig: UI niemals auf Firebase warten lassen. */
+drawCard();
+Promise.resolve().then(hydrate).then(changed=>{if(changed)drawCard()}).catch(e=>console.warn('L9T2 background restore',e));
 })();
