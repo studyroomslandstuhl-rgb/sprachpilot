@@ -10,6 +10,7 @@ Diese Regeln gelten für alle Themen und alle neuen oder überarbeiteten Aufgabe
 - Geöffnete Aufgabe: zuerst die L8-Aufgaben-Kopfkarte mit „Aufgabe X“, Titel, genau einer kurzen Anweisung und Fortschrittsbalken; danach genau eine L8-Aufgabenkarte für den Inhalt.
 - Buttons, Eingaben, Multiple Choice, Tabellen, Feedback, Rundungen, Abstände und mobile Darstellung verwenden die L8-Komponenten und L8-Klassen.
 - Karteikarten verwenden den L8T1-Karteikartenstandard mit Vorderseite, Bild, Muttersprache, Rückseite, Wort, Plural/Perfekt/Beispiel, Anhören, Sprechen und Schreiben.
+- **Randomisierung ist verbindlich:** Fragen/Items werden bei jeder neu begonnenen Aufgabe in zufälliger Reihenfolge angeordnet. Bei Aufgaben mit Antwortmöglichkeiten werden auch die Antwortoptionen zufällig gemischt. Reihenfolge-Aufgaben selbst bleiben natürlich lösbar; dort werden die zu ordnenden Elemente zufällig gestartet, die fachlich richtige Zielreihenfolge bleibt unverändert.
 - Richtige Einzelantworten gehen automatisch zum nächsten Item. Es darf keinen konkurrierenden Timer geben.
 - Falsch beantwortete Items werden später erneut gezeigt, bis sie richtig gelöst wurden.
 - **Automatisches Scrollen ist verbindlich:** Beim Öffnen und nach dem Wechsel zum nächsten Item wird zur aktiven Aufgabenkarte gescrollt. Reines Fehlerfeedback darf nicht unnötig neu scrollen. Technische Standardbasis: `/js/sp-task-runtime-standard.js`.
