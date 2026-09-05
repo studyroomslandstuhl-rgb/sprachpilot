@@ -9,7 +9,8 @@ if(window.__SP_KARTEIKARTEN_STANDARD_V1)return;window.__SP_KARTEIKARTEN_STANDARD
  * Verbindliche Referenz: A1 Lektion 8 · Thema 1 · ?task=karteikarten
  * Variabel: ausschließlich Farbe und Karteninhalt.
  * Nicht variabel: Texte der Aufgabe/Bedienung, Layout, Maße, DOM-Struktur,
- * Flip-Verhalten, Hilfelogik, Button-Reihenfolge und responsive Darstellung.
+ * Flip-Verhalten, Hilfelogik, Button-Reihenfolge, Auto-Scroll zum Bild
+ * und responsive Darstellung.
  */
 document.body.classList.add('sp-karteikarten-standard','sp-l8t1-card-standard');
 
@@ -88,6 +89,36 @@ function enforceContract(){
  document.querySelectorAll('.l8-wrap>footer').forEach(node=>node.remove());
 }
 
+let lastAutoScrollKey='';
+let autoScrollTimer=null;
+function currentCardScrollKey(){
+ const card=document.querySelector('.l8-flip-card');
+ if(!card)return'';
+ const image=card.querySelector('.l8-flip-front .l8-card-visual img');
+ const translation=card.querySelector('.l8-flip-front .l8-card-translation strong');
+ const word=card.querySelector('.l8-flip-back .l8-flip-word');
+ return [image?.currentSrc||image?.src||'',translation?.textContent||'',word?.textContent||''].join('|');
+}
+function autoScrollToImage(force=false){
+ const target=document.querySelector('.l8-flip-front .l8-card-visual')||document.querySelector('.l8-card-stage');
+ if(!target)return false;
+ const key=currentCardScrollKey();
+ if(!force&&key&&key===lastAutoScrollKey)return false;
+ if(key)lastAutoScrollKey=key;
+ clearTimeout(autoScrollTimer);
+ autoScrollTimer=setTimeout(()=>{
+  const current=document.querySelector('.l8-flip-front .l8-card-visual')||document.querySelector('.l8-card-stage');
+  if(!current)return;
+  try{
+   current.scrollIntoView({behavior:'smooth',block:'start',inline:'nearest'});
+   setTimeout(()=>window.scrollBy({top:-12,left:0,behavior:'auto'}),0);
+  }catch(e){
+   try{current.scrollIntoView(true)}catch(_e){}
+  }
+ },120);
+ return true;
+}
+
 function normalizeCard(){
  enforceContract();
  const card=document.querySelector('.l8-flip-card');
@@ -102,12 +133,13 @@ function normalizeCard(){
   const actions=document.querySelector('.l8-card-actions');add(actions,'actions','card-actions');const micButton=document.getElementById('cardMic');const writeButton=document.getElementById('cardWrite');if(micButton)add(micButton,'btn');if(writeButton)add(writeButton,'btn','secondary');const answer=document.getElementById('cardWriteBox');add(answer,'l7-answer-box');
  }
  enforceContract();
+ autoScrollToImage(false);
  return true;
 }
 
 const root=document.getElementById('app');
 if(root)new MutationObserver(()=>normalizeCard()).observe(root,{childList:true,subtree:true});
-[0,40,120,350,900].forEach(ms=>setTimeout(normalizeCard,ms));
+[0,40,120,350,900].forEach(ms=>setTimeout(()=>{normalizeCard();if(ms===350)autoScrollToImage(true)},ms));
 
-window.SPCardTaskStandard={version:'1.2',reference:'A1-Lektion-8/Thema-1?task=karteikarten',emoji:'🃏',normalizeCard,enforceContract};
+window.SPCardTaskStandard={version:'1.3',reference:'A1-Lektion-8/Thema-1?task=karteikarten',emoji:'🃏',normalizeCard,enforceContract,autoScrollToImage};
 })();
