@@ -6,9 +6,28 @@ const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&
 const defaultLabels={noun:'Nomen',verb:'Verben',adjective:'Adjektive',adverb:'Weitere Wörter',phrase:'Redewendungen',other:'Weitere Wörter'};
 function typeOf(item){const t=String(item?.type||'').toLowerCase();if(t==='noun')return'noun';if(t==='verb'||t==='modal')return'verb';if(t==='adjective')return'adjective';if(t==='adverb'||t==='pronoun'||t==='modalpartikel')return'adverb';if(t==='phrase')return'phrase';return'other'}
 function term(item){return String(item?.full||item?.term||item?.word||'').trim()}
-function stop(){if(currentAudio){try{currentAudio.pause();currentAudio.src=''}catch(e){}currentAudio=null}try{speechSynthesis.cancel()}catch(e){}}
+function stop(){
+ if(currentAudio){
+  const a=currentAudio;currentAudio=null;
+  try{a.onended=null;a.onerror=null;a.pause();a.removeAttribute('src');a.load()}catch(e){}
+ }
+ try{speechSynthesis.cancel()}catch(e){}
+}
 function speak(text){if(!('speechSynthesis'in window))return;try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=.84;speechSynthesis.speak(u)}catch(e){}}
-function play(item,button){stop();button?.classList.add('playing');const src=String(item?.audio||'');if(!src){button?.classList.remove('playing');speak(term(item));return}const a=new Audio(src);currentAudio=a;a.onended=()=>{button?.classList.remove('playing');currentAudio=null};a.onerror=()=>{button?.classList.remove('playing');currentAudio=null;speak(term(item))};a.play().catch(()=>a.onerror())}
+function play(item,button){
+ stop();
+ button?.classList.add('playing');
+ const src=String(item?.audio||'').trim();
+ /* Computerstimme nur wenn gar keine Audio-Datei hinterlegt ist. Sobald Bunny vorhanden ist, läuft ausschließlich Bunny. */
+ if(!src){button?.classList.remove('playing');speak(term(item));return}
+ const a=new Audio();currentAudio=a;
+ a.preload='auto';
+ a.onended=()=>{if(currentAudio===a)currentAudio=null;button?.classList.remove('playing')};
+ a.onerror=()=>{if(currentAudio===a)currentAudio=null;button?.classList.remove('playing')};
+ a.src=src;
+ const p=a.play();
+ if(p&&typeof p.catch==='function')p.catch(()=>{if(currentAudio===a)currentAudio=null;button?.classList.remove('playing')});
+}
 function detail(item){const bits=[];if(item?.plural)bits.push(`<div class="sp-vocab-meta"><b>Plural:</b> ${esc(item.plural)}</div>`);if(item?.perfect)bits.push(`<div class="sp-vocab-meta"><b>Perfekt:</b> ${esc(item.perfect)}</div>`);if(item?.example)bits.push(`<div class="sp-vocab-example">${esc(item.example)}</div>`);return bits.join('')}
 function waitForHeader(timeout=6000){return new Promise(resolve=>{const started=Date.now();function check(){if(document.querySelector('.sp-header'))return resolve(true);if(Date.now()-started>=timeout)return resolve(false);requestAnimationFrame(check)}check()})}
 async function render(config={}){
