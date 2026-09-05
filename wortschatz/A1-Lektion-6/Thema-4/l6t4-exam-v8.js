@@ -21,6 +21,16 @@ const questions=[
  {q:'Meine Hobbys ___ Lesen und Wandern.',a:'sind',o:['sind','ist','bin','seid'],t:'Singular und Plural'},
  {q:'Welche Antwort passt?',a:'Ich weiß es nicht.',o:['Ich weiß es nicht.','Na klar.','Oh, wie dumm!','Auf jeden Fall.'],t:'Passend reagieren',d:'Tim: Wann beginnt der Film?'}
 ];
+
+/* Eine Datenquelle: dieselben Fragen speisen Teilnehmerprüfung und Lehreransicht. */
+window.SP_EXAM_REGISTRY=window.SP_EXAM_REGISTRY&&typeof window.SP_EXAM_REGISTRY==='object'?window.SP_EXAM_REGISTRY:{};
+window.SP_EXAM_REGISTRY['6-4:exam']={
+ lesson:6,theme:4,id:'exam',exam:true,title:'Prüfung',instruction:'Löse die 15 Aufgaben.',
+ page:'pruefung-ohne-audio.html',testHref:'pruefung-ohne-audio.html',
+ items:questions.map(item=>({type:'choice',label:item.t||'',context:item.d||'',prompt:item.q,options:[...(item.o||[])],answer:item.a}))
+};
+setTimeout(()=>window.SPTeacherExamReader?.run?.(),0);
+
 const app=document.getElementById('app');
 const shuffle=list=>{const copy=[...(list||[])];for(let i=copy.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[copy[i],copy[j]]=[copy[j],copy[i]]}return copy};
 function strictExamUnlocked(){
@@ -29,6 +39,11 @@ function strictExamUnlocked(){
  return tasks.every(task=>Number(task.total)>0&&window.l6t4Percent(task.key,task.total)>=100);
 }
 if(!app)return;
+if(new URLSearchParams(location.search).get('teacherExamRead')==='1'){
+ app.innerHTML='<div style="padding:24px;font-weight:800">Lehreransicht wird geladen …</div>';
+ setTimeout(()=>window.SPTeacherExamReader?.run?.(),0);
+ return;
+}
 if(!strictExamUnlocked()){
  app.innerHTML='<div class="result"><div class="star" style="font-size:58px">🔒</div><h2>Prüfung gesperrt</h2><p>Schließe zuerst alle Lernaufgaben dieses Themas mit 100 % ab.</p><a class="back" href="index.html">Zur Themenübersicht</a></div>';
  return;
