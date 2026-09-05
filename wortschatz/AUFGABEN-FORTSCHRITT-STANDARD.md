@@ -6,8 +6,11 @@ Referenz für die funktionierende Speicher- und Punkte-Logik: **A1 Lektion 4**. 
 
 - Jede Aufgabe speichert ihren lokalen Zustand sofort nach einer Änderung.
 - Richtige Items, aktuelle Position, Wiederholungsstatus und bereits beantwortete Items dürfen beim Seitenwechsel nicht verloren gehen.
+- Der lokale Speicher-Schlüssel muss innerhalb eines Teilnehmerkontos stabil bleiben. Eine Teilnehmer-ID, die sich erst nach Login-/Firebase-Synchronisierung ändert, darf niemals dazu führen, dass eine Aufgabe unter einem neuen Schlüssel weiterliest und vorhandener Fortschritt scheinbar verschwindet.
+- Wenn mehrere gültige Alias-IDs desselben Teilnehmers existieren, werden vorhandene lokale Zustände zusammengeführt bzw. auf einen stabilen kanonischen Schlüssel migriert; vorhandener Fortschritt wird dabei nur erhöht/vereinigt, niemals durch einen leeren Zustand ersetzt.
 - Zusätzlich wird der sichtbare Aufgabenfortschritt zentral über `/js/progress.js` mit `recordTaskProgress(...)` gespeichert.
 - Wenn `SPProgress` beim Speichern noch nicht geladen ist, wird der Schreibvorgang wie in L4 in `SP_PROGRESS_QUEUE` gelegt und `/js/progress.js` nachgeladen. Ein noch nicht geladenes Modul darf niemals dazu führen, dass Fortschritt verloren geht.
+- Beim Verlassen/Verbergen einer Aufgaben-Seite wird ein noch ausstehender Fortschrittsstand noch einmal an die zentrale Synchronisierung übergeben.
 - Die zentrale Laufzeitbasis für neue Standard-Aufgabenseiten ist `/js/sp-task-runtime-standard.js`.
 
 ## 2. Punkte
@@ -45,6 +48,7 @@ Am Ende einer Aufgabe muss sichtbar sein, dass die Punkte gespeichert wurden bzw
 ## 5. Lehrer-Vorschau
 
 - Lehrer-Vorschau speichert keine Teilnehmerpunkte und keinen Teilnehmerfortschritt in Firebase.
-- Die Aufgabe darf innerhalb der Vorschau trotzdem normal weiterlaufen; temporärer Sitzungsstatus ist erlaubt.
+- Die Aufgabe darf innerhalb der Vorschau trotzdem normal weiterlaufen.
+- Vorschaufortschritt darf lokal unter einem getrennten Vorschau-Schlüssel gespeichert werden, damit Tests nach einem Reload nicht verschwinden; er darf niemals in den Teilnehmer-Firebase-Datensatz geschrieben werden.
 
-Damit gilt verbindlich: **lokal sofort speichern, zentral synchronisieren, am Ende Punkte vergeben, Dashboard-Gesamtpunkte aktualisieren und immer zur aktiven Aufgabe scrollen.**
+Damit gilt verbindlich: **lokal sofort und unter stabilem Schlüssel speichern, zentral synchronisieren, am Ende Punkte vergeben, Dashboard-Gesamtpunkte aktualisieren und immer zur aktiven Aufgabe scrollen.**
