@@ -7,7 +7,7 @@ if(!path||!taskId)return;
 const lesson=Number(path[1]),theme=Number(path[2]);
 const topicId=`wortschatz-a1-lektion-${lesson}-thema-${theme}`;
 const topicTitle=`A1 Lektion ${lesson} · Thema ${theme}`;
-let lastMetric='',lastScrollSignature='',scrollTimer=null,justCompleted=false;
+let lastMetric='',lastScrollSignature='',scrollTimer=null,justCompleted=false,metricInitialized=false;
 
 function isPreview(){try{const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();return ['teacher','lehrer','admin','owner','superadmin'].includes(role)||sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}catch(e){return false}}
 function dataObject(){return window[`L${lesson}T${theme}`]||null}
@@ -18,7 +18,7 @@ function derivedTotal(state={}){const n=Number(state.total)||0;if(n>0)return n;c
 function metric(state={}){const total=derivedTotal(state),done=Array.isArray(state.done)?state.done.length:Math.max(0,Number(state.done)||0),percent=total?Math.min(100,Math.round(done/total*100)):0;return{total,done,percent}}
 function matchesKey(key){const k=String(key||'');if(!k.startsWith(`SP_L${lesson}`))return false;const themeNeedle=`_T${theme}_`;if(!k.includes(themeNeedle))return false;return k.toLowerCase().includes(taskId.toLowerCase())}
 function queue(method,payload){if(isPreview())return;try{if(window.SPProgress&&typeof window.SPProgress[method]==='function'){window.SPProgress[method](payload);return}window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method,payload});import('/js/progress.js?v=20260831-central6').catch(()=>{})}catch(e){}}
-function syncState(state){if(isPreview()||/^(pruefung|exam)$/i.test(taskId))return;const m=metric(state);if(!m.total)return;const sig=`${m.done}/${m.total}/${m.percent}`;if(sig===lastMetric)return;const previous=lastMetric;lastMetric=sig;if(m.percent>=100&&!/\/100$/.test(previous))justCompleted=true;queue('recordTaskProgress',{module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson,theme,topicId,title:topicTitle,file:`task.html?task=${taskId}`,taskKey:taskId,taskTitle:taskTitle(),total:m.total,done:m.done,percent:m.percent,completed:m.percent>=100})}
+function syncState(state){if(isPreview()||/^(pruefung|exam)$/i.test(taskId))return;const m=metric(state);if(!m.total)return;const sig=`${m.done}/${m.total}/${m.percent}`;if(sig===lastMetric)return;const previous=lastMetric;lastMetric=sig;if(metricInitialized&&m.percent>=100&&previous&&!/\/100$/.test(previous))justCompleted=true;metricInitialized=true;queue('recordTaskProgress',{module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson,theme,topicId,title:topicTitle,file:`task.html?task=${taskId}`,taskKey:taskId,taskTitle:taskTitle(),total:m.total,done:m.done,percent:m.percent,completed:m.percent>=100})}
 function readBestState(){let best=null,bestDone=-1;try{for(let i=0;i<localStorage.length;i++){const k=localStorage.key(i);if(!matchesKey(k))continue;let s;try{s=JSON.parse(localStorage.getItem(k)||'null')}catch(e){continue}if(!s||typeof s!=='object')continue;const m=metric(s);if(m.done>bestDone){best=s;bestDone=m.done}}}catch(e){}return best}
 
 const originalSetItem=Storage.prototype.setItem;
@@ -34,5 +34,5 @@ function scheduleUi(){clearTimeout(scrollTimer);scrollTimer=setTimeout(()=>{scro
 const root=document.getElementById('app');if(root)new MutationObserver(scheduleUi).observe(root,{childList:true,subtree:true});
 window.addEventListener('load',()=>{setTimeout(()=>{const st=readBestState();if(st)syncState(st);scrollToActive(true);showFinishPoints()},120)});
 setTimeout(()=>{const st=readBestState();if(st)syncState(st);scrollToActive(true);showFinishPoints()},350);
-window.SPTaskRuntimeStandard={version:'1.0',syncState,scrollToActive,showFinishPoints,topicId,lesson,theme,taskId};
+window.SPTaskRuntimeStandard={version:'1.1',syncState,scrollToActive,showFinishPoints,topicId,lesson,theme,taskId};
 })();
