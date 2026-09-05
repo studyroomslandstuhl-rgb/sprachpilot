@@ -3,12 +3,18 @@
 const D=window.L9T1;if(!D)return;
 const CDN='https://sprachpilot.b-cdn.net/';
 const AUDIO=CDN+'audio/';
+const IMAGE_ALIASES={
+ 'einen_antrag_ausfuellen':'antrag_ausfuellen.webp',
+ 'einen_antrag_stellen':'antrag_stellen.webp'
+};
 
 function clean(value){
  return String(value||'').trim().replace(/\\/g,'/').replace(/^\/+/, '').replace(/^(?:\.\/)+/,'').replace(/^(?:\.\.\/)+/,'');
 }
 function encodePath(value){return clean(value).split('/').filter(Boolean).map(encodeURIComponent).join('/')}
 function image(value,id=''){
+ const alias=IMAGE_ALIASES[String(id||'').trim()];
+ if(alias)return CDN+encodePath(alias);
  const original=String(value||'').trim();
  if(/^https?:\/\//i.test(original))return original;
  let file=clean(value)||clean(id);if(!file)return'';
@@ -117,5 +123,5 @@ function audit(){
  walk(D);
  return {total:refs.length,bunny:refs.filter(x=>x.bunny).length,external:refs.filter(x=>!x.bunny&&/^https:\/\//i.test(x.url)).length,invalid:refs.filter(x=>!/^https:\/\//i.test(x.url))};
 }
-window.L9T1Bunny={CDN,AUDIO,image,audio,cardById,audit};
+window.L9T1Bunny={CDN,AUDIO,IMAGE_ALIASES,image,audio,cardById,audit};
 })();
