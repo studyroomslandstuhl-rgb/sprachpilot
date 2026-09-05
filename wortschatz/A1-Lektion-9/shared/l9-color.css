@@ -44,3 +44,7 @@ body{
 .l8-progress-circle{background:var(--lesson-main)!important;box-shadow:0 12px 26px rgba(62,125,77,.18)!important}
 .l8-progress>div{background:linear-gradient(135deg,var(--lesson-main-dark),var(--lesson-main))!important}
 .l8-input:focus,textarea.l8-input:focus{outline-color:rgba(143,207,154,.28)!important;border-color:var(--lesson-main-dark)!important}
+
+/* Standard: Die obere SprachPilot-Leiste kommt ausschließlich global aus guard.js / sp-header.js.
+   Lokale L9-Header aus alten Renderern dürfen nie als zweite Leiste sichtbar werden. */
+.l9-top,.l9-head{display:none!important}
