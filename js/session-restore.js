@@ -64,11 +64,15 @@
   function installPointBridge(){
     try{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(!p||teacherSession())return;import('/js/point-delta-bridge.js?v=20260831-central2').then(()=>{try{window.SPEnsurePointDeltaBridge?.()}catch(e){}}).catch(error=>console.warn('Punkte-Kompatibilitätsbridge konnte noch nicht geladen werden',error))}catch(e){}
   }
+  function installTeacherExamReader(){
+    if(!/\/wortschatz\/A\d-Lektion-\d+\/Thema-\d+\//i.test(String(location.pathname||'')))return;
+    import('/js/sp-teacher-exam-reader.js?v=20260905-global2').then(()=>{try{window.SPTeacherExamReader?.run?.()}catch(e){}}).catch(error=>console.warn('Lehrer-Prüfungsansicht konnte noch nicht geladen werden',error));
+  }
 
-  restore();installPointBridge();
-  setTimeout(installSecureLogoutOverride,0);setTimeout(installSecureLogoutOverride,500);setTimeout(installPointBridge,250);
-  window.addEventListener('SP_STUDENT_IDENTITY_NORMALIZED',()=>{setTimeout(installSecureLogoutOverride,0);setTimeout(installPointBridge,0)});
-  window.addEventListener('storage',()=>{restore();installPointBridge()});
-  document.addEventListener('visibilitychange',()=>{if(!document.hidden){restore();installPointBridge()}else{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(p&&!teacherSession())saveBackups(p)}});
+  restore();installPointBridge();installTeacherExamReader();
+  setTimeout(installSecureLogoutOverride,0);setTimeout(installSecureLogoutOverride,500);setTimeout(installPointBridge,250);setTimeout(installTeacherExamReader,350);
+  window.addEventListener('SP_STUDENT_IDENTITY_NORMALIZED',()=>{setTimeout(installSecureLogoutOverride,0);setTimeout(installPointBridge,0);setTimeout(installTeacherExamReader,0)});
+  window.addEventListener('storage',()=>{restore();installPointBridge();installTeacherExamReader()});
+  document.addEventListener('visibilitychange',()=>{if(!document.hidden){restore();installPointBridge();installTeacherExamReader()}else{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(p&&!teacherSession())saveBackups(p)}});
   window.addEventListener('pagehide',()=>{const p=firstSecureStudent(PROFILE_KEYS,localStorage);if(p&&!teacherSession())saveBackups(p)});
 })();
