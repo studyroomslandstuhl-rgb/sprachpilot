@@ -23,6 +23,11 @@ html[data-sp-card-lesson="8"]{
  --lesson-soft:#ecfafb;--lesson-line:#bde5e9;--lesson-bg:#f8fdfd;
  --lesson-shadow:0 12px 28px rgba(23,98,110,.16);
 }
+html[data-sp-card-lesson="9"]{
+ --lesson-main:#8FCF9A;--lesson-main-dark:#3E7D4D;--lesson-main-light:#DDF1E1;
+ --lesson-soft:#EFF8F1;--lesson-line:#C9E5CF;--lesson-bg:#F7FCF8;
+ --lesson-shadow:0 12px 28px rgba(62,125,77,.16);
+}
 body{background:linear-gradient(180deg,var(--lesson-bg),#fff)}
 .topbar,.card,.sp-header{box-shadow:var(--lesson-shadow)}
 .progress{background:color-mix(in srgb,var(--lesson-soft) 86%,#fff)}
