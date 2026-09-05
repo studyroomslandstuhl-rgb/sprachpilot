@@ -45,12 +45,10 @@ D.nounDialogs=[
  dlg('dlg15','Was bekomme ich zurück?','Sie bekommen ','das','.','Wechselgeld','wechselgeld','Dieses Nomen hat keinen Plural; „das“ zeigt Singular.'),
  dlg('dlg16','Für wen ist die Fahrkarte?','Für ','den','.','Erwachsenen','erwachsener','Nach „für“ steht Akkusativ. Bei „der Erwachsene“ lautet die Form: den Erwachsenen.'),
  dlg('dlg17','Wer holt das Dokument ab?','Das macht ','die','.','Erwachsene','erwachsene','„die“ + „macht“ zeigen eine Frau im Singular.'),
- dlg('dlg18','Wir fahren zweimal. Was kaufen wir?','Wir kaufen zwei ','die','?','Fahrkarten','fahrkarte','Die Zahl „zwei“ zeigt Plural. Schreibe nur das Nomen in die Lücke.'),
- dlg('dlg19','Was zeigen die beiden Erwachsenen?','Sie zeigen ihre ','die','?','Führerscheine','fuehrerschein','„beiden“ und „ihre“ zeigen Plural. Schreibe nur das Nomen.'),
- dlg('dlg20','Sind mehrere Ämter geöffnet?','Ja, ','die',' sind geöffnet.','Ämter','amt','„sind“ zeigt Plural; achte auf den Umlaut.')
+ dlg('dlg18','Welche Fahrkarten nehmt ihr?','Wir nehmen ','die','.','Fahrkarten','fahrkarte','Der Artikel „die“ und der Inhalt zeigen Plural.'),
+ dlg('dlg19','Was zeigen die Erwachsenen?','Sie zeigen ','die','.','Führerscheine','fuehrerschein','Der Artikel „die“ und der Inhalt zeigen Plural.'),
+ dlg('dlg20','Welche Ämter sind geöffnet?','Geöffnet sind ','die','.','Ämter','amt','Der Artikel „die“ und „sind“ zeigen Plural; achte auf den Umlaut.')
 ];
-/* Bei den letzten drei Dialogen ist der Artikel grammatisch bereits durch Zahl/Possessivwort ersetzt. Der Renderer blendet das gespeicherte Hilfsfeld deshalb nicht als Satzbestandteil ein. */
-D.nounDialogs.forEach(x=>{if(['dlg18','dlg19','dlg20'].includes(x.id))x.articleDisplay=x.id==='dlg20'?'die':''});
 
 const cas=(id,before,noun,after,answer,hint)=>({id,before,noun,after,answer,hint});
 D.caseArticles=[
@@ -78,7 +76,7 @@ D.caseArticles=[
 
 const extraTasks=[
  {id:'artikel-nomen',icon:'🧾',title:'Artikel schreiben',description:'Schreibe den richtigen Artikel.',kind:'noun-article'},
- {id:'plural-bild',icon:'🖼️',title:'Plural schreiben',description:'Sieh das Bild und schreibe den Plural mit Artikel.',kind:'noun-plural'},
+ {id:'plural-bild',icon:'🖼️',title:'Plural schreiben',description:'Sieh das Bild und schreibe den Plural mit Artikel. Hat das Nomen keinen Plural, schreibe „kein Plural“.',kind:'noun-plural'},
  {id:'nomen-dialoge',icon:'💬',title:'Nomen im Dialog',description:'Ergänze das Nomen in der richtigen Form.',kind:'noun-dialog'},
  {id:'artikel-kasus',icon:'✍️',title:'Artikel im Satz',description:'Ergänze den richtigen Artikel.',kind:'case-article'}
 ];
