@@ -1,0 +1,8 @@
+html.sp-header-first #app,
+html.sp-header-first #lessonOverview{
+  visibility:hidden!important;
+}
+html.sp-header-ready #app,
+html.sp-header-ready #lessonOverview{
+  visibility:visible!important;
+}
