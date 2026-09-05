@@ -1,0 +1,31 @@
+/* L9T1 uses the L8 task structure. Only L9-specific task internals live here. */
+body[data-page="task"] .l8-wrap{padding-top:12px}
+.l9-task-center{text-align:center}
+.l9-media,.l9-main-image,.l9-choice-image,.l9-order-image,.l9-writing-image{display:grid;place-items:center;overflow:hidden;background:#fff;border:2px solid var(--lesson-line);border-radius:18px}
+.l9-media img,.l9-main-image img,.l9-choice-image img,.l9-order-image img,.l9-writing-image img{display:block;width:100%;height:100%;object-fit:contain}
+.l9-media-fallback{display:grid;place-items:center;min-height:100%;font-size:42px;color:var(--lesson-main-dark);background:var(--lesson-soft)}
+.l9-main-image{width:min(320px,80vw);height:min(320px,80vw);margin:14px auto 18px}
+.l9-image-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px;margin:18px 0}
+.l9-image-option{padding:10px;border:2px solid var(--lesson-line);border-radius:18px;background:#fff;cursor:pointer;transition:.12s ease}
+.l9-image-option:hover{border-color:var(--lesson-main-dark);background:var(--lesson-soft);transform:translateY(-1px)}
+.l9-choice-image{width:100%;aspect-ratio:1;max-height:280px;border:0}
+.l9-write-box{max-width:700px;margin:16px auto}
+.l9-table-wrap{overflow-x:auto;margin:14px 0}.l9-table-wrap .l8-input{min-width:145px}
+.l9-row-feedback{margin-top:7px}.l9-row-feedback .l8-feedback{margin-top:6px}
+.l9-sentence-builder{display:flex;align-items:center;justify-content:center;gap:8px;flex-wrap:wrap;margin:18px auto;font-size:20px;line-height:1.55}
+.l9-sentence-builder .l8-input{width:150px;display:inline-block}
+.l9-sequence-board{margin:18px 0;padding:14px;border:2px solid var(--lesson-line);border-radius:18px;background:var(--lesson-soft)}
+.l9-slot-labels{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:8px}
+.l9-slot-labels span{font-weight:950;color:var(--lesson-main-dark);text-align:center}
+.l9-order-row{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:10px;margin-bottom:12px}
+.l9-order-card{min-width:0;padding:10px;border:2px solid var(--lesson-line);border-radius:16px;background:#fff;text-align:center}
+.l9-order-card p{min-height:74px;margin:6px 0 12px;display:flex;align-items:center;justify-content:center;line-height:1.4}
+.l9-order-image{width:100%;aspect-ratio:1;margin-bottom:8px;border:0}
+.l9-move{display:grid;grid-template-columns:1fr 1fr;gap:6px}.l9-move .l8-btn{padding:7px}
+.l9-writing-group{margin:16px 0;padding:16px;border:2px solid var(--lesson-line);border-radius:18px;background:#fff}
+.l9-writing-group h3{margin:0 0 13px;color:var(--lesson-main-dark);font-size:22px}
+.l9-writing-step{display:grid;grid-template-columns:120px minmax(0,1fr);gap:14px;align-items:center;padding:11px 0;border-top:1px solid var(--lesson-line)}
+.l9-writing-step:first-of-type{border-top:0}.l9-writing-image{width:120px;height:120px}
+.l9-cloze-text{font-size:18px;line-height:2.1}.l9-inline-input{display:inline-block;width:150px!important;margin:3px 5px;vertical-align:middle}
+@media(max-width:760px){.l9-image-options{grid-template-columns:1fr 1fr}.l9-order-row{grid-template-columns:repeat(2,minmax(0,1fr))}.l9-slot-labels{display:none}.l9-writing-step{grid-template-columns:92px minmax(0,1fr)}.l9-writing-image{width:92px;height:92px}}
+@media(max-width:520px){.l9-image-options{grid-template-columns:1fr}.l9-order-row{grid-template-columns:1fr}.l9-writing-step{grid-template-columns:1fr}.l9-writing-image{width:120px;height:120px;margin:auto}.l9-sentence-builder{font-size:18px}.l9-sentence-builder .l8-input{width:125px}}
