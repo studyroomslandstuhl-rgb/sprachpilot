@@ -70,7 +70,7 @@ function enforceContract(){
  const title=document.querySelector('.l8-task-title-block h1');
  if(title&&title.textContent!=='Karteikarten')title.textContent='Karteikarten';
  const instruction=document.querySelector('.l8-task-title-block p');
- if(instruction&&instruction.textContent!=='📚 Lerne die Wörter.')instruction.textContent='📚 Lerne die Wörter.';
+ if(instruction&&instruction.textContent!=='🃏 Lerne die Wörter.')instruction.textContent='🃏 Lerne die Wörter.';
  const mic=document.getElementById('cardMic');
  if(mic)mic.textContent='🎤 Sprechen';
  const write=document.getElementById('cardWrite');
@@ -109,5 +109,5 @@ const root=document.getElementById('app');
 if(root)new MutationObserver(()=>normalizeCard()).observe(root,{childList:true,subtree:true});
 [0,40,120,350,900].forEach(ms=>setTimeout(normalizeCard,ms));
 
-window.SPCardTaskStandard={version:'1.1',reference:'A1-Lektion-8/Thema-1?task=karteikarten',normalizeCard,enforceContract};
+window.SPCardTaskStandard={version:'1.2',reference:'A1-Lektion-8/Thema-1?task=karteikarten',emoji:'🃏',normalizeCard,enforceContract};
 })();
