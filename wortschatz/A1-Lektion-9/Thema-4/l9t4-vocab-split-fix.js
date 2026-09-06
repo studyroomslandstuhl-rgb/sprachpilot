@@ -24,6 +24,15 @@ if(!D.cards.some(x=>x?.id==='besuchen')){
  const i=D.cards.findIndex(x=>x?.id==='sprachschule');
  D.cards.splice(i>=0?i+1:D.cards.length,0,besuchen);
 }
+const audioFiles={
+ erlaubnis:'die_erlaubnis.mp3',
+ angehoerige:'die_angehoerige.mp3',
+ angehoeriger:'der_angehoerige.mp3'
+};
+for(const item of D.cards){
+ const file=audioFiles[item?.id];
+ if(file)item.audio=`${AUDIO}${file}`;
+}
 window.L9_T4_WORDS=D.cards;
 if(window.L9_THEMES?.[4])window.L9_THEMES[4].coreVocabulary=D.cards;
 if(Array.isArray(D.perfectItems)&&!D.perfectItems.some(x=>String(x?.verb||'').toLowerCase()==='besuchen'))D.perfectItems.push({id:'pf-4-besuchen',verb:'besuchen',answer:'hat besucht'});
