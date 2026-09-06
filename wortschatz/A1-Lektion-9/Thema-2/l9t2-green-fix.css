@@ -1,0 +1,32 @@
+html,body[data-theme="2"]{
+ --lesson-main:#8FCF9A!important;
+ --lesson-main-dark:#3E7D4D!important;
+ --lesson-dark:#3E7D4D!important;
+ --lesson-main-light:#DDF1E1!important;
+ --lesson-soft:#EFF8F1!important;
+ --lesson-main-soft:#EFF8F1!important;
+ --lesson-line:#C9E5CF!important;
+ --lesson-bg:#F7FCF8!important;
+ --lesson-text:#23472B!important;
+ --lesson-ink:#23472B!important;
+ --lesson-muted:#63756A!important;
+ --lesson-on-main:#23472B!important;
+ --l8-main:#8FCF9A!important;
+ --l8-dark:#3E7D4D!important;
+ --l8-soft:#EFF8F1!important;
+ --l8-line:#C9E5CF!important;
+ --l8-bg:#F7FCF8!important;
+ --l8-ink:#23472B!important;
+}
+body[data-theme="2"]{color:#23472B!important;background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.42) 310px,rgba(255,255,255,.1)),linear-gradient(135deg,#8FCF9A,#DDF1E1)!important}
+body[data-theme="2"] .l8-card,body[data-theme="2"] .l8-exercise,body[data-theme="2"] .l9t2-dialog,body[data-theme="2"] .l9t2-big-sentence,body[data-theme="2"] .l9t2-rules{border-color:#C9E5CF!important}
+body[data-theme="2"] .l8-task-head h1,body[data-theme="2"] h2,body[data-theme="2"] h3,body[data-theme="2"] .l8-task-kicker{color:#3E7D4D!important}
+body[data-theme="2"] .l8-progress>div{background:linear-gradient(135deg,#3E7D4D,#8FCF9A)!important}
+body[data-theme="2"] .l8-btn.primary{background:#3E7D4D!important;border-color:#3E7D4D!important;color:#fff!important}
+body[data-theme="2"] .l8-btn:not(.primary){border-color:#3E7D4D!important;color:#3E7D4D!important}
+body[data-theme="2"] .l8-option{border-color:#C9E5CF!important;color:#23472B!important}
+body[data-theme="2"] .l8-option:hover,body[data-theme="2"] .l8-option.selected,body[data-theme="2"] .l9t2-audio-option.selected{background:#EFF8F1!important;border-color:#3E7D4D!important;outline-color:#8FCF9A!important}
+body[data-theme="2"] .l9t2-memory-card:not(.open):not(.matched){background:#3E7D4D!important;border-color:#3E7D4D!important;color:#fff!important}
+body[data-theme="2"] .answer-area,body[data-theme="2"] .free-box,body[data-theme="2"] .speech-box,body[data-theme="2"] .write-box,body[data-theme="2"] .card-answer-box,body[data-theme="2"] .chat-window,body[data-theme="2"] .vocabulary-group,body[data-theme="2"] .sound-row{background:#F7FCF8!important}
+body[data-theme="2"] input:focus,body[data-theme="2"] textarea:focus{outline-color:rgba(143,207,154,.35)!important;border-color:#3E7D4D!important}
+body[data-theme="2"] footer{color:#63756A!important}
