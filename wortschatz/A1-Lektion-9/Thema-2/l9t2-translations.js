@@ -35,5 +35,6 @@ function code(){const p=profile(),raw=normal(p.motherLanguageCode||p.muttersprac
 const c=code();
 for(const item of window.L9T2?.cards||[]){const tr=T[item.id]?.[c]||T[item.id]?.en;if(tr){item.translation=tr;item.meaning=`${tr} · ${item.meaning||''}`}}
 for(const item of window.L9T2?.grammarExtras||[]){const tr=T[item.id]?.[c]||T[item.id]?.en;if(tr)item.translation=tr}
+for(const item of window.L9T2?.flashcards||[]){const key=item.translationKey||item.id;const tr=T[key]?.[c]||T[key]?.en;if(tr)item.translation=tr}
 window.L9T2Translations={code:c,lexicon:T};
 })();
