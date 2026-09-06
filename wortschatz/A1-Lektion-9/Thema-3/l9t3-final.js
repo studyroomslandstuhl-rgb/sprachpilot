@@ -1,0 +1,1 @@
+(function(){'use strict';const D=window.L9T3;if(!D)return;D.cards=(D.cards||[]).filter(x=>x.id!=='gepaeck_abgeben');window.L9_T3_WORDS=D.cards;if(window.L9_THEMES?.[3])window.L9_THEMES[3].coreVocabulary=D.cards;})();
