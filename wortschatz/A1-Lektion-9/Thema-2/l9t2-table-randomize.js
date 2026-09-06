@@ -1,0 +1,1 @@
+(function(){'use strict';const D=window.L9T2;if(!D||!Array.isArray(D.imperativeTable))return;for(let i=D.imperativeTable.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[D.imperativeTable[i],D.imperativeTable[j]]=[D.imperativeTable[j],D.imperativeTable[i]]}})();
