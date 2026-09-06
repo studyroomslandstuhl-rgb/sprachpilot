@@ -13,8 +13,8 @@ function normalizeTask(x,i,n){
  return t;
 }
 function renderTask(t,i){
- const p=t.progress||0,done=p>=100;
- if(t.locked)return`<div class="l8-card l8-task-card locked" aria-disabled="true"><div class="l8-task-number">${i+1}. ${esc(t.title)}</div><div class="emoji">${esc(t.icon)}</div><p>${esc(t.description||'')}</p><div class="l8-progress"><div style="width:0%"></div></div><div class="l8-small">gesperrt</div><div class="l8-task-start">Noch nicht verfügbar</div></div>`;
+ const p=t.progress||0,done=p>=100,isExam=/prüfung/i.test(t.title||'');
+ if(t.locked)return`<div class="l8-card l8-task-card locked" aria-disabled="true"><div class="l8-task-number">${i+1}. ${esc(t.title)}</div><div class="emoji">${esc(t.icon)}</div><p>${esc(t.description||'')}</p><div class="l8-progress"><div style="width:0%"></div></div><div class="l8-small">gesperrt</div><div class="l8-task-start">${isExam?'Prüfung gesperrt':'Noch nicht verfügbar'}</div></div>`;
  const href=t.href||`task.html?task=${encodeURIComponent(t.id||'')}`;
  return`<a class="l8-card l8-task-card ${done?'done':''}" href="${esc(href)}"><div class="l8-task-number">${i+1}. ${esc(t.title)}</div><div class="emoji">${esc(t.icon)}</div><p>${esc(t.description||'')}</p><div class="l8-progress"><div style="width:${p}%"></div></div><div class="l8-small">${p}%</div><div class="l8-task-start">${done?'Fertig':'Starten'}</div></a>`;
 }
