@@ -2,54 +2,91 @@
 'use strict';
 const CDN='https://sprachpilot.b-cdn.net/',AUDIO=CDN+'audio/';
 const media=id=>({image:`${CDN}${id}.webp`,audio:`${AUDIO}${id}.mp3`});
-const noun=(id,article,word,plural,example)=>({id,article,word,full:`${article} ${word}`,plural,type:'noun',example,...media(id)});
-const word=(id,value,type,opts={})=>({id,word:value,full:value,article:'',plural:'',perfect:opts.perfect||'',type,example:opts.example||'',...media(id)});
+const M={
+ allein:'Ohne eine andere Person.',behoerde:'Eine öffentliche Stelle, bei der man offizielle Dinge erledigt.',person:'Ein Mensch.',geburtsname:'Der Familienname, den eine Person bei der Geburt hatte.',geschlecht:'Angabe wie männlich oder weiblich.',auslaender:'Ein Mann, der aus einem anderen Land kommt.',auslaenderin:'Eine Frau, die aus einem anderen Land kommt.',maennlich:'Geschlecht: Mann oder Junge.',weiblich:'Geschlecht: Frau oder Mädchen.',angehoeriger:'Ein männliches Familienmitglied oder eine nahestehende Person.',angehoerige:'Ein weibliches Familienmitglied oder eine nahestehende Person.',bedeuten:'Sagen, welchen Sinn ein Wort oder eine Sache hat.',wiederholen:'Etwas noch einmal sagen oder machen.',verstehen:'Den Sinn von etwas kennen und begreifen.',sprachschule_besuchen:'In eine Sprachschule gehen und dort lernen.',helfen:'Eine andere Person unterstützen.',auskunft:'Eine offizielle oder hilfreiche Information.',erlaubnis:'Die Zustimmung, dass man etwas machen darf.',erklaerung:'Information, die etwas verständlich macht.',dokument:'Ein offizielles oder wichtiges Papier.',geld:'Münzen, Scheine oder Geld auf einem Konto.',genug:'So viel, wie man braucht.',einkommen:'Geld, das eine Person regelmäßig durch Arbeit oder andere Quellen bekommt.',reise:'Eine Fahrt oder ein Aufenthalt an einem anderen Ort.',versicherung:'Ein Vertrag, der bei bestimmten Schäden oder Problemen hilft.',botschaft:'Offizielle Vertretung eines Landes in einem anderen Land.',visum:'Offizielle Erlaubnis, in ein Land einzureisen oder dort zu bleiben.',mitarbeiter:'Ein Mann, der bei einer Firma oder Behörde arbeitet.',mitarbeiterin:'Eine Frau, die bei einer Firma oder Behörde arbeitet.',beamter:'Ein Mann im öffentlichen Dienst.',beamtin:'Eine Frau im öffentlichen Dienst.',verdienen:'Geld für Arbeit bekommen.',reisepass:'Offizielles Reisedokument mit persönlichen Daten.',reisen:'Von einem Ort in ein anderes Land oder eine andere Stadt fahren.',bisherige:'So, wie es bis jetzt war.',familienstand:'Angabe wie ledig, verheiratet oder geschieden.',verpflichtungserklaerung:'Ein offizielles Dokument, mit dem jemand finanzielle Verantwortung übernimmt.',einkommensnachweis:'Ein Dokument, das zeigt, wie viel Geld jemand verdient.',kennenlernen:'Eine Person zum ersten Mal treffen und näher kennenlernen.',schriftlich:'In geschriebener Form.',muendlich:'Gesprochen, nicht geschrieben.',hoffentlich:'Man wünscht, dass etwas passiert.',zum_glueck:'Man ist froh, dass etwas gut passiert ist.',endlich:'Nach langem Warten passiert etwas.'
+};
+const noun=(id,article,word,plural,example)=>({id,article,word,full:`${article} ${word}`,plural,type:'noun',meaning:M[id]||example,example,...media(id)});
+const word=(id,value,type,opts={})=>({id,word:value,full:value,article:'',plural:'',perfect:opts.perfect||'',type,meaning:M[id]||opts.example||'',example:opts.example||'',...media(id)});
 const cards=[
- word('allein','allein','adverb',{example:'Die Person kommt allein.'}),
- noun('behoerde','die','Behörde','die Behörden','Ich habe einen Termin bei der Behörde.'),
- noun('person','die','Person','die Personen','Die Person wartet am Schalter.'),
- noun('geburtsname','der','Geburtsname','die Geburtsnamen','Wie ist Ihr Geburtsname?'),
- noun('geschlecht','das','Geschlecht','die Geschlechter','Bitte geben Sie Ihr Geschlecht an.'),
- noun('auslaender','der','Ausländer','die Ausländer','Der Ausländer braucht eine Auskunft.'),
- noun('auslaenderin','die','Ausländerin','die Ausländerinnen','Die Ausländerin wartet bei der Behörde.'),
- word('maennlich','männlich','adjective',{example:'Geschlecht: männlich.'}),
- word('weiblich','weiblich','adjective',{example:'Geschlecht: weiblich.'}),
- noun('angehoeriger','der','Angehörige','die Angehörigen','Mein Angehöriger kommt mit.'),
- noun('angehoerige','die','Angehörige','die Angehörigen','Meine Angehörige kommt mit.'),
- word('bedeuten','bedeuten','verb',{perfect:'hat bedeutet',example:'Was bedeutet das?'}),
- word('wiederholen','wiederholen','verb',{perfect:'hat wiederholt',example:'Können Sie das bitte wiederholen?'}),
- word('verstehen','verstehen','verb',{perfect:'hat verstanden',example:'Ich verstehe das nicht.'}),
- word('sprachschule_besuchen','die Sprachschule besuchen','phrase',{perfect:'hat die Sprachschule besucht',example:'Ich besuche eine Sprachschule.'}),
- word('helfen','helfen','verb',{perfect:'hat geholfen',example:'Können Sie mir helfen?'}),
- noun('auskunft','die','Auskunft','die Auskünfte','Ich brauche eine Auskunft.'),
- noun('erlaubnis','die','Erlaubnis','die Erlaubnisse','Ich brauche eine Erlaubnis.'),
- noun('erklaerung','die','Erklärung','die Erklärungen','Ich brauche eine Erklärung.'),
- noun('dokument','das','Dokument','die Dokumente','Das Dokument ist wichtig.'),
- noun('geld','das','Geld','kein Plural','Ich habe genug Geld.'),
- word('genug','genug','adverb',{example:'Ich habe genug Geld.'}),
- noun('einkommen','das','Einkommen','die Einkommen','Wie hoch ist Ihr Einkommen?'),
- noun('reise','die','Reise','die Reisen','Die Reise ist im Juli.'),
- noun('versicherung','die','Versicherung','die Versicherungen','Ich habe eine Versicherung.'),
- noun('botschaft','die','Botschaft','die Botschaften','Ich habe einen Termin bei der Botschaft.'),
- noun('visum','das','Visum','die Visa','Ich brauche ein Visum.'),
- noun('mitarbeiter','der','Mitarbeiter','die Mitarbeiter','Der Mitarbeiter hilft mir.'),
- noun('mitarbeiterin','die','Mitarbeiterin','die Mitarbeiterinnen','Die Mitarbeiterin erklärt das Formular.'),
- noun('beamter','der','Beamte','die Beamten','Der Beamte arbeitet bei der Behörde.'),
- noun('beamtin','die','Beamtin','die Beamtinnen','Die Beamtin gibt eine Auskunft.'),
- word('verdienen','verdienen','verb',{perfect:'hat verdient',example:'Wie viel verdienen Sie?'}),
- noun('reisepass','der','Reisepass','die Reisepässe','Bitte bringen Sie Ihren Reisepass mit.'),
- word('reisen','reisen','verb',{perfect:'ist gereist',example:'Ich reise im Sommer.'}),
- word('bisherige','bisherige','adjective',{example:'Wie ist Ihre bisherige Adresse?'}),
- noun('familienstand','der','Familienstand','die Familienstände','Wie ist Ihr Familienstand?'),
- noun('verpflichtungserklaerung','die','Verpflichtungserklärung','die Verpflichtungserklärungen','Ich brauche eine Verpflichtungserklärung.'),
- noun('einkommensnachweis','der','Einkommensnachweis','die Einkommensnachweise','Bitte bringen Sie einen Einkommensnachweis mit.'),
- word('kennenlernen','kennenlernen','verb',{perfect:'hat kennengelernt',example:'Ich habe meine Frau in Deutschland kennengelernt.'}),
- word('schriftlich','schriftlich','adjective',{example:'Bitte geben Sie die Antwort schriftlich.'}),
- word('muendlich','mündlich','adjective',{example:'Die Prüfung ist mündlich.'}),
- word('hoffentlich','hoffentlich','adverb',{example:'Hoffentlich bekomme ich das Visum.'}),
- word('zum_glueck','zum Glück','phrase',{example:'Zum Glück habe ich alle Dokumente.'}),
- word('endlich','endlich','adverb',{example:'Endlich habe ich das Visum.'})
+ word('allein','allein','adverb',{example:'Die Person kommt allein.'}),noun('behoerde','die','Behörde','die Behörden','Ich habe einen Termin bei der Behörde.'),noun('person','die','Person','die Personen','Die Person wartet am Schalter.'),noun('geburtsname','der','Geburtsname','die Geburtsnamen','Wie ist Ihr Geburtsname?'),noun('geschlecht','das','Geschlecht','die Geschlechter','Bitte geben Sie Ihr Geschlecht an.'),noun('auslaender','der','Ausländer','die Ausländer','Der Ausländer braucht eine Auskunft.'),noun('auslaenderin','die','Ausländerin','die Ausländerinnen','Die Ausländerin wartet bei der Behörde.'),
+ word('maennlich','männlich','adjective',{example:'Geschlecht: männlich.'}),word('weiblich','weiblich','adjective',{example:'Geschlecht: weiblich.'}),noun('angehoeriger','der','Angehörige','die Angehörigen','Mein Angehöriger kommt mit.'),noun('angehoerige','die','Angehörige','die Angehörigen','Meine Angehörige kommt mit.'),word('bedeuten','bedeuten','verb',{perfect:'hat bedeutet',example:'Was bedeutet das?'}),word('wiederholen','wiederholen','verb',{perfect:'hat wiederholt',example:'Können Sie das bitte wiederholen?'}),word('verstehen','verstehen','verb',{perfect:'hat verstanden',example:'Ich verstehe das nicht.'}),word('sprachschule_besuchen','die Sprachschule besuchen','phrase',{perfect:'hat die Sprachschule besucht',example:'Ich besuche eine Sprachschule.'}),word('helfen','helfen','verb',{perfect:'hat geholfen',example:'Können Sie mir helfen?'}),
+ noun('auskunft','die','Auskunft','die Auskünfte','Ich brauche eine Auskunft.'),noun('erlaubnis','die','Erlaubnis','die Erlaubnisse','Ich brauche eine Erlaubnis.'),noun('erklaerung','die','Erklärung','die Erklärungen','Ich brauche eine Erklärung.'),noun('dokument','das','Dokument','die Dokumente','Das Dokument ist wichtig.'),noun('geld','das','Geld','kein Plural','Ich habe genug Geld.'),word('genug','genug','adverb',{example:'Ich habe genug Geld.'}),noun('einkommen','das','Einkommen','die Einkommen','Wie hoch ist Ihr Einkommen?'),noun('reise','die','Reise','die Reisen','Die Reise ist im Juli.'),noun('versicherung','die','Versicherung','die Versicherungen','Ich habe eine Versicherung.'),noun('botschaft','die','Botschaft','die Botschaften','Ich habe einen Termin bei der Botschaft.'),noun('visum','das','Visum','die Visa','Ich brauche ein Visum.'),
+ noun('mitarbeiter','der','Mitarbeiter','die Mitarbeiter','Der Mitarbeiter hilft mir.'),noun('mitarbeiterin','die','Mitarbeiterin','die Mitarbeiterinnen','Die Mitarbeiterin erklärt das Formular.'),noun('beamter','der','Beamte','die Beamten','Der Beamte arbeitet bei der Behörde.'),noun('beamtin','die','Beamtin','die Beamtinnen','Die Beamtin gibt eine Auskunft.'),word('verdienen','verdienen','verb',{perfect:'hat verdient',example:'Wie viel verdienen Sie?'}),noun('reisepass','der','Reisepass','die Reisepässe','Bitte bringen Sie Ihren Reisepass mit.'),word('reisen','reisen','verb',{perfect:'ist gereist',example:'Ich reise im Sommer.'}),word('bisherige','bisherige','adjective',{example:'Wie ist Ihre bisherige Adresse?'}),noun('familienstand','der','Familienstand','die Familienstände','Wie ist Ihr Familienstand?'),noun('verpflichtungserklaerung','die','Verpflichtungserklärung','die Verpflichtungserklärungen','Ich brauche eine Verpflichtungserklärung.'),noun('einkommensnachweis','der','Einkommensnachweis','die Einkommensnachweise','Bitte bringen Sie einen Einkommensnachweis mit.'),
+ word('kennenlernen','kennenlernen','verb',{perfect:'hat kennengelernt',example:'Ich habe meine Frau in Deutschland kennengelernt.'}),word('schriftlich','schriftlich','adjective',{example:'Bitte geben Sie die Antwort schriftlich.'}),word('muendlich','mündlich','adjective',{example:'Die Prüfung ist mündlich.'}),word('hoffentlich','hoffentlich','adverb',{example:'Hoffentlich bekomme ich das Visum.'}),word('zum_glueck','zum Glück','phrase',{example:'Zum Glück habe ich alle Dokumente.'}),word('endlich','endlich','adverb',{example:'Endlich habe ich das Visum.'})
 ];
-const practicePhrases=['Darf ich etwas fragen?','Können Sie mir helfen?','Helfen Sie mir?','Ich brauche eine Auskunft.','Ich verstehe nicht.','Das habe ich nicht verstanden.','Ich kann noch nicht so gut Deutsch.','Was heißt das?','Was bedeutet das?','Können Sie mir bitte erklären?','Können Sie bitte wiederholen?','Wie bitte?','Noch einmal bitte.'];
-window.L9T4={title:'Bei der Behörde',cards,practicePhrases};window.L9_T4_WORDS=cards;if(window.L9_THEMES?.[4]){window.L9_THEMES[4].coreVocabulary=cards;window.L9_THEMES[4].practicePhrases=practicePhrases;window.L9_THEMES[4].examples=practicePhrases;window.L9_THEMES[4].subtitle='Personendaten · Auskunft · Reisepass · Visum · verstehen und nachfragen';window.L9_THEMES[4].chips=['Personendaten','Auskunft','Reisepass','Visum','nachfragen'];}
+const practicePhrases=['Darf ich Sie etwas fragen?','Können Sie mir helfen?','Helfen Sie mir?','Ich brauche eine Auskunft.','Ich verstehe nicht.','Das habe ich nicht verstanden.','Ich kann noch nicht so gut Deutsch.','Wie heißt das?','Was bedeutet das?','Was heißt das?','Können Sie das bitte erklären?','Können Sie das bitte wiederholen?','Wie bitte?','Noch einmal bitte.'];
+const dialogGaps=[
+ ['dg01',['A: Guten Tag. Was brauchen Sie?','B: Ich brauche eine ___.'],'Auskunft'],['dg02',['A: Haben Sie Ihren ___ dabei?','B: Ja, hier ist er.'],'Reisepass'],['dg03',['A: Wie ist Ihr ___?','B: Müller.'],'Geburtsname'],['dg04',['A: Was ist Ihr ___?','B: verheiratet.'],'Familienstand'],['dg05',['A: Wie hoch ist Ihr ___?','B: 2.400 Euro im Monat.'],'Einkommen'],['dg06',['A: Haben Sie eine ___?','B: Ja, bei der AOK.'],'Versicherung'],['dg07',['A: Ich verstehe das Formular nicht.','B: Die Mitarbeiterin kann es ___.'],'erklären'],['dg08',['A: Entschuldigung, ich habe das nicht verstanden.','B: Ich kann es ___.'],'wiederholen'],['dg09',['A: Können Sie mir ___?','B: Natürlich.'],'helfen'],['dg10',['A: Ich möchte nach Kanada reisen.','B: Dann brauchen Sie vielleicht ein ___.'],'Visum'],
+ ['dg11',['A: Wo bekomme ich das Visum?','B: Fragen Sie bei der ___.'],'Botschaft'],['dg12',['A: Wer arbeitet dort am Schalter?','B: Eine ___.'],'Beamtin'],['dg13',['A: Was muss ich über mein Geld zeigen?','B: Bringen Sie einen ___.'],'Einkommensnachweis'],['dg14',['A: Wie soll ich die Antwort geben?','B: Bitte ___.'],'schriftlich'],['dg15',['A: Ist die Prüfung schriftlich?','B: Nein, sie ist ___.'],'mündlich'],['dg16',['A: Haben Sie genug ___?','B: Ja.'],'Geld'],['dg17',['A: Kommen Sie allein?','B: Nein, meine ___ kommt mit.'],'Angehörige'],['dg18',['A: Was bedeutet dieses Wort?','B: Ich kann die Bedeutung ___.'],'erklären'],['dg19',['A: Was machen Sie im Sommer?','B: Ich möchte ___.'],'reisen'],['dg20',['A: Was machen Sie beruflich?','B: Ich arbeite und ___ 2.600 Euro.'],'verdiene']
+].map(x=>({id:x[0],dialog:x[1],answer:x[2]}));
+const phraseScrambles=practicePhrases.map((p,i)=>({id:`ps${i+1}`,answer:p,words:p.replace(/[?.!]/g,'').split(/\s+/)}));
+const contextChoices=[
+ {id:'cc01',context:'Die Beamtin spricht sehr schnell. Du möchtest, dass sie den Satz noch einmal sagt.',answer:'Können Sie das bitte wiederholen?',options:['Können Sie das bitte wiederholen?','Ich brauche eine Auskunft.','Darf ich Sie etwas fragen?','Was heißt das?']},
+ {id:'cc02',context:'Du kennst die Bedeutung eines Wortes nicht.',answer:'Was bedeutet das?',options:['Was bedeutet das?','Helfen Sie mir?','Wie bitte?','Ich kann noch nicht so gut Deutsch.']},
+ {id:'cc03',context:'Du möchtest zuerst höflich eine Frage stellen.',answer:'Darf ich Sie etwas fragen?',options:['Darf ich Sie etwas fragen?','Noch einmal bitte.','Ich verstehe nicht.','Wie heißt das?']},
+ {id:'cc04',context:'Du brauchst Unterstützung beim Formular.',answer:'Können Sie mir helfen?',options:['Können Sie mir helfen?','Was heißt das?','Ich brauche eine Auskunft.','Wie bitte?']},
+ {id:'cc05',context:'Du hast einen Satz gehört, aber nicht verstanden.',answer:'Das habe ich nicht verstanden.',options:['Das habe ich nicht verstanden.','Was bedeutet das?','Helfen Sie mir?','Darf ich Sie etwas fragen?']},
+ {id:'cc06',context:'Du möchtest sagen, dass dein Deutsch noch nicht gut ist.',answer:'Ich kann noch nicht so gut Deutsch.',options:['Ich kann noch nicht so gut Deutsch.','Wie heißt das?','Noch einmal bitte.','Ich brauche eine Auskunft.']},
+ {id:'cc07',context:'Du brauchst eine Information von der Behörde.',answer:'Ich brauche eine Auskunft.',options:['Ich brauche eine Auskunft.','Wie bitte?','Was heißt das?','Können Sie das bitte erklären?']},
+ {id:'cc08',context:'Du möchtest wissen, wie ein Gegenstand oder ein Wort genannt wird.',answer:'Wie heißt das?',options:['Wie heißt das?','Was bedeutet das?','Können Sie mir helfen?','Ich verstehe nicht.']},
+ {id:'cc09',context:'Du möchtest eine Erklärung bekommen.',answer:'Können Sie das bitte erklären?',options:['Können Sie das bitte erklären?','Noch einmal bitte.','Ich brauche eine Auskunft.','Helfen Sie mir?']},
+ {id:'cc10',context:'Du hast akustisch nicht verstanden, was gesagt wurde.',answer:'Wie bitte?',options:['Wie bitte?','Was heißt das?','Darf ich Sie etwas fragen?','Ich kann noch nicht so gut Deutsch.']}
+];
+const contextWrites=[
+ {id:'cw01',context:'Die Mitarbeiterin spricht zu schnell. Bitte sie höflich, den Satz noch einmal zu sagen.',answers:['Können Sie das bitte wiederholen?','Noch einmal bitte.','Wie bitte?'],answer:'Können Sie das bitte wiederholen?'},
+ {id:'cw02',context:'Du verstehst ein Wort nicht und möchtest seine Bedeutung wissen.',answers:['Was bedeutet das?','Was heißt das?'],answer:'Was bedeutet das?'},
+ {id:'cw03',context:'Du brauchst Hilfe beim Ausfüllen eines Formulars.',answers:['Können Sie mir helfen?','Helfen Sie mir?'],answer:'Können Sie mir helfen?'},
+ {id:'cw04',context:'Du möchtest zuerst fragen, ob du eine Frage stellen darfst.',answers:['Darf ich Sie etwas fragen?'],answer:'Darf ich Sie etwas fragen?'},
+ {id:'cw05',context:'Du hast die Erklärung nicht verstanden.',answers:['Das habe ich nicht verstanden.','Ich verstehe nicht.'],answer:'Das habe ich nicht verstanden?'},
+ {id:'cw06',context:'Du möchtest sagen, dass du noch nicht gut Deutsch sprichst.',answers:['Ich kann noch nicht so gut Deutsch.'],answer:'Ich kann noch nicht so gut Deutsch.'},
+ {id:'cw07',context:'Du brauchst eine offizielle Information.',answers:['Ich brauche eine Auskunft.'],answer:'Ich brauche eine Auskunft.'},
+ {id:'cw08',context:'Du möchtest wissen, wie etwas auf Deutsch heißt.',answers:['Wie heißt das?','Was heißt das?'],answer:'Wie heißt das?'}
+];
+const dialogComplete=[
+ {id:'dc01',lines:['Beamtin: Guten Tag. Was kann ich für Sie tun?','Sie: ___','Beamtin: Natürlich. Was möchten Sie wissen?'],answer:'Ich brauche eine Auskunft.',answers:['Ich brauche eine Auskunft.','Darf ich Sie etwas fragen?']},
+ {id:'dc02',lines:['Beamtin: Bitte füllen Sie hier Ihren Geburtsnamen ein.','Sie: ___','Beamtin: Das ist Ihr Familienname bei der Geburt.'],answer:'Was bedeutet das?',answers:['Was bedeutet das?','Was heißt das?']},
+ {id:'dc03',lines:['Beamter: Sie brauchen außerdem einen Einkommensnachweis.','Sie: ___','Beamter: Natürlich. Ich erkläre es.'],answer:'Können Sie das bitte erklären?',answers:['Können Sie das bitte erklären?','Was bedeutet das?']},
+ {id:'dc04',lines:['Beamtin: Bringen Sie nächste Woche Ihren Reisepass und die Versicherung mit.','Sie: ___','Beamtin: Reisepass und Versicherung.'],answer:'Können Sie das bitte wiederholen?',answers:['Können Sie das bitte wiederholen?','Noch einmal bitte.','Wie bitte?']},
+ {id:'dc05',lines:['Beamter: Füllen Sie bitte Seite drei aus.','Sie: ___','Beamter: Ja, ich helfe Ihnen.'],answer:'Können Sie mir helfen?',answers:['Können Sie mir helfen?','Helfen Sie mir?']},
+ {id:'dc06',lines:['Beamtin: Haben Sie noch eine Frage?','Sie: ___','Beamtin: Kein Problem, wir sprechen langsam.'],answer:'Ich kann noch nicht so gut Deutsch.',answers:['Ich kann noch nicht so gut Deutsch.','Ich verstehe nicht.']}
+];
+const doc=(id,label)=>({id,label,image:`${CDN}${id}.webp`});
+const listeningDocs=[
+ {id:'ld01',spoken:'Wenn Sie eine Meldebescheinigung möchten, müssen Sie uns unbedingt Ihren Mietvertrag mitbringen.',answer:'mietvertrag',choices:[doc('ausweis','Ausweis'),doc('fuehrerschein','Führerschein'),doc('arbeitsvertrag','Arbeitsvertrag'),doc('mietvertrag','Mietvertrag')]},
+ {id:'ld02',spoken:'Für Ihren Termin bei der Botschaft bringen Sie bitte Ihren Reisepass mit.',answer:'reisepass',choices:[doc('reisepass','Reisepass'),doc('ausweis','Ausweis'),doc('fahrkarte','Fahrkarte'),doc('einkommensnachweis','Einkommensnachweis')]},
+ {id:'ld03',spoken:'Für die Anmeldung brauchen wir die Wohnungsgeberbestätigung.',answer:'wohnungsgeberbestaetigung',choices:[doc('wohnungsgeberbestaetigung','Wohnungsgeberbestätigung'),doc('arbeitsvertrag','Arbeitsvertrag'),doc('geburtsurkunde','Geburtsurkunde'),doc('reisepass','Reisepass')]},
+ {id:'ld04',spoken:'Bitte bringen Sie einen Nachweis über Ihr Einkommen mit.',answer:'einkommensnachweis',choices:[doc('einkommensnachweis','Einkommensnachweis'),doc('mietvertrag','Mietvertrag'),doc('passfoto','Passfoto'),doc('fahrzeugpapiere','Fahrzeugpapiere')]},
+ {id:'ld05',spoken:'Für den neuen Pass brauchen wir ein aktuelles Passfoto.',answer:'passfoto',choices:[doc('passfoto','Passfoto'),doc('reisepass','Reisepass'),doc('geburtsurkunde','Geburtsurkunde'),doc('steuer_id','Steuer-ID')]},
+ {id:'ld06',spoken:'Wenn Sie verheiratet sind, bringen Sie bitte Ihre Heiratsurkunde mit.',answer:'heiratsurkunde',choices:[doc('heiratsurkunde','Heiratsurkunde'),doc('geburtsurkunde','Geburtsurkunde'),doc('mietvertrag','Mietvertrag'),doc('arbeitsvertrag','Arbeitsvertrag')]},
+ {id:'ld07',spoken:'Für diesen Antrag brauchen wir Ihre Geburtsurkunde.',answer:'geburtsurkunde',choices:[doc('geburtsurkunde','Geburtsurkunde'),doc('heiratsurkunde','Heiratsurkunde'),doc('reisepass','Reisepass'),doc('versicherung','Versicherung')]},
+ {id:'ld08',spoken:'Bitte zeigen Sie Ihren gültigen Ausweis am Schalter.',answer:'ausweis',choices:[doc('ausweis','Ausweis'),doc('fuehrerschein','Führerschein'),doc('reisepass','Reisepass'),doc('fahrkarte','Fahrkarte')]},
+ {id:'ld09',spoken:'Für die Verpflichtung brauchen wir die Verpflichtungserklärung im Original.',answer:'verpflichtungserklaerung',choices:[doc('verpflichtungserklaerung','Verpflichtungserklärung'),doc('einkommensnachweis','Einkommensnachweis'),doc('mietvertrag','Mietvertrag'),doc('dokument','Dokument')]},
+ {id:'ld10',spoken:'Für die Arbeitserlaubnis bringen Sie bitte Ihren Arbeitsvertrag mit.',answer:'arbeitsvertrag',choices:[doc('arbeitsvertrag','Arbeitsvertrag'),doc('mietvertrag','Mietvertrag'),doc('reisepass','Reisepass'),doc('wohnungsgeberbestaetigung','Wohnungsgeberbestätigung')]}
+];
+const verbMap=new Map();
+for(const n of [1,2,3,4])for(const x of (window.L9_THEMES?.[n]?.coreVocabulary||[])){if(!x?.perfect||!['verb','modal'].includes(x.type))continue;const k=String(x.word||x.full||'').toLowerCase();if(!verbMap.has(k))verbMap.set(k,{id:`pf-${n}-${x.id}`,verb:x.word||x.full,answer:x.perfect});}
+for(const x of cards){if(x.perfect&&['verb','modal'].includes(x.type)){const k=String(x.word||x.full).toLowerCase();if(!verbMap.has(k))verbMap.set(k,{id:`pf-4-${x.id}`,verb:x.word||x.full,answer:x.perfect});}}
+const perfectItems=[...verbMap.values()];
+const transformTexts=[{
+ id:'tx01',title:'Ein Vormittag bei der Behörde',
+ present:'Man geht morgens zur Behörde. Zuerst wartet man im Wartebereich. Dann zeigt man den Reisepass. Man erklärt der Mitarbeiterin das Problem. Die Mitarbeiterin hilft und wiederholt wichtige Informationen. Danach füllt man ein Formular aus und gibt die Unterlagen ab. Zum Schluss holt man ein Dokument ab.',
+ answer:'Man ist morgens zur Behörde gegangen. Zuerst hat man im Wartebereich gewartet. Dann hat man den Reisepass gezeigt. Man hat der Mitarbeiterin das Problem erklärt. Die Mitarbeiterin hat geholfen und wichtige Informationen wiederholt. Danach hat man ein Formular ausgefüllt und die Unterlagen abgegeben. Zum Schluss hat man ein Dokument abgeholt.'
+}];
+const tasks=[
+ {id:'karteikarten',kind:'cards',title:'Karteikarten',description:'Lerne die Wörter.',icon:'🃏'},
+ {id:'hoeren-bild',kind:'audio-image',title:'Hören & Bild',description:'Höre und wähle das Bild.',icon:'🎧'},
+ {id:'bedeutung-wort',kind:'meaning-word',title:'Bedeutung finden',description:'Wähle das richtige Wort.',icon:'🧠'},
+ {id:'dialog-luecken',kind:'dialog-gap',title:'Dialoge',description:'Schreibe das passende Wort.',icon:'💬'},
+ {id:'satzsalat',kind:'phrase-scramble',title:'Satzsalat',description:'Bilde den richtigen Satz.',icon:'🧩'},
+ {id:'frage-waehlen',kind:'context-choice',title:'Frage wählen',description:'Wähle die passende Frage.',icon:'🎯'},
+ {id:'frage-schreiben',kind:'context-write',title:'Frage schreiben',description:'Schreibe eine passende Frage.',icon:'✍️'},
+ {id:'dialog-ergaenzen',kind:'dialog-complete',title:'Behördendialoge',description:'Ergänze den Dialog.',icon:'🗨️'},
+ {id:'unterlagen-hoeren',kind:'listening-doc',title:'Welche Unterlage?',description:'Höre und wähle die Unterlage.',icon:'📑'},
+ {id:'perfekt',kind:'perfect-write',title:'Perfekt',description:'Schreibe die Perfektform.',icon:'⏳'},
+ {id:'text-vergangenheit',kind:'transform-text',title:'Text in der Vergangenheit',description:'Schreibe den Text im Perfekt.',icon:'🕰️'},
+ {id:'pruefung',kind:'exam',title:'Prüfung',description:'Zeig, was du kannst.',icon:'🏆',exam:true}
+];
+window.L9T4={title:'Bei der Behörde',cards,practicePhrases,dialogGaps,phraseScrambles,contextChoices,contextWrites,dialogComplete,listeningDocs,perfectItems,transformTexts,tasks};
+window.L9_T4_WORDS=cards;
+if(window.L9_THEMES?.[4]){window.L9_THEMES[4].coreVocabulary=cards;window.L9_THEMES[4].practicePhrases=practicePhrases;window.L9_THEMES[4].examples=practicePhrases;window.L9_THEMES[4].tasks=tasks;window.L9_THEMES[4].subtitle='Personendaten · Auskunft · verstehen und nachfragen';window.L9_THEMES[4].chips=['Behörde','Auskunft','Unterlagen','nachfragen','Perfekt'];}
 })();
