@@ -1,9 +1,9 @@
 (function(){
 'use strict';
-const CDN='https://sprachpilot.b-cdn.net/',AUDIO=CDN+'audio/';
+const CDN='https://sprachpilot.b-cdn.net/';
 const removed=new Set(['buergeramt','fahrerlaubnisbehoerde','wohnungsgeberbestaetigung','steuer_id','fahrzeugpapiere','versicherungsnachweis']);
 const base=(window.L9_THEMES?.[5]?.coreVocabulary||window.L9_T5_WORDS||[]).filter(x=>!removed.has(x.id));
-const phrase=(id,full,example,asset=id)=>({id,word:full,full,article:'',plural:'',type:'phrase',example,image:`${CDN}${asset}.webp`,audio:`${AUDIO}${asset}.mp3`});
+const phrase=(id,full,example,imageAsset)=>({id,word:full,full,article:'',plural:'',type:'phrase',example,image:imageAsset?`${CDN}${imageAsset}.webp`:'',audio:''});
 const phrases=[
  phrase('fuehrerschein_beantragen','einen Führerschein beantragen','Ich möchte einen Führerschein beantragen.','fuehrerschein'),
  phrase('einen_antrag_ausfuellen','einen Antrag ausfüllen','Ich muss einen Antrag ausfüllen.','einen_antrag_ausfuellen'),
@@ -16,7 +16,5 @@ const phrases=[
  phrase('visum_bekommen','ein Visum bekommen','Ich möchte ein Visum bekommen.','visum')
 ];
 const cards=[...base,...phrases];
-window.L9T5={title:'Welche Behörde brauche ich?',cards,phrases};
-window.L9_T5_WORDS=cards;
-if(window.L9_THEMES?.[5])window.L9_THEMES[5].coreVocabulary=cards;
+window.L9T5={title:'Welche Behörde brauche ich?',cards,phrases};window.L9_T5_WORDS=cards;if(window.L9_THEMES?.[5])window.L9_THEMES[5].coreVocabulary=cards;
 })();
