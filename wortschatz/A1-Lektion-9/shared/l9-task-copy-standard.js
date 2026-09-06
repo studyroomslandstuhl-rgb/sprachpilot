@@ -10,8 +10,8 @@ function copy(raw,themeNo){
   if(/unterlagen/.test(s))return exact('Karteikarten: Unterlagen','Lerne die Unterlagen.');
   return exact('Karteikarten','Lerne die neuen Wörter.');
  }
- if(/bild oder erklarung.*wort|bild.*beschreibung.*behorde/.test(s))return exact(themeNo===5?'Behörde finden':'Wort finden',themeNo===5?'Sieh das Bild oder lies die Beschreibung. Wähle die Behörde.':'Sieh das Bild oder lies die Erklärung. Wähle das Wort.');
- if(/bild.*erklarung.*unterlage/.test(s))return exact('Unterlage finden','Sieh das Bild oder lies die Erklärung. Wähle die Unterlage.');
+ if(/bild oder erklarung.*wort|bild.*beschreibung.*behorde|beschreibung.*behorde/.test(s))return exact(themeNo===5?'Behörde finden':'Wort finden',themeNo===5?'Sieh das Bild oder lies die Beschreibung. Wähle die Behörde.':'Sieh das Bild oder lies die Erklärung. Wähle das Wort.');
+ if(/bild.*erklarung.*unterlage|erklarung.*unterlage/.test(s))return exact('Unterlage finden','Sieh das Bild oder lies die Erklärung. Wähle die Unterlage.');
  if(/nomen.*artikel.*plural/.test(s))return exact('Artikel & Plural','Schreibe Artikel und Plural.');
  if(/verben.*infinitiv.*perfekt/.test(s))return exact('Verben','Ordne die Verbformen richtig zu.');
  if(/mussen.*konjug|muessen.*konjug/.test(s))return exact('müssen konjugieren','Schreibe die richtige Form von müssen.');
@@ -21,7 +21,7 @@ function copy(raw,themeNo){
  if(/aussagen.*fragen.*durfen/.test(s))return exact('Sätze & Fragen mit dürfen','Bilde richtige Sätze und Fragen mit dürfen.');
  if(/aussagen.*mussen|aussagen.*muessen/.test(s))return exact('Sätze mit müssen','Bilde richtige Sätze mit müssen.');
  if(/fragen.*mussen|fragen.*muessen/.test(s))return exact('Fragen mit müssen','Bilde richtige Fragen mit müssen.');
- if(/reihenfolge|schritte ordnen|weg durch mehrere schritte/.test(s))return exact('Reihenfolge','Ordne die Schritte richtig.');
+ if(/reihenfolge|schritte ordnen|weg durch mehrere schritte|ablauf.*zuerst.*danach.*dann/.test(s))return exact('Reihenfolge','Ordne die Schritte richtig.');
  if(/fahrkartenautomat/.test(s))return exact('Fahrkartenautomat','Verstehe die Anweisung und wähle den richtigen Schritt.');
  if(/behordengesprach/.test(s))return exact('Behördengespräch','Ergänze das Gespräch.');
  if(/anleitung horen/.test(s))return exact('Hören & ordnen','Hör zu und ordne die Schritte.');
@@ -69,8 +69,8 @@ function copy(raw,themeNo){
  if(/muss.*muss nicht.*darf.*darf nicht.*behordenkontext/.test(s))return exact('dürfen & müssen','Wähle die passende Form.');
  if(/dokument vorhanden.*fehlt|dokument.*mitbringen/.test(s))return exact('Dokumente','Entscheide: vorhanden, fehlt oder mitbringen.');
  if(/frage.*antwort verbinden/.test(s))return exact('Frage & Antwort','Ordne Frage und Antwort zu.');
- if(/kurze dialoge.*schalter/.test(s))return exact('Dialoge','Ergänze die Dialoge am Schalter.');
- if(/horen.*welche behorde.*unterlagen/.test(s))return exact('Hören','Hör zu und wähle Behörde oder Unterlage.');
+ if(/kurze dialoge.*schalter|dialoge.*schalter/.test(s))return exact('Dialoge','Ergänze die Dialoge am Schalter.');
+ if(/horen.*welche behorde.*unterlagen|horen.*behorde.*unterlagen/.test(s))return exact('Hören','Hör zu und wähle Behörde oder Unterlage.');
  if(/behorde.*anliegen.*unterlagen/.test(s))return exact('Große Zuordnung','Ordne Behörde, Anliegen und Unterlagen zu.');
  const title=String(typeof raw==='string'?raw:(raw?.title||`Aufgabe`)).replace(/Themenprüfung/gi,'Prüfung').replace(/^Karteikarten:\s*/i,'Karteikarten: ').trim();
  return exact(title,String(raw?.description||raw?.instruction||'Bearbeite die Aufgabe.').replace(/Diese Aufgabe wird im L8\/L9-Standard umgesetzt\.?/gi,'Bearbeite die Aufgabe.'));
