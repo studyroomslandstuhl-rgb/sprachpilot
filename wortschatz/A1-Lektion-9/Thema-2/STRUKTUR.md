@@ -31,6 +31,8 @@ Die Lernenden können:
 - warten – **hat gewartet**
 - lachen – **hat gelacht**
 - aufhören – **hat aufgehört**
+- hingehen – **ist hingegangen**
+- laden – **hat geladen**
 
 ### Weitere Wörter
 
@@ -45,12 +47,14 @@ Die Lernenden können:
 - der Stock – die Stockwerke
 - der Unterricht – kein Plural
 - die Sprachschule – die Sprachschulen
+- die Autovermietung – die Autovermietungen
+- der Wartebereich – die Wartebereiche
 
-**Nicht als eigene Wortschatzwörter verwenden:** Kursgebühr, doch, bitte, mal.
+**Nicht als eigene normale Wortschatzwörter verwenden:** Kursgebühr, doch, bitte, mal.
 
 ## Zusätzliche Grammatik: doch · bitte · mal
 
-Diese drei Wörter gehören in Thema 2 zur **Grammatik/Kommunikation**, nicht zum Wortschatz. Sie bekommen keine Wortschatzbilder und erscheinen nicht in den Karteikarten.
+Diese drei Wörter gehören in Thema 2 zur **Grammatik/Kommunikation**, nicht zum normalen Wortschatz. Sie bekommen keine normalen Wortschatzbilder. Zur Wiederholung dürfen sie in den Karteikarten als besondere Grammatikkarten mit Emoji und Hören erscheinen.
 
 - 😠 **doch** – stärker / nachdrücklicher
 - 🙏 **bitte** – höflich
@@ -110,7 +114,7 @@ Beispiele:
 13. kurze Dialoge in Sprachschule, Anmeldung und Kasse ergänzen
 14. eigene Anweisungen sprechen oder schreiben
 15. Mischaufgabe: bilden + verstehen + passende Form wählen
-16. Themenprüfung
+16. Prüfung
 
 ## Qualitätsregeln
 
@@ -118,6 +122,6 @@ Beispiele:
 - **du / ihr / Sie** werden sichtbar getrennt und anschließend bewusst gemischt getestet.
 - Die Lernenden müssen Formen sowohl **bilden als auch verstehen**.
 - Trennbare Verben werden korrekt getrennt.
-- **doch, bitte, mal** werden in echten kurzen Aufforderungen geübt, aber nicht als Bild-Wortschatz behandelt.
+- **doch, bitte, mal** werden in echten kurzen Aufforderungen geübt, aber nicht als normaler Bild-Wortschatz behandelt.
 - Keine unnötig komplizierte Grammatiktheorie zu Modalpartikeln.
 - Alle neuen Verben werden zusätzlich mit Perfektform gelernt und getestet.
