@@ -1,0 +1,1 @@
+(function(){'use strict';const D=window.L9T4;if(!D)return;const t=(D.tasks||[]).find(x=>x.id==='satzsalat');if(t){t.title='Buchstabensalat';t.description='Bilde den richtigen Satz.';}const cw=(D.contextWrites||[]).find(x=>x.id==='cw05');if(cw)cw.answer='Das habe ich nicht verstanden.';if(window.L9_THEMES?.[4])window.L9_THEMES[4].tasks=D.tasks;})();
