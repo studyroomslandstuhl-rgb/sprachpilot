@@ -4,124 +4,39 @@
 
 ## Hauptziel
 
-Thema 2 ist das zentrale **Imperativ-Thema** der Lektion. Die Lernenden sollen Imperativformen nicht nur erkennen, sondern selbst sicher bilden, verstehen und in kurzen Alltagssituationen benutzen können.
+Thema 2 ist das zentrale Imperativ-Thema der Lektion. Die Lernenden erkennen Imperativformen, unterscheiden du / ihr / Sie, bilden Imperativ selbst und benutzen doch, bitte und mal im Kontext.
 
-## Lernziele
+## Wortschatzbasis
 
-Die Lernenden können:
-
-- den Imperativ für **du**, **ihr** und **Sie** erkennen,
-- die drei Imperativformen selbst bilden,
-- **du / ihr / Sie** sicher voneinander unterscheiden,
-- trennbare Verben im Imperativ korrekt verwenden,
-- kurze Anweisungen hören und verstehen,
-- selbst passende Anweisungen geben,
-- Imperativ mit **doch, bitte, mal** kombinieren,
-- erkennen, wie **doch, bitte, mal** eine Aufforderung freundlicher, natürlicher oder nachdrücklicher machen,
-- neue Verben zusammen mit ihrer **Perfektform** lernen und wiedererkennen.
-
-## Verbindlicher Wortschatz
-
-### Verben mit Perfekt
-
-- erklären – **hat erklärt**
-- ausmachen – **hat ausgemacht**
-- zuhören – **hat zugehört**
-- aufstehen – **ist aufgestanden**
-- warten – **hat gewartet**
-- lachen – **hat gelacht**
-- aufhören – **hat aufgehört**
-- hingehen – **ist hingegangen**
-- laden – **hat geladen**
-
-### Weitere Wörter
-
-- leise
-- laut
-
-### Nomen
-
-- die Gebühr – die Gebühren
-- die Kasse – die Kassen
-- die Anmeldung – die Anmeldungen
-- der Stock – die Stockwerke
-- der Unterricht – kein Plural
-- die Sprachschule – die Sprachschulen
-- die Autovermietung – die Autovermietungen
-- der Wartebereich – die Wartebereiche
-
-**Nicht als eigene normale Wortschatzwörter verwenden:** Kursgebühr, doch, bitte, mal.
-
-## Zusätzliche Grammatik: doch · bitte · mal
-
-Diese drei Wörter gehören in Thema 2 zur **Grammatik/Kommunikation**, nicht zum normalen Wortschatz. Sie bekommen keine normalen Wortschatzbilder. Zur Wiederholung dürfen sie in den Karteikarten als besondere Grammatikkarten mit Emoji und Hören erscheinen.
-
-- 😠 **doch** – stärker / nachdrücklicher
-- 🙏 **bitte** – höflich
-- 😊 **mal** – freundlich / natürlich
-
-Beispiele:
-
-- Komm **doch** rein.
-- Warten Sie **bitte** hier.
-- Hör **mal** zu.
-- Hör **doch bitte** auf.
-- Erklär das **bitte noch mal**.
-
-## Imperativ-Muster
-
-### du
-
-- Erklär das bitte noch einmal.
-- Mach das Handy aus.
-- Hör bitte zu.
-- Steh bitte auf.
-- Warte mal hier.
-- Hör doch bitte auf.
-
-### ihr
-
-- Erklärt das bitte noch einmal.
-- Macht das Handy aus.
-- Hört bitte zu.
-- Steht bitte auf.
-- Wartet mal hier.
-- Hört doch bitte auf.
-
-### Sie
-
-- Erklären Sie das bitte noch einmal.
-- Machen Sie das Handy aus.
-- Hören Sie bitte zu.
-- Stehen Sie bitte auf.
-- Warten Sie bitte hier.
-- Hören Sie bitte auf.
+- kompletter Wortschatz aus L9T2
+- bei den Bild-/Höraufgaben zusätzlich Wortschatz aus L9T1
+- für Imperativ-Sätze dürfen bekannte A1/A2-Verben und einfache Dativverben verwendet werden
+- doch, bitte, mal bleiben Grammatik-/Kommunikationswörter und brauchen keine normalen Wortschatzbilder
 
 ## Verbindliche Aufgabenfolge
 
-1. Imperativ oder normaler Aussagesatz?
-2. du / ihr / Sie unterscheiden
-3. du-Imperativ bilden
-4. ihr-Imperativ bilden
-5. Sie-Imperativ bilden
-6. dieselbe Anweisung in du / ihr / Sie umformen
-7. trennbare Verben im Imperativ
-8. Imperativform aus dem Kontext auswählen
-9. gehörte Anweisung verstehen
-10. passende Anweisung zur Situation auswählen
-11. **doch / bitte / mal** passend ergänzen
-12. Unterschiede zwischen neutraler, höflicher und natürlicher Aufforderung erkennen
-13. kurze Dialoge in Sprachschule, Anmeldung und Kasse ergänzen
-14. eigene Anweisungen sprechen oder schreiben
-15. Mischaufgabe: bilden + verstehen + passende Form wählen
-16. Prüfung
+1. **Karteikarten** – L9T2-Wortschatz lernen.
+2. **Bild & Wort** – ein Bild wird gezeigt; vier Wörter aus L9T1/L9T2 stehen zur Auswahl; richtiges Wort wählen. Items und Antworten randomisiert.
+3. **Bild & Hören** – ein Bild wird gezeigt; vier Wörter werden nur als Audio angeboten; anhören und richtige Audio-Antwort wählen. Wortpool L9T1/L9T2, randomisiert.
+4. **Memory** – Wort und passendes Bild finden.
+5. **Dialoge** – Dialoge mit Lücken; passende Wörter selbst schreiben.
+6. **Satz, Frage oder Imperativ?** – 20 Sätze nacheinander; jeweils Satz / Frage / Imperativ zuordnen. Wortschatz aus L9T1/L9T2 plus bekannte A1/A2-Verben und Dativverben.
+7. **du, ihr oder Sie?** – 20 Imperativ-Sätze nacheinander der richtigen Person zuordnen.
+8. **Imperativ-Tabelle** – Spalten du / ihr / Sie, links Wortgruppen mit Verben + Nomen/Adjektiven; alle drei Formen selbst schreiben, z. B. leise sein → Sei leise. / Seid leise. / Seien Sie leise.
+9. **Imperativ bilden** – Form und einzelne Satzbausteine sind vorgegeben; vollständigen Imperativ-Satz selbst schreiben.
+10. **mal, bitte oder doch?** – klare Dialogkontexte; passende Modalpartikel auswählen.
+11. **Partikel im Dialog** – Dialog + neutraler Ausgangssatz; passende Partikel selbst entscheiden und vollständigen Satz mit mal / bitte / doch schreiben.
+12. **Regeln lesen** – kurze Regeltexte im Imperativ an verschiedenen Orten (Sprachschule, Unterricht, Amt, Autovermietung); anschließend Verständnisfragen beantworten.
+13. **Prüfung** – bleibt letzter Punkt und wird separat inhaltlich aufgebaut.
 
 ## Qualitätsregeln
 
-- Der Schwerpunkt bleibt konsequent auf **Imperativ**.
-- **du / ihr / Sie** werden sichtbar getrennt und anschließend bewusst gemischt getestet.
-- Die Lernenden müssen Formen sowohl **bilden als auch verstehen**.
+- Alle Items und Antwortoptionen werden randomisiert, wenn keine feste Reihenfolge didaktisch nötig ist.
+- Falsch gelöste Items werden zuerst korrigiert und am Ende erneut abgefragt.
+- Aufgaben erscheinen einzeln bzw. übersichtlich mobil; keine unnötig langen Seiten.
+- Aufgabe 6 und 7 enthalten jeweils genau 20 Sätze.
+- Imperativformen müssen grammatisch eindeutig und A1/A2-tauglich sein.
 - Trennbare Verben werden korrekt getrennt.
-- **doch, bitte, mal** werden in echten kurzen Aufforderungen geübt, aber nicht als normaler Bild-Wortschatz behandelt.
-- Keine unnötig komplizierte Grammatiktheorie zu Modalpartikeln.
-- Alle neuen Verben werden zusätzlich mit Perfektform gelernt und getestet.
+- Dativverben wie helfen und antworten dürfen in einfachen bekannten Strukturen vorkommen.
+- Modalpartikel-Aufgaben müssen so kontextualisiert sein, dass eine Antwort klar am besten passt.
+- Leseaufgaben verwenden kurze Regeln und bekannten Wortschatz; keine unnötig neuen Wörter.
