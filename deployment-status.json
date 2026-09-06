@@ -1,9 +1,9 @@
 {
   "result": "cancelled",
-  "source_sha": "116cc270988b840231633b27084bd2fec173536e",
-  "page_url": "",
-  "run_id": "34041572043",
+  "source_sha": "32f0fad80b64ba4f70821f80ac9c2421d62f4fd8",
+  "page_url": "https://www.sprachpilot.org/",
+  "run_id": "34041581952",
   "run_attempt": "1",
-  "run_url": "https://github.com/studyroomslandstuhl-rgb/sprachpilot/actions/runs/34041572043",
-  "recorded_at": "2026-09-06T15:12:44.965885+00:00"
+  "run_url": "https://github.com/studyroomslandstuhl-rgb/sprachpilot/actions/runs/34041581952",
+  "recorded_at": "2026-09-06T15:13:14.830224+00:00"
 }
