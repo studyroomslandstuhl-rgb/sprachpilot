@@ -32,23 +32,37 @@ Die Lernenden können:
 - lachen – **hat gelacht**
 - aufhören – **hat aufgehört**
 
-### Adverbien / Modalpartikeln
+### Weitere Wörter
 
-- leiser
+- leise
 - laut
-- doch
-- bitte
-- mal
 
 ### Nomen
 
 - die Gebühr – die Gebühren
 - die Kasse – die Kassen
 - die Anmeldung – die Anmeldungen
-- die Kursgebühr – die Kursgebühren
 - der Stock – die Stockwerke
 - der Unterricht – kein Plural
 - die Sprachschule – die Sprachschulen
+
+**Nicht als eigene Wortschatzwörter verwenden:** Kursgebühr, doch, bitte, mal.
+
+## Zusätzliche Grammatik: doch · bitte · mal
+
+Diese drei Wörter gehören in Thema 2 zur **Grammatik/Kommunikation**, nicht zum Wortschatz. Sie bekommen keine Wortschatzbilder und erscheinen nicht in den Karteikarten.
+
+- 😠 **doch** – stärker / nachdrücklicher
+- 🙏 **bitte** – höflich
+- 😊 **mal** – freundlich / natürlich
+
+Beispiele:
+
+- Komm **doch** rein.
+- Warten Sie **bitte** hier.
+- Hör **mal** zu.
+- Hör **doch bitte** auf.
+- Erklär das **bitte noch mal**.
 
 ## Imperativ-Muster
 
@@ -79,18 +93,6 @@ Die Lernenden können:
 - Warten Sie bitte hier.
 - Hören Sie bitte auf.
 
-## doch · bitte · mal
-
-Die Wörter werden **kommunikativ**, nicht über komplizierte Grammatikbegriffe gelernt.
-
-Beispiele:
-
-- Komm **doch** rein.
-- Warten Sie **bitte** hier.
-- Hör **mal** zu.
-- Hör **doch bitte** auf.
-- Erklär das **bitte noch mal**.
-
 ## Verbindliche Aufgabenfolge
 
 1. Imperativ oder normaler Aussagesatz?
@@ -116,6 +118,6 @@ Beispiele:
 - **du / ihr / Sie** werden sichtbar getrennt und anschließend bewusst gemischt getestet.
 - Die Lernenden müssen Formen sowohl **bilden als auch verstehen**.
 - Trennbare Verben werden korrekt getrennt.
-- **doch, bitte, mal** werden in echten kurzen Aufforderungen geübt.
+- **doch, bitte, mal** werden in echten kurzen Aufforderungen geübt, aber nicht als Bild-Wortschatz behandelt.
 - Keine unnötig komplizierte Grammatiktheorie zu Modalpartikeln.
 - Alle neuen Verben werden zusätzlich mit Perfektform gelernt und getestet.
