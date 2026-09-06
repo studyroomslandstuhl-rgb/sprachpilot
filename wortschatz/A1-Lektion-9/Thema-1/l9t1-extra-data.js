@@ -3,7 +3,8 @@
 const D=window.L9T1;if(!D)return;
 const CDN='https://sprachpilot.b-cdn.net/';
 const card=id=>(D.cards||[]).find(x=>x.id===id)||{};
-const nounIds=['fuehrerschein','ticket','amt','europaeische_union','fahrt','fahrkarte','antrag','ausweis','papiere','automat','ziel','erwachsener','erwachsene','autovermietung','unterlagen','dokument','wechselgeld'];
+// Immer alle Nomen verwenden, die tatsächlich zum Wortschatz von L9T1 gehören.
+const nounIds=(D.cards||[]).filter(c=>c&&c.type==='noun'&&c.id).map(c=>c.id);
 const promptWord=(c,id)=>id==='erwachsener'?'Erwachsene (Mann)':id==='erwachsene'?'Erwachsene (Frau)':String(c.word||c.full||id).replace(/^(der|die|das)\s+/i,'');
 
 D.articleNouns=nounIds.map(id=>{const c=card(id);return{
@@ -53,25 +54,25 @@ D.nounDialogs=[
 const cas=(id,before,noun,after,answer,hint)=>({id,before,noun,after,answer,hint});
 D.caseArticles=[
  cas('case01','Man muss ','Antrag',' ausfüllen.','den','„ausfüllen“ hat hier ein Akkusativobjekt: der Antrag → den Antrag.'),
- cas('case02','Bitte bringen Sie ','Ausweis',' mit.','den','„mitbringen“ hat hier ein Akkusativobjekt: der Ausweis → den Ausweis.'),
+ cas('case02','Man muss ','Ausweis',' mitbringen.','den','„mitbringen“ hat hier ein Akkusativobjekt: der Ausweis → den Ausweis.'),
  cas('case03','Man muss ','Papiere',' unterschreiben.','die','Plural im Akkusativ: die Papiere.'),
- cas('case04','Die Mitarbeiterin stempelt ','Dokument','.','das','Neutrum im Akkusativ bleibt: das Dokument.'),
- cas('case05','Zuerst wählt man ','Ziel','.','das','„wählen“ verlangt hier Akkusativ: das Ziel.'),
- cas('case06','Danach wählt man ','Erwachsene',' aus.','die','Femininum im Akkusativ: die Erwachsene.'),
- cas('case07','Für ','Führerschein',' braucht man Unterlagen.','den','Nach „für“ steht Akkusativ: der → den.'),
- cas('case08','Für ','Fahrt',' braucht man eine Fahrkarte.','die','Nach „für“ steht Akkusativ; Femininum bleibt die.'),
- cas('case09','Ohne ','Ticket',' kann man nicht fahren.','das','Nach „ohne“ steht Akkusativ; Neutrum bleibt das.'),
- cas('case10','Ohne ','Führerschein',' kann man kein Auto mieten.','den','Nach „ohne“ steht Akkusativ: der → den.'),
- cas('case11','Um ','Automaten',' stehen Erwachsene.','den','Nach „um“ steht Akkusativ: der Automat → den Automaten.'),
- cas('case12','Bei ','Amt',' stellt man einen Antrag.','dem','Nach „bei“ steht Dativ: das → dem.'),
- cas('case13','Bei ','Autovermietung',' kann man ein Auto mieten.','der','Nach „bei“ steht Dativ: die → der.'),
- cas('case14','Nach ','Fahrt',' ist das Ticket noch gültig.','der','Nach „nach“ steht Dativ: die → der.'),
- cas('case15','Aus ','Amt',' holt man das Dokument ab.','dem','Nach „aus“ steht Dativ: das → dem.'),
- cas('case16','Von ','Autovermietung',' holt man das Auto ab.','der','Nach „von“ steht Dativ: die → der.'),
- cas('case17','Zu ','Amt',' muss man den Ausweis mitbringen.','dem','Nach „zu“ steht Dativ: das → dem.'),
- cas('case18','Seit ','Fahrt',' ist das Ticket nicht mehr gültig.','der','Nach „seit“ steht Dativ: die → der.'),
- cas('case19','Bei ','Automaten',' wählt man zuerst das Ziel.','dem','Nach „bei“ steht Dativ: der → dem.'),
- cas('case20','Von ','Erwachsenen',' bekommt man die Papiere.','dem','Nach „von“ steht Dativ: der Erwachsene → dem Erwachsenen.')
+ cas('case04','Man muss ','Dokument',' stempeln.','das','Neutrum im Akkusativ bleibt: das Dokument.'),
+ cas('case05','Zuerst muss man ','Ziel',' wählen.','das','„wählen“ verlangt hier Akkusativ: das Ziel.'),
+ cas('case06','Danach muss man ','Erwachsene',' auswählen.','die','Femininum im Akkusativ: die Erwachsene.'),
+ cas('case07','Man muss ','Führerschein',' mitbringen.','den','„mitbringen“ hat hier ein Akkusativobjekt: der Führerschein → den Führerschein.'),
+ cas('case08','Man muss ','Fahrkarte',' auswählen.','die','Femininum im Akkusativ bleibt: die Fahrkarte.'),
+ cas('case09','Man muss ','Ticket',' auswählen.','das','Neutrum im Akkusativ bleibt: das Ticket.'),
+ cas('case10','Man muss ','Unterlagen',' mitbringen.','die','Plural im Akkusativ: die Unterlagen.'),
+ cas('case11','Der Automat gibt ','Wechselgeld','.','das','„geben“ hat hier ein Akkusativobjekt; Neutrum bleibt das.'),
+ cas('case12','Für ','Fahrt',' braucht man eine Fahrkarte.','die','Nach „für“ steht Akkusativ; Femininum bleibt die.'),
+ cas('case13','Um ','Automaten',' stehen Erwachsene.','den','Nach „um“ steht Akkusativ: der Automat → den Automaten.'),
+ cas('case14','Bei ','Amt',' stellt man einen Antrag.','dem','Nach „bei“ steht Dativ: das → dem.'),
+ cas('case15','Bei ','Autovermietung',' muss man den Führerschein mitbringen.','der','Nach „bei“ steht Dativ: die → der.'),
+ cas('case16','Aus ','Europäischen Union',' kommt der Führerschein.','der','Nach „aus“ steht Dativ: die Europäische Union → der Europäischen Union.'),
+ cas('case17','Von ','Erwachsenen',' bekommt man die Papiere.','dem','Nach „von“ steht Dativ: der Erwachsene → dem Erwachsenen.'),
+ cas('case18','Nach ','Fahrt',' ist das Ticket nicht mehr gültig.','der','Nach „nach“ steht Dativ: die → der.'),
+ cas('case19','Zu ','Amt',' muss man den Ausweis mitbringen.','dem','Nach „zu“ steht Dativ: das → dem.'),
+ cas('case20','Seit ','Fahrt',' ist das Ticket nicht mehr gültig.','der','Nach „seit“ steht Dativ: die → der.')
 ];
 
 const extraTasks=[
