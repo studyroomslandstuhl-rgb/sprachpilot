@@ -26,7 +26,7 @@ const cards=[
  noun('erklaerung','die','Erklärung','die Erklärungen','Ich brauche eine Erklärung.'),
  noun('dokument','das','Dokument','die Dokumente','Das Dokument ist wichtig.'),
  noun('geld','das','Geld','kein Plural','Ich habe genug Geld.'),
- word('genug','genug','adverb',{example:'Das Geld ist genug.'}),
+ word('genug','genug','adverb',{example:'Ich habe genug Geld.'}),
  noun('einkommen','das','Einkommen','die Einkommen','Wie hoch ist Ihr Einkommen?'),
  noun('reise','die','Reise','die Reisen','Die Reise ist im Juli.'),
  noun('versicherung','die','Versicherung','die Versicherungen','Ich habe eine Versicherung.'),
@@ -50,10 +50,6 @@ const cards=[
  word('zum_glueck','zum Glück','phrase',{example:'Zum Glück habe ich alle Dokumente.'}),
  word('endlich','endlich','adverb',{example:'Endlich habe ich das Visum.'})
 ];
-const practicePhrases=[
-'Darf ich etwas fragen?','Können Sie mir helfen?','Helfen Sie mir?','Ich brauche eine Auskunft.','Ich verstehe nicht.','Das habe ich nicht verstanden.','Ich kann noch nicht so gut Deutsch.','Was heißt das?','Was bedeutet das?','Können Sie mir das bitte erklären?','Können Sie bitte wiederholen?','Wie bitte?','Noch einmal bitte.'
-];
-window.L9T4={title:'Bei der Behörde',cards,practicePhrases};
-window.L9_T4_WORDS=cards;
-if(window.L9_THEMES?.[4]){window.L9_THEMES[4].coreVocabulary=cards;window.L9_THEMES[4].practicePhrases=practicePhrases;window.L9_THEMES[4].examples=practicePhrases;}
+const practicePhrases=['Darf ich etwas fragen?','Können Sie mir helfen?','Helfen Sie mir?','Ich brauche eine Auskunft.','Ich verstehe nicht.','Das habe ich nicht verstanden.','Ich kann noch nicht so gut Deutsch.','Was heißt das?','Was bedeutet das?','Können Sie mir bitte erklären?','Können Sie bitte wiederholen?','Wie bitte?','Noch einmal bitte.'];
+window.L9T4={title:'Bei der Behörde',cards,practicePhrases};window.L9_T4_WORDS=cards;if(window.L9_THEMES?.[4]){window.L9_THEMES[4].coreVocabulary=cards;window.L9_THEMES[4].practicePhrases=practicePhrases;window.L9_THEMES[4].examples=practicePhrases;window.L9_THEMES[4].subtitle='Personendaten · Auskunft · Reisepass · Visum · verstehen und nachfragen';window.L9_THEMES[4].chips=['Personendaten','Auskunft','Reisepass','Visum','nachfragen'];}
 })();
