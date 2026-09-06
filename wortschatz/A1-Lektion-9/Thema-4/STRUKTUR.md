@@ -79,7 +79,7 @@ Diese Redemittel werden **nicht als Wortschatzkarten und nicht in der Wortschatz
 - Ich kann noch nicht so gut Deutsch.
 - Was heißt das?
 - Was bedeutet das?
-- Können Sie mir das bitte erklären?
+- Können Sie mir bitte erklären?
 - Können Sie bitte wiederholen?
 - Wie bitte?
 - Noch einmal bitte.
