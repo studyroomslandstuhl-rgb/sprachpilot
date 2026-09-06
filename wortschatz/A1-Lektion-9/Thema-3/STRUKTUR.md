@@ -1,89 +1,35 @@
 # Lektion 9 · Thema 3
 
-## Was darf man? – dürfen, müssen, erlaubt und verboten
+## Was darf man? – dürfen, Modalverben und Regeln
 
 ## Hauptziel
 
-Thema 3 trainiert **dürfen** und Regeln. Danach wird **dürfen** gezielt mit dem bereits bekannten **müssen** verglichen.
-
-## Verbindlicher Wortschatz
-
-### Nomen
-
-- die Zigarette – die Zigaretten
-- der Parkplatz – die Parkplätze
-- der Laptop – die Laptops
-- das Gepäck – kein Plural
-- der Moment – die Momente
-
-### Verben mit Perfekt
-
-- beantragen – **hat beantragt**
-- ausmachen – **hat ausgemacht**
-- parken – **hat geparkt**
-- abgeben – **hat abgegeben**
-- rauchen – **hat geraucht**
-- mitnehmen – **hat mitgenommen**
-
-### Feste Verbindung
-
-- Gepäck abgeben – **hat Gepäck abgegeben**
-
-### Weitere Wörter
-
-- international
-- langsam
-- Achtung!
-- erlaubt
-- verboten
-
-**dürfen** bleibt das Grammatikziel des Themas, wird aber nicht als eigene Wortschatzkarte geführt.
-
-## Grammatik
-
-### dürfen
-
-- ich darf
-- du darfst
-- er/sie/es darf
-- wir dürfen
-- ihr dürft
-- sie/Sie dürfen
-- man darf
-
-### Bedeutungsunterschiede
-
-- **Ich darf hier parken.** → Parken ist erlaubt.
-- **Ich darf hier nicht parken.** → Parken ist verboten.
-- **Ich muss hier warten.** → Warten ist notwendig.
-- **Ich muss hier nicht warten.** → Warten ist nicht notwendig.
-
-Wichtig: **muss nicht** bedeutet nicht „verboten“.
+Thema 3 trainiert den Wortschatz des Themas, die vollständige Konjugation von **dürfen**, Sätze mit **dürfen + Infinitiv**, den Vergleich wichtiger Modalverben sowie das Verstehen von Regeln mit **erlaubt** und **verboten**.
 
 ## Verbindliche Aufgabenfolge
 
-1. Karteikarten
-2. dürfen konjugieren
-3. man darf / man darf nicht
-4. Aussagen mit dürfen
-5. Fragen mit dürfen
-6. erlaubt oder verboten
-7. Schilder und Regeln
-8. Was darf man? Was darf man nicht?
-9. darf / darf nicht / muss / muss nicht
-10. Bedeutungen zuordnen
-11. dürfen oder müssen
-12. Dialoge über Regeln
-13. Gepäck: abgeben oder mitnehmen
-14. kurze Gespräche verstehen
-15. eigene Regeln formulieren
-16. dürfen und müssen mischen
-17. Prüfung
+1. **Karteikarten** – Wortschatz aus L9T3.
+2. **Wort & Bild** – ein Wort ist vorgegeben; aus vier Bildern das richtige Bild auswählen.
+3. **Hören & Schreiben** – ein Wort wird vorgelesen; das Wort selbst schreiben.
+4. **Bedeutung** – ein Wort ist vorgegeben; aus vier Bedeutungen die richtige auswählen.
+5. **Artikel & Wort** – ein Bild ist vorgegeben; bestimmten Artikel und Nomen vollständig schreiben.
+6. **Plural** – ein Nomen ist vorgegeben; die richtige Pluralform schreiben. Bei Nomen ohne Plural: `kein Plural`.
+7. **dürfen konjugieren** – Tabelle mit Pronomen links und der richtigen Form von dürfen rechts; Aufbau analog zu L9T1 mit müssen.
+8. **dürfen + Verb** – Bild zum Verb und Satz mit zwei Lücken; richtige Form von dürfen und den Infinitiv schreiben. Genau 20 Sätze. Wortschatz aus L9T1, L9T2 und L9T3 darf verwendet werden.
+9. **Sätze bauen** – Satzbausteine sind vorgegeben; daraus einen vollständigen Satz mit dürfen bilden. Genau 20 Sätze.
+10. **Welches Modalverb?** – in Sätzen das passende Modalverb auswählen: können, wollen, möchten, mögen, müssen oder dürfen; richtige konjugierte Form beachten.
+11. **Dialog: Modalverben** – größerer Dialog zwischen zwei Freundinnen; je nach Kontext müssen, dürfen, wollen oder können ergänzen.
+12. **Regeln lesen** – drei kurze Lesetexte mit Regeln, z. B. Bibliothek, Schwimmbad und Bürgeramt. Die Texte verwenden auch erlaubt/verboten. Zu jedem Text genau sechs einfach formulierte Verständnisfragen, insgesamt 18 Fragen.
+13. **Prüfung** – immer letzte Aufgabe.
 
 ## Qualitätsregeln
 
-- Zuerst wird **dürfen** sicher aufgebaut.
-- Danach folgt der bewusste Kontrast mit **müssen**.
-- **muss nicht** und **darf nicht** werden niemals gleichgesetzt.
-- A1-Satzbau und kurze realistische Situationen.
-- Neue Verben werden mit Perfektform gelernt.
+- Alle bisherigen L9T3-Aufgaben werden durch diese Reihenfolge ersetzt.
+- Items und Antwortoptionen werden randomisiert, sofern keine feste didaktische Reihenfolge notwendig ist.
+- Falsch gelöste Items müssen korrigiert werden und werden am Ende der Aufgabe erneut abgefragt.
+- Aufgabe 7 hat eine feste Pronomenreihenfolge wie die müssen-Tabelle aus L9T1.
+- Aufgabe 8 und 9 enthalten jeweils genau 20 Items.
+- In Aufgabe 10 muss sowohl die Bedeutung des Modalverbs als auch die richtige konjugierte Form eindeutig sein.
+- Die Lesetexte bilden jeweils eine zusammenhängende Einheit; die sechs Fragen bleiben beim jeweiligen Text.
+- Auf Mobilgeräten werden vier Bildantworten als 2×2-Auswahl gezeigt.
+- Keine sichtbaren Ersatz-Emojis für fehlende Bilder.
