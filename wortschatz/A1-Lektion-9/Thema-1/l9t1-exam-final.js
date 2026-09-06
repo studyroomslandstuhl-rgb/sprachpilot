@@ -3,6 +3,15 @@
 const D=window.L9T1;if(!D)return;
 const CDN='https://sprachpilot.b-cdn.net/';
 const img=id=>`${CDN}${id}.webp`;
+const EXAM_VERSION='20260906-no-perfekt-15-v1';
+function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')}catch(e){return{}}}
+function pid(){const p=profile();return String(p.canonicalStudentId||p.studentId||p.uid||p.email||localStorage.getItem('SP_STUDENT_ID')||'student').toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_')}
+function resetOldExamState(){
+ const id=pid(),stateKey=`SP_L9_${id}_T1_pruefung`,marker=`SP_L9_${id}_T1_EXAM_VERSION`;
+ try{if(localStorage.getItem(marker)!==EXAM_VERSION){localStorage.removeItem(stateKey);localStorage.setItem(marker,EXAM_VERSION)}}catch(e){}
+ try{if(sessionStorage.getItem(marker)!==EXAM_VERSION){sessionStorage.removeItem(stateKey);sessionStorage.setItem(marker,EXAM_VERSION)}}catch(e){}
+}
+resetOldExamState();
 
 D.exam=[
  {
@@ -122,5 +131,6 @@ if(examTask){
  examTask.icon='⭐';
  examTask.title='Prüfung';
  examTask.description='Teste dein Wissen.';
+ examTask.instruction='Teste dein Wissen.';
 }
 })();
