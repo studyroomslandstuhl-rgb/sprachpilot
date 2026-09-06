@@ -2,12 +2,14 @@
 'use strict';
 const D=window.L9T2;if(!D)return;
 const CDN='https://sprachpilot.b-cdn.net/';
-const svgEmoji=emoji=>`data:image/svg+xml;charset=UTF-8,${encodeURIComponent(`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 800 800"><rect width="800" height="800" rx="80" fill="#EFF8F1"/><text x="400" y="470" text-anchor="middle" font-size="310">${emoji}</text></svg>`)}`;
-const visuals={grammar_doch:svgEmoji('😠'),grammar_bitte:svgEmoji('🙏'),grammar_mal:svgEmoji('😊')};
 
 /* Aufgaben 2–5 benutzen ausschließlich die 22 Einträge aus L9T2:
-   19 Wortschatzkarten + doch / bitte / mal. Keine alten oder neuen Wörter. */
-D.visualWords=(D.flashcards||[]).map(x=>({...x,image:x.image||visuals[x.id]||`${CDN}${String(x.id||'').replace(/^grammar_/,'')}.webp`}));
+   19 Wortschatzkarten + doch / bitte / mal. Keine alten oder neuen Wörter.
+   Die drei Modalpartikeln haben bewusst KEIN Bild: Sie werden als echte Emojis gerendert. */
+D.visualWords=(D.flashcards||[]).map(x=>({
+ ...x,
+ image:x.type==='grammar'?'':(x.image||`${CDN}${String(x.id||'')}.webp`)
+}));
 D.mixedWords=[...D.visualWords];
 D.wordLabel=x=>String(x?.full||x?.word||'').trim();
 
