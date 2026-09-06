@@ -33,10 +33,26 @@ const grammarExtras=[
  {id:'mal',word:'mal',emoji:'😊',note:'macht eine Aufforderung natürlicher und freundlicher',example:'Hör mal zu.',audio:`${AUDIO}mal.mp3`}
 ];
 
+const grammarCards=grammarExtras.map(x=>({
+ id:`grammar_${x.id}`,
+ translationKey:x.id,
+ word:x.word,
+ full:x.word,
+ article:'',plural:'',perfect:'',type:'grammar',
+ emoji:x.emoji,
+ example:x.example,
+ meaning:x.note,
+ audio:x.audio,
+ image:'',
+ answers:[x.word]
+}));
+const flashcards=[...cards,...grammarCards];
+
 window.L9T2={
  title:'Mach das bitte!',
  cards,
  grammarExtras,
+ flashcards,
  tasks:[{id:'karteikarten',kind:'cards',title:'Karteikarten',description:'Lerne die Wörter.',instruction:'Lerne die Wörter.',icon:'🃏'}]
 };
 if(window.L9_THEMES?.[2]){
