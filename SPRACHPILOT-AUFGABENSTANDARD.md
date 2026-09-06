@@ -67,7 +67,7 @@ Zentrale technische Dateien:
 - `/js/sp-task-runtime-standard.js`
 - `/js/guard.js`
 
-## 7. Bilder und mobile Darstellung
+## 7. Bilder, mobile Darstellung und Lektionsfarben
 
 - Niemals sichtbare Bild-Fallback-Emojis, Rahmenbild-Symbole oder Platzhalter wie `🖼️` unter oder neben einem Bild anzeigen.
 - Wenn ein Bild nicht geladen werden kann, wird das fehlerhafte Bild still ausgeblendet; es erscheint kein Ersatz-Emoji.
@@ -76,6 +76,8 @@ Zentrale technische Dateien:
 - Auch auf sehr schmalen Displays darf eine Vierer-Bildauswahl nicht automatisch in eine lange Einspaltenliste zerfallen.
 - Bilder verwenden `object-fit: contain`, damit das gesamte Motiv sichtbar bleibt.
 - Kleine Hinweisbilder direkt neben einer Lücke bleiben klein und verdrängen den Text nicht.
+- **Jede Lektion verwendet in Themenübersicht, Karteikarten, normalen Aufgaben und Prüfung durchgehend ihre festgelegte Lektionsfarbe.** Alte Vorlagen-Styles aus anderen Lektionen dürfen die aktuelle Lektionsfarbe niemals überschreiben.
+- Gemeinsame oder wiederverwendete CSS-Dateien müssen ihre Farben über die aktuellen Lektionsvariablen beziehen; hart codierte Farben einer anderen Lektion werden für die aktuelle Lektion überschrieben oder entfernt.
 
 ## 8. Abnahmekriterien für jede neue Aufgabe
 
@@ -88,9 +90,10 @@ Eine neue Aufgabe ist erst fertig, wenn:
 - die Seite beim Scrollen nicht wackelt und nicht gegen den Nutzer zurückscrollt;
 - technisch nur ein einziges System das Scrollen innerhalb der Aufgabe steuert;
 - die mobile Bilddarstellung kompakt ist und keine Fallback-Emojis zeigt;
+- die gesamte Aufgabe die korrekte Lektionsfarbe benutzt und keine Farben einer alten Vorlage übernimmt;
 - Lehrer die Prüfung unabhängig vom Teilnehmerfortschritt öffnen können;
 - Firebase-/Punkte-/Prüfungslogik korrekt weiterarbeitet.
 
 ## 9. Kurzregel
 
-> Alle SprachPilot-Aufgaben randomisieren Items und sichtbare Antworten, sofern keine ausdrücklich feste didaktische Reihenfolge verlangt wird. Jede Aufgabe hat stabile Item-IDs. Innerhalb einer Aufgabe darf ausschließlich `sp-task-autoscroll.js` automatisch scrollen; Positions- und Runtime-Dateien dürfen dort nicht zusätzlich scrollen. Auto-Scroll ist ein einmaliger, ruhiger Sprung beim Öffnen bzw. echten Itemwechsel und darf niemals gegen manuelles Scrollen arbeiten. Vier Bildoptionen erscheinen mobil als 2×2-Matrix. Sichtbare Bild-Fallback-Emojis sind verboten. Lehrkräfte können Prüfungen jederzeit öffnen.
+> Alle SprachPilot-Aufgaben randomisieren Items und sichtbare Antworten, sofern keine ausdrücklich feste didaktische Reihenfolge verlangt wird. Jede Aufgabe hat stabile Item-IDs. Innerhalb einer Aufgabe darf ausschließlich `sp-task-autoscroll.js` automatisch scrollen; Positions- und Runtime-Dateien dürfen dort nicht zusätzlich scrollen. Auto-Scroll ist ein einmaliger, ruhiger Sprung beim Öffnen bzw. echten Itemwechsel und darf niemals gegen manuelles Scrollen arbeiten. Vier Bildoptionen erscheinen mobil als 2×2-Matrix. Sichtbare Bild-Fallback-Emojis sind verboten. Jede Aufgabe übernimmt immer die Farbe ihrer eigenen Lektion. Lehrkräfte können Prüfungen jederzeit öffnen.
