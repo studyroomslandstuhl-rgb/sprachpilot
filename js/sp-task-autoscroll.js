@@ -2,6 +2,8 @@
 'use strict';
 if(window.SPTaskAutoScroll)return;
 let timer=null;
+let userScrolling=false;
+let suppressUntil=0;
 
 function visible(node){
  if(!node)return false;
@@ -10,51 +12,44 @@ function visible(node){
  return s.display!=='none'&&s.visibility!=='hidden'&&r.width>0&&r.height>0;
 }
 function target(){
- const direct=[
-  '.l8-card-stage','.l8-exercise','.l8-finish',
-  '.l7-card-stage','.l7-exercise','.l7-finish',
-  '[data-sp-task-active]','.exercise-card','.task-exercise'
- ];
+ const direct=['.l8-card-stage','.l8-exercise','.l8-finish','.l7-card-stage','.l7-exercise','.l7-finish','[data-sp-task-active]','.exercise-card','.task-exercise'];
  for(const sel of direct){const n=[...document.querySelectorAll(sel)].find(visible);if(n)return n}
  const area=document.getElementById('taskArea')||document.querySelector('.task-area,[data-task-area]');
  if(area&&visible(area))return area.closest('.l8-card,.l7-card,.card,.exercise-card')||area;
- const candidates=[...document.querySelectorAll('main .card, main section.card, main .task-card')].filter(n=>visible(n)&&!n.matches('.progress-card,.l8-task-head,.l7-task-head,.l8-progress-card,.l7-progress-card'));
- return candidates[0]||null;
+ return null;
 }
 function headerOffset(){
  const h=[document.querySelector('.sp-header'),document.querySelector('header.topbar'),document.querySelector('.topbar'),document.querySelector('.l7-topbar')].find(visible);
  if(!h)return 12;
  return Math.min(170,Math.max(12,Math.round(h.getBoundingClientRect().height)+12));
 }
-function go(behavior='smooth'){
+function markUserScroll(){
+ userScrolling=true;
+ suppressUntil=Date.now()+1200;
+ clearTimeout(timer);
+}
+['touchstart','touchmove','wheel','pointerdown'].forEach(type=>window.addEventListener(type,markUserScroll,{passive:true,capture:true}));
+function go(behavior='auto',force=false){
+ if(!force&&(userScrolling||Date.now()<suppressUntil))return false;
  const n=target();if(!n)return false;
  try{
   const top=Math.max(0,window.scrollY+n.getBoundingClientRect().top-headerOffset());
+  if(Math.abs(window.scrollY-top)<12)return true;
   window.scrollTo({top,left:0,behavior});
   return true;
- }catch(e){try{n.scrollIntoView({behavior,block:'start'});return true}catch(_){return false}}
+ }catch(e){return false}
 }
-function schedule(delay=70,behavior='smooth'){
+function schedule(delay=60,behavior='auto',force=false){
  clearTimeout(timer);
- timer=setTimeout(()=>{requestAnimationFrame(()=>go(behavior))},delay);
+ timer=setTimeout(()=>requestAnimationFrame(()=>go(behavior,force)),Math.max(0,delay));
 }
+function allowNext(){userScrolling=false;suppressUntil=0}
 
-const root=document.getElementById('app')||document.querySelector('main')||document.body;
-if(root){
- const observer=new MutationObserver(()=>schedule(85,'smooth'));
- observer.observe(root,{childList:true,subtree:true,characterData:true});
-}
+// Genau ein automatischer Sprung beim ersten Öffnen. Danach nur noch explizite
+// Itemwechsel über SPTaskAutoScroll.schedule(); kein MutationObserver und keine
+// Klick-/Tastatur-Schleifen, die gegen manuelles Scrollen arbeiten.
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>schedule(90,'auto',true),{once:true});else schedule(90,'auto',true);
+window.addEventListener('pageshow',()=>{allowNext();schedule(90,'auto',true)},{once:true});
 
-document.addEventListener('click',e=>{
- const el=e.target?.closest?.('button,a,.l8-option,.l7-option,[data-value],[data-answer],[data-next]');
- if(!el)return;
- schedule(120,'smooth');
- setTimeout(()=>schedule(80,'smooth'),420);
-},true);
-document.addEventListener('submit',()=>{schedule(120,'smooth');setTimeout(()=>schedule(80,'smooth'),420)},true);
-document.addEventListener('keydown',e=>{if(e.key==='Enter'){schedule(120,'smooth');setTimeout(()=>schedule(80,'smooth'),420)}},true);
-window.addEventListener('load',()=>{schedule(40,'auto');setTimeout(()=>schedule(40,'auto'),250)});
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>{schedule(30,'auto');setTimeout(()=>schedule(30,'auto'),180)});else{schedule(20,'auto');setTimeout(()=>schedule(20,'auto'),180)}
-
-window.SPTaskAutoScroll={version:'1.0',scroll:()=>go('smooth'),scrollNow:()=>go('auto'),schedule};
+window.SPTaskAutoScroll={version:'2.0',scroll:()=>{allowNext();return go('auto',true)},scrollNow:()=>{allowNext();return go('auto',true)},schedule:(delay=40,behavior='auto')=>{allowNext();schedule(delay,behavior,true)},cancel:()=>clearTimeout(timer)};
 })();
