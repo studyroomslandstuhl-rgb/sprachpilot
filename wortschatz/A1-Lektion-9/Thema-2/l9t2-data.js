@@ -35,4 +35,9 @@ window.L9T2={
  grammarExtras,
  tasks:[{id:'karteikarten',kind:'cards',title:'Karteikarten',description:'Lerne die Wörter.',instruction:'Lerne die Wörter.',icon:'🃏'}]
 };
+if(window.L9_THEMES?.[2]){
+ window.L9_THEMES[2].coreVocabulary=cards;
+ window.L9_THEMES[2].grammarExtras=grammarExtras;
+}
+window.L9_T2_WORDS=cards;
 })();
