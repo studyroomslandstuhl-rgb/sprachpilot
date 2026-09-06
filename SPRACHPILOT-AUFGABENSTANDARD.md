@@ -50,8 +50,11 @@ Zentrale technische Datei: `/js/sp-task-random-standard.js`
 
 - Beim Öffnen einer Aufgabe wird genau einmal zur echten Arbeitsfläche gescrollt.
 - Nach einem echten Wechsel zum nächsten Item darf genau einmal wieder zur neuen Arbeitsfläche gescrollt werden.
+- **Innerhalb einer Aufgabe darf es technisch nur einen einzigen Auto-Scroll-Verantwortlichen geben: `/js/sp-task-autoscroll.js`.** Andere Runtime-, Fortschritts-, Positions-, Header- oder Inhaltsdateien dürfen keine eigenen `scrollIntoView`, `scrollTo`, `scrollBy`, MutationObserver-Scrolls oder wiederholten Scroll-Timer ausführen.
+- `/js/sp-task-position-standard.js` merkt auf Aufgabenseiten ausschließlich die zuletzt bearbeitete Aufgabe. Es scrollt dort nicht. Sein Scroll-Verhalten ist nur für die Themenübersicht zuständig.
+- `/js/sp-task-runtime-standard.js` ist für Fortschritt/Punkte zuständig und darf nicht eigenständig scrollen.
 - Automatisches Scrollen darf niemals durch MutationObserver, Klick-Schleifen, Fokus-Schleifen oder wiederholte Timer gegen das manuelle Scrollen des Nutzers arbeiten.
-- Sobald der Nutzer selbst wischt, scrollt, das Mausrad benutzt oder die Seite berührt, wird ein noch ausstehender automatischer Scrollvorgang abgebrochen.
+- Sobald der Nutzer selbst wischt, scrollt, das Mausrad benutzt oder die Seite berührt, wird ein noch ausstehender automatischer Scrollvorgang abgebrochen. Ein nachfolgender normaler Itemwechsel darf den Nutzer nicht sofort gegen seine aktive Wischbewegung zurückziehen.
 - Automatischer Fokus auf Eingabefelder darf auf Mobilgeräten keinen Scrollsprung auslösen. Bei Fokus ist `preventScroll` zu verwenden; ein automatischer Fokus direkt nach Rendern ist auf Touch-Geräten zu vermeiden.
 - Die zuletzt geöffnete Aufgabe eines Themas wird pro Profil gespeichert.
 - Beim Zurückkehren zur Themenübersicht wird automatisch zu genau dieser zuletzt bearbeiteten Aufgabe gescrollt.
@@ -61,6 +64,7 @@ Zentrale technische Datei: `/js/sp-task-random-standard.js`
 Zentrale technische Dateien:
 - `/js/sp-task-position-standard.js`
 - `/js/sp-task-autoscroll.js`
+- `/js/sp-task-runtime-standard.js`
 - `/js/guard.js`
 
 ## 7. Bilder und mobile Darstellung
@@ -82,10 +86,11 @@ Eine neue Aufgabe ist erst fertig, wenn:
 - ein Re-Render die aktuelle Antwortreihenfolge nicht mitten im Item verändert;
 - gespeicherter Fortschritt korrekt wiederaufgenommen wird;
 - die Seite beim Scrollen nicht wackelt und nicht gegen den Nutzer zurückscrollt;
+- technisch nur ein einziges System das Scrollen innerhalb der Aufgabe steuert;
 - die mobile Bilddarstellung kompakt ist und keine Fallback-Emojis zeigt;
 - Lehrer die Prüfung unabhängig vom Teilnehmerfortschritt öffnen können;
 - Firebase-/Punkte-/Prüfungslogik korrekt weiterarbeitet.
 
 ## 9. Kurzregel
 
-> Alle SprachPilot-Aufgaben randomisieren Items und sichtbare Antworten, sofern keine ausdrücklich feste didaktische Reihenfolge verlangt wird. Jede Aufgabe hat stabile Item-IDs. Auto-Scroll ist ein einmaliger, ruhiger Sprung beim Öffnen bzw. echten Itemwechsel und darf niemals gegen manuelles Scrollen arbeiten. Vier Bildoptionen erscheinen mobil als 2×2-Matrix. Sichtbare Bild-Fallback-Emojis sind verboten. Lehrkräfte können Prüfungen jederzeit öffnen.
+> Alle SprachPilot-Aufgaben randomisieren Items und sichtbare Antworten, sofern keine ausdrücklich feste didaktische Reihenfolge verlangt wird. Jede Aufgabe hat stabile Item-IDs. Innerhalb einer Aufgabe darf ausschließlich `sp-task-autoscroll.js` automatisch scrollen; Positions- und Runtime-Dateien dürfen dort nicht zusätzlich scrollen. Auto-Scroll ist ein einmaliger, ruhiger Sprung beim Öffnen bzw. echten Itemwechsel und darf niemals gegen manuelles Scrollen arbeiten. Vier Bildoptionen erscheinen mobil als 2×2-Matrix. Sichtbare Bild-Fallback-Emojis sind verboten. Lehrkräfte können Prüfungen jederzeit öffnen.
