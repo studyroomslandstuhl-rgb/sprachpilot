@@ -7,6 +7,7 @@ function apply(){
   'hoeren-bild':{icon:'🎧',title:'Hören & Bild',description:'Wähle das passende Bild.'},
   'bedeutung-wort':{icon:'🧠',title:'Bedeutung finden',description:'Wähle das richtige Wort.'},
   'bild-sprechen':{icon:'🗣️',title:'Bild & Sprechen',description:'Sprich oder schreibe das Wort.'},
+  'artikel-nomen':{icon:'🏷️',title:'Artikel',description:'Schreibe den richtigen Artikel.'},
   'artikel-schreiben':{icon:'🏷️',title:'Artikel',description:'Schreibe den richtigen Artikel.'},
   'plural-bild':{icon:'🔤',title:'Plural',description:'Schreibe die richtige Pluralform.'},
   'nomen-dialoge':{icon:'💬',title:'Nomen im Dialog',description:'Ergänze das Nomen.'},
@@ -20,7 +21,7 @@ function apply(){
   'pruefung':{icon:'🏆',title:'Prüfung',description:'Zeig, was du kannst.'}
  };
  for(const t of D.tasks){const c=cfg[t.id];if(c)Object.assign(t,c,{instruction:c.instruction||c.description});}
- const order=['karteikarten','hoeren-bild','bedeutung-wort','bild-sprechen','artikel-schreiben','plural-bild','nomen-dialoge','artikel-kasus','muessen-tabelle','muessen-saetze','modal-kontext','anweisungen-hoeren','lueckentexte','anleitung-schreiben','pruefung'];
+ const order=['karteikarten','hoeren-bild','bedeutung-wort','bild-sprechen','artikel-nomen','artikel-schreiben','plural-bild','nomen-dialoge','artikel-kasus','muessen-tabelle','muessen-saetze','modal-kontext','anweisungen-hoeren','lueckentexte','anleitung-schreiben','pruefung'];
  const pos=new Map(order.map((id,i)=>[id,i]));
  D.tasks.sort((a,b)=>(pos.get(a.id)??999)-(pos.get(b.id)??999));
 }
