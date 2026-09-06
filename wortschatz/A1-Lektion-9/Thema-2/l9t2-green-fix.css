@@ -11,6 +11,7 @@ html,body[data-theme="2"]{
  --lesson-ink:#23472B!important;
  --lesson-muted:#63756A!important;
  --lesson-on-main:#23472B!important;
+ --lesson-shadow:0 12px 28px rgba(62,125,77,.16)!important;
  --l8-main:#8FCF9A!important;
  --l8-dark:#3E7D4D!important;
  --l8-soft:#EFF8F1!important;
@@ -19,14 +20,37 @@ html,body[data-theme="2"]{
  --l8-ink:#23472B!important;
 }
 body[data-theme="2"]{color:#23472B!important;background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.42) 310px,rgba(255,255,255,.1)),linear-gradient(135deg,#8FCF9A,#DDF1E1)!important}
-body[data-theme="2"] .l8-card,body[data-theme="2"] .l8-exercise,body[data-theme="2"] .l9t2-dialog,body[data-theme="2"] .l9t2-big-sentence,body[data-theme="2"] .l9t2-rules{border-color:#C9E5CF!important}
-body[data-theme="2"] .l8-task-head h1,body[data-theme="2"] h2,body[data-theme="2"] h3,body[data-theme="2"] .l8-task-kicker{color:#3E7D4D!important}
-body[data-theme="2"] .l8-progress>div{background:linear-gradient(135deg,#3E7D4D,#8FCF9A)!important}
-body[data-theme="2"] .l8-btn.primary{background:#3E7D4D!important;border-color:#3E7D4D!important;color:#fff!important}
-body[data-theme="2"] .l8-btn:not(.primary){border-color:#3E7D4D!important;color:#3E7D4D!important}
-body[data-theme="2"] .l8-option{border-color:#C9E5CF!important;color:#23472B!important}
-body[data-theme="2"] .l8-option:hover,body[data-theme="2"] .l8-option.selected,body[data-theme="2"] .l9t2-audio-option.selected{background:#EFF8F1!important;border-color:#3E7D4D!important;outline-color:#8FCF9A!important}
+body[data-theme="2"] .sp-header{background:#8FCF9A!important;color:#23472B!important}
+body[data-theme="2"] .l8-card,body[data-theme="2"] .card,body[data-theme="2"] .l8-exercise,body[data-theme="2"] .l9t2-dialog,body[data-theme="2"] .l9t2-big-sentence,body[data-theme="2"] .l9t2-rules,body[data-theme="2"] .question-card,body[data-theme="2"] .plural-card,body[data-theme="2"] .flip-face{border-color:#C9E5CF!important}
+body[data-theme="2"] .l8-task-head h1,body[data-theme="2"] h1,body[data-theme="2"] h2,body[data-theme="2"] h3,body[data-theme="2"] .l8-task-kicker,body[data-theme="2"] .question,body[data-theme="2"] .flip-word,body[data-theme="2"] .singular{color:#3E7D4D!important}
+body[data-theme="2"] .l8-progress>div,body[data-theme="2"] .bar{background:linear-gradient(135deg,#3E7D4D,#8FCF9A)!important}
+body[data-theme="2"] .progress{background:#E5F2E8!important}
+body[data-theme="2"] .l8-btn.primary,body[data-theme="2"] .btn:not(.secondary):not(.ghost){background:#3E7D4D!important;border-color:#3E7D4D!important;color:#fff!important}
+body[data-theme="2"] .l8-btn:not(.primary),body[data-theme="2"] .btn.secondary,body[data-theme="2"] .btn.ghost{background:#fff!important;border-color:#3E7D4D!important;color:#3E7D4D!important}
+body[data-theme="2"] .l8-option,body[data-theme="2"] .option,body[data-theme="2"] .token,body[data-theme="2"] .image-option{border-color:#C9E5CF!important;color:#23472B!important;background:#fff!important}
+body[data-theme="2"] .l8-option:hover,body[data-theme="2"] .l8-option.selected,body[data-theme="2"] .l9t2-audio-option.selected,body[data-theme="2"] .option:hover,body[data-theme="2"] .token:hover,body[data-theme="2"] .image-option:hover{background:#EFF8F1!important;border-color:#3E7D4D!important;outline-color:#8FCF9A!important}
 body[data-theme="2"] .l9t2-memory-card:not(.open):not(.matched){background:#3E7D4D!important;border-color:#3E7D4D!important;color:#fff!important}
-body[data-theme="2"] .answer-area,body[data-theme="2"] .free-box,body[data-theme="2"] .speech-box,body[data-theme="2"] .write-box,body[data-theme="2"] .card-answer-box,body[data-theme="2"] .chat-window,body[data-theme="2"] .vocabulary-group,body[data-theme="2"] .sound-row{background:#F7FCF8!important}
-body[data-theme="2"] input:focus,body[data-theme="2"] textarea:focus{outline-color:rgba(143,207,154,.35)!important;border-color:#3E7D4D!important}
+body[data-theme="2"] .l9t2-memory-card.open,body[data-theme="2"] .l9t2-memory-card.matched{background:#fff!important;border-color:#C9E5CF!important}
+body[data-theme="2"] .answer-area,body[data-theme="2"] .free-box,body[data-theme="2"] .speech-box,body[data-theme="2"] .write-box,body[data-theme="2"] .card-answer-box,body[data-theme="2"] .chat-window,body[data-theme="2"] .vocabulary-group,body[data-theme="2"] .sound-row,body[data-theme="2"] .task-instruction,body[data-theme="2"] .audio-panel,body[data-theme="2"] .source-pill,body[data-theme="2"] .order-answer,body[data-theme="2"] .sentence-starters span,body[data-theme="2"] .l9t2-cue,body[data-theme="2"] .l9t2-review-note,body[data-theme="2"] .l9t2-question,body[data-theme="2"] .flip-back,body[data-theme="2"] .card-translation{background:#EFF8F1!important;border-color:#C9E5CF!important}
+body[data-theme="2"] .chat-row.left .chat-bubble,body[data-theme="2"] .chat-row.right .chat-bubble{background:#fff!important;border-color:#C9E5CF!important}
+body[data-theme="2"] .word-chip,body[data-theme="2"] .sound-number,body[data-theme="2"] .num,body[data-theme="2"] .account-pill,body[data-theme="2"] .account-link,body[data-theme="2"] .task-count,body[data-theme="2"] .circle{background:#EFF8F1!important;border-color:#C9E5CF!important;color:#3E7D4D!important}
+body[data-theme="2"] .module{border-color:#C9E5CF!important;background:#fff!important}
+body[data-theme="2"] .module.done-card{background:#EFF8F1!important;border-color:#8FCF9A!important}
+body[data-theme="2"] .module:hover{box-shadow:0 12px 24px rgba(62,125,77,.14)!important}
+body[data-theme="2"] .answer-area,body[data-theme="2"] .free-box,body[data-theme="2"] .speech-box,body[data-theme="2"] .write-box,body[data-theme="2"] .card-answer-box{background:#F7FCF8!important}
+body[data-theme="2"] input,body[data-theme="2"] textarea,body[data-theme="2"] select{border-color:#C9E5CF!important}
+body[data-theme="2"] input:focus,body[data-theme="2"] textarea:focus,body[data-theme="2"] select:focus{outline-color:rgba(143,207,154,.35)!important;border-color:#3E7D4D!important}
 body[data-theme="2"] footer{color:#63756A!important}
+
+/* Aufgabe 6/7: echte Zuordnungstabellen */
+body[data-theme="2"] .l9t2-sort-wrap{overflow-x:auto;margin:12px 0 18px}
+body[data-theme="2"] .l9t2-sort-table{width:100%;border-collapse:separate;border-spacing:8px;table-layout:fixed}
+body[data-theme="2"] .l9t2-sort-table th,body[data-theme="2"] .l9t2-sort-table td{border:2px solid #C9E5CF;border-radius:14px;padding:10px;vertical-align:top;background:#fff}
+body[data-theme="2"] .l9t2-sort-table .l9t2-current{background:#EFF8F1;color:#23472B;font-size:21px;line-height:1.4;text-align:center;font-weight:900}
+body[data-theme="2"] .l9t2-sort-head{width:100%;min-height:48px;border:0;border-radius:10px;background:#3E7D4D;color:#fff;font-weight:950;cursor:pointer;padding:9px}
+body[data-theme="2"] .l9t2-sort-head:hover{background:#2F663D}
+body[data-theme="2"] .l9t2-sorted-list{display:grid;gap:7px;min-height:70px}
+body[data-theme="2"] .l9t2-sorted-item{padding:8px;border-radius:10px;background:#EFF8F1;border:1px solid #C9E5CF;font-size:14px;line-height:1.3}
+body[data-theme="2"] .l9t2-context{max-width:760px;margin:10px auto 14px;padding:14px 16px;border:2px solid #C9E5CF;border-radius:16px;background:#EFF8F1;line-height:1.5;text-align:left}
+body[data-theme="2"] .l9t2-reading-text{font-size:18px;line-height:1.65;margin:0;color:#23472B}
+@media(max-width:600px){body[data-theme="2"] .l9t2-sort-table{border-spacing:5px}body[data-theme="2"] .l9t2-sort-table th,body[data-theme="2"] .l9t2-sort-table td{padding:6px}body[data-theme="2"] .l9t2-sort-table .l9t2-current{font-size:18px}body[data-theme="2"] .l9t2-sort-head{font-size:14px;padding:7px 4px}body[data-theme="2"] .l9t2-sorted-item{font-size:12px;padding:6px}}
