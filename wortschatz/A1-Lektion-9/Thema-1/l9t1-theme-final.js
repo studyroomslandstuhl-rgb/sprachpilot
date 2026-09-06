@@ -18,7 +18,7 @@ function apply(){
   'anweisungen-hoeren':{icon:'🧭',title:'Anweisungen hören',description:'Ordne die Schritte zu.',instruction:'Ordne die Schritte zu.'},
   'lueckentexte':{icon:'🧱',title:'Anweisungen im Text',description:'Fülle die Lücken.'},
   'anleitung-schreiben':{icon:'🛠️',title:'Anleitung schreiben',description:'Schreibe die Anleitung.'},
-  'pruefung':{icon:'🏆',title:'Prüfung',description:'Zeig, was du kannst.'}
+  'pruefung':{icon:'⭐',title:'Prüfung',description:'Teste dein Wissen.',instruction:'Teste dein Wissen.'}
  };
  for(const t of D.tasks){const c=cfg[t.id];if(c)Object.assign(t,c,{instruction:c.instruction||c.description});}
  const order=['karteikarten','hoeren-bild','bedeutung-wort','bild-sprechen','artikel-nomen','artikel-schreiben','plural-bild','nomen-dialoge','artikel-kasus','muessen-tabelle','muessen-saetze','modal-kontext','anweisungen-hoeren','lueckentexte','anleitung-schreiben','pruefung'];
