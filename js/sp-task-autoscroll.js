@@ -2,8 +2,8 @@
 'use strict';
 if(window.SPTaskAutoScroll)return;
 let timer=null;
-let userScrolling=false;
 let suppressUntil=0;
+let booted=false;
 
 function visible(node){
  if(!node)return false;
@@ -24,32 +24,40 @@ function headerOffset(){
  return Math.min(170,Math.max(12,Math.round(h.getBoundingClientRect().height)+12));
 }
 function markUserScroll(){
- userScrolling=true;
- suppressUntil=Date.now()+1200;
+ suppressUntil=Date.now()+1800;
  clearTimeout(timer);
+ timer=null;
 }
 ['touchstart','touchmove','wheel','pointerdown'].forEach(type=>window.addEventListener(type,markUserScroll,{passive:true,capture:true}));
 function go(behavior='auto',force=false){
- if(!force&&(userScrolling||Date.now()<suppressUntil))return false;
+ if(!force&&Date.now()<suppressUntil)return false;
  const n=target();if(!n)return false;
  try{
   const top=Math.max(0,window.scrollY+n.getBoundingClientRect().top-headerOffset());
-  if(Math.abs(window.scrollY-top)<12)return true;
+  if(Math.abs(window.scrollY-top)<16)return true;
   window.scrollTo({top,left:0,behavior});
   return true;
  }catch(e){return false}
 }
-function schedule(delay=60,behavior='auto',force=false){
+function schedule(delay=50,behavior='auto',force=false){
  clearTimeout(timer);
- timer=setTimeout(()=>requestAnimationFrame(()=>go(behavior,force)),Math.max(0,delay));
+ timer=setTimeout(()=>{
+  timer=null;
+  requestAnimationFrame(()=>go(behavior,force));
+ },Math.max(0,delay));
 }
-function allowNext(){userScrolling=false;suppressUntil=0}
+function boot(){
+ if(booted)return;
+ booted=true;
+ schedule(100,'auto',false);
+}
+if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',boot,{once:true});else boot();
 
-// Genau ein automatischer Sprung beim ersten Öffnen. Danach nur noch explizite
-// Itemwechsel über SPTaskAutoScroll.schedule(); kein MutationObserver und keine
-// Klick-/Tastatur-Schleifen, die gegen manuelles Scrollen arbeiten.
-if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',()=>schedule(90,'auto',true),{once:true});else schedule(90,'auto',true);
-window.addEventListener('pageshow',()=>{allowNext();schedule(90,'auto',true)},{once:true});
-
-window.SPTaskAutoScroll={version:'2.0',scroll:()=>{allowNext();return go('auto',true)},scrollNow:()=>{allowNext();return go('auto',true)},schedule:(delay=40,behavior='auto')=>{allowNext();schedule(delay,behavior,true)},cancel:()=>clearTimeout(timer)};
+window.SPTaskAutoScroll={
+ version:'3.0',
+ scroll:()=>go('auto',false),
+ scrollNow:()=>go('auto',true),
+ schedule:(delay=40,behavior='auto')=>schedule(delay,behavior,false),
+ cancel:()=>{clearTimeout(timer);timer=null;suppressUntil=Date.now()+1800}
+};
 })();
