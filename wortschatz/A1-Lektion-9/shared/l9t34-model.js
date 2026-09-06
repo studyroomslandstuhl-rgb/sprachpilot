@@ -16,6 +16,7 @@ function itemIds(taskId){const t=(D.tasks||[]).find(x=>x.id===taskId);if(!t)retu
  case'context-choice':return ids(D.contextChoices);
  case'context-write':return ids(D.contextWrites);
  case'dialog-complete':return ids(D.dialogComplete);
+ case'error-correction':return ids(D.errorCorrections);
  case'listening-doc':return ids(D.listeningDocs);
  case'perfect-write':return ids(D.perfectItems);
  case'transform-text':return ids(D.transformTexts);
