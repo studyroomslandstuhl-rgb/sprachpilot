@@ -3,7 +3,7 @@
 const CDN='https://sprachpilot.b-cdn.net/',AUDIO=CDN+'audio/';
 const media=id=>({image:`${CDN}${id}.webp`,audio:`${AUDIO}${id}.mp3`});
 const noun=(id,article,word,plural,example)=>({id,article,word,full:`${article} ${word}`,plural,type:'noun',example,...media(id)});
-const word=(id,value,type,opts={})=>({id,word:value,full:value,article:'',plural:'',perfect:opts.perfect||'',type,example:opts.example||'',...media(id)});
+const word=(id,value,type,opts={})=>({id,word:value,full:value,article:'',plural:'',perfect:opts.perfect||'',type,example:opts.example||'',...media(id),...(opts.media||{})});
 const cards=[
  word('international','international','adjective',{example:'Das ist ein internationaler Flughafen.'}),
  word('beantragen','beantragen','verb',{perfect:'hat beantragt',example:'Ich möchte ein Visum beantragen.'}),
@@ -20,10 +20,8 @@ const cards=[
  word('achtung','Achtung!','interjection',{example:'Achtung! Hier darf man nicht rauchen.'}),
  word('erlaubt','erlaubt','adjective',{example:'Parken ist hier erlaubt.'}),
  word('verboten','verboten','adjective',{example:'Rauchen ist hier verboten.'}),
- word('gepaeck_abgeben','Gepäck abgeben','phrase',{perfect:'hat Gepäck abgegeben',example:'Man muss das Gepäck abgeben.'}),
+ word('gepaeck_abgeben','Gepäck abgeben','phrase',{perfect:'hat Gepäck abgegeben',example:'Man muss das Gepäck abgeben.',media:{image:`${CDN}abgeben.webp`,audio:''}}),
  word('mitnehmen','mitnehmen','verb',{perfect:'hat mitgenommen',example:'Darf ich den Laptop mitnehmen?'})
 ];
-window.L9T3={title:'Was darf man?',cards};
-window.L9_T3_WORDS=cards;
-if(window.L9_THEMES?.[3])window.L9_THEMES[3].coreVocabulary=cards;
+window.L9T3={title:'Was darf man?',cards};window.L9_T3_WORDS=cards;if(window.L9_THEMES?.[3])window.L9_THEMES[3].coreVocabulary=cards;
 })();
