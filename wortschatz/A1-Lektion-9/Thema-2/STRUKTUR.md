@@ -26,7 +26,42 @@ Thema 2 ist das zentrale Imperativ-Thema der Lektion. Die Lernenden erkennen Imp
 10. **mal, bitte oder doch?** – ausführlichere Dialog- und Situationskontexte. Aus der Beziehung und Situation muss klar hervorgehen, ob eine höfliche Bitte, eine lockere kurze Aufforderung oder Ermutigung/Nachdruck gemeint ist.
 11. **Partikel im Dialog** – ebenfalls mit ausreichend Kontext. Dialog + neutraler Ausgangssatz; passende Partikel selbst entscheiden und vollständigen Satz mit mal / bitte / doch schreiben.
 12. **Regeln lesen** – Regeln werden als zusammenhängende kurze Texte formuliert, nicht als Stichpunkte. Die Verständnisfragen dürfen den Text nicht wortwörtlich wiederholen, sondern verwenden bekannte alternative Formulierungen bzw. bekannte Synonyme für dieselbe Information.
-13. **Prüfung** – bleibt letzter Punkt und wird separat inhaltlich aufgebaut.
+13. **Prüfung** – 15 Items, keine Perfektfragen. Die Prüfung wird erst nach 100 % aller Lernaufgaben freigeschaltet.
+
+## Prüfung · 15 Items
+
+Die Prüfung enthält genau folgende Mischung:
+
+- **3 × Bild → Schreiben**: Bild sehen und das deutsche Wort mit Artikel selbst schreiben.
+  - die Gebühr
+  - die Anmeldung
+  - der Wartebereich
+- **3 × Hören → Bild**: deutsches Wort hören und aus vier randomisierten Bildern das passende Bild wählen.
+  - aufstehen
+  - die Autovermietung
+  - zuhören
+- **3 × Plural**: Pluralform mit Artikel selbst schreiben.
+  - die Gebühr → die Gebühren
+  - die Sprachschule → die Sprachschulen
+  - der Stock → die Stockwerke
+- **4 × Imperativ**:
+  - du: zuhören → Hör zu!
+  - ihr: aufstehen → Steht auf!
+  - Sie: warten → Warten Sie!
+  - du, trennbar: das Handy ausmachen → Mach das Handy aus!
+- **2 × Modalpartikel**:
+  - höflicher Kontext → bitte
+  - lockerer Kontext mit zuhören + mal → Hör mal zu!
+
+Für die Prüfung gilt ausdrücklich:
+
+- **kein Perfekt**,
+- Fragenreihenfolge wird pro Prüfungsdurchlauf randomisiert,
+- Antwortoptionen und Bildoptionen werden randomisiert,
+- die Erstantwort bestimmt das Prüfungsergebnis,
+- falsch beantwortete Fragen müssen anschließend korrekt gelöst werden,
+- Prüfungspunkte folgen dem SprachPilot-Standard: maximal 100 / 200 / 300 Punkte in Durchlauf 1 / 2 / 3,
+- Lehrer-Vorschau schreibt keinen Teilnehmerfortschritt und keine Teilnehmerpunkte.
 
 ## Qualitätsregeln
 
