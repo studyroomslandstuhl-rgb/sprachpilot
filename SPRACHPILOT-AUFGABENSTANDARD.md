@@ -33,6 +33,9 @@ Zentrale technische Datei: `/js/sp-task-random-standard.js`
 ## 4. Verständnis statt Wortgleichheit
 
 - Lese- und Hörverstehen dürfen nicht durch bloßes Finden desselben Wortes im Ausgangstext lösbar sein.
+- **Fragen und richtige Antwortoptionen dürfen die entscheidende Formulierung aus dem Ausgangstext niemals wortwörtlich übernehmen.**
+- Informationen werden in Fragen mit bekannten Synonymen, einfachen Umschreibungen, Beispielsituationen, Zeit-/Zahlbeispielen oder kleinen Schlussfolgerungen geprüft.
+- Beispiel: Im Text steht „fünf Minuten vor dem Termin“. Die Frage darf nicht „Wann soll man kommen?“ mit der Antwort „fünf Minuten vor dem Termin“ sein. Stattdessen z. B. „Der Termin ist um 10:00 Uhr. Welche Ankunftszeit passt?“ → „09:55 Uhr“.
 - Fragen prüfen Bedeutung, Zusammenhang oder einfache Schlussfolgerungen.
 - Direkte Wort-Bild-Zuordnung ist nur dort erlaubt, wo Wortschatzerkennung ausdrücklich Lernziel ist.
 
