@@ -8,8 +8,8 @@ D.nounVerbPairs=[
  {id:'nv04',noun:'ein Visum',verb:'beantragen',full:'ein Visum beantragen'},
  {id:'nv05',noun:'den Reisepass',verb:'mitbringen',full:'den Reisepass mitbringen'},
  {id:'nv06',noun:'eine Versicherung',verb:'abschließen',full:'eine Versicherung abschließen'},
- {id:'nv07',noun:'eine Auskunft',verb:'bekommen',full:'eine Auskunft bekommen'},
- {id:'nv08',noun:'eine Erlaubnis',verb:'brauchen',full:'eine Erlaubnis brauchen'},
+ {id:'nv07',noun:'eine Auskunft',verb:'geben',full:'eine Auskunft geben'},
+ {id:'nv08',noun:'eine Verpflichtungserklärung',verb:'abgeben',full:'eine Verpflichtungserklärung abgeben'},
  {id:'nv09',noun:'ein Dokument',verb:'unterschreiben',full:'ein Dokument unterschreiben'},
  {id:'nv10',noun:'einen Einkommensnachweis',verb:'vorlegen',full:'einen Einkommensnachweis vorlegen'}
 ];
