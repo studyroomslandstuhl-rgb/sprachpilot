@@ -4,7 +4,7 @@
 
 ## Hauptziel
 
-Thema 4 trainiert Wortschatz und Kommunikation bei Behörden. Die Lernenden verstehen Wörter und Unterlagen, ergänzen Behördendialoge, benutzen feste Redemittel bei Nichtverstehen und Hilfe, korrigieren typische Wortschatz- und Grammatikfehler, wiederholen die Perfektformen der Verben aus Lektion 9 und übertragen einen kurzen Text mit `man` vom Präsens ins Perfekt.
+Thema 4 trainiert Wortschatz und Kommunikation bei Behörden. Die Lernenden verstehen Wörter und Unterlagen, ergänzen Behördendialoge, benutzen feste Redemittel bei Nichtverstehen und Hilfe, korrigieren typische Wortschatz- und Grammatikfehler, wiederholen die Perfektformen der Verben aus Lektion 9, übertragen einen kurzen Text mit `man` vom Präsens ins Perfekt und festigen typische Nomen-Verb-Verbindungen.
 
 ## Verbindliche Redemittel
 
@@ -39,13 +39,13 @@ Diese Formulierungen werden in Aufgabe 5–8 aktiv geübt:
 10. **Welche Unterlage?** – eine Beamtin/ein Beamter erklärt im Hören, welche Unterlage mitgebracht werden muss; vier Dokumentbilder stehen zur Auswahl. Das richtige Dokument anklicken.
 11. **Perfekt** – alle Verben mit Perfektform aus Lektion 9, Thema 1 bis Thema 4 wiederholen. Infinitiv ist vorgegeben; Hilfsverb + Partizip II selbst schreiben.
 12. **Text in der Vergangenheit** – ein zusammenhängender Text mit `man` steht im Präsens und benutzt Verben aus Lektion 9. Den gesamten Text im Perfekt neu schreiben.
-13. **Prüfung** – immer letzte Aufgabe.
+13. **Nomen-Verb-Verbindungen** – links stehen Nomen/Nominalgruppen, rechts die Verben. Die passenden Verben werden per Drag-and-drop neben das richtige Nomen gezogen. Richtige Paare bleiben zusammen stehen, falsche Verben springen zurück. Verbindliche Paare: Geld – verdienen; eine Sprachschule – besuchen; eine Reise – machen; ein Visum – beantragen; den Reisepass – mitbringen; eine Versicherung – abschließen; eine Auskunft – geben; eine Verpflichtungserklärung – abgeben; ein Dokument – unterschreiben; einen Einkommensnachweis – vorlegen.
+14. **Prüfung** – immer letzte Aufgabe.
 
 ## Qualitätsregeln
 
-- Alle bisherigen L9T4-Aufgaben werden durch diese Reihenfolge ersetzt.
 - Items und Antwortmöglichkeiten werden randomisiert, wenn keine feste Reihenfolge didaktisch nötig ist.
-- Falsch gelöste Items müssen zuerst korrigiert werden und werden am Ende erneut abgefragt.
+- Falsch gelöste Items müssen korrigiert werden.
 - Behördendialoge bleiben sprachlich A1-tauglich und realistisch.
 - Aufgabe 5 verwendet die Redemittel exakt in der oben festgelegten Form.
 - Aufgabe 7 akzeptiert mehrere passende Lösungen, wenn der Kontext mehrere der gelernten Formulierungen sinnvoll erlaubt.
@@ -53,5 +53,6 @@ Diese Formulierungen werden in Aufgabe 5–8 aktiv geübt:
 - Aufgabe 10 ist eine echte Hörverstehensaufgabe: Die Lösung darf nicht schon als sichtbarer Text oberhalb der Bilder stehen.
 - Bei Aufgabe 11 werden nur tatsächlich vorhandene Perfektformen aus L9T1–L9T4 abgefragt.
 - Aufgabe 12 benutzt Perfekt, nicht Präteritum, und erhält das unbestimmte Subjekt `man`.
+- Aufgabe 13 randomisiert sowohl die Nomen- als auch die Verbreihenfolge bei jedem neuen Durchlauf. Auf Touch-Geräten ist Fingerziehen möglich; als mobile Absicherung kann zuerst ein Verb und danach das Nomen angetippt werden.
 - Vier Bildantworten erscheinen auf Mobilgeräten in einer 2×2-Anordnung.
 - Keine sichtbaren Ersatz-Emojis für fehlende Bilder.
