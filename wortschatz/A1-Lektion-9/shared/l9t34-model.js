@@ -20,6 +20,7 @@ function itemIds(taskId){const t=(D.tasks||[]).find(x=>x.id===taskId);if(!t)retu
  case'listening-doc':return ids(D.listeningDocs);
  case'perfect-write':return ids(D.perfectItems);
  case'transform-text':return ids(D.transformTexts);
+ case'noun-verb-match':return ids(D.nounVerbPairs);
  case'exam':return Array.from({length:12},(_,i)=>`exam${i+1}`);
  default:return[];
 }}
