@@ -22,7 +22,7 @@ function localPct(t){
   return total?Math.min(100,Math.round(done/total*100)):0;
  }catch(e){return 0}
 }
-function taskFile(t){return`task.html?task=${t.id}`}
+function taskFile(t){return t.id==='karteikarten'?'karteikarten.html?task=karteikarten':`task.html?task=${t.id}`}
 function taskEmoji(t){return t.icon||'✅'}
 function teacherNote(){return preview()?'<div class="sp-teacher-preview-note">Lehrer-Vorschau: Fortschritte und Punkte der Teilnehmer werden hier nicht verändert.</div>':''}
 function scorePanel(){const r=run(),points=Number(localStorage.getItem('SP_POINTS_TOTAL')||0)||0;if(preview())return'<div class="l8-score-panel"><div class="l8-score-label">Punkte</div><div class="l8-score-total">Vorschau</div><div class="l8-small">Keine Teilnehmerpunkte</div></div>';return`<div class="l8-score-panel"><div class="l8-score-label">${r===1?'Versuch 1 von 3':`Wiederholung ${r} von 3`}</div><div class="l8-score-total">${points} Punkte</div><div class="l8-small">Fortschritt wird automatisch gespeichert.</div></div>`}
