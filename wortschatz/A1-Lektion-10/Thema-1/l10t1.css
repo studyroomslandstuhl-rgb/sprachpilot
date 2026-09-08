@@ -1,1 +1,41 @@
-:root{--lesson-main:#F4A3A3;--lesson-dark:#A86464;--lesson-main-dark:#A86464;--lesson-soft:#FDF1F1;--lesson-line:#F3C9C9;--lesson-muted:#6b7280;--theme-main:#F4A3A3;--theme-dark:#A86464;--theme-soft:#FDF1F1;--theme-line:#F3C9C9}*{box-sizing:border-box}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,#F9DEDE,#fff);color:#17212b}.l10t1-page,.l8-wrap{max-width:1180px;margin:0 auto;padding:24px}.l8-card,.l10t1-card{background:#fff;border:2px solid var(--lesson-line);border-radius:24px;padding:22px;margin-bottom:18px;box-shadow:0 8px 22px rgba(88,42,42,.10)}.l10t1-vocab-launch{display:flex;align-items:center;justify-content:space-between;gap:18px;text-decoration:none;color:#17212b}.l10t1-vocab-launch__icon{width:68px;height:68px;border-radius:20px;background:var(--lesson-soft);display:grid;place-items:center;font-size:34px;flex:0 0 auto}.l10t1-vocab-launch__copy{flex:1;min-width:0}.l10t1-vocab-launch__copy h2{margin:0 0 6px;color:var(--lesson-main-dark);font-size:26px}.l10t1-vocab-launch__copy p{margin:0;color:#5f6773;line-height:1.45}.l10t1-vocab-launch__button{border:2px solid var(--lesson-main);border-radius:16px;padding:12px 16px;background:#fff;color:var(--lesson-main-dark);font-weight:900;white-space:nowrap}.l10t1-note h2{margin-top:0;color:var(--lesson-main-dark)}.l10t1-note p{margin-bottom:0;color:#5f6773;line-height:1.5}@media(max-width:720px){.l10t1-page,.l8-wrap{padding:14px}.l10t1-vocab-launch{align-items:flex-start;flex-wrap:wrap}.l10t1-vocab-launch__button{width:100%;text-align:center}}
+@import url("../../A1-Lektion-8/shared/l8-color.css?v=20260908-l10standard1");
+
+/* Lektion 10 · Thema 1 benutzt dieselbe Karten-/Aufgabenbasis wie L8/L9.
+   Variabel sind nur Farbe und Inhalt. */
+:root{
+ --lesson-main:#F4A3A3;
+ --lesson-main-dark:#A86464;
+ --lesson-dark:#A86464;
+ --lesson-main-light:#F9DEDE;
+ --lesson-soft:#FDF1F1;
+ --lesson-main-soft:#FDF1F1;
+ --lesson-line:#F3C9C9;
+ --lesson-bg:#FFF9F9;
+ --lesson-text:#4E3030;
+ --lesson-ink:#4E3030;
+ --lesson-muted:#806767;
+ --lesson-on-main:#572F2F;
+ --lesson-shadow:0 12px 28px rgba(168,100,100,.16);
+ --l8-main:var(--lesson-main);
+ --l8-dark:var(--lesson-main-dark);
+ --l8-soft:var(--lesson-soft);
+ --l8-line:var(--lesson-line);
+ --l8-bg:var(--lesson-bg);
+ --l8-ink:var(--lesson-text);
+ --l8-good:#217A4B;
+ --l8-bad:#A72A2A;
+ --l8-warn:#8A6517;
+}
+body{color:var(--lesson-text)!important;background:linear-gradient(180deg,rgba(255,255,255,.88),rgba(255,255,255,.46) 310px,rgba(255,255,255,.12)),linear-gradient(135deg,var(--lesson-main),var(--lesson-main-light))!important}
+.sp-header{background:var(--lesson-main)!important}
+.l8-progress-circle{background:var(--lesson-main)!important;box-shadow:0 12px 26px rgba(168,100,100,.18)!important}
+.l8-progress>div{background:linear-gradient(135deg,var(--lesson-main-dark),var(--lesson-main))!important}
+.l8-input:focus,textarea.l8-input:focus{outline-color:rgba(244,163,163,.28)!important;border-color:var(--lesson-main-dark)!important}
+
+.l10-vocab-standard{display:flex;align-items:center;gap:16px;text-decoration:none;color:inherit;margin-bottom:16px;min-height:auto!important}
+.l10-vocab-standard .emoji{font-size:42px;line-height:1;margin:0;flex:0 0 auto}
+.l10-vocab-standard__copy{flex:1;min-width:0}
+.l10-vocab-standard__copy strong{display:block;font-size:21px;color:var(--lesson-main-dark);margin-bottom:4px}
+.l10-vocab-standard__copy span{display:block;line-height:1.4;color:var(--lesson-text)}
+.l10-vocab-standard__action{flex:0 0 auto;border:2px solid var(--lesson-line);border-radius:14px;background:var(--lesson-soft);padding:10px 14px;color:var(--lesson-main-dark);font-weight:900}
+@media(max-width:700px){.l10-vocab-standard{align-items:flex-start;flex-wrap:wrap}.l10-vocab-standard__action{width:100%;text-align:center}}
