@@ -3,6 +3,7 @@
 if(window.L10T1TaskStandard)return;
 const D=window.L10T1||{tasks:[]};
 const taskId=String(new URLSearchParams(location.search).get('task')||'karteikarten');
+if(taskId==='karteikarten')return;
 const taskIndex=Math.max(0,(D.tasks||[]).findIndex(t=>t.id===taskId));
 let timer=null;
 
@@ -43,5 +44,5 @@ function schedule(){clearTimeout(timer);timer=setTimeout(normalize,0)}
 const root=document.getElementById('app');
 if(root)new MutationObserver(schedule).observe(root,{childList:true,subtree:true,attributes:true,attributeFilter:['class']});
 [0,40,120,300,700].forEach(ms=>setTimeout(normalize,ms));
-window.L10T1TaskStandard={version:'1.0',normalize};
+window.L10T1TaskStandard={version:'1.1',normalize};
 })();
