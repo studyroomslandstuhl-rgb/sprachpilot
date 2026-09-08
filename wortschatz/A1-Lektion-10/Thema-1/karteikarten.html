@@ -11,30 +11,16 @@
 <link rel="preconnect" href="https://sprachpilot.b-cdn.net">
 <link rel="dns-prefetch" href="//sprachpilot.b-cdn.net">
 <link rel="stylesheet" href="/css/sp-header.css?v=theme-standard4">
-<link rel="stylesheet" href="l10t1-task.css?v=20260908-l8cards-final1">
+<link rel="stylesheet" href="l10t1-karteikarten-fast.css?v=20260908-fast1">
 </head>
 <body data-theme="1" data-page="task">
 <div id="spHeaderHost"></div>
-<main id="app"><div class="l8-wrap"><section class="l8-card">Karteikarten werden geladen …</section></div></main>
-<script type="module" src="/js/guard.js?v=l10t1-cards-final1"></script>
+<main id="app"><div class="l8-wrap"><section class="l8-card l8-task-head">Karteikarten werden geladen …</section></div></main>
 <script src="l10t1-data.js?v=20260908-standard2"></script>
-<script src="l10t1-translations.js?v=20260908-l10cards-final1"></script>
-<script src="l10t1-bunny-media.js?v=20260908-l10cards-final1"></script>
-<script src="l10t1-karteikarten-l8-bridge.js?v=20260908-final1"></script>
-<script src="/wortschatz/A1-Lektion-8/shared/l8-ui.js?v=20260908-l10cards-final1"></script>
-<script>
-(function(){
- const root=document.getElementById('app');
- try{
-  if(!window.L10T1CardBridgeReady||!window.L8UI||!window.L8S||!window.L8_THEME)throw new Error('Karteikarten-Daten fehlen');
-  window.L8UI.taskPage();
- }catch(error){
-  console.error('L10T1 Karteikarten konnten nicht gestartet werden',error);
-  if(root)root.innerHTML='<div class="l8-wrap"><section class="l8-card"><h2>Karteikarten konnten nicht geladen werden.</h2><p>Bitte lade die Seite neu.</p><p><a class="l8-btn primary" href="index.html">Zur Themenübersicht</a></p></section></div>';
- }
-})();
-</script>
-<script src="/js/sp-karteikarten-standard-v1.js?v=20260908-l10cards-final1"></script>
+<script src="l10t1-translations.js?v=20260908-fast1"></script>
+<script src="l10t1-bunny-media.js?v=20260908-fast1"></script>
+<script src="l10t1-karteikarten-fast.js?v=20260908-fast1"></script>
+<script type="module" src="/js/guard.js?v=l10t1-cards-fast1"></script>
 <script type="module">
 try{
  const {renderSpHeader,bindSpHeader}=await import('/js/sp-header.js?v=theme-standard4');
