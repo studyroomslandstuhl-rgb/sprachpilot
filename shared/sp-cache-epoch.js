@@ -1,12 +1,14 @@
 (function(){
 'use strict';
-const EPOCH='20260901-course-release-save-fix4';
+const EPOCH='20260908-theme-release-fix1';
 const KEY='SP_CACHE_EPOCH';
 const RELEASE_ASSETS=[
+ '/js/course-releases.js?v=strict-themes2',
  '/js/course-releases.js?v=20260901-course-release-fix2',
  '/js/course-releases.js?v=20260822-cache2',
  '/js/course-releases.js?v=release-core-20260701b',
  '/js/course-releases.js?v=verb-stable3',
+ '/js/release-helper.js?v=20260908-theme-release1',
  '/js/student-login-v2.js?v=20260901-course-release-fix2',
  '/js/student-login-v2.js?v=20260825-link5',
  '/dativverben/access.js?v=20260901-course-release-fix2',
@@ -14,9 +16,10 @@ const RELEASE_ASSETS=[
  '/teacher/release-course-code-fix.js?v=teacher-lite1',
  '/teacher/release-parent-rules.js?v=teacher-lite1',
  '/teacher/releases.js?v=teacher-lite1',
+ '/teacher/theme-release-hotfix.js?v=20260908-theme-release1',
  '/shared/release-catalog-a1-l3-l7.js?v=20260824-2'
 ];
-if(window.__SP_CACHE_EPOCH_V14)return;window.__SP_CACHE_EPOCH_V14=true;
+if(window.__SP_CACHE_EPOCH_V15)return;window.__SP_CACHE_EPOCH_V15=true;
 async function clearAppCaches(){
  const jobs=[];
  try{if('caches'in window)jobs.push(caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))))}catch(e){}
