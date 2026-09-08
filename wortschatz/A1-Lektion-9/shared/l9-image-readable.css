@@ -70,8 +70,8 @@ body[data-page="task"] .l9t2-memory-card img{
   object-position:center!important;
 }
 
-/* Auf kleinen Displays sind 2x2-Kacheln fuer Bilder mit Beschriftung zu klein.
-   Bildaufgaben werden deshalb einspaltig dargestellt. */
+/* Auf kleinen Displays sind kleine Mehrspalten-Kacheln fuer Bilder mit Beschriftung zu klein.
+   Bildaufgaben und Bildserien werden deshalb gross und einspaltig dargestellt. */
 @media(max-width:620px){
   body[data-page="task"] .l9-main-image,
   body[data-page="task"] .l9t2-main-image,
@@ -80,6 +80,8 @@ body[data-page="task"] .l9t2-memory-card img{
     width:min(330px,92vw)!important;
   }
   body[data-page="task"] .l9-image-options,
+  body[data-page="task"] .l9-writing-images,
+  body[data-page="task"] .l9-order-row,
   body[data-page="task"] .l9x-image-grid,
   body[data-page="task"] .l9x-doc-grid,
   body[data-page="task"] .l9t2-exam-image-grid{
@@ -90,12 +92,19 @@ body[data-page="task"] .l9t2-memory-card img{
     gap:12px!important;
   }
   body[data-page="task"] .l9-image-option,
+  body[data-page="task"] .l9-writing-image,
+  body[data-page="task"] .l9-order-card,
   body[data-page="task"] .l9x-image-choice,
   body[data-page="task"] .l9x-doc,
   body[data-page="task"] .l9t2-exam-image-option{
     width:100%!important;
     max-width:340px!important;
-    margin:0 auto!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+  }
+  body[data-page="task"] .l9-order-card p{
+    min-height:0!important;
+    font-size:16px!important;
   }
   body[data-page="task"] .l9t2-memory{
     grid-template-columns:repeat(2,minmax(0,1fr))!important;
