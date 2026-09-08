@@ -5,8 +5,14 @@ if(!taskId)return;
 const topicId='wortschatz-a1-lektion-10-thema-1';
 const currentRun=Math.max(1,Math.min(3,Number(localStorage.getItem('SP_SCORE_RUN_'+topicId)||1)||1));
 const key=`SP_L10_T1_${taskId}`;
+const preview=['teacher','lehrer','admin','owner','superadmin'].includes(String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase())||sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1';
 function read(){try{return JSON.parse(localStorage.getItem(key)||'null')}catch(e){return null}}
 function write(s){try{localStorage.setItem(key,JSON.stringify(s))}catch(e){}}
+if(preview){
+ try{localStorage.removeItem(key)}catch(e){}
+ window.L10T1RunState={currentRun,key,preview:true};
+ return;
+}
 const existing=read();
 if(existing&&typeof existing==='object'){
  const stateRun=Number(existing._run||1)||1;
@@ -16,5 +22,5 @@ if(existing&&typeof existing==='object'){
  else{existing._run=currentRun;write(existing)}
 }
 setTimeout(()=>{const s=read();if(s&&typeof s==='object'&&Number(s._run||0)!==currentRun){s._run=currentRun;write(s)}},350);
-window.L10T1RunState={currentRun,key};
+window.L10T1RunState={currentRun,key,preview:false};
 })();
