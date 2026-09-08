@@ -14,37 +14,40 @@ if(window.SP_L10T1_TASK==='karteikarten'||window.SP_L10T1_TASK==='cards')locatio
 <link rel="preconnect" href="https://sprachpilot.b-cdn.net">
 <link rel="dns-prefetch" href="//sprachpilot.b-cdn.net">
 <link rel="stylesheet" href="/css/sp-header.css?v=theme-standard4">
-<link rel="stylesheet" href="l10t1-task.css?v=20260908-standard2">
-<link rel="stylesheet" href="l10t1-drag.css?v=20260908-2">
+<link rel="stylesheet" href="l10t1-task.css?v=20260908-hangfix1">
+<link rel="stylesheet" href="l10t1-drag.css?v=20260908-hangfix1">
 </head>
 <body data-theme="1" data-page="task">
 <main id="app"><div class="l8-wrap"><section class="l8-card">Aufgabe wird geladen …</section></div></main>
-<script type="module" src="/js/guard.js?v=l10t1-standard5"></script>
-<script src="l10t1-data.js?v=20260908-standard2"></script>
-<script src="l10t1-drag-data.js?v=20260908-1"></script>
-<script src="l10t1-bunny-media.js?v=20260908-2"></script>
-<script src="l10t1-translations.js?v=1"></script>
-<script src="/js/sp-task-runtime-standard.js?v=20260906-scrollfix3"></script>
-<script src="/js/sp-task-autoscroll.js?v=20260906-scrollfix3"></script>
-<script src="/js/sp-task-random-standard.js?v=20260902-3"></script>
-<script src="l10t1-task-standard.js?v=20260908-standard5"></script>
+<script type="module" src="/js/guard.js?v=20260908-hangfix1"></script>
+<script src="l10t1-data.js?v=20260908-hangfix1"></script>
+<script src="l10t1-drag-data.js?v=20260908-hangfix1"></script>
+<script src="l10t1-bunny-media.js?v=20260908-hangfix1"></script>
+<script src="l10t1-translations.js?v=20260908-hangfix1"></script>
+<script src="/js/sp-task-runtime-standard.js?v=20260908-hangfix1"></script>
+<script src="/js/sp-task-autoscroll.js?v=20260908-hangfix1"></script>
+<script src="/js/sp-task-random-standard.js?v=20260908-hangfix1"></script>
+<script src="l10t1-task-standard.js?v=20260908-hangfix1"></script>
 <script type="module">
 const id=window.SP_L10T1_TASK;
 const app=document.getElementById('app');
-const fail=(error)=>{console.error('L10T1 task load failed',error);if(app)app.innerHTML='<div class="l8-wrap"><section class="l8-card"><h2>Aufgabe konnte nicht geladen werden.</h2><p>Bitte lade die Seite neu.</p><p><a class="l8-btn" href="./">Zur Themenübersicht</a></p></section></div>'};
-if(id&&id!=='karteikarten'&&id!=='cards'){
+let settled=false;
+const fail=(error)=>{if(settled)return;settled=true;console.error('L10T1 task load failed',error);if(app)app.innerHTML='<div class="l8-wrap"><section class="l8-card"><h2>Aufgabe konnte nicht geladen werden.</h2><p>Bitte lade die Seite neu.</p><p><a class="l8-btn primary" href="./">Zur Themenübersicht</a></p></section></div>'};
+const loaded=()=>{settled=true};
+setTimeout(()=>{if(!settled&&app&&/Aufgabe wird geladen/.test(app.textContent||''))fail(new Error('Zeitüberschreitung beim Laden'))},8000);
+void (async()=>{
+ if(!id){fail(new Error('Keine Aufgabe angegeben'));return}
+ if(id==='karteikarten'||id==='cards')return;
  try{
-  const gate=await import('./l10t1-run-preflight.js?v=20260908-standard4');
-  if(gate.allowed){
-   if(id==='hoeren-bild'||id==='hoeren-schreiben')await import('./l10t1-audio-app.js?v=20260908-2');
-   else if(id==='artikel-dialoge')await import('./l10t1-article-dialog.js?v=20260908-standard2');
-   else if(id==='artikel-sortieren'||id==='gesicht-koerper')await import('./l10t1-drag-app.js?v=20260908-3');
-   else await import('./l10t1-app.js?v=20260908-standard2');
-  }
+  const gate=await import('./l10t1-run-preflight.js?v=20260908-hangfix1');
+  if(!gate.allowed){loaded();return}
+  if(id==='hoeren-bild'||id==='hoeren-schreiben')await import('./l10t1-audio-app.js?v=20260908-hangfix1');
+  else if(id==='artikel-dialoge')await import('./l10t1-article-dialog.js?v=20260908-hangfix1');
+  else if(id==='artikel-sortieren'||id==='gesicht-koerper')await import('./l10t1-drag-app.js?v=20260908-hangfix1');
+  else await import('./l10t1-app.js?v=20260908-hangfix1');
+  loaded();
  }catch(error){fail(error)}
-}else if(!id){
- fail(new Error('Keine Aufgabe angegeben'));
-}
+})();
 </script>
 </body>
 </html>
