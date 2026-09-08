@@ -25,10 +25,9 @@ function install(){
 }
 
 if(!install()){
-  let tries=0;
   const timer=setInterval(()=>{
-    tries++;
-    if(install()||tries>100)clearInterval(timer);
-  },100);
+    if(install())clearInterval(timer);
+  },500);
+  window.addEventListener('beforeunload',()=>clearInterval(timer),{once:true});
 }
 })();
