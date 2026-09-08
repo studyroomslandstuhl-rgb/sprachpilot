@@ -28,6 +28,11 @@ html[data-sp-card-lesson="9"]{
  --lesson-soft:#EFF8F1;--lesson-line:#C9E5CF;--lesson-bg:#F7FCF8;
  --lesson-shadow:0 12px 28px rgba(62,125,77,.16);
 }
+html[data-sp-card-lesson="10"]{
+ --lesson-main:#F4A3A3;--lesson-main-dark:#A86464;--lesson-main-light:#F9DEDE;
+ --lesson-soft:#FDF1F1;--lesson-line:#F3C9C9;--lesson-bg:#FFF9F9;
+ --lesson-shadow:0 12px 28px rgba(168,100,100,.16);
+}
 body{background:linear-gradient(180deg,var(--lesson-bg),#fff)}
 .topbar,.card,.sp-header{box-shadow:var(--lesson-shadow)}
 .progress{background:color-mix(in srgb,var(--lesson-soft) 86%,#fff)}
