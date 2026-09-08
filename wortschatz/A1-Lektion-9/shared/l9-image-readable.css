@@ -1,0 +1,111 @@
+/* L9: Bilder in Aufgaben muessen vollstaendig und gross genug lesbar bleiben. */
+body[data-page="task"] #taskArea img{
+  object-fit:contain!important;
+  object-position:center center!important;
+  max-width:100%!important;
+}
+
+/* Einzelbilder */
+body[data-page="task"] .l9-main-image,
+body[data-page="task"] .l9t2-main-image,
+body[data-page="task"] .l9t2-exam-main-image,
+body[data-page="task"] .l9x-main-image{
+  width:min(360px,88vw)!important;
+  height:auto!important;
+  aspect-ratio:1/1!important;
+  max-height:none!important;
+  overflow:visible!important;
+  padding:6px!important;
+  box-sizing:border-box!important;
+  background:#fff!important;
+}
+body[data-page="task"] .l9-main-image img,
+body[data-page="task"] .l9t2-main-image img,
+body[data-page="task"] .l9t2-exam-main-image img,
+body[data-page="task"] .l9x-main-image img{
+  width:100%!important;
+  height:100%!important;
+  object-fit:contain!important;
+}
+
+/* Bildantworten: keine abgeschnittenen Raender und moeglichst grosse Flaeche */
+body[data-page="task"] .l9-image-option,
+body[data-page="task"] .l9x-image-choice,
+body[data-page="task"] .l9x-doc,
+body[data-page="task"] .l9t2-exam-image-option{
+  padding:6px!important;
+  overflow:visible!important;
+  box-sizing:border-box!important;
+}
+body[data-page="task"] .l9-choice-image,
+body[data-page="task"] .l9-order-image,
+body[data-page="task"] .l9-writing-image{
+  max-height:none!important;
+  overflow:visible!important;
+}
+body[data-page="task"] .l9-choice-image img,
+body[data-page="task"] .l9-order-image img,
+body[data-page="task"] .l9-writing-image img,
+body[data-page="task"] .l9x-image-choice img,
+body[data-page="task"] .l9x-doc img,
+body[data-page="task"] .l9t2-exam-image-option img{
+  width:100%!important;
+  height:auto!important;
+  aspect-ratio:1/1!important;
+  object-fit:contain!important;
+  display:block!important;
+}
+
+/* Karteikarten: Bild ebenfalls gross genug fuer den unteren Bildbereich. */
+body[data-page="task"] .l8-card-visual{
+  width:min(360px,88vw)!important;
+  height:min(360px,88vw)!important;
+  max-width:none!important;
+  max-height:none!important;
+}
+body[data-page="task"] .l8-card-visual img,
+body[data-page="task"] .l8-back-image img,
+body[data-page="task"] .l9t2-memory-card img{
+  object-fit:contain!important;
+  object-position:center!important;
+}
+
+/* Auf kleinen Displays sind 2x2-Kacheln fuer Bilder mit Beschriftung zu klein.
+   Bildaufgaben werden deshalb einspaltig dargestellt. */
+@media(max-width:620px){
+  body[data-page="task"] .l9-main-image,
+  body[data-page="task"] .l9t2-main-image,
+  body[data-page="task"] .l9t2-exam-main-image,
+  body[data-page="task"] .l9x-main-image{
+    width:min(330px,92vw)!important;
+  }
+  body[data-page="task"] .l9-image-options,
+  body[data-page="task"] .l9x-image-grid,
+  body[data-page="task"] .l9x-doc-grid,
+  body[data-page="task"] .l9t2-exam-image-grid{
+    grid-template-columns:1fr!important;
+    max-width:340px!important;
+    margin-left:auto!important;
+    margin-right:auto!important;
+    gap:12px!important;
+  }
+  body[data-page="task"] .l9-image-option,
+  body[data-page="task"] .l9x-image-choice,
+  body[data-page="task"] .l9x-doc,
+  body[data-page="task"] .l9t2-exam-image-option{
+    width:100%!important;
+    max-width:340px!important;
+    margin:0 auto!important;
+  }
+  body[data-page="task"] .l9t2-memory{
+    grid-template-columns:repeat(2,minmax(0,1fr))!important;
+    gap:10px!important;
+  }
+  body[data-page="task"] .l9t2-memory-word{
+    font-size:14px!important;
+  }
+  body[data-page="task"] .l8-card-visual{
+    width:min(330px,92vw)!important;
+    height:min(330px,92vw)!important;
+  }
+}
