@@ -22,49 +22,34 @@ function localPct(t){
   return total?Math.min(100,Math.round(done/total*100)):0;
  }catch(e){return 0}
 }
-function taskFile(t){return t.id==='karteikarten'?'karteikarten.html?task=karteikarten':`task.html?task=${t.id}`}
+function taskFile(t){return`task.html?task=${t.id}`}
 function taskEmoji(t){return t.icon||'✅'}
 function teacherNote(){return preview()?'<div class="sp-teacher-preview-note">Lehrer-Vorschau: Fortschritte und Punkte der Teilnehmer werden hier nicht verändert.</div>':''}
 function scorePanel(){const r=run(),points=Number(localStorage.getItem('SP_POINTS_TOTAL')||0)||0;if(preview())return'<div class="l8-score-panel"><div class="l8-score-label">Punkte</div><div class="l8-score-total">Vorschau</div><div class="l8-small">Keine Teilnehmerpunkte</div></div>';return`<div class="l8-score-panel"><div class="l8-score-label">${r===1?'Versuch 1 von 3':`Wiederholung ${r} von 3`}</div><div class="l8-score-total">${points} Punkte</div><div class="l8-small">Fortschritt wird automatisch gespeichert.</div></div>`}
 
 const progress=Object.fromEntries((D.tasks||[]).map(t=>[t.id,localPct(t)]));
-
-function render(){
- const completed=practice.filter(t=>(progress[t.id]||0)>=100).length;
- const avg=Math.round(practice.reduce((sum,t)=>sum+(progress[t.id]||0),0)/Math.max(1,practice.length));
- const examOpen=preview()||completed===practice.length;
- const header=renderSpHeader({subtitle:'Körper und Körperteile · A1 Lektion 10 · Thema 1',color:{main:'#F4A3A3',dark:'#A86464',soft:'#FDF1F1',line:'#F3C9C9'}});
- root.innerHTML=`<div class="l10-theme-page">${header}<div class="l8-wrap">${teacherNote()}<section class="l8-card l8-progress-card"><div class="l8-progress-circle">${avg}%</div><div class="l8-progress-main"><h2>Dein Fortschritt</h2><p class="l8-small">${completed} / ${practice.length} Aufgaben abgeschlossen</p><div class="l8-progress"><div style="width:${avg}%"></div></div><p class="l8-small l8-theme-subtitle">Körper und Körperteile</p><div class="l8-tags"><span class="l8-tag">Körper</span><span class="l8-tag">Körperteile</span><span class="l8-tag">Artikel</span><span class="l8-tag">Plural</span></div></div><div class="l8-score-slot">${scorePanel()}</div></section><section class="l8-grid">${(D.tasks||[]).map((t,i)=>{const p=Math.round(progress[t.id]||0),locked=t.exam&&!examOpen;if(locked)return`<div class="l8-card l8-task-card locked" aria-disabled="true"><div class="l8-task-number">${i+1}. ${esc(t.title)}</div><div class="emoji">${esc(taskEmoji(t))}</div><p>${esc(t.text||'')}</p><div class="l8-progress"><div style="width:0%"></div></div><div class="l8-small">gesperrt</div><div class="l8-task-start">Prüfung gesperrt</div></div>`;return`<a class="l8-card l8-task-card ${p>=100?'done':''}" href="${taskFile(t)}"><div class="l8-task-number">${i+1}. ${esc(t.title)}</div><div class="emoji">${esc(taskEmoji(t))}</div><p>${esc(t.text||'')}</p><div class="l8-progress"><div style="width:${p}%"></div></div><div class="l8-small">${p}%</div><div class="l8-task-start">${t.exam&&preview()?'Prüfung ansehen':p>=100?'Fertig':'Starten'}</div></a>`}).join('')}</section><footer>© SprachPilot</footer></div></div>`;
- bindSpHeader(root);
-}
-
-render();
-
-async function hydrateCloudProgress(){
- if(preview())return;
+if(!preview()){
  try{
-  const mod=await import('/js/progress.js?v=20260908-hangfix1');
-  const timeout=new Promise(resolve=>setTimeout(()=>resolve(null),2500));
-  const cloud=await Promise.race([mod.loadCurrentStudentProgress(),timeout]);
+  const mod=await import('/js/progress.js?v=20260831-central6');
+  const cloud=await mod.loadCurrentStudentProgress();
   const topic=cloud?.wortschatz?.[TOPIC];
-  if(!topic)return;
-  const active=run();
-  let changed=false;
-  for(const t of practice){
-   const rec=topic.tasks?.[t.id]||topic.tasks?.[taskFile(t)];
-   if(!rec)continue;
-   const recRun=Number(rec.run||topic.currentRun||topic.current?.run||active)||active;
-   if(recRun!==active)continue;
-   const next=Math.max(progress[t.id]||0,Math.max(0,Math.min(100,Number(rec.percent||0))));
-   if(next!==progress[t.id]){progress[t.id]=next;changed=true}
+  if(topic){
+   const active=run();
+   for(const t of practice){
+    const rec=topic.tasks?.[t.id]||topic.tasks?.[taskFile(t)];
+    if(!rec)continue;
+    const recRun=Number(rec.run||topic.currentRun||topic.current?.run||active)||active;
+    if(recRun===active)progress[t.id]=Math.max(progress[t.id]||0,Math.max(0,Math.min(100,Number(rec.percent||0))));
+   }
+   if(exam){const er=topic.exam||{};const erRun=Number(er.run||topic.currentRun||active)||active;if(erRun===active)progress[exam.id]=Math.max(progress[exam.id]||0,Math.max(0,Math.min(100,Number(er.percent||er.bestPercent||0))))}
   }
-  if(exam){
-   const er=topic.exam||{};
-   const erRun=Number(er.run||topic.currentRun||active)||active;
-   if(erRun===active){const next=Math.max(progress[exam.id]||0,Math.max(0,Math.min(100,Number(er.percent||er.bestPercent||0))));if(next!==progress[exam.id]){progress[exam.id]=next;changed=true}}
-  }
-  if(changed)render();
  }catch(e){console.warn('L10T1 overview progress',e)}
 }
 
-hydrateCloudProgress();
+const completed=practice.filter(t=>(progress[t.id]||0)>=100).length;
+const avg=Math.round(practice.reduce((sum,t)=>sum+(progress[t.id]||0),0)/Math.max(1,practice.length));
+const examOpen=preview()||completed===practice.length;
+const header=renderSpHeader({subtitle:'Körper und Körperteile · A1 Lektion 10 · Thema 1',color:{main:'#F4A3A3',dark:'#A86464',soft:'#FDF1F1',line:'#F3C9C9'}});
+
+root.innerHTML=`<div class="l10-theme-page">${header}<div class="l8-wrap">${teacherNote()}<section class="l8-card l8-progress-card"><div class="l8-progress-circle">${avg}%</div><div class="l8-progress-main"><h2>Dein Fortschritt</h2><p class="l8-small">${completed} / ${practice.length} Aufgaben abgeschlossen</p><div class="l8-progress"><div style="width:${avg}%"></div></div><p class="l8-small l8-theme-subtitle">Körper und Körperteile</p><div class="l8-tags"><span class="l8-tag">Körper</span><span class="l8-tag">Körperteile</span><span class="l8-tag">Artikel</span><span class="l8-tag">Plural</span></div></div><div class="l8-score-slot">${scorePanel()}</div></section><section class="l8-grid">${(D.tasks||[]).map((t,i)=>{const p=Math.round(progress[t.id]||0),locked=t.exam&&!examOpen;if(locked)return`<div class="l8-card l8-task-card locked" aria-disabled="true"><div class="l8-task-number">${i+1}. ${esc(t.title)}</div><div class="emoji">${esc(taskEmoji(t))}</div><p>${esc(t.text||'')}</p><div class="l8-progress"><div style="width:0%"></div></div><div class="l8-small">gesperrt</div><div class="l8-task-start">Prüfung gesperrt</div></div>`;return`<a class="l8-card l8-task-card ${p>=100?'done':''}" href="${taskFile(t)}"><div class="l8-task-number">${i+1}. ${esc(t.title)}</div><div class="emoji">${esc(taskEmoji(t))}</div><p>${esc(t.text||'')}</p><div class="l8-progress"><div style="width:${p}%"></div></div><div class="l8-small">${p}%</div><div class="l8-task-start">${t.exam&&preview()?'Prüfung ansehen':p>=100?'Fertig':'Starten'}</div></a>`}).join('')}</section><footer>© SprachPilot</footer></div></div>`;
+bindSpHeader(root);
