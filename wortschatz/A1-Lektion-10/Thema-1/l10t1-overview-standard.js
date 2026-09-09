@@ -9,10 +9,17 @@ const exam=(D.tasks||[]).find(t=>t.exam);
 function esc(v){return String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]))}
 function preview(){try{return ['teacher','lehrer','admin','owner','superadmin'].includes(String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase())||sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}catch(e){return false}}
 function run(){return Math.max(1,Math.min(3,Number(localStorage.getItem('SP_SCORE_RUN_'+TOPIC)||1)||1))}
+function owner(){try{const p=JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{};return String(p.canonicalStudentId||p.docId||p.studentId||p.userId||p.authUid||p.uid||p.id||p.email||localStorage.getItem('SP_STUDENT_ID')||'student').trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_')}catch(e){return'student'}}
+function localState(t){
+ const id=String(t?.id||'');
+ const keyed=localStorage.getItem(`SP_L10_${owner()}_T1_${id}`);
+ const legacy=owner()==='student'?localStorage.getItem(`SP_L10_T1_${id}`):null;
+ try{return JSON.parse(keyed||legacy||'null')}catch(e){return null}
+}
 function localPct(t){
  if(preview())return 0;
  try{
-  const s=JSON.parse(localStorage.getItem(`SP_L10_T1_${t.id}`)||'null');
+  const s=localState(t);
   if(!s)return 0;
   const active=run();
   if(Number(s._run||1)!==active)return 0;
