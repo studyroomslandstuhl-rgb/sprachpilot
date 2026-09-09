@@ -4,8 +4,12 @@ const D=window.L10T1||{};
 const cards=Array.isArray(D.cards)?D.cards:[];
 const root=document.getElementById('app');
 const TOPIC='wortschatz-a1-lektion-10-thema-1';
-const KEY='SP_L10_T1_karteikarten';
+const LEGACY_KEY='SP_L10_T1_karteikarten';
 const total=cards.length;
+const preview=()=>{try{const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();return ['teacher','lehrer','admin','owner','superadmin'].includes(role)||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'||sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'}catch(e){return false}};
+const owner=()=>{try{const p=JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{};return String(p.canonicalStudentId||p.docId||p.studentId||p.userId||p.authUid||p.uid||p.id||p.email||localStorage.getItem('SP_STUDENT_ID')||'student').trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_')}catch(e){return'student'}};
+const storage=()=>preview()?sessionStorage:localStorage;
+const stateKey=()=>preview()?`SP_L10_PREVIEW_T1_karteikarten`:`SP_L10_${owner()}_T1_karteikarten`;
 const labels={en:'Englisch',ru:'Russisch',uk:'Ukrainisch',tr:'Türkisch',ar:'Arabisch',ja:'Japanisch',ro:'Rumänisch',pl:'Polnisch',ku:'Kurdisch'};
 const langCode=String(window.L10T1Translations?.code||'en');
 const langLabel=labels[langCode]||'Englisch';
@@ -15,9 +19,17 @@ const equal=(v,card)=>[card.full,card.term,card.word].filter(Boolean).some(x=>no
 const run=()=>Math.max(1,Math.min(3,Number(localStorage.getItem('SP_SCORE_RUN_'+TOPIC)||1)||1));
 const shuffle=a=>{a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function blank(){return{schema:2,_run:run(),total,done:[],queue:shuffle([...Array(total).keys()]),review:[],tries:{},current:null,updatedAt:Date.now()}}
-function load(){try{const raw=JSON.parse(localStorage.getItem(KEY)||'null');if(!raw||Number(raw.schema)!==2||Number(raw._run)!==run()||Number(raw.total)!==total)return blank();raw.done=Array.isArray(raw.done)?raw.done.filter(i=>Number.isInteger(i)&&i>=0&&i<total):[];raw.queue=Array.isArray(raw.queue)?raw.queue.filter(i=>Number.isInteger(i)&&i>=0&&i<total&&!raw.done.includes(i)):[];raw.review=Array.isArray(raw.review)?raw.review.filter(i=>Number.isInteger(i)&&i>=0&&i<total&&!raw.done.includes(i)):[];raw.tries=raw.tries&&typeof raw.tries==='object'?raw.tries:{};if(raw.current!=null&&(!Number.isInteger(raw.current)||raw.current<0||raw.current>=total||raw.done.includes(raw.current)))raw.current=null;return raw}catch(e){return blank()}}
-let state=load();
-function save(){state.schema=2;state._run=run();state.total=total;state.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(state))}catch(e){}}
+function load(){try{const store=storage(),key=stateKey();let rawText=store.getItem(key);if(!rawText&&!preview()&&owner()==='student')rawText=localStorage.getItem(LEGACY_KEY);const raw=JSON.parse(rawText||'null');if(!raw||Number(raw.schema)!==2||Number(raw._run)!==run()||Number(raw.total)!==total)return blank();raw.done=Array.isArray(raw.done)?raw.done.filter(i=>Number.isInteger(i)&&i>=0&&i<total):[];raw.queue=Array.isArray(raw.queue)?raw.queue.filter(i=>Number.isInteger(i)&&i>=0&&i<total&&!raw.done.includes(i)):[];raw.review=Array.isArray(raw.review)?raw.review.filter(i=>Number.isInteger(i)&&i>=0&&i<total&&!raw.done.includes(i)):[];raw.tries=raw.tries&&typeof raw.tries==='object'?raw.tries:{};if(raw.current!=null&&(!Number.isInteger(raw.current)||raw.current<0||raw.current>=total||raw.done.includes(raw.current)))raw.current=null;return raw}catch(e){return blank()}}
+let state=load(),syncTimer=0,importing=false;
+function queueProgress(){
+ if(preview()||!total)return;
+ const percent=Math.max(0,Math.min(100,Math.round(state.done.length/total*100)));
+ if(percent<=0)return;
+ const payload={module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:10,theme:1,topicId:TOPIC,title:'A1 Lektion 10 · Thema 1',file:'task.html?task=karteikarten',taskKey:'karteikarten',taskTitle:'Karteikarten',run:run(),total,done:state.done.length,percent,completed:percent>=100};
+ const send=()=>{if(window.SPProgress?.recordTaskProgress)window.SPProgress.recordTaskProgress(payload).catch(()=>{});else{window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:'recordTaskProgress',payload});if(!importing){importing=true;import('/js/progress.js?v=20260831-central6').catch(()=>{}).finally(()=>{importing=false})}}};
+ clearTimeout(syncTimer);syncTimer=setTimeout(send,120);
+}
+function save(){state.schema=2;state._run=run();state.total=total;state.updatedAt=Date.now();try{storage().setItem(stateKey(),JSON.stringify(state))}catch(e){}queueProgress()}
 function nextIndex(){if(Number.isInteger(state.current)&&!state.done.includes(state.current))return state.current;while(state.queue.length&&state.done.includes(state.queue[0]))state.queue.shift();while(!state.queue.length&&state.review.length&&state.done.includes(state.review[0]))state.review.shift();if(!state.queue.length&&!state.review.length){const missing=[...Array(total).keys()].filter(i=>!state.done.includes(i));if(!missing.length)return null;state.queue=shuffle(missing)}state.current=state.queue.length?state.queue.shift():state.review.shift();save();return state.current}
 function markWrong(i){const n=Number(state.tries[i]||0)+1;state.tries[i]=n;if(!state.review.includes(i))state.review.push(i);save();return n}
 function markRight(i){const hadWrong=Number(state.tries[i]||0)>0;state.current=null;if(hadWrong&&state.review.includes(i)){state.review=state.review.filter(x=>x!==i);state.queue.push(i);state.tries[i]=0;save();return true}state.review=state.review.filter(x=>x!==i);delete state.tries[i];if(!state.done.includes(i))state.done.push(i);save();return false}
