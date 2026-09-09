@@ -13,6 +13,14 @@ function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')
 function pid(){var p=profile();return String(p.canonicalStudentId||p.studentId||p.uid||p.email||localStorage.getItem('SP_STUDENT_ID')||'student').toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_');}
 function preview(){var r=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').toLowerCase();return ['teacher','lehrer','admin','owner','superadmin'].indexOf(r)>=0||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'||sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1';}
 function storage(){return preview()?sessionStorage:localStorage;}
+var TOPIC='wortschatz-a1-lektion-9-thema-3',syncTimers={},importingProgress=false;
+function run(){return Math.max(1,Math.min(3,Number(localStorage.getItem('SP_SCORE_RUN_'+TOPIC)||1)||1));}
+function queueProgress(method,payload){
+ if(preview())return;
+ if(window.SPProgress&&typeof window.SPProgress[method]==='function'){try{var p=window.SPProgress[method](payload);if(p&&p.catch)p.catch(function(){});}catch(e){}return;}
+ window.SP_PROGRESS_QUEUE=window.SP_PROGRESS_QUEUE||[];window.SP_PROGRESS_QUEUE.push({method:method,payload:payload});
+ if(!importingProgress){importingProgress=true;import('/js/progress.js?v=20260831-central6').catch(function(){}).finally(function(){importingProgress=false;});}
+}
 
 if(!D||!Array.isArray(D.tasks)){
  root.innerHTML='<div class="l8-wrap"><section class="l8-card"><h2>Aufgabendaten fehlen.</h2><p>Lektion 9 · Thema 3 konnte nicht vollständig geladen werden.</p><button class="l8-btn primary" type="button" onclick="location.reload()">Neu laden</button></section></div>';
@@ -48,13 +56,14 @@ function itemIds(id){
 }
 function fixedOrder(t){return ['conjugation-table','dialog-modal','reading-rules','exam'].indexOf(t.kind)>=0;}
 function stateKey(id){return 'SP_L9_'+pid()+'_T3_'+id;}
-function freshState(id){var all=itemIds(id);return {done:[],review:{},wrong:{},answers:{},order:fixedOrder(D.tasks.find(function(x){return x.id===id;})||{})?all.slice():shuffle(all)};}
+function freshState(id){var all=itemIds(id);return {done:[],review:{},wrong:{},mistakes:[],answers:{},order:fixedOrder(D.tasks.find(function(x){return x.id===id;})||{})?all.slice():shuffle(all)};}
 function load(id){
  id=id||taskId;var all=itemIds(id),s=freshState(id);
  try{var raw=JSON.parse(storage().getItem(stateKey(id))||'null');if(raw&&typeof raw==='object')s=Object.assign(s,raw);}catch(e){}
  s.done=Array.from(new Set((s.done||[]).filter(function(x){return all.indexOf(x)>=0;})));
  s.review=s.review&&typeof s.review==='object'?s.review:{};
  s.wrong=s.wrong&&typeof s.wrong==='object'?s.wrong:{};
+ s.mistakes=Array.from(new Set((s.mistakes||[]).filter(function(x){return all.indexOf(x)>=0;})));
  s.answers=s.answers&&typeof s.answers==='object'?s.answers:{};
  if(fixedOrder(D.tasks.find(function(x){return x.id===id;})||{}))s.order=all.slice();
  else{
@@ -64,14 +73,33 @@ function load(id){
  }
  save(id,s,false);return s;
 }
+function syncProgress(id,s){
+ if(preview())return;
+ var t=D.tasks.find(function(x){return x.id===id;}),all=itemIds(id),total=all.length;
+ if(!t||!total)return;
+ var done=(s.done||[]).filter(function(x){return all.indexOf(x)>=0;}).length;
+ var pct=Math.max(0,Math.min(100,Math.round(done/total*100)));
+ clearTimeout(syncTimers[id]);
+ syncTimers[id]=setTimeout(function(){
+  if(t.exam){
+   if(pct<100)return;
+   var mistakes=(s.mistakes||[]).filter(function(x){return all.indexOf(x)>=0;}).length;
+   var correct=Math.max(0,total-mistakes),scorePct=Math.round(correct/total*100);
+   var signature='R'+run()+':'+scorePct+':'+total,signatureKey=stateKey(id)+'_EXAM_SYNC';
+   if(storage().getItem(signatureKey)===signature)return;
+   storage().setItem(signatureKey,signature);
+   queueProgress('recordExamResult',{module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:9,theme:3,topicId:TOPIC,title:'A1 Lektion 9 · Thema 3',file:'task.html?task='+id,run:run(),score:correct,maxScore:total,percent:scorePct,scorePercent:scorePct,stars:scorePct>=100?3:scorePct>=70?2:scorePct>=50?1:0});
+  }else if(pct>0)queueProgress('recordTaskProgress',{module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:9,theme:3,topicId:TOPIC,title:'A1 Lektion 9 · Thema 3',file:'task.html?task='+id,taskKey:id,taskTitle:t.title||id,run:run(),total:total,done:done,percent:pct,completed:pct>=100});
+ },120);
+}
 function save(id,s,emit){
  try{storage().setItem(stateKey(id),JSON.stringify(s));}catch(e){}
- if(emit!==false){try{window.dispatchEvent(new CustomEvent('sprachpilot-progress',{detail:{lesson:9,theme:3,task:id,state:s}}));}catch(e){}}
+ if(emit!==false){syncProgress(id,s);try{window.dispatchEvent(new CustomEvent('sprachpilot-progress',{detail:{lesson:9,theme:3,task:id,state:s}}));}catch(e){}}
 }
 function pending(id){var s=load(id),all=itemIds(id);return all.filter(function(x){return !!s.review[x];});}
 function percent(id){id=id||taskId;var all=itemIds(id);if(!all.length)return 0;var s=load(id),p=Math.round(s.done.length/all.length*100);return p>=100&&pending(id).length?99:p;}
 function firstOpen(){var s=load(taskId),i;for(i=0;i<s.order.length;i++)if(s.done.indexOf(s.order[i])<0)return s.order[i];for(i=0;i<s.order.length;i++)if(s.review[s.order[i]])return s.order[i];return null;}
-function wrong(id){var s=load(taskId);s.wrong[id]=(Number(s.wrong[id])||0)+1;s.review[id]=true;save(taskId,s,true);return s.wrong[id];}
+function wrong(id){var s=load(taskId);s.wrong[id]=(Number(s.wrong[id])||0)+1;if(s.mistakes.indexOf(id)<0)s.mistakes.push(id);s.review[id]=true;save(taskId,s,true);return s.wrong[id];}
 function correct(id){var s=load(taskId);if(s.done.indexOf(id)>=0&&s.review[id])delete s.review[id];else if(s.done.indexOf(id)<0)s.done.push(id);delete s.wrong[id];delete s.answers[id];save(taskId,s,true);return s;}
 function remember(id,val){var s=load(taskId);s.answers[id]=val;save(taskId,s,false);}
 function taskNo(){return D.tasks.findIndex(function(x){return x.id===taskId;})+1;}
