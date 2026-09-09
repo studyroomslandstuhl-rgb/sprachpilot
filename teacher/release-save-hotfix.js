@@ -68,9 +68,12 @@ function rebuildCourseGlobals(courses){
 function install(){
   const Courses=window.Courses;
   if(!Courses||Courses.__verifiedReleaseSave20260908)return false;
+  const originalUpdate=typeof Courses.update==='function'?Courses.update.bind(Courses):null;
   Courses.__verifiedReleaseSave20260908=true;
 
   Courses.update=async function(id,data){
+    const releaseUpdate=RELEASE_KEYS.some(key=>Object.prototype.hasOwnProperty.call(data||{},key));
+    if(!releaseUpdate&&originalUpdate)return originalUpdate(id,data);
     const database=typeof Courses.database==='function'?Courses.database():(window.db||window.firebase?.firestore?.());
     if(!database?.collection)throw new Error('Firebase ist nicht verfügbar.');
 
