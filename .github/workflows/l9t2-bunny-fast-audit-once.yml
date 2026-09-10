@@ -1,0 +1,60 @@
+name: L9T2 Bunny fast audit once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/l9t2-bunny-fast-audit-once.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Probe Bunny candidates in parallel
+        shell: bash
+        run: |
+          python3 - <<'PY' > /tmp/candidates.txt
+          from urllib.parse import quote
+          words={
+          'leise':['leise','leiser'],
+          'erklaeren':['erklaeren','erklären'],
+          'laut':['laut'], 'ausmachen':['ausmachen'],
+          'zuhoeren':['zuhoeren','zuhören'], 'aufstehen':['aufstehen'], 'warten':['warten'],
+          'gebuehr':['gebuehr','die_gebuehr','gebühr','die_gebühr'],
+          'kasse':['kasse','die_kasse'], 'lachen':['lachen'],
+          'aufhoeren':['aufhoeren','aufhören'],
+          'anmeldung':['anmeldung','die_anmeldung'],
+          'stock':['stock','der_stock'],
+          'unterricht':['unterricht','der_unterricht'],
+          'sprachschule':['sprachschule','die_sprachschule'],
+          'autovermietung':['autovermietung','die_autovermietung'],
+          'hingehen':['hingehen'], 'laden':['laden'],
+          'wartebereich':['wartebereich','der_wartebereich'],
+          'doch':['doch'], 'bitte':['bitte'], 'mal':['mal']}
+          base='https://sprachpilot.b-cdn.net/'
+          for id_, stems in words.items():
+              expanded=[]
+              for s in stems:
+                  expanded += [s, 'l9t2_'+s, 'l9_t2_'+s, 'l9t2-'+s]
+              for s in dict.fromkeys(expanded):
+                  q=quote(s,safe='_-')
+                  for ext in ('webp','png','jpg','jpeg'):
+                      for folder in ('','bilder/','images/','wortschatz/'):
+                          print(f'{id_}|IMG|{base}{folder}{q}.{ext}')
+                  for ext in ('mp3','m4a','wav','ogg'):
+                      for folder in ('audio/',''):
+                          print(f'{id_}|AUDIO|{base}{folder}{q}.{ext}')
+          PY
+          probe(){
+            IFS='|' read -r id kind url <<< "$1"
+            code=$(curl -L -sS --connect-timeout 3 --max-time 7 -r 0-0 -o /dev/null -w '%{http_code}' "$url" || true)
+            if [[ "$code" == 200 || "$code" == 206 ]]; then printf 'HIT|%s|%s|%s\n' "$id" "$kind" "$url"; fi
+          }
+          export -f probe
+          echo '=== FAST_BUNNY_AUDIT_BEGIN ==='
+          xargs -d '\n' -P 40 -I{} bash -c 'probe "$1"' _ '{}' < /tmp/candidates.txt
+          echo '=== FAST_BUNNY_AUDIT_END ==='
