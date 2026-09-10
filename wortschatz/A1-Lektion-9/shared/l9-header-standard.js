@@ -7,7 +7,7 @@ function ensureTaskAutoScroll(){
 }
 function ensureTeacherExamStandard(){
  if(window.SP_L9_TEACHER_EXAM_STANDARD||document.querySelector('script[src*="l9-teacher-exam-standard.js"]'))return;
- const s=document.createElement('script');s.src='/wortschatz/A1-Lektion-9/shared/l9-teacher-exam-standard.js?v=20260905-1';s.defer=true;document.head.appendChild(s);
+ const s=document.createElement('script');s.src='/wortschatz/A1-Lektion-9/shared/l9-teacher-exam-standard.js?v=20260910-syntaxfix1';s.defer=true;document.head.appendChild(s);
 }
 function apply(){
  const n=Number(document.body?.dataset?.theme||location.pathname.match(/\/Thema-(\d+)\//i)?.[1]||0);if(!n)return;
