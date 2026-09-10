@@ -25,67 +25,45 @@ jobs:
           cat > verify.cjs <<'JS'
           const { chromium } = require('playwright-core');
           const pages=[
-            ['cards','https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=karteikarten&bunnyverify=4'],
-            ['bild-wort','https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=bild-wort&bunnyverify=4'],
-            ['overview','https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/uebersicht.html?bunnyverify=4']
+            ['cards','https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=karteikarten&bunnyverify=5'],
+            ['bild-wort','https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=bild-wort&bunnyverify=5'],
+            ['overview','https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/uebersicht.html?bunnyverify=5']
           ];
           (async()=>{
             const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME,args:['--no-sandbox','--disable-dev-shm-usage','--autoplay-policy=no-user-gesture-required']});
             const context=await browser.newContext();
             await context.addInitScript(()=>{
               try{
-                localStorage.setItem('SP_LOGIN_ROLE','student');
-                localStorage.setItem('SP_ACTIVE_ROLE','student');
+                localStorage.setItem('SP_LOGIN_ROLE','student');localStorage.setItem('SP_ACTIVE_ROLE','student');
                 localStorage.setItem('SP_USER_PROFILE',JSON.stringify({studentId:'audit',motherLanguageCode:'en'}));
                 localStorage.setItem('SP_L9_audit_T2_karteikarten',JSON.stringify({done:[],wrong:{},review:{},reviewFirstCorrect:{},order:['leise','erklaeren','laut']}));
                 localStorage.setItem('SP_L9_audit_T2_bild-wort',JSON.stringify({done:[],wrong:{},review:{},answers:{},order:['pic-leise']}));
               }catch(e){}
-              document.addEventListener('DOMContentLoaded',()=>{
-                if(!document.querySelector('.sp-header')){
-                  const h=document.createElement('header');h.className='sp-header';h.innerHTML='<div class="sp-header__subtitle"></div>';document.body.prepend(h);
-                }
-              },{once:true});
+              document.addEventListener('DOMContentLoaded',()=>{if(!document.querySelector('.sp-header')){const h=document.createElement('header');h.className='sp-header';h.innerHTML='<div class="sp-header__subtitle"></div>';document.body.prepend(h)}},{once:true});
             });
-            await context.route('**/js/guard.js*',route=>route.fulfill({status:200,contentType:'application/javascript',body:'// live media audit: auth guard intentionally bypassed'}));
+            await context.route('**/js/guard.js*',route=>route.fulfill({status:200,contentType:'application/javascript',body:'// auth bypass only for isolated live media verification'}));
             let failures=0;
             for(const [name,url] of pages){
-              const page=await context.newPage();
-              const bunnyResponses=[];
-              const failed=[];
-              const errors=[];
-              page.on('response',r=>{if(r.url().includes('sprachpilot.b-cdn.net'))bunnyResponses.push({status:r.status(),type:r.headers()['content-type']||'',url:r.url()})});
+              const page=await context.newPage(),responses=[],failed=[],errors=[];
+              page.on('response',r=>{if(r.url().includes('sprachpilot.b-cdn.net'))responses.push({status:r.status(),type:r.headers()['content-type']||'',url:r.url()})});
               page.on('requestfailed',r=>{if(r.url().includes('sprachpilot.b-cdn.net'))failed.push({url:r.url(),error:r.failure()?.errorText||''})});
               page.on('pageerror',e=>errors.push(e.message));
               await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
               await page.waitForTimeout(name==='overview'?1800:1000);
-              const before=await page.evaluate(()=>({
-                url:location.href,
-                hasL9T2:!!window.L9T2,
-                hasBunny:!!window.L9T2BunnyMedia,
-                samples:(window.L9T2?.flashcards||window.L9T2?.cards||[]).slice(0,3).map(x=>({id:x.id,image:x.image||'',audio:x.audio||''})),
-                images:[...document.images].filter(x=>x.src.includes('sprachpilot.b-cdn.net')).slice(0,10).map(x=>({src:x.currentSrc||x.src,w:x.naturalWidth,h:x.naturalHeight,complete:x.complete})),
-                buttons:[...document.querySelectorAll('#cardListen,[data-sp-vocab-audio]')].length,
-                text:(document.body?.innerText||'').slice(0,220)
-              }));
-              console.log('STATE|'+name+'|'+JSON.stringify(before));
+              const state=await page.evaluate(()=>({hasL9T2:!!window.L9T2,hasBunny:!!window.L9T2BunnyMedia,images:[...document.images].filter(x=>x.src.includes('sprachpilot.b-cdn.net')).slice(0,12).map(x=>({src:x.currentSrc||x.src,w:x.naturalWidth,h:x.naturalHeight,complete:x.complete})),buttons:[...document.querySelectorAll('#cardListen,[data-sp-vocab-audio]')].length}));
+              console.log('STATE|'+name+'|'+JSON.stringify(state));
               const btn=page.locator('#cardListen,[data-sp-vocab-audio]').first();
-              if(await btn.count()){
-                await btn.click({timeout:4000}).catch(e=>console.log('CLICKERR|'+name+'|'+e.message));
-                await page.waitForTimeout(1600);
-              }
-              console.log('BUNNY|'+name+'|'+JSON.stringify(bunnyResponses));
-              console.log('FAILED|'+name+'|'+JSON.stringify(failed));
-              console.log('ERRORS|'+name+'|'+JSON.stringify(errors));
-              const imageOk=name==='cards'||name==='bild-wort'||name==='overview' ? before.images.some(x=>x.w>0&&x.h>0) : true;
-              const image200=bunnyResponses.some(x=>x.status===200&&x.type.includes('image/'));
-              const audio200=(name==='cards'||name==='overview')?bunnyResponses.some(x=>x.status===200&&x.type.includes('audio/')):true;
-              const runtimeOk=before.hasL9T2&&before.hasBunny&&errors.length===0&&failed.length===0&&imageOk&&image200&&audio200;
-              console.log('RESULT|'+name+'|'+(runtimeOk?'PASS':'FAIL'));
-              if(!runtimeOk)failures++;
+              if(await btn.count()){await btn.click({timeout:4000});await page.waitForTimeout(1600)}
+              console.log('BUNNY|'+name+'|'+JSON.stringify(responses));
+              console.log('FAILED|'+name+'|'+JSON.stringify(failed));console.log('ERRORS|'+name+'|'+JSON.stringify(errors));
+              const imageOk=state.images.some(x=>x.w>0&&x.h>0);
+              const imageResponse=responses.some(x=>(x.status===200||x.status===206)&&x.type.includes('image/'));
+              const audioResponse=(name==='cards'||name==='overview')?responses.some(x=>(x.status===200||x.status===206)&&x.type.includes('audio/')):true;
+              const ok=state.hasL9T2&&state.hasBunny&&errors.length===0&&failed.length===0&&imageOk&&imageResponse&&audioResponse;
+              console.log('RESULT|'+name+'|'+(ok?'PASS':'FAIL'));if(!ok)failures++;
               await page.close();
             }
-            await browser.close();
-            if(failures)process.exit(1);
+            await browser.close();if(failures)process.exit(1);
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
           CHROME="$CHROME" node verify.cjs
