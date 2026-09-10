@@ -1,14 +1,18 @@
 (function(){
 'use strict';
 const D=window.L9T2;if(!D)return;
-const CDN='https://sprachpilot.b-cdn.net/';
+const A=D.assets||window.L9T2Assets||{};
+const bunnyImage=id=>typeof A.image==='function'?A.image(id):`https://sprachpilot.b-cdn.net/${String(id||'')}.webp`;
+const bunnyAudio=id=>typeof A.audio==='function'?A.audio(id):`https://sprachpilot.b-cdn.net/audio/${String(id||'')}.mp3`;
 
 /* Aufgaben 2–5 benutzen ausschließlich die 22 Einträge aus L9T2:
    19 Wortschatzkarten + doch / bitte / mal. Keine alten oder neuen Wörter.
-   Die drei Modalpartikeln haben bewusst KEIN Bild: Sie werden als echte Emojis gerendert. */
+   Die drei Modalpartikeln haben bewusst KEIN Bild: Sie werden als echte Emojis gerendert.
+   Für alle 19 Wörter werden Bild und Audio direkt aus der zentralen Bunny-Zuordnung geladen. */
 D.visualWords=(D.flashcards||[]).map(x=>({
  ...x,
- image:x.type==='grammar'?'':(x.image||`${CDN}${String(x.id||'')}.webp`)
+ image:x.type==='grammar'?'':bunnyImage(x.id),
+ audio:x.type==='grammar'?x.audio:bunnyAudio(x.id)
 }));
 D.mixedWords=[...D.visualWords];
 D.wordLabel=x=>String(x?.full||x?.word||'').trim();
