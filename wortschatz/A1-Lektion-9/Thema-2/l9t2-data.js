@@ -1,8 +1,35 @@
 (function(){
 'use strict';
-const CDN='https://sprachpilot.b-cdn.net/';
-const AUDIO=CDN+'audio/';
-const media=id=>({image:`${CDN}${id}.webp`,audio:`${AUDIO}${id}.mp3`});
+const BUNNY='https://sprachpilot.b-cdn.net';
+const BUNNY_FILES=Object.freeze({
+ leise:'leise',
+ erklaeren:'erklaeren',
+ laut:'laut',
+ ausmachen:'ausmachen',
+ zuhoeren:'zuhoeren',
+ aufstehen:'aufstehen',
+ warten:'warten',
+ gebuehr:'gebuehr',
+ kasse:'kasse',
+ lachen:'lachen',
+ aufhoeren:'aufhoeren',
+ anmeldung:'anmeldung',
+ stock:'stock',
+ unterricht:'unterricht',
+ sprachschule:'sprachschule',
+ autovermietung:'autovermietung',
+ hingehen:'hingehen',
+ laden:'laden',
+ wartebereich:'wartebereich'
+});
+function fallbackFile(id){return String(id||'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ä/g,'ae').replace(/ö/g,'oe').replace(/ü/g,'ue').replace(/ß/g,'ss').replace(/[^a-z0-9]+/g,'_').replace(/^_+|_+$/g,'')}
+function file(id){return BUNNY_FILES[id]||fallbackFile(id)}
+function image(id){const name=file(id);return name?`${BUNNY}/${name}.webp`:''}
+function audio(id){const name=file(id);return name?`${BUNNY}/audio/${name}.mp3`:''}
+function media(id){return{image:image(id),audio:audio(id)}}
+const assets={base:BUNNY,files:BUNNY_FILES,file,image,audio,media};
+window.L9T2Assets=assets;
+
 const card=(id,word,opts={})=>({id,word,full:opts.full||word,article:opts.article||'',plural:opts.plural||'',perfect:opts.perfect||'',type:opts.type||'word',example:opts.example||'',meaning:opts.meaning||'',answers:[opts.full||word],...media(id)});
 
 const cards=[
@@ -28,9 +55,9 @@ const cards=[
 ];
 
 const grammarExtras=[
- {id:'doch',word:'doch',emoji:'😠',note:'macht eine Aufforderung stärker oder nachdrücklicher',example:'Komm doch rein.',audio:`${AUDIO}doch.mp3`},
- {id:'bitte',word:'bitte',emoji:'🙏',note:'macht eine Aufforderung höflich',example:'Warten Sie bitte hier.',audio:`${AUDIO}bitte.mp3`},
- {id:'mal',word:'mal',emoji:'😊',note:'macht eine Aufforderung natürlicher und freundlicher',example:'Hör mal zu.',audio:`${AUDIO}mal.mp3`}
+ {id:'doch',word:'doch',emoji:'😠',note:'macht eine Aufforderung stärker oder nachdrücklicher',example:'Komm doch rein.',audio:`${BUNNY}/audio/doch.mp3`},
+ {id:'bitte',word:'bitte',emoji:'🙏',note:'macht eine Aufforderung höflich',example:'Warten Sie bitte hier.',audio:`${BUNNY}/audio/bitte.mp3`},
+ {id:'mal',word:'mal',emoji:'😊',note:'macht eine Aufforderung natürlicher und freundlicher',example:'Hör mal zu.',audio:`${BUNNY}/audio/mal.mp3`}
 ];
 
 const grammarCards=grammarExtras.map(x=>({
@@ -50,6 +77,7 @@ const flashcards=[...cards,...grammarCards];
 
 window.L9T2={
  title:'Mach das bitte!',
+ assets,
  cards,
  grammarExtras,
  flashcards,
