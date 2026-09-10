@@ -13,7 +13,55 @@ function run(){return Math.max(1,Math.min(3,Number(localStorage.getItem('SP_SCOR
 function store(){return preview()?sessionStorage:localStorage}
 function key(){return `SP_L10_${owner()}_T2_${taskId}`}
 function read(total){let s={done:[],wrong:{},order:[],_run:run(),total};try{const x=JSON.parse(store().getItem(key())||'{}');if(x&&Number(x._run||1)===run())Object.assign(s,x)}catch(e){}s.done=Array.isArray(s.done)?s.done:[];s.wrong=s.wrong||{};s.order=Array.isArray(s.order)?s.order:[];s.total=total;return s}
-function write(s){s._run=run();try{store().setItem(key(),JSON.stringify(s));window.dispatchEvent(new CustomEvent('sprachpilot-progress',{detail:{lesson:10,theme:2,topic:TOPIC,task:taskId,state:s}}))}catch(e){}}
+let progressSyncTimer=0,progressImporting=false;
+function sendCentralProgress(payload){
+ if(preview())return;
+ try{
+  if(window.SPProgress&&typeof window.SPProgress.recordTaskProgress==='function'){
+   Promise.resolve(window.SPProgress.recordTaskProgress(payload)).catch(()=>{});
+   return;
+  }
+  window.SP_PROGRESS_QUEUE=Array.isArray(window.SP_PROGRESS_QUEUE)?window.SP_PROGRESS_QUEUE:[];
+  window.SP_PROGRESS_QUEUE.push({method:'recordTaskProgress',payload});
+  if(!progressImporting){
+   progressImporting=true;
+   import('/js/progress.js?v=20260831-central6').catch(()=>{}).finally(()=>{progressImporting=false});
+  }
+ }catch(e){}
+}
+function syncStoredProgress(total){
+ if(preview())return;
+ clearTimeout(progressSyncTimer);
+ progressSyncTimer=setTimeout(()=>{
+  try{
+   const persisted=JSON.parse(store().getItem(key())||'null');
+   if(!persisted||Number(persisted._run||1)!==run())return;
+   const finalTotal=Math.max(0,Number(persisted.total||total||0));
+   const done=Array.isArray(persisted.done)?Math.min(finalTotal,persisted.done.length):0;
+   const percent=finalTotal?Math.round(done/finalTotal*100):0;
+   if(percent<=0)return;
+   sendCentralProgress({
+    topic:TOPIC,
+    file:`task.html?task=${taskId}`,
+    taskKey:taskId,
+    taskTitle:task?.title||taskId,
+    run:run(),
+    done,
+    total:finalTotal,
+    percent,
+    completed:percent>=100
+   });
+  }catch(e){}
+ },120);
+}
+function write(s){
+ s._run=run();
+ try{
+  store().setItem(key(),JSON.stringify(s));
+  syncStoredProgress(s.total);
+  window.dispatchEvent(new CustomEvent('sprachpilot-progress',{detail:{lesson:10,theme:2,topic:TOPIC,task:taskId,state:s}}));
+ }catch(e){}
+}
 function taskHead(done,total){const p=total?Math.round(done/total*100):0;return `<section class="l8-card l8-task-head"><div class="l8-task-title-block"><span class="l8-task-kicker">Aufgabe ${Math.max(1,(D.tasks||[]).findIndex(x=>x.id===taskId)+1)}</span><h1>${esc(task?.title||'Aufgabe')}</h1><p>${esc(task?.icon||'✅')} ${esc(task?.text||'')}</p></div><div class="l8-progress-row"><span>${done} von ${total} fertig</span><strong>${p}%</strong></div><div class="l8-progress"><div style="width:${p}%"></div></div></section>`}
 function shell(body,done,total){const header=renderSpHeader({subtitle:'Gesundheit und Alltag · A1 Lektion 10 · Thema 2',color:{main:'#F4A3A3',dark:'#A86464',soft:'#FDF1F1',line:'#F3C9C9'}});root.innerHTML=`<div class="l10-theme-page">${header}<div class="l8-wrap">${preview()?'<div class="sp-teacher-preview-note">Lehrer-Vorschau: Teilnehmerfortschritt wird nicht verändert.</div>':''}${taskHead(done,total)}${body}<footer>© SprachPilot</footer></div></div>`;bindSpHeader(root)}
 function finish(total){const s=read(total);s.done=Array.from({length:total},(_,i)=>String(i));write(s);shell(`<section class="l8-card l8-finish"><div class="l8-finish-icon">✓</div><h2>Gut gemacht!</h2><p>Du hast diese Aufgabe zu 100% abgeschlossen.</p><div class="l8-row l8-center-actions"><a class="l8-btn primary" href="./index.html">Zur Übersicht</a></div></section>`,total,total)}
