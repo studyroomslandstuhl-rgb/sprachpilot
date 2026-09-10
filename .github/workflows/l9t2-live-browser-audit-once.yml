@@ -14,7 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Verify live L9T2 Bunny rendering and audio
+      - name: Verify complete live L9T2 Bunny media flow
         shell: bash
         run: |
           set -e
@@ -24,10 +24,12 @@ jobs:
           npm install --silent playwright-core@1.55.0
           cat > verify.cjs <<'JS'
           const { chromium } = require('playwright-core');
-          const pages=[
-            ['cards','https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=karteikarten&bunnyverify=5'],
-            ['bild-wort','https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=bild-wort&bunnyverify=5'],
-            ['overview','https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/uebersicht.html?bunnyverify=5']
+          const tests=[
+            {name:'cards',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=karteikarten&bunnyverify=6',audio:true,act:async p=>{await p.locator('#l8FlipCard').click();await p.waitForTimeout(550);await p.locator('#cardListen').click()}},
+            {name:'bild-wort',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=bild-wort&bunnyverify=6'},
+            {name:'bild-hoeren',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=bild-hoeren&bunnyverify=6',audio:true,act:async p=>{await p.locator('[data-audio]').first().click()}},
+            {name:'memory',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=memory&bunnyverify=6'},
+            {name:'overview',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/uebersicht.html?bunnyverify=6',audio:true,act:async p=>{await p.locator('[data-sp-vocab-audio]').first().click()}}
           ];
           (async()=>{
             const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME,args:['--no-sandbox','--disable-dev-shm-usage','--autoplay-policy=no-user-gesture-required']});
@@ -36,31 +38,29 @@ jobs:
               try{
                 localStorage.setItem('SP_LOGIN_ROLE','student');localStorage.setItem('SP_ACTIVE_ROLE','student');
                 localStorage.setItem('SP_USER_PROFILE',JSON.stringify({studentId:'audit',motherLanguageCode:'en'}));
-                localStorage.setItem('SP_L9_audit_T2_karteikarten',JSON.stringify({done:[],wrong:{},review:{},reviewFirstCorrect:{},order:['leise','erklaeren','laut']}));
-                localStorage.setItem('SP_L9_audit_T2_bild-wort',JSON.stringify({done:[],wrong:{},review:{},answers:{},order:['pic-leise']}));
+                for(const id of ['karteikarten','bild-wort','bild-hoeren','memory'])localStorage.removeItem(`SP_L9_audit_T2_${id}`);
               }catch(e){}
               document.addEventListener('DOMContentLoaded',()=>{if(!document.querySelector('.sp-header')){const h=document.createElement('header');h.className='sp-header';h.innerHTML='<div class="sp-header__subtitle"></div>';document.body.prepend(h)}},{once:true});
             });
             await context.route('**/js/guard.js*',route=>route.fulfill({status:200,contentType:'application/javascript',body:'// auth bypass only for isolated live media verification'}));
             let failures=0;
-            for(const [name,url] of pages){
+            for(const t of tests){
               const page=await context.newPage(),responses=[],failed=[],errors=[];
               page.on('response',r=>{if(r.url().includes('sprachpilot.b-cdn.net'))responses.push({status:r.status(),type:r.headers()['content-type']||'',url:r.url()})});
               page.on('requestfailed',r=>{if(r.url().includes('sprachpilot.b-cdn.net'))failed.push({url:r.url(),error:r.failure()?.errorText||''})});
               page.on('pageerror',e=>errors.push(e.message));
-              await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000});
-              await page.waitForTimeout(name==='overview'?1800:1000);
-              const state=await page.evaluate(()=>({hasL9T2:!!window.L9T2,hasBunny:!!window.L9T2BunnyMedia,images:[...document.images].filter(x=>x.src.includes('sprachpilot.b-cdn.net')).slice(0,12).map(x=>({src:x.currentSrc||x.src,w:x.naturalWidth,h:x.naturalHeight,complete:x.complete})),buttons:[...document.querySelectorAll('#cardListen,[data-sp-vocab-audio]')].length}));
-              console.log('STATE|'+name+'|'+JSON.stringify(state));
-              const btn=page.locator('#cardListen,[data-sp-vocab-audio]').first();
-              if(await btn.count()){await btn.click({timeout:4000});await page.waitForTimeout(1600)}
-              console.log('BUNNY|'+name+'|'+JSON.stringify(responses));
-              console.log('FAILED|'+name+'|'+JSON.stringify(failed));console.log('ERRORS|'+name+'|'+JSON.stringify(errors));
-              const imageOk=state.images.some(x=>x.w>0&&x.h>0);
+              await page.goto(t.url,{waitUntil:'domcontentloaded',timeout:30000});
+              await page.waitForTimeout(t.name==='overview'?2200:1400);
+              const before=await page.evaluate(()=>({hasL9T2:!!window.L9T2,hasBunny:!!window.L9T2BunnyMedia,images:[...document.images].filter(x=>x.src.includes('sprachpilot.b-cdn.net')).map(x=>({src:x.currentSrc||x.src,w:x.naturalWidth,h:x.naturalHeight})).slice(0,16)}));
+              if(t.act){try{await t.act(page);await page.waitForTimeout(1800)}catch(e){errors.push('interaction: '+e.message)}}
+              const imageOk=before.images.some(x=>x.w>0&&x.h>0);
               const imageResponse=responses.some(x=>(x.status===200||x.status===206)&&x.type.includes('image/'));
-              const audioResponse=(name==='cards'||name==='overview')?responses.some(x=>(x.status===200||x.status===206)&&x.type.includes('audio/')):true;
-              const ok=state.hasL9T2&&state.hasBunny&&errors.length===0&&failed.length===0&&imageOk&&imageResponse&&audioResponse;
-              console.log('RESULT|'+name+'|'+(ok?'PASS':'FAIL'));if(!ok)failures++;
+              const audioResponse=t.audio?responses.some(x=>(x.status===200||x.status===206)&&x.type.includes('audio/')):true;
+              const ok=before.hasL9T2&&before.hasBunny&&imageOk&&imageResponse&&audioResponse&&failed.length===0&&errors.length===0;
+              console.log('STATE|'+t.name+'|'+JSON.stringify(before));
+              console.log('BUNNY|'+t.name+'|'+JSON.stringify(responses.filter(x=>x.type.includes('image/')||x.type.includes('audio/')).slice(0,24)));
+              console.log('FAILED|'+t.name+'|'+JSON.stringify(failed));console.log('ERRORS|'+t.name+'|'+JSON.stringify(errors));
+              console.log('RESULT|'+t.name+'|'+(ok?'PASS':'FAIL'));if(!ok)failures++;
               await page.close();
             }
             await browser.close();if(failures)process.exit(1);
