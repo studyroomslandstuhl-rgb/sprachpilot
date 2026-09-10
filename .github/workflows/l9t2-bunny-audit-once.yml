@@ -1,0 +1,97 @@
+name: L9T2 Bunny media audit once
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/l9t2-bunny-audit-once.yml'
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Probe public Bunny CDN for L9T2 media
+        shell: bash
+        run: |
+          set -u
+          CDN='https://sprachpilot.b-cdn.net'
+          cat > /tmp/words.tsv <<'EOF'
+          leise	leise	leiser
+          erklaeren	erklären	erklaeren
+          laut	laut	laut
+          ausmachen	ausmachen	ausmachen
+          zuhoeren	zuhören	zuhoeren
+          aufstehen	aufstehen	aufstehen
+          warten	warten	warten
+          gebuehr	Gebühr	gebuehr
+          kasse	Kasse	kasse
+          lachen	lachen	lachen
+          aufhoeren	aufhören	aufhoeren
+          anmeldung	Anmeldung	anmeldung
+          stock	Stock	stock
+          unterricht	Unterricht	unterricht
+          sprachschule	Sprachschule	sprachschule
+          autovermietung	Autovermietung	autovermietung
+          hingehen	hingehen	hingehen
+          laden	laden	laden
+          wartebereich	Wartebereich	wartebereich
+          doch	doch	doch
+          bitte	bitte	bitte
+          mal	mal	mal
+          EOF
+
+          probe() {
+            local url="$1"
+            local code type
+            code=$(curl -L -sS --connect-timeout 5 --max-time 12 -o /dev/null -w '%{http_code}' "$url" || true)
+            if [[ "$code" =~ ^(200|206)$ ]]; then
+              type=$(curl -L -sSI --connect-timeout 5 --max-time 12 "$url" 2>/dev/null | awk -F': ' 'tolower($1)=="content-type"{gsub("\r","");v=$2}END{print v}')
+              printf '%s|%s\n' "$url" "$type"
+              return 0
+            fi
+            return 1
+          }
+
+          echo '=== L9T2_BUNNY_AUDIT_BEGIN ==='
+          while IFS=$'\t' read -r id label legacy; do
+            [[ -n "$id" ]] || continue
+            declare -a bases=()
+            add_base(){ local x="$1"; [[ -n "$x" ]] || return; for y in "${bases[@]:-}"; do [[ "$y" == "$x" ]] && return; done; bases+=("$x"); }
+            add_base "$id"
+            add_base "$legacy"
+            low=$(printf '%s' "$label" | tr '[:upper:]' '[:lower:]')
+            add_base "$low"
+            ascii=$(printf '%s' "$low" | sed 's/ä/ae/g;s/ö/oe/g;s/ü/ue/g;s/ß/ss/g;s/ /_/g;s/-/_/g')
+            add_base "$ascii"
+            compact=$(printf '%s' "$ascii" | tr -d '_')
+            add_base "$compact"
+            add_base "l9t2_${id}"
+            add_base "l9_t2_${id}"
+            add_base "l9t2-${id}"
+
+            img=''
+            for b in "${bases[@]}"; do
+              for ext in webp png jpg jpeg; do
+                for p in "$b.$ext" "bilder/$b.$ext" "images/$b.$ext" "wortschatz/$b.$ext"; do
+                  hit=$(probe "$CDN/$p" || true)
+                  if [[ -n "$hit" ]]; then img="$hit"; break 3; fi
+                done
+              done
+            done
+
+            aud=''
+            for b in "${bases[@]}"; do
+              for ext in mp3 m4a wav ogg; do
+                for p in "audio/$b.$ext" "$b.$ext" "audio/l9t2_$b.$ext" "audio/l9t2-$b.$ext"; do
+                  hit=$(probe "$CDN/$p" || true)
+                  if [[ -n "$hit" ]]; then aud="$hit"; break 3; fi
+                done
+              done
+            done
+            printf 'MEDIA|%s|IMG=%s|AUDIO=%s\n' "$id" "${img:-MISSING}" "${aud:-MISSING}"
+          done < /tmp/words.tsv
+          echo '=== L9T2_BUNNY_AUDIT_END ==='
