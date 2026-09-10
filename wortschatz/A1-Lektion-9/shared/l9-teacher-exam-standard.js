@@ -4,7 +4,12 @@ if(window.__SP_L9_TEACHER_EXAM_STANDARD_V1)return;
 window.__SP_L9_TEACHER_EXAM_STANDARD_V1=true;
 
 const themeNo=()=>Number(document.body?.dataset?.theme||location.pathname.match(/Thema-(\d+)/i)?.[1]||0);
-const isExam=t=>!!(t&&(t.exam===true||t.isExam===true||String(t.kind||t.type||'').toLowerCase().includes('exam')||/pruefung|prüfung|exam/i.test(`${t.id||''} ${t.title||''}`))));
+const isExam=t=>Boolean(t&&(
+ t.exam===true||
+ t.isExam===true||
+ String(t.kind||t.type||'').toLowerCase().includes('exam')||
+ /pruefung|prüfung|exam/i.test(`${t.id||''} ${t.title||''}`)
+));
 const examItemsOf=D=>{
  for(const value of [D?.exam,D?.examItems,D?.questions,D?.pruefung,D?.prüfung])if(Array.isArray(value))return value;
  return [];
