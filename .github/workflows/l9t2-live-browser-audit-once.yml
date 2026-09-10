@@ -14,19 +14,7 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - uses: actions/checkout@v6
-      - name: Syntax-check every L9T2 JavaScript file
-        shell: bash
-        run: |
-          set +e
-          failed=0
-          for f in wortschatz/A1-Lektion-9/Thema-2/*.js; do
-            echo "CHECK|$f"
-            node --check "$f" || failed=1
-          done
-          echo "SYNTAX_FAILED=$failed"
-          exit 0
-      - name: Inspect published L9T2 parser errors
+      - name: Trace live parser exception with Chromium CDP
         shell: bash
         run: |
           set -e
@@ -34,18 +22,32 @@ jobs:
           mkdir -p /tmp/l9t2-browser && cd /tmp/l9t2-browser
           npm init -y >/dev/null 2>&1
           npm install --silent playwright-core@1.55.0
-          cat > audit.cjs <<'JS'
+          cat > trace.cjs <<'JS'
           const { chromium } = require('playwright-core');
           (async()=>{
             const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME,args:['--no-sandbox','--disable-dev-shm-usage']});
             const page=await browser.newPage();
-            page.on('pageerror',e=>console.log('PAGEERROR_STACK|'+(e.stack||e.message)));
-            page.on('console',m=>{if(m.type()==='error')console.log('CONSOLE_ERROR|'+m.text())});
-            page.on('requestfailed',r=>console.log('REQFAIL|'+r.url()+'|'+(r.failure()?.errorText||'')));
-            page.on('response',r=>{const u=r.url();if(u.includes('/Thema-2/l9t2-'))console.log('SCRIPTRESP|'+r.status()+'|'+u)});
-            await page.goto('https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=karteikarten&syntaxaudit=2',{waitUntil:'domcontentloaded',timeout:30000}).catch(e=>console.log('GOTOERR|'+e.message));
-            await page.waitForTimeout(3500);
+            const cdp=await page.context().newCDPSession(page);
+            await cdp.send('Runtime.enable');
+            cdp.on('Runtime.exceptionThrown',({exceptionDetails:d})=>{
+              console.log('CDP_EXCEPTION|'+JSON.stringify({
+                text:d.text,
+                url:d.url,
+                lineNumber:d.lineNumber,
+                columnNumber:d.columnNumber,
+                exception:d.exception?.description||d.exception?.value||'',
+                stack:d.stackTrace?.callFrames?.slice(0,6)||[]
+              }));
+            });
+            page.on('pageerror',e=>console.log('PAGEERROR|'+e.message));
+            page.on('response',async r=>{
+              const u=r.url();
+              if((r.request().resourceType()==='script'||u.includes('/js/'))&&r.status()>=400) console.log('BAD_SCRIPT|'+r.status()+'|'+u);
+            });
+            await page.goto('https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=karteikarten&trace=3',{waitUntil:'domcontentloaded',timeout:30000}).catch(e=>console.log('GOTOERR|'+e.message));
+            await page.waitForTimeout(4500);
+            console.log('FINALURL|'+page.url());
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
-          CHROME="$CHROME" node audit.cjs
+          CHROME="$CHROME" node trace.cjs
