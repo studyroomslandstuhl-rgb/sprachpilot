@@ -14,64 +14,37 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 10
     steps:
-      - name: Inspect published L9T2 in Chromium
+      - uses: actions/checkout@v6
+      - name: Syntax-check every L9T2 JavaScript file
+        shell: bash
+        run: |
+          set +e
+          failed=0
+          for f in wortschatz/A1-Lektion-9/Thema-2/*.js; do
+            echo "CHECK|$f"
+            node --check "$f" || failed=1
+          done
+          echo "SYNTAX_FAILED=$failed"
+          exit 0
+      - name: Inspect published L9T2 parser errors
         shell: bash
         run: |
           set -e
-          CHROME=$(command -v google-chrome || command -v google-chrome-stable || true)
-          echo "CHROME=$CHROME"
-          test -n "$CHROME"
+          CHROME=$(command -v google-chrome || command -v google-chrome-stable)
           mkdir -p /tmp/l9t2-browser && cd /tmp/l9t2-browser
           npm init -y >/dev/null 2>&1
           npm install --silent playwright-core@1.55.0
           cat > audit.cjs <<'JS'
           const { chromium } = require('playwright-core');
-          const executablePath = process.env.CHROME;
-          const urls = [
-            'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=karteikarten&liveaudit=1',
-            'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=bild-wort&liveaudit=1',
-            'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/uebersicht.html?liveaudit=1'
-          ];
           (async()=>{
-            const browser = await chromium.launch({headless:true, executablePath, args:['--no-sandbox','--disable-dev-shm-usage']});
-            const context = await browser.newContext();
-            await context.addInitScript(() => {
-              try {
-                localStorage.setItem('SP_LOGIN_ROLE','teacher');
-                localStorage.setItem('SP_ACTIVE_ROLE','teacher');
-                localStorage.setItem('SP_TEACHER_PREVIEW','1');
-                localStorage.setItem('SP_USER_PROFILE',JSON.stringify({role:'teacher',userType:'teacher',displayName:'Live Audit'}));
-                sessionStorage.setItem('SP_TEACHER_PREVIEW','1');
-              } catch(e) {}
-            });
-            for (const url of urls) {
-              const page = await context.newPage();
-              console.log('\n=== PAGE_BEGIN '+url+' ===');
-              page.on('console',m=>console.log('CONSOLE|'+m.type()+'|'+m.text()));
-              page.on('pageerror',e=>console.log('PAGEERROR|'+e.message));
-              page.on('requestfailed',r=>console.log('REQFAIL|'+r.url()+'|'+(r.failure()?.errorText||'')));
-              page.on('response',r=>{const u=r.url();if(u.includes('sprachpilot.b-cdn.net')||u.includes('l9t2-')) console.log('RESP|'+r.status()+'|'+(r.headers()['content-type']||'')+'|'+u)});
-              try { await page.goto(url,{waitUntil:'domcontentloaded',timeout:30000}); } catch(e) { console.log('GOTOERR|'+e.message); }
-              await page.waitForTimeout(7000);
-              console.log('FINALURL|'+page.url());
-              const state = await page.evaluate(() => ({
-                title:document.title,
-                bodyText:(document.body?.innerText||'').slice(0,800),
-                hasL9T2:!!window.L9T2,
-                hasBunny:!!window.L9T2BunnyMedia,
-                sample:(window.L9T2?.flashcards||window.L9T2?.cards||[]).slice(0,3).map(x=>({id:x.id,image:x.image,audio:x.audio})),
-                images:[...document.images].slice(0,12).map(x=>({src:x.currentSrc||x.src,complete:x.complete,naturalWidth:x.naturalWidth,naturalHeight:x.naturalHeight,display:getComputedStyle(x).display})),
-                audioButtons:[...document.querySelectorAll('button')].filter(b=>/hör|anhör|listen/i.test(b.textContent||'')).slice(0,5).map(b=>({id:b.id,text:b.textContent.trim(),disabled:b.disabled}))
-              }));
-              console.log('STATE|'+JSON.stringify(state));
-              const audioButton = page.locator('#cardListen,[data-sp-vocab-audio]').first();
-              if (await audioButton.count()) {
-                try { await audioButton.click({timeout:3000}); await page.waitForTimeout(1800); console.log('AUDIOCLICK|ok'); }
-                catch(e) { console.log('AUDIOCLICK|fail|'+e.message); }
-              }
-              console.log('=== PAGE_END ===');
-              await page.close();
-            }
+            const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME,args:['--no-sandbox','--disable-dev-shm-usage']});
+            const page=await browser.newPage();
+            page.on('pageerror',e=>console.log('PAGEERROR_STACK|'+(e.stack||e.message)));
+            page.on('console',m=>{if(m.type()==='error')console.log('CONSOLE_ERROR|'+m.text())});
+            page.on('requestfailed',r=>console.log('REQFAIL|'+r.url()+'|'+(r.failure()?.errorText||'')));
+            page.on('response',r=>{const u=r.url();if(u.includes('/Thema-2/l9t2-'))console.log('SCRIPTRESP|'+r.status()+'|'+u)});
+            await page.goto('https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=karteikarten&syntaxaudit=2',{waitUntil:'domcontentloaded',timeout:30000}).catch(e=>console.log('GOTOERR|'+e.message));
+            await page.waitForTimeout(3500);
             await browser.close();
           })().catch(e=>{console.error(e);process.exit(1)});
           JS
