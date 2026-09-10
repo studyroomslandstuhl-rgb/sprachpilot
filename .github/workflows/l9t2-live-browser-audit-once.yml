@@ -25,11 +25,19 @@ jobs:
           cat > verify.cjs <<'JS'
           const { chromium } = require('playwright-core');
           const tests=[
-            {name:'cards',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=karteikarten&bunnyverify=6',audio:true,act:async p=>{await p.locator('#l8FlipCard').click();await p.waitForTimeout(550);await p.locator('#cardListen').click()}},
-            {name:'bild-wort',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=bild-wort&bunnyverify=6'},
-            {name:'bild-hoeren',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=bild-hoeren&bunnyverify=6',audio:true,act:async p=>{await p.locator('[data-audio]').first().click()}},
-            {name:'memory',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=memory&bunnyverify=6'},
-            {name:'overview',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/uebersicht.html?bunnyverify=6',audio:true,act:async p=>{await p.locator('[data-sp-vocab-audio]').first().click()}}
+            {name:'cards',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=karteikarten&bunnyverify=7',audio:true,act:async p=>{await p.locator('#l8FlipCard').click();await p.waitForTimeout(550);await p.locator('#cardListen').click()}},
+            {name:'bild-wort',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=bild-wort&bunnyverify=7'},
+            {name:'bild-hoeren',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=bild-hoeren&bunnyverify=7',audio:true,act:async p=>{await p.locator('[data-audio]').first().click()}},
+            {name:'memory',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/task.html?task=memory&bunnyverify=7',act:async p=>{
+              const cards=p.locator('.l9t2-memory-card');
+              const count=await cards.count();
+              for(let i=0;i<count;i++){
+                await cards.nth(i).click();await p.waitForTimeout(90);
+                if(await p.locator('.l9t2-memory-card.open img[src*="sprachpilot.b-cdn.net"]').count())break;
+                if(i%2===1)await p.waitForTimeout(750);
+              }
+            }},
+            {name:'overview',url:'https://www.sprachpilot.org/wortschatz/A1-Lektion-9/Thema-2/uebersicht.html?bunnyverify=7',audio:true,act:async p=>{await p.locator('[data-sp-vocab-audio]').first().click()}}
           ];
           (async()=>{
             const browser=await chromium.launch({headless:true,executablePath:process.env.CHROME,args:['--no-sandbox','--disable-dev-shm-usage','--autoplay-policy=no-user-gesture-required']});
@@ -51,13 +59,13 @@ jobs:
               page.on('pageerror',e=>errors.push(e.message));
               await page.goto(t.url,{waitUntil:'domcontentloaded',timeout:30000});
               await page.waitForTimeout(t.name==='overview'?2200:1400);
-              const before=await page.evaluate(()=>({hasL9T2:!!window.L9T2,hasBunny:!!window.L9T2BunnyMedia,images:[...document.images].filter(x=>x.src.includes('sprachpilot.b-cdn.net')).map(x=>({src:x.currentSrc||x.src,w:x.naturalWidth,h:x.naturalHeight})).slice(0,16)}));
               if(t.act){try{await t.act(page);await page.waitForTimeout(1800)}catch(e){errors.push('interaction: '+e.message)}}
-              const imageOk=before.images.some(x=>x.w>0&&x.h>0);
+              const state=await page.evaluate(()=>({hasL9T2:!!window.L9T2,hasBunny:!!window.L9T2BunnyMedia,images:[...document.images].filter(x=>x.src.includes('sprachpilot.b-cdn.net')).map(x=>({src:x.currentSrc||x.src,w:x.naturalWidth,h:x.naturalHeight})).slice(0,16)}));
+              const imageOk=state.images.some(x=>x.w>0&&x.h>0);
               const imageResponse=responses.some(x=>(x.status===200||x.status===206)&&x.type.includes('image/'));
               const audioResponse=t.audio?responses.some(x=>(x.status===200||x.status===206)&&x.type.includes('audio/')):true;
-              const ok=before.hasL9T2&&before.hasBunny&&imageOk&&imageResponse&&audioResponse&&failed.length===0&&errors.length===0;
-              console.log('STATE|'+t.name+'|'+JSON.stringify(before));
+              const ok=state.hasL9T2&&state.hasBunny&&imageOk&&imageResponse&&audioResponse&&failed.length===0&&errors.length===0;
+              console.log('STATE|'+t.name+'|'+JSON.stringify(state));
               console.log('BUNNY|'+t.name+'|'+JSON.stringify(responses.filter(x=>x.type.includes('image/')||x.type.includes('audio/')).slice(0,24)));
               console.log('FAILED|'+t.name+'|'+JSON.stringify(failed));console.log('ERRORS|'+t.name+'|'+JSON.stringify(errors));
               console.log('RESULT|'+t.name+'|'+(ok?'PASS':'FAIL'));if(!ok)failures++;
