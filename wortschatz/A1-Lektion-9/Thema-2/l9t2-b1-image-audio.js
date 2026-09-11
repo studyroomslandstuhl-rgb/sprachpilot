@@ -27,31 +27,34 @@ const B1=Object.freeze({
  mal:'Dieses Wort macht eine Aufforderung lockerer und natürlicher, besonders in einem informellen Gespräch.'
 });
 
-function applyText(list){
- for(const item of list||[]){if(item&&B1[item.id])item.b1Text=B1[item.id]}
-}
-applyText(D.cards);
-applyText(D.flashcards);
-applyText(D.visualWords);
-applyText(D.mixedWords);
-
-for(const task of D.tasks||[]){
- if(!task)continue;
- if(task.id==='bild-wort'){
-  task.title='Bild – B1-Bedeutung';
-  task.description='Sieh das Bild und wähle die passende Erklärung auf B1-Deutsch.';
-  task.instruction=task.description;
-  task.icon='🖼️';
- }
- if(task.id==='bild-hoeren'){
-  task.title='Bild – B1-Hören';
-  task.description='Sieh das Bild, höre vier Erklärungen auf B1-Deutsch und wähle die passende aus.';
-  task.instruction=task.description;
-  task.icon='🎧';
+function applyText(list){for(const item of list||[]){if(item&&B1[item.id])item.b1Text=B1[item.id]}}
+function applyTasks(){
+ for(const task of D.tasks||[]){
+  if(!task)continue;
+  if(task.id==='bild-wort'){
+   task.title='Bild – B1-Bedeutung';
+   task.description='Sieh das Bild und wähle die passende Erklärung auf B1-Deutsch.';
+   task.instruction=task.description;
+   task.icon='🖼️';
+  }
+  if(task.id==='bild-hoeren'){
+   task.title='Bild – B1-Hören';
+   task.description='Sieh das Bild, höre vier Erklärungen auf B1-Deutsch und wähle die passende aus.';
+   task.instruction=task.description;
+   task.icon='🎧';
+  }
  }
 }
+function apply(){
+ applyText(D.cards);
+ applyText(D.flashcards);
+ applyText(D.visualWords);
+ applyText(D.mixedWords);
+ applyTasks();
+}
+apply();
 
 D.b1ImageAudioText=B1;
 D.b1Text=function(item){return B1[item?.id]||String(item?.meaning||item?.full||item?.word||'').trim()};
-window.L9T2B1ImageAudio={texts:B1,apply:()=>{applyText(D.visualWords);applyText(D.flashcards)}};
+window.L9T2B1ImageAudio={texts:B1,apply};
 })();
