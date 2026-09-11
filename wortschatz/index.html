@@ -69,7 +69,7 @@ footer{text-align:center;color:var(--sp-muted);margin-top:24px;font-size:14px}
 <script type="module" src="/js/account-progress-autostart.js?v=20260831-central3"></script>
 <script type="module">
 import { loadCourseRelease, lessonOpen } from "/js/course-releases.js?v=release-core-20260701b";
-import { logout, dashboardHref } from "/js/auth.js?v=20260709-login-fix";
+import { logout, dashboardHref, getActiveRole, getStoredTeacherProfile } from "/js/auth.js?v=20260709-login-fix";
 
 const LEVELS={A1:"a1Lessons",A2:"a2Lessons",B1:"b1Lessons"};
 const A1_LESSON_COLORS={
@@ -115,8 +115,9 @@ function lessonReleased(data,lesson){
 }
 function setAccount(){
   const p=profile();
+  const teacher=getActiveRole()==="teacher" ? getStoredTeacherProfile() : null;
   const pill=document.getElementById("accountPill");
-  if(pill) pill.textContent=p ? `${fullName(p)}${courseId(p)?" · "+courseId(p):""}` : "Nicht eingeloggt";
+  if(pill) pill.textContent=p ? `${fullName(p)}${courseId(p)?" · "+courseId(p):""}` : teacher ? `${teacher.vorname||teacher.firstName||teacher.name||"Lehrer/in"} · Lehrerzugang` : "Nicht eingeloggt";
   const dash=document.querySelector('.account-link[href*="dashboard"]');
   if(dash) dash.href=dashboardHref();
 }
@@ -151,6 +152,7 @@ function render(data,source="cache"){
   Object.entries(LEVELS).forEach(([level,target])=>renderLevel(level,target,data||{}));
   const p=profile();
   const count=document.querySelectorAll(".lesson-btn:not(.skeleton)").length;
+  if(getActiveRole()==="teacher"){setStatus(`Lehrer-Vorschau: <strong>Alle ${count} Lektionen</strong> sind geöffnet. Schülerpunkte und Schülerfortschritt werden dabei nicht verändert.`);return}
   if(!p){setStatus("Bitte zuerst einloggen. Danach siehst du deine freigeschalteten Lektionen.",true);return}
   if(count){setStatus(`Eingeloggt: <strong>${safe(fullName(p))}</strong> · Kurs: <strong>${safe(courseId(p))}</strong><br>Freigeschaltet: <strong>${count}</strong> Lektion(en)`)}
   else setStatus(`Für deinen Kurs <strong>${safe(courseId(p))}</strong> ist noch keine Wortschatz-Lektion freigeschaltet.`,true)
@@ -160,6 +162,7 @@ async function start(){
   setAccount();
   document.getElementById("logoutBtn")?.addEventListener("click",()=>{const action=window.logout||logout;return action()});
   const p=profile();
+  if(getActiveRole()==="teacher"){render({releaseMode:"all",defaultLocked:false,teacherPreview:true},"teacher");return}
   const cached=p?.assignments||readJson("SP_COURSE_RELEASES",null);
   if(hasReleaseData(cached))render(cached,"cache");else renderSkeleton();
   if(!p){render({},"logged-out");return}
