@@ -155,9 +155,10 @@ function render(data,source="cache"){
   if(count){setStatus(`Eingeloggt: <strong>${safe(fullName(p))}</strong> · Kurs: <strong>${safe(courseId(p))}</strong><br>Freigeschaltet: <strong>${count}</strong> Lektion(en)`)}
   else setStatus(`Für deinen Kurs <strong>${safe(courseId(p))}</strong> ist noch keine Wortschatz-Lektion freigeschaltet.`,true)
 }
+window.logout=logout;
 async function start(){
   setAccount();
-  document.getElementById("logoutBtn")?.addEventListener("click",()=>logout());
+  document.getElementById("logoutBtn")?.addEventListener("click",()=>{const action=window.logout||logout;return action()});
   const p=profile();
   const cached=p?.assignments||readJson("SP_COURSE_RELEASES",null);
   if(hasReleaseData(cached))render(cached,"cache");else renderSkeleton();
