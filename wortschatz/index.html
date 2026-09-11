@@ -118,7 +118,8 @@ function setAccount(){
   if(dash) dash.href=dashboardHref();
 }
 function setStatus(text,bad=false){const box=document.getElementById("assignmentStatus");box.className="status"+(bad?" no":"");box.innerHTML=text}
-function renderSkeleton(){Object.values(LEVELS).forEach(id=>{const box=document.getElementById(id);box.innerHTML="";for(let i=0;i<4;i++){const el=document.createElement("div");el.className="lesson-btn skeleton";el.textContent="Lektion";box.appendChild(el)}})}
+function renderSkeleton(){Object.values(LEVELS).forEach(id=>{const box=document.getElementById(id);box.innerHTML="";const el=document.createElement("div");el.className="empty";el.textContent="Freigaben werden geladen …";box.appendChild(el)})}
+function renderLoadError(){Object.values(LEVELS).forEach(id=>{const box=document.getElementById(id);if(!box||box.querySelector(".lesson-btn:not(.skeleton)"))return;box.innerHTML="";const el=document.createElement("div");el.className="empty";el.textContent="Freigaben konnten nicht geladen werden. Bitte Seite neu laden.";box.appendChild(el)});setStatus("Die Kursfreigaben konnten nicht geladen werden. Bitte prüfe die Internetverbindung und lade die Seite neu.",true)}
 function applyLessonColor(a,level,number){
   if(level!=="A1")return;
   const color=A1_LESSON_COLORS[number];
@@ -158,10 +159,21 @@ async function start(){
   const cached=p?.assignments||readJson("SP_COURSE_RELEASES",null);
   if(hasReleaseData(cached))render(cached,"cache");else renderSkeleton();
   if(!p){setStatus("Bitte zuerst einloggen. Danach siehst du deine freigeschalteten Lektionen.",true);return}
-  const data=await loadCourseRelease(p).catch(()=>cached||{});
-  if(hasReleaseData(data))render(data,"cloud");else render(cached||{},"fallback");
+  let finished=false;
+  const watchdog=setTimeout(()=>{if(!finished)renderLoadError()},12000);
+  try{
+    const data=await loadCourseRelease(p);
+    finished=true;
+    clearTimeout(watchdog);
+    if(hasReleaseData(data))render(data,"cloud");else render(cached||{},"fallback");
+  }catch(e){
+    finished=true;
+    clearTimeout(watchdog);
+    console.warn("Kursfreigaben konnten nicht geladen werden",e);
+    if(hasReleaseData(cached))render(cached,"cache-error");else renderLoadError();
+  }
 }
-start();
+start().catch(e=>{console.warn("Wortschatz-Übersicht konnte nicht gestartet werden",e);renderLoadError()});
 </script>
 <script defer src="../js/performance-boot.js?v=20260709b"></script>
 </body>
