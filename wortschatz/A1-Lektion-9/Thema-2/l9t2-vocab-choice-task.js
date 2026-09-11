@@ -3,7 +3,33 @@
 const D=window.L9T2,root=document.getElementById('app');
 const taskId=String(new URLSearchParams(location.search).get('task')||'');
 if(!D||!root||!['bild-wort','bild-hoeren'].includes(taskId))return;
+const B1=Object.freeze({
+ leise:'Wenn jemand so spricht, hört man die Stimme nur schwach, und andere Personen werden kaum gestört.',
+ erklaeren:'Man beschreibt einen Inhalt so genau, dass eine andere Person ihn verstehen kann.',
+ laut:'Eine Stimme oder ein Geräusch ist so stark, dass man es deutlich oder sogar aus größerer Entfernung hört.',
+ ausmachen:'Man beendet die Funktion eines Geräts, sodass es danach nicht mehr eingeschaltet ist.',
+ zuhoeren:'Man konzentriert sich auf das, was eine andere Person sagt, und versucht den Inhalt zu verstehen.',
+ aufstehen:'Man verlässt eine sitzende oder liegende Position und stellt sich auf die Füße.',
+ warten:'Man bleibt an einem Ort, bis eine Person kommt oder ein Ereignis beginnt.',
+ gebuehr:'Das ist ein Geldbetrag, den man für eine bestimmte Dienstleistung oder einen offiziellen Vorgang bezahlen muss.',
+ kasse:'Dort bezahlt man Waren, Eintritt oder andere Kosten.',
+ lachen:'Man reagiert mit Stimme und Gesicht, weil etwas lustig ist oder Freude macht.',
+ aufhoeren:'Man beendet eine Handlung und macht danach nicht weiter.',
+ anmeldung:'Dabei gibt man seine Daten an, um offiziell an einem Kurs, Termin oder Angebot teilzunehmen.',
+ stock:'Das ist eine Ebene in einem mehrstöckigen Gebäude.',
+ unterricht:'Das ist die Zeit, in der Lernende gemeinsam mit einer Lehrkraft lernen und üben.',
+ sprachschule:'Das ist eine Bildungseinrichtung, in der Menschen eine Fremdsprache lernen.',
+ autovermietung:'Das ist eine Firma, bei der man gegen Bezahlung für eine bestimmte Zeit ein Fahrzeug bekommt.',
+ hingehen:'Man bewegt sich zu einem bestimmten Ort, weil man dort etwas erledigen oder jemanden treffen möchte.',
+ laden:'Man bringt Gegenstände oder Gepäck in ein Fahrzeug, damit sie transportiert werden können.',
+ wartebereich:'Das ist ein Platz mit Sitzmöglichkeiten, an dem Menschen bis zu ihrem Termin bleiben.',
+ doch:'Dieses Wort kann eine Aufforderung stärker machen oder jemanden freundlich ermutigen, etwas trotzdem zu tun.',
+ bitte:'Dieses Wort macht eine Aufforderung höflicher und zeigt Respekt gegenüber der anderen Person.',
+ mal:'Dieses Wort macht eine Aufforderung lockerer und natürlicher, besonders in einem informellen Gespräch.'
+});
 const words=D.visualWords||[],task=(D.tasks||[]).find(x=>x.id===taskId);if(!task)return;
+if(taskId==='bild-wort'){task.title='Bild – B1-Bedeutung';task.description='Sieh das Bild und wähle die passende Erklärung auf B1-Deutsch.';task.instruction=task.description;task.icon='🖼️'}
+else{task.title='Bild – B1-Hören';task.description='Sieh das Bild, höre vier Erklärungen auf B1-Deutsch und wähle die passende aus.';task.instruction=task.description;task.icon='🎧'}
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 const shuffle=a=>{const b=[...(a||[])];for(let i=b.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[b[i],b[j]]=[b[j],b[i]]}return b};
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')}catch(e){return{}}}
@@ -16,22 +42,22 @@ function write(s,emit=true){try{store.setItem(key,JSON.stringify(s));if(emit)win
 function firstOpen(){const s=read();for(const id of s.order)if(!s.done.includes(id))return id;for(const id of s.order)if(s.review[id])return id;return null}
 function markWrong(id){const s=read();s.wrong[id]=(Number(s.wrong[id])||0)+1;s.review[id]=true;write(s);return s.wrong[id]}
 function markDone(id){const s=read();if(s.done.includes(id)&&s.review[id])delete s.review[id];else if(!s.done.includes(id))s.done.push(id);delete s.wrong[id];delete s.answers[id];write(s);sync(s);return s}
-function label(w){return String(w?.full||w?.word||'')}
 function byId(id){return words.find(x=>x.id===id)}
-function visual(w){if(w?.emoji)return`<div class="l9t2-main-image l9t2-native-emoji" role="img" aria-label="${esc(label(w))}"><span>${esc(w.emoji)}</span></div>`;return`<div class="l9t2-main-image"><img src="${esc(w?.image||'')}" alt="" loading="lazy" decoding="async" onerror="this.remove()"></div>`}
-function speak(text){try{if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=.84;speechSynthesis.speak(u)}catch(e){}}
-function play(w){if(w?.audio){try{const a=new Audio(w.audio);a.onerror=()=>speak(label(w));const p=a.play();if(p?.catch)p.catch(()=>speak(label(w)));return}catch(e){}}speak(label(w))}
+function b1(w){return String(B1[w?.id]||w?.b1Text||w?.meaning||w?.full||w?.word||'').trim()}
+function visual(w){if(w?.emoji)return`<div class="l9t2-main-image l9t2-native-emoji" role="img" aria-label="Bild"><span>${esc(w.emoji)}</span></div>`;return`<div class="l9t2-main-image"><img src="${esc(w?.image||'')}" alt="" loading="lazy" decoding="async" onerror="this.remove()"></div>`}
+function germanVoice(){try{return speechSynthesis.getVoices().find(v=>/^de(-|_)/i.test(v.lang||''))||null}catch(e){return null}}
+function speak(text){try{if(!('speechSynthesis'in window))return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=.88;const v=germanVoice();if(v)u.voice=v;speechSynthesis.speak(u)}catch(e){}}
 function pct(s=read()){return Math.round(s.done.length/Math.max(1,valid.length)*100)}
 function head(){const s=read(),p=pct(s);return`<section class="l8-card l8-task-head"><div class="l8-task-title-block"><span class="l8-task-kicker">Aufgabe ${taskId==='bild-wort'?2:3}</span><h1>${esc(task.title)}</h1><p>${esc(task.icon||'✅')} ${esc(task.description||'')}</p></div><div class="l8-progress-row"><span>${s.done.length} von ${valid.length} fertig</span><strong>${p}%</strong></div><div class="l8-progress"><div style="width:${p}%"></div></div></section>`}
 function scroll(){setTimeout(()=>window.SPTaskAutoScroll?.schedule?.(0,'auto'),30)}
 async function sync(s){if(preview())return;try{await import('/js/progress.js?v=20260831-central6');await window.SPProgress?.recordTaskProgress?.({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:9,theme:2,topicId:'wortschatz-a1-lektion-9-thema-2',title:'A1 Lektion 9 · Thema 2',file:`task.html?task=${taskId}`,taskTitle:task.title,percent:pct(s),completed:pct(s)>=100,total:valid.length,done:s.done.length})}catch(e){}}
 function finish(){root.innerHTML=`<div class="l8-wrap">${head()}<section class="l8-card l8-finish"><div class="l8-finish-icon">✓</div><h2>Gut gemacht!</h2><p>Du hast alle ${valid.length} Wörter bearbeitet.</p><div class="l8-row l8-center-actions"><a class="l8-btn" href="index.html">Zur Übersicht</a><a class="l8-btn primary" href="task.html?task=${taskId==='bild-wort'?'bild-hoeren':'memory'}">Weiter</a></div></section></div>`;scroll()}
 function draw(){const open=firstOpen();if(!open)return finish();const wid=open.slice(4),target=byId(wid);if(!target){markDone(open);return draw()}const options=shuffle([target,...shuffle(words.filter(x=>x.id!==wid)).slice(0,3)]),s=read(),tries=s.wrong[open]||0,saved=s.answers[open]||'';
- root.innerHTML=`<div class="l8-wrap">${head()}<section class="l8-card l8-exercise"><div id="taskArea"><div class="l9t2-center">${visual(target)}${taskId==='bild-hoeren'?'<p class="l8-small">Höre die vier Wörter und wähle das passende Wort zum Bild oder Emoji.</p>':''}<div class="l9t2-choice-grid">${taskId==='bild-wort'?options.map(x=>`<button class="l8-option" data-word="${esc(x.id)}" type="button">${esc(label(x))}</button>`).join(''):options.map((x,i)=>`<button class="l8-option l9t2-audio-option ${saved===x.id?'selected':''}" data-audio="${esc(x.id)}" type="button">🔊 Wort ${String.fromCharCode(65+i)}</button>`).join('')}</div>${taskId==='bild-hoeren'?'<div class="l8-row l8-center-actions"><button class="l8-btn primary" id="checkAudio" type="button">Prüfen</button></div>':''}<div id="feedback">${tries?'<div class="l8-feedback bad">Noch nicht richtig. Versuch es noch einmal.</div>':''}</div></div></div></section><footer>© SprachPilot</footer></div>`;
- if(taskId==='bild-wort')document.querySelectorAll('[data-word]').forEach(b=>b.onclick=()=>{if(b.dataset.word===wid){markDone(open);document.getElementById('feedback').innerHTML='<div class="l8-feedback good">Richtig!</div>';setTimeout(draw,360)}else{markWrong(open);document.getElementById('feedback').innerHTML='<div class="l8-feedback bad">Noch nicht richtig. Versuch es noch einmal.</div>'}});
- else{document.querySelectorAll('[data-audio]').forEach(b=>b.onclick=()=>{const st=read();st.answers[open]=b.dataset.audio;write(st,false);document.querySelectorAll('[data-audio]').forEach(x=>x.classList.remove('selected'));b.classList.add('selected');play(byId(b.dataset.audio))});document.getElementById('checkAudio').onclick=()=>{const sel=read().answers[open]||'';if(!sel)return;if(sel===wid){markDone(open);document.getElementById('feedback').innerHTML='<div class="l8-feedback good">Richtig!</div>';setTimeout(draw,360)}else{markWrong(open);document.getElementById('feedback').innerHTML='<div class="l8-feedback bad">Noch nicht richtig. Höre noch einmal.</div>'}}}
+ root.innerHTML=`<div class="l8-wrap">${head()}<section class="l8-card l8-exercise"><div id="taskArea"><div class="l9t2-center">${visual(target)}${taskId==='bild-hoeren'?'<p class="l8-small">Höre vier Erklärungen auf B1-Deutsch. Welche Erklärung passt zum Bild oder Emoji?</p>':'<p class="l8-small">Welche Erklärung auf B1-Deutsch passt zum Bild oder Emoji?</p>'}<div class="l9t2-choice-grid">${taskId==='bild-wort'?options.map(x=>`<button class="l8-option l9t2-b1-text-option" data-word="${esc(x.id)}" type="button">${esc(b1(x))}</button>`).join(''):options.map((x,i)=>`<button class="l8-option l9t2-audio-option ${saved===x.id?'selected':''}" data-audio="${esc(x.id)}" type="button">🔊 Text ${String.fromCharCode(65+i)}</button>`).join('')}</div>${taskId==='bild-hoeren'?'<div class="l8-row l8-center-actions"><button class="l8-btn primary" id="checkAudio" type="button">Prüfen</button></div>':''}<div id="feedback">${tries?'<div class="l8-feedback bad">Noch nicht richtig. Versuch es noch einmal.</div>':''}</div></div></div></section><footer>© SprachPilot</footer></div>`;
+ if(taskId==='bild-wort')document.querySelectorAll('[data-word]').forEach(btn=>btn.onclick=()=>{if(btn.dataset.word===wid){markDone(open);document.getElementById('feedback').innerHTML='<div class="l8-feedback good">Richtig!</div>';setTimeout(draw,360)}else{markWrong(open);document.getElementById('feedback').innerHTML='<div class="l8-feedback bad">Noch nicht richtig. Lies die Erklärungen noch einmal.</div>'}});
+ else{document.querySelectorAll('[data-audio]').forEach(btn=>btn.onclick=()=>{const st=read();st.answers[open]=btn.dataset.audio;write(st,false);document.querySelectorAll('[data-audio]').forEach(x=>x.classList.remove('selected'));btn.classList.add('selected');speak(b1(byId(btn.dataset.audio)))});document.getElementById('checkAudio').onclick=()=>{const sel=read().answers[open]||'';if(!sel)return;if(sel===wid){markDone(open);document.getElementById('feedback').innerHTML='<div class="l8-feedback good">Richtig!</div>';setTimeout(draw,360)}else{markWrong(open);document.getElementById('feedback').innerHTML='<div class="l8-feedback bad">Noch nicht richtig. Höre die Erklärungen noch einmal.</div>'}}}
  scroll();
 }
-const style=document.createElement('style');style.textContent='.l9t2-native-emoji{display:grid!important;place-items:center!important;background:var(--lesson-soft)!important}.l9t2-native-emoji span{font-size:clamp(74px,22vw,150px);line-height:1}.l9t2-memory-emoji{font-size:clamp(34px,11vw,72px);line-height:1}';document.head.appendChild(style);
+const style=document.createElement('style');style.textContent='.l9t2-native-emoji{display:grid!important;place-items:center!important;background:var(--lesson-soft)!important}.l9t2-native-emoji span{font-size:clamp(74px,22vw,150px);line-height:1}.l9t2-b1-text-option{font-size:16px!important;line-height:1.42!important;text-align:left!important;min-height:92px!important;padding:14px!important}@media(max-width:700px){.l9t2-b1-text-option{font-size:15px!important;min-height:84px!important}}';document.head.appendChild(style);
 draw();
 })();
