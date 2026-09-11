@@ -1,5 +1,6 @@
 (function(){'use strict';
 const B='https://sprachpilot.b-cdn.net/';
+const AUDIO=B+'audio/';
 const v=[
 ['klub','der Klub','Klub','die Klubs','🏢','Eine Gruppe oder ein Ort, wo Menschen gemeinsam etwas machen.'],
 ['notaufnahme','die Notaufnahme','Notaufnahme','die Notaufnahmen','🏥','Hier bekommt man im Krankenhaus bei einem Notfall schnell Hilfe.'],
@@ -22,7 +23,7 @@ const v=[
 ['bekannte','die Bekannte','Bekannte','die Bekannten','👩','Eine Frau, die man kennt, aber die nicht unbedingt eine Freundin ist.'],
 ['lied','das Lied','Lied','die Lieder','🎵','Musik mit einem Text, den man singt.'],
 ['schatz','der Schatz','Schatz','die Schätze','💝','Eine sehr liebe Person oder etwas sehr Wertvolles.']
-].map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:B+'l10t2-'+x[0]+'.webp',audio:B+'l10t2-'+x[0]+'.mp3'}));
+].map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:B+x[0]+'.webp',audio:AUDIO+x[0]+'.mp3'}));
 const nouns=v.filter(x=>x.article);
 const tasks=[
 {id:'karteikarten',title:'Karteikarten',icon:'🃏',text:'Lerne alle 21 Wörter wie bei den Karteikarten aus Lektion 9.'},
