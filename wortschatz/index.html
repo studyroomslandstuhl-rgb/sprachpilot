@@ -158,7 +158,7 @@ async function start(){
   const p=profile();
   const cached=p?.assignments||readJson("SP_COURSE_RELEASES",null);
   if(hasReleaseData(cached))render(cached,"cache");else renderSkeleton();
-  if(!p){setStatus("Bitte zuerst einloggen. Danach siehst du deine freigeschalteten Lektionen.",true);return}
+  if(!p){render({},"logged-out");return}
   let finished=false;
   const watchdog=setTimeout(()=>{if(!finished)renderLoadError()},12000);
   try{
