@@ -1,10 +1,10 @@
 (function(){
 'use strict';
-if(window.__SP_L10T2_L8_TASK_BRIDGE_V2)return;window.__SP_L10T2_L8_TASK_BRIDGE_V2=true;
+if(window.__SP_L10T2_L8_TASK_BRIDGE_V3)return;window.__SP_L10T2_L8_TASK_BRIDGE_V3=true;
 function ensureCss(href,id){if(document.getElementById(id))return;const l=document.createElement('link');l.id=id;l.rel='stylesheet';l.href=href;document.head.appendChild(l)}
 ensureCss('/wortschatz/A1-Lektion-8/shared/l8-color.css?v=20260911-l10t2-l8','sp-l10t2-l8-base');
 ensureCss('./l10t2-l8.css?v=20260911-l10t2-l8','sp-l10t2-l8-local');
-const task=String(new URLSearchParams(location.search).get('task')||'').toLowerCase();
+const task=String(new URLSearchParams(location.search).get('task')||'').toLowerCase(),page=String(document.body?.dataset?.page||'');
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{}}catch(e){return{}}}
 function preview(){try{const p=profile(),role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||p.role||'').toLowerCase();return ['teacher','lehrer','admin','owner','superadmin'].includes(role)||sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}catch(e){return false}}
 function owner(){const p=profile();return String(p.canonicalStudentId||p.docId||p.studentId||p.userId||p.authUid||p.uid||p.id||p.email||localStorage.getItem('SP_STUDENT_ID')||'student').trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_')}
@@ -12,8 +12,9 @@ function resetThemeProgress(){if(preview()){alert('In der Lehrer-Vorschau werden
 window.resetThemeProgress=resetThemeProgress;
 try{if(task){sessionStorage.setItem('SP_L10_LAST_TASK_T2',task);localStorage.setItem('SP_L10_LAST_TASK_T2',task)}}catch(e){}
 function taskTitle(){const t=(window.L10T2?.tasks||[]).find(x=>String(x.id)===task);return String(t?.title||'Aufgabe')}
-function polishHeader(){const sub=document.querySelector('.sp-header__subtitle');if(sub)sub.textContent=`${taskTitle()} · A1 Lektion 10 · Thema 2`;document.querySelectorAll('.sp-header__nav-link').forEach(a=>{if(String(a.textContent||'').trim()==='Übersicht'&&a.tagName==='A')a.setAttribute('href','uebersicht.html')});document.querySelectorAll('#app .sp-header').forEach(h=>h.remove())}
+function subtitle(){if(page==='overview')return'Übersicht · Gesundheit und Possessivpronomen · A1 Lektion 10 · Thema 2';if(page==='theme')return'Gesundheit und Possessivpronomen · A1 Lektion 10 · Thema 2';return`${taskTitle()} · A1 Lektion 10 · Thema 2`}
+function polishHeader(){const sub=document.querySelector('.sp-header__subtitle');if(sub)sub.textContent=subtitle();document.querySelectorAll('.sp-header__nav-link').forEach(a=>{if(String(a.textContent||'').trim()==='Übersicht'&&a.tagName==='A')a.setAttribute('href','uebersicht.html')});document.querySelectorAll('#app .sp-header').forEach(h=>h.remove())}
 function patchCardTranslation(){if(task!=='karteikarten'&&task!=='cards')return;const box=document.querySelector('.l8-flip-front .l8-card-translation'),word=String(document.querySelector('.l8-flip-word')?.textContent||'').trim();if(!box||!word)return;const item=(window.L10T2?.cards||[]).find(x=>String(x.full||x.word||'').trim()===word);if(!item)return;const label=box.querySelector('span'),value=box.querySelector('strong');if(label)label.textContent=window.L10T2Translations?.label||'Übersetzung';if(value)value.textContent=item.translation||'–'}
 function patch(){polishHeader();patchCardTranslation()}
-const root=document.getElementById('app')||document.body;new MutationObserver(()=>requestAnimationFrame(patch)).observe(root,{childList:true,subtree:true});document.addEventListener('DOMContentLoaded',patch);[0,80,250,700,1500].forEach(ms=>setTimeout(patch,ms));
+const root=document.getElementById('app')||document.body;new MutationObserver(()=>requestAnimationFrame(patch)).observe(root,{childList:true,subtree:true});document.addEventListener('DOMContentLoaded',patch);[0,80,250,700,1100,1600].forEach(ms=>setTimeout(patch,ms));
 })();
