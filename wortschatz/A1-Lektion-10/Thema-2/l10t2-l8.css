@@ -1,0 +1,10 @@
+:root{
+ --lesson-main:#F4A3A3;--lesson-main-dark:#A86464;--lesson-dark:#A86464;--lesson-main-light:#F9DEDE;
+ --lesson-soft:#FDF1F1;--lesson-line:#F3C9C9;--lesson-bg:#FFF9F9;--lesson-text:#4B3434;--lesson-muted:#7E6969;
+ --lesson-shadow:0 12px 28px rgba(168,100,100,.16);--l8-main:#F4A3A3;--l8-dark:#A86464;--l8-soft:#FDF1F1;
+ --l8-line:#F3C9C9;--l8-bg:#FFF9F9;--l8-ink:#4B3434
+}
+body{background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.42) 310px,rgba(255,255,255,.1)),linear-gradient(135deg,#F4A3A3,#F9DEDE)!important}
+.sp-header{background:#F4A3A3!important}.l8-progress-circle{box-shadow:0 12px 26px rgba(168,100,100,.18)!important}
+.l8-input:focus,textarea.l8-input:focus{outline-color:rgba(244,163,163,.28)!important}
+.l10-theme-page>.sp-header,#app>.sp-header{display:none!important}.l10-theme-page{display:contents}
