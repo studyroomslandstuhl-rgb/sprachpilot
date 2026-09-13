@@ -35,7 +35,7 @@ const tasks=[
 {id:'possessiv-tabelle',title:'Possessivpronomen – Tabelle',icon:'📋',cardText:'Ergänze die Possessivformen.',text:'Lies das Pronomen. Ergänze beide Possessivformen im Nominativ.'},
 {id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',cardText:'Schreibe die passende Form.',text:'Lies Person und Genus. Schreibe die passende Possessivform.'},
 {id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',cardText:'Formuliere Sätze für alle Personen um.',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Achte auf Person und Possessivform.'},
-{id:'familie-luecken',title:'Familien – Lückentexte',icon:'👨‍👩‍👧‍👦',cardText:'Ergänze drei Texte.',text:'Lies die drei Texte in der 3. Person. Setze in jede Lücke die passende Possessivform ein.'},
+{id:'familie-luecken',title:'Familien – Lückentexte',icon:'👨‍👩‍👧‍👦',cardText:'Ergänze drei Texte.',text:'Bearbeite jeden Text einzeln. Lies den Text in der 3. Person und ergänze alle Possessivformen.'},
 {id:'biografien',title:'Biografien umschreiben',icon:'✍️',cardText:'Schreibe in der 3. Person.',text:'Lies den ganzen Ausgangstext. Schreibe ihn vollständig in der 3. Person neu: ich → er/sie, wir → sie und mein/meine/unser/unsere → sein/seine/ihr/ihre.'},
 {id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,cardText:'Prüfe das ganze Thema.',text:'Bearbeite 20 gemischte Prüfungsfragen aus dem ganzen Thema. Jede Antwort zählt beim ersten Versuch.'}
 ];
