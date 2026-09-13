@@ -23,18 +23,18 @@ const v=[
 ['bekannte','die Bekannte','Bekannte','die Bekannten','👩','Eine Frau, die man kennt, aber die nicht unbedingt eine Freundin ist.'],
 ['lied','das Lied','Lied','die Lieder','🎵','Musik mit einem Text, den man singt.'],
 ['schatz','der Schatz','Schatz','die Schätze','💝','Eine sehr liebe Person oder etwas sehr Wertvolles.']
-].map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:B+x[0]+'.webp',audio:AUDIO+x[0]+'.mp3'}));
+].map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:B+x[0]+'.webp',audio:AUDIO+({bekannter:'der_bekannte',bekannte:'die_bekannte'}[x[0]]||x[0])+'.mp3'}));
 const nouns=v.filter(x=>x.article);
 const tasks=[
-{id:'karteikarten',title:'Karteikarten',icon:'🃏',text:'Lerne alle 21 Wörter wie bei den Karteikarten aus Lektion 9.'},
-{id:'wort-bedeutung',title:'Wort – Bedeutung',icon:'💡',text:'Lies das Wort und wähle die richtige Bedeutung.'},
-{id:'hoeren-bild',title:'Hören – Bild',icon:'🎧',text:'Höre das Wort und wähle das passende Bild.'},
-{id:'artikel-plural',title:'Artikel und Plural',icon:'🔤',text:'Ergänze bei allen Nomen den Artikel und den Plural.'},
-{id:'wehtun-schmerzen-basis',title:'wehtun ↔ Schmerzen',icon:'🤕',text:'Formuliere Sätze mit wehtun und -schmerzen um. Pronomen: ich, du und Sie.'},
-{id:'possessiv-tabelle',title:'Possessivpronomen – Tabelle',icon:'📋',text:'Ergänze die Formen im Nominativ: mein/meine, dein/deine usw.'},
-{id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',text:'Bilde die richtige Form, z. B. du + feminin → deine.'},
-{id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',text:'Formuliere um. Jetzt werden alle Pronomen und auch Namen benutzt.'},
-{id:'familie-luecken',title:'Familie – Lückentext',icon:'👨‍👩‍👧‍👦',text:'Setze die Possessivpronomen in der richtigen Form ein.'},
+{id:'karteikarten',title:'Karteikarten',icon:'🃏',text:'Sieh das Bild an, höre das Wort und lerne alle 21 Wörter.'},
+{id:'wort-bedeutung',title:'Wort – Bedeutung',icon:'💡',text:'Lies das Wort. Wähle die passende Bedeutung.'},
+{id:'hoeren-bild',title:'Hören – Bild',icon:'🎧',text:'Höre das Wort. Wähle das passende Bild.'},
+{id:'artikel-plural',title:'Artikel und Plural',icon:'🔤',text:'Wähle den richtigen Artikel. Schreibe danach den Plural mit Artikel.'},
+{id:'wehtun-schmerzen-basis',title:'wehtun ↔ Schmerzen',icon:'🤕',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Benutze ich, du oder Sie.'},
+{id:'possessiv-tabelle',title:'Possessivpronomen – Tabelle',icon:'📋',text:'Lies das Pronomen. Ergänze beide Possessivformen im Nominativ.'},
+{id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',text:'Lies Person und Genus. Schreibe die passende Possessivform.'},
+{id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Achte auf Person und Possessivform.'},
+{id:'familie-luecken',title:'Familie – Lückentext',icon:'👨‍👩‍👧‍👦',text:'Lies den ganzen Text. Setze in jede Lücke die passende Possessivform ein.'},
 {id:'biografien',title:'Biografien umschreiben',icon:'✍️',text:'Lies den ganzen Ausgangstext. Schreibe ihn vollständig in der 3. Person neu: ich → er/sie, wir → sie und mein/meine/unser/unsere → sein/seine/ihr/ihre.'},
 {id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,text:'Bearbeite 15 gemischte Prüfungsfragen aus dem ganzen Thema. Jede Antwort zählt beim ersten Versuch.'}
 ];

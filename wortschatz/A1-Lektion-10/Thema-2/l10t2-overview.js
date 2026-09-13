@@ -3,6 +3,7 @@
 if(window.__SP_L10T2_L8_OVERVIEW_V1)return;window.__SP_L10T2_L8_OVERVIEW_V1=true;
 const D=window.L10T2||{tasks:[]};
 const root=document.getElementById('app');
+const {renderSpHeader,bindSpHeader}=await import('/js/sp-header.js?v=theme-standard4');
 const TOPIC='wortschatz-a1-lektion-10-thema-2';
 const tasks=Array.isArray(D.tasks)?D.tasks:[];
 const practiceTasks=tasks.filter(t=>!t.exam);
@@ -13,7 +14,7 @@ function owner(){const p=profile();return String(p.canonicalStudentId||p.docId||
 function run(){return Math.max(1,Math.min(3,Number(localStorage.getItem('SP_SCORE_RUN_'+TOPIC)||1)||1))}
 function stateKey(id){return `SP_L10_${owner()}_T2_${id}`}
 function localPct(t){if(preview())return 0;try{const s=JSON.parse(localStorage.getItem(stateKey(t.id))||'null');if(!s||Number(s._run||1)!==run())return 0;const total=Math.max(0,Number(s.total||0)),done=Array.isArray(s.done)?s.done.length:Math.max(0,Number(s.done||0));return total?Math.min(100,Math.round(done/total*100)):0}catch(e){return 0}}
-function teacherNote(){return preview()?'<div class="sp-teacher-preview-note">Lehrer-Vorschau: Es werden keine Teilnehmerpunkte und keine Teilnehmerfortschritte gespeichert.</div>':''}
+function teacherNote(){return preview()?'<div class="sp-teacher-preview-note">Lehrer-Vorschau: Fortschritte und Punkte der Teilnehmer werden hier nicht verändert.</div>':''}
 function taskPoints(r){return r===1?5:r===2?10:r===3?15:0}
 function taskEmoji(t){return String(t?.icon||'✅')}
 function lastKey(){return'SP_L10_LAST_TASK_T2'}
@@ -53,5 +54,11 @@ function score(){
 }
 function scorePanel(){if(preview())return'<div class="l8-score-panel"><div class="l8-score-label">Punkte</div><div class="l8-score-total">Vorschau</div><div class="l8-small">Keine Teilnehmerpunkte</div></div>';const s=score();return`<div class="l8-score-panel"><div class="l8-score-label">${s.r===1?'Versuch 1 von 3':`Wiederholung ${s.r} von 3`}</div><div class="l8-score-total">${s.lifetime} Punkte</div><div class="l8-small">Aufgaben: ${s.current}</div>${s.pending?'<div class="l8-small l8-score-sync">Synchronisierung läuft …</div>':''}</div>`}
 function renderTask(t,i){const p=Math.round(progress[t.id]||0),done=p>=100,locked=t.exam&&!preview()&&completed<practiceTasks.length;if(locked)return`<div class="l8-card l8-task-card locked" aria-disabled="true"><div class="l8-task-number">${i+1}. ${esc(t.title)}</div><div class="emoji">${esc(taskEmoji(t))}</div><p>${esc(t.text||'')}</p><div class="l8-progress"><div style="width:0%"></div></div><div class="l8-small">gesperrt</div><div class="l8-task-start">Prüfung gesperrt</div></div>`;return`<a class="l8-card l8-task-card ${done?'done':''}" href="task.html?task=${encodeURIComponent(t.id)}"><div class="l8-task-number">${i+1}. ${esc(t.title)}</div><div class="emoji">${esc(taskEmoji(t))}</div><p>${esc(t.text||t.instruction||'')}</p><div class="l8-progress"><div style="width:${p}%"></div></div><div class="l8-small">${p}%</div><div class="l8-task-start">${t.exam&&preview()?'Prüfung ansehen':done?'Fertig':'Starten'}</div></a>`}
-if(root){root.innerHTML=`<div class="l8-wrap">${teacherNote()}<section class="l8-card l8-progress-card"><div class="l8-progress-circle">${avg}%</div><div class="l8-progress-main"><h2>Dein Fortschritt</h2><p class="l8-small">${completed} / ${practiceTasks.length} Aufgaben abgeschlossen</p><div class="l8-progress"><div style="width:${avg}%"></div></div><p class="l8-small l8-theme-subtitle">Gesundheit und Possessivpronomen</p><div class="l8-tags"><span class="l8-tag">21 Wörter</span><span class="l8-tag">wehtun / -schmerzen</span><span class="l8-tag">Possessivpronomen</span></div></div><div class="l8-score-slot">${scorePanel()}</div></section><section class="l8-grid">${tasks.map(renderTask).join('')}</section><footer>© SprachPilot</footer></div>`;[50,250,700].forEach(ms=>setTimeout(()=>{scrollLast();polishHeader()},ms))}
+if(root){
+ const header=renderSpHeader({subtitle:'Gesundheit und Possessivpronomen · A1 Lektion 10 · Thema 2',color:{main:'#F4A3A3',dark:'#A86464',soft:'#FDF1F1',line:'#F3C9C9'}});
+ const progressCard=`<section class="l8-card l8-progress-card"><div class="l8-progress-circle">${avg}%</div><div class="l8-progress-main"><h2>Dein Fortschritt</h2><p class="l8-small">${completed} / ${practiceTasks.length} Aufgaben abgeschlossen</p><div class="l8-progress"><div style="width:${avg}%"></div></div><p class="l8-small l8-theme-subtitle">Gesundheit und Possessivpronomen</p><div class="l8-tags"><span class="l8-tag">21 Wörter</span><span class="l8-tag">wehtun / -schmerzen</span><span class="l8-tag">Possessivpronomen</span></div></div><div class="l8-score-slot">${scorePanel()}</div></section>`;
+ root.innerHTML=`<div class="l10-theme-page">${header}<div class="l8-wrap">${teacherNote()}${progressCard}<section class="l8-grid">${tasks.map(renderTask).join('')}</section><footer>© SprachPilot</footer></div></div>`;
+ bindSpHeader(root);
+ [50,250,700].forEach(ms=>setTimeout(()=>{scrollLast();polishHeader()},ms));
+}
 })();
