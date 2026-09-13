@@ -37,7 +37,7 @@ const tasks=[
 {id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',cardText:'Formuliere Sätze für alle Personen um.',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Achte auf Person und Possessivform.'},
 {id:'familie-luecken',title:'Familien – Lückentexte',icon:'👨‍👩‍👧‍👦',cardText:'Ergänze drei Texte.',text:'Bearbeite jeden Text einzeln. Lies den Text in der 3. Person und ergänze alle Possessivformen.'},
 {id:'biografien',title:'Biografien umschreiben',icon:'✍️',cardText:'Schreibe in der 3. Person.',text:'Schreibe den Ausgangstext in der 3. Person.'},
-{id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,cardText:'Prüfe das ganze Thema.',text:'Bearbeite 20 gemischte Prüfungsfragen aus dem ganzen Thema. Jede Antwort zählt beim ersten Versuch.'}
+{id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,cardText:'Prüfe das ganze Thema.',text:'Bearbeite 20 Fragen. Jede Antwort zählt nur beim ersten Versuch.'}
 ];
 const baseTransform=[
 ['Meine Hand tut weh.','Ich habe Handschmerzen.'],['Mein Kopf tut weh.','Ich habe Kopfschmerzen.'],['Mein Rücken tut weh.','Ich habe Rückenschmerzen.'],['Mein Hals tut weh.','Ich habe Halsschmerzen.'],['Meine Füße tun weh.','Ich habe Fußschmerzen.'],['Meine Knie tun weh.','Ich habe Knieschmerzen.'],
