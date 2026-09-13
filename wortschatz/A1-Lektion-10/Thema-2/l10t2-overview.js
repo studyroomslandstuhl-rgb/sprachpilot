@@ -5,6 +5,7 @@ const D=window.L10T2||{tasks:[]};
 const root=document.getElementById('app');
 const TOPIC='wortschatz-a1-lektion-10-thema-2';
 const tasks=Array.isArray(D.tasks)?D.tasks:[];
+const practiceTasks=tasks.filter(t=>!t.exam);
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{}}catch(e){return{}}}
 function preview(){try{const p=profile(),role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||p.role||'').toLowerCase();return ['teacher','lehrer','admin','owner','superadmin'].includes(role)||sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}catch(e){return false}}
@@ -37,8 +38,8 @@ if(!preview()){
   }
  }catch(e){console.warn('L10T2 L8 overview progress',e)}
 }
-const completed=tasks.filter(t=>(progress[t.id]||0)>=100).length;
-const avg=tasks.length?Math.round(tasks.reduce((sum,t)=>sum+(progress[t.id]||0),0)/tasks.length):0;
+const completed=practiceTasks.filter(t=>(progress[t.id]||0)>=100).length;
+const avg=practiceTasks.length?Math.round(practiceTasks.reduce((sum,t)=>sum+(progress[t.id]||0),0)/practiceTasks.length):0;
 function score(){
  const r=run(),per=taskPoints(r);let current=completed*per,lifetime=current,pending=false;
  if(cloudTopic){
@@ -51,6 +52,6 @@ function score(){
  return{r,current,lifetime,pending};
 }
 function scorePanel(){if(preview())return'<div class="l8-score-panel"><div class="l8-score-label">Punkte</div><div class="l8-score-total">Vorschau</div><div class="l8-small">Keine Teilnehmerpunkte</div></div>';const s=score();return`<div class="l8-score-panel"><div class="l8-score-label">${s.r===1?'Versuch 1 von 3':`Wiederholung ${s.r} von 3`}</div><div class="l8-score-total">${s.lifetime} Punkte</div><div class="l8-small">Aufgaben: ${s.current}</div>${s.pending?'<div class="l8-small l8-score-sync">Synchronisierung läuft …</div>':''}</div>`}
-function renderTask(t,i){const p=Math.round(progress[t.id]||0),done=p>=100;return`<a class="l8-card l8-task-card ${done?'done':''}" href="task.html?task=${encodeURIComponent(t.id)}"><div class="l8-task-number">${i+1}. ${esc(t.title)}</div><div class="emoji">${esc(taskEmoji(t))}</div><p>${esc(t.text||t.instruction||'')}</p><div class="l8-progress"><div style="width:${p}%"></div></div><div class="l8-small">${p}%</div><div class="l8-task-start">${done?'Fertig':'Starten'}</div></a>`}
-if(root){root.innerHTML=`<div class="l8-wrap">${teacherNote()}<section class="l8-card l8-progress-card"><div class="l8-progress-circle">${avg}%</div><div class="l8-progress-main"><h2>Dein Fortschritt</h2><p class="l8-small">${completed} / ${tasks.length} Aufgaben abgeschlossen</p><div class="l8-progress"><div style="width:${avg}%"></div></div><p class="l8-small l8-theme-subtitle">Gesundheit und Possessivpronomen</p><div class="l8-tags"><span class="l8-tag">21 Wörter</span><span class="l8-tag">wehtun / -schmerzen</span><span class="l8-tag">Possessivpronomen</span></div></div><div class="l8-score-slot">${scorePanel()}</div></section><section class="l8-grid">${tasks.map(renderTask).join('')}</section><footer>© SprachPilot</footer></div>`;[50,250,700].forEach(ms=>setTimeout(()=>{scrollLast();polishHeader()},ms))}
+function renderTask(t,i){const p=Math.round(progress[t.id]||0),done=p>=100,locked=t.exam&&!preview()&&completed<practiceTasks.length;if(locked)return`<div class="l8-card l8-task-card locked" aria-disabled="true"><div class="l8-task-number">${i+1}. ${esc(t.title)}</div><div class="emoji">${esc(taskEmoji(t))}</div><p>${esc(t.text||'')}</p><div class="l8-progress"><div style="width:0%"></div></div><div class="l8-small">gesperrt</div><div class="l8-task-start">Prüfung gesperrt</div></div>`;return`<a class="l8-card l8-task-card ${done?'done':''}" href="task.html?task=${encodeURIComponent(t.id)}"><div class="l8-task-number">${i+1}. ${esc(t.title)}</div><div class="emoji">${esc(taskEmoji(t))}</div><p>${esc(t.text||t.instruction||'')}</p><div class="l8-progress"><div style="width:${p}%"></div></div><div class="l8-small">${p}%</div><div class="l8-task-start">${t.exam&&preview()?'Prüfung ansehen':done?'Fertig':'Starten'}</div></a>`}
+if(root){root.innerHTML=`<div class="l8-wrap">${teacherNote()}<section class="l8-card l8-progress-card"><div class="l8-progress-circle">${avg}%</div><div class="l8-progress-main"><h2>Dein Fortschritt</h2><p class="l8-small">${completed} / ${practiceTasks.length} Aufgaben abgeschlossen</p><div class="l8-progress"><div style="width:${avg}%"></div></div><p class="l8-small l8-theme-subtitle">Gesundheit und Possessivpronomen</p><div class="l8-tags"><span class="l8-tag">21 Wörter</span><span class="l8-tag">wehtun / -schmerzen</span><span class="l8-tag">Possessivpronomen</span></div></div><div class="l8-score-slot">${scorePanel()}</div></section><section class="l8-grid">${tasks.map(renderTask).join('')}</section><footer>© SprachPilot</footer></div>`;[50,250,700].forEach(ms=>setTimeout(()=>{scrollLast();polishHeader()},ms))}
 })();

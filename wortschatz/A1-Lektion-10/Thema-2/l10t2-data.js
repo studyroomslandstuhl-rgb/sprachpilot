@@ -35,7 +35,8 @@ const tasks=[
 {id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',text:'Bilde die richtige Form, z. B. du + feminin → deine.'},
 {id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',text:'Formuliere um. Jetzt werden alle Pronomen und auch Namen benutzt.'},
 {id:'familie-luecken',title:'Familie – Lückentext',icon:'👨‍👩‍👧‍👦',text:'Setze die Possessivpronomen in der richtigen Form ein.'},
-{id:'biografien',title:'Biografien umschreiben',icon:'✍️',text:'Schreibe drei kurze Biografien aus der 1. in die 3. Person um.'}
+{id:'biografien',title:'Biografien umschreiben',icon:'✍️',text:'Lies den ganzen Ausgangstext. Schreibe ihn vollständig in der 3. Person neu: ich → er/sie, wir → sie und mein/meine/unser/unsere → sein/seine/ihr/ihre.'},
+{id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,text:'Bearbeite 15 gemischte Prüfungsfragen aus dem ganzen Thema. Jede Antwort zählt beim ersten Versuch.'}
 ];
 const baseTransform=[
 ['Meine Hand tut weh.','Ich habe Handschmerzen.'],['Mein Kopf tut weh.','Ich habe Kopfschmerzen.'],['Mein Rücken tut weh.','Ich habe Rückenschmerzen.'],['Mein Hals tut weh.','Ich habe Halsschmerzen.'],['Meine Füße tun weh.','Ich habe Fußschmerzen.'],['Meine Knie tun weh.','Ich habe Knieschmerzen.'],
@@ -58,5 +59,22 @@ const bios=[
 {label:'Frau',from:'Ich heiße Sofia. Ich bin 27 Jahre alt. Mein Freund heißt Amir. Meine Schwester wohnt in Berlin. Mein Beruf ist Architektin. Meine Arbeit ist interessant und meine Kollegen sind nett.',to:'Sie heißt Sofia. Sie ist 27 Jahre alt. Ihr Freund heißt Amir. Ihre Schwester wohnt in Berlin. Ihr Beruf ist Architektin. Ihre Arbeit ist interessant und ihre Kollegen sind nett.'},
 {label:'Paar',from:'Wir heißen Julia und Max. Wir sind verheiratet. Unsere Tochter heißt Mia. Unser Sohn heißt Ben. Unsere Wohnung ist klein, aber unser Garten ist groß. Unsere Freunde wohnen in der Nähe.',to:'Sie heißen Julia und Max. Sie sind verheiratet. Ihre Tochter heißt Mia. Ihr Sohn heißt Ben. Ihre Wohnung ist klein, aber ihr Garten ist groß. Ihre Freunde wohnen in der Nähe.'}
 ];
-window.L10T2={cards:v,flashcards:v,nouns,tasks,baseTransform,possRows,possForm,allTransform,family,bios};
+const examItems=[
+{type:'choice',q:'Wo bekommt man im Krankenhaus bei einem Notfall schnell Hilfe?',a:'die Notaufnahme',options:['die Notaufnahme','der Klub','der Bereich','die Nachricht']},
+{type:'input',q:'Schreibe den Plural mit Artikel: der Unfall',a:'die Unfälle'},
+{type:'choice',q:'Welches Wort bedeutet: „Der Kurs findet heute nicht statt“?',a:'ausfallen',options:['ausfallen','informieren','wehtun','gesund']},
+{type:'input',q:'Formuliere um: Mein Kopf tut weh.',a:'Ich habe Kopfschmerzen.'},
+{type:'input',q:'Formuliere um: Du hast Rückenschmerzen.',a:'Dein Rücken tut weh.'},
+{type:'input',q:'Possessivform: ich + feminin',a:'meine'},
+{type:'input',q:'Possessivform: ihr + Plural',a:'eure'},
+{type:'input',q:'Ergänze: Anna arbeitet im Krankenhaus. ___ Bereich ist die Notaufnahme.',a:'Ihr'},
+{type:'input',q:'Ergänze: Paul und Mia haben zwei Kinder. ___ Kinder sind gesund.',a:'Ihre'},
+{type:'choice',q:'Welches Wort passt? Man gibt einer Person eine kurze Information.',a:'die Nachricht',options:['die Nachricht','der Schmerz','der Kuss','das Lied']},
+{type:'input',q:'Schreibe den Plural mit Artikel: die Tablette',a:'die Tabletten'},
+{type:'input',q:'Schreibe in der 3. Person: Meine Schwester wohnt in Berlin.',a:'Ihre Schwester wohnt in Berlin.'},
+{type:'input',q:'Schreibe in der 3. Person: Unser Sohn heißt Ben.',a:'Ihr Sohn heißt Ben.'},
+{type:'choice',q:'Was bedeutet „hoffentlich“?',a:'Man wünscht, dass etwas Gutes passiert.',options:['Man wünscht, dass etwas Gutes passiert.','Man hat starke Schmerzen.','Etwas findet nicht statt.','Man muss lachen.']},
+{type:'input',q:'Formuliere um: Ihre Füße tun weh.',a:'Sie haben Fußschmerzen.'}
+];
+window.L10T2={cards:v,flashcards:v,nouns,tasks,baseTransform,possRows,possForm,allTransform,family,bios,examItems};
 })();
