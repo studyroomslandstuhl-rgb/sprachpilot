@@ -24,7 +24,7 @@ const v=[
 ['bekannte','die Bekannte','Bekannte','die Bekannten','👩','Eine Frau, die man kennt, aber die nicht unbedingt eine Freundin ist.'],
 ['lied','das Lied','Lied','die Lieder','🎵','Musik mit einem Text, den man singt.'],
 ['schatz','der Schatz','Schatz','die Schätze','💝','Eine sehr liebe Person oder etwas sehr Wertvolles.']
-].map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:B+x[0]+'.webp',audio:AUDIO+AUDIO_FILES[x[0]]}));
+].map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:B+x[0]+'.webp',audio:AUDIO+AUDIO_FILES[x[0]],audioFallback:B+AUDIO_FILES[x[0]]}));
 const nouns=v.filter(x=>x.article);
 const tasks=[
 {id:'karteikarten',title:'Karteikarten',icon:'🃏',cardText:'Lerne alle 21 Wörter.',text:'Sieh das Bild an, höre das Wort und lerne alle 21 Wörter.'},
@@ -36,7 +36,7 @@ const tasks=[
 {id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',cardText:'Schreibe die passende Form.',text:'Lies Person und Genus. Schreibe die passende Possessivform.'},
 {id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',cardText:'Formuliere Sätze für alle Personen um.',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Achte auf Person und Possessivform.'},
 {id:'familie-luecken',title:'Familien – Lückentexte',icon:'👨‍👩‍👧‍👦',cardText:'Ergänze drei Texte.',text:'Bearbeite jeden Text einzeln. Lies den Text in der 3. Person und ergänze alle Possessivformen.'},
-{id:'biografien',title:'Biografien umschreiben',icon:'✍️',cardText:'Schreibe in der 3. Person.',text:'Lies den ganzen Ausgangstext. Schreibe ihn vollständig in der 3. Person neu: ich → er/sie, wir → sie und mein/meine/unser/unsere → sein/seine/ihr/ihre.'},
+{id:'biografien',title:'Biografien umschreiben',icon:'✍️',cardText:'Schreibe in der 3. Person.',text:'Schreibe den Ausgangstext in der 3. Person.'},
 {id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,cardText:'Prüfe das ganze Thema.',text:'Bearbeite 20 gemischte Prüfungsfragen aus dem ganzen Thema. Jede Antwort zählt beim ersten Versuch.'}
 ];
 const baseTransform=[
