@@ -58,6 +58,11 @@ function write(s){
  s._run=run();
  try{
   store().setItem(key(),JSON.stringify(s));
+  const persisted=JSON.parse(store().getItem(key())||'null');
+  if(persisted&&typeof persisted==='object'){
+   for(const name of Object.keys(s))delete s[name];
+   Object.assign(s,persisted);
+  }
   syncStoredProgress(s.total);
   window.dispatchEvent(new CustomEvent('sprachpilot-progress',{detail:{lesson:10,theme:2,topic:TOPIC,task:taskId,state:s}}));
  }catch(e){}

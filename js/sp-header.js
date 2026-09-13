@@ -10,7 +10,8 @@ const LESSONS={
   6:{title:"Lektion 6: Wetter",subtitle:"Wortschatz · A1 Lektion 6 · Wetter",color:{main:"#ffb6c1",dark:"#8a3a4f",soft:"#fff0f4",line:"#f3c2cc"}},
   7:{title:"Lektion 7",subtitle:"Wortschatz und Grammatik · A1 Lektion 7",color:{main:"#a8cfff",dark:"#235a92",soft:"#eef7ff",line:"#b9dcff"}},
   8:{title:"Lektion 8",subtitle:"Wortschatz und Grammatik · A1 Lektion 8",color:{main:"#8DBFEA",dark:"#4E7FA8",soft:"#EEF6FD",line:"#C9DFF2"}},
-  9:{title:"Lektion 9",subtitle:"Wortschatz und Grammatik · A1 Lektion 9",color:{main:"#8FCF9A",dark:"#3E7D4D",soft:"#EFF8F1",line:"#C9E5CF"}}
+  9:{title:"Lektion 9",subtitle:"Wortschatz und Grammatik · A1 Lektion 9",color:{main:"#8FCF9A",dark:"#3E7D4D",soft:"#EFF8F1",line:"#C9E5CF"}},
+  10:{title:"Lektion 10",subtitle:"Wortschatz und Grammatik · A1 Lektion 10",color:{main:"#F4A3A3",dark:"#A86464",soft:"#FDF1F1",line:"#F3C9C9"}}
 };
 const THEME_TITLES={
   "3-1":"Lebensmittel & Getränke","3-2":"Mengen & Verpackungen",
@@ -19,7 +20,8 @@ const THEME_TITLES={
   "6-1":"Wetter","6-2":"Himmelsrichtungen, Länder & Jahreszeiten","6-3":"Restaurant, Akkusativ & Planen","6-4":"Freizeit & Alltag",
   "7-1":"können, wollen und möchten","7-2":"Perfekt mit haben","7-3":"Perfekt mit sein","7-4":"Kommunikation in der Schule",
   "8-1":"Arbeit und Berufe",
-  "9-1":"Was muss man machen?"
+  "9-1":"Was muss man machen?",
+  "10-1":"Körper und Körperteile","10-2":"Gesundheit und Possessivpronomen"
 };
 function profileText(profile){if(!profile)return"Nicht eingeloggt";const name=[profile.vorname||profile.firstName||profile.name,profile.nachname||profile.lastName].filter(Boolean).join(" ").trim();const course=profile.kurs||profile.kursnummer||profile.courseCode||profile.course||"";return[name||profile.email||"Profil",course].filter(Boolean).join(" · ")}
 function fileTitle(file){const raw=String(file||"").replace(/\.html$/i,"").replace(/[-_]+/g," ").trim();if(!raw||raw.toLowerCase()==="index")return"";return raw.charAt(0).toUpperCase()+raw.slice(1)}

@@ -28,7 +28,7 @@ function loadState(){
  saveState(s);return s
 }
 let state=loadState();
-function saveState(s=state){s.updatedAt=Date.now();try{localStorage.setItem(stateKey(),JSON.stringify(s))}catch(e){}}
+function saveState(s=state){s.updatedAt=Date.now();try{localStorage.setItem(stateKey(),JSON.stringify(s));const persisted=JSON.parse(localStorage.getItem(stateKey())||'null');if(persisted&&typeof persisted==='object'){for(const key of Object.keys(s))delete s[key];Object.assign(s,persisted)}}catch(e){}}
 function doneCount(){return state.done.length}
 function nextItem(){const id=state.order.find(x=>!state.done.includes(x));return id?CARD_BY_ID[id]:null}
 function image(item,cls='l10-image'){return`<img class="${cls}" src="${esc(item.image)}" alt="" draggable="false">`}

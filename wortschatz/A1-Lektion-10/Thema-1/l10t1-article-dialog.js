@@ -16,7 +16,7 @@ function shuffle(a){a=[...a];for(let i=a.length-1;i>0;i--){const j=Math.floor(Ma
 function base(){return{_run:run,order:shuffle(items.map(x=>x.id)),done:[],firstSeen:[],firstCorrect:[],wrong:{},total:items.length,updatedAt:Date.now()}}
 function load(){let s=null;try{s=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){};if(!s||Number(s._run||1)!==run||!Array.isArray(s.order)||s.order.length!==items.length||items.some(x=>!s.order.includes(x.id)))s=base();s.done=Array.isArray(s.done)?s.done.filter(id=>byId[id]):[];s.firstSeen=Array.isArray(s.firstSeen)?s.firstSeen:[];s.firstCorrect=Array.isArray(s.firstCorrect)?s.firstCorrect:[];s.wrong=s.wrong||{};s.total=items.length;save(s);return s}
 let state=load();
-function save(s=state){s._run=run;s.updatedAt=Date.now();localStorage.setItem(KEY,JSON.stringify(s))}
+function save(s=state){s._run=run;s.updatedAt=Date.now();localStorage.setItem(KEY,JSON.stringify(s));try{const persisted=JSON.parse(localStorage.getItem(KEY)||'null');if(persisted&&typeof persisted==='object'){for(const key of Object.keys(s))delete s[key];Object.assign(s,persisted)}}catch(e){}}
 function current(){const id=state.order.find(id=>!state.done.includes(id));return id?byId[id]:null}
 function pct(){return state.total?Math.round(state.done.length/state.total*100):0}
 function header(){return renderSpHeader({subtitle:'Artikel in Dialogen · A1 Lektion 10 · Thema 1',color:{main:'#F4A3A3',dark:'#A86464',soft:'#FDF1F1',line:'#F3C9C9'},navItems:[{label:'← Zurück',href:'./'},{label:'Wortschatz',href:'uebersicht.html'}]})}

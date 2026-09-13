@@ -18,7 +18,7 @@ function run(){return Math.max(1,Math.min(3,Number(localStorage.getItem('SP_SCOR
 function base(){return{_run:run(),order:shuffle(cards.map(x=>x.id)),done:[],firstCorrect:[],total,updatedAt:Date.now()}}
 function load(){let s=null;try{s=JSON.parse(localStorage.getItem(KEY)||'null')}catch(e){};if(!s||Number(s._run||1)!==run()||!Array.isArray(s.order)||s.order.length!==total||cards.some(c=>!s.order.includes(c.id)))s=base();s.done=Array.isArray(s.done)?s.done.filter(id=>byId[id]):[];s.firstCorrect=Array.isArray(s.firstCorrect)?s.firstCorrect:[];s.total=total;save(s);return s}
 let state=load();
-function save(s=state){s._run=run();s.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(s))}catch(e){}}
+function save(s=state){s._run=run();s.updatedAt=Date.now();try{localStorage.setItem(KEY,JSON.stringify(s));const persisted=JSON.parse(localStorage.getItem(KEY)||'null');if(persisted&&typeof persisted==='object'){for(const key of Object.keys(s))delete s[key];Object.assign(s,persisted)}}catch(e){}}
 function current(){const id=state.order.find(id=>!state.done.includes(id));return id?byId[id]:null}
 function pct(){return total?Math.round(state.done.length/total*100):0}
 function header(){return renderSpHeader({subtitle:`${task.title||'Hören'} · A1 Lektion 10 · Thema 1`,color:{main:'#F4A3A3',dark:'#A86464',soft:'#FDF1F1',line:'#F3C9C9'}})}
