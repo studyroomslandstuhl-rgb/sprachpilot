@@ -34,9 +34,9 @@ const tasks=[
 {id:'possessiv-tabelle',title:'Possessivpronomen – Tabelle',icon:'📋',text:'Lies das Pronomen. Ergänze beide Possessivformen im Nominativ.'},
 {id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',text:'Lies Person und Genus. Schreibe die passende Possessivform.'},
 {id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Achte auf Person und Possessivform.'},
-{id:'familie-luecken',title:'Familie – Lückentext',icon:'👨‍👩‍👧‍👦',text:'Lies den ganzen Text. Setze in jede Lücke die passende Possessivform ein.'},
+{id:'familie-luecken',title:'Lara und ihre Familie',icon:'👨‍👩‍👧‍👦',text:'Lies den Text über Lara in der 3. Person. Setze in jede Lücke die passende Possessivform ein.'},
 {id:'biografien',title:'Biografien umschreiben',icon:'✍️',text:'Lies den ganzen Ausgangstext. Schreibe ihn vollständig in der 3. Person neu: ich → er/sie, wir → sie und mein/meine/unser/unsere → sein/seine/ihr/ihre.'},
-{id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,text:'Bearbeite 15 gemischte Prüfungsfragen aus dem ganzen Thema. Jede Antwort zählt beim ersten Versuch.'}
+{id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,text:'Bearbeite 20 gemischte Prüfungsfragen aus dem ganzen Thema. Jede Antwort zählt beim ersten Versuch.'}
 ];
 const baseTransform=[
 ['Meine Hand tut weh.','Ich habe Handschmerzen.'],['Mein Kopf tut weh.','Ich habe Kopfschmerzen.'],['Mein Rücken tut weh.','Ich habe Rückenschmerzen.'],['Mein Hals tut weh.','Ich habe Halsschmerzen.'],['Meine Füße tun weh.','Ich habe Fußschmerzen.'],['Meine Knie tun weh.','Ich habe Knieschmerzen.'],
@@ -52,7 +52,7 @@ const allTransform=[
 ['Er hat Bauchschmerzen.','Sein Bauch tut weh.'],['Sie hat Zahnschmerzen.','Ihre Zähne tun weh.'],['Wir haben Rückenschmerzen.','Unsere Rücken tun weh.'],['Ihr habt Kopfschmerzen.','Eure Köpfe tun weh.'],['Sie haben Knieschmerzen.','Ihre Knie tun weh.'],['Du hast Armschmerzen.','Dein Arm tut weh.'],['Ich habe Halsschmerzen.','Mein Hals tut weh.'],['Sie haben Fußschmerzen.','Ihre Füße tun weh.'],['Mia hat Bauchschmerzen.','Mias Bauch tut weh.'],['Ben hat Zahnschmerzen.','Bens Zähne tun weh.']
 ].map((p,i)=>({q:p[0],a:p[1]}));
 const family={text:[
-['Ich heiße Lara.',''],['___ Mann heißt David.','Mein'],['___ Tochter Emma ist acht Jahre alt.','Meine'],['___ Sohn Leon ist fünf.','Mein'],['David arbeitet im Krankenhaus. ___ Bereich ist die Notaufnahme.','Sein'],['Emma mag Musik. ___ Lieblingslied ist sehr lustig.','Ihr'],['Leon spielt Fußball. ___ Klub ist ganz in der Nähe.','Sein'],['Meine Eltern wohnen auch hier. ___ Wohnung ist groß.','Ihre'],['___ Mutter heißt Karin und ___ Vater heißt Peter.','Meine|mein'],['Peter hat einen Bruder. ___ Name ist Klaus.','Sein'],['Klaus und seine Frau haben zwei Kinder. ___ Kinder sind meine Cousins.','Ihre'],['Wir haben auch einen Hund. ___ Name ist Bruno.','Sein'],['Bruno ist gesund. ___ Beine sind stark.','Seine'],['David und ich arbeiten viel. ___ Wochenende ist deshalb sehr wichtig.','Unser'],['Emma und Leon sagen: „___ Familie ist lustig!“','Unsere']
+['Das ist Lara.',''],['___ Mann heißt David.','Ihr'],['___ Tochter Emma ist acht Jahre alt.','Ihre'],['___ Sohn Leon ist fünf Jahre alt.','Ihr'],['David arbeitet im Krankenhaus. ___ Bereich ist die Notaufnahme.','Sein'],['Emma mag Musik. ___ Lieblingslied ist sehr lustig.','Ihr'],['Leon spielt Fußball. ___ Klub ist ganz in der Nähe.','Sein'],['Laras Eltern wohnen auch hier. ___ Wohnung ist groß.','Ihre'],['___ Mutter heißt Karin und ___ Vater heißt Peter.','Ihre|ihr'],['Peter hat einen Bruder. ___ Name ist Klaus.','Sein'],['Klaus und seine Frau haben zwei Kinder. ___ Kinder sind Laras Cousins.','Ihre'],['Die Familie hat auch einen Hund. ___ Name ist Bruno.','Sein'],['Bruno ist gesund. ___ Beine sind stark.','Seine'],['Lara und David arbeiten viel. ___ Wochenende ist deshalb sehr wichtig.','Ihr'],['Emma und Leon finden: ___ Familie ist lustig.','Ihre']
 ]};
 const bios=[
 {label:'Mann',from:'Ich heiße Daniel. Ich bin 31 Jahre alt. Meine Frau heißt Nora. Mein Sohn heißt Emil. Mein Beruf ist Koch. Meine Arbeit ist manchmal stressig, aber mein Team ist lustig.',to:'Er heißt Daniel. Er ist 31 Jahre alt. Seine Frau heißt Nora. Sein Sohn heißt Emil. Sein Beruf ist Koch. Seine Arbeit ist manchmal stressig, aber sein Team ist lustig.'},
@@ -60,21 +60,26 @@ const bios=[
 {label:'Paar',from:'Wir heißen Julia und Max. Wir sind verheiratet. Unsere Tochter heißt Mia. Unser Sohn heißt Ben. Unsere Wohnung ist klein, aber unser Garten ist groß. Unsere Freunde wohnen in der Nähe.',to:'Sie heißen Julia und Max. Sie sind verheiratet. Ihre Tochter heißt Mia. Ihr Sohn heißt Ben. Ihre Wohnung ist klein, aber ihr Garten ist groß. Ihre Freunde wohnen in der Nähe.'}
 ];
 const examItems=[
-{type:'choice',q:'Wo bekommt man im Krankenhaus bei einem Notfall schnell Hilfe?',a:'die Notaufnahme',options:['die Notaufnahme','der Klub','der Bereich','die Nachricht']},
-{type:'input',q:'Schreibe den Plural mit Artikel: der Unfall',a:'die Unfälle'},
-{type:'choice',q:'Welches Wort bedeutet: „Der Kurs findet heute nicht statt“?',a:'ausfallen',options:['ausfallen','informieren','wehtun','gesund']},
-{type:'input',q:'Formuliere um: Mein Kopf tut weh.',a:'Ich habe Kopfschmerzen.'},
-{type:'input',q:'Formuliere um: Du hast Rückenschmerzen.',a:'Dein Rücken tut weh.'},
-{type:'input',q:'Possessivform: ich + feminin',a:'meine'},
-{type:'input',q:'Possessivform: ihr + Plural',a:'eure'},
-{type:'input',q:'Ergänze: Anna arbeitet im Krankenhaus. ___ Bereich ist die Notaufnahme.',a:'Ihr'},
-{type:'input',q:'Ergänze: Paul und Mia haben zwei Kinder. ___ Kinder sind gesund.',a:'Ihre'},
-{type:'choice',q:'Welches Wort passt? Man gibt einer Person eine kurze Information.',a:'die Nachricht',options:['die Nachricht','der Schmerz','der Kuss','das Lied']},
-{type:'input',q:'Schreibe den Plural mit Artikel: die Tablette',a:'die Tabletten'},
-{type:'input',q:'Schreibe in der 3. Person: Meine Schwester wohnt in Berlin.',a:'Ihre Schwester wohnt in Berlin.'},
-{type:'input',q:'Schreibe in der 3. Person: Unser Sohn heißt Ben.',a:'Ihr Sohn heißt Ben.'},
-{type:'choice',q:'Was bedeutet „hoffentlich“?',a:'Man wünscht, dass etwas Gutes passiert.',options:['Man wünscht, dass etwas Gutes passiert.','Man hat starke Schmerzen.','Etwas findet nicht statt.','Man muss lachen.']},
-{type:'input',q:'Formuliere um: Ihre Füße tun weh.',a:'Sie haben Fußschmerzen.'}
+{section:'Wortschatz',type:'choice',q:'Wo bekommt man im Krankenhaus bei einem Notfall schnell Hilfe?',a:'die Notaufnahme',options:['die Notaufnahme','der Klub','der Bereich','die Nachricht']},
+{section:'Wortschatz',type:'choice',q:'Welches Wort bedeutet: „Der Kurs findet heute nicht statt“?',a:'ausfallen',options:['ausfallen','informieren','wehtun','gesund']},
+{section:'Wortschatz',type:'choice',q:'Was bedeutet „hoffentlich“?',a:'Man wünscht, dass etwas Gutes passiert.',options:['Man wünscht, dass etwas Gutes passiert.','Man hat starke Schmerzen.','Etwas findet nicht statt.','Man muss lachen.']},
+{section:'Wortschatz',type:'choice',q:'Welches Wort passt? Man gibt einer Person eine kurze Information.',a:'die Nachricht',options:['die Nachricht','der Schmerz','der Kuss','das Lied']},
+{section:'Artikel und Plural',type:'input',q:'Schreibe Singular mit Artikel: ___ Bekannte (Mann)',a:'der Bekannte'},
+{section:'Artikel und Plural',type:'input',q:'Schreibe den Plural mit Artikel: der Unfall',a:'die Unfälle'},
+{section:'Artikel und Plural',type:'input',q:'Schreibe den Plural mit Artikel: die Tablette',a:'die Tabletten'},
+{section:'Artikel und Plural',type:'input',q:'Schreibe den Plural mit Artikel: der Kuss',a:'die Küsse'},
+{section:'wehtun und Schmerzen',type:'input',q:'Formuliere um: Mein Kopf tut weh.',a:'Ich habe Kopfschmerzen.'},
+{section:'wehtun und Schmerzen',type:'input',q:'Formuliere um: Du hast Rückenschmerzen.',a:'Dein Rücken tut weh.'},
+{section:'wehtun und Schmerzen',type:'input',q:'Formuliere um: Ihre Füße tun weh.',a:'Sie haben Fußschmerzen.'},
+{section:'wehtun und Schmerzen',type:'input',q:'Formuliere um: Er hat Bauchschmerzen.',a:'Sein Bauch tut weh.'},
+{section:'Possessivformen',type:'input',q:'Schreibe die Possessivform: ich + feminin',a:'meine'},
+{section:'Possessivformen',type:'input',q:'Schreibe die Possessivform: ihr + Plural',a:'eure'},
+{section:'Possessivformen',type:'input',q:'Ergänze: David arbeitet im Krankenhaus. ___ Bereich ist die Notaufnahme.',a:'Sein'},
+{section:'Possessivformen',type:'input',q:'Ergänze: Lara und David haben zwei Kinder. ___ Kinder heißen Emma und Leon.',a:'Ihre'},
+{section:'3. Person',type:'input',q:'Schreibe in der 3. Person: Meine Schwester wohnt in Berlin.',a:'Ihre Schwester wohnt in Berlin.'},
+{section:'3. Person',type:'input',q:'Schreibe in der 3. Person: Mein Beruf ist Koch.',a:'Sein Beruf ist Koch.'},
+{section:'3. Person',type:'input',q:'Schreibe in der 3. Person: Unsere Tochter heißt Mia.',a:'Ihre Tochter heißt Mia.'},
+{section:'3. Person',type:'input',q:'Schreibe den ganzen Satz in der 3. Person: Wir sind verheiratet.',a:'Sie sind verheiratet.'}
 ];
 window.L10T2={cards:v,flashcards:v,nouns,tasks,baseTransform,possRows,possForm,allTransform,family,bios,examItems};
 })();
