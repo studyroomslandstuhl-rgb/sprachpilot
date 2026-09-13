@@ -26,17 +26,17 @@ const v=[
 ].map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:B+x[0]+'.webp',audio:AUDIO+({bekannter:'der_bekannte',bekannte:'die_bekannte'}[x[0]]||x[0])+'.mp3'}));
 const nouns=v.filter(x=>x.article);
 const tasks=[
-{id:'karteikarten',title:'Karteikarten',icon:'🃏',text:'Sieh das Bild an, höre das Wort und lerne alle 21 Wörter.'},
-{id:'wort-bedeutung',title:'Wort – Bedeutung',icon:'💡',text:'Lies das Wort. Wähle die passende Bedeutung.'},
-{id:'hoeren-bild',title:'Hören – Bild',icon:'🎧',text:'Höre das Wort. Wähle das passende Bild.'},
-{id:'artikel-plural',title:'Artikel und Plural',icon:'🔤',text:'Wähle den richtigen Artikel. Schreibe danach den Plural mit Artikel.'},
-{id:'wehtun-schmerzen-basis',title:'wehtun ↔ Schmerzen',icon:'🤕',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Benutze ich, du oder Sie.'},
-{id:'possessiv-tabelle',title:'Possessivpronomen – Tabelle',icon:'📋',text:'Lies das Pronomen. Ergänze beide Possessivformen im Nominativ.'},
-{id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',text:'Lies Person und Genus. Schreibe die passende Possessivform.'},
-{id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Achte auf Person und Possessivform.'},
-{id:'familie-luecken',title:'Lara und ihre Familie',icon:'👨‍👩‍👧‍👦',text:'Lies den Text über Lara in der 3. Person. Setze in jede Lücke die passende Possessivform ein.'},
-{id:'biografien',title:'Biografien umschreiben',icon:'✍️',text:'Lies den ganzen Ausgangstext. Schreibe ihn vollständig in der 3. Person neu: ich → er/sie, wir → sie und mein/meine/unser/unsere → sein/seine/ihr/ihre.'},
-{id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,text:'Bearbeite 20 gemischte Prüfungsfragen aus dem ganzen Thema. Jede Antwort zählt beim ersten Versuch.'}
+{id:'karteikarten',title:'Karteikarten',icon:'🃏',cardText:'Lerne alle 21 Wörter.',text:'Sieh das Bild an, höre das Wort und lerne alle 21 Wörter.'},
+{id:'wort-bedeutung',title:'Wort – Bedeutung',icon:'💡',cardText:'Wähle die passende Bedeutung.',text:'Lies das Wort. Wähle die passende Bedeutung.'},
+{id:'hoeren-bild',title:'Hören – Bild',icon:'🎧',cardText:'Höre und wähle das Bild.',text:'Höre das Wort. Wähle das passende Bild.'},
+{id:'artikel-plural',title:'Artikel und Plural',icon:'🔤',cardText:'Ergänze Artikel und Plural.',text:'Wähle den richtigen Artikel. Schreibe danach den Plural mit Artikel.'},
+{id:'wehtun-schmerzen-basis',title:'wehtun ↔ Schmerzen',icon:'🤕',cardText:'Formuliere die Sätze um.',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Benutze ich, du oder Sie.'},
+{id:'possessiv-tabelle',title:'Possessivpronomen – Tabelle',icon:'📋',cardText:'Ergänze die Possessivformen.',text:'Lies das Pronomen. Ergänze beide Possessivformen im Nominativ.'},
+{id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',cardText:'Schreibe die passende Form.',text:'Lies Person und Genus. Schreibe die passende Possessivform.'},
+{id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',cardText:'Formuliere Sätze für alle Personen um.',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Achte auf Person und Possessivform.'},
+{id:'familie-luecken',title:'Lara und ihre Familie',icon:'👨‍👩‍👧‍👦',cardText:'Ergänze die Possessivformen im Text.',text:'Lies den Text über Lara in der 3. Person. Setze in jede Lücke die passende Possessivform ein.'},
+{id:'biografien',title:'Biografien umschreiben',icon:'✍️',cardText:'Schreibe in der 3. Person.',text:'Lies den ganzen Ausgangstext. Schreibe ihn vollständig in der 3. Person neu: ich → er/sie, wir → sie und mein/meine/unser/unsere → sein/seine/ihr/ihre.'},
+{id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,cardText:'Prüfe das ganze Thema.',text:'Bearbeite 20 gemischte Prüfungsfragen aus dem ganzen Thema. Jede Antwort zählt beim ersten Versuch.'}
 ];
 const baseTransform=[
 ['Meine Hand tut weh.','Ich habe Handschmerzen.'],['Mein Kopf tut weh.','Ich habe Kopfschmerzen.'],['Mein Rücken tut weh.','Ich habe Rückenschmerzen.'],['Mein Hals tut weh.','Ich habe Halsschmerzen.'],['Meine Füße tun weh.','Ich habe Fußschmerzen.'],['Meine Knie tun weh.','Ich habe Knieschmerzen.'],
