@@ -1,6 +1,7 @@
 (function(){'use strict';
 const B='https://sprachpilot.b-cdn.net/';
 const AUDIO=B+'audio/';
+const AUDIO_FILES={klub:'klub.mp3',notaufnahme:'notaufnahme.mp3',bereich:'bereich.mp3',tablette:'tablette.mp3',wehtun:'wehtun.mp3',unfall:'unfall.mp3',schmerz:'schmerz.mp3',beide:'beide.mp3',lustig:'lustig.mp3',schlimm:'schlimm.mp3',idee:'idee.mp3',informieren:'informieren.mp3',ausfallen:'ausfallen.mp3',nachricht:'nachricht.mp3',kuss:'kuss.mp3',gesund:'gesund.mp3',hoffentlich:'hoffentlich.mp3',bekannter:'der_bekannte.mp3',bekannte:'die_bekannte.mp3',lied:'lied.mp3',schatz:'schatz.mp3'};
 const v=[
 ['klub','der Klub','Klub','die Klubs','🏢','Eine Gruppe oder ein Ort, wo Menschen gemeinsam etwas machen.'],
 ['notaufnahme','die Notaufnahme','Notaufnahme','die Notaufnahmen','🏥','Hier bekommt man im Krankenhaus bei einem Notfall schnell Hilfe.'],
@@ -23,7 +24,7 @@ const v=[
 ['bekannte','die Bekannte','Bekannte','die Bekannten','👩','Eine Frau, die man kennt, aber die nicht unbedingt eine Freundin ist.'],
 ['lied','das Lied','Lied','die Lieder','🎵','Musik mit einem Text, den man singt.'],
 ['schatz','der Schatz','Schatz','die Schätze','💝','Eine sehr liebe Person oder etwas sehr Wertvolles.']
-].map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:B+x[0]+'.webp',audio:AUDIO+({bekannter:'der_bekannte',bekannte:'die_bekannte'}[x[0]]||x[0])+'.mp3'}));
+].map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:B+x[0]+'.webp',audio:AUDIO+AUDIO_FILES[x[0]]}));
 const nouns=v.filter(x=>x.article);
 const tasks=[
 {id:'karteikarten',title:'Karteikarten',icon:'🃏',cardText:'Lerne alle 21 Wörter.',text:'Sieh das Bild an, höre das Wort und lerne alle 21 Wörter.'},
@@ -34,7 +35,7 @@ const tasks=[
 {id:'possessiv-tabelle',title:'Possessivpronomen – Tabelle',icon:'📋',cardText:'Ergänze die Possessivformen.',text:'Lies das Pronomen. Ergänze beide Possessivformen im Nominativ.'},
 {id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',cardText:'Schreibe die passende Form.',text:'Lies Person und Genus. Schreibe die passende Possessivform.'},
 {id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',cardText:'Formuliere Sätze für alle Personen um.',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Achte auf Person und Possessivform.'},
-{id:'familie-luecken',title:'Lara und ihre Familie',icon:'👨‍👩‍👧‍👦',cardText:'Ergänze die Possessivformen im Text.',text:'Lies den Text über Lara in der 3. Person. Setze in jede Lücke die passende Possessivform ein.'},
+{id:'familie-luecken',title:'Familien – Lückentexte',icon:'👨‍👩‍👧‍👦',cardText:'Ergänze drei Texte.',text:'Lies die drei Texte in der 3. Person. Setze in jede Lücke die passende Possessivform ein.'},
 {id:'biografien',title:'Biografien umschreiben',icon:'✍️',cardText:'Schreibe in der 3. Person.',text:'Lies den ganzen Ausgangstext. Schreibe ihn vollständig in der 3. Person neu: ich → er/sie, wir → sie und mein/meine/unser/unsere → sein/seine/ihr/ihre.'},
 {id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,cardText:'Prüfe das ganze Thema.',text:'Bearbeite 20 gemischte Prüfungsfragen aus dem ganzen Thema. Jede Antwort zählt beim ersten Versuch.'}
 ];
@@ -51,8 +52,16 @@ const allTransform=[
 ['Anna hat Kopfschmerzen.','Annas Kopf tut weh.'],['Paul hat Rückenschmerzen.','Pauls Rücken tut weh.'],['Marias Hand tut weh.','Maria hat Handschmerzen.'],['Toms Knie tut weh.','Tom hat Knieschmerzen.'],['Lenas Hals tut weh.','Lena hat Halsschmerzen.'],
 ['Er hat Bauchschmerzen.','Sein Bauch tut weh.'],['Sie hat Zahnschmerzen.','Ihre Zähne tun weh.'],['Wir haben Rückenschmerzen.','Unsere Rücken tun weh.'],['Ihr habt Kopfschmerzen.','Eure Köpfe tun weh.'],['Sie haben Knieschmerzen.','Ihre Knie tun weh.'],['Du hast Armschmerzen.','Dein Arm tut weh.'],['Ich habe Halsschmerzen.','Mein Hals tut weh.'],['Sie haben Fußschmerzen.','Ihre Füße tun weh.'],['Mia hat Bauchschmerzen.','Mias Bauch tut weh.'],['Ben hat Zahnschmerzen.','Bens Zähne tun weh.']
 ].map((p,i)=>({q:p[0],a:p[1]}));
-const family={text:[
+const family={texts:[
+{title:'Lara und ihre Familie',text:[
 ['Das ist Lara.',''],['___ Mann heißt David.','Ihr'],['___ Tochter Emma ist acht Jahre alt.','Ihre'],['___ Sohn Leon ist fünf Jahre alt.','Ihr'],['David arbeitet im Krankenhaus. ___ Bereich ist die Notaufnahme.','Sein'],['Emma mag Musik. ___ Lieblingslied ist sehr lustig.','Ihr'],['Leon spielt Fußball. ___ Klub ist ganz in der Nähe.','Sein'],['Laras Eltern wohnen auch hier. ___ Wohnung ist groß.','Ihre'],['___ Mutter heißt Karin und ___ Vater heißt Peter.','Ihre|ihr'],['Peter hat einen Bruder. ___ Name ist Klaus.','Sein'],['Klaus und seine Frau haben zwei Kinder. ___ Kinder sind Laras Cousins.','Ihre'],['Die Familie hat auch einen Hund. ___ Name ist Bruno.','Sein'],['Bruno ist gesund. ___ Beine sind stark.','Seine'],['Lara und David arbeiten viel. ___ Wochenende ist deshalb sehr wichtig.','Ihr'],['Emma und Leon finden: ___ Familie ist lustig.','Ihre']
+]},
+{title:'Tom und seine Familie',text:[
+['Das ist Tom.',''],['___ Frau heißt Nina.','Seine'],['___ Sohn heißt Paul.','Sein'],['___ Tochter Mia ist sechs Jahre alt.','Seine'],['Tom arbeitet in einem Klub. ___ Arbeit ist interessant.','Seine'],['Nina ist Ärztin. ___ Bereich ist die Notaufnahme.','Ihr'],['Paul spielt Gitarre. ___ Lieblingslied ist sehr lustig.','Sein'],['Mia hat eine gute Idee. ___ Idee gefällt der ganzen Familie.','Ihre'],['Tom und Nina haben viele Freunde. ___ Freunde wohnen in der Nähe.','Ihre'],['Die Familie hat eine Katze. ___ Name ist Luna.','Ihr']
+]},
+{title:'Sara und Robert',text:[
+['Das sind Sara und Robert.',''],['___ Wohnung ist klein, aber schön.','Ihre'],['___ Sohn heißt Ben.','Ihr'],['___ Tochter heißt Ella.','Ihre'],['Sara hat einen Bruder. ___ Name ist Jonas.','Sein'],['Robert hat eine Schwester. ___ Name ist Lea.','Ihr'],['Ben spielt Fußball. ___ Klub ist in der Nähe.','Sein'],['Ella liebt Musik. ___ Lieblingslied ist lustig.','Ihr'],['Sara und Robert arbeiten viel. ___ Wochenende ist ihnen wichtig.','Ihr'],['Die Kinder besuchen oft die Großeltern. ___ Haus hat einen großen Garten.','Ihr']
+]}
 ]};
 const bios=[
 {label:'Mann',from:'Ich heiße Daniel. Ich bin 31 Jahre alt. Meine Frau heißt Nora. Mein Sohn heißt Emil. Mein Beruf ist Koch. Meine Arbeit ist manchmal stressig, aber mein Team ist lustig.',to:'Er heißt Daniel. Er ist 31 Jahre alt. Seine Frau heißt Nora. Sein Sohn heißt Emil. Sein Beruf ist Koch. Seine Arbeit ist manchmal stressig, aber sein Team ist lustig.'},

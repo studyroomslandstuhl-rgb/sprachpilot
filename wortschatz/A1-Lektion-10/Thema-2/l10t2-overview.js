@@ -7,6 +7,7 @@ const {renderSpHeader,bindSpHeader}=await import('/js/sp-header.js?v=theme-stand
 const TOPIC='wortschatz-a1-lektion-10-thema-2';
 const tasks=Array.isArray(D.tasks)?D.tasks:[];
 const practiceTasks=tasks.filter(t=>!t.exam);
+const examTask=tasks.find(t=>t.exam)||null;
 const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{}}catch(e){return{}}}
 function preview(){try{const p=profile(),role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||p.role||'').toLowerCase();return ['teacher','lehrer','admin','owner','superadmin'].includes(role)||sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}catch(e){return false}}
@@ -57,7 +58,7 @@ function renderTask(t,i){const p=Math.round(progress[t.id]||0),done=p>=100,locke
 if(root){
  const header=renderSpHeader({subtitle:'Gesundheit und Possessivpronomen · A1 Lektion 10 · Thema 2',color:{main:'#F4A3A3',dark:'#A86464',soft:'#FDF1F1',line:'#F3C9C9'}});
  const progressCard=`<section class="l8-card l8-progress-card"><div class="l8-progress-circle">${avg}%</div><div class="l8-progress-main"><h2>Dein Fortschritt</h2><p class="l8-small">${completed} / ${practiceTasks.length} Aufgaben abgeschlossen</p><div class="l8-progress"><div style="width:${avg}%"></div></div><p class="l8-small l8-theme-subtitle">Gesundheit und Possessivpronomen</p><div class="l8-tags"><span class="l8-tag">21 Wörter</span><span class="l8-tag">wehtun / -schmerzen</span><span class="l8-tag">Possessivpronomen</span></div></div><div class="l8-score-slot">${scorePanel()}</div></section>`;
- root.innerHTML=`<div class="l10-theme-page">${header}<div class="l8-wrap">${teacherNote()}${progressCard}<section class="l8-grid">${tasks.map(renderTask).join('')}</section><footer>© SprachPilot</footer></div></div>`;
+ root.innerHTML=`<div class="l10-theme-page">${header}<div class="l8-wrap">${teacherNote()}${progressCard}<section class="l8-grid">${practiceTasks.map(renderTask).join('')}</section>${examTask?`<section class="l8-grid l8-exam-grid">${renderTask(examTask,practiceTasks.length)}</section>`:''}<footer>© SprachPilot</footer></div></div>`;
  bindSpHeader(root);
  [50,250,700].forEach(ms=>setTimeout(()=>{scrollLast();polishHeader()},ms));
 }
