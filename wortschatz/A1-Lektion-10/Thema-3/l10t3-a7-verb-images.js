@@ -19,7 +19,7 @@ D.sollenGaps=[
   row('sg06','Zum Termin','Anna ihre Versichertenkarte','soll','mitnehmen','mitnehmen'),
   row('sg07','Vor der Untersuchung','ich das Formular','soll','ausfüllen','ausfuellen'),
   row('sg08','Morgen','wir die Arztbescheinigung','sollen','mitbringen','mitbringen'),
-  row('sg09','Frau Klein,','Sie das Formular hier','sollen','unterschreiben','unterschreiben'),
+  row('sg09','Frau Klein, Sie','das Formular hier','sollen','unterschreiben','unterschreiben'),
   row('sg10','Nach dem Neustart','das Gerät wieder','soll','funktionieren','funktionieren'),
   row('sg11','Für den Termin','du eine Uhrzeit','sollst','wählen','waehlen'),
   row('sg12','Für die Behandlung','ihr einen passenden Termin','sollt','auswählen','auswaehlen'),
@@ -35,7 +35,7 @@ D.sollenGaps=[
 
 const task=(D.tasks||[]).find(t=>t.id==='sollen-verb');
 if(task){
-  task.title='sollen + Bildverb';
+  task.title='sollen + Verb';
   task.cardText='Schau das Bild an. Ergänze sollen und das Verb.';
   task.text='Schau das Bild an. Ergänze die richtige Form von sollen und den Infinitiv.';
   task.example='Maria ___ das Formular [Bild]. → Maria soll das Formular ausfüllen.';
