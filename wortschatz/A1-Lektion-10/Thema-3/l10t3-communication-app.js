@@ -4,13 +4,13 @@ const taskId=String(new URLSearchParams(location.search).get('task')||'').toLowe
 const task=(D.tasks||[]).find(t=>t.id===taskId)||{title:'Kommunikation',icon:'💬',text:'Bearbeite die Aufgabe.'};
 const TOPIC='wortschatz-a1-lektion-10-thema-3';
 try{sessionStorage.setItem('SP_L10_LAST_TASK_T3',taskId);localStorage.setItem('SP_L10_LAST_TASK_T3',taskId)}catch(e){}
-const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot',"'":'&#39;'}[c]));
 const norm=v=>String(v??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/[.,!?;:“”"'`´()]/g,'').replace(/\s+/g,' ');
 const shuffle=a=>{a=[...(a||[])];for(let i=a.length-1;i>0;i--){const j=Math.floor(Math.random()*(i+1));[a[i],a[j]]=[a[j],a[i]]}return a};
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{}}catch(e){return{}}}
 function owner(){const p=profile();return String(p.canonicalStudentId||p.docId||p.studentId||p.userId||p.authUid||p.uid||p.id||p.email||localStorage.getItem('SP_STUDENT_ID')||'student').trim().toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_')}
 function preview(){try{const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||profile().role||'').toLowerCase();return ['teacher','lehrer','admin','owner','superadmin'].includes(role)||sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1'}catch(e){return false}}
-function run(){return Math.max(1,Math.min(3,Number(localStorage.getItem('SP_SCORE_RUN_'+TOPIC)||1)||1)}
+function run(){return Math.max(1,Math.min(3,Number(localStorage.getItem('SP_SCORE_RUN_'+TOPIC)||1)||1))}
 function store(){return preview()?sessionStorage:localStorage}
 function key(){return`SP_L10_${owner()}_T3_${taskId}`}
 function items(){if(taskId==='arzt-dialoge-hoeren')return D.doctorDialogues||[];if(taskId==='chef-dialoge-hoeren')return D.workDialogues||[];if(taskId==='imperativ-sollen')return D.imperativeSollen||[];if(taskId==='krankmeldung-attest-lesen')return D.medicalDocuments||[];if(taskId==='probleme-tipps')return D.problemTips||[];return[]}
