@@ -29,7 +29,10 @@ const raw=[
 ['gruss','der Gruß','Gruß','die Grüße','👋','Der Schluss eines Briefes, zum Beispiel „Viele Grüße“.'],
 ['krankgeschrieben','krankgeschrieben','krankgeschrieben','','🤒','Vom Arzt bestätigt: Man darf wegen Krankheit nicht arbeiten.']
 ];
-const cards=raw.map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:CDN+x[0]+'.webp',audio:AUDIO+x[0]+'.mp3',audioFallback:CDN+x[0]+'.mp3'}));
+const nounIds=new Set(['schritt','medizin','apotheke','fieber','husten','salbe','gesundheit','schnupfen','absender','ort','empfaenger','anrede','datum','unterschrift','sprechstunde','krankmeldung','betreff','postleitzahl','hausnummer','strasse','gruss']);
+const verbIds=new Set(['verwenden','tun','schicken']);
+const adjectiveIds=new Set(['ruhig','krankgeschrieben']);
+const cards=raw.map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',type:nounIds.has(x[0])?'noun':verbIds.has(x[0])?'verb':adjectiveIds.has(x[0])?'adjective':'other',image:CDN+x[0]+'.webp?v=20260914-l10t3-bunny1',audioFile:x[0]+'.mp3',audio:AUDIO+x[0]+'.mp3?v=20260914-l10t3-bunny1',audioFallback:CDN+x[0]+'.mp3?v=20260914-l10t3-bunny1'}));
 const nouns=cards.filter(x=>x.article&&x.plural);
 const tasks=[
 {id:'karteikarten',title:'Karteikarten',icon:'🃏',cardText:'Lerne alle 27 Wörter.',text:'Lerne die Wörter.'},

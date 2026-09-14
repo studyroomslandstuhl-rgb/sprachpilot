@@ -105,11 +105,13 @@ function row(item,index){
  </article>`;
 }
 function setHeader(theme){
- const subtitle=document.querySelector('.sp-header__subtitle');if(subtitle)subtitle.textContent=`Wortschatzübersicht · ${theme.title} · A1 Lektion 8 · Thema ${theme.number}`;
+ const context=window.L8_OVERVIEW_CONTEXT||{},lesson=Number(context.lesson)||8;
+ const subtitle=document.querySelector('.sp-header__subtitle');if(subtitle)subtitle.textContent=context.subtitle||`Wortschatzübersicht · ${theme.title} · A1 Lektion ${lesson} · Thema ${theme.number}`;
  document.querySelectorAll('.sp-header__nav-link').forEach(link=>{const txt=String(link.textContent||'').trim();if(txt==='Übersicht'&&link.tagName==='A')link.setAttribute('href','uebersicht.html')});
 }
 function installReset(){
- window.resetThemeProgress=()=>{if(window.L8S?.reset)return window.L8S.reset(themeNumber());location.href='index.html'};
+ const context=window.L8_OVERVIEW_CONTEXT||{};
+ window.resetThemeProgress=()=>{if(typeof context.reset==='function')return context.reset();if(window.L8S?.reset)return window.L8S.reset(themeNumber());location.href='index.html'};
 }
 function render(){
  const root=document.getElementById('app'),n=themeNumber();const theme=window.L8_THEME||window.L8_ALL_THEMES?.[n]||window.L8_ALL_THEMES?.[String(n)];
