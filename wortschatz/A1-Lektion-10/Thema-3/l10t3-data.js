@@ -27,15 +27,23 @@ const raw=[
 ['hausnummer','die Hausnummer','Hausnummer','die Hausnummern','🏠','Die Nummer eines Hauses in einer Straße.'],
 ['strasse','die Straße','Straße','die Straßen','🛣️','Ein Teil der Adresse; dort stehen Häuser.'],
 ['gruss','der Gruß','Gruß','die Grüße','👋','Der Schluss eines Briefes, zum Beispiel „Viele Grüße“.'],
-['krankgeschrieben','krankgeschrieben','krankgeschrieben','','🤒','Vom Arzt bestätigt: Man darf wegen Krankheit nicht arbeiten.']
+['empfangen','empfangen','empfangen','','📥','Etwas oder jemanden bekommen. Perfekt: hat empfangen.'],
+['attest','das Attest','Attest','die Atteste','📃','Eine schriftliche Bescheinigung vom Arzt.'],
+['arztbescheinigung','die Arztbescheinigung','Arztbescheinigung','die Arztbescheinigungen','🩺','Ein Dokument vom Arzt, das eine Krankheit bestätigt.'],
+['anbei','anbei','anbei','','📎','Das genannte Dokument ist mitgeschickt.'],
+['gespraech','das Gespräch','Gespräch','die Gespräche','💬','Menschen sprechen miteinander.'],
+['sonnenbrand','der Sonnenbrand','Sonnenbrand','die Sonnenbrände','🌞','Gerötete und schmerzende Haut nach zu viel Sonne.'],
+['kuehlen','kühlen','kühlen','','🧊','Etwas kalt machen oder kalt halten.'],
+['tabletten_nehmen','Tabletten nehmen','Tabletten nehmen','','💊','Tabletten schlucken und als Medizin benutzen.'],
+['krankschreiben','krankschreiben','krankschreiben','','🤒','Ärztlich bestätigen, dass jemand nicht arbeiten kann.']
 ];
-const nounIds=new Set(['schritt','medizin','apotheke','fieber','husten','salbe','gesundheit','schnupfen','absender','ort','empfaenger','anrede','datum','unterschrift','sprechstunde','krankmeldung','betreff','postleitzahl','hausnummer','strasse','gruss']);
-const verbIds=new Set(['verwenden','tun','schicken']);
-const adjectiveIds=new Set(['ruhig','krankgeschrieben']);
+const nounIds=new Set(['schritt','medizin','apotheke','fieber','husten','salbe','gesundheit','schnupfen','absender','ort','empfaenger','anrede','datum','unterschrift','sprechstunde','krankmeldung','betreff','postleitzahl','hausnummer','strasse','gruss','attest','arztbescheinigung','gespraech','sonnenbrand']);
+const verbIds=new Set(['verwenden','tun','schicken','empfangen','kuehlen','tabletten_nehmen','krankschreiben']);
+const adjectiveIds=new Set(['ruhig']);
 const cards=raw.map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',type:nounIds.has(x[0])?'noun':verbIds.has(x[0])?'verb':adjectiveIds.has(x[0])?'adjective':'other',image:CDN+x[0]+'.webp?v=20260914-l10t3-bunny1',audioFile:x[0]+'.mp3',audio:AUDIO+x[0]+'.mp3?v=20260914-l10t3-bunny1',audioFallback:CDN+x[0]+'.mp3?v=20260914-l10t3-bunny1'}));
 const nouns=cards.filter(x=>x.article&&x.plural);
 const tasks=[
-{id:'karteikarten',title:'Karteikarten',icon:'🃏',cardText:'Sprich oder schreibe 27 Wörter.',text:'Sprich oder schreibe das deutsche Wort.'},
+{id:'karteikarten',title:'Karteikarten',icon:'🃏',cardText:'Sprich oder schreibe 35 Wörter.',text:'Sprich oder schreibe das deutsche Wort.'},
 {id:'wort-bedeutung',title:'Wort – Bedeutung',icon:'💡',cardText:'Wähle die richtige Bedeutung.',text:'Wähle die richtige Bedeutung.'},
 {id:'hoeren-bild',title:'Hören – Bild',icon:'🎧',cardText:'Höre das Wort. Wähle das Bild.',text:'Höre. Wähle das richtige Bild.'},
 {id:'artikel-plural',title:'Artikel und Plural',icon:'🔤',cardText:'Wähle den Artikel. Schreibe den Plural.',text:'Ergänze Artikel und Plural.',example:'Apotheke → die · die Apotheken'},
