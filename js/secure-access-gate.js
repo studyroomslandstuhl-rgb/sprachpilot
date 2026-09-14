@@ -15,6 +15,13 @@ function teacherProfile(){return parse(localStorage.getItem('SP_TEACHER_PROFILE'
 function role(){return String(getActiveRole?.()||localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||'').trim().toLowerCase()}
 function teacherRole(value=role()){return ['teacher','lehrer','admin','owner','superadmin'].includes(value)}
 function studentRole(value=role()){return ['student','schueler','schüler'].includes(value)}
+function secureStoredTeacherSession(){
+  try{
+    const t=teacherProfile(),uid=String(t.secureTeacherUid||t.uid||'').trim(),storedUid=String(localStorage.getItem('SP_TEACHER_UID')||localStorage.getItem('SP_TEACHER_ID')||'').trim();
+    const verifiedAt=Number(t.secureTeacherVerifiedAt||0),age=Date.now()-verifiedAt;
+    return localStorage.getItem('SP_TEACHER_MODE')==='1'&&t.secureTeacherSession===true&&!!uid&&uid===storedUid&&verifiedAt>0&&age>=0&&age<30*24*60*60*1000;
+  }catch(e){return false}
+}
 function previewMarker(){
   try{
     const local=localStorage.getItem('SP_TEACHER_PREVIEW'),session=sessionStorage.getItem('SP_TEACHER_PREVIEW');
@@ -63,8 +70,17 @@ export async function verifySecureAccess({allowTeacher=true,redirect=true,mark=t
 
   if(allowTeacher&&teacherRole(activeRole)){
     // Der eigentliche Lehrer-Datenzugriff bleibt zusätzlich durch Firestore Rules geschützt.
-    // Für die Sichtbarkeit von Lerninhalten genügt eine echte, nicht-anonyme Firebase-Sitzung.
-    if(!firebaseUser||firebaseUser.isAnonymous||!firebaseUser.uid)return fail('TEACHER_FIREBASE_AUTH_REQUIRED',{redirect});
+    // Nach einer bereits in Firestore bestätigten Dashboard-Anmeldung darf die Lernansicht
+    // auch dann öffnen, wenn das erneute Auth-Signal auf der Inhaltsseite verspätet eintrifft.
+    // Schreibzugriffe bleiben weiterhin durch Firebase Auth und Firestore Rules geschützt.
+    if(!firebaseUser||firebaseUser.isAnonymous||!firebaseUser.uid){
+      if(!secureStoredTeacherSession())return fail('TEACHER_FIREBASE_AUTH_REQUIRED',{redirect});
+      const t=teacherProfile(),uid=String(t.secureTeacherUid||t.uid||'');
+      const result={ok:true,type:'teacher-session',uid,profile:p,user:null,authPending:true};
+      try{window.SP_SECURE_ACCESS=result}catch(e){}
+      if(mark)markVisible();
+      return result;
+    }
     const result={ok:true,type:'teacher',uid:String(firebaseUser.uid),profile:p,user:firebaseUser};
     try{window.SP_SECURE_ACCESS=result}catch(e){}
     if(mark)markVisible();

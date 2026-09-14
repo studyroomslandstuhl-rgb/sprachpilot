@@ -83,7 +83,7 @@ function clearLegacyTeacherState(){
 }
 function storeTeacherSession(){
   clearLegacyTeacherState();
-  const profile={...(state.teacher||{}),uid:state.user?.uid||'',email:state.user?.email||state.teacher?.email||'',role:state.isOwner?'owner':'teacher',owner:state.isOwner};
+  const profile={...(state.teacher||{}),uid:state.user?.uid||'',email:state.user?.email||state.teacher?.email||'',role:state.isOwner?'owner':'teacher',owner:state.isOwner,secureTeacherSession:true,secureTeacherUid:state.user?.uid||'',secureTeacherVerifiedAt:Date.now()};
   try{
     localStorage.setItem('SP_TEACHER_MODE','1');
     localStorage.setItem('SP_LOGIN_ROLE','teacher');
