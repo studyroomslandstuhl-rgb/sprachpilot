@@ -12,7 +12,8 @@ function preview(){try{return ['teacher','lehrer','admin','owner','superadmin'].
 function run(){return Math.max(1,Math.min(3,Number(localStorage.getItem('SP_SCORE_RUN_'+TOPIC)||1)||1))}
 function store(){return preview()?sessionStorage:localStorage}
 function key(){return `SP_L10_${owner()}_T2_${taskId}`}
-function read(total){let s={done:[],wrong:{},order:[],firstSeen:[],firstCorrect:[],_run:run(),total};try{const x=JSON.parse(store().getItem(key())||'{}');if(x&&Number(x._run||1)===run()&&Number(x.total||0)===Number(total||0))Object.assign(s,x)}catch(e){}s.done=Array.isArray(s.done)?s.done:[];s.wrong=s.wrong||{};s.order=Array.isArray(s.order)?s.order:[];s.firstSeen=Array.isArray(s.firstSeen)?s.firstSeen:[];s.firstCorrect=Array.isArray(s.firstCorrect)?s.firstCorrect:[];s.total=total;return s}
+function contentVersion(){return taskId==='pruefung'?2:1}
+function read(total){let s={done:[],wrong:{},order:[],firstSeen:[],firstCorrect:[],_run:run(),_contentVersion:contentVersion(),total};try{const x=JSON.parse(store().getItem(key())||'{}');if(x&&Number(x._run||1)===run()&&Number(x.total||0)===Number(total||0)&&Number(x._contentVersion||1)===contentVersion())Object.assign(s,x)}catch(e){}s.done=Array.isArray(s.done)?s.done:[];s.wrong=s.wrong||{};s.order=Array.isArray(s.order)?s.order:[];s.firstSeen=Array.isArray(s.firstSeen)?s.firstSeen:[];s.firstCorrect=Array.isArray(s.firstCorrect)?s.firstCorrect:[];s.total=total;return s}
 let progressSyncTimer=0,progressImporting=false;
 function sendCentralProgress(payload){
  if(preview())return;
@@ -56,6 +57,7 @@ function syncStoredProgress(total){
 }
 function write(s){
  s._run=run();
+ s._contentVersion=contentVersion();
  try{
   store().setItem(key(),JSON.stringify(s));
   const persisted=JSON.parse(store().getItem(key())||'null');
