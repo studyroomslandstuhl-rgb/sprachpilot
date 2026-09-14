@@ -27,17 +27,17 @@ const v=[
 ].map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:B+x[0]+'.webp',audio:AUDIO+AUDIO_FILES[x[0]],audioFallback:B+AUDIO_FILES[x[0]]}));
 const nouns=v.filter(x=>x.article);
 const tasks=[
-{id:'karteikarten',title:'Karteikarten',icon:'🃏',cardText:'Lerne alle 21 Wörter.',text:'Sieh das Bild an, höre das Wort und lerne alle 21 Wörter.'},
-{id:'wort-bedeutung',title:'Wort – Bedeutung',icon:'💡',cardText:'Wähle die passende Bedeutung.',text:'Lies das Wort. Wähle die passende Bedeutung.'},
-{id:'hoeren-bild',title:'Hören – Bild',icon:'🎧',cardText:'Höre und wähle das Bild.',text:'Höre das Wort. Wähle das passende Bild.'},
-{id:'artikel-plural',title:'Artikel und Plural',icon:'🔤',cardText:'Ergänze Artikel und Plural.',text:'Wähle den richtigen Artikel. Schreibe danach den Plural mit Artikel.'},
-{id:'wehtun-schmerzen-basis',title:'wehtun ↔ Schmerzen',icon:'🤕',cardText:'Formuliere die Sätze um.',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Benutze ich, du oder Sie.'},
-{id:'possessiv-tabelle',title:'Possessivpronomen – Tabelle',icon:'📋',cardText:'Ergänze die Possessivformen.',text:'Lies das Pronomen. Ergänze beide Possessivformen im Nominativ.'},
-{id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',cardText:'Schreibe die passende Form.',text:'Lies Person und Genus. Schreibe die passende Possessivform.'},
-{id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',cardText:'Formuliere Sätze für alle Personen um.',text:'Formuliere den Satz um. Sprich oder schreibe den neuen Satz. Achte auf Person und Possessivform.'},
-{id:'familie-luecken',title:'Familien – Lückentexte',icon:'👨‍👩‍👧‍👦',cardText:'Ergänze drei Texte.',text:'Bearbeite jeden Text einzeln. Lies den Text in der 3. Person und ergänze alle Possessivformen.'},
-{id:'biografien',title:'Biografien umschreiben',icon:'✍️',cardText:'Schreibe in der 3. Person.',text:'Schreibe den Ausgangstext in der 3. Person.'},
-{id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,cardText:'Prüfe das ganze Thema.',text:'Bearbeite 20 Fragen. Jede Antwort zählt nur beim ersten Versuch.'}
+{id:'karteikarten',title:'Karteikarten',icon:'🃏',cardText:'Lerne alle 21 Wörter.',text:'Lerne die Wörter.'},
+{id:'wort-bedeutung',title:'Wort – Bedeutung',icon:'💡',cardText:'Wähle die passende Bedeutung.',text:'Wähle die richtige Bedeutung.'},
+{id:'hoeren-bild',title:'Hören – Bild',icon:'🎧',cardText:'Höre und wähle das Bild.',text:'Höre das Wort. Wähle das richtige Bild.'},
+{id:'artikel-plural',title:'Artikel und Plural',icon:'🔤',cardText:'Ergänze Artikel und Plural.',text:'Wähle den Artikel. Schreibe den Plural.'},
+{id:'wehtun-schmerzen-basis',title:'wehtun ↔ Schmerzen',icon:'🤕',cardText:'Formuliere die Sätze um.',text:'Formuliere den Satz um. Sprich oder schreibe.'},
+{id:'possessiv-tabelle',title:'Possessivpronomen – Tabelle',icon:'📋',cardText:'Ergänze die Possessivformen.',text:'Ergänze die Tabelle.'},
+{id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',cardText:'Schreibe die passende Form.',text:'Schreibe die passende Possessivform.'},
+{id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',cardText:'Formuliere Sätze für alle Personen um.',text:'Formuliere den Satz um. Sprich oder schreibe.'},
+{id:'familie-luecken',title:'Familien – Lückentexte',icon:'👨‍👩‍👧‍👦',cardText:'Ergänze drei Texte.',text:'Ergänze die Possessivformen im Text.'},
+{id:'biografien',title:'Biografien umschreiben',icon:'✍️',cardText:'Schreibe in der 3. Person.',text:'Schreibe den Text in der 3. Person.'},
+{id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,cardText:'Prüfe das ganze Thema.',text:'Beantworte 20 Fragen.'}
 ];
 const baseTransform=[
 ['Meine Hand tut weh.','Ich habe Handschmerzen.'],['Mein Kopf tut weh.','Ich habe Kopfschmerzen.'],['Mein Rücken tut weh.','Ich habe Rückenschmerzen.'],['Mein Hals tut weh.','Ich habe Halsschmerzen.'],['Meine Füße tun weh.','Ich habe Fußschmerzen.'],['Meine Knie tun weh.','Ich habe Knieschmerzen.'],
