@@ -33,16 +33,28 @@
     // fälschlich "Kein Lehrerzugang" auslösen.
     window.spCompatAuthReady = new Promise(function(resolve){
       let finished = false;
-      const stop = window.auth.onAuthStateChanged(function(user){
+      let stop = function(){};
+      let timer = null;
+      const finish = function(user){
+        if(finished) return;
+        finished = true;
+        if(timer) clearTimeout(timer);
+        try{stop()}catch(e){}
+        resolve(user || window.auth.currentUser || null);
+      };
+      timer = setTimeout(function(){
+        console.warn('Firebase Auth hat nicht rechtzeitig geantwortet. Aktueller Sitzungsstand wird verwendet.');
+        finish(window.auth.currentUser || null);
+      }, 6000);
+      stop = window.auth.onAuthStateChanged(function(user){
         if(finished) return;
         if(user || isTeacherArea){
-          finished = true;
-          try{stop()}catch(e){}
-          resolve(user || null);
+          finish(user || null);
           return;
         }
         // Außerhalb des Lehrerbereichs dürfen ältere Seiten weiterhin anonym arbeiten.
         finished = true;
+        if(timer) clearTimeout(timer);
         try{stop()}catch(e){}
         window.auth.signInAnonymously()
           .then(function(result){ resolve(result && result.user ? result.user : window.auth.currentUser || null); })
@@ -50,6 +62,9 @@
             console.warn("Firebase Anonymous Auth konnte nicht gestartet werden:", error);
             resolve(null);
           });
+      }, function(error){
+        console.warn('Firebase Auth State konnte nicht gelesen werden:', error);
+        finish(window.auth.currentUser || null);
       });
     });
 

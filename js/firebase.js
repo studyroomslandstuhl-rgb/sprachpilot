@@ -47,12 +47,18 @@ let signInFlight=null;
 let initialStateSettled=false;
 const initialAuthState=new Promise(resolve=>{
   let stop=null;
+  let timer=null;
   const finish=user=>{
     if(initialStateSettled)return;
     initialStateSettled=true;
+    if(timer)clearTimeout(timer);
     try{if(stop)stop()}catch(e){}
     resolve(user||auth.currentUser||null);
   };
+  timer=setTimeout(()=>{
+    console.warn("Firebase Auth hat nicht rechtzeitig geantwortet. Aktueller Sitzungsstand wird verwendet.");
+    finish(auth.currentUser||null);
+  },6000);
   try{
     stop=onAuthStateChanged(auth,user=>finish(user||null),error=>{
       console.warn("Firebase Auth State konnte nicht gelesen werden",error);
