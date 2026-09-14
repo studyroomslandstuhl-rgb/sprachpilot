@@ -35,18 +35,18 @@ const adjectiveIds=new Set(['ruhig','krankgeschrieben']);
 const cards=raw.map(x=>({id:x[0],full:x[1],word:x[2],plural:x[3],emoji:x[4],meaning:x[5],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',type:nounIds.has(x[0])?'noun':verbIds.has(x[0])?'verb':adjectiveIds.has(x[0])?'adjective':'other',image:CDN+x[0]+'.webp?v=20260914-l10t3-bunny1',audioFile:x[0]+'.mp3',audio:AUDIO+x[0]+'.mp3?v=20260914-l10t3-bunny1',audioFallback:CDN+x[0]+'.mp3?v=20260914-l10t3-bunny1'}));
 const nouns=cards.filter(x=>x.article&&x.plural);
 const tasks=[
-{id:'karteikarten',title:'Karteikarten',icon:'🃏',cardText:'Lerne alle 27 Wörter.',text:'Lerne die Wörter.'},
+{id:'karteikarten',title:'Karteikarten',icon:'🃏',cardText:'Sprich oder schreibe 27 Wörter.',text:'Sprich oder schreibe das deutsche Wort.'},
 {id:'wort-bedeutung',title:'Wort – Bedeutung',icon:'💡',cardText:'Wähle die richtige Bedeutung.',text:'Wähle die richtige Bedeutung.'},
-{id:'hoeren-bild',title:'Hören – Bild',icon:'🎧',cardText:'Höre und wähle das Bild.',text:'Höre das Wort. Wähle das richtige Bild.'},
-{id:'artikel-plural',title:'Artikel und Plural',icon:'🔤',cardText:'Ergänze Artikel und Plural.',text:'Wähle den Artikel. Schreibe den Plural.'},
-{id:'sollen-tabelle',title:'sollen – Tabelle',icon:'📋',cardText:'Konjugiere sollen.',text:'Ergänze die Formen von sollen.'},
-{id:'sollen-saetze',title:'sollen – Sätze',icon:'🧩',cardText:'Ergänze sollen.',text:'Schreibe die richtige Form von sollen.',example:'Du ___ viel trinken. → sollst'},
-{id:'arzt-empfehlungen',title:'Empfehlungen vom Arzt',icon:'🩺',cardText:'Formuliere Empfehlungen.',text:'Schreibe die Empfehlung mit sollen.',example:'Der Arzt sagt: viel trinken. → Sie sollen viel trinken.'},
+{id:'hoeren-bild',title:'Hören – Bild',icon:'🎧',cardText:'Höre das Wort. Wähle das Bild.',text:'Höre. Wähle das richtige Bild.'},
+{id:'artikel-plural',title:'Artikel und Plural',icon:'🔤',cardText:'Wähle den Artikel. Schreibe den Plural.',text:'Ergänze Artikel und Plural.',example:'Apotheke → die · die Apotheken'},
+{id:'sollen-tabelle',title:'sollen – Tabelle',icon:'📋',cardText:'Ergänze die Formen von sollen.',text:'Konjugiere sollen.'},
+{id:'sollen-saetze',title:'sollen – Sätze',icon:'🧩',cardText:'Sprich oder schreibe die richtige Form.',text:'Ergänze sollen. Sprich oder schreibe.',example:'Du ___ viel trinken. → sollst'},
+{id:'arzt-empfehlungen',title:'Empfehlungen vom Arzt',icon:'🩺',cardText:'Sprich oder schreibe Empfehlungen.',text:'Formuliere mit sollen. Sprich oder schreibe.',example:'viel trinken → Sie sollen viel trinken.'},
 {id:'gesundheitstipps',title:'Gesundheitstipps',icon:'💚',cardText:'Wähle den passenden Tipp.',text:'Wähle die passende Empfehlung.'},
-{id:'apotheke-dialoge',title:'In der Apotheke',icon:'⚕️',cardText:'Ergänze die Dialoge.',text:'Ergänze das passende Wort.'},
-{id:'briefteile',title:'Krankmeldung – Briefteile',icon:'✉️',cardText:'Ordne die Briefteile zu.',text:'Wähle den richtigen Briefteil.'},
-{id:'krankmeldung-schreiben',title:'Krankmeldung schreiben',icon:'📝',cardText:'Schreibe drei Krankmeldungen.',text:'Schreibe eine kurze Krankmeldung.',example:'Ich bin krank und kann heute nicht arbeiten. Die Krankmeldung schicke ich mit.'},
-{id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,cardText:'Prüfe das ganze Thema.',text:'Beantworte 20 Fragen.'}
+{id:'apotheke-dialoge',title:'In der Apotheke',icon:'⚕️',cardText:'Ergänze das fehlende Wort.',text:'Ergänze das fehlende Wort.',example:'Was kann ich für Sie ___? → tun'},
+{id:'briefteile',title:'Krankmeldung – Briefteile',icon:'✉️',cardText:'Wähle den passenden Briefteil.',text:'Wähle den passenden Briefteil.',example:'Wer schreibt den Brief? → der Absender'},
+{id:'krankmeldung-schreiben',title:'Krankmeldung schreiben',icon:'📝',cardText:'Schreibe drei kurze Krankmeldungen.',text:'Schreibe eine kurze Krankmeldung.',example:'Ich bin krank und kann heute nicht arbeiten. Die Krankmeldung schicke ich mit.'},
+{id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,cardText:'Löse 20 gemischte Aufgaben.',text:'Löse 20 gemischte Aufgaben.'}
 ];
 const sollenRows=[['ich','soll'],['du','sollst'],['er / es / sie','soll'],['wir','sollen'],['ihr','sollt'],['sie / Sie','sollen']];
 const sollenSentences=[

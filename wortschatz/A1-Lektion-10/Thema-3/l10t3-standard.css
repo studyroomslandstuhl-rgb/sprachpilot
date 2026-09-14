@@ -1,0 +1,4 @@
+.l8-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
+.l8-task-card{min-width:0}
+@media(max-width:1050px){.l8-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
+@media(max-width:700px){.l8-grid{grid-template-columns:1fr}}
