@@ -208,7 +208,7 @@ function renderOverview(){
     <section class="sp-card sp-stat"><div class="value">${state.students.length}</div><div class="label">Teilnehmende</div></section>
     <section class="sp-card sp-stat"><div class="value">${released}</div><div class="label">Kurse mit Freigaben</div></section>
     <section class="sp-card sp-stat"><div class="value">${state.courses.length-released}</div><div class="label">noch einzurichten</div></section>
-    <section class="sp-card sp-wide"><h2>Kurse</h2><p>Keine Fortschritts-Vollscans und keine automatische Neuladung. Aktualisierung nur über den Button oben.</p><div class="sp-course-list">${state.courses.length?state.courses.map(courseRow).join(''):'<div class="sp-empty">Noch keine Kurse vorhanden.</div>'}</div></section>
+    <section class="sp-card sp-wide"><h2>Kurse</h2><p>Punkte werden aus allen gespeicherten Lektionen und Themen zusammengeführt. Aktualisierung über den Button oben.</p><div class="sp-course-list">${state.courses.length?state.courses.map(courseRow).join(''):'<div class="sp-empty">Noch keine Kurse vorhanden.</div>'}</div></section>
   </div>`;
 }
 
@@ -248,7 +248,7 @@ function studentAccessPill(student){
 }
 function renderStudents(){
   const options=state.courses.map(c=>`<option value="${esc(courseCode(c))}">${esc(courseName(c))}</option>`).join('');
-  $('app').innerHTML=`${pageHead('Teilnehmende','Kontaktdaten und Kurszuordnung. Fortschrittsdaten werden hier bewusst nicht geladen.')}
+  $('app').innerHTML=`${pageHead('Teilnehmende','Kontaktdaten, Kurszuordnung und der aktuelle Gesamtpunktestand.')}
   <section class="sp-card sp-wide"><div class="sp-filterbar"><input id="studentSearch" type="search" placeholder="Name oder E-Mail suchen"><select id="studentCourseFilter"><option value="">Alle Kurse</option>${options}</select></div><div id="studentTableHost"></div></section>`;
   $('studentSearch')?.addEventListener('input',renderStudentTable);
   $('studentCourseFilter')?.addEventListener('change',renderStudentTable);
@@ -296,6 +296,16 @@ async function saveStudent(id){
 }
 
 function loadScript(src){return new Promise((resolve,reject)=>{if(document.querySelector(`script[data-sp-lazy="${CSS.escape(src)}"]`))return resolve();const s=document.createElement('script');s.src=src;s.dataset.spLazy=src;s.onload=resolve;s.onerror=()=>reject(new Error('Konnte '+src+' nicht laden'));document.head.appendChild(s)})}
+let pointsToolsPromise=null;
+function ensurePointsTools(){
+  if(pointsToolsPromise)return pointsToolsPromise;
+  pointsToolsPromise=(async()=>{
+    await loadScript('../shared/points-recalculator.js?v=20260914-all-lessons1');
+    await loadScript('points-dashboard.js?v=20260914-all-lessons1');
+    return true;
+  })().catch(error=>{pointsToolsPromise=null;console.warn('Punkte aus allen Lektionen konnten noch nicht geladen werden',error);return false});
+  return pointsToolsPromise;
+}
 async function ensureReleaseTools(){
   if(state.releaseToolsReady)return true;
   if(state.releaseToolsPromise)return state.releaseToolsPromise;
@@ -462,7 +472,7 @@ async function init(){
     state.view=VIEW_IDS.has(location.hash.slice(1))?location.hash.slice(1):'overview';
     if((state.view==='teacher-approval'||state.view==='email-templates')&&!state.isOwner)state.view='overview';
     navState();
-    await loadBaseData();renderCurrent();
+    await loadBaseData();renderCurrent();ensurePointsTools();
   }catch(error){console.error(error);status('Lehrerdashboard konnte nicht geladen werden: '+text(error?.message||error),'error');if(app)app.innerHTML=`<section class="sp-card sp-wide"><h2>Dashboard konnte nicht geladen werden</h2><p>${esc(error?.message||error)}</p><div class="sp-row-actions" style="justify-content:flex-start"><a class="sp-button secondary" href="login.html">Zum Lehrerlogin</a></div></section>`}
 }
 
