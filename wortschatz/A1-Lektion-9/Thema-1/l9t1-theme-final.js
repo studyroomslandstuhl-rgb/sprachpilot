@@ -13,7 +13,8 @@ function apply(){
   'nomen-dialoge':{icon:'💬',title:'Nomen im Dialog',description:'Ergänze das Nomen.'},
   'artikel-kasus':{icon:'🎯',title:'Artikel im Satz',description:'Ergänze den Artikel.'},
   'muessen-tabelle':{icon:'🔄',title:'müssen konjugieren',description:'Konjugiere müssen.'},
-  'muessen-saetze':{icon:'🧩',title:'müssen + Verb',description:'Ergänze müssen und das Verb.'},
+  'muessen-formen-saetze':{icon:'🧩',title:'müssen – Personen und Sätze',description:'Ergänze die richtige Form von müssen.'},
+  'muessen-saetze':{icon:'🖼️',title:'müssen + Verb',description:'Ergänze müssen und das Verb.'},
   'modal-kontext':{icon:'💡',title:'Welches Modalverb?',description:'Wähle das richtige Modalverb.'},
   'anweisungen-hoeren':{icon:'🧭',title:'Anweisungen hören',description:'Ordne die Schritte zu.',instruction:'Ordne die Schritte zu.'},
   'anweisungen-richtig-falsch2':{icon:'🎧',title:'Hören: Richtig oder falsch?',description:'Höre genau zu und entscheide.',instruction:'Höre genau zu. Entscheide bei jeder Aussage: richtig oder falsch.'},
@@ -22,7 +23,7 @@ function apply(){
   'pruefung':{icon:'⭐',title:'Prüfung',description:'Teste dein Wissen.',instruction:'Teste dein Wissen.'}
  };
  for(const t of D.tasks){const c=cfg[t.id];if(c)Object.assign(t,c,{instruction:c.instruction||c.description});}
- const order=['karteikarten','hoeren-bild','bedeutung-wort','bild-sprechen','artikel-nomen','artikel-schreiben','plural-bild','nomen-dialoge','artikel-kasus','muessen-tabelle','muessen-saetze','modal-kontext','anweisungen-hoeren','anweisungen-richtig-falsch2','lueckentexte','anleitung-schreiben','pruefung'];
+ const order=['karteikarten','hoeren-bild','bedeutung-wort','bild-sprechen','artikel-nomen','artikel-schreiben','plural-bild','nomen-dialoge','artikel-kasus','muessen-tabelle','muessen-formen-saetze','muessen-saetze','modal-kontext','anweisungen-hoeren','anweisungen-richtig-falsch2','lueckentexte','anleitung-schreiben','pruefung'];
  const pos=new Map(order.map((id,i)=>[id,i]));
  D.tasks.sort((a,b)=>(pos.get(a.id)??999)-(pos.get(b.id)??999));
 }
