@@ -13,6 +13,10 @@ function storedAssignments(profile){
  return profile?.assignments||{}
 }
 
+function withTimeout(promise,ms,fallback){
+ return Promise.race([Promise.resolve(promise),new Promise(resolve=>setTimeout(()=>resolve(fallback),ms))])
+}
+
 function uniq(list){
  const seen=new Set(),out=[];
  (list||[]).forEach(raw=>{
@@ -55,16 +59,18 @@ function installVerbGroups(active){
  if(duplicates.length)console.error('Doppelte Verben zwischen Gruppen verhindert',duplicates)
 }
 
-async function install(profile,preview,assignments){
+async function install(profile,preview,assignments,{resolveOrder=true,restoreProgress=true}={}){
  const data=assignments&&typeof assignments==='object'?assignments:{};
  const locked=!preview&&!moduleOpen(data,'Verben');
  let active=preview?CANONICAL_ALL.slice():orderedReleasedVerbs(data,CANONICAL_ALL);
- if(!preview&&window.SPStudentVerbOrderLock?.resolve){
-  try{active=await window.SPStudentVerbOrderLock.resolve({profile,active})}
+ if(!preview&&resolveOrder&&window.SPStudentVerbOrderLock?.resolve){
+  try{active=await withTimeout(window.SPStudentVerbOrderLock.resolve({profile,active}),1800,active)}
   catch(error){console.warn('Persönliche Gruppenreihenfolge konnte nicht wiederhergestellt werden',error)}
  }
  installVerbGroups(active);
- try{if(!preview&&window.SPVerbProgressPersistence?.restoreCloud)await window.SPVerbProgressPersistence.restoreCloud()}catch(error){console.warn('Gespeicherter Verben-Fortschritt konnte nicht wiederhergestellt werden',error)}
+ if(restoreProgress){
+  try{if(!preview&&window.SPVerbProgressPersistence?.restoreCloud)await withTimeout(window.SPVerbProgressPersistence.restoreCloud(),2500,null)}catch(error){console.warn('Gespeicherter Verben-Fortschritt konnte nicht wiederhergestellt werden',error)}
+ }
  VerbGroupsUI.install({dashboard:dashboardHref(),logout,locked});
  window.SP_VERBEN_READY=true
 }
@@ -77,9 +83,25 @@ async function init(){
  try{const raw=sessionStorage.getItem('SP_TEACHER_PREVIEW');if(raw==='1'||JSON.parse(raw||'null')?.teacherPreview===true)preview=true}catch{}
  window.VerbGroupsProfile=profile;
  VerbGroupsEngine.setContext(profile,preview);
- let assignments;
- try{assignments=await loadCourseRelease(profile)}catch{assignments=storedAssignments(profile)}
- await install(profile,preview,assignments||storedAssignments(profile))
+ const cached=storedAssignments(profile);
+ if(preview){await install(profile,true,{releaseMode:'all',defaultLocked:false,teacherPreview:true},{resolveOrder:false,restoreProgress:false});return}
+
+ // Die Oberfläche darf nicht auf mehrere langsame Firebase-Abfragen warten.
+ // Der vorhandene Kursstand wird sofort angezeigt und anschließend im Hintergrund aktualisiert.
+ const releasePromise=loadCourseRelease(profile).catch(()=>cached);
+ const first=await withTimeout(releasePromise,650,cached);
+ await install(profile,false,first||cached,{resolveOrder:false,restoreProgress:false});
+
+ Promise.resolve(releasePromise).then(async fresh=>{
+  const assignments=fresh||cached;
+  await install(profile,false,assignments,{resolveOrder:true,restoreProgress:false});
+  try{
+   if(window.SPVerbProgressPersistence?.restoreCloud){
+    await withTimeout(window.SPVerbProgressPersistence.restoreCloud(),2500,null);
+    VerbGroupsUI.install({dashboard:dashboardHref(),logout,locked:!moduleOpen(assignments,'Verben')});
+   }
+  }catch(error){console.warn('Gespeicherter Verben-Fortschritt konnte nicht wiederhergestellt werden',error)}
+ }).catch(error=>console.warn('Verben wurden lokal geladen; Firebase-Aktualisierung folgt später',error))
 }
 
 init().catch(error=>{
