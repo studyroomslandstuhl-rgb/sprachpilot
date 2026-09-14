@@ -2,7 +2,7 @@
 'use strict';
 if(window.SPL10RepeatStandard)return;
 
-const lessonMatch=location.pathname.match(/A1-Lektion-10\/Thema-(1|2)/i);
+const lessonMatch=location.pathname.match(/A1-Lektion-10\/Thema-(1|2|3)/i);
 if(!lessonMatch)return;
 const theme=Number(lessonMatch[1]);
 const qs=new URLSearchParams(location.search);
