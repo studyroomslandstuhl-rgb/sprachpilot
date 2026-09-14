@@ -3,7 +3,7 @@
 const D=window.L9T3;if(!D)return;
 const CDN='https://sprachpilot.b-cdn.net/';
 const img=id=>`${CDN}${id}.webp`;
-const EXAM_VERSION='20260914-l9t3-exam20-v1';
+const EXAM_VERSION='20260914-l9t3-exam18-v2';
 
 function profile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')}catch(e){return{}}}
 function pid(){const p=profile();return String(p.canonicalStudentId||p.studentId||p.uid||p.email||localStorage.getItem('SP_STUDENT_ID')||'student').toLowerCase().replace(/[^a-z0-9äöüß@._-]+/gi,'_')}
@@ -27,9 +27,6 @@ D.exam=[
  {id:'exam10',kind:'input',prompt:'Konjugiere dürfen: du ___',answer:'darfst',hint:'Bei du kommt -st dazu.'},
  {id:'exam11',kind:'input',prompt:'Konjugiere dürfen: ihr ___',answer:'dürft',hint:'Bei ihr lautet die Form dürft.'},
  {id:'exam12',kind:'input',prompt:'Konjugiere dürfen: wir ___',answer:'dürfen',hint:'Bei wir steht der Infinitiv.'},
-
- {id:'exam13',kind:'pair',prompt:'Ergänze beide Lücken.',image:img('rauchen'),left:'Hier',middle:'man nicht',answer1:'darf',answer2:'rauchen',hint:'Das Bild zeigt das Verb rauchen. Achte auf man.'},
- {id:'exam14',kind:'pair',prompt:'Ergänze beide Lücken.',image:img('mitnehmen'),left:'Im Flugzeug',middle:'ich den Laptop',answer1:'darf',answer2:'mitnehmen',hint:'Das Bild zeigt das Verb mitnehmen. Achte auf ich.'},
 
  {id:'exam15',kind:'input',prompt:'Bilde einen Satz: wir / das Gepäck / dürfen / mitnehmen',answer:'Wir dürfen das Gepäck mitnehmen.',answers:['Wir dürfen das Gepäck mitnehmen'],hint:'Das Modalverb steht auf Position 2, der Infinitiv am Ende.'},
 
