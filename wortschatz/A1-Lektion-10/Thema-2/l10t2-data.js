@@ -31,11 +31,12 @@ const tasks=[
 {id:'wort-bedeutung',title:'Wort – Bedeutung',icon:'💡',cardText:'Wähle die passende Bedeutung.',text:'Wähle die richtige Bedeutung.'},
 {id:'hoeren-bild',title:'Hören – Bild',icon:'🎧',cardText:'Höre und wähle das Bild.',text:'Höre das Wort. Wähle das richtige Bild.'},
 {id:'artikel-plural',title:'Artikel und Plural',icon:'🔤',cardText:'Ergänze Artikel und Plural.',text:'Wähle den Artikel. Schreibe den Plural.'},
-{id:'wehtun-schmerzen-basis',title:'wehtun ↔ Schmerzen',icon:'🤕',cardText:'Formuliere die Sätze um.',text:'Formuliere den Satz um. Sprich oder schreibe.'},
+{id:'wehtun-schmerzen-basis',title:'wehtun ↔ Schmerzen',icon:'🤕',cardText:'Formuliere die Sätze um.',text:'Formuliere den Satz um. Sprich oder schreibe.',example:'Mein Kopf tut weh. → Ich habe Kopfschmerzen.'},
 {id:'possessiv-tabelle',title:'Possessivpronomen – Tabelle',icon:'📋',cardText:'Ergänze die Possessivformen.',text:'Ergänze die Tabelle.'},
-{id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',cardText:'Schreibe die passende Form.',text:'Schreibe die passende Possessivform.'},
-{id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',cardText:'Formuliere Sätze für alle Personen um.',text:'Formuliere den Satz um. Sprich oder schreibe.'},
-{id:'familie-luecken',title:'Familien – Lückentexte',icon:'👨‍👩‍👧‍👦',cardText:'Ergänze drei Texte.',text:'Ergänze die Possessivformen im Text.'},
+{id:'possessiv-form',title:'Possessivpronomen – Form',icon:'🧩',cardText:'Schreibe die passende Form.',text:'Schreibe die passende Possessivform.',example:'ich + feminin → meine'},
+{id:'wehtun-schmerzen-alle',title:'wehtun ↔ Schmerzen – alle Personen',icon:'🩹',cardText:'Formuliere Sätze für alle Personen um.',text:'Formuliere den Satz um. Sprich oder schreibe.',example:'Er hat Bauchschmerzen. → Sein Bauch tut weh.'},
+{id:'possessiv-luecken',title:'Possessivpronomen – Lücken',icon:'📝',cardText:'Ergänze 20 Sätze.',text:'Schreibe das passende Possessivpronomen.'},
+{id:'familie-luecken',title:'Familien – Lückentexte',icon:'👨‍👩‍👧‍👦',cardText:'Ergänze drei Texte.',text:'Ergänze die Possessivformen im Text.',example:'Lara: ___ Mann heißt David. → Ihr Mann heißt David.'},
 {id:'biografien',title:'Biografien umschreiben',icon:'✍️',cardText:'Schreibe in der 3. Person.',text:'Schreibe den Text in der 3. Person.'},
 {id:'pruefung',title:'Prüfung',icon:'⭐',exam:true,cardText:'Prüfe das ganze Thema.',text:'Beantworte 20 Fragen.'}
 ];
@@ -47,6 +48,18 @@ const baseTransform=[
 const possRows=[['ich','mein','meine'],['du','dein','deine'],['er','sein','seine'],['sie','ihr','ihre'],['es','sein','seine'],['wir','unser','unsere'],['ihr','euer','eure'],['sie (Plural)','ihr','ihre'],['Sie','Ihr','Ihre']];
 const genders=[['maskulin','m'],['feminin','f'],['neutral','n'],['Plural','p']];
 const possForm=[];possRows.forEach(r=>genders.forEach(g=>possForm.push({q:r[0]+' + '+g[0],a:(g[1]==='m'||g[1]==='n')?r[1]:r[2]})));
+const possGaps=[
+{before:'Das ist',after:'Bruder.',pronoun:'ich',a:'mein'},{before:'Hier ist',after:'Schwester.',pronoun:'ich',a:'meine'},
+{before:'Das ist',after:'Auto.',pronoun:'du',a:'dein'},{before:'Dort sind',after:'Kinder.',pronoun:'du',a:'deine'},
+{before:'',after:'Beruf ist Koch.',pronoun:'er',a:'sein'},{before:'',after:'Mutter heißt Nora.',pronoun:'er',a:'seine'},
+{before:'',after:'Freund heißt Amir.',pronoun:'sie',a:'ihr'},{before:'',after:'Idee ist gut.',pronoun:'sie',a:'ihre'},
+{before:'',after:'Zimmer ist klein.',pronoun:'es',a:'sein'},{before:'',after:'Fenster sind offen.',pronoun:'es',a:'seine'},
+{before:'',after:'Kurs beginnt heute.',pronoun:'wir',a:'unser'},{before:'',after:'Lehrerin heißt Frau Wolf.',pronoun:'wir',a:'unsere'},
+{before:'',after:'Hund ist gesund.',pronoun:'ihr',a:'euer'},{before:'',after:'Freunde sind lustig.',pronoun:'ihr',a:'eure'},
+{before:'',after:'Sohn heißt Ben.',pronoun:'sie (Plural)',a:'ihr'},{before:'',after:'Wohnung ist groß.',pronoun:'sie (Plural)',a:'ihre'},
+{before:'',after:'Name ist Herr Klein.',pronoun:'Sie',a:'Ihr'},{before:'',after:'Tabletten sind hier.',pronoun:'Sie',a:'Ihre'},
+{before:'',after:'Klub ist in der Nähe.',pronoun:'er',a:'sein'},{before:'',after:'Nachricht ist wichtig.',pronoun:'sie',a:'ihre'}
+];
 const allTransform=[
 ['Mein Bauch tut weh.','Ich habe Bauchschmerzen.'],['Deine Zähne tun weh.','Du hast Zahnschmerzen.'],['Sein Rücken tut weh.','Er hat Rückenschmerzen.'],['Ihre Hand tut weh.','Sie hat Handschmerzen.'],['Sein Knie tut weh.','Es hat Knieschmerzen.'],['Unsere Köpfe tun weh.','Wir haben Kopfschmerzen.'],['Eure Hälse tun weh.','Ihr habt Halsschmerzen.'],['Ihre Füße tun weh.','Sie haben Fußschmerzen.'],['Ihr Arm tut weh.','Sie haben Armschmerzen.'],
 ['Anna hat Kopfschmerzen.','Annas Kopf tut weh.'],['Paul hat Rückenschmerzen.','Pauls Rücken tut weh.'],['Marias Hand tut weh.','Maria hat Handschmerzen.'],['Toms Knie tut weh.','Tom hat Knieschmerzen.'],['Lenas Hals tut weh.','Lena hat Halsschmerzen.'],
@@ -90,5 +103,5 @@ const examItems=[
 {section:'3. Person',type:'input',q:'Schreibe in der 3. Person: Unsere Tochter heißt Mia.',a:'Ihre Tochter heißt Mia.'},
 {section:'3. Person',type:'input',q:'Schreibe den ganzen Satz in der 3. Person: Wir sind verheiratet.',a:'Sie sind verheiratet.'}
 ];
-window.L10T2={cards:v,flashcards:v,nouns,tasks,baseTransform,possRows,possForm,allTransform,family,bios,examItems};
+window.L10T2={cards:v,flashcards:v,nouns,tasks,baseTransform,possRows,possForm,possGaps,allTransform,family,bios,examItems};
 })();
