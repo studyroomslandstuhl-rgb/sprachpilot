@@ -74,7 +74,7 @@ function roleChanged(){
   if(!loginPage())location.reload();
 }
 window.addEventListener('storage',event=>{
-  if(!event.key||ROLE_KEYS.has(event.key))setTimeout(roleChanged,0);
+  if(!event.key||ROLE_KEYS.has(event.key))setTimeout(roleChanged,80);
 });
 try{
   const channel=new BroadcastChannel('sprachpilot-session');
