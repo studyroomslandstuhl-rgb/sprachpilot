@@ -27,9 +27,16 @@ export function startStudentSession(){
   setLoginRole("student");
 }
 export function startTeacherSession(){
-  localStorage.removeItem("SP_USER_PROFILE");
-  localStorage.removeItem("SP_STUDENT_PROFILE");
-  localStorage.removeItem("SP_STUDENT_ID");
+  [
+    "SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_PROFILE_BACKUP","SP_STUDENT_PROFILE_BACKUP",
+    "SP_KEEP_LOGGED_IN","SP_STUDENT_ID","SP_STUDENT_AUTH_UID"
+  ].forEach(k=>localStorage.removeItem(k));
+  try{
+    [
+      "SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_STUDENT_ID","SP_STUDENT_AUTH_UID",
+      "SP_PROFILE_SESSION_BACKUP","SP_STUDENT_PROFILE_SESSION_BACKUP"
+    ].forEach(k=>sessionStorage.removeItem(k));
+  }catch(e){}
   setLoginRole("teacher");
 }
 export function getActiveRole(){
