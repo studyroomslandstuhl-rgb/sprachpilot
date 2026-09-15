@@ -21,7 +21,6 @@ const order=[
  task('briefteile','Krankmeldung – Briefteile','📝','Wähle A, B oder C.','Wähle die richtige Antwort.'),
  task('brief-fragen-artikel','Briefteile – Schreiben','❓','Beantworte die Fragen zu den Briefteilen.','Schreibe die Antwort mit Artikel.'),
  task('krankmeldung-attest-lesen','Atteste lesen','📄','Lies die Atteste und beantworte die Fragen.','Lies das Attest. Beantworte die Fragen.'),
- task('arzt-arbeit-dialoge-hoeren','Arzt und Arbeit – Dialoge','🎧','Höre die Dialoge und beantworte die Fragen.','Höre den Dialog. Beantworte die Fragen.'),
  task('krankmeldung-schreiben','Krankmeldung schreiben','📝','Schreibe eine vollständige Krankmeldung an deine Chefin.','Schreibe die Krankmeldung. Alle wichtigen Punkte werden kontrolliert.'),
  task('pruefung','Prüfung','⭐','Prüfe das ganze Thema.','Löse die Prüfung.',{exam:true})
 ];
@@ -42,4 +41,11 @@ D.healthTipItems=[
  {id:'ht10',person:'Bekannte',problem:'starke Schmerzen',question:'Meine Bekannte hat starke Schmerzen. Was kann man da tun?',tip:'den Hausarzt anrufen',answer:'Sie soll den Hausarzt anrufen.'}
 ];
 D.sickNotes=[{id:'kn1',label:'Nach dem Arztbesuch',prompt:'Sie waren beim Arzt und können drei Tage nicht arbeiten. Schreiben Sie Ihrer Chefin. Informieren Sie über die Dauer und das Attest.'}];
+try{
+ const id=String(new URLSearchParams(location.search).get('task')||'').toLowerCase();
+ let p={};try{p=JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{}}catch(e){}
+ const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||p.role||'').toLowerCase();
+ const teacher=['teacher','lehrer','admin','owner','superadmin'].includes(role)||sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1';
+ if(id==='pruefung'&&teacher)setTimeout(()=>import('/js/sp-l10-teacher-exam-preview.js?v=20260915-1'),250);
+}catch(e){}
 })();
