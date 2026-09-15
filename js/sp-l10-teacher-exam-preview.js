@@ -1,0 +1,11 @@
+import {renderSpHeader,bindSpHeader} from '/js/sp-header.js?v=theme-standard4';
+const root=document.getElementById('app');
+const path=location.pathname;
+const theme=path.includes('/Thema-3/')?3:2;
+const D=theme===3?(window.L10T3||{}):(window.L10T2||{});
+const items=Array.isArray(D.examItems)?D.examItems:[];
+const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const header=renderSpHeader({subtitle:`Lehrer-Vorschau · A1 Lektion 10 · Thema ${theme}`,color:{main:'#F4A3A3',dark:'#A86464',soft:'#FDF1F1',line:'#F3C9C9'}});
+const cards=items.map((x,i)=>`<section class="l8-card l8-exercise"><div class="l8-note"><strong>Prüfungsfrage ${i+1} von ${items.length}</strong>${x.section?` · ${esc(x.section)}`:''}</div><h3>${esc(x.q||'')}</h3>${Array.isArray(x.options)?`<div class="l8-options">${x.options.map(o=>`<div class="l8-option ${String(o)===String(x.a)?'selected':''}">${esc(o)}</div>`).join('')}</div>`:''}<div class="l8-feedback good"><strong>Richtige Antwort:</strong> ${esc(x.a||'')}</div></section>`).join('');
+root.innerHTML=`<div class="l10-theme-page">${header}<div class="l8-wrap"><div class="sp-teacher-preview-note">Lehrer-Vorschau: Alle Prüfungsfragen. Es werden keine Teilnehmerfortschritte oder Punkte gespeichert.</div><section class="l8-card l8-task-head"><div class="l8-task-title-block"><span class="l8-task-kicker">Prüfung</span><h1>Prüfungsfragen – Lehreransicht</h1><p>Alle ${items.length} Fragen mit Lösungen.</p></div></section>${cards||'<section class="l8-card"><p>Keine Prüfungsfragen gefunden.</p></section>'}<div class="l8-row l8-center-actions"><a class="l8-btn primary" href="index.html">Zur Themenübersicht</a></div><footer>© SprachPilot</footer></div></div>`;
+bindSpHeader(root);
