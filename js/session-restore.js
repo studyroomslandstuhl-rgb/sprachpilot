@@ -33,7 +33,14 @@
       if(String(localStorage.getItem('SP_LOGIN_CONTEXT')||'').toLowerCase().startsWith('teacher'))localStorage.removeItem('SP_LOGIN_CONTEXT');
     }catch(e){}
   }
-  function clearStudentSessionFlags(){try{['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_KEEP_LOGGED_IN','SP_STUDENT_ID','SP_STUDENT_AUTH_UID','SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE','SP_AUTH_ROLE','SP_LOGIN_CONTEXT','motherLanguage','muttersprache','SP_MOTHER_LANGUAGE_CODE'].forEach(k=>localStorage.removeItem(k))}catch(e){}}
+  function clearStudentSessionFlags(){
+    try{
+      ['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_PROFILE_BACKUP','SP_STUDENT_PROFILE_BACKUP','SP_KEEP_LOGGED_IN','SP_STUDENT_ID','SP_STUDENT_AUTH_UID','SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE','SP_AUTH_ROLE','SP_LOGIN_CONTEXT','motherLanguage','muttersprache','SP_MOTHER_LANGUAGE_CODE'].forEach(k=>localStorage.removeItem(k));
+    }catch(e){}
+    try{
+      ['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_STUDENT_ID','SP_STUDENT_AUTH_UID','SP_PROFILE_SESSION_BACKUP','SP_STUDENT_PROFILE_SESSION_BACKUP'].forEach(k=>sessionStorage.removeItem(k));
+    }catch(e){}
+  }
   function clearInsecureActiveStudent(){clearStudentSessionFlags();try{localStorage.setItem('SP_SECURE_STUDENT_RELOGIN_REQUIRED','1')}catch(e){}}
   function enforceStudentRole(p){if(!secureStudent(p))return;clearPreviewResidue();sanitizeCourseState(p);try{localStorage.setItem('SP_LOGIN_ROLE','student');localStorage.setItem('SP_ACTIVE_ROLE','student');localStorage.setItem('SP_USER_ROLE','student');localStorage.setItem('SP_STUDENT_AUTH_UID',String(p.authUid||''));localStorage.removeItem('SP_SECURE_STUDENT_RELOGIN_REQUIRED')}catch(e){}}
   function saveBackups(p){if(!secureStudent(p))return;p=sanitizeCourseState(p);const s=JSON.stringify(p);try{BACKUP_KEYS.forEach(k=>localStorage.setItem(k,s));sessionStorage.setItem('SP_PROFILE_SESSION_BACKUP',s);sessionStorage.setItem('SP_STUDENT_PROFILE_SESSION_BACKUP',s)}catch(e){}}
