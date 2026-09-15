@@ -39,46 +39,11 @@ window.l6PlaySentence=function(id){patchMedia();const w=ws().find(x=>x.id===id);
 window.say=function(text){patchMedia();const t=String(text||'').trim(),w=ws().find(x=>[x.word,x.full,x.sentence].concat(x.altSentences||[]).some(v=>String(v||'').trim()===t));if(w){if((t===w.sentence||(w.altSentences||[]).includes(t))&&WEATHER_SENTENCE_IDS.has(w.id))return window.l6PlaySentence(w.id);return window.l6PlayWord(w.id)}fallbackSpeak(t)};
 const originalListen=window.listenItems;
 window.listenItems=function(){const list=typeof originalListen==='function'?originalListen():[];return list.map((x,i)=>({...x,audio:AUDIO+(x.audioName||`a1-l6-t1-hoeren-${String(i+1).padStart(2,'0')}.mp3`)}))};
-
-/* Sätze gibt es in L6T1 nur für echte Wetterwörter/Wettererscheinungen. */
 window.sentenceItems=function(){return weatherSentenceWords().map(w=>({w,sol:typeof sentenceSolutions==='function'?sentenceSolutions(w):[w.sentence]}))};
-window.cardItems=function(){return ws().flatMap(w=>{
- const mode=w.type==='verb'?'verb':(w.type==='phrase'?'phrase':'noun');
- return WEATHER_SENTENCE_IDS.has(w.id)?[{mode,w},{mode:'sentence',w}]:[{mode,w}];
-})};
-window.writingItems=function(){
- const pool=weatherSentenceWords(),res=[];let n=0;
- if(!pool.length)return res;
- while(res.length<20){
-  const day=DAYS[n%DAYS.length],time=TIMES[n%TIMES.length],w=pool[n%pool.length];
-  let rest=w.sentence;
-  if(rest==='Die Sonne scheint.')rest='scheint die Sonne.';
-  else {let m=rest.match(/^Es ist (.+)\.$/);if(m)rest=`ist es ${m[1]}.`;else {m=rest.match(/^Es sind (.+)\.$/);if(m)rest=`sind es ${m[1]}.`;else {m=rest.match(/^Es (.+)\.$/);if(m)rest=`${m[1]} es.`;else rest=rest.charAt(0).toLowerCase()+rest.slice(1)}}}
-  res.push({short:day[0],day:day[1],time,w,sol:`Am ${day[1]} um ${time} ${rest}`});n++;
- }
- return res;
-};
-
-window.renderOverview=function(target){
- patchMedia();const all=ws(),groups=['Im Buch','Nicht im Buch'];
- target.innerHTML=groups.map(g=>{const list=all.filter(w=>w.group===g);if(!list.length)return'';return `<section class="type-block l6-standard-block"><div class="type-title">${g}</div><div class="l6-vocab-grid">${list.map(w=>{
-  const hasSentence=WEATHER_SENTENCE_IDS.has(w.id)&&w.sentence;
-  const src=w.image||CDN+String(w.id||'').toLowerCase()+'.webp';
-  return `<article class="l6-vocab-card"><div class="l6-vocab-image"><img src="${src}" alt="" loading="lazy"></div><div class="l6-vocab-main"><div class="l6-vocab-word">${full(w)}</div>${hasSentence?`<div class="l6-vocab-sentence">${w.sentence}${w.altSentences?.length?`<br>${w.altSentences.join('<br>')}`:''}</div>`:''}<div class="small">${tr(w)}</div><div class="l6-audio-row"><button class="btn secondary" type="button" onclick="l6PlayWord('${w.id}')">🔊 Wort</button>${hasSentence?`<button class="btn secondary" type="button" onclick="l6PlaySentence('${w.id}')">🔊 Satz</button>`:''}</div></div></article>`
- }).join('')}</div></section>`}).join('')
-};
-
-window.renderTaskList=function(includeExam=true){
- const ts=taskTotals().filter(t=>includeExam||t[0]!=='pruefung.html'),practice=ts.filter(t=>t[0]!=='pruefung.html'),examOpen=practice.every(t=>pctFor(t[0],t[1])>=100);let n=0;
- const cards=[`<a class="module l8-card l8-task-card l6-overview-card" href="uebersicht.html"><div class="num l8-task-number">Übersicht</div><div class="icon emoji">📚</div><p>Sieh alle neuen Wörter, Bilder, Übersetzungen und Hörbeispiele.</p><div class="start l8-task-start">Öffnen</div></a>`];
- ts.forEach(t=>{n++;const meta=taskMeta[t[0]]||['✅',t[2],'Bearbeite die Aufgabe.'],p=pctFor(t[0],t[1]);if(t[0]==='pruefung.html'&&!examOpen){cards.push(`<div class="module l8-card l8-task-card locked exam-locked" aria-disabled="true"><div class="num l8-task-number">${n}. ${meta[1]}</div><div class="icon emoji">⭐</div><p>Die Prüfung wird freigeschaltet, wenn alle Aufgaben 100% erreicht haben.</p><div class="progress l8-progress"><div class="bar" style="width:0%"></div></div><div class="small">gesperrt</div><div class="start l8-task-start">Prüfung gesperrt</div></div>`)}else{cards.push(`<a class="module l8-card l8-task-card ${p>=100?'done':''}" href="${t[0]}"><div class="num l8-task-number">${n}. ${meta[1]}</div><div class="icon emoji">${meta[0]}</div><p>${meta[2]}</p><div class="progress l8-progress"><div class="bar" style="width:${p}%"></div></div><div class="small">${p}%</div><div class="start l8-task-start">${p>=100?'Fertig':'Starten'}</div></a>`)}});
- return `<div class="grid l8-grid">${cards.join('')}</div>`
-};
-window.renderMenu=function(){
- patchMedia();const box=document.getElementById('teacherBox');if(box&&typeof isTeacher==='function'){box.innerHTML=isTeacher()?`<section class="card teacher-box"><div class="toggle-row"><div><b>Lehreroption</b><br><span class="small">Zusatzwortschatz Wetter aktivieren.</span></div><label class="switch"><input type="checkbox" ${extraOn()?'checked':''} onchange="setExtraWeather(this.checked)"> Nicht im Buch</label></div></section>`:''}
- const grid=document.getElementById('taskGrid');if(grid)grid.innerHTML=window.renderTaskList(true);
- const ts=taskTotals(),practice=ts.filter(t=>t[0]!=='pruefung.html'),avg=Math.round(practice.reduce((s,t)=>s+pctFor(t[0],t[1]),0)/Math.max(1,practice.length))||0,done=practice.filter(t=>pctFor(t[0],t[1])>=100).length;
- if(window.totalCircle)totalCircle.textContent=avg+'%';if(window.totalBar)totalBar.style.width=avg+'%';if(window.totalText)totalText.textContent=done+' / '+practice.length+' Aufgaben abgeschlossen'
-};
+window.cardItems=function(){return ws().flatMap(w=>{const mode=w.type==='verb'?'verb':(w.type==='phrase'?'phrase':'noun');return WEATHER_SENTENCE_IDS.has(w.id)?[{mode,w},{mode:'sentence',w}]:[{mode,w}]})};
+window.writingItems=function(){const pool=weatherSentenceWords(),res=[];let n=0;if(!pool.length)return res;while(res.length<20){const day=DAYS[n%DAYS.length],time=TIMES[n%TIMES.length],w=pool[n%pool.length];let rest=w.sentence;if(rest==='Die Sonne scheint.')rest='scheint die Sonne.';else{let m=rest.match(/^Es ist (.+)\.$/);if(m)rest=`ist es ${m[1]}.`;else{m=rest.match(/^Es sind (.+)\.$/);if(m)rest=`sind es ${m[1]}.`;else{m=rest.match(/^Es (.+)\.$/);if(m)rest=`${m[1]} es.`;else rest=rest.charAt(0).toLowerCase()+rest.slice(1)}}}res.push({short:day[0],day:day[1],time,w,sol:`Am ${day[1]} um ${time} ${rest}`});n++}return res};
+window.renderOverview=function(target){patchMedia();const all=ws(),groups=['Im Buch','Nicht im Buch'];target.innerHTML=groups.map(g=>{const list=all.filter(w=>w.group===g);if(!list.length)return'';return `<section class="type-block l6-standard-block"><div class="type-title">${g}</div><div class="l6-vocab-grid">${list.map(w=>{const hasSentence=WEATHER_SENTENCE_IDS.has(w.id)&&w.sentence;const src=w.image||CDN+String(w.id||'').toLowerCase()+'.webp';return `<article class="l6-vocab-card"><div class="l6-vocab-image"><img src="${src}" alt="" loading="lazy"></div><div class="l6-vocab-main"><div class="l6-vocab-word">${full(w)}</div>${hasSentence?`<div class="l6-vocab-sentence">${w.sentence}${w.altSentences?.length?`<br>${w.altSentences.join('<br>')}`:''}</div>`:''}<div class="small">${tr(w)}</div><div class="l6-audio-row"><button class="btn secondary" type="button" onclick="l6PlayWord('${w.id}')">🔊 Wort</button>${hasSentence?`<button class="btn secondary" type="button" onclick="l6PlaySentence('${w.id}')">🔊 Satz</button>`:''}</div></div></article>`}).join('')}</div></section>`}).join('')};
+window.renderTaskList=function(includeExam=true){const ts=taskTotals().filter(t=>includeExam||t[0]!=='pruefung.html'),practice=ts.filter(t=>t[0]!=='pruefung.html'),examOpen=practice.every(t=>pctFor(t[0],t[1])>=100);let n=0;const cards=[];ts.forEach(t=>{n++;const meta=taskMeta[t[0]]||['✅',t[2],'Bearbeite die Aufgabe.'],p=pctFor(t[0],t[1]);if(t[0]==='pruefung.html'&&!examOpen){cards.push(`<div class="l8-card l8-task-card locked exam-locked" aria-disabled="true"><div class="l8-task-number">${n}. ${meta[1]}</div><div class="emoji">⭐</div><p>Die Prüfung wird freigeschaltet, wenn alle Aufgaben 100% erreicht haben.</p><div class="l8-progress"><div style="width:0%"></div></div><div class="l8-small">gesperrt</div><div class="l8-task-start">Prüfung gesperrt</div></div>`)}else{cards.push(`<a class="l8-card l8-task-card ${p>=100?'done':''}" href="${t[0]}"><div class="l8-task-number">${n}. ${meta[1]}</div><div class="emoji">${meta[0]}</div><p>${meta[2]}</p><div class="l8-progress"><div style="width:${p}%"></div></div><div class="l8-small">${p}%</div><div class="l8-task-start">${p>=100?'Fertig':'Starten'}</div></a>`)}});return cards.join('')};
+window.renderMenu=function(){patchMedia();const box=document.getElementById('teacherBox');if(box&&typeof isTeacher==='function'){box.innerHTML=isTeacher()?`<section class="l8-card teacher-box"><div class="toggle-row"><div><b>Lehreroption</b><br><span class="l8-small">Zusatzwortschatz Wetter aktivieren.</span></div><label class="switch"><input type="checkbox" ${extraOn()?'checked':''} onchange="setExtraWeather(this.checked)"> Nicht im Buch</label></div></section>`:''}const grid=document.getElementById('taskGrid');if(grid)grid.innerHTML=window.renderTaskList(true);const ts=taskTotals(),practice=ts.filter(t=>t[0]!=='pruefung.html'),avg=Math.round(practice.reduce((s,t)=>s+pctFor(t[0],t[1]),0)/Math.max(1,practice.length))||0,done=practice.filter(t=>pctFor(t[0],t[1])>=100).length;if(window.totalCircle)totalCircle.textContent=avg+'%';if(window.totalBar)totalBar.style.width=avg+'%';if(window.totalText)totalText.textContent=done+' / '+practice.length+' Aufgaben abgeschlossen'};
 patchMedia();
 })();
