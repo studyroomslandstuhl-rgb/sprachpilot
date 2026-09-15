@@ -60,4 +60,12 @@ if(back?.questions?.length>=3){
  back.questions[0]={q:'Was ist das Problem?',a:'Rückenschmerzen',options:['Rückenschmerzen','Kopfschmerzen','Bauchschmerzen','Knieschmerzen']};
  back.questions[1]={q:'Welche Symptome hat die Person?',a:'Schmerzen beim Bewegen und Heben',options:['Schmerzen beim Bewegen und Heben','Schmerzen beim Schlafen','Schmerzen beim Essen','Schmerzen beim Husten']};
 }
+
+try{
+ const id=String(new URLSearchParams(location.search).get('task')||'').toLowerCase();
+ let p={};try{p=JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'{}')||{}}catch(e){}
+ const role=String(localStorage.getItem('SP_LOGIN_ROLE')||localStorage.getItem('SP_ACTIVE_ROLE')||p.role||'').toLowerCase();
+ const teacher=['teacher','lehrer','admin','owner','superadmin'].includes(role)||sessionStorage.getItem('SP_TEACHER_PREVIEW')==='1'||localStorage.getItem('SP_TEACHER_PREVIEW')==='1';
+ if(id==='pruefung'&&teacher)setTimeout(()=>import('/js/sp-l10-teacher-exam-preview.js?v=20260915-1'),250);
+}catch(e){}
 })();
