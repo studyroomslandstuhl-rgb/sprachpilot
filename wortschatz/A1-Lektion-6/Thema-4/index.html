@@ -45,9 +45,11 @@
 L6T4ThemeScoreV3.initOverview();
 l6t4MatchedMenu();
 (function(){
- const examUrl='pruefung-ohne-audio.html?v=20260915-examunlock1';
+ const MARK='SP_L6_T4_ALL_PRACTICE_100';
+ const examUrl='pruefung-ohne-audio.html?v=20260915-unlock2';
  let running=false;
- const unlocked=()=>typeof l6t4ExamUnlocked==='function'&&l6t4ExamUnlocked();
+ const visibleAll100=()=>{const nodes=[...document.querySelectorAll('#taskGrid a')].filter(link=>{const t=(link.textContent||'').toLowerCase(),h=(link.getAttribute('href')||'').toLowerCase();return !t.includes('prüfung')&&!h.includes('pruefung')&&!h.includes('task=exam')});return nodes.length>0&&nodes.every(link=>/(^|\D)100\s*%/.test(link.textContent||'')||link.classList.contains('done-card')||link.classList.contains('done'))};
+ const unlocked=()=>{let ok=false;try{ok=typeof l6t4ExamUnlocked==='function'&&l6t4ExamUnlocked()}catch(e){}if(!ok)ok=visibleAll100();if(ok)localStorage.setItem(MARK,'1');return ok||localStorage.getItem(MARK)==='1'};
  const enforce=()=>{
   if(running)return;
   running=true;
@@ -60,7 +62,8 @@ l6t4MatchedMenu();
      link.setAttribute('href',examUrl);
      link.removeAttribute('aria-disabled');
      link.classList.remove('exam-locked','locked');
-     const start=link.querySelector('.start');if(start&&start.textContent==='Gesperrt')start.textContent='Starten';
+     const start=link.querySelector('.start');if(start)start.textContent='Starten';
+     const desc=link.querySelector('p.small');if(desc&&/100/.test(text))desc.textContent='Zeige, was du gelernt hast.';
     }else{
      link.removeAttribute('href');
      link.setAttribute('aria-disabled','true');
@@ -77,5 +80,6 @@ l6t4MatchedMenu();
 })();
 L6T4ThemeScoreV3.renderSummary();
 </script>
+<script src="l6t4-exam-unlock-compat.js?v=20260915-unlock2"></script>
 </body>
 </html>
