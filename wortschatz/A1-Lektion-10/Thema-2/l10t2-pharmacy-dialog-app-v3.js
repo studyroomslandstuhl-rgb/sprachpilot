@@ -18,8 +18,46 @@ function save(){state._run=run();try{store().setItem(key(),JSON.stringify(state)
 function current(){const id=state.order.find(x=>!state.done.includes(x));return items.find(x=>x.id===id)||null}
 function feedback(type,text){const e=document.getElementById('fb');if(e)e.innerHTML=`<div class="l8-feedback ${type}">${text}</div>`}
 function shell(body){const header=renderSpHeader({subtitle:'Gesundheit und Apotheke · A1 Lektion 10 · Thema 2',color:{main:'#F4A3A3',dark:'#A86464',soft:'#FDF1F1',line:'#F3C9C9'}});root.innerHTML=`<div class="l10-theme-page">${header}<div class="l8-wrap"><section class="l8-card l8-task-head"><div class="l8-task-title-block"><span class="l8-task-kicker">Apotheke</span><h1>${esc(task.title)}</h1><p>${esc(task.icon||'⚕️')} ${esc(task.text||'')}</p></div><div class="l8-progress-row"><span>${state.done.length} von ${state.total} Dialogen fertig</span><strong>${pct()}%</strong></div><div class="l8-progress"><div style="width:${pct()}%"></div></div></section>${body}<footer>© SprachPilot</footer></div></div>`;bindSpHeader(root)}
-function speakDialogue(item){try{speechSynthesis.cancel();for(const line of item.lines||[]){const u=new SpeechSynthesisUtterance(String(line[1]||''));u.lang='de-DE';u.rate=.82;speechSynthesis.speak(u)}}catch(e){}}
-function play(item){if(!item.audio)return speakDialogue(item);try{const a=new Audio(item.audio);let used=false;const fallback=()=>{if(used)return;used=true;speakDialogue(item)};a.onerror=fallback;const p=a.play();if(p?.catch)p.catch(fallback)}catch(e){speakDialogue(item)}}
-function finish(){save();shell('<section class="l8-card l8-finish"><div class="l8-finish-icon">✓</div><h2>Gut gemacht!</h2><p>Du hast alle 5 Apotheken-Dialoge bearbeitet.</p><div class="l8-row l8-center-actions"><a class="l8-btn primary" href="index.html">Zur Themenübersicht</a></div></section>')}
-function render(){state=read();const item=current();if(!item)return finish();const selected={};const qs=shuffle((item.questions||[]).map((q,i)=>({...q,_i:i})));shell(`<section class="l8-card l8-exercise"><div class="l8-row l8-center-actions"><button class="l8-btn primary" id="play">🔊 Dialog anhören</button></div><p class="l8-small" style="text-align:center">Höre den Dialog. Beantworte danach alle drei Fragen.</p>${qs.map(q=>`<div style="margin-top:18px;padding-top:14px;border-top:1px solid #e0e8ec"><h3>${esc(q.q)}</h3><div class="l8-options">${shuffle(q.options||[]).map(o=>`<button type="button" class="l8-option" data-q="${q._i}" data-a="${esc(o)}">${esc(o)}</button>`).join('')}</div></div>`).join('')}<div class="l8-row l8-center-actions" style="margin-top:18px"><button class="l8-btn primary" id="check">Prüfen</button></div><div id="fb"></div></section>`);document.getElementById('play').onclick=()=>play(item);document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{selected[b.dataset.q]=b.dataset.a;document.querySelectorAll(`[data-q="${b.dataset.q}"]`).forEach(x=>x.classList.toggle('selected',x===b))});document.getElementById('check').onclick=()=>{const original=item.questions||[];if(original.some((_,i)=>!selected[i]))return feedback('warn','Beantworte zuerst alle drei Fragen.');if(original.every((q,i)=>norm(selected[i])===norm(q.a))){if(!state.done.includes(item.id))state.done.push(item.id);delete state.wrong[item.id];save();feedback('good','Richtig!');setTimeout(render,450)}else{state.wrong[item.id]=(Number(state.wrong[item.id])||0)+1;state.order=state.order.filter(x=>x!==item.id);state.order.push(item.id);save();const n=state.wrong[item.id];feedback(n>=3?'warn':'bad',n>=3?`Lösung: <strong>${esc(original.map(q=>q.a).join(' · '))}</strong>. Der Dialog kommt noch einmal.`:'Noch nicht richtig. Der Dialog kommt am Ende noch einmal.')}}}
+function finish(){save();shell(`<section class="l8-card l8-finish"><div class="l8-finish-icon">✓</div><h2>Gut gemacht!</h2><p>Du hast alle ${state.total} Apotheken-Dialoge richtig gelöst.</p><div class="l8-row l8-center-actions"><a class="l8-btn primary" href="index.html">Zur Themenübersicht</a></div></section>`)}
+function render(){
+ state=read();
+ const item=current();
+ if(!item)return finish();
+ const selected={};
+ const qs=shuffle((item.questions||[]).map((q,i)=>({...q,_i:i})));
+ shell(`<section class="l8-card l8-exercise">
+   <div style="max-width:720px;margin:0 auto 16px">
+     <audio id="dialogPlayer" controls preload="metadata" style="width:100%" src="${esc(item.audio||'')}"></audio>
+     <div class="l8-row l8-center-actions" style="margin-top:8px">
+       <button type="button" class="l8-btn" id="back10">↶ 10 Sek.</button>
+       <button type="button" class="l8-btn" id="stop">■ Stopp</button>
+     </div>
+   </div>
+   <p class="l8-small" style="text-align:center">Du kannst pausieren, zurückgehen und den Dialog noch einmal hören.</p>
+   ${qs.map(q=>`<div style="margin-top:18px;padding-top:14px;border-top:1px solid #e0e8ec"><h3>${esc(q.q)}</h3><div class="l8-options">${shuffle(q.options||[]).map(o=>`<button type="button" class="l8-option" data-q="${q._i}" data-a="${esc(o)}">${esc(o)}</button>`).join('')}</div></div>`).join('')}
+   <div class="l8-row l8-center-actions" style="margin-top:18px"><button class="l8-btn primary" id="check">Prüfen</button></div><div id="fb"></div>
+ </section>`);
+ const player=document.getElementById('dialogPlayer');
+ document.getElementById('stop').onclick=()=>{try{player.pause();player.currentTime=0}catch(e){}};
+ document.getElementById('back10').onclick=()=>{try{player.currentTime=Math.max(0,(player.currentTime||0)-10)}catch(e){}};
+ document.querySelectorAll('[data-q]').forEach(b=>b.onclick=()=>{selected[b.dataset.q]=b.dataset.a;document.querySelectorAll(`[data-q="${b.dataset.q}"]`).forEach(x=>x.classList.toggle('selected',x===b))});
+ document.getElementById('check').onclick=()=>{
+   const original=item.questions||[];
+   if(original.some((_,i)=>!selected[i]))return feedback('warn','Beantworte zuerst alle drei Fragen.');
+   if(original.every((q,i)=>norm(selected[i])===norm(q.a))){
+     if(!state.done.includes(item.id))state.done.push(item.id);
+     delete state.wrong[item.id];
+     save();
+     feedback('good','Richtig!');
+     setTimeout(render,650);
+   }else{
+     state.wrong[item.id]=(Number(state.wrong[item.id])||0)+1;
+     state.order=state.order.filter(x=>x!==item.id);
+     state.order.push(item.id);
+     save();
+     feedback('bad','Noch nicht richtig. Dieser Dialog kommt später noch einmal.');
+     setTimeout(render,900);
+   }
+ };
+}
 render();
