@@ -6,7 +6,7 @@ const t=(D.tasks||[]).find(x=>x.id==='apotheke-dialoge-hoeren');
 if(t)Object.assign(t,{title:'Apotheke – Dialoge',cardText:'Höre 3 längere Dialoge in der Apotheke und beantworte jeweils 3 Fragen.',text:'Höre den Dialog. Beantworte die 3 Fragen.'});
 D.pharmacyDialogues=[
 {
-id:'apo-sonnenbrand',
+id:'apo-sonnenbrand-v2',
 audio:'https://sprachpilot.b-cdn.net/audio/l10t2-apotheke-sonnenbrand.mp3',
 lines:[
 ['Apothekerin','Guten Tag. Was ist passiert?'],
@@ -31,13 +31,13 @@ lines:[
 ['Kunde','Gut, danke. Dann kühle ich die Haut und verwende die Salbe.']
 ],
 questions:[
-{q:'Was ist das Problem?',a:'Sonnenbrand',options:['Sonnenbrand','Schnupfen','Rückenschmerzen','Husten']},
-{q:'Welche Symptome hat die Person?',a:'Rote, heiße und brennende Haut',options:['Rote, heiße und brennende Haut','Husten, Schnupfen und Fieber','Kopfschmerzen und Schwindel','Bauchschmerzen und Übelkeit']},
-{q:'Was soll die Person machen?',a:'Die Haut kühlen, eine Salbe verwenden und im Schatten bleiben',options:['Die Haut kühlen, eine Salbe verwenden und im Schatten bleiben','Eis direkt auf die Haut legen und in die Sonne gehen','Sport machen und wenig trinken','Nichts tun und morgen schwimmen gehen']}
+{q:'Was ist das Problem?',a:'Sonnenbrand',options:['Sonnenbrand','Hautausschlag','Rückenschmerzen','Fieber']},
+{q:'Welche Symptome hat die Person?',a:'Rote, heiße Haut und Brennen',options:['Rote, heiße Haut und Brennen','Rote Haut und Husten','Heiße Haut und Schnupfen','Blasen und Halsschmerzen']},
+{q:'Was soll die Person machen?',a:'Haut kühlen und Salbe verwenden',options:['Haut kühlen und Salbe verwenden','Eis direkt auf die Haut legen','Wieder in die Sonne gehen','Nur Wasser trinken']}
 ]
 },
 {
-id:'apo-ruecken',
+id:'apo-ruecken-v2',
 audio:'https://sprachpilot.b-cdn.net/audio/l10t2-apotheke-rueckenschmerzen.mp3',
 lines:[
 ['Apotheker','Guten Tag. Wie kann ich Ihnen helfen?'],
@@ -58,13 +58,13 @@ lines:[
 ['Kundin','Gut. Dann nehme ich die Salbe und passe heute auf. Danke.']
 ],
 questions:[
-{q:'Was ist das Problem?',a:'Rückenschmerzen',options:['Rückenschmerzen','Sonnenbrand','Halsschmerzen','Fieber']},
-{q:'Welche Symptome hat die Person?',a:'Der untere Rücken tut bei Bewegung und beim Heben weh',options:['Der untere Rücken tut bei Bewegung und beim Heben weh','Die Haut ist rot und heiß','Die Nase läuft und der Hals tut weh','Der Kopf tut weh und ihr ist schwindelig']},
-{q:'Was soll die Person machen?',a:'Eine Salbe verwenden, sich vorsichtig bewegen und nichts Schweres tragen',options:['Eine Salbe verwenden, sich vorsichtig bewegen und nichts Schweres tragen','Den ganzen Tag liegen und schwere Kisten tragen','Sport machen und keine Salbe benutzen','Sofort wieder normal arbeiten']}
+{q:'Was ist das Problem?',a:'Rückenschmerzen',options:['Rückenschmerzen','Beinschmerzen','Bauchschmerzen','Kopfschmerzen']},
+{q:'Welche Symptome hat die Person?',a:'Schmerzen beim Bewegen und Heben',options:['Schmerzen beim Bewegen und Heben','Schmerzen beim Husten und Atmen','Schmerzen beim Essen und Trinken','Schmerzen beim Schlafen und Sprechen']},
+{q:'Was soll die Person machen?',a:'Salbe benutzen und nichts Schweres tragen',options:['Salbe benutzen und nichts Schweres tragen','Schmerztabletten nehmen und arbeiten','Den ganzen Tag im Bett bleiben','Schwere Kisten tragen']}
 ]
 },
 {
-id:'apo-kind-fieber',
+id:'apo-kind-fieber-v2',
 audio:'https://sprachpilot.b-cdn.net/audio/l10t2-apotheke-kind-fieber.mp3',
 lines:[
 ['Mutter','Guten Tag. Ich brauche etwas für meinen Sohn. Er ist acht Jahre alt und ihm geht es seit gestern nicht gut.'],
@@ -87,9 +87,9 @@ lines:[
 ['Apothekerin','Das ist sinnvoll. Achten Sie darauf, dass er regelmäßig Wasser oder Tee trinkt. Gute Besserung.']
 ],
 questions:[
-{q:'Was ist das Problem?',a:'Das Kind hat hohes Fieber',options:['Das Kind hat hohes Fieber','Das Kind hat Rückenschmerzen','Das Kind hat Sonnenbrand','Das Kind hat Zahnschmerzen']},
-{q:'Welche Symptome hat der Sohn?',a:'Husten, Schnupfen, Halsschmerzen und wenig Appetit',options:['Husten, Schnupfen, Halsschmerzen und wenig Appetit','Rückenschmerzen und taube Beine','Rote Haut und Blasen','Kopfschmerzen und Bauchschmerzen']},
-{q:'Was soll die Mutter machen?',a:'Mit ihrem Sohn zum Arzt gehen, ihm viel zu trinken geben und ihn ausruhen lassen',options:['Mit ihrem Sohn zum Arzt gehen, ihm viel zu trinken geben und ihn ausruhen lassen','Ihn zur Schule schicken und Sport machen lassen','Ihm mehr Medizin als angegeben geben','Nichts tun und bis morgen warten']}
+{q:'Was ist das Problem?',a:'Das Kind hat Fieber',options:['Das Kind hat Fieber','Das Kind hat Kopfschmerzen','Das Kind hat Schnupfen, aber keine Halsschmerzen','Das Kind hat nur Husten']},
+{q:'Welche Symptome hat der Sohn?',a:'Schnupfen, Husten, wenig Appetit und Halsschmerzen',options:['Kopfschmerzen, Husten und Schnupfen','Fieber, Husten und Augenschmerzen','Schnupfen, Halsschmerzen und viel Appetit','Schnupfen, Husten, wenig Appetit und Halsschmerzen']},
+{q:'Was soll die Mutter machen?',a:'Zum Arzt gehen',options:['Hustensaft geben','Nichts machen','Zum Arzt gehen','Fieber messen']}
 ]
 }
 ];
