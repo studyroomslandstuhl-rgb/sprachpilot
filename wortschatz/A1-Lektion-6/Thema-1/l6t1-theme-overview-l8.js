@@ -27,7 +27,7 @@ function refreshScore(ts){
 }
 window.renderTaskList=function(includeExam=true){
  const ts=taskTotals().filter(t=>includeExam||t[0]!=='pruefung.html'),practice=ts.filter(t=>t[0]!=='pruefung.html'),examOpen=practice.every(t=>pctFor(t[0],t[1])>=100);
- const cards=[`<a class="l8-card l8-task-card" href="uebersicht.html"><div class="l8-task-number">Übersicht</div><div class="emoji">📚</div><p>Sieh alle neuen Wörter, Bilder, Übersetzungen und Hörbeispiele.</p><div class="l8-task-start">Öffnen</div></a>`];
+ const cards=[];
  ts.forEach((t,i)=>{const meta=META[t[0]]||['✅',t[2],'Bearbeite die Aufgabe.'],pct=pctFor(t[0],t[1]),exam=t[0]==='pruefung.html';if(exam&&!examOpen){cards.push(`<div class="l8-card l8-task-card locked" aria-disabled="true"><div class="l8-task-number">${i+1}. ${meta[1]}</div><div class="emoji">⭐</div><p>Die Prüfung wird freigeschaltet, wenn alle Aufgaben 100% erreicht haben.</p><div class="l8-progress"><div style="width:0%"></div></div><div class="l8-small">gesperrt</div><div class="l8-task-start">Prüfung gesperrt</div></div>`)}else{cards.push(`<a class="l8-card l8-task-card ${pct>=100?'done':''}" href="${t[0]}"><div class="l8-task-number">${i+1}. ${meta[1]}</div><div class="emoji">${meta[0]}</div><p>${meta[2]}</p><div class="l8-progress"><div style="width:${pct}%"></div></div><div class="l8-small">${pct}%</div><div class="l8-task-start">${pct>=100?'Fertig':'Starten'}</div></a>`)}});
  return cards.join('');
 };
