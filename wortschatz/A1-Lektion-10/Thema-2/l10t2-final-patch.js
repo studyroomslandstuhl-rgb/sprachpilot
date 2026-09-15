@@ -47,4 +47,17 @@ if(Array.isArray(D.tasks)){
     D.tasks.splice(pharmacyIndex>=0?pharmacyIndex:D.tasks.length,0,qaTask);
   }
 }
+
+const pd=D.pharmacyDialogues||[];
+const sun=pd.find(x=>String(x.id).includes('sonnenbrand'));
+if(sun?.questions?.length>=3){
+ sun.questions[0]={q:'Was ist das Problem?',a:'Sonnenbrand',options:['Sonnenbrand','Fieber','Rückenschmerzen','Hautausschlag']};
+ sun.questions[1]={q:'Welche Symptome hat die Person?',a:'Rote, heiße Haut und Brennen',options:['Heiße Haut und Schnupfen','Rote, heiße Haut und Brennen','Rote Haut und Husten','Fieber und rote Haut']};
+ sun.questions[2]={q:'Was soll die Person machen?',a:'Haut kühlen und Salbe verwenden',options:['Nur Wasser trinken','Wieder in die Sonne gehen','Eis direkt auf die Haut legen','Haut kühlen und Salbe verwenden']};
+}
+const back=pd.find(x=>String(x.id).includes('ruecken'));
+if(back?.questions?.length>=3){
+ back.questions[0]={q:'Was ist das Problem?',a:'Rückenschmerzen',options:['Rückenschmerzen','Kopfschmerzen','Bauchschmerzen','Knieschmerzen']};
+ back.questions[1]={q:'Welche Symptome hat die Person?',a:'Schmerzen beim Bewegen und Heben',options:['Schmerzen beim Bewegen und Heben','Schmerzen beim Schlafen','Schmerzen beim Essen','Schmerzen beim Husten']};
+}
 })();
