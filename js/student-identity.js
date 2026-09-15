@@ -173,7 +173,18 @@ function persistProfile(profile){
 }
 function clearActivatedStudentSession(){
   try{
-    ['SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_KEEP_LOGGED_IN','SP_STUDENT_ID','SP_STUDENT_AUTH_UID','SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE','SP_AUTH_ROLE','SP_LOGIN_CONTEXT','motherLanguage','muttersprache','SP_MOTHER_LANGUAGE_CODE'].forEach(key=>localStorage.removeItem(key));
+    [
+      'SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_PROFILE_BACKUP','SP_STUDENT_PROFILE_BACKUP',
+      'SP_KEEP_LOGGED_IN','SP_STUDENT_ID','SP_STUDENT_AUTH_UID',
+      'SP_LOGIN_ROLE','SP_ACTIVE_ROLE','SP_USER_ROLE','SP_AUTH_ROLE','SP_LOGIN_CONTEXT',
+      'motherLanguage','muttersprache','SP_MOTHER_LANGUAGE_CODE'
+    ].forEach(key=>localStorage.removeItem(key));
+  }catch(e){}
+  try{
+    [
+      'SP_USER_PROFILE','SP_STUDENT_PROFILE','SP_STUDENT_ID','SP_STUDENT_AUTH_UID',
+      'SP_PROFILE_SESSION_BACKUP','SP_STUDENT_PROFILE_SESSION_BACKUP'
+    ].forEach(key=>sessionStorage.removeItem(key));
   }catch(e){}
 }
 async function isolateActivatedStudent(){
