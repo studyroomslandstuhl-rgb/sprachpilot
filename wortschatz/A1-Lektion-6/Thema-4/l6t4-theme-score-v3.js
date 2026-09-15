@@ -102,12 +102,50 @@ async function syncFirebase(){
 function resetPractice(){if(preview()){alert('In der Lehrer-Vorschau wird kein Teilnehmerfortschritt gespeichert.');return false}if(!confirm('Sichtbaren Fortschritt zurücksetzen? Bereits verdiente Punkte bleiben erhalten.'))return false;clearVisible();location.href='index.html?v=l6t4-central4';return true}
 function initOverview(){migrate();advanceIfNeeded();renderSummary();setTimeout(syncFirebase,250)}
 
+/*
+ * Prüfungsfreigabe: Für die Freigabe zählt der beste verlässliche lokale Nachweis
+ * pro Lernaufgabe. Ältere L6T4-Seiten haben für einzelne Aufgaben unterschiedliche
+ * Schlüssel benutzt (z. B. task-dialog-rf vs. die komplette URL). Dadurch konnten
+ * in der TÜ 100 % sichtbar sein, während die alte Unlock-Prüfung noch einen anderen
+ * Schlüssel mit 0 % gelesen hat. Die Freigabe darf deshalb nicht an einem Alias hängen.
+ */
+function taskAliases(task){
+ const aliases=new Set([task?.key,task?.file,task?.id,task?.id?`task-${task.id}`:''].filter(Boolean));
+ if(task?.id==='plural')aliases.add('plural-sprechen.html');
+ if(task?.id==='dialog-rf'){
+  aliases.add('task-dialog-rf');
+  aliases.add('task.html?task=dialog-rf');
+  aliases.add('task.html?task=dialog-rf&number=12');
+ }
+ if(task?.id==='dialog-abc'){
+  aliases.add('task-dialog-abc');
+  aliases.add('dialoge.html');
+  aliases.add('dialoge.html?v=l6t4-dialoge4');
+  aliases.add('task.html?task=dialog-abc');
+  aliases.add('task.html?task=dialog-abc&number=13');
+ }
+ return [...aliases];
+}
+function practicePercent(task){
+ const ledger=read(),data=runData(ledger),aliases=taskAliases(task);let best=0;
+ for(const alias of aliases){
+  best=Math.max(best,rawPercent(alias));
+  const saved=data.tasks?.[alias];
+  if(saved)best=Math.max(best,clamp(saved.percent),saved.completed?100:0);
+ }
+ /* Falls der aktuell sichtbare Renderer bereits 100 % kennt, diesen Zustand ebenfalls
+    anerkennen. Das ist insbesondere für alte externe Aufgabenpfade wichtig. */
+ try{if(typeof originalPercent==='function')for(const alias of aliases)best=Math.max(best,clamp(originalPercent(alias,Number(task?.total)||0)))}catch(e){}
+ return clamp(best);
+}
+
 const originalPercent=window.l6t4Percent;
 window.l6t4Sync=function(file,state){return recordTask(file,state)};
 window.l6t4Percent=function(file,total){const item=window.L6T4_TASKS?.find(task=>task.key===file||task.file===file||task.id===file);if(item?.exam||file==='task-exam'||file==='pruefung.html')return summary().examBestPercent;return typeof originalPercent==='function'?originalPercent(file,total):0};
-window.l6t4ExamUnlocked=function(){return preview()||practiceTasks().every(task=>window.l6t4Percent(task.key||task.file||task.id,task.total)>=100)};
+window.l6t4ExamUnlocked=function(){return preview()||practiceTasks().every(task=>practicePercent(task)>=100)};
+window.l6t4PracticePercent=practicePercent;
 window.l6t4Reset=resetPractice;
-window.L6T4ThemeScoreV3={read,recordTask,recordExam,summary,summaryHtml,renderSummary,initOverview,syncFirebase,advanceIfNeeded,resetPractice,taskPoints,examMax,practiceTasks,ledgerKey:LEDGER_KEY};
+window.L6T4ThemeScoreV3={read,recordTask,recordExam,summary,summaryHtml,renderSummary,initOverview,syncFirebase,advanceIfNeeded,resetPractice,taskPoints,examMax,practiceTasks,practicePercent,ledgerKey:LEDGER_KEY};
 window.addEventListener('l6t4-score-change',renderSummary);
 migrate();
 })();
