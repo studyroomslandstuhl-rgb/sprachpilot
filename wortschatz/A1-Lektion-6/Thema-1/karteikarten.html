@@ -27,9 +27,11 @@
 <script src="l6t1-final-fix.js?v=2"></script>
 <script src="l6t1-steigen-sinken.js?v=3"></script>
 <script src="l6t1-stability-fix.js?v=1"></script>
-<script src="l6t1-card-vocabulary-only.js?v=1"></script>
-<script src="l6t1-standard-20260915.js?v=2"></script>
-<script src="/js/sp-card-standard.js?v=2"></script>
+<script src="l6t1-standard-20260915.js?v=6"></script>
+<!-- Karteikarten bleiben reine Wortschatzkarten. Dieser Patch muss NACH dem Standard geladen werden,
+     damit dessen cardItems()-Definition nicht wieder Satzkarten hineinmischt. -->
+<script src="l6t1-card-vocabulary-only.js?v=2"></script>
+<script src="/js/sp-card-standard.js?v=3"></script>
 <script>
 (function(){
 l6t1CleanWords();
@@ -45,6 +47,6 @@ SPCardStandard.mount({
 });
 })();
 </script>
-<script src="l6t1-card-type-label.js?v=2"></script>
+<script src="l6t1-card-type-label.js?v=3"></script>
 </body>
 </html>
