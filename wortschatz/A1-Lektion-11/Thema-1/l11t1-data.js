@@ -10,7 +10,6 @@ const phrases=[
 'Entschuldigung, wo ist …?','Ich suche …','Wo finde ich …?','Ist hier … in der Nähe?','Gibt es hier … in der Nähe?','Fahren Sie geradeaus.','Gehen Sie geradeaus.','Fahren Sie nach links.','Fahren Sie nach rechts.','Biegen Sie links ab.','Biegen Sie rechts ab.','An der Ampel links.','An der Ampel rechts.','Nehmen Sie die zweite Straße links.'
 ];
 const tasks=[
-{id:'uebersicht',title:'Übersicht',icon:'📚',cardText:'Lerne alle Wörter und Redemittel.'},
 {id:'karteikarten',title:'Karteikarten',icon:'🃏',cardText:'Lerne die Wörter mit Bild und Ton.'},
 {id:'bild-wort',title:'Bild – Wort',icon:'🖼️',cardText:'Wähle das passende Wort zum Bild.'},
 {id:'artikel-plural',title:'Artikel und Plural',icon:'🔤',cardText:'Ergänze Artikel und Plural.'},
