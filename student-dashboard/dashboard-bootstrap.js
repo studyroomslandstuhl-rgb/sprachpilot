@@ -1,7 +1,7 @@
 import '/shared/sp-cache-epoch.js?v=20260831-global-progress-sync9';
 import '/shared/points-recalculator.js?v=20260904-l8-dashboard1';
 import '/shared/dativ-points-extension.js?v=20260831-global3';
-import '/js/session-restore.js?v=20260831-central2';
+import '/js/session-restore.js?v=20260915-logout1';
 import { verifySecureAccess } from '/js/secure-access-gate.js?v=1';
 
 function readProfile(){try{return JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||'null')||{}}catch(e){return{}}}
