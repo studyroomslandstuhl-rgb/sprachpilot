@@ -31,7 +31,7 @@ function labelParts(){
  ];
 }
 function makeGap(item,names){
- var options=shuffle([item.part].concat(shuffle(names.filter(function(x){return x!==item.part;})).slice(0,3)));
+ var options=shuffle(names);
  return '<div class="sp-letter-gap" data-box="'+esc(item.id)+'" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 8px">'+
   '<input class="l8-input" data-article="'+esc(item.id)+'" placeholder="Artikel" style="width:92px;min-width:92px">'+
   '<select class="l8-input" data-select="'+esc(item.id)+'" style="flex:1;min-width:180px"><option value="">Briefteil wählen</option>'+options.map(function(o){return '<option value="'+esc(o)+'">'+esc(o)+'</option>';}).join('')+'</select></div>';
