@@ -1,1 +1,47 @@
-:root{--l11-main:#F6D78B;--l11-dark:#8C6E26;--l11-soft:#FDF8EC;--l11-line:#F3E2B7}body{margin:0;font-family:Arial,Helvetica,sans-serif;background:linear-gradient(135deg,var(--l11-main),var(--l11-soft));color:#17212b}.l11-wrap{max-width:1120px;margin:0 auto;padding:24px}.l11-card{background:#fff;border:2px solid var(--l11-line);border-radius:24px;padding:20px;box-shadow:0 8px 20px rgba(0,0,0,.08)}.l11-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:16px;margin-top:18px}.l11-task{text-decoration:none;color:inherit;min-height:200px;display:flex;flex-direction:column}.l11-task .emoji{font-size:36px}.l11-task h3{margin:8px 0}.l11-task p{color:#4b5563;line-height:1.45}.l11-task .start{margin-top:auto;border:2px solid var(--l11-main);border-radius:14px;padding:10px;text-align:center;font-weight:800;color:var(--l11-dark)}.l11-task.locked{opacity:.45;pointer-events:none;background:#f2f2f2}.l11-progress{height:10px;border-radius:999px;background:#eee;overflow:hidden;margin-top:10px}.l11-progress>div{height:100%;background:var(--l11-main)}.l11-vocab{display:grid;grid-template-columns:repeat(auto-fit,minmax(230px,1fr));gap:14px}.l11-word{display:grid;grid-template-columns:72px 1fr;gap:12px;align-items:center}.l11-word img{width:72px;height:72px;object-fit:cover;border-radius:16px;background:#f5f5f5}.l11-word .full{font-weight:900}.l11-small{font-size:13px;color:#6b7280}.l11-source{display:inline-block;border-radius:999px;padding:4px 8px;background:var(--l11-soft);color:var(--l11-dark);font-size:12px;font-weight:800}.l11-controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.l11-btn{border:2px solid var(--l11-main);background:#fff;border-radius:14px;padding:10px 14px;font-weight:900;cursor:pointer}.l11-btn.primary{background:var(--l11-main);color:#5C4715}.l11-question{font-size:22px;font-weight:900;margin:18px 0}.l11-options{display:grid;gap:10px}.l11-option{padding:12px 14px;border:2px solid var(--l11-line);background:#fff;border-radius:14px;text-align:left;font-weight:700;cursor:pointer}.l11-option.correct{border-color:#3da35d;background:#ecfdf3}.l11-option.wrong{border-color:#c94b4b;background:#fff1f1}.l11-feedback{margin-top:14px;font-weight:900}.l11-card-main{max-width:760px;margin:18px auto}.l11-card-image{display:block;width:min(320px,80vw);aspect-ratio:1;object-fit:cover;border-radius:24px;margin:16px auto;background:#f3f3f3}.l11-flash{font-size:34px;font-weight:900;text-align:center;margin:16px}.l11-phrase{padding:10px 12px;border-bottom:1px solid #eee}.l11-tags{display:flex;gap:8px;flex-wrap:wrap}.l11-tag{background:var(--l11-soft);color:var(--l11-dark);font-weight:800;padding:6px 10px;border-radius:999px}@media(max-width:700px){.l11-wrap{padding:14px}.l11-card{padding:16px}.l11-grid{grid-template-columns:1fr}}
+@import url("../../A1-Lektion-8/shared/l8-color.css?v=20260915-l11t1-l8base1");
+
+/* L11T1 verwendet strukturell exakt die L9T1/L8-Kartenbasis. Nur die Farben sind L11. */
+:root{
+ --lesson-main:#F6D78B;
+ --lesson-main-dark:#A88633;
+ --lesson-dark:#A88633;
+ --lesson-main-light:#F8EDCA;
+ --lesson-soft:#FDF8EC;
+ --lesson-main-soft:#FDF8EC;
+ --lesson-line:#F3E2B7;
+ --lesson-bg:#FFFCF5;
+ --lesson-text:#5C4715;
+ --lesson-ink:#5C4715;
+ --lesson-muted:#786B4B;
+ --lesson-on-main:#5C4715;
+ --lesson-shadow:0 12px 28px rgba(168,134,51,.16);
+ --l8-main:var(--lesson-main);
+ --l8-dark:var(--lesson-main-dark);
+ --l8-soft:var(--lesson-soft);
+ --l8-line:var(--lesson-line);
+ --l8-bg:var(--lesson-bg);
+ --l8-ink:var(--lesson-text);
+ --l8-good:#217A4B;
+ --l8-bad:#A72A2A;
+ --l8-warn:#8A6517;
+}
+body{color:var(--lesson-text)!important;background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.42) 310px,rgba(255,255,255,.1)),linear-gradient(135deg,var(--lesson-main),var(--lesson-main-light))!important}
+.sp-header{background:var(--lesson-main)!important}
+.l8-progress-circle{background:var(--lesson-main)!important;box-shadow:0 12px 26px rgba(168,134,51,.18)!important}
+.l8-progress>div{background:linear-gradient(135deg,var(--lesson-main-dark),var(--lesson-main))!important}
+
+/* Kompatibilität für die bereits angelegten L11-Aufgabenseiten. */
+.l11-wrap{width:min(1120px,calc(100% - 28px));margin:0 auto;padding:18px 0 42px}
+.l11-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:16px}
+.l11-card{background:#fff;border:2px solid var(--lesson-line);border-radius:22px;padding:18px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
+.l11-task{display:flex;min-height:250px;flex-direction:column;text-decoration:none;color:inherit;transition:.18s ease}
+.l11-task:hover{transform:translateY(-3px);box-shadow:0 13px 27px rgba(0,0,0,.12)}
+.l11-task.locked{opacity:.5;pointer-events:none;background:#f2f2f2}
+.l11-task>.emoji{font-size:46px;text-align:center;margin:20px 0 12px}
+.l11-task>.start{margin-top:auto;border:2px solid var(--lesson-main);border-radius:16px;padding:11px;text-align:center;font-weight:900;color:var(--lesson-main-dark);background:#fff}
+.l11-progress{height:11px;border-radius:999px;background:#eee;overflow:hidden;margin:12px 0 6px}.l11-progress>div{height:100%;background:linear-gradient(135deg,var(--lesson-main-dark),var(--lesson-main));border-radius:999px}
+.l11-small{font-size:13px;color:var(--lesson-muted);font-weight:800}.l11-tags{display:flex;gap:8px;flex-wrap:wrap;margin-top:12px}.l11-tag{padding:7px 10px;border-radius:999px;background:var(--lesson-soft);color:var(--lesson-main-dark);font-weight:900}
+.l11-card-main{max-width:820px;margin:0 auto 16px}.l11-card-image{display:block;width:min(360px,80vw);height:min(360px,80vw);object-fit:contain;margin:0 auto 18px;border-radius:22px;background:#fff}
+.l11-flash,.l11-question{text-align:center;font-weight:950;font-size:28px;margin:16px 0}.l11-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:12px}.l11-option,.l11-btn{border:2px solid var(--lesson-line);border-radius:16px;background:#fff;padding:13px 14px;font-weight:900;color:var(--lesson-text);cursor:pointer}.l11-option.correct{border-color:#217A4B;background:#e8f6ee}.l11-option.wrong{border-color:#A72A2A;background:#fdecec}.l11-btn.primary{background:var(--lesson-main);border-color:var(--lesson-main-dark);color:var(--lesson-text)}.l11-controls{display:flex;gap:10px;flex-wrap:wrap;margin-top:16px}.l11-feedback{text-align:center;font-weight:900;margin-top:12px;min-height:24px}
+
+@media(max-width:700px){.l11-wrap{width:min(100% - 18px,1120px);padding-top:10px}.l11-grid{grid-template-columns:1fr}.l11-options{grid-template-columns:1fr}.l11-question,.l11-flash{font-size:24px}}
