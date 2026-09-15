@@ -1,4 +1,35 @@
 .l8-grid{grid-template-columns:repeat(5,minmax(0,1fr))}
 .l8-task-card{min-width:0}
 @media(max-width:1050px){.l8-grid{grid-template-columns:repeat(3,minmax(0,1fr))}}
-@media(max-width:700px){.l8-grid{grid-template-columns:1fr}}
+@media(max-width:700px){
+ .l8-grid{grid-template-columns:1fr}
+ /* L10T3 Aufgabe 15: Briefteile beschriften – mobile Darstellung */
+ .l8-exercise [style*="grid-template-columns:minmax(260px,1.25fr) minmax(250px,1fr)"],
+ .l8-exercise [style*="grid-template-columns:1fr 1fr"],
+ .l8-exercise [style*="grid-template-columns:minmax(130px,1fr) 90px"]{
+  grid-template-columns:1fr!important;
+  min-width:0!important;
+  width:100%!important;
+ }
+ .l8-exercise [style*="grid-template-columns:minmax(260px,1.25fr) minmax(250px,1fr)"]{
+  gap:10px!important;
+  align-items:stretch!important;
+  padding:14px 0!important;
+ }
+ .l8-exercise [style*="grid-template-columns:minmax(130px,1fr) 90px"]{gap:8px!important}
+ .l8-exercise select.l8-input.part,
+ .l8-exercise input.l8-input.article{
+  width:100%!important;
+  max-width:100%!important;
+  min-width:0!important;
+  box-sizing:border-box!important;
+ }
+ .l8-exercise input.l8-input.article{min-height:46px!important}
+ .l8-exercise>div[style*="padding:20px"]{padding:14px!important;overflow:hidden!important}
+}
+@media(max-width:420px){
+ .l8-wrap{width:min(100% - 12px,1120px)!important}
+ .l8-card.l8-exercise{padding:14px!important}
+ .l8-exercise h3{font-size:18px!important;line-height:1.35!important}
+ .l8-exercise [style*="grid-template-columns:minmax(260px,1.25fr) minmax(250px,1fr)"]{gap:8px!important}
+}
