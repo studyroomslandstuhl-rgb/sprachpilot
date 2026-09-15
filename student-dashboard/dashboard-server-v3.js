@@ -1,6 +1,6 @@
 import { db, doc, getDocFromServer, setDoc, collection, query, where, getDocsFromServer, limit, serverTimestamp, onSnapshot } from '/js/firebase.js';
 import { getActiveProfile } from '/js/auth.js';
-import { logoutSecureStudent } from '/js/student-identity.js?v=identity5';
+import { logoutSecureStudent } from '/js/student-identity.js?v=20260915-logout1';
 import { loadCourseRelease, themeOpen, taskOpen } from '/js/course-releases.js?v=release-core-20260824a';
 import '/shared/points-recalculator.js?v=20260822-dashboard5';
 import '/shared/release-catalog-a1-l3-l7.js?v=1';
