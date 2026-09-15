@@ -1,4 +1,5 @@
-import '/js/session-restore.js?v=20260915-logout1';
+import '/js/role-session-guard.js?v=20260915-role1';
+import '/js/session-restore.js?v=20260915-role1';
 import '/shared/points-recalculator.js?v=20260831-global3';
 import '/shared/dativ-points-extension.js?v=20260831-global3';
 
