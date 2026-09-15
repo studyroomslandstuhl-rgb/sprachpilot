@@ -29,8 +29,8 @@
   async function sendPasswordResetMail(email){return mailCallable("requestPasswordReset")({email:norm(email)})}
 
   function clearStudentMode(){
-    ["SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_KEEP_LOGGED_IN","SP_STUDENT_ID","SP_STUDENT_AUTH_UID","SP_AUTH_ROLE","SP_SECURE_STUDENT_RELOGIN_REQUIRED"].forEach(k=>localStorage.removeItem(k));
-    try{["SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_STUDENT_ID","SP_STUDENT_AUTH_UID"].forEach(k=>sessionStorage.removeItem(k))}catch(e){}
+    ["SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_PROFILE_BACKUP","SP_STUDENT_PROFILE_BACKUP","SP_KEEP_LOGGED_IN","SP_STUDENT_ID","SP_STUDENT_AUTH_UID","SP_AUTH_ROLE","SP_SECURE_STUDENT_RELOGIN_REQUIRED"].forEach(k=>localStorage.removeItem(k));
+    try{["SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_STUDENT_ID","SP_STUDENT_AUTH_UID","SP_PROFILE_SESSION_BACKUP","SP_STUDENT_PROFILE_SESSION_BACKUP"].forEach(k=>sessionStorage.removeItem(k))}catch(e){}
   }
   function clearTeacherMode(){
     ["SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_UID","SP_TEACHER_PROFILE","SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_LOGIN_CONTEXT","SP_L7_PREVIEW_PID"].forEach(k=>localStorage.removeItem(k));
