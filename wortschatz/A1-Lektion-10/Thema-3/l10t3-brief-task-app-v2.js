@@ -32,22 +32,40 @@ function draw13(){
  const parts=(D.letterLabelParts||[]);
  if(!parts.length)return finish();
  const names=parts.map(x=>x.part);
- const line=(x,i,extra='')=>{const opts=shuffle([x.part,...shuffle(names.filter(n=>n!==x.part)).slice(0,3)]);return `<div class="sp-letter-line" data-id="${esc(x.id)}" style="margin:${extra||'10px 0'}"><div style="font-size:1.05rem;margin-bottom:8px">${esc(x.marker)}</div><div class="l8-options" style="margin-bottom:8px">${opts.map(o=>`<button type="button" class="l8-option" data-part="${esc(x.id)}" data-value="${esc(o)}">${esc(o)}</button>`).join('')}</div><input class="l8-input" data-article="${esc(x.id)}" placeholder="Artikel" style="max-width:140px"></div>`};
  const p=Object.fromEntries(parts.map(x=>[x.part,x]));
- const letter=`<div class="sp-letter-sheet" style="background:#fff;border:1px solid #e7d7d7;border-radius:16px;padding:22px;max-width:760px;margin:0 auto;line-height:1.55">
- ${line(p.Absender,0)}
- ${line(p.Empfänger,1,'22px 0 10px')}
- <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:22px">${line(p.Ort,2,'0')}${line(p.Datum,3,'0')}</div>
- ${line(p.Betreff,4,'22px 0 10px')}
- ${line(p.Anrede,5,'18px 0 10px')}
- <p style="margin:18px 0">leider bin ich krank und kann drei Tage nicht arbeiten. Das Attest finden Sie anbei.</p>
- ${line(p.Gruß,6,'18px 0 10px')}
- ${line(p.Unterschrift,7,'10px 0 0')}
+ const gap=x=>{
+   const opts=shuffle([x.part,...shuffle(names.filter(n=>n!==x.part)).slice(0,3)]);
+   return `<div class="sp-letter-gap" data-id="${esc(x.id)}" style="display:flex;gap:8px;align-items:center;flex-wrap:wrap;margin:0 0 6px"><input class="l8-input" data-article="${esc(x.id)}" placeholder="Artikel" style="width:92px;min-width:92px"><select class="l8-input" data-select="${esc(x.id)}" style="flex:1;min-width:180px"><option value="">Briefteil wählen</option>${opts.map(o=>`<option value="${esc(o)}">${esc(o)}</option>`).join('')}</select></div>`;
+ };
+ const letter=`<div class="sp-letter-sheet" style="background:#fff;border:1px solid #e7d7d7;border-radius:16px;padding:24px;max-width:760px;margin:0 auto;line-height:1.55">
+   ${gap(p.Absender)}<div style="margin-bottom:20px">Anna Becker<br>Hauptstraße 12<br>66538 Neunkirchen</div>
+   ${gap(p.Empfänger)}<div style="margin-bottom:24px">Firma Sonnenschein<br>Personalabteilung<br>Bahnhofstraße 8<br>66538 Neunkirchen</div>
+   <div style="display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-bottom:24px">
+     <div>${gap(p.Ort)}<div>Neunkirchen,</div></div>
+     <div>${gap(p.Datum)}<div>15.09.2026</div></div>
+   </div>
+   ${gap(p.Betreff)}<div style="font-weight:700;margin-bottom:22px">Krankmeldung</div>
+   ${gap(p.Anrede)}<div style="margin-bottom:18px">Sehr geehrte Frau Winter,</div>
+   <p style="margin:0 0 18px">leider bin ich krank und kann drei Tage nicht arbeiten. Das Attest finden Sie anbei.</p>
+   ${gap(p.Gruß)}<div style="margin-bottom:18px">Mit freundlichen Grüßen</div>
+   ${gap(p.Unterschrift)}<div>Anna Becker</div>
  </div>`;
- shell(`<section class="l8-card l8-exercise"><div class="l8-note"><strong>Brief:</strong> Wähle bei jeder Lücke den richtigen Briefteil und schreibe den Artikel.</div>${letter}<div class="l8-row l8-center-actions" style="margin-top:18px"><button class="l8-btn primary" id="check">Brief prüfen</button></div><div id="fb"></div></section>`);
- const chosen={};
- document.querySelectorAll('[data-part]').forEach(b=>b.onclick=()=>{chosen[b.dataset.part]=b.dataset.value;document.querySelectorAll(`[data-part="${b.dataset.part}"]`).forEach(x=>x.classList.toggle('selected',x===b))});
- document.getElementById('check').onclick=()=>{let all=true;const missing=[];parts.forEach(x=>{const article=document.querySelector(`[data-article="${x.id}"]`);const okPart=norm(chosen[x.id]||'')===norm(x.part);const okArticle=norm(article?.value||'')===norm(x.article);const box=document.querySelector(`[data-id="${x.id}"]`);box?.classList.toggle('sp-answer-ok',okPart&&okArticle);box?.classList.toggle('sp-answer-bad',!(okPart&&okArticle));if(!(okPart&&okArticle)){all=false;missing.push(x.article+' '+x.part)}});if(all){st.done=parts.map(x=>x.id);save();feedback('good','Der ganze Brief ist richtig!');setTimeout(finish,450)}else{const n=(st.wrong.all||0)+1;st.wrong.all=n;save();feedback('bad',n>=3?`Lösungen: <strong>${esc(missing.join(' · '))}</strong>`:'Noch nicht alles richtig. Prüfe die markierten Lücken.')}};
+ shell(`<section class="l8-card l8-exercise"><div class="l8-note"><strong>Ganzer Brief:</strong> Ergänze an jeder Lücke den Briefteil und den Artikel.</div>${letter}<div class="l8-row l8-center-actions" style="margin-top:18px"><button class="l8-btn primary" id="check">Brief prüfen</button></div><div id="fb"></div></section>`);
+ document.getElementById('check').onclick=()=>{
+   let all=true;const missing=[];
+   parts.forEach(x=>{
+     const article=document.querySelector(`[data-article="${x.id}"]`);
+     const select=document.querySelector(`[data-select="${x.id}"]`);
+     const okPart=norm(select?.value||'')===norm(x.part);
+     const okArticle=norm(article?.value||'')===norm(x.article);
+     const box=document.querySelector(`[data-id="${x.id}"]`);
+     box?.classList.toggle('sp-answer-ok',okPart&&okArticle);
+     box?.classList.toggle('sp-answer-bad',!(okPart&&okArticle));
+     if(!(okPart&&okArticle)){all=false;missing.push(x.article+' '+x.part)}
+   });
+   if(all){st.done=parts.map(x=>x.id);save();feedback('good','Der ganze Brief ist richtig!');setTimeout(finish,450)}
+   else{const n=(st.wrong.all||0)+1;st.wrong.all=n;save();feedback('bad',n>=3?`Lösungen: <strong>${esc(missing.join(' · '))}</strong>`:'Noch nicht alles richtig. Prüfe die markierten Lücken.')}
+ };
 }
 function draw14(){const item=cur();if(!item)return finish();const opts=shuffle(item.options);shell(`<section class="l8-card l8-exercise"><div class="sp-source">${esc(item.q)}</div><div class="l8-options">${opts.map((o,i)=>`<button type="button" class="l8-option" data-a="${esc(o)}">${String.fromCharCode(65+i)} · ${esc(o)}</button>`).join('')}</div><div id="fb"></div></section>`);document.querySelectorAll('[data-a]').forEach(b=>b.onclick=()=>{if(norm(b.dataset.a)===norm(item.a))right(item,draw14);else wrong(item,item.a)})}
 function draw15(){const item=cur();if(!item)return finish();shell(`<section class="l8-card l8-exercise"><div class="sp-source">${esc(item.q)}</div><div class="l8-answer-row"><input class="l8-input" id="ans" placeholder="Antwort mit Artikel schreiben"><button class="l8-btn primary" id="check">Prüfen</button></div><div id="fb"></div></section>`);document.getElementById('check').onclick=()=>{const v=document.getElementById('ans').value;if(norm(v)===norm(item.a))right(item,draw15);else wrong(item,item.a)}}
