@@ -28,6 +28,7 @@
 <script src="l6t1-steigen-sinken.js?v=3"></script>
 <script src="l6t1-stability-fix.js?v=1"></script>
 <script src="l6t1-card-vocabulary-only.js?v=1"></script>
+<script src="l6t1-standard-20260915.js?v=2"></script>
 <script src="/js/sp-card-standard.js?v=2"></script>
 <script>
 (function(){
@@ -39,7 +40,7 @@ function solutionText(it){const value=solution(it);return Array.isArray(value)?v
 SPCardStandard.mount({
  area:'#area',words:items,nextPage:'artikel.html',full:solutionText,word:solutionText,
  plural:it=>it.w.plural||'',example:it=>it.w.sentence||'',translation:it=>tr(it.w),languageName:'Muttersprache',
- visual:(it)=>visual(it.w),answers:it=>Array.isArray(solution(it))?solution(it):[solution(it)],accept:(it,value)=>exact(value,solution(it)),audio:it=>typeof say==='function'?say(solutionText(it)):null,
+ visual:(it)=>visual(it.w),answers:it=>Array.isArray(solution(it))?solution(it):[solution(it)],accept:(it,value)=>exact(value,solution(it)),audio:it=>it.mode==='sentence'?l6PlaySentence(it.w.id):l6PlayWord(it.w.id),
  state:{progress(){const list=items(),st=loadTask(FILE,list.length);return{total:list.length,done:st.done.length,tries:st.tries||0,hadWrong:!!st.hadWrong}},current(){const list=items();return list[spNextIndex(FILE,list.length)]},wrong(){return spMarkWrong(FILE,items().length)},right(){spMarkRight(FILE,items().length)},resetCurrent(){localStorage.removeItem(taskKey(FILE))}}
 });
 })();
