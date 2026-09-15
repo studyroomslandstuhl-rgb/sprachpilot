@@ -180,10 +180,33 @@ export function saveActiveProfile(st,courseData,docId=null){
   localStorage.setItem("muttersprache",p.muttersprache);
   return p
 }
-export function logout(){
+export async function logout(){
   clearTeacherPreviewState();
-  ["SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_KEEP_LOGGED_IN","SP_STUDENT_ID","motherLanguage","muttersprache","SP_MOTHER_LANGUAGE_CODE","SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_AUTH_ROLE","SP_LOGIN_CONTEXT","SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_UID","SP_TEACHER_PROFILE"].forEach(k=>localStorage.removeItem(k));
-  location.href="/index.html";
+  const localKeys=[
+    "SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_PROFILE_BACKUP","SP_STUDENT_PROFILE_BACKUP",
+    "SP_KEEP_LOGGED_IN","SP_STUDENT_ID","SP_STUDENT_AUTH_UID",
+    "motherLanguage","muttersprache","SP_MOTHER_LANGUAGE_CODE",
+    "SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_AUTH_ROLE","SP_LOGIN_CONTEXT",
+    "SP_TEACHER_MODE","SP_USER_ROLE","SP_TEACHER_EMAIL","SP_TEACHER_ID",
+    "SP_TEACHER_UID","SP_TEACHER_PROFILE","SP_L7_PREVIEW_PID"
+  ];
+  const sessionKeys=[
+    "SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_STUDENT_ID","SP_STUDENT_AUTH_UID",
+    "SP_PROFILE_SESSION_BACKUP","SP_STUDENT_PROFILE_SESSION_BACKUP",
+    "SP_TEACHER_PREVIEW","SP_TEACHER_MODE_WAS_ACTIVE","SP_PREVIEW_COURSE"
+  ];
+  try{localKeys.forEach(k=>localStorage.removeItem(k))}catch(e){}
+  try{sessionKeys.forEach(k=>sessionStorage.removeItem(k))}catch(e){}
+  try{
+    const module=await import("/js/student-secure-auth.js?v=20260915-logout1");
+    await module.secureStudentSignOut();
+  }catch(error){
+    console.warn("Firebase-Abmeldung konnte nicht bestätigt werden",error);
+  }finally{
+    try{localKeys.forEach(k=>localStorage.removeItem(k))}catch(e){}
+    try{sessionKeys.forEach(k=>sessionStorage.removeItem(k))}catch(e){}
+    location.replace("/index.html?loggedOut=1");
+  }
 }
 
 export async function findStudentByEmailAndCourse(email,courseInput,courseDocId=""){
