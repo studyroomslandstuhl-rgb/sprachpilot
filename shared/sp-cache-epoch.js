@@ -1,6 +1,6 @@
 (function(){
 'use strict';
-const EPOCH='20260915-logout1';
+const EPOCH='20260915-role1';
 const KEY='SP_CACHE_EPOCH';
 const RELEASE_ASSETS=[
  '/js/course-releases.js?v=strict-themes2',
@@ -19,7 +19,7 @@ const RELEASE_ASSETS=[
  '/teacher/theme-release-hotfix.js?v=20260908-theme-release1',
  '/shared/release-catalog-a1-l3-l7.js?v=20260824-2'
 ];
-if(window.__SP_CACHE_EPOCH_V16)return;window.__SP_CACHE_EPOCH_V16=true;
+if(window.__SP_CACHE_EPOCH_V17)return;window.__SP_CACHE_EPOCH_V17=true;
 async function clearAppCaches(){
  const jobs=[];
  try{if('caches'in window)jobs.push(caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))))}catch(e){}
