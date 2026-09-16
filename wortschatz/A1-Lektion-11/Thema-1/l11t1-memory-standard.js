@@ -19,7 +19,7 @@ function setProgress(done,total){const p=Math.round(done/Math.max(1,total)*100),
 async function markDone(total){
  try{localStorage.setItem(progressKey,'100');localStorage.setItem(progressKey+'_book','100');localStorage.setItem(progressKey+'_all','100');localStorage.setItem('SP_L11_LAST_TASK_T1','memory');sessionStorage.setItem('SP_L11_LAST_TASK_T1','memory')}catch(e){}
  try{
-  const p=await import('/js/progress.js?v=20260831-central6');
+  await import('/js/progress.js?v=20260831-central6');
   const api=window.SPProgress;
   const run=Math.max(1,Math.min(3,Number(localStorage.getItem('SP_SCORE_RUN_wortschatz-a1-lektion-11-thema-1')||1)||1));
   await api?.recordTaskProgress?.({module:'wortschatz',moduleTitle:'Wortschatz',level:'A1',lesson:11,theme:1,topic:'wortschatz-a1-lektion-11-thema-1',topicId:'wortschatz-a1-lektion-11-thema-1',title:'A1 Lektion 11 · Thema 1',file:'task.html?task=memory',taskKey:'memory',taskTitle:task.title,run,done:total,total,percent:100,completed:true});
@@ -29,35 +29,14 @@ function finish(total){setProgress(total,total);markDone(total);document.querySe
 
 const pool=activeCards().filter(w=>w?.image&&!['erste','zweite','dritte','vierte','in_der_naehe','flugzeug'].includes(String(w.id||'').toLowerCase()));
 const pairs=shuffle(pool).slice(0,Math.min(8,pool.length));
-const deck=shuffle(pairs.flatMap(w=>[{token:w.id+':img',id:w.id,type:'img',w},{token:w.id+':word',id:w.id,type:'word',w}]));
-let memoryOpen=[];
-let busy=false;
-let matched=new Set();
-let moves=0;
+const deck=shuffle(pairs.flatMap(w=>[{key:w.id,type:'image',w},{key:w.id,type:'word',w}]));
+let first=null,lock=false,matched=new Set(),moves=0;
 
 function render(){
  if(matched.size>=pairs.length)return finish(pairs.length);
  setProgress(matched.size,pairs.length);
- document.querySelector('#exercise').innerHTML=`<section class="l8-card l10-memory-wrap l8-card-stage"><div class="l11-memory-head"><strong>${matched.size} / ${pairs.length} Paare</strong><span>${moves} Versuche</span></div><div class="l11-memory-grid">${deck.map((card,i)=>{const isMatched=matched.has(card.id),isOpen=isMatched||memoryOpen.includes(card.token);const inside=card.type==='img'?`<img src="${esc(card.w.image)}" alt="">`:`<b>${esc(card.w.full)}</b>`;return `<button type="button" class="l11-memory-card ${isOpen?'open':''} ${isMatched?'matched':''}" data-memory="${i}" ${isMatched?'disabled':''}><span class="memory-cover" ${isOpen?'hidden':''}>?</span><span class="memory-content" ${isOpen?'':'hidden'}>${inside}</span></button>`}).join('')}</div><div class="l11-feedback" aria-live="polite"></div></section>`;
- document.querySelectorAll('[data-memory]').forEach(btn=>btn.onclick=()=>pick(Number(btn.dataset.memory)));
-}
-function pick(index){
- if(busy)return;
- const card=deck[index];
- if(!card||matched.has(card.id)||memoryOpen.includes(card.token))return;
- memoryOpen.push(card.token);
- render();
- if(memoryOpen.length<2)return;
- moves++;
- const first=deck.find(c=>c.token===memoryOpen[0]);
- const second=deck.find(c=>c.token===memoryOpen[1]);
- if(first&&second&&first.id===second.id&&first.type!==second.type){
-  busy=true;
-  setTimeout(()=>{matched.add(first.id);memoryOpen=[];busy=false;render()},450);
- }else{
-  busy=true;
-  setTimeout(()=>{memoryOpen=[];busy=false;render()},850);
- }
+ document.querySelector('#exercise').innerHTML=`<section class="l8-card l10-memory-wrap"><div class="l11-memory-head"><strong>${matched.size} / ${pairs.length} Paare</strong><span>${moves} Versuche</span></div><div class="l10-memory-grid">${deck.map((c,i)=>`<button class="l10-memory-card ${matched.has(c.key)?'matched':''}" data-memory="${i}" ${matched.has(c.key)?'disabled':''}><span class="memory-cover">?</span><span class="memory-content" hidden>${c.type==='image'?`<img src="${esc(c.w.image)}" alt="">`:`<b>${esc(c.w.full)}</b>`}</span></button>`).join('')}</div></section>`;
+ document.querySelectorAll('[data-memory]').forEach(btn=>btn.onclick=()=>{if(lock||btn.classList.contains('open'))return;const idx=Number(btn.dataset.memory),card=deck[idx];btn.classList.add('open');btn.querySelector('.memory-cover').hidden=true;btn.querySelector('.memory-content').hidden=false;if(first===null){first={idx,card,btn};return}moves++;if(first.card.key===card.key&&first.card.type!==card.type){matched.add(card.key);first=null;if(matched.size===pairs.length)setTimeout(()=>finish(pairs.length),450);else setTimeout(render,350)}else{lock=true;setTimeout(()=>{first=null;lock=false;render()},850)}});
 }
 
 frame();
