@@ -1,20 +1,25 @@
 (function(){'use strict';
 const CDN='https://sprachpilot.b-cdn.net/',AUDIO=CDN+'audio/';
 const raw=[
-['werkstatt','die Werkstatt','die Werkstätten','🏭','both'],
-['tankstelle','die Tankstelle','die Tankstellen','⛽','both'],
-['museum','das Museum','die Museen','🏛️','both'],
-['ampel','die Ampel','die Ampeln','🚦','both'],
-['bahnhof','der Bahnhof','die Bahnhöfe','🚉','both'],
-['metzgerei','die Metzgerei','die Metzgereien','🥩','both'],
-['post','die Post','','📮','both'],
-['hotel','das Hotel','die Hotels','🏨','both'],
+['werkstatt','die Werkstatt','die Werkstätten','🏭','book'],
+['tankstelle','die Tankstelle','die Tankstellen','⛽','book'],
+['museum','das Museum','die Museen','🏛️','book'],
+['ampel','die Ampel','die Ampeln','🚦','book'],
+['bahnhof','der Bahnhof','die Bahnhöfe','🚉','book'],
+['metzgerei','die Metzgerei','die Metzgereien','🥩','book'],
+['post','die Post','','📮','book'],
+['hotel','das Hotel','die Hotels','🏨','book'],
 ['schluessel','der Schlüssel','die Schlüssel','🔑','book'],
 ['autobahn','die Autobahn','die Autobahnen','🛣️','book'],
 ['bruecke','die Brücke','die Brücken','🌉','book'],
 ['weg','der Weg','die Wege','🛤️','book'],
 ['stadtplan','der Stadtplan','die Stadtpläne','🗺️','book'],
 ['flugzeug','das Flugzeug','die Flugzeuge','✈️','book'],
+['fliegen','fliegen','','✈️','book'],
+['geradeaus','geradeaus','','⬆️','book'],
+['links','links','','⬅️','book'],
+['rechts','rechts','','➡️','book'],
+['fremd','fremd','','❓','book'],
 ['buecherei','die Bücherei','die Büchereien','📚','class'],
 ['baumarkt','der Baumarkt','die Baumärkte','🛠️','class'],
 ['bushaltestelle','die Bushaltestelle','die Bushaltestellen','🚌','class'],
@@ -38,13 +43,8 @@ const raw=[
 ['zweite','zweite','','2️⃣','class'],
 ['dritte','dritte','','3️⃣','class'],
 ['vierte','vierte','','4️⃣','class'],
-['fliegen','fliegen','','✈️','book'],
 ['abbiegen','abbiegen','','↪️','class'],
-['geradeaus','geradeaus','','⬆️','both'],
-['links','links','','⬅️','both'],
-['rechts','rechts','','➡️','both'],
-['in_der_naehe','in der Nähe','','📍','class'],
-['fremd','fremd','','❓','book']
+['in_der_naehe','in der Nähe','','📍','class']
 ];
 const cards=raw.map(x=>({id:x[0],full:x[1],plural:x[2],emoji:x[3],source:x[4],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:CDN+x[0]+'.webp',audio:AUDIO+x[0]+'.mp3'}));
 const phrases=[
