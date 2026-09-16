@@ -1,7 +1,8 @@
 (function(){
 'use strict';
-if(window.__SP_RELEASE_STALE_CLEANUP_L3_L7_V1)return;window.__SP_RELEASE_STALE_CLEANUP_L3_L7_V1=true;
-const lessonRange=lesson=>{const n=Number(String(lesson||'').match(/A1-Lektion-(\d+)/i)?.[1]||0);return n>=3&&n<=7};
+if(window.__SP_RELEASE_STALE_CLEANUP_V2)return;window.__SP_RELEASE_STALE_CLEANUP_V2=true;
+// L7+ use task.html?task=... routes and must never be cleaned by the old filename catalog.
+const lessonRange=lesson=>{const n=Number(String(lesson||'').match(/A1-Lektion-(\d+)/i)?.[1]||0);return n>=3&&n<=6};
 const catalog=()=>window.SP_A1_RELEASE_CATALOG_L3_L7?.lessons||[];
 function valid(){
  const themes=new Set(),tasks=new Map();
@@ -43,6 +44,8 @@ async function run(){
   lastSignature=signature;if(changedCount)try{window.dispatchEvent(new CustomEvent('SP_RELEASE_STALE_KEYS_CLEANED',{detail:{courses:changedCount}}))}catch(e){}return true;
  }finally{running=false}
 }
-function schedule(){[600,1400,3000,6500].forEach(delay=>setTimeout(()=>run().catch(()=>{}),delay))}
-window.SPReleaseStaleCleanupL3L7={run,cleanCourse};window.addEventListener('load',schedule,{once:true});window.addEventListener('focus',()=>setTimeout(()=>run().catch(()=>{}),200));schedule();
+// Only one delayed cleanup pass. No focus listener and no repeated background writes.
+function schedule(){setTimeout(()=>run().catch(()=>{}),2200)}
+window.SPReleaseStaleCleanupL3L6={run,cleanCourse};
+window.addEventListener('load',schedule,{once:true});
 })();
