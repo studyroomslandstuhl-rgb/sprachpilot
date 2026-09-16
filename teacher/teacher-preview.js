@@ -4,7 +4,6 @@ const TeacherPreview = {
   },
   previewUser(preview){
     const t=this.teacherProfile();
-    const studentView=!preview.allAccess;
     const firstName=t.firstName || t.vorname || t.name || "Lehrer";
     const lastName=t.lastName || t.nachname || "";
     const course=preview.courseCode || preview.kurs || (preview.allAccess ? "ALLE" : "Lehrer-Vorschau");
@@ -23,21 +22,20 @@ const TeacherPreview = {
       muttersprache:"Deutsch",
       assignments,
       releases:preview.releases || assignments.releases || {},
-      role:studentView?"student":"teacher",
-      loginRole:studentView?"student":"teacher",
-      isTeacher:!studentView,
-      isStudent:studentView,
-      teacherPreview:!studentView,
-      studentCoursePreview:studentView,
+      role:"teacher",
+      loginRole:"teacher",
+      isTeacher:true,
+      isStudent:false,
+      teacherPreview:true,
+      studentCoursePreview:false,
       allAccess:!!preview.allAccess,
       previewOnly:true
     };
   },
   activate(preview){
-    const role=preview.allAccess?"teacher":"student";
-    localStorage.setItem("SP_ACTIVE_ROLE",role);
-    localStorage.setItem("SP_LOGIN_ROLE",role);
-    localStorage.setItem("SP_LOGIN_CONTEXT",preview.allAccess?"teacher":"teacher-student-preview");
+    localStorage.setItem("SP_ACTIVE_ROLE","teacher");
+    localStorage.setItem("SP_LOGIN_ROLE","teacher");
+    localStorage.setItem("SP_LOGIN_CONTEXT","teacher-preview");
     localStorage.removeItem("SP_STUDENT_PROFILE");
     localStorage.removeItem("SP_STUDENT_ID");
     localStorage.removeItem("SP_KEEP_LOGGED_IN");
@@ -98,7 +96,7 @@ const TeacherPreview = {
       startedAt:new Date().toISOString()
     });
 
-    location.href="/student-dashboard/index.html?teacherPreview=1&course="+encodeURIComponent(code);
+    location.href="/index.html?teacherPreview=1&course="+encodeURIComponent(code);
   },
   exit(){
     localStorage.removeItem("SP_TEACHER_PREVIEW");
