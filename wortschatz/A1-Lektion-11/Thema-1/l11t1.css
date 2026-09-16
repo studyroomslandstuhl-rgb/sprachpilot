@@ -60,8 +60,17 @@ body{color:var(--lesson-text)!important;background:linear-gradient(180deg,rgba(2
 /* Bildauswahl */
 .l11-image-options{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:14px}.l11-image-choice{min-height:190px;border:3px solid var(--lesson-line);border-radius:20px;background:#fff;padding:8px;cursor:pointer}.l11-image-choice img{display:block;width:100%;height:190px;object-fit:contain;border-radius:14px}
 
-/* Memory */
-.l11-memory-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:16px;font-weight:900}.l11-memory-grid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}.l11-memory-card{aspect-ratio:1/1;border:3px solid var(--lesson-line);border-radius:18px;background:var(--lesson-soft);padding:8px;cursor:pointer;display:grid;place-items:center;color:var(--lesson-main-dark);font-size:34px;font-weight:950}.l11-memory-card.open,.l11-memory-card.matched{background:#fff}.l11-memory-card.matched{border-color:#217A4B;opacity:.7}.l11-memory-card .memory-content{width:100%;height:100%;display:grid;place-items:center;font-size:16px;line-height:1.2}.l11-memory-card .memory-content img{width:100%;height:100%;object-fit:contain;border-radius:12px}
+/* Memory exakt nach L10T1 Aufgabe 8 */
+.l11-memory-head{display:flex;justify-content:space-between;gap:12px;margin-bottom:16px;font-weight:900}
+.l10-memory-wrap{max-width:980px;margin-left:auto;margin-right:auto}
+.l10-memory-grid{display:grid;grid-template-columns:repeat(6,minmax(0,1fr));gap:9px;margin-top:18px}
+.l10-memory-card{aspect-ratio:1/1;border:2px solid var(--lesson-line);border-radius:14px;background:var(--lesson-soft);color:var(--lesson-main-dark);font-weight:950;font-size:15px;cursor:pointer;padding:6px;overflow:hidden;display:grid;place-items:center}
+.l10-memory-card.open{background:#fff}.l10-memory-card.matched{border-color:#8FD0A5;background:#E8F7EF}
+.l10-memory-card img{width:100%;height:100%;object-fit:contain}
+.l10-memory-card .memory-cover{display:grid;place-items:center;width:100%;height:100%;font-size:34px}
+.l10-memory-card .memory-content{width:100%;height:100%;place-items:center;text-align:center;line-height:1.2}
+.l10-memory-card .memory-content:not([hidden]){display:grid}
+.l10-memory-card .memory-cover[hidden],.l10-memory-card .memory-content[hidden]{display:none!important}
 
-@media(max-width:700px){.l11-wrap{width:min(100% - 18px,1120px);padding-top:10px}.l11-grid{grid-template-columns:1fr}.l11-options,.l11-image-options{grid-template-columns:1fr 1fr}.l11-question,.l11-flash{font-size:24px}.l11-source-buttons{grid-template-columns:1fr}.l8-flip-back-grid{grid-template-columns:1fr}.l8-back-image{width:100px;height:100px;margin:0 auto}.l8-card-actions{display:grid;grid-template-columns:1fr 1fr}.l11-write-row{display:grid}.l11-memory-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.l11-image-choice,.l11-image-choice img{min-height:130px;height:130px}}
-@media(max-width:430px){.l11-memory-grid{grid-template-columns:repeat(2,minmax(0,1fr))}.l11-image-options{grid-template-columns:1fr 1fr}.l8-card-visual{width:250px;height:250px}}
+@media(max-width:700px){.l11-wrap{width:min(100% - 18px,1120px);padding-top:10px}.l11-grid{grid-template-columns:1fr}.l11-options,.l11-image-options{grid-template-columns:1fr 1fr}.l11-question,.l11-flash{font-size:24px}.l11-source-buttons{grid-template-columns:1fr}.l8-flip-back-grid{grid-template-columns:1fr}.l8-back-image{width:100px;height:100px;margin:0 auto}.l8-card-actions{display:grid;grid-template-columns:1fr 1fr}.l11-write-row{display:grid}.l10-memory-grid{grid-template-columns:repeat(4,minmax(0,1fr))}.l11-image-choice,.l11-image-choice img{min-height:130px;height:130px}}
+@media(max-width:430px){.l10-memory-grid{grid-template-columns:repeat(3,minmax(0,1fr))}.l11-image-options{grid-template-columns:1fr 1fr}.l8-card-visual{width:250px;height:250px}}
