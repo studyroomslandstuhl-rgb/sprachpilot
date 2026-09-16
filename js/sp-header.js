@@ -23,7 +23,7 @@ const THEME_TITLES={
   "9-1":"Was muss man machen?",
   "10-1":"Körper und Körperteile","10-2":"Gesundheit und Possessivpronomen"
 };
-function profileText(profile){if(!profile)return"Nicht eingeloggt";const name=[profile.vorname||profile.firstName||profile.name,profile.nachname||profile.lastName].filter(Boolean).join(" ").trim();const course=profile.kurs||profile.kursnummer||profile.courseCode||profile.course||"";return[name||profile.email||"Profil",course].filter(Boolean).join(" · ")}
+function profileText(profile){if(!profile)return"Nicht eingeloggt";const name=[profile.vorname||profile.firstName||profile.name,profile.nachname||profile.lastName].filter(Boolean).join(" ").trim();const course=profile.kurs||profile.kursnummer||profile.courseCode||profile.course||"";const preview=profile.teacherPreview===true||profile.previewOnly===true;return[name||profile.email||"Profil",preview?"Lehrervorschau":"",course].filter(Boolean).join(" · ")}
 function fileTitle(file){const raw=String(file||"").replace(/\.html$/i,"").replace(/[-_]+/g," ").trim();if(!raw||raw.toLowerCase()==="index")return"";return raw.charAt(0).toUpperCase()+raw.slice(1)}
 function computedVar(...names){try{const style=getComputedStyle(document.documentElement);for(const name of names){const value=style.getPropertyValue(name).trim();if(value)return value}}catch(e){}return""}
 function setVar(name,value){if(value)document.documentElement.style.setProperty(name,value)}
