@@ -1,19 +1,15 @@
 (function(){
 'use strict';
-const D=window.L11T1||{cards:[],phrases:[]};
+const D=window.L11T1||{cards:[]};
 const M=window.L11T1SourceMode;
-const sourceLabel=s=>s==='both'?'Buch + Unterricht':s==='book'?'Buch':'Unterricht';
-const verbIds=new Set(['fliegen','abbiegen']);
-const adverbIds=new Set(['geradeaus','links','rechts','in_der_naehe']);
-const adjectiveIds=new Set(['fremd']);
 const selected=M?.activeCards?.()||D.cards||[];
 const items=selected.map(w=>({
  id:w.id,
  term:w.full,
  full:w.full,
  plural:w.plural||'',
- type:w.article?'noun':verbIds.has(w.id)?'verb':adjectiveIds.has(w.id)?'adjektiv':adverbIds.has(w.id)?'adverb':'other',
- detail:sourceLabel(w.source),
+ type:'other',
+ detail:w.source==='book'?'Buch':'Unterricht',
  source:w.source,
  image:w.image,
  audio:w.audio,
