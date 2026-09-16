@@ -20,17 +20,6 @@ const items=selected.map(w=>({
  audioFile:(w.audio||'').split('/').pop()||'',
  translations:w.translations||{}
 }));
-(D.phrases||[]).forEach((p,i)=>items.push({
- id:'redemittel_'+(i+1),
- term:p,
- full:p,
- type:'phrase',
- detail:'Redemittel',
- source:'phrase',
- image:'',
- audio:'',
- translations:{}
-}));
 window.L8_THEME={number:1,title:'In der Stadt unterwegs',tasks:[{id:'karteikarten',kind:'cards',title:'Karteikarten',items}]};
 window.L8_OVERVIEW_CONTEXT={lesson:11,subtitle:'Wortschatzübersicht · In der Stadt unterwegs · A1 Lektion 11 · Thema 1'};
 window.L8_CONTENT_READY=Promise.resolve(window.L8_THEME);
