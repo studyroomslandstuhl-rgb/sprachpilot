@@ -6,6 +6,7 @@ let installed=false;
 function norm(v){return String(v??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/\s+/g,' ')}
 function taskItem(S,id,index){const task=S.task?.(id);return{task,item:task?.items?.[index]||null}}
 function isMemoryTask(S,id){const t=S.task?.(id);return !!(t?.spL7T2Memory||t?.spL7Memory||t?.memory||norm(`${id} ${t?.kind||''} ${t?.title||''}`).includes('memory'))}
+function isCardTask(S,id){const t=S.task?.(id),text=norm(`${id} ${t?.kind||''} ${t?.title||''}`);return text.includes('karteikart')||text.includes('cards')||t?.kind==='cards'}
 function solutionText(item){
  if(!item)return'';
  const direct=item.answer??item.word??item.form??item.perfect??item.correct??item.solution;
@@ -60,7 +61,10 @@ function normalizeQueue(S,theme,id,total){
  if(out.length!==(st.queue||[]).length){st.queue=out;S.save(theme,id,st,false)}
  return st
 }
-function repeatRequired(st,i){return !!(st.hadWrong||Number(st.tries||0)>0||Number(st.wrongTries?.[i]||0)>0||st.answers?.cardRepeat?.[i]===true)}
+function repeatRequired(st,i,S,id){
+ if(isCardTask(S,id))return Number(st.wrongTries?.[i]||0)>0;
+ return !!(st.hadWrong||Number(st.tries||0)>0||Number(st.wrongTries?.[i]||0)>0||st.answers?.cardRepeat?.[i]===true)
+}
 function install(){
  const S=window.L7S;if(!S||installed)return !!S;
  const rawIndex=S.index.bind(S);
@@ -89,7 +93,7 @@ function install(){
   const st=S.load(theme,id,total),i=Number(st.current);
   st.done=Array.isArray(st.done)?st.done:[];st.queue=Array.isArray(st.queue)?st.queue:[];st.answers=st.answers||{};
   if(Number.isInteger(i)&&i>=0&&i<total){
-   const needsRepeat=!isMemoryTask(S,id)&&repeatRequired(st,i);
+   const needsRepeat=!isMemoryTask(S,id)&&repeatRequired(st,i,S,id);
    st.queue=st.queue.filter(x=>Number(x)!==i&&!st.done.includes(Number(x)));
    if(needsRepeat){
     st.done=st.done.filter(x=>Number(x)!==i);
@@ -103,6 +107,7 @@ function install(){
  };
  S.markRepeat=function(theme,id,total,index,reason='repeat'){
   const st=S.load(theme,id,total),i=Number(index);if(!Number.isInteger(i)||i<0||i>=total)return false;
+  if(isCardTask(S,id))return false;
   st.answers=st.answers||{};st.answers.cardRepeat=st.answers.cardRepeat||{};st.answers.cardRepeat[i]=String(reason||'repeat');
   S.save(theme,id,st,false);return true
  };
