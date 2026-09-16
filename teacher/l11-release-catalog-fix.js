@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L11_RELEASE_CATALOG_FIX_20260916)return;
-window.__SP_L11_RELEASE_CATALOG_FIX_20260916=true;
+if(window.__SP_MODERN_RELEASE_CATALOG_FIX_20260916)return;
+window.__SP_MODERN_RELEASE_CATALOG_FIX_20260916=true;
 
 const T1=[
  ['task.html?task=karteikarten','Karteikarten'],
@@ -27,7 +27,35 @@ const T2=[
  ['task.html?task=pruefung','Prüfung']
 ];
 
-function patch(){
+function uniqPaths(paths){
+ const seen=new Set();
+ return (paths||[]).filter(p=>{const k=JSON.stringify(p);if(seen.has(k))return false;seen.add(k);return true});
+}
+function modernAlias(file){
+ const raw=String(file||'').trim();
+ if(!raw||raw.startsWith('task.html?task='))return raw;
+ const m=raw.match(/(?:^|\/)([^/?#]+)\.html(?:[?#].*)?$/i);
+ if(!m)return raw;
+ const id=m[1].toLowerCase();
+ if(['index','uebersicht','statistik'].includes(id))return raw;
+ return 'task.html?task='+encodeURIComponent(id);
+}
+function installTaskAliases(){
+ if(typeof taskReleasePaths!=='function'||taskReleasePaths.__modernAliases20260916)return false;
+ const original=taskReleasePaths;
+ const wrapped=function(lessonKey,themeKey,file){
+   const base=original(lessonKey,themeKey,file)||[];
+   const alias=modernAlias(file);
+   if(!alias||alias===file)return base;
+   const extra=original(lessonKey,themeKey,alias)||[];
+   return uniqPaths(base.concat(extra));
+ };
+ wrapped.__modernAliases20260916=true;
+ wrapped.__original=original;
+ try{taskReleasePaths=wrapped;}catch(e){window.taskReleasePaths=wrapped;}
+ return true;
+}
+function patchCatalog(){
  if(typeof RELEASE_CATALOG==='undefined'||!RELEASE_CATALOG?.lessons)return false;
  const lesson=RELEASE_CATALOG.lessons.find(l=>l&&l.key==='A1-Lektion-11');
  if(!lesson)return false;
@@ -36,8 +64,13 @@ function patch(){
  if(t1){t1.title='Thema 1 · In der Stadt unterwegs';t1.tasks=T1.slice();}
  if(t2){t2.title='Thema 2 · Verkehrsmittel';t2.tasks=T2.slice();}
  lesson.title='A1 Lektion 11';
- window.__SP_L11_RELEASE_CATALOG_READY=true;
  return true;
+}
+function patch(){
+ const a=patchCatalog();
+ const b=installTaskAliases();
+ if(a&&b){window.__SP_MODERN_RELEASE_CATALOG_READY=true;return true;}
+ return false;
 }
 
 if(!patch()){
