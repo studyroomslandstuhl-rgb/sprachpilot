@@ -1,5 +1,6 @@
 /* SprachPilot Global Design System v15 */
 (function(){
+  try{import('/js/role-session-guard.js?v=20260916-role2').catch(function(){});}catch(e){}
   try{import('/js/sp-assets.js?v=3').catch(function(){});}catch(e){}
   function safe(value){
     return String(value || "")
@@ -29,19 +30,26 @@
       localStorage.removeItem(k); sessionStorage.removeItem(k);
     });
   }
-  function logoutAll(){
-    ["SP_LOGIN_ROLE","SP_USER_ROLE","SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_TEACHER_PROFILE","SP_KEEP_LOGGED_IN","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_UID"].forEach(k=>{
-      localStorage.removeItem(k); sessionStorage.removeItem(k);
-    });
-    clearPreview();
-    location.href="/index.html";
+  async function logoutAll(){
+    try{
+      const auth=await import('/js/auth.js?v=20260916-role2');
+      await auth.logout();
+    }catch(e){
+      ["SP_LOGIN_ROLE","SP_ACTIVE_ROLE","SP_USER_ROLE","SP_USER_PROFILE","SP_STUDENT_PROFILE","SP_PROFILE_BACKUP","SP_STUDENT_PROFILE_BACKUP","SP_TEACHER_PROFILE","SP_KEEP_LOGGED_IN","SP_TEACHER_EMAIL","SP_TEACHER_ID","SP_TEACHER_UID"].forEach(k=>{
+        try{localStorage.removeItem(k);sessionStorage.removeItem(k)}catch(error){}
+      });
+      clearPreview();
+      location.replace("/index.html?loggedOut=1");
+    }
   }
   function renderHeader(target, options){
     const el=typeof target==="string"?document.querySelector(target):target;
     if(!el) return;
     const opts=options||{};
     const profile=getActiveProfile();
-    const name=[profile.vorname||profile.firstName||profile.name||"", profile.nachname||profile.lastName||""].join(" ").trim() || (getLoginRole()==="teacher"?"Lehrer/in":"Schüler/in");
+    const preview=profile.teacherPreview===true||profile.previewOnly===true;
+    const baseName=[profile.vorname||profile.firstName||profile.name||"", profile.nachname||profile.lastName||""].join(" ").trim() || (getLoginRole()==="teacher"?"Lehrer/in":"Schüler/in");
+    const name=preview?baseName+" · Lehrervorschau":baseName;
     const course=profile.kurs||profile.kursnummer||profile.courseCode||"";
     const title=opts.title||"SprachPilot";
     const subtitle=opts.subtitle||"Deutsch lernen";
