@@ -22,7 +22,6 @@ const raw=[
 ['apotheke','die Apotheke','die Apotheken','⚕️','class'],
 ['kindergarten','der Kindergarten','die Kindergärten','🧸','class'],
 ['kino','das Kino','die Kinos','🎬','class'],
-['laden','der Laden','die Läden','🏪','class','_laden.webp'],
 ['supermarkt','der Supermarkt','die Supermärkte','🛒','class'],
 ['geschaeft','das Geschäft','die Geschäfte','🏬','class'],
 ['bank','die Bank','die Banken','🏦','class'],
@@ -47,7 +46,7 @@ const raw=[
 ['in_der_naehe','in der Nähe','','📍','class'],
 ['fremd','fremd','','❓','book']
 ];
-const cards=raw.map(x=>({id:x[0],full:x[1],plural:x[2],emoji:x[3],source:x[4],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:CDN+(x[5]||x[0]+'.webp'),audio:AUDIO+x[0]+'.mp3'}));
+const cards=raw.map(x=>({id:x[0],full:x[1],plural:x[2],emoji:x[3],source:x[4],article:/^(der|die|das) /.test(x[1])?x[1].split(' ')[0]:'',image:CDN+x[0]+'.webp',audio:AUDIO+x[0]+'.mp3'}));
 const phrases=[
 'Entschuldigung, wo ist …?',
 'Ich suche …',
