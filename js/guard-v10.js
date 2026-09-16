@@ -1,4 +1,5 @@
-import { requireLogin, renderAccountStrip, logout } from "/js/auth.js";
+import "/js/role-session-guard.js?v=20260916-role2";
+import { requireLogin, renderAccountStrip, logout } from "/js/auth.js?v=20260916-role2";
 window.logout = logout;
 const user = requireLogin();
 const path = location.pathname;
