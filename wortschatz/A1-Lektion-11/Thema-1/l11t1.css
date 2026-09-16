@@ -1,6 +1,5 @@
 @import url("../../A1-Lektion-8/shared/l8-color.css?v=20260915-l11t1-l8base1");
 
-/* L11T1 verwendet strukturell exakt die L9T1/L8-Kartenbasis. Nur die Farben sind L11. */
 :root{
  --lesson-main:#F6D78B;
  --lesson-main-dark:#A88633;
@@ -28,26 +27,21 @@
  --l11-book-border:#74A7E8;
  --l11-class:#E7F7E8;
  --l11-class-border:#79B97E;
- --l11-both:#FFF1CC;
- --l11-both-border:#D3A741;
- --l11-phrase:#F4E6FF;
- --l11-phrase-border:#AA79C8;
 }
 body{color:var(--lesson-text)!important;background:linear-gradient(180deg,rgba(255,255,255,.86),rgba(255,255,255,.42) 310px,rgba(255,255,255,.1)),linear-gradient(135deg,var(--lesson-main),var(--lesson-main-light))!important}
 .sp-header{background:var(--lesson-main)!important}
 .l8-progress-circle{background:var(--lesson-main)!important;box-shadow:0 12px 26px rgba(168,134,51,.18)!important}
 .l8-progress>div{background:linear-gradient(135deg,var(--lesson-main-dark),var(--lesson-main))!important}
 
-/* Buch / Unterricht Auswahl wie bei L4T3 */
+/* Genau zwei Wortquellen: Buch und Unterricht. */
 .l11-source-selector{display:grid;gap:14px}.l11-source-selector h2{margin:0 0 4px;color:var(--lesson-main-dark)}
-.l11-source-buttons{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.l11-source-buttons{display:grid;grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}
 .l11-source-btn{border:3px solid var(--lesson-line);border-radius:16px;padding:12px 10px;background:#fff;font-weight:950;cursor:pointer;color:var(--lesson-text)}
-.l11-source-btn.book{border-color:var(--l11-book-border);background:var(--l11-book)}.l11-source-btn.class{border-color:var(--l11-class-border);background:var(--l11-class)}.l11-source-btn.all{border-color:var(--l11-both-border);background:var(--l11-both)}
-.l11-source-btn:not(.active){filter:saturate(.55);opacity:.72}.l11-source-btn.active{box-shadow:0 0 0 3px #fff,0 0 0 6px currentColor;opacity:1;filter:none}
-.l11-source-current{font-size:14px;font-weight:800}.l11-source-legend{display:flex;gap:8px;flex-wrap:wrap}.l11-source-legend span{padding:6px 10px;border-radius:999px;font-size:13px;font-weight:900;border:2px solid transparent}.l11-source-legend .book{background:var(--l11-book);border-color:var(--l11-book-border)}.l11-source-legend .class{background:var(--l11-class);border-color:var(--l11-class-border)}.l11-source-legend .both{background:var(--l11-both);border-color:var(--l11-both-border)}.l11-source-legend .phrase{background:var(--l11-phrase);border-color:var(--l11-phrase-border)}
-.l8-overview-word.source-book{border-color:var(--l11-book-border)!important;background:var(--l11-book)!important}.l8-overview-word.source-class{border-color:var(--l11-class-border)!important;background:var(--l11-class)!important}.l8-overview-word.source-both{border-color:var(--l11-both-border)!important;background:var(--l11-both)!important}.l8-overview-word.source-phrase{border-color:var(--l11-phrase-border)!important;background:var(--l11-phrase)!important}
+.l11-source-btn.book{border-color:var(--l11-book-border);background:var(--l11-book)}.l11-source-btn.all{border-color:var(--l11-class-border);background:linear-gradient(90deg,var(--l11-book) 0 49%,var(--l11-class) 51% 100%)}
+.l11-source-btn:not(.active){filter:saturate(.55);opacity:.72}.l11-source-btn.active{box-shadow:0 0 0 3px #fff,0 0 0 6px var(--lesson-main-dark);opacity:1;filter:none}
+.l11-source-current{font-size:14px;font-weight:800}.l11-source-legend{display:flex;gap:8px;flex-wrap:wrap;margin-top:14px}.l11-source-legend span{padding:6px 10px;border-radius:999px;font-size:13px;font-weight:900;border:2px solid transparent}.l11-source-legend .book{background:var(--l11-book);border-color:var(--l11-book-border)}.l11-source-legend .class{background:var(--l11-class);border-color:var(--l11-class-border)}
+.l8-overview-word.source-book{border-color:var(--l11-book-border)!important;background:var(--l11-book)!important}.l8-overview-word.source-class{border-color:var(--l11-class-border)!important;background:var(--l11-class)!important}
 
-/* Kompatibilität für die bereits angelegten L11-Aufgabenseiten. */
 .l11-wrap{width:min(1120px,calc(100% - 28px));margin:0 auto;padding:18px 0 42px}
 .l11-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(245px,1fr));gap:16px}
 .l11-card{background:#fff;border:2px solid var(--lesson-line);border-radius:22px;padding:18px;box-shadow:0 8px 20px rgba(0,0,0,.08)}
