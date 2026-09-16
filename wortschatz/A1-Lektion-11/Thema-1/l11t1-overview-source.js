@@ -2,22 +2,23 @@
 'use strict';
 function apply(){
  const wrap=document.querySelector('.l8-overview-page');if(!wrap)return;
- if(!document.querySelector('.l11-source-selector')&&window.L11T1SourceMode){
-  const intro=wrap.querySelector('.l8-overview-intro');
-  const box=document.createElement('div');box.innerHTML=window.L11T1SourceMode.selectorHtml();
-  intro?.after(box.firstElementChild);
+ const groups=[...wrap.querySelectorAll('.l8-overview-group')];
+ if(groups.length>1){
+  const rows=groups.flatMap(g=>[...g.querySelectorAll('.l8-overview-word')]);
+  const first=groups[0],list=first.querySelector('.l8-overview-list'),head=first.querySelector('.l8-overview-group-head');
+  if(head)head.innerHTML=`<h2>Wörter</h2><span>${rows.length} Wörter</span>`;
+  if(list){list.innerHTML='';rows.forEach(r=>list.appendChild(r))}
+  groups.slice(1).forEach(g=>g.remove());
  }
  document.querySelectorAll('.l8-overview-word').forEach(row=>{
   const detail=String(row.querySelector('.l8-overview-detail')?.textContent||'').trim();
-  row.classList.remove('source-book','source-class','source-both','source-phrase');
+  row.classList.remove('source-book','source-class');
   if(detail==='Buch')row.classList.add('source-book');
   else if(detail==='Unterricht')row.classList.add('source-class');
-  else if(detail==='Buch + Unterricht')row.classList.add('source-both');
-  else if(detail==='Redemittel')row.classList.add('source-phrase');
  });
  if(!document.querySelector('.l11-source-legend')){
-  const selector=document.querySelector('.l11-source-selector');
-  if(selector){const legend=document.createElement('div');legend.className='l11-source-legend';legend.innerHTML='<span class="book">Buch</span><span class="class">Unterricht</span><span class="both">Buch + Unterricht</span><span class="phrase">Redemittel</span>';selector.appendChild(legend)}
+  const intro=document.querySelector('.l8-overview-intro');
+  if(intro){const legend=document.createElement('div');legend.className='l11-source-legend';legend.innerHTML='<span class="book">Buch</span><span class="class">Unterricht</span>';intro.appendChild(legend)}
  }
 }
 new MutationObserver(apply).observe(document.documentElement,{childList:true,subtree:true});
