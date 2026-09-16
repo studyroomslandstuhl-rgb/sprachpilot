@@ -1,4 +1,5 @@
-import "/js/session-restore.js?v=20260831-central3";
+import "/js/role-session-guard.js?v=20260916-role2";
+import "/js/session-restore.js?v=20260915-role1";
 import { logout } from "/js/auth.js";
 import { verifySecureAccess } from "/js/secure-access-gate.js?v=20260831-central8";
 import { installSpHeader } from "/js/sp-header.js?v=theme-standard3";
