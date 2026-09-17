@@ -79,30 +79,25 @@ const HIGH_FREQUENCY_TASK_PAGE=IS_WORTSCHATZ_TASK_PAGE||IS_FRAGEN_EXERCISE||IS_V
 const NO_FIREBASE_SYNC=qs.has("nofirebase")||sessionStorage.getItem("SP_NO_FIREBASE_SYNC_SESSION")==="1";
 const PERFORMANCE_SYNC_OFF=NO_FIREBASE_SYNC;
 const FULL_FIREBASE=!PERFORMANCE_SYNC_OFF;
-const GLOBAL_POINTS_PAGE=IS_WORTSCHATZ_EXERCISE||IS_FRAGEN_EXERCISE||IS_VERBEN_EXERCISE||IS_PERFEKT_EXERCISE;
+const GLOBAL_POINTS_PAGE=IS_WORTSCHATZ_TASK_PAGE||IS_FRAGEN_EXERCISE||IS_VERBEN_EXERCISE||IS_PERFEKT_EXERCISE;
 // Every learning page must have the same point writer. Several legacy tasks only
 // call SPProgress when it already exists; previously those pages could reach
 // 100 % locally without ever awarding points. Scoring adds a persistent retry
 // queue, while progress.js awards each task/run only once.
 let globalPointsReady=Promise.resolve(null);
 if(FULL_FIREBASE&&GLOBAL_POINTS_PAGE){
- globalPointsReady=import('/js/progress.js?v=20260917-alltasks1')
-  .then(()=>import('/js/scoring.js?v=20260917-alltasks1'))
-  .then(async()=>{
-   window.SprachPilotScoring?.drainGenericProgressQueue?.();
-   // Once per login session, reconstruct points from progress that was already
-   // stored before the global writer was fixed. This operation is raise-only.
-   const repairKey='SP_HISTORICAL_POINT_RECOVERY_STARTED_V1';
-   if(!sessionStorage.getItem(repairKey)){
-    sessionStorage.setItem(repairKey,'1');
-    setTimeout(()=>import('/student-dashboard/points-raise-only.js?v=20260917-history1')
-     .then(mod=>mod.raiseOwnPointsFromEvidence?.())
-     .then(result=>{if(!result?.ok)sessionStorage.removeItem(repairKey);return result})
-     .catch(error=>{sessionStorage.removeItem(repairKey);console.warn('Alte Aufgabenpunkte werden später nachgetragen',error)}),1200);
-   }
-   return window.SPProgress||null
-  })
-  .catch(error=>{console.warn('Zentrale Punktevergabe konnte noch nicht gestartet werden',error);return null});
+ globalPointsReady=new Promise(resolve=>{
+  const start=()=>import('/js/progress.js?v=20260917-alltasks2')
+   .then(()=>import('/js/scoring.js?v=20260917-alltasks2'))
+   .then(()=>{window.SprachPilotScoring?.drainGenericProgressQueue?.();return window.SPProgress||null})
+   .catch(error=>{console.warn('Zentrale Punktevergabe konnte noch nicht gestartet werden',error);return null})
+   .then(resolve);
+  const schedule=()=>{
+   if('requestIdleCallback'in window)requestIdleCallback(start,{timeout:1800});
+   else setTimeout(start,700);
+  };
+  if(document.readyState==='loading')document.addEventListener('DOMContentLoaded',schedule,{once:true});else schedule();
+ });
  window.SP_GLOBAL_POINTS_READY=globalPointsReady;
 }
 if(IS_WORTSCHATZ_EXERCISE){
@@ -150,7 +145,7 @@ if(IS_L3T1){import("/wortschatz/A1-Lektion-3/Thema-1/l3t1-stability.js?v=3").cat
 if(IS_L3T2){import("/wortschatz/A1-Lektion-3/Thema-2/l3t2-task-fix.js?v=3").catch(()=>{})}
 if(IS_L6T2){import("/wortschatz/A1-Lektion-6/Thema-2/l6t2-stability.js?v=1").catch(()=>{})}
 if(IS_L6T3){import("/wortschatz/A1-Lektion-6/Thema-3/l6t3-theme-score-v2.js?v=3").catch(()=>{})}
-if((IS_L6T4||IS_L7_THEME_OVERVIEW||IS_L8_THEME_OVERVIEW)&&!PERFORMANCE_SYNC_OFF)import("/js/progress.js?v=20260831-central6").catch(()=>{});
+if(((IS_L6T4&&IS_WORTSCHATZ_THEME_OVERVIEW)||IS_L7_THEME_OVERVIEW||IS_L8_THEME_OVERVIEW)&&!PERFORMANCE_SYNC_OFF)setTimeout(()=>import("/js/progress.js?v=20260917-overview-idle1").catch(()=>{}),700);
 if(USES_STANDARD_PROGRESS)import("/js/sp-progress-standard.js?v=20260831-central3").catch(()=>{});
 if(NEEDS_EXAM_UNLOCK_FIX&&!PERFORMANCE_SYNC_OFF){setTimeout(()=>import("/js/exam-unlock-fix.js?v=4").catch(()=>{}),120)}
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
