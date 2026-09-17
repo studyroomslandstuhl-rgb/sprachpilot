@@ -79,6 +79,19 @@ const HIGH_FREQUENCY_TASK_PAGE=IS_WORTSCHATZ_TASK_PAGE||IS_FRAGEN_EXERCISE||IS_V
 const NO_FIREBASE_SYNC=qs.has("nofirebase")||sessionStorage.getItem("SP_NO_FIREBASE_SYNC_SESSION")==="1";
 const PERFORMANCE_SYNC_OFF=NO_FIREBASE_SYNC;
 const FULL_FIREBASE=!PERFORMANCE_SYNC_OFF;
+const GLOBAL_POINTS_PAGE=IS_WORTSCHATZ_EXERCISE||IS_FRAGEN_EXERCISE||IS_VERBEN_EXERCISE||IS_PERFEKT_EXERCISE;
+// Every learning page must have the same point writer. Several legacy tasks only
+// call SPProgress when it already exists; previously those pages could reach
+// 100 % locally without ever awarding points. Scoring adds a persistent retry
+// queue, while progress.js awards each task/run only once.
+let globalPointsReady=Promise.resolve(null);
+if(FULL_FIREBASE&&GLOBAL_POINTS_PAGE){
+ globalPointsReady=import('/js/progress.js?v=20260917-alltasks1')
+  .then(()=>import('/js/scoring.js?v=20260917-alltasks1'))
+  .then(()=>{window.SprachPilotScoring?.drainGenericProgressQueue?.();return window.SPProgress||null})
+  .catch(error=>{console.warn('Zentrale Punktevergabe konnte noch nicht gestartet werden',error);return null});
+ window.SP_GLOBAL_POINTS_READY=globalPointsReady;
+}
 if(IS_WORTSCHATZ_EXERCISE){
   import("/js/sp-task-random-standard.js?v=20260905-1").catch(()=>{});
   import("/js/sp-task-position-standard.js?v=20260905-1").catch(()=>{});
@@ -130,7 +143,6 @@ if(NEEDS_EXAM_UNLOCK_FIX&&!PERFORMANCE_SYNC_OFF){setTimeout(()=>import("/js/exam
 if(path.includes("/wortschatz/A1-Lektion-4/")){window.addEventListener("load",()=>setTimeout(()=>{const s=document.createElement("script");s.src="/js/l4-answer-aliases.js?v=1";document.body.appendChild(s)},500))}
 if(FULL_FIREBASE){
  if(!LIGHT_FIREBASE_PAGE)setTimeout(()=>{import("/js/global-sync.js?v=2").then(m=>m.startGlobalSync()).catch(()=>{})},1500);
- if(!IS_L6T3&&!IS_L7&&!IS_L8&&!IS_L9&&!IS_L10){const scoringDelay=IS_L5?1800:300;setTimeout(()=>{import("/js/scoring.js?v=20260831-central3").catch(()=>{})},scoringDelay)}
 }
 if(/^\/wortschatz\/?(?:index\.html)?$/i.test(path)){setTimeout(()=>import("/wortschatz/index-release-lock.js?v=12").catch(()=>{}),900)}
 if(!PERFORMANCE_SYNC_OFF&&IS_FRAGEN_EXERCISE){setTimeout(()=>import("/js/fragen-progress-sync.js?v=3").catch(()=>{}),2400);import("/fragen-A1/scoring-bridge.js?v=3").catch(()=>{})}
