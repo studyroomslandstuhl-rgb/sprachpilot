@@ -88,7 +88,20 @@ let globalPointsReady=Promise.resolve(null);
 if(FULL_FIREBASE&&GLOBAL_POINTS_PAGE){
  globalPointsReady=import('/js/progress.js?v=20260917-alltasks1')
   .then(()=>import('/js/scoring.js?v=20260917-alltasks1'))
-  .then(()=>{window.SprachPilotScoring?.drainGenericProgressQueue?.();return window.SPProgress||null})
+  .then(async()=>{
+   window.SprachPilotScoring?.drainGenericProgressQueue?.();
+   // Once per login session, reconstruct points from progress that was already
+   // stored before the global writer was fixed. This operation is raise-only.
+   const repairKey='SP_HISTORICAL_POINT_RECOVERY_STARTED_V1';
+   if(!sessionStorage.getItem(repairKey)){
+    sessionStorage.setItem(repairKey,'1');
+    setTimeout(()=>import('/student-dashboard/points-raise-only.js?v=20260917-history1')
+     .then(mod=>mod.raiseOwnPointsFromEvidence?.())
+     .then(result=>{if(!result?.ok)sessionStorage.removeItem(repairKey);return result})
+     .catch(error=>{sessionStorage.removeItem(repairKey);console.warn('Alte Aufgabenpunkte werden später nachgetragen',error)}),1200);
+   }
+   return window.SPProgress||null
+  })
   .catch(error=>{console.warn('Zentrale Punktevergabe konnte noch nicht gestartet werden',error);return null});
  window.SP_GLOBAL_POINTS_READY=globalPointsReady;
 }
