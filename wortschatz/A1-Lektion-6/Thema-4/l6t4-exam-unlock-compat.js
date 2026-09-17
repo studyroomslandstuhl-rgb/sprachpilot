@@ -33,11 +33,17 @@ function repair(){
  grid.querySelectorAll('a,.module,.l8-task-card').forEach(node=>{
   const text=String(node.textContent||'').toLowerCase(),href=String(node.getAttribute?.('href')||'').toLowerCase();
   if(!text.includes('prüfung')&&!text.includes('themenprüfung')&&!href.includes('pruefung')&&!href.includes('task=exam'))return;
-  if(node.tagName==='A')node.setAttribute('href','pruefung-ohne-audio.html?v=20260915-unlock2');
-  node.removeAttribute('aria-disabled');node.classList.remove('locked','exam-locked');
-  const start=node.querySelector?.('.start,.l8-task-start');if(start)start.textContent='Starten';
+  const target='pruefung-ohne-audio.html?v=20260915-unlock2';
+  if(node.tagName==='A'&&node.getAttribute('href')!==target)node.setAttribute('href',target);
+  if(node.hasAttribute('aria-disabled'))node.removeAttribute('aria-disabled');
+  if(node.classList.contains('locked')||node.classList.contains('exam-locked'))node.classList.remove('locked','exam-locked');
+  const start=node.querySelector?.('.start,.l8-task-start');if(start&&start.textContent!=='Starten')start.textContent='Starten';
  });
 }
 [0,80,250,700,1500].forEach(ms=>setTimeout(repair,ms));
-const grid=document.getElementById('taskGrid');if(grid)new MutationObserver(repair).observe(grid,{childList:true,subtree:true,attributes:true,attributeFilter:['class','style','href']});
+let scheduled=false;
+function scheduleRepair(){if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;repair()})}
+// Aufgaben können das Raster einmal neu aufbauen. Attributänderungen aus repair()
+// selbst dürfen jedoch keinen erneuten Durchlauf auslösen (Endlosschleife bei 100 %).
+const grid=document.getElementById('taskGrid');if(grid)new MutationObserver(scheduleRepair).observe(grid,{childList:true});
 })();
