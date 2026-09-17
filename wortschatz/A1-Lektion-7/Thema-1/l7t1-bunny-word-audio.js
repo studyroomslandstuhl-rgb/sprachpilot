@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7T1_BUNNY_AUDIO_6)return;
-window.__SP_L7T1_BUNNY_AUDIO_6=true;
+if(window.__SP_L7T1_BUNNY_AUDIO_7)return;
+window.__SP_L7T1_BUNNY_AUDIO_7=true;
 if(!location.pathname.includes('/wortschatz/A1-Lektion-7/Thema-1/'))return;
 
 const BASE='https://sprachpilot.b-cdn.net/audio/';
@@ -39,7 +39,7 @@ function itemText(item){
 function sourceText(button){
  const overview=overviewItem(button);
  if(overview)return itemText(overview);
- const direct=button.dataset.audioInfinitive||button.dataset.bunnyInfinitive||button.dataset.audio||button.dataset.text||'';
+ const direct=button.dataset.audioFile||button.dataset.audioInfinitive||button.dataset.bunnyInfinitive||button.dataset.audio||button.dataset.text||'';
  if(direct)return String(direct).trim();
  const scope=button.closest('.flip-face,.l7-learning,.l7-question-card,.question-card,.card')||document;
  return String(scope.querySelector('.flip-word,.word,h2,h3')?.textContent||'').trim();
@@ -121,7 +121,7 @@ function play(value,button){
 }
 
 document.addEventListener('click',event=>{
- const button=event.target instanceof Element?event.target.closest('button[data-audio],button[data-audio-infinitive],[data-action="card-audio"],#cardListenBtn,.card-listen-btn,.word-audio,[data-audio-index]'):null;
+ const button=event.target instanceof Element?event.target.closest('button[data-audio],button[data-audio-file],button[data-audio-infinitive],[data-action="card-audio"],#cardListenBtn,.card-listen-btn,.word-audio,[data-audio-index]'):null;
  if(!button)return;
  const value=sourceText(button);
  if(!value)return;
