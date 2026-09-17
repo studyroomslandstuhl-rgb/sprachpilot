@@ -11,7 +11,7 @@ const raw=[
 ['hotel','das Hotel','die Hotels','🏨','book'],
 ['schluessel','der Schlüssel','die Schlüssel','🔑','book','der_schluessel.webp'],
 ['autobahn','die Autobahn','die Autobahnen','🛣️','book'],
-['bruecke','die Brücke','die Brücken','🌉','book'],
+['bruecke','die Brücke','die Brücken','🌉','book','die_bruecke.webp'],
 ['weg','der Weg','die Wege','🛤️','book'],
 ['stadtplan','der Stadtplan','die Stadtpläne','🗺️','book'],
 ['flugzeug','das Flugzeug','die Flugzeuge','✈️','book','das_flugzeug.webp'],
