@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7_TRANSLATION_KEY_FIX_1)return;
-window.__SP_L7_TRANSLATION_KEY_FIX_1=true;
+if(window.__SP_L7_TRANSLATION_KEY_FIX_2)return;
+window.__SP_L7_TRANSLATION_KEY_FIX_2=true;
 
 function normalize(value){
  return String(value||'').trim().toLowerCase().normalize('NFD')
@@ -24,7 +24,8 @@ function install(){
  }
  function native(item){const code=api.currentCode();return{code,label:api.name(code),text:exact(item,code)}}
  function grid(item){
-  return `<div class="sp-translation-grid">${api.langs.map(([code,label])=>`<div><b>${api.escape(label)}:</b> <span>${api.escape(exact(item,code)||'—')}</span></div>`).join('')}</div>`;
+  const selected=native(item);
+  return `<div class="sp-translation-grid sp-translation-grid--native"><div><b>${api.escape(selected.label)}:</b> <span>${api.escape(selected.text||'—')}</span></div></div>`;
  }
  function enrich(){
   const theme=window.L7_THEME;
