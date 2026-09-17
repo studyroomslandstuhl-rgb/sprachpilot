@@ -98,15 +98,8 @@ function check(v){
  S.attempt(theme,t.id,t.items.length,index,ok);
  if(ok)return correct();
  const tries=Number(S.wrong(theme,t.id,t.items.length))||1;
- if(kind==='cards'){
-  document.querySelectorAll('#taskArea button,#taskArea input,#taskArea textarea').forEach(x=>x.disabled=true);
-  const feedback=document.getElementById('feedback');
-  if(feedback)feedback.innerHTML='<div class="l7-no">Noch nicht richtig. Diese Karte kommt am Ende noch einmal.</div>';
-  setTimeout(()=>{S.right(theme,t.id,t.items.length);task(theme,t.id)},550);
-  return;
- }
- const feedback=document.getElementById('feedback');if(feedback)feedback.innerHTML=help(i,tries);
- document.getElementById('answerInput')?.focus();
+ document.querySelectorAll('#taskArea button,#taskArea input,#taskArea textarea').forEach(x=>x.disabled=true);
+ const feedback=document.getElementById('feedback');if(feedback)feedback.innerHTML='<div class="l7-no">Noch nicht richtig. Diese Aufgabe kommt am Ende noch einmal.</div>';
 }
 function correct(){
  const{theme,t,index}=R,st=S.load(theme,t.id,t.items.length),repeat=st.hadWrong||st.tries>0;
