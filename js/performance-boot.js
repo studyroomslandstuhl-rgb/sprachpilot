@@ -66,18 +66,6 @@
   if(document.readyState==="loading")document.addEventListener("DOMContentLoaded",startImageTuning,{once:true});
   else startImageTuning();
 
-  function clearOldRuntimeCache(){
-    if("caches" in window){
-      caches.keys().then(function(keys){
-        return Promise.all(keys.map(function(key){return caches.delete(key)}));
-      }).catch(function(){});
-    }
-    if("serviceWorker" in navigator){
-      navigator.serviceWorker.getRegistrations().then(function(regs){
-        return Promise.all(regs.map(function(reg){return reg.unregister()}));
-      }).catch(function(){});
-    }
-  }
-
-  idle(clearOldRuntimeCache,400);
+  // Keep browser caches intact. Static assets use versioned URLs, so changed
+  // files are refreshed without turning every visit into a cold start.
 })();
