@@ -1,9 +1,38 @@
-import "/js/role-session-guard.js?v=20260916-role2";
-import "/js/session-restore.js?v=20260915-role1";
-import { logout } from "/js/auth.js?v=20260916-role2";
-import { verifySecureAccess } from "/js/secure-access-gate.js?v=20260831-central8";
-import { installSpHeader } from "/js/sp-header.js?v=20260916-role2";
+// Paint the navigation before Firebase, authentication and lesson modules load.
+// This file is included by all learning pages, so the rule stays consistent.
+function quickHeaderSubtitle(){
+ const path=location.pathname,match=path.match(/A1-Lektion-(\d+)(?:\/Thema-(\d+))?/i);
+ if(!match)return'SprachPilot';
+ const lesson=Number(match[1]),theme=match[2]?Number(match[2]):null;
+ return theme?`A1 Lektion ${lesson} · Thema ${theme}`:`Wortschatz · A1 Lektion ${lesson}`;
+}
+function quickText(value){return String(value||'').replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;').replace(/"/g,'&quot;').replace(/'/g,'&#039;')}
+function quickAccountText(){
+ try{
+  const profile=JSON.parse(localStorage.getItem('SP_USER_PROFILE')||localStorage.getItem('SP_STUDENT_PROFILE')||localStorage.getItem('SP_TEACHER_PROFILE')||'null');
+  if(!profile)return'Konto wird geladen …';
+  return [profile.vorname||profile.firstName||profile.name,profile.nachname||profile.lastName,profile.kurs||profile.courseCode].filter(Boolean).join(' · ')||'Konto wird geladen …';
+ }catch(e){return'Konto wird geladen …'}
+}
+function installQuickHeader(){
+ if(document.querySelector('.sp-header'))return;
+ const style=document.createElement('style');style.id='sp-header-first-inline';
+ style.textContent='body.sp-header-loading> :not(.sp-header--quick){visibility:hidden!important}.sp-header--quick{visibility:visible!important;min-height:108px;background:var(--lesson-main,#2f95ad);color:#fff;padding:18px 24px;margin:0 0 18px;box-sizing:border-box;border-radius:0 0 26px 26px;box-shadow:0 10px 28px rgba(0,0,0,.16);font-family:Arial,Helvetica,sans-serif}.sp-header--quick .sp-q-main{display:flex;align-items:center;justify-content:space-between;gap:16px;flex-wrap:wrap}.sp-header--quick .sp-q-brand{display:flex;align-items:center;gap:14px}.sp-header--quick img{width:52px;height:52px;background:#fff;border-radius:14px;padding:6px;box-sizing:content-box}.sp-header--quick strong{display:block;font-size:28px}.sp-header--quick small{font-size:15px;font-weight:700}.sp-header--quick .sp-q-account{padding:10px 14px;border-radius:14px;background:rgba(255,255,255,.9);color:#174b61;font-weight:800}@media(max-width:620px){.sp-header--quick{padding:14px 16px}.sp-header--quick strong{font-size:24px}.sp-header--quick .sp-q-account{width:100%;box-sizing:border-box}}';
+ document.head.appendChild(style);document.body.classList.add('sp-header-loading');
+ const header=document.createElement('header');header.className='sp-header sp-header--quick';
+ header.innerHTML=`<div class="sp-q-main"><div class="sp-q-brand"><img src="/assets/logo/sprachpilot-logo.png" alt="SprachPilot" width="52" height="52"><div><strong>SprachPilot</strong><small>${quickText(quickHeaderSubtitle())}</small></div></div><div class="sp-q-account">${quickText(quickAccountText())}</div></div>`;
+ document.body.insertBefore(header,document.body.firstChild);
+ requestAnimationFrame(()=>requestAnimationFrame(()=>document.body.classList.remove('sp-header-loading')));
+}
+installQuickHeader();
 
+const [{logout},{verifySecureAccess},{installSpHeader}]=await Promise.all([
+ import('/js/auth.js?v=20260916-role2'),
+ import('/js/secure-access-gate.js?v=20260831-central8'),
+ import('/js/sp-header.js?v=20260917-header-first1'),
+ import('/js/role-session-guard.js?v=20260916-role2'),
+ import('/js/session-restore.js?v=20260915-role1')
+]);
 const SECURE_ACCESS=await verifySecureAccess({allowTeacher:true,redirect:true,mark:true});
 const SP_USER=SECURE_ACCESS?.profile||null;
 const IS_SECURE_STUDENT=SECURE_ACCESS?.type==='student';
