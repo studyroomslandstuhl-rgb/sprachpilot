@@ -14,7 +14,6 @@ load('/shared/sp-cache-epoch.js?v=20260831-sync-device-merge8').catch(()=>{})
  .then(()=>{window.SPL7WrongQueueV8?.install?.();return load('../shared/l7-theme-score.js?v=20260831-firebase-progress3')})
  .then(()=>load('../shared/l7-score-repeat-fix.js?v=1'))
  .then(()=>load('../shared/l7-score-live-sync.js?v=20260831-central8'))
- .then(()=>page==='task'?window.L7ThemeScore?.seedFromCloud?.(theme):null)
  .then(()=>{if([2,3,4].includes(theme))return load('../shared/l7-exam-gate.js?v=2').then(()=>window.SPL7StrictExamGate?.install?.())})
  .then(()=>{if(theme===4)window.L7T4BunnyMedia?.install?.()})
  .then(()=>{
@@ -23,7 +22,13 @@ load('/shared/sp-cache-epoch.js?v=20260831-sync-device-merge8').catch(()=>{})
    return load(`../shared/l7-ui.js?v=${version}`)
     .then(()=>theme===4?load('../Thema-4/l7t4-custom-ui.js?v=4'):null)
     .then(()=>load('../shared/l7-external-links.js?v=1'))
-    .then(()=>{window.SPL7WrongQueueV8?.install?.();return window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'))});
+    .then(()=>{window.SPL7WrongQueueV8?.install?.();return window.L7.renderTaskPage(theme,new URLSearchParams(location.search).get('task'))})
+    .then(()=>{
+      // Do not hold the first render behind authentication and Firestore.
+      // Local progress is available immediately; cloud data is reconciled in
+      // the background and the score UI receives its existing sync events.
+      if(page==='task')setTimeout(()=>window.L7ThemeScore?.seedFromCloud?.(theme)?.catch?.(()=>{}),0);
+    });
  })
  .catch(error=>{console.error(error);if(root)root.innerHTML='<section class="card"><h2>Die Inhalte konnten nicht geladen werden.</h2><p>Bitte lade die Seite neu oder aktualisiere deinen Browser.</p><button class="btn" onclick="location.reload()">Neu laden</button></section>'});
 })();
