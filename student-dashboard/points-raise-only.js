@@ -18,5 +18,12 @@ export async function raiseOwnPointsFromEvidence(){
  let evidenceTarget=0,highestStored=0;for(const row of rows){evidenceTarget=Math.max(evidenceTarget,evidence(row.data));highestStored=Math.max(highestStored,stored(row.data))}
  const raised=[];if(evidenceTarget>0){const nowIso=new Date().toISOString();for(const row of rows){const before=stored(row.data);if(before>=evidenceTarget)continue;const patch={ranking:{...(row.data.ranking||{}),points:evidenceTarget,updatedAt:nowIso},totals:{...(row.data.totals||{}),points:evidenceTarget,updatedAt:nowIso},pointsTotal:evidenceTarget,lifetimePoints:evidenceTarget,punkteGesamt:evidenceTarget,metadata:{...(row.data.metadata||{}),pointRecovery:{...(row.data.metadata?.pointRecovery||{}),version:9,lastRaisedAt:nowIso,raisedFrom:before,raisedTo:evidenceTarget,method:'student-raise-only-preserved-evidence'}}};try{await setDoc(doc(db,'progress',row.id),patch,{merge:true});raised.push({id:row.id,from:before,to:evidenceTarget})}catch(e){}}}
  try{localStorage.setItem('SP_POINTS_TOTAL',String(Math.max(num(localStorage.getItem('SP_POINTS_TOTAL')),highestStored,evidenceTarget)))}catch(e){}
- const result={ok:true,evidenceTarget,highestStored,raised,checked:rows.length,autoLowering:false,spreadStoredTotals:false};window.SP_STUDENT_POINT_RECOVERY=result;return result
+ const total=Math.max(num(localStorage.getItem('SP_POINTS_TOTAL')),highestStored,evidenceTarget);
+ const result={ok:true,evidenceTarget,highestStored,total,raised,checked:rows.length,autoLowering:false,spreadStoredTotals:false};
+ window.SP_STUDENT_POINT_RECOVERY=result;
+ try{
+  window.dispatchEvent(new CustomEvent('SP_HISTORICAL_POINTS_RECOVERED',{detail:result}));
+  window.dispatchEvent(new CustomEvent('SP_ACCOUNT_PROGRESS_SYNCED',{detail:{points:total,historicalRecovery:true,raised:raised.length}}));
+ }catch(e){}
+ return result
 }

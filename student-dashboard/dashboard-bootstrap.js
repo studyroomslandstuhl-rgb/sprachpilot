@@ -57,8 +57,13 @@ async function runBackgroundSyncs(){
     const mod=await import('/student-dashboard/local-theme-points-recovery.js?v=20260904-l8-all3');
     localThemes=await withTimeout(mod.recover({skipAliasWait:true}),5000,0);
   }catch(error){console.warn('Lokale L7/L8-Themenpunkte werden später synchronisiert.',error)}
+  let historicalPoints={ok:false,reason:'not-started'};
+  try{
+    const mod=await import('/student-dashboard/points-raise-only.js?v=20260917-history1');
+    historicalPoints=await withTimeout(mod.raiseOwnPointsFromEvidence(),8000,{ok:false,reason:'historical-point-recovery-timeout'});
+  }catch(error){console.warn('Bereits erledigte Aufgabenpunkte werden später nachgetragen.',error)}
   const progressReady=progress?.blocked!==true&&progress?.nonDestructive===true&&Number(progress?.authorityVersion||0)>=5;
-  return{ok:progressReady,l8,aliases,progress,localThemes};
+  return{ok:progressReady,l8,aliases,progress,localThemes,historicalPoints};
 }
 
 clearStaleTeacherPreview();
