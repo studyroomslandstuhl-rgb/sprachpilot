@@ -75,10 +75,10 @@ function index(theme,id,total){
  return s.current
 }
 function attempt(theme,id,total,i,ok){const s=load(theme,id,total);if(!s.firstSeen.includes(i)){s.firstSeen.push(i);if(ok)s.firstCorrect++}save(theme,id,s,false)}
-function wrong(theme,id,total){const s=load(theme,id,total),i=Number(s.current);if(!Number.isInteger(i))return 0;const count=Math.max(Number(s.wrongTries?.[i]||0),Number(s.tries||0))+1;s.wrongTries=s.wrongTries||{};s.wrongTries[i]=count;s.tries=count;s.hadWrong=true;s.queue=(s.queue||[]).filter(x=>Number(x)!==i);s.current=i;save(theme,id,s);return count}
+function wrong(theme,id,total){const s=load(theme,id,total),i=s.current==null?NaN:Number(s.current);if(!Number.isInteger(i))return 0;const count=Math.max(Number(s.wrongTries?.[i]||0),Number(s.tries||0))+1;s.wrongTries=s.wrongTries||{};delete s.wrongTries[i];s.tries=0;s.hadWrong=false;s.queue=(s.queue||[]).filter(x=>Number(x)!==i&&!s.done.includes(Number(x)));s.queue.push(i);s.current=null;save(theme,id,s);setTimeout(()=>{try{window.L7?.renderTaskPage?.(Number(theme),String(id))}catch(e){}},650);return count}
 function repeatRequired(s,i){return !!(s.hadWrong||Number(s.tries||0)>0||Number(s.wrongTries?.[i]||0)>0||s.answers?.cardRepeat?.[i])}
 function right(theme,id,total,free=false){
- const s=load(theme,id,total),i=Number(s.current);s.answers=s.answers||{};s.queue=ids(s.queue,total).filter(x=>x!==i&&!s.done.includes(x));
+ const s=load(theme,id,total),i=s.current==null?NaN:Number(s.current);s.answers=s.answers||{};s.queue=ids(s.queue,total).filter(x=>x!==i&&!s.done.includes(x));
  if(Number.isInteger(i)&&i>=0&&i<total){if(repeatRequired(s,i)){s.done=s.done.filter(x=>Number(x)!==i);s.queue.push(i)}else if(!s.done.includes(i))s.done.push(i);if(s.wrongTries)delete s.wrongTries[i];if(s.answers.cardRepeat)delete s.answers.cardRepeat[i]}
  s.current=null;s.tries=0;s.hadWrong=false;save(theme,id,s)
 }
