@@ -19,7 +19,7 @@ function normalize(){
 }
 function phaseInfo(state){const choiceDone=choiceIndexes.filter(index=>state.done.includes(index)).length;return choiceDone>=choiceIndexes.length?{number:2,text:'Höre dieselben Geräusche noch einmal. Sprich oder schreibe die Aktivität.'}:{number:1,text:'Höre das Geräusch und wähle die passende Aktivität.'}}
 function help(item,tries){if(tries===1)return'<div class="l7-no">Noch nicht richtig. Höre noch einmal.</div>';if(tries===2)return'<div class="l7-hint">Achte auf das typische Geräusch der Aktivität.</div>';if(tries>=3)return`<div class="l7-no"><strong>Lösung:</strong> ${esc(item.answer)}<br>Die Aufgabe kommt später erneut.</div>`;return''}
-function audio(item){return`<div class="sound-audio"><audio controls preload="metadata" src="${CDN+encodeURIComponent(item.audioFile)}"></audio><p class="small">Du kannst das Geräusch mehrmals hören.</p></div>`}
+function audio(item){const raw=String(item.audioFile||'').trim(),src=/^https:\/\/sprachpilot\.b-cdn\.net\/audio\//i.test(raw)?raw:`${CDN}audio/${encodeURIComponent(raw.split('/').pop()||'')}`;return`<div class="sound-audio"><audio controls playsinline preload="metadata" src="${src}"></audio><p class="small">Du kannst das Geräusch mehrmals hören.</p></div>`}
 function progress(state){const percent=Math.round(state.done.length/task.items.length*100);return`<div class="l7-progress-row"><span>${state.done.length} fehlerfrei · ${task.items.length-state.done.length} übrig</span><strong>${percent}%</strong></div><div class="l7-progress"><span style="width:${percent}%"></span></div>`}
 function render(){
  normalize();const state=S.load(theme,id,task.items.length);

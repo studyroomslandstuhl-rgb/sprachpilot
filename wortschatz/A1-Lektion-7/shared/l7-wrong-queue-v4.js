@@ -1,7 +1,7 @@
 (function(){
 'use strict';
-if(window.__SP_L7_WRONG_QUEUE_V8)return;
-window.__SP_L7_WRONG_QUEUE_V8=true;
+if(window.__SP_L7_WRONG_QUEUE_V9)return;
+window.__SP_L7_WRONG_QUEUE_V9=true;
 let installed=false;
 function norm(v){return String(v??'').trim().toLowerCase().normalize('NFD').replace(/[\u0300-\u036f]/g,'').replace(/ß/g,'ss').replace(/\s+/g,' ')}
 function taskItem(S,id,index){const task=S.task?.(id);return{task,item:task?.items?.[index]||null}}
@@ -76,21 +76,19 @@ function install(){
   return i
  };
  S.wrong=function(theme,id,total){
-  if(isMemoryTask(S,id))return 0;
   const retryable=[...document.querySelectorAll('#app button,#app input,#app select,#app textarea')].filter(el=>!el.disabled);
-  const st=S.load(theme,id,total),i=Number(st.current);if(!Number.isInteger(i)||i<0||i>=total)return 0;
+  const st=S.load(theme,id,total),i=st.current==null?NaN:Number(st.current);if(!Number.isInteger(i)||i<0||i>=total)return 0;
   const previous=Math.max(Number(st.wrongTries?.[i]||0),Number(st.tries||0)),count=previous+1;
-  st.wrongTries=st.wrongTries||{};st.wrongTries[i]=count;st.tries=count;st.hadWrong=true;
-  st.queue=(Array.isArray(st.queue)?st.queue:[]).filter(x=>Number(x)!==i);
-  st.current=i;
+  st.wrongTries=st.wrongTries||{};delete st.wrongTries[i];st.tries=0;st.hadWrong=false;
+  st.queue=(Array.isArray(st.queue)?st.queue:[]).filter(x=>Number(x)!==i&&!st.done.includes(Number(x)));
+  st.queue.push(i);st.current=null;
   S.save(theme,id,st,true);
   try{window.dispatchEvent(new CustomEvent('SP_L7_WRONG_ANSWER',{detail:{theme:Number(theme),id:String(id),index:i,count}}))}catch(e){}
-  restoreRetryControls(retryable);
-  injectHelp(S,theme,id,i,count);
+  setTimeout(()=>{try{window.L7?.renderTaskPage?.(Number(theme),String(id))}catch(e){}},650);
   return count
  };
  S.right=function(theme,id,total,free=false){
-  const st=S.load(theme,id,total),i=Number(st.current);
+  const st=S.load(theme,id,total),i=st.current==null?NaN:Number(st.current);
   st.done=Array.isArray(st.done)?st.done:[];st.queue=Array.isArray(st.queue)?st.queue:[];st.answers=st.answers||{};
   if(Number.isInteger(i)&&i>=0&&i<total){
    const needsRepeat=!isMemoryTask(S,id)&&repeatRequired(st,i,S,id);
@@ -111,9 +109,9 @@ function install(){
   st.answers=st.answers||{};st.answers.cardRepeat=st.answers.cardRepeat||{};st.answers.cardRepeat[i]=String(reason||'repeat');
   S.save(theme,id,st,false);return true
  };
- S.__spNoSkipWrongAnswers=true;S.__spThreeStageHelp=true;S.__spRetryAfterCorrection=true;
+ S.__spWrongAnswersMoveToEnd=true;S.__spNoDuplicateWrongQueue=true;
  installed=true;return true
 }
-window.SPL7WrongQueueV4=window.SPL7WrongQueueV5=window.SPL7WrongQueueV6=window.SPL7WrongQueueV7=window.SPL7WrongQueueV8={install};
+window.SPL7WrongQueueV4=window.SPL7WrongQueueV5=window.SPL7WrongQueueV6=window.SPL7WrongQueueV7=window.SPL7WrongQueueV8=window.SPL7WrongQueueV9={install};
 if(!install()){let n=0;const timer=setInterval(()=>{if(install()||++n>200)clearInterval(timer)},25)}
 })();

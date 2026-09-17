@@ -9,7 +9,7 @@ const accepted=i=>[i.answer,i.word,...(i.answers||[])].filter(Boolean);
 const generic=i=>{const a=String(i.answer||i.word||'');return i.kind==='order'?'Achte auf Verbposition und Satzende.':a?`Die Lösung beginnt mit „${a[0]}“.`:'Lies die Aufgabe noch einmal.'};
 const help=(i,n)=>n===1?'<div class="l7-no">Noch nicht richtig. Versuche es noch einmal.</div>':n===2?`<div class="l7-hint"><strong>Hinweis:</strong> ${S.esc(i.hint||generic(i))}</div>`:n>=3?`<div class="l7-no"><strong>Lösung:</strong> ${S.esc(i.answer||i.word)}<br>Gib die richtige Antwort selbst ein. Die Aufgabe kommt später erneut.</div>`:'';
 const context=i=>i.context?`<div class="l7-context">${S.esc(i.context)}</div>`:'';
-const audio=i=>i.audio?`<div class="l7-audio"><button class="l7-btn secondary" data-audio="${S.esc(i.audio)}">🔊 Anhören</button><span>Du kannst den Text mehrmals hören.</span></div>`:'';
+const audio=i=>i.audioFile||i.audio?`<div class="l7-audio"><button class="l7-btn secondary" data-audio-file="${S.esc(i.audioFile||i.audio)}" data-audio="${S.esc(i.audio||i.audioFile)}">🔊 Anhören</button><span>Du kannst den Text mehrmals hören.</span></div>`:'';
 const input=(label='Schreibe die Antwort.',value='')=>`<div class="l7-answer-box"><label for="answerInput">${S.esc(label)}</label><div><input id="answerInput" autocomplete="off" value="${S.esc(value)}"><button class="l7-btn" data-action="check">Prüfen</button></div></div>`;
 function draftKey(index){return`text:${index}`}
 function orderKey(index){return`order:${index}`}
@@ -68,7 +68,7 @@ function renderTokens(tokens,usedOrder){
 }
 function card(i,draft){
  const pl=i.plural?`<div><span>Plural</span><strong>${S.esc(i.plural)}</strong></div>`:'';
- return`<div class="l7-learning">${i.image?S.image(i.image,i.word):''}<div class="l7-meaning">${S.esc(i.meaning)}</div><div class="l7-actions"><button class="l7-btn secondary" data-audio="${S.esc(i.audio||i.word)}">🔊 Anhören</button><button class="l7-btn" data-action="mic">🎤 Sprechen</button><button class="l7-btn secondary" data-action="write">✍️ Schreiben</button><button class="l7-btn ghost" data-action="reveal">Lösung zeigen</button></div>${input('Deutsches Wort oder Form',draft)}<div id="cardBack" class="l7-card-back" hidden><div class="word">${S.esc(i.word)}</div><div class="details"><div><span>Bedeutung</span><strong>${S.esc(i.meaning)}</strong></div>${pl}<div><span>Beispiel</span><strong>${S.esc(i.example||'')}</strong></div></div></div></div>`
+ return`<div class="l7-learning">${i.image?S.image(i.image,i.word):''}<div class="l7-meaning">${S.esc(i.meaning)}</div><div class="l7-actions"><button class="l7-btn secondary" data-audio-file="${S.esc(i.perfectAudioFile||i.audioFile||i.audio||'')}" data-audio="${S.esc(i.audio||i.word)}">🔊 Anhören</button><button class="l7-btn" data-action="mic">🎤 Sprechen</button><button class="l7-btn secondary" data-action="write">✍️ Schreiben</button><button class="l7-btn ghost" data-action="reveal">Lösung zeigen</button></div>${input('Deutsches Wort oder Form',draft)}<div id="cardBack" class="l7-card-back" hidden><div class="word">${S.esc(i.word)}</div><div class="details"><div><span>Bedeutung</span><strong>${S.esc(i.meaning)}</strong></div>${pl}<div><span>Beispiel</span><strong>${S.esc(i.example||'')}</strong></div></div></div></div>`
 }
 function bind(){
  const a=document.getElementById('taskArea');
@@ -76,7 +76,7 @@ function bind(){
   const b=e.target.closest('button');if(!b)return;
   if(b.dataset.answer!==undefined)return check(b.dataset.answer);
   if(b.dataset.token!==undefined)return token(b);
-  if(b.dataset.audio!==undefined)return S.say(b.dataset.audio,()=>tech('Die Audiofunktion ist nicht verfügbar. Lies den Text.'));
+  if(b.dataset.audio!==undefined){const exact=S.audioUrl?.(b.dataset.audioFile);return exact?new Audio(exact).play().catch(()=>tech('Die Audiodatei konnte nicht gestartet werden.')):S.say(b.dataset.audio,()=>tech('Die Audiofunktion ist nicht verfügbar. Lies den Text.'))}
   const x=b.dataset.action;
   if(x==='check')return check(document.getElementById('answerInput')?.value);
   if(x==='mic')return mic();
@@ -98,8 +98,8 @@ function check(v){
  S.attempt(theme,t.id,t.items.length,index,ok);
  if(ok)return correct();
  const tries=Number(S.wrong(theme,t.id,t.items.length))||1;
- const feedback=document.getElementById('feedback');if(feedback)feedback.innerHTML=help(i,tries);
- document.getElementById('answerInput')?.focus();
+ document.querySelectorAll('#taskArea button,#taskArea input,#taskArea textarea').forEach(x=>x.disabled=true);
+ const feedback=document.getElementById('feedback');if(feedback)feedback.innerHTML='<div class="l7-no">Noch nicht richtig. Diese Aufgabe kommt am Ende noch einmal.</div>';
 }
 function correct(){
  const{theme,t,index}=R,st=S.load(theme,t.id,t.items.length),repeat=st.hadWrong||st.tries>0;

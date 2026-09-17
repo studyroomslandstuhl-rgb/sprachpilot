@@ -5,6 +5,7 @@ window.__SP_L7_OVERVIEW_STANDARD_3=true;
 
 const CDN='https://sprachpilot.b-cdn.net/';
 const AUDIO_DIRS=[CDN+'audio/',CDN+'Audio/'];
+const PERFECT_FORMS=Object.freeze({'losfahren':'ist losgefahren','zurückkommen':'ist zurückgekommen','mitkommen':'ist mitgekommen','fehlen':'hat gefehlt','sich entschuldigen':'hat sich entschuldigt','bescheid sagen':'hat Bescheid gesagt'});
 let currentAudio=null;
 let playGeneration=0;
 
@@ -35,6 +36,11 @@ function participleText(item){
  if(!perfect){const full=itemFull(item),parts=full.split(/\s+-\s+/);perfect=parts.length>1?parts.slice(1).join(' - ').trim():''}
  return perfect.replace(/^(habe|hast|hat|haben|habt|bin|bist|ist|sind|seid)\s+/i,'').trim()
 }
+function perfectText(item){
+ const direct=String(item?.perfect||item?.perfekt||item?.perfectForm||'').trim();if(direct)return direct;
+ const answer=String(item?.answer||item?.word||'').trim();if(/^(habe|hast|hat|haben|habt|bin|bist|ist|sind|seid)\s+/i.test(answer))return answer;
+ return PERFECT_FORMS[infinitiveText(item).toLowerCase()]||participleText(item)
+}
 function addAudioValue(out,value){
  const raw=String(value||'').trim();if(!raw)return;
  if(/^https?:\/\//i.test(raw)){out.push(raw);return}
@@ -53,8 +59,9 @@ function audioCandidates(item,kind='default'){
   addAudioValue(out,infinitiveText(item));
   return [...new Set(out)]
  }
- if(kind==='participle'){
+ if(kind==='perfect'){
   addAudioValue(out,item?.participleAudio||item?.participleAudioFile||item?.perfectAudio||item?.perfectAudioFile);
+  addAudioValue(out,perfectText(item));
   addAudioValue(out,participleText(item));
   return [...new Set(out)]
  }
@@ -84,7 +91,7 @@ function playItem(item,kind='default',button=null){
  stopAudio();
  const generation=playGeneration;
  const candidates=audioCandidates(item,kind);
- const spoken=kind==='infinitive'?infinitiveText(item):kind==='participle'?participleText(item):itemFull(item);
+ const spoken=kind==='infinitive'?infinitiveText(item):kind==='perfect'?perfectText(item):itemFull(item);
  let index=0;
  button?.classList.add('playing');
  function attempt(){
@@ -118,18 +125,19 @@ function translationHtml(item){
  return'';
 }
 function audioHtml(item,index,type){
- const dual=[2,3].includes(themeNumber())&&type==='verb';
+ const dual=themeNumber()>=2&&type==='verb';
  if(!dual)return`<button class="sp-overview-audio" type="button" data-audio-index="${index}" data-audio-kind="default" aria-label="${esc(itemFull(item))} anhören">🔊</button>`;
  return `<div class="sp-overview-audios">
-   <button class="sp-overview-audio sp-overview-audio--text" type="button" data-audio-index="${index}" data-audio-kind="infinitive" aria-label="Infinitiv ${esc(infinitiveText(item))} anhören"><span>🔊</span><b>Infinitiv</b></button>
-   <button class="sp-overview-audio sp-overview-audio--text" type="button" data-audio-index="${index}" data-audio-kind="participle" aria-label="Partizip II ${esc(participleText(item))} anhören"><span>🔊</span><b>Partizip II</b></button>
+   <button class="sp-overview-audio sp-overview-audio--text" type="button" data-audio-index="${index}" data-audio-kind="infinitive" aria-label="Präsens ${esc(infinitiveText(item))} anhören"><span>🔊</span><b>Präsens</b></button>
+   <button class="sp-overview-audio sp-overview-audio--text" type="button" data-audio-index="${index}" data-audio-kind="perfect" aria-label="Perfekt ${esc(perfectText(item))} anhören"><span>🔊</span><b>Perfekt</b></button>
   </div>`
 }
 function wordRow(item,index){
  const source=imageUrl(item),word=itemFull(item),type=itemType(item);
- return `<article class="sp-overview-word ${[2,3].includes(themeNumber())&&type==='verb'?'sp-overview-word--dual-audio':''}" data-word-index="${index}">
+ const verbForms=themeNumber()>=2&&type==='verb'?`<div class="sp-overview-verb-forms"><p><b>Präsens:</b> ${esc(infinitiveText(item))}</p><p><b>Perfekt:</b> ${esc(perfectText(item))}</p></div>`:'';
+ return `<article class="sp-overview-word ${themeNumber()>=2&&type==='verb'?'sp-overview-word--dual-audio':''}" data-word-index="${index}">
   <div class="sp-overview-word__image">${source?`<img src="${esc(source)}" alt="${esc(word)}" loading="lazy" onerror="this.hidden=true;this.nextElementSibling.hidden=false"><div class="sp-overview-word__fallback" hidden>${esc(word)}</div>`:`<div class="sp-overview-word__fallback">${esc(word)}</div>`}</div>
-  <div class="sp-overview-word__content"><h3>${esc(word)}</h3>${type==='noun'?`<p class="sp-overview-word__plural">Plural: ${esc(pluralText(item))}</p>`:''}${translationHtml(item)}</div>
+  <div class="sp-overview-word__content"><h3>${esc(word)}</h3>${type==='noun'?`<p class="sp-overview-word__plural">Plural: ${esc(pluralText(item))}</p>`:''}${verbForms}${translationHtml(item)}</div>
   ${audioHtml(item,index,type)}
  </article>`;
 }
@@ -177,6 +185,7 @@ style.textContent=`
 .sp-overview-intro h1{margin:4px 0 18px;color:var(--dark);font-size:34px}.sp-overview-intro>p:last-child{font-size:20px;line-height:1.55;margin:0;max-width:820px}
 .sp-overview-group__head{display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:18px}.sp-overview-group__head h2{margin:0;color:var(--dark);font-size:30px}.sp-overview-group__head span{padding:9px 14px;border:1px solid var(--line);border-radius:999px;background:var(--soft);color:var(--dark);font-weight:900}
 .sp-overview-list{display:grid;gap:14px}.sp-overview-word{display:grid;grid-template-columns:140px minmax(0,1fr) 68px;gap:18px;align-items:center;padding:15px;border:2px solid var(--line);border-radius:22px;background:#fff}.sp-overview-word--dual-audio{grid-template-columns:140px minmax(0,1fr) 152px}.sp-overview-word__image{width:140px;height:140px;border-radius:18px;overflow:hidden;background:var(--soft);display:grid;place-items:center}.sp-overview-word__image img{width:100%;height:100%;object-fit:contain;display:block}.sp-overview-word__fallback{padding:10px;text-align:center;font-weight:900;color:var(--dark)}.sp-overview-word__content h3{margin:0 0 6px;color:var(--dark);font-size:25px}.sp-overview-word__plural{margin:0 0 10px;color:var(--muted);font-size:17px}.sp-overview-audio{width:58px;height:58px;border:3px solid var(--dark);border-radius:50%;background:#fff;font-size:25px;cursor:pointer}.sp-overview-audio:active{transform:scale(.96)}.sp-overview-audio.playing{background:var(--soft);border-color:var(--main)}.sp-overview-audios{display:grid;gap:8px}.sp-overview-audio--text{width:100%;height:auto;min-height:52px;border-radius:14px;padding:7px 9px;display:flex;align-items:center;justify-content:center;gap:7px;font-size:17px}.sp-overview-audio--text b{font-size:13px;line-height:1.1}
+.sp-overview-verb-forms{display:grid;gap:5px;margin:8px 0 10px}.sp-overview-verb-forms p{margin:0;font-size:17px;line-height:1.35}.sp-overview-verb-forms b{color:var(--dark)}
 .sp-translation-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:6px 14px;padding-top:8px;border-top:1px solid var(--line);font-size:14px;line-height:1.35}.sp-translation-grid b{color:var(--dark)}.sp-translation-grid span{color:var(--text)}
 @media(max-width:760px){.sp-overview-intro h1{font-size:29px}.sp-overview-intro>p:last-child{font-size:18px}.sp-overview-word,.sp-overview-word--dual-audio{grid-template-columns:112px minmax(0,1fr) 132px;gap:12px;padding:12px}.sp-overview-word__image{width:112px;height:112px}.sp-overview-word__content h3{font-size:21px}.sp-overview-audio{width:50px;height:50px}.sp-overview-audio--text{width:100%;min-height:48px}.sp-translation-grid{grid-template-columns:1fr}.sp-overview-group__head h2{font-size:27px}}
 @media(max-width:560px){.sp-overview-word,.sp-overview-word--dual-audio{grid-template-columns:88px minmax(0,1fr);align-items:start}.sp-overview-word__image{width:88px;height:88px}.sp-overview-audio:not(.sp-overview-audio--text){grid-column:1/-1;width:100%;height:48px;border-radius:14px}.sp-overview-audios{grid-column:1/-1;grid-template-columns:1fr 1fr}.sp-overview-audio--text{width:100%}.sp-overview-group__head{align-items:flex-start}.sp-overview-group__head span{font-size:13px}}
