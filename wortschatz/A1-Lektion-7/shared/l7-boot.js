@@ -3,7 +3,7 @@
 const theme=Number(document.body.dataset.theme);
 const page=document.body.dataset.page||'theme';
 const root=document.getElementById('app');
-const version='l7-firebase-progress-v16';
+const version='l7-audio-mobile-v17';
 function load(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.body.appendChild(script)})}
 load('/shared/sp-cache-epoch.js?v=20260831-sync-device-merge8').catch(()=>{})
  .then(()=>load('/js/progress-role-guard.js?v=20260831-central8'))
