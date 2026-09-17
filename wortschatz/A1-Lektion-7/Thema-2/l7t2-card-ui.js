@@ -44,7 +44,7 @@ function install(){
    S.wrong(theme,t.id,t.items.length);
    document.querySelectorAll('.sp-l7t2-image-card button,.sp-l7t2-image-card input').forEach(x=>x.disabled=true);
    const f=document.getElementById('spCardFeedback');if(f)f.innerHTML='<div class="l7-no">Noch nicht richtig. Diese Karte kommt am Ende noch einmal.</div>';
-   setTimeout(()=>{clearDraft(theme,t,index);S.right(theme,t.id,t.items.length);render(theme,t.id)},550);
+   setTimeout(()=>{clearDraft(theme,t,index);render(theme,t.id)},550);
    return;
   }
   const before=S.load(theme,t.id,t.items.length),repeat=before.hadWrong||before.tries>0;clearDraft(theme,t,index);S.right(theme,t.id,t.items.length);
