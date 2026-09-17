@@ -20,23 +20,19 @@ const RELEASE_ASSETS=[
  '/shared/release-catalog-a1-l3-l7.js?v=20260824-2'
 ];
 if(window.__SP_CACHE_EPOCH_V18)return;window.__SP_CACHE_EPOCH_V18=true;
-async function clearAppCaches(){
- const jobs=[];
- try{if('caches'in window)jobs.push(caches.keys().then(keys=>Promise.all(keys.map(key=>caches.delete(key)))))}catch(e){}
- try{if(navigator.serviceWorker?.getRegistrations)jobs.push(navigator.serviceWorker.getRegistrations().then(rows=>Promise.all(rows.map(row=>row.unregister()))))}catch(e){}
- await Promise.allSettled(jobs);
-}
 async function refreshReleaseAssets(){
- try{await Promise.allSettled(RELEASE_ASSETS.map(src=>fetch(src,{cache:'reload',credentials:'same-origin'})))}catch(e){}
+ // Refresh in the background. Versioned URLs already invalidate changed files;
+ // deleting every browser cache and forcing a reload made each release feel like
+ // two cold page loads, especially on phones and slow connections.
+ try{await Promise.allSettled(RELEASE_ASSETS.map(src=>fetch(src,{cache:'no-cache',credentials:'same-origin'})))}catch(e){}
 }
 async function run(){
  let old='';try{old=localStorage.getItem(KEY)||''}catch(e){}
  if(old===EPOCH)return;
  try{localStorage.setItem(KEY,EPOCH)}catch(e){}
- await clearAppCaches();
- await refreshReleaseAssets();
- const url=new URL(location.href);
- if(url.searchParams.get('spcache')!==EPOCH){url.searchParams.set('spcache',EPOCH);location.replace(url.href)}
+ const start=()=>refreshReleaseAssets();
+ if('requestIdleCallback'in window)requestIdleCallback(start,{timeout:4000});
+ else setTimeout(start,1500);
 }
 window.SPCacheEpoch={epoch:EPOCH,run};run().catch(()=>{});
 })();
