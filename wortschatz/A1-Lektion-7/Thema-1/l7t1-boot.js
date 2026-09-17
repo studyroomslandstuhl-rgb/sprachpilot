@@ -2,7 +2,7 @@
 'use strict';
 const theme=Number(document.body.dataset.theme),page=document.body.dataset.page||'theme',root=document.getElementById('app'),version='l7t1-card-queue-v20';
 function preload(src){try{if(document.querySelector(`link[rel="preload"][href="${src}"]`))return;const link=document.createElement('link');link.rel='preload';link.as='script';link.href=src;document.head.appendChild(link)}catch(e){}}
-const commonPreloads=['/shared/sp-cache-epoch.js?v=20260831-sync-device-merge8','/js/progress-role-guard.js?v=20260831-central8','../shared/l7-state-safety.js?v=1',`../shared/l7-state.js?v=${version}`,'../shared/l7-wrong-queue-v4.js?v=12','../shared/l7-theme-score.js?v=20260831-firebase-progress3','../shared/l7-score-repeat-fix.js?v=1','../shared/l7-score-live-sync.js?v=20260831-central8',`../shared/l7-answer-normalization.js?v=${version}`];
+const commonPreloads=['/shared/sp-cache-epoch.js?v=20260831-sync-device-merge8','/js/progress-role-guard.js?v=20260831-central8','../shared/l7-state-safety.js?v=1',`../shared/l7-state.js?v=${version}`,'../shared/l7-wrong-queue-v4.js?v=13','../shared/l7-theme-score.js?v=20260831-firebase-progress3','../shared/l7-score-repeat-fix.js?v=1','../shared/l7-score-live-sync.js?v=20260831-central8',`../shared/l7-answer-normalization.js?v=${version}`];
 const pagePreloads=page==='theme'?['../shared/l7-theme-standard.js?v=l7-theme-standard12',`l7t1-l6-layout.js?v=${version}`]:[`../shared/l7-ui.js?v=${version}`,'../shared/l7-external-links.js?v=1',`l7t1-conjugation-ui.js?v=${version}`,`l7t1-tasks-2-4-ui.js?v=${version}`,`l7t1-noun-plural-help-v2.js?v=${version}`,`l7t1-grammar-ui.js?v=${version}`,`l7t1-ability-ui.js?v=${version}`,`l7t1-sms-modal-ui.js?v=${version}`,`l7t1-l6-layout.js?v=${version}`];
 [...commonPreloads,...pagePreloads].forEach(preload);
 function load(src){return new Promise((resolve,reject)=>{const script=document.createElement('script');script.src=src;script.onload=resolve;script.onerror=reject;document.body.appendChild(script)})}
@@ -13,7 +13,7 @@ load('/shared/sp-cache-epoch.js?v=20260831-sync-device-merge8').catch(()=>{})
  .then(()=>Promise.resolve(window.L7_THEME_READY))
  .then(()=>load('../shared/l7-state-safety.js?v=1'))
  .then(()=>load(`../shared/l7-state.js?v=${version}`))
- .then(()=>load('../shared/l7-wrong-queue-v4.js?v=12'))
+ .then(()=>load('../shared/l7-wrong-queue-v4.js?v=13'))
  .then(()=>{window.SPL7WrongQueueV8?.install?.();return load('../shared/l7-theme-score.js?v=20260831-firebase-progress3')})
  .then(()=>load('../shared/l7-score-repeat-fix.js?v=1'))
  .then(()=>load('../shared/l7-score-live-sync.js?v=20260831-central8'))
