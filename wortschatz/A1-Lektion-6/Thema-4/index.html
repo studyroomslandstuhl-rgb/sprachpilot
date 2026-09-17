@@ -47,7 +47,7 @@ l6t4MatchedMenu();
 (function(){
  const MARK='SP_L6_T4_ALL_PRACTICE_100';
  const examUrl='pruefung-ohne-audio.html?v=20260915-unlock2';
- let running=false;
+ let running=false,scheduled=false;
  const visibleAll100=()=>{const nodes=[...document.querySelectorAll('#taskGrid a')].filter(link=>{const t=(link.textContent||'').toLowerCase(),h=(link.getAttribute('href')||'').toLowerCase();return !t.includes('prüfung')&&!h.includes('pruefung')&&!h.includes('task=exam')});return nodes.length>0&&nodes.every(link=>/(^|\D)100\s*%/.test(link.textContent||'')||link.classList.contains('done-card')||link.classList.contains('done'))};
  const unlocked=()=>{let ok=false;try{ok=typeof l6t4ExamUnlocked==='function'&&l6t4ExamUnlocked()}catch(e){}if(!ok)ok=visibleAll100();if(ok)localStorage.setItem(MARK,'1');return ok||localStorage.getItem(MARK)==='1'};
  const enforce=()=>{
@@ -62,20 +62,24 @@ l6t4MatchedMenu();
      link.setAttribute('href',examUrl);
      link.removeAttribute('aria-disabled');
      link.classList.remove('exam-locked','locked');
-     const start=link.querySelector('.start');if(start)start.textContent='Starten';
-     const desc=link.querySelector('p.small');if(desc&&/100/.test(text))desc.textContent='Zeige, was du gelernt hast.';
+     const start=link.querySelector('.start');if(start&&start.textContent!=='Starten')start.textContent='Starten';
+     const desc=link.querySelector('p.small');if(desc&&/100/.test(text)&&desc.textContent!=='Zeige, was du gelernt hast.')desc.textContent='Zeige, was du gelernt hast.';
     }else{
      link.removeAttribute('href');
      link.setAttribute('aria-disabled','true');
      link.classList.add('exam-locked','locked');
-     const start=link.querySelector('.start');if(start)start.textContent='Gesperrt';
-     const desc=link.querySelector('p.small');if(desc)desc.textContent='Schließe zuerst alle anderen Aufgaben zu 100 % ab.';
+     const start=link.querySelector('.start');if(start&&start.textContent!=='Gesperrt')start.textContent='Gesperrt';
+     const desc=link.querySelector('p.small');if(desc&&desc.textContent!=='Schließe zuerst alle anderen Aufgaben zu 100 % ab.')desc.textContent='Schließe zuerst alle anderen Aufgaben zu 100 % ab.';
     }
    });
-  }finally{running=false}
+ }finally{running=false}
  };
+ const scheduleEnforce=()=>{if(scheduled)return;scheduled=true;requestAnimationFrame(()=>{scheduled=false;enforce()})};
  enforce();
- const grid=document.getElementById('taskGrid');if(grid)new MutationObserver(enforce).observe(grid,{childList:true,subtree:true});
+ // Nur ein echter Neuaufbau des Rasters muss erneut geprüft werden. Die alte
+ // Subtree-Beobachtung reagierte auf ihre eigenen Textänderungen und konnte
+ // dadurch den Browser direkt nach dem Öffnen in einer Endlosschleife blockieren.
+ const grid=document.getElementById('taskGrid');if(grid)new MutationObserver(scheduleEnforce).observe(grid,{childList:true});
  document.addEventListener('click',event=>{const link=event.target.closest('#taskGrid a');if(!link)return;const text=(link.textContent||'').toLowerCase(),href=link.getAttribute('href')||'';if(!text.includes('prüfung')&&!href.includes('task=exam')&&!href.includes('pruefung'))return;event.preventDefault();event.stopImmediatePropagation();if(unlocked())location.assign(examUrl)},true)
 })();
 L6T4ThemeScoreV3.renderSummary();
