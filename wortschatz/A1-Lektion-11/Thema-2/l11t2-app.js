@@ -34,35 +34,55 @@ function wordImage(){const pool=D.cards;const items=shuffle(pool).map(w=>({a:w.i
 function listenImage(){const pool=D.cards;const items=shuffle(pool).map(w=>({a:w.id,label:w.full,word:w,options:shuffle([w,...shuffle(pool.filter(x=>x.id!==w.id)).slice(0,3)])}));quiz(items,it=>`<section class="l8-card"><div class="l11t2-question">Höre das Wort.</div><div class="l11t2-row"><button class="l11t2-btn primary" id="listen">🔊 Hören</button></div><div class="l11t2-image-options" style="margin-top:16px">${it.options.map(x=>`<button class="l11t2-image-choice" data-choice="${x.id}"><img src="${esc(x.image)}"></button>`).join('')}</div><div id="fb" class="l11t2-feedback"></div></section>`)}
 function memory(){const pairs=shuffle(D.cards).slice(0,8),deck=shuffle(pairs.flatMap(w=>[{id:w.id,type:'img',w},{id:w.id,type:'word',w}]));let first=null,matched=new Set(),moves=0,lock=false;frame('<div id="exercise"></div>');const render=()=>{setProgress(matched.size,pairs.length);document.querySelector('#exercise').innerHTML=`<section class="l8-card"><div class="l11t2-row"><b>${matched.size}/${pairs.length} Paare</b><span>${moves} Versuche</span></div><div class="l11t2-memory" style="margin-top:14px">${deck.map((c,i)=>`<button class="l11t2-memory-card ${matched.has(c.id)?'matched':''}" data-m="${i}" ${matched.has(c.id)?'disabled':''}>?</button>`).join('')}</div></section>`;document.querySelectorAll('[data-m]').forEach(b=>b.onclick=()=>{if(lock||b.dataset.open==='1')return;const c=deck[Number(b.dataset.m)];b.dataset.open='1';b.innerHTML=c.type==='img'?`<img src="${esc(c.w.image)}">`:esc(c.w.full);if(first===null){first={b,c};return}moves++;if(first.c.id===c.id&&first.c.type!==c.type){matched.add(c.id);first=null;if(matched.size===pairs.length)setTimeout(()=>{finish(pairs.length,pairs.length)},350);else setTimeout(render,250)}else{lock=true;setTimeout(()=>{first=null;lock=false;render()},750)}})};render()}
 function prepositionImageAudio(){
- const pairs=shuffle(D.prepositionCards||[]),deck=shuffle(pairs.flatMap(w=>[{...w,side:'image'},{...w,side:'audio'}]));
- let first=null,done=new Set();
+ const base=shuffle(D.prepositionCards||[]);
+ let queue=[...base],first=null,done=new Set(),roundMisses=new Set(),attemptedThisRound=new Set();
  frame('<div id="exercise"></div>');
  const render=()=>{
-  if(done.size===pairs.length)return finish(done.size,pairs.length);
-  setProgress(done.size,pairs.length);
-  document.querySelector('#exercise').innerHTML=`<section class="l8-card"><p class="l11t2-small-center">Tippe zuerst auf eine Bildkarte und dann auf die passende Hörkarte – oder umgekehrt.</p><div class="l11t2-pair-grid">${deck.map((c,n)=>`<button type="button" data-pair="${n}" aria-pressed="false" ${done.has(c.id)?'disabled':''}>${c.side==='image'?`<img src="${esc(c.image)}" alt="Bild zu einer Wechselpräposition" draggable="false">`:'<span aria-hidden="true">🔊</span><span class="sr-only">Hörkarte</span>'}</button>`).join('')}</div><div id="fb" class="l11t2-feedback"></div></section>`;
+  if(!queue.length){
+   const retry=base.filter(w=>!done.has(w.id)&&roundMisses.has(w.id));
+   if(retry.length){queue=shuffle(retry);roundMisses=new Set();attemptedThisRound=new Set();first=null;return render()}
+   return finish(done.size,base.length);
+  }
+  const currentIds=new Set(queue.map(x=>x.id));
+  const deck=shuffle(queue.flatMap(w=>[{...w,side:'image'},{...w,side:'audio'}]));
+  setProgress(done.size,base.length);
+  document.querySelector('#exercise').innerHTML=`<section class="l8-card"><p class="l11t2-small-center">Ordne Bildkarte und Hörkarte einander zu.</p><div class="l11t2-pair-grid">${deck.map((c,n)=>`<button type="button" data-pair="${n}" class="${done.has(c.id)?'matched':''}" aria-pressed="false" ${done.has(c.id)?'disabled':''}>${c.side==='image'?`<img src="${esc(c.image)}" alt="Bild zu einer Wechselpräposition" draggable="false">`:'<span aria-hidden="true">🔊</span><span class="sr-only">Hörkarte</span>'}</button>`).join('')}</div><div id="fb" class="l11t2-feedback"></div></section>`;
   const clearSelection=()=>document.querySelectorAll('[data-pair].selected').forEach(x=>{x.classList.remove('selected');x.setAttribute('aria-pressed','false')});
-  document.querySelectorAll('[data-pair]').forEach(b=>b.addEventListener('click',()=>{
-   const c=deck[Number(b.dataset.pair)];
-   if(c.side==='audio')play(c,b);
+  document.querySelectorAll('[data-pair]').forEach(btn=>btn.addEventListener('click',()=>{
+   const card=deck[Number(btn.dataset.pair)];
+   if(card.side==='audio')play(card,btn);
+   if(done.has(card.id))return;
    if(!first){
-    first={b,c};b.classList.add('selected');b.setAttribute('aria-pressed','true');
-    document.querySelector('#fb').textContent=c.side==='image'?'Jetzt die passende Hörkarte wählen.':'Jetzt das passende Bild wählen.';
+    first={btn,card};btn.classList.add('selected');btn.setAttribute('aria-pressed','true');
+    document.querySelector('#fb').textContent=card.side==='image'?'Jetzt die passende Hörkarte wählen.':'Jetzt das passende Bild wählen.';
     return;
    }
-   if(first.b===b){clearSelection();first=null;document.querySelector('#fb').textContent='Auswahl aufgehoben.';return}
-   if(first.c.side===c.side){
-    clearSelection();first={b,c};b.classList.add('selected');b.setAttribute('aria-pressed','true');
-    document.querySelector('#fb').textContent=c.side==='image'?'Jetzt die passende Hörkarte wählen.':'Jetzt das passende Bild wählen.';
+   if(first.btn===btn){clearSelection();first=null;document.querySelector('#fb').textContent='Auswahl aufgehoben.';return}
+   if(first.card.side===card.side){
+    clearSelection();first={btn,card};btn.classList.add('selected');btn.setAttribute('aria-pressed','true');
+    document.querySelector('#fb').textContent=card.side==='image'?'Jetzt die passende Hörkarte wählen.':'Jetzt das passende Bild wählen.';
     return;
    }
-   if(first.c.id===c.id){
-    done.add(c.id);clearSelection();first=null;document.querySelector('#fb').textContent='Richtig!';
-    setTimeout(render,280);
-   }else{
-    b.classList.add('wrong');document.querySelector('#fb').textContent='Das passt nicht. Versuche es noch einmal.';
-    setTimeout(()=>{clearSelection();first=null;render()},650);
+   const firstId=first.card.id,secondId=card.id;
+   const firstTryForBoth=!attemptedThisRound.has(firstId)&&!attemptedThisRound.has(secondId);
+   attemptedThisRound.add(firstId);attemptedThisRound.add(secondId);
+   if(firstId===secondId){
+    if(firstTryForBoth){
+     done.add(card.id);
+     queue=queue.filter(w=>w.id!==card.id);
+     document.querySelectorAll('[data-pair]').forEach(x=>{const d=deck[Number(x.dataset.pair)];if(d.id===card.id){x.classList.add('matched');x.disabled=true}});
+     document.querySelector('#fb').textContent='Richtig!';
+    }else{
+     roundMisses.add(card.id);
+     queue=queue.filter(w=>w.id!==card.id);
+     document.querySelector('#fb').textContent='Richtig – dieses Paar kommt am Ende noch einmal.';
+    }
+    clearSelection();first=null;setTimeout(render,500);return;
    }
+   roundMisses.add(firstId);roundMisses.add(secondId);
+   first.btn.classList.add('wrong');btn.classList.add('wrong');
+   document.querySelector('#fb').textContent='Das passt nicht. Beide Karten kommen am Ende noch einmal.';
+   clearSelection();first=null;setTimeout(render,700);
   }));
  };
  render();
