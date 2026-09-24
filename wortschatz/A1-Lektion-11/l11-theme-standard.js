@@ -20,12 +20,63 @@ function overview(){const l=lang();root.innerHTML=`<div class="l10-theme-page">$
 function taskFrame(task){const i=C.tasks.findIndex(t=>t.id===task.id);root.innerHTML=`<div class="l10-theme-page">${header(task.title+' · A1 Lektion 11 · Thema '+C.theme)}<div class="l8-wrap"><section class="l8-card l8-task-head"><span class="l8-task-kicker">Aufgabe ${i+1}</span><h1>${esc(task.title)}</h1><p>${task.icon} ${esc(task.cardText)}</p><div class="l8-progress"><div id="pbar" style="width:0%"></div></div><div id="ptxt" class="l8-small">0%</div></section><div id="exercise"></div></div></div>`;bindOverview()}
 function progress(n,total){const p=Math.round(n/Math.max(1,total)*100);document.querySelector('#pbar').style.width=p+'%';document.querySelector('#ptxt').textContent=p+'%'}
 function finished(task,score,total){complete(task,score,total);document.querySelector('#exercise').innerHTML=`<section class="l8-card l8-card-stage"><h2>${score===total?'Gut gemacht!':'Fertig'}</h2><p>${score} / ${total} richtig</p><div class="l11-controls"><a class="l11-btn primary" href="index.html">Zur Themenübersicht</a><button class="l11-btn" onclick="location.reload()">Noch einmal</button></div></section>`;progress(total,total)}
-function choiceQuiz(task,items,render){let pos=0,score=0,tries=0;taskFrame(task);const draw=()=>{if(pos>=items.length)return finished(task,score,items.length);progress(pos,items.length);tries=0;const it=items[pos];document.querySelector('#exercise').innerHTML=render(it);document.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>{if(b.dataset.choice===String(it.a)){score++;b.classList.add('correct');document.querySelector('#fb').textContent='Richtig!';setTimeout(()=>{pos++;draw()},500)}else{tries++;b.classList.add('wrong');const fb=document.querySelector('#fb');if(tries===1)fb.textContent='Noch nicht. Versuch es noch einmal.';else if(tries===2)fb.textContent='Tipp: '+(it.hint||'Achte genau auf die Bedeutung.');else{fb.textContent='Richtig ist: '+it.label;document.querySelectorAll('[data-choice]').forEach(x=>{if(x.dataset.choice===String(it.a))x.classList.add('correct')});setTimeout(()=>{pos++;draw()},900)}}});const ab=document.querySelector('#audioBtn');if(ab)ab.onclick=()=>play(it.audio||AUDIO+(it.audioId||'')+'.mp3',it.audioText||it.label,ab)};draw()}
+function taskNumber(task){return Math.max(1,C.tasks.findIndex(t=>t.id===task.id)+1)}
+function adaptiveExcluded(task){return task?.id==='memory'||taskNumber(task)===6}
+function helpText(it,tries){
+ if(tries===1)return 'Hilfe 1: Schau dir Frage und Antwortmöglichkeiten noch einmal genau an.';
+ if(tries===2)return 'Hilfe 2: '+(it.hint||'Achte auf das Schlüsselwort und die Bedeutung.');
+ return 'Hilfe 3: Die richtige Antwort ist: '+(it.label||it.a);
+}
+function choiceQuiz(task,items,render){
+ if(adaptiveExcluded(task)){
+  let pos=0,score=0;taskFrame(task);
+  const draw=()=>{if(pos>=items.length)return finished(task,score,items.length);progress(pos,items.length);const it=items[pos];document.querySelector('#exercise').innerHTML=render(it);document.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>{document.querySelectorAll('[data-choice]').forEach(x=>x.disabled=true);const ok=b.dataset.choice===String(it.a);b.classList.add(ok?'correct':'wrong');if(ok)score++;else document.querySelectorAll('[data-choice]').forEach(x=>{if(x.dataset.choice===String(it.a))x.classList.add('correct')});document.querySelector('#fb').textContent=ok?'Richtig!':'Richtig ist: '+(it.label||it.a);setTimeout(()=>{pos++;draw()},650)});const ab=document.querySelector('#audioBtn');if(ab)ab.onclick=()=>play(it.audio||AUDIO+(it.audioId||'')+'.mp3',it.audioText||it.label,ab)};draw();return;
+ }
+ const total=items.length,queue=items.map((it,i)=>({it,key:i,original:true}));let originalDone=0;
+ taskFrame(task);
+ const draw=()=>{
+  if(!queue.length)return finished(task,total,total);
+  progress(originalDone===total?Math.max(0,total-1):originalDone,total);
+  const current=queue[0],it=current.it;let tries=0,hadError=false;
+  document.querySelector('#exercise').innerHTML=render(it);
+  const wire=()=>{
+   document.querySelectorAll('[data-choice]').forEach(b=>b.onclick=()=>{
+    const ok=b.dataset.choice===String(it.a),fb=document.querySelector('#fb');
+    if(ok){
+     b.classList.add('correct');document.querySelectorAll('[data-choice]').forEach(x=>x.disabled=true);fb.textContent=hadError?'Richtig! Diese Frage kommt am Ende noch einmal.':'Richtig!';
+     if(current.original)originalDone++;
+     queue.shift();
+     if(hadError)queue.push({it,key:current.key,original:false});
+     setTimeout(draw,550);return;
+    }
+    hadError=true;tries++;b.classList.add('wrong');fb.textContent=helpText(it,tries);
+    if(tries>=3)document.querySelectorAll('[data-choice]').forEach(x=>{if(x.dataset.choice===String(it.a))x.classList.add('correct')});
+   });
+   const ab=document.querySelector('#audioBtn');if(ab)ab.onclick=()=>play(it.audio||AUDIO+(it.audioId||'')+'.mp3',it.audioText||it.label,ab);
+  };
+  wire();
+ };
+ draw();
+}
 function buttons(opts){return `<div class="l11-options">${opts.map(o=>`<button class="l11-option" data-choice="${esc(o.value)}">${esc(o.label)}</button>`).join('')}</div><div class="l11-feedback" id="fb"></div>`}
 function flashcards(task){const a=shuffle(C.cards),l=lang();let i=0;taskFrame(task);const draw=()=>{const w=a[i];progress(i,a.length);document.querySelector('#exercise').innerHTML=`<section class="l8-card l8-card-stage"><div class="sp-flash"><img src="${esc(w.image)}" alt=""><h2>${esc(w.full)}</h2><p>${esc(trans(w)||'–')} <small>(${esc(l.label)})</small></p>${w.plural?`<p>Plural: <b>${esc(w.plural)}</b></p>`:''}${w.present?`<p>Präsens: <b>${esc(w.present)}</b></p>`:''}${w.perfect?`<p>Perfekt: <b>${esc(w.perfect)}</b></p>`:''}<button class="l11-btn" id="audioBtn">🔊 Hören</button><button class="l11-btn primary" id="next">${i===a.length-1?'Fertig':'Weiter'}</button></div></section>`;document.querySelector('#audioBtn').onclick=()=>play(w.audio,w.full,document.querySelector('#audioBtn'));document.querySelector('#next').onclick=()=>{if(i===a.length-1)finished(task,a.length,a.length);else{i++;draw()}}};draw()}
 function imageWord(task,listen=false){const pool=C.cards.filter(w=>w.image),sel=shuffle(pool).slice(0,Math.min(20,pool.length)),items=sel.map(w=>{const os=shuffle([w,...shuffle(pool.filter(x=>x.id!==w.id)).slice(0,3)]);return{a:w.id,label:w.full,hint:'Der Artikel und das Bild helfen dir.',image:w.image,audio:w.audio,audioText:w.full,opts:os.map(x=>({value:x.id,label:x.full}))}});choiceQuiz(task,items,it=>`<section class="l8-card l8-card-stage">${listen?`<button class="l11-btn primary" id="audioBtn">🔊 Hören</button>`:`<img class="l11-card-image" src="${esc(it.image)}" alt="">`}<div class="l11-question">${listen?'Welches Wort hast du gehört?':'Welches Wort passt?'}</div>${buttons(it.opts)}</section>`)}
 function wordImage(task){const pool=C.cards.filter(w=>w.image),sel=shuffle(pool).slice(0,Math.min(20,pool.length)),items=sel.map(w=>{const os=shuffle([w,...shuffle(pool.filter(x=>x.id!==w.id)).slice(0,3)]);return{a:w.id,label:w.full,hint:'Suche das Bild zum Wort.',word:w.full,opts:os}});choiceQuiz(task,items,it=>`<section class="l8-card l8-card-stage"><div class="l11-question">${esc(it.word)}</div><div class="l11-image-options">${it.opts.map(x=>`<button class="l11-image-choice" data-choice="${x.id}"><img src="${x.image}" alt=""></button>`).join('')}</div><div class="l11-feedback" id="fb"></div></section>`)}
 function customChoice(task,data){choiceQuiz(task,shuffle(data).slice(0,20),it=>`<section class="l8-card l8-card-stage">${it.audio?`<button class="l11-btn primary" id="audioBtn">🔊 Hören</button>`:''}<div class="l11-question">${esc(it.q)}</div>${buttons(shuffle(it.options.map(x=>({value:x,label:x}))))}</section>`)}
-function writeTask(task,data){let pos=0,score=0,tries=0;taskFrame(task);const draw=()=>{if(pos>=data.length)return finished(task,score,data.length);progress(pos,data.length);tries=0;const it=data[pos];document.querySelector('#exercise').innerHTML=`<section class="l8-card l8-card-stage"><div class="l11-question">${esc(it.q)}</div><input class="l8-input" id="answer" autocomplete="off"><button class="l11-btn primary" id="check">Prüfen</button><div class="l11-feedback" id="fb"></div></section>`;document.querySelector('#check').onclick=()=>{const ok=(it.answers||[it.a]).some(a=>norm(a)===norm(document.querySelector('#answer').value));if(ok){score++;document.querySelector('#fb').textContent='Richtig!';setTimeout(()=>{pos++;draw()},450)}else{tries++;document.querySelector('#fb').textContent=tries===1?'Noch nicht. Versuch es noch einmal.':tries===2?'Tipp: '+(it.hint||'Achte auf die Form.'):'Richtig: '+it.a;if(tries>=3)setTimeout(()=>{pos++;draw()},900)}}};draw()}
+function writeTask(task,data){
+ if(adaptiveExcluded(task)){
+  let pos=0,score=0;taskFrame(task);const draw=()=>{if(pos>=data.length)return finished(task,score,data.length);progress(pos,data.length);const it=data[pos];document.querySelector('#exercise').innerHTML=`<section class="l8-card l8-card-stage"><div class="l11-question">${esc(it.q)}</div><input class="l8-input" id="answer" autocomplete="off"><button class="l11-btn primary" id="check">Prüfen</button><div class="l11-feedback" id="fb"></div></section>`;document.querySelector('#check').onclick=()=>{const ok=(it.answers||[it.a]).some(a=>norm(a)===norm(document.querySelector('#answer').value));if(ok)score++;document.querySelector('#fb').textContent=ok?'Richtig!':'Richtig: '+it.a;setTimeout(()=>{pos++;draw()},700)}};draw();return;
+ }
+ const total=data.length,queue=data.map((it,i)=>({it,key:i,original:true}));let originalDone=0;taskFrame(task);
+ const draw=()=>{
+  if(!queue.length)return finished(task,total,total);
+  progress(originalDone===total?Math.max(0,total-1):originalDone,total);
+  const current=queue[0],it=current.it;let tries=0,hadError=false;
+  document.querySelector('#exercise').innerHTML=`<section class="l8-card l8-card-stage"><div class="l11-question">${esc(it.q)}</div><input class="l8-input" id="answer" autocomplete="off"><button class="l11-btn primary" id="check">Prüfen</button><div class="l11-feedback" id="fb"></div></section>`;
+  const check=()=>{const input=document.querySelector('#answer'),ok=(it.answers||[it.a]).some(a=>norm(a)===norm(input.value)),fb=document.querySelector('#fb');if(ok){fb.textContent=hadError?'Richtig! Diese Frage kommt am Ende noch einmal.':'Richtig!';if(current.original)originalDone++;queue.shift();if(hadError)queue.push({it,key:current.key,original:false});setTimeout(draw,500);return}hadError=true;tries++;fb.textContent=helpText(it,tries);if(tries>=3)input.placeholder=String(it.a||'')};
+  document.querySelector('#check').onclick=check;document.querySelector('#answer').onkeydown=e=>{if(e.key==='Enter')check()};
+ };
+ draw();
+}
 function taskPage(){const id=String(new URLSearchParams(location.search).get('task')||'karteikarten').toLowerCase(),task=C.tasks.find(t=>t.id===id)||C.tasks[0];if(task.exam){const practice=C.tasks.filter(t=>!t.exam);if(!practice.every(t=>pct(t.id)>=100)&&!preview()){location.href='index.html';return}}if(id==='karteikarten')return flashcards(task);if(id==='bild-wort')return imageWord(task);if(id==='wort-bild')return wordImage(task);if(id==='hoeren-bild')return imageWord(task,true);if(C.choiceTasks?.[id])return customChoice(task,C.choiceTasks[id]);if(C.writeTasks?.[id])return writeTask(task,C.writeTasks[id]);return imageWord(task)}
 const page=document.body.dataset.page;if(page==='theme')themePage();else if(page==='overview')overview();else taskPage();
