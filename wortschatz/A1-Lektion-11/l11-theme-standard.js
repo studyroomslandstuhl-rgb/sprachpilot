@@ -21,7 +21,7 @@ function taskFrame(task){const i=C.tasks.findIndex(t=>t.id===task.id);root.inner
 function progress(n,total){const p=Math.round(n/Math.max(1,total)*100);document.querySelector('#pbar').style.width=p+'%';document.querySelector('#ptxt').textContent=p+'%'}
 function finished(task,score,total){complete(task,score,total);document.querySelector('#exercise').innerHTML=`<section class="l8-card l8-card-stage"><h2>${score===total?'Gut gemacht!':'Fertig'}</h2><p>${score} / ${total} richtig</p><div class="l11-controls"><a class="l11-btn primary" href="index.html">Zur Themenübersicht</a><button class="l11-btn" onclick="location.reload()">Noch einmal</button></div></section>`;progress(total,total)}
 function taskNumber(task){return Math.max(1,C.tasks.findIndex(t=>t.id===task.id)+1)}
-function adaptiveExcluded(task){return task?.id==='memory'||taskNumber(task)===6}
+function adaptiveExcluded(task){return task?.id==='memory'}
 function helpText(it,tries){
  if(tries===1)return 'Hilfe 1: Schau dir Frage und Antwortmöglichkeiten noch einmal genau an.';
  if(tries===2)return 'Hilfe 2: '+(it.hint||'Achte auf das Schlüsselwort und die Bedeutung.');
