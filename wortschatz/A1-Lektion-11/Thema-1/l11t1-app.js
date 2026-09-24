@@ -37,7 +37,7 @@ function setProgress(done,total){const p=Math.round(done/Math.max(1,total)*100),
 function finish(score,total){const pct=Math.round(score/Math.max(1,total)*100);if(taskId==='pruefung')syncProgress(score,total);else markDone(score,total);document.querySelector('#exercise').innerHTML=`<section class="l8-card l8-card-stage"><h2>${pct===100?'Gut gemacht!':'Fertig'}</h2><p>${score} / ${total} richtig · ${pct}%</p><div class="l11-controls"><a class="l11-btn primary" href="index.html">Zur Themenübersicht</a><button class="l11-btn" onclick="location.reload()">Noch einmal</button></div></section>`;setProgress(taskId==='pruefung'?score:total,total)}
 function speak(text){try{speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(text);u.lang='de-DE';u.rate=.84;speechSynthesis.speak(u)}catch(e){}}
 function playWord(w,button){if(button)button.disabled=true;const done=()=>{if(button)button.disabled=false};try{const a=new Audio(w.audio);a.addEventListener('ended',done,{once:true});a.addEventListener('error',()=>{done();speak(w.full)},{once:true});a.play().catch(()=>{done();speak(w.full)})}catch(e){done();speak(w.full)}}
-function adaptiveExcluded(){return taskId==='memory'||Math.max(1,D.tasks.findIndex(t=>t.id===taskId)+1)===6}
+function adaptiveExcluded(){return taskId==='memory'}
 function helpText(it,tries){if(tries===1)return 'Hilfe 1: Schau dir die Aufgabe noch einmal genau an.';if(tries===2)return 'Hilfe 2: '+(it.hint||'Achte auf Bild, Wort und Bedeutung.');return 'Hilfe 3: Die richtige Antwort ist: '+(it.label||it.a)}
 function quiz(items,renderQuestion){
  if(adaptiveExcluded()){
