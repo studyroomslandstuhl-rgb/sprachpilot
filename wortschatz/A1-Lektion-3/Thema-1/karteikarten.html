@@ -21,7 +21,7 @@
 <footer>© SprachPilot</footer>
 </div>
 <script type="module" src="/js/guard.js?v=card-standard1"></script>
-<script src="app.js?v=42"></script>
+<script src="app.js?v=43"></script>
 <script type="module" src="/js/scoring.js?v=6"></script>
 <script src="/js/sp-card-standard.js?v=1"></script>
 <script>
@@ -39,7 +39,7 @@ SPCardStandard.mount({
   progress(){return{total:CARD_WORDS.length,done:Q.done.length,tries:Q.tries||0,hadWrong:!!Q.had}},
   current(){if(!Q.cur)Q.cur=nextItem(Q);return Q.cur},
   wrong(){wrong(Q);persist(Q);return Q.tries},
-  right(){const item=Q.cur;right(Q,item);if(Q.done.length>=CARD_WORDS.length&&window.SprachPilotScoring?.awardTask)window.SprachPilotScoring.awardTask(FILE)}
+  right(){const item=Q.cur;if(!item)return;right(Q,item);Q.cur=null;Q.tries=0;Q.had=false;if(Q.done.length>=CARD_WORDS.length&&window.SprachPilotScoring?.awardTask)window.SprachPilotScoring.awardTask(FILE)}
  }
 });
 })();
