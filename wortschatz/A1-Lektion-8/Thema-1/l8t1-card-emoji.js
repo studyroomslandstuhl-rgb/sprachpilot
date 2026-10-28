@@ -77,6 +77,7 @@ function patchDom(){
  if(!id)return;
  const task=theme.tasks.find(item=>String(item?.id||'')===id);
  if(!task)return;
+ if(window.__SP_KARTEIKARTEN_STANDARD_V1&&task.kind==='cards')return;
  const line=document.querySelector('.l8-task-title-block p');
  if(line&&task.instruction){
   setText(line,`${emojiFor(task)} ${task.instruction}`);

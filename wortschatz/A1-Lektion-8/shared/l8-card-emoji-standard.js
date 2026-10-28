@@ -29,7 +29,8 @@ function patchDom(){
  const currentId=new URLSearchParams(location.search).get('task')||'';
  const current=t.tasks.find(task=>String(task?.id||'')===currentId);
  if(isCards(current)){
-  const line=document.querySelector('.l8-task-title-block p');
+  if(window.__SP_KARTEIKARTEN_STANDARD_V1&&isCards(current))return;
+ const line=document.querySelector('.l8-task-title-block p');
   if(line&&current.instruction){const wanted=`${CARD_EMOJI} ${current.instruction}`;if(line.textContent!==wanted)line.textContent=wanted;}
  }
 }

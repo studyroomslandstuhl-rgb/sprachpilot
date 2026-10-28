@@ -73,15 +73,15 @@ function enforceContract(){
  const instruction=document.querySelector('.l8-task-title-block p');
  if(instruction&&instruction.textContent!=='🃏 Lerne die Wörter.')instruction.textContent='🃏 Lerne die Wörter.';
  const mic=document.getElementById('cardMic');
- if(mic)mic.textContent='🎤 Sprechen';
+ if(mic&&mic.textContent!=='🎤 Sprechen')mic.textContent='🎤 Sprechen';
  const write=document.getElementById('cardWrite');
- if(write)write.textContent='✍️ Schreiben';
+ if(write&&write.textContent!=='✍️ Schreiben')write.textContent='✍️ Schreiben';
  const listen=document.getElementById('cardListen')||document.querySelector('.l8-card-listen');
- if(listen)listen.textContent='🔊 Anhören';
+ if(listen&&listen.textContent!=='🔊 Anhören')listen.textContent='🔊 Anhören';
  const check=document.getElementById('cardCheck');
- if(check)check.textContent='Prüfen';
+ if(check&&check.textContent!=='Prüfen')check.textContent='Prüfen';
  const input=document.getElementById('cardInput');
- if(input)input.setAttribute('placeholder','Wort schreiben');
+ if(input&&input.getAttribute('placeholder')!=='Wort schreiben')input.setAttribute('placeholder','Wort schreiben');
  document.querySelectorAll('.l8-card-detail').forEach(node=>{
   const label=String(node.querySelector('span')?.textContent||'').trim();
   if(label&&!/^(Plural|Beispiel)$/i.test(label))node.remove();
