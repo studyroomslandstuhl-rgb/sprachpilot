@@ -12,7 +12,7 @@ const blocked=new Set(['sehr geehrter herr','sehr geehrte frau','mit freundliche
 const grammarOnly=[/eine stelle haben\s+(als|bei)/i,/stelle haben\s+(als|bei)/i];
 const TR=new Map();
 function add(keys,en,ru,tr,uk,ar,ja,ro,pl,ku){const val={en,ru,tr,uk,ar,ja,ro,pl,ku};String(keys).split('|').forEach(k=>TR.set(norm(k),val))}
-add('da','there','там','orada','там','هناك','そこ','acolo','tam','li wir');
+add('da','there','там','orada','там','موجود / حاضر','そこ','acolo','tam','li wir');
 add('zeigen','to show','показывать','göstermek','показувати','يُري','見せる','a arăta','pokazywać','nîşan dan');
 add('gerade','right now / just','сейчас / как раз','şu anda / tam','зараз / саме','الآن / بالضبط','ちょうど今 / ちょうど','chiar acum / tocmai','właśnie / teraz','niha / tam');
 add('später','later','позже','daha sonra','пізніше','لاحقًا','後で','mai târziu','później','paşê');
